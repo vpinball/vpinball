@@ -221,7 +221,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    ctx->srcHeight = m_b2sHeight;
 
    // Update animations
-   auto now = std::chrono::high_resolution_clock::now();
+   auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>((now - m_lastBackglassRenderTick).count()) / 1000000000.0f;
    m_lastBackglassRenderTick = now;
    for (auto& animation : m_b2s->m_backglassAnimations)
@@ -276,7 +276,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx)
    ctx->srcHeight = m_dmdHeight;
 
    // Update animations
-   auto now = std::chrono::high_resolution_clock::now();
+   auto now = std::chrono::steady_clock::now();
    float elapsed = static_cast<float>((now - m_lastDmdRenderTick).count()) / 1000000000.0f;
    m_lastDmdRenderTick = now;
    for (auto& animation : m_b2s->m_dmdAnimations)

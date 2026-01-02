@@ -343,12 +343,12 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
             using namespace std::literals;
             StateMsg stateMsg;
             UdpClientSocket client(hostProp_Get(), portProp_Val, 500);
-            auto start = std::chrono::high_resolution_clock::now();
+            auto start = std::chrono::steady_clock::now();
             while (runMode != RunMode::RunModeNone)
             {
                msgReadySem.acquire();
                stateMsg = lastState;
-               stateMsg.timestamp = static_cast<uint32_t>((std::chrono::high_resolution_clock::now() - start) / 1us);
+               stateMsg.timestamp = static_cast<uint32_t>((std::chrono::steady_clock::now() - start) / 1us);
                int sent = 0;
                while (sent < sizeof(stateMsg))
                {

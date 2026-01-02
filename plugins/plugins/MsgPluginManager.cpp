@@ -267,7 +267,7 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    std::unique_lock<std::mutex> lock(pm.m_timerListMutex);
    if (delayInS < 0.)
    {
-      pm.m_timers.insert(pm.m_timers.begin(), TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() });
+      pm.m_timers.insert(pm.m_timers.begin(), TimerEntry { callback, userData, std::chrono::steady_clock::now() });
 #ifdef _MSC_VER
       // Wake up message loop
       PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
@@ -279,7 +279,7 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    }
    else
    {
-      auto timer = TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
+      auto timer = TimerEntry { callback, userData, std::chrono::steady_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
       pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry& a, const TimerEntry& b) { return a.time < b.time; }), timer);
 #ifdef _MSC_VER
       // Wake up message loop
@@ -296,7 +296,7 @@ void MsgPluginManager::ProcessAsyncCallbacks()
    std::vector<TimerEntry> timers;
    {
       const std::lock_guard<std::mutex> lock(m_timerListMutex);
-      const std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+      const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
       for (std::vector<TimerEntry>::iterator it = m_timers.begin(); it < m_timers.end();)
       {
          if (it->time > now)
