@@ -186,8 +186,8 @@ vec3 faaa(const vec2 u)
 	if( horzSpan) posN.y += lengthSign * 0.5;
 	vec2 posP = posN;
 	vec2 offNP = offs;
-	if(!horzSpan) offNP.x = 0;
-	if( horzSpan) offNP.y = 0;
+	if(!horzSpan) offNP.x = 0.0;
+	if( horzSpan) offNP.y = 0.0;
 	posP += offNP * FAAAOffMult[0];
 	posN -= offNP * FAAAOffMult[0];
 	float lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
