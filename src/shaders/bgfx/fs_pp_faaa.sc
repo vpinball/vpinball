@@ -41,7 +41,7 @@ float luma(const vec3 l)
 // Antialiasing quality setting. Higher values result in higher quality
 // of antialiasing applied to detected edges. Default: 5 (high quality)
 // Range: From 1 (fastest) to 9 (highest quality).
-#define FAAA_QUALITY 4 // was 5 in original FAAA
+#define FAAA_QUALITY 9 // was 5 in original FAAA
 
 /*============================================================================
 	Settings - from FXAA3 QUALITY VERSION LOW DITHER SETTINGS

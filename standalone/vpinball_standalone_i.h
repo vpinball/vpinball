@@ -694,7 +694,7 @@ typedef enum FXAASettings {
     Fast_NFAA = 4,
     Standard_DLAA = 5,
     Quality_SMAA = 6,
-    Standard_FAAA = 7
+    Quality_FAAA = 7
 } FXAASettings;
 typedef enum PhysicsSet {
     Disable = 0,

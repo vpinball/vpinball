@@ -2431,7 +2431,7 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
    const bool FXAA1 = m_FXAA == Fast_FXAA;
    const bool FXAA2 = m_FXAA == Standard_FXAA;
    const bool FXAA3 = m_FXAA == Quality_FXAA;
-   const bool FAAA = m_FXAA == Standard_FAAA;
+   const bool FAAA = m_FXAA == Quality_FAAA;
 
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
