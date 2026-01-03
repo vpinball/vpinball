@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class FlipperUIPart : public EditableUIPart
+class FlipperUIPart final : public EditableUIPart
 {
 public:
    explicit FlipperUIPart(Flipper* flipper);

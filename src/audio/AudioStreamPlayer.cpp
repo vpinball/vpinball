@@ -107,7 +107,7 @@ void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *str
    const uint64_t nowTS = SDL_GetTicks() - me->m_startTimestamp; // Where we should be in the music (ms)
    #endif
    float throttle = 1.f;
-   //PLOGI << "Get stream data for " << me->m_name.c_str() << " enqueued: " << ((float)SDL_GetAudioStreamQueued(stream) / SDL_AUDIO_FRAMESIZE(me->m_audioSpec)) << " samples enqueued";
+   //PLOGI << "Get stream data for " << me->m_name << " enqueued: " << ((float)SDL_GetAudioStreamQueued(stream) / SDL_AUDIO_FRAMESIZE(me->m_audioSpec)) << " samples enqueued";
    if (playedTS > nowTS)
    {
       // We have played ahead of the source: either the source is paused or it is having issues => just resync silently

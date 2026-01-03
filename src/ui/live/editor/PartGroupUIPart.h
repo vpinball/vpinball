@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class PartGroupUIPart : public EditableUIPart
+class PartGroupUIPart final : public EditableUIPart
 {
 public:
    explicit PartGroupUIPart(PartGroup* partGroup);

@@ -1104,12 +1104,12 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
    buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
    if (buffer && m_width != buffer->width())
    {
-      PLOGE << "Invalid file: image '" << m_name.c_str() << "' width does not match the width of the image datablock.";
+      PLOGE << "Invalid file: image '" << m_name << "' width does not match the width of the image datablock.";
       const_cast<Texture*>(this)->m_width = buffer->width();
    }
    if (buffer && m_height != buffer->height())
    {
-      PLOGE << "Invalid file: image '" << m_name.c_str() << "' height does not match the height of the image datablock.";
+      PLOGE << "Invalid file: image '" << m_name << "' height does not match the height of the image datablock.";
       const_cast<Texture*>(this)->m_height = buffer->height();
    }
    m_imageBuffer = buffer;

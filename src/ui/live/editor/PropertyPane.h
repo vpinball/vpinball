@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class PropertyPane
+class PropertyPane final
 {
 public:
    PropertyPane(PinTable* table);

@@ -223,11 +223,11 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       SDL_free(pAudioList);
       if (m_playfieldAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
       {
-         PLOGI << "Table sound device was not found (" << playfieldDevice << "), using default: " << GetPlayfieldDeviceName().c_str();
+         PLOGI << "Table sound device was not found (" << playfieldDevice << "), using default: " << GetPlayfieldDeviceName();
       }
       if (m_backglassAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
       {
-         PLOGI << "Backglass sound device was not found (" << backglassDevice << "), using default: " << GetBackglassDeviceName().c_str();
+         PLOGI << "Backglass sound device was not found (" << backglassDevice << "), using default: " << GetBackglassDeviceName();
       }
    }
 

@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class RubberUIPart : public EditableUIPart
+class RubberUIPart final : public EditableUIPart
 {
 public:
    explicit RubberUIPart(Rubber* rubber);

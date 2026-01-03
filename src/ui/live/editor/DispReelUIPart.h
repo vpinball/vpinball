@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class DispReelUIPart : public EditableUIPart
+class DispReelUIPart final : public EditableUIPart
 {
 public:
    explicit DispReelUIPart(DispReel* dispreel);

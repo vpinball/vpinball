@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class SpinnerUIPart : public EditableUIPart
+class SpinnerUIPart final: public EditableUIPart
 {
 public:
    explicit SpinnerUIPart(Spinner* spinner);

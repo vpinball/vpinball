@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class DecalUIPart : public EditableUIPart
+class DecalUIPart final : public EditableUIPart
 {
 public:
    explicit DecalUIPart(Decal* becal);

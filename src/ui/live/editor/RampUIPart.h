@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class RampUIPart : public EditableUIPart
+class RampUIPart final : public EditableUIPart
 {
 public:
    explicit RampUIPart(Ramp* ramp);

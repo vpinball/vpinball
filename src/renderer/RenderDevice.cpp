@@ -97,7 +97,7 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
       memcpy(tex->data(), _data, _size);
       if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal)
       {
-         uint8_t* pixels = static_cast<uint8_t*>(tex->data());
+         uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
          for (uint32_t i = 0; i < _width * _height; i++)
             std::swap(pixels[i * 4], pixels[i * 4 + 2]);
       }
@@ -189,7 +189,7 @@ void RenderDevice::CaptureGLScreenshot()
          glReadBuffer(GL_BACK);
          glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
          tex->FlipY();
-         success = tex->Save(m_screenshotFilename.c_str());
+         success = tex->Save(m_screenshotFilename);
       }
    #endif
    m_screenshotCallback(success);
@@ -256,7 +256,7 @@ void RenderDevice::CaptureDX9Screenshot()
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
             bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
-      success = tex->Save(m_screenshotFilename.c_str());
+      success = tex->Save(m_screenshotFilename);
    }
    pSurface->Release();
    pBackBuffer->Release();
@@ -1535,11 +1535,11 @@ float RenderDevice::GetPredictedDisplayDelayInS() const
    if (g_pplayer->m_vrDevice)
       return g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
 
-   // Suppose a constant delay of at least 1 frame (in most situation, this will be at least 2 or 3 times higher)
+   // Assume a constant delay of at least 1 frame (in most situations, this will be at least 2 or 3 times higher)
    if (m_visualLatencyCorrection < 0)
       return 1.f / g_pplayer->GetTargetRefreshRate();
 
-   // User has measured his setup latency
+   // User has measured their setup latency
    return (float)m_visualLatencyCorrection * 1e-3f;
 }
 

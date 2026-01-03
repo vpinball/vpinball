@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class TextBoxUIPart : public EditableUIPart
+class TextBoxUIPart final : public EditableUIPart
 {
 public:
    explicit TextBoxUIPart(Textbox* textbox);

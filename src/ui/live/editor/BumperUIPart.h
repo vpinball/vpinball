@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class BumperUIPart : public EditableUIPart
+class BumperUIPart final : public EditableUIPart
 {
 public:
    explicit BumperUIPart(Bumper* bumper);

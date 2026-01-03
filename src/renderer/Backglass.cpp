@@ -103,7 +103,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    try {
       tinyxml2::XMLDocument b2sTree;
       std::stringstream buffer;
-      std::ifstream myFile(b2sFileName.c_str());
+      std::ifstream myFile(b2sFileName);
       buffer << myFile.rdbuf();
       myFile.close();
       const string xml = buffer.str();

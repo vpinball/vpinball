@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class HitTargetUIPart : public EditableUIPart
+class HitTargetUIPart final : public EditableUIPart
 {
 public:
    explicit HitTargetUIPart(HitTarget* hitTarget);

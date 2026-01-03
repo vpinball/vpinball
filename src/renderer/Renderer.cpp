@@ -1224,7 +1224,7 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vert
       const Matrix3D& mv = GetMVP().GetModelView();
       tangent = mv.MultiplyVectorNoTranslate(tangent);
       bitangent = mv.MultiplyVectorNoTranslate(bitangent);
-      Vertex3Ds eye = (v1 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
+      Vertex3Ds eye = (v1 + v2) * 0.5f; // Assume a rectangle shape, use opposite corners to get its center
       eye = mv.MultiplyVectorNoPerspective(eye);
       eye.Normalize();
       const float tN = tangent.Length();
@@ -2111,7 +2111,7 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
 {
    //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
    //const float jitter = (float)((msec() & 2047) / 1000.0);
-   const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Determinist jitter to ensure stable render for regression tests
+   const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Deterministic jitter to ensure stable render for regression tests
    const bool useAO = GetAOMode() == 2;
 
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
@@ -2307,7 +2307,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          continue;
 
       // Discard stable balls or balls that have moved too much (which means the ball was likely created/moved)
-      // We supposes that velocity won't change before rendering (which is wrong) but extends it by a magic factor of 10
+      // We assume that velocity won't change before rendering (which is wrong) but extend it by a magic factor of 10
       const Matrix3D view = GetMVP().GetView();
       const vec3 posl = pball->m_d.m_pos + 0.5f * pball->m_d.m_vel;
       const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
@@ -2402,7 +2402,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao, GetAORenderTarget(1)->GetColorSampler());
          m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
       }
-      const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Determinist jitter to ensure stable render for regression tests
+      const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Deterministic jitter to ensure stable render for regression tests
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 
          static_cast<float>(1.0 / tempRT->GetWidth()), static_cast<float>(1.0 / tempRT->GetHeight()), jitter, jitter);
       m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);

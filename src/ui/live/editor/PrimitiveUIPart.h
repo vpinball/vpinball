@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class PrimitiveUIPart : public EditableUIPart
+class PrimitiveUIPart final : public EditableUIPart
 {
 public:
    explicit PrimitiveUIPart(Primitive* primitive);

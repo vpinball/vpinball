@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class KickerUIPart : public EditableUIPart
+class KickerUIPart final : public EditableUIPart
 {
 public:
    explicit KickerUIPart(Kicker* kicker);

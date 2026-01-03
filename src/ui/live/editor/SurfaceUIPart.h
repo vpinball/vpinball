@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class SurfaceUIPart : public EditableUIPart
+class SurfaceUIPart final : public EditableUIPart
 {
 public:
    explicit SurfaceUIPart(Surface* surface);

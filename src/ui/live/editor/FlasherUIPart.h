@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class FlasherUIPart : public EditableUIPart
+class FlasherUIPart final : public EditableUIPart
 {
 public:
    explicit FlasherUIPart(Flasher* flasher);

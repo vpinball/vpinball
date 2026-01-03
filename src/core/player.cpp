@@ -1733,7 +1733,7 @@ void Player::PrepareFrame()
    m_logicProfiler.NewFrame(m_time_msec);
    m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
 
-   m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
+   m_overall_frames++; // This causes the next VPinMAME <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
    m_LastKnownGoodCounter++;
    m_startFrameTick = usec();
    

@@ -217,7 +217,7 @@ void LayeredINIPropertyStore::Save()
       mINI::INIFile file(m_path);
       if (!file.write(m_ini, true))
       {
-         PLOGE << "Failed to save settings file to '" << m_path.c_str() << '\'';
+         PLOGE << "Failed to save settings file to '" << m_path << '\'';
       }
    }
    else if (FileExists(m_path))

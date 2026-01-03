@@ -1772,7 +1772,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    //Vertex Shader
    GLchar* vertexSource = new GLchar[vertex.length() + 1];
    memcpy((void*)vertexSource, vertex.c_str(), vertex.length());
-   vertexSource[vertex.length()] = 0;
+   vertexSource[vertex.length()] = '\0';
 
    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
    glShaderSource(vertexShader, 1, &vertexSource, nullptr);
@@ -1803,7 +1803,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    if (success && geometry.length()>0 && UseGeometryShader()) {
       geometrySource = new GLchar[geometry.length() + 1];
       memcpy((void*)geometrySource, geometry.c_str(), geometry.length());
-      geometrySource[geometry.length()] = 0;
+      geometrySource[geometry.length()] = '\0';
 
       geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
       glShaderSource(geometryShader, 1, &geometrySource, nullptr);

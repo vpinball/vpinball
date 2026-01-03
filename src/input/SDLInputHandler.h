@@ -379,7 +379,7 @@ private:
       if (joyName.starts_with("mjrnet Pinscape Controller"s) && nAxis >= 6)
       {
          // We only register the 6 predefined axis. The other ports are all generic and based on user configuration
-         // Note: the default mapping we propose only maps the plunger and nudge acceleration, leaving the user to decide if he wants to use velocities as well (with a recent enough firmware)
+         // Note: the default mapping we propose only maps the plunger and nudge acceleration, leaving the users to decide if they want to use velocities as well (with a recent enough firmware)
          m_pininput.RegisterElementName(deviceId, true, 0x0200, "Nudge X Acceleration"s);
          m_pininput.RegisterElementName(deviceId, true, 0x0201, "Nudge Y Acceleration"s);
          m_pininput.RegisterElementName(deviceId, true, 0x0202, "Plunger Position"s);

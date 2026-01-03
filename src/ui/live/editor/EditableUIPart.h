@@ -71,7 +71,7 @@ public:
 };
 
 
-class BaseUIPart : public EditableUIPart
+class BaseUIPart final : public EditableUIPart
 {
 public:
    BaseUIPart(IEditable* editable)

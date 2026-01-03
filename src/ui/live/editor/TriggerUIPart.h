@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class TriggerUIPart : public EditableUIPart
+class TriggerUIPart final : public EditableUIPart
 {
 public:
    explicit TriggerUIPart(Trigger* surface);

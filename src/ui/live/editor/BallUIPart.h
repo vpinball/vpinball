@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class BallUIPart : public EditableUIPart
+class BallUIPart final : public EditableUIPart
 {
 public:
    BallUIPart(Ball* ball);

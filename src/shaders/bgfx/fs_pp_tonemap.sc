@@ -302,7 +302,7 @@ vec3 AgXToneMapping(vec3 color)
     #else
 
     // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
-    // It is supposed that they are ok for rec709 input values.
+    // It is assumed that they are ok for rec709 input values.
     // (note that out transform is the inverse of in transform)
     const mat3 AgXInsetMatrix = mtxFromRows3
     (

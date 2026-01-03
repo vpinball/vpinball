@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class GateUIPart : public EditableUIPart
+class GateUIPart final : public EditableUIPart
 {
 public:
    explicit GateUIPart(Gate* gate);

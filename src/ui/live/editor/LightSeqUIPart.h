@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class LightSeqUIPart : public EditableUIPart
+class LightSeqUIPart final : public EditableUIPart
 {
 public:
    explicit LightSeqUIPart(LightSeq* lightSeq);

@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class PlungerUIPart : public EditableUIPart
+class PlungerUIPart final : public EditableUIPart
 {
 public:
    explicit PlungerUIPart(Plunger* plunger);

@@ -1780,7 +1780,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             const Matrix3D viewOrientation = rotz * rotx2;
             const Matrix3D viewOrientationInv = Matrix3D::MatrixInverse(viewOrientation);
 
-            // The user defines in his settings the real world height where he wants the top of the lockbar to be.
+            // The users define in their settings the real world height where they want the top of the lockbar to be.
             // The real world playfield height is then computed by removing the glass distance at the playfield bottom (typically 2 to 3").
             // The m_tablePos allows to slightly adjust this height on a per table basis.
             // In the end Playfield height = m_tablePos.z (User adjustement) + m_lockBatHeight (Real world lockbar height) - glass distance * scale

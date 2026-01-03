@@ -224,7 +224,7 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          renderer = std::make_unique<B2SRenderer>(msgApi, endpointId, loadedB2S.get());
          renderer->Render(ctx);
       }
-      return true; // Until loaded, we suppose that the file will succeeded load with the expected backglass/score view
+      return true; // Until loaded, we assume that the file will succeed loading with the expected backglass/score view
    }
    else
    {

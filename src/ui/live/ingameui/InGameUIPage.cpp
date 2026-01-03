@@ -872,7 +872,7 @@ void InGameUIPage::RenderInputActionPopup()
 {
    if (!m_defineActionPopup && m_defineActionItem)
    {
-      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselect the item
+      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselects the item
       if (m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped())
          m_defineActionPopup = true;
       else

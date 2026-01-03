@@ -172,7 +172,7 @@ static void ColorizeThread()
                   state->UpdateFrame64V2();
             }
             
-            // This supposes that we won't decode another frame with a pup trigger before the message will be processed on main thread (should be ok)
+            // This assumes that we won't decode another frame with a pup trigger before the message will be processed on main thread (should be ok)
             if (pSerum->triggerID != 0xffffffff)
                msgApi->RunOnMainThread(0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &pSerum->triggerID); }, nullptr);
 

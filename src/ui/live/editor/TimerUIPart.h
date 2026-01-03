@@ -6,7 +6,7 @@
 namespace VPX::EditorUI
 {
 
-class TimerUIPart : public EditableUIPart
+class TimerUIPart final : public EditableUIPart
 {
 public:
    TimerUIPart(Timer* timer);

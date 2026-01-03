@@ -333,7 +333,7 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
 //   . collect U and I ratings, compute R at stability temperature (T): R = U/I
 //   . select a stability temperature (T), and compute corresponding R0 using the 2 following equations:
 //      R = p(T).L/A with p = resisitivity, L = filament length, A = wire section surface (Pi.r²)
-//        we suppose L/A constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
+//        we assume L/A to be constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
 //        knowing that p0 of tungsten is 5.65x10-8 Ohm.m at T0 = 293K
 //      (p - p0) = a.p0.(T - T0) with a = temperature to resistivity of tungsten, approximated to 0.0045
 //   . find (dichotomy search) a filament radius that leads to the chosen stability temperature (we compute the corresponding filament length since we know L/A = R0/p0 = L/(PI.r²) so L = PI.r².R0/p0)

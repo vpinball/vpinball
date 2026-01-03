@@ -473,7 +473,7 @@ void LiveUI::RenderUI()
          if (cmd->ElemCount != 0)
          {
             #ifdef ENABLE_BGFX
-            // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: upload are supposed to happen in the 'preCmd' list (before any render command)
+            // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: uploads are supposed to happen in the 'preCmd' list (before any render command)
             // so this should not have any effect, still it does. This definitely needs more investigation...
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
