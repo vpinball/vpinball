@@ -61,6 +61,14 @@ vec3 ReinhardToneMap(vec3 color)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 
+#if defined(TARGET_essl)
+	#if defined(CRT)
+		#define texelFetch(tex, pos, lod) texture2DLod(tex, vec2(pos) / crtSize, float(lod))
+	#elif defined(DMD)
+		#define texelFetch(tex, pos, lod) texture2DLod(tex, vec2(pos) / dmdSize, float(lod))
+	#endif
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -112,11 +120,7 @@ vec3 ReinhardToneMap(vec3 color)
 	#define CRTS_MASK_SHADOW 1
 	// Setup the function which returns input image color
 	vec3 CrtsFetch(vec2 uv) {
-		#if defined(TARGET_essl)
-		return InvGamma(texture2DLod(displayTex, uv, 0.0).rgb);
-		#else
 		return InvGamma(texelFetch(displayTex, ivec2(uv * crtSize), 0).rgb);
-		#endif
 	}
 	
 	#include "fs_crt_lottes.fs"
