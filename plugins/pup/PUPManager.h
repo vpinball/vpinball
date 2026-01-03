@@ -98,6 +98,7 @@ private:
    void Start();
    void Stop();
 
+   float m_mainVolume = 1.f;
    string m_szRootPath;
    string m_szPath;
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;

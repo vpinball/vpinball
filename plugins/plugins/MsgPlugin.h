@@ -170,7 +170,7 @@ typedef struct MsgSettingDef
    static float varName##_Val; \
    static float varName##_Get() { return varName##_Val; } \
    static void varName##_Set(float v) { varName##_Val = v; } \
-   static MsgSettingDef varName { .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, &varName##_Get, &varName##_Set } }
+   static MsgSettingDef varName { .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FLOAT, .floatDef = { minValue, maxValue, stepVal, defValue, &varName##_Get, &varName##_Set } }
 #define MSGPI_INT_VAL_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue) \
    static int varName##_Val; \
    static int varName##_Get() { return varName##_Val; } \
