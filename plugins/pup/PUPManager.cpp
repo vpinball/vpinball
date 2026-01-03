@@ -10,11 +10,47 @@
 
 namespace PUP {
 
+MSGPI_FLOAT_VAL_SETTING(pupMainVolume, "MainVol", "Main Volume", "Overall volume", true, 0.f, 1.f, 0.01f, 1.f);
+
+MSGPI_INT_VAL_SETTING(pupBGPadLeft, "BGPadLeft", "Backglass Left Pad", "Left Padding of backglass", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupBGPadRight, "BGPadRight", "Backglass Right Pad", "Right Padding of backglass", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupBGPadTop, "BGPadTop", "Backglass Top Pad", "Top Padding of backglass", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupBGPadBottom, "BGPadBottom", "Backglass Bottom Pad", "Bottom Padding of backglass", true, 0, 4096, 0);
+MSGPI_STRING_VAL_SETTING(pupBGFrameOverlayPath, "BGFrameOverlay", "Backglass Frame Overlay", "Path to an image that will be rendered as an ovelray on the backglass display", true, "", 1024);
+
+MSGPI_INT_VAL_SETTING(pupSVPadLeft, "SVPadLeft", "Score View Left Pad", "Left Padding of Score View", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupSVPadRight, "SVPadRight", "Score View Right Pad", "Right Padding of Score View", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupSVPadTop, "SVPadTop", "Score View Top Pad", "Top Padding of Score View", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupSVPadBottom, "SVPadBottom", "Score View Bottom Pad", "Bottom Padding of Score View", true, 0, 4096, 0);
+MSGPI_STRING_VAL_SETTING(pupSVFrameOverlayPath, "SVFrameOverlay", "Score View Frame Overlay", "Path to an image that will be rendered as an ovelray on the Score View display", true, "", 1024);
+
+MSGPI_INT_VAL_SETTING(pupTopperPadLeft, "TopperPadLeft", "Topper Left Pad", "Left Padding of topper", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupTopperPadRight, "TopperPadRight", "Topper Right Pad", "Right Padding of topper", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupTopperPadTop, "TopperPadTop", "Topper Top Pad", "Top Padding of topper", true, 0, 4096, 0);
+MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad", "Bottom Padding of topper", true, 0, 4096, 0);
+MSGPI_STRING_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an ovelray on the topper display", true, "", 1024);
+
 PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
    : m_szRootPath(rootPath)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
 {
+   msgApi->RegisterSetting(endpointId, &pupMainVolume);
+   msgApi->RegisterSetting(endpointId, &pupBGPadLeft);
+   msgApi->RegisterSetting(endpointId, &pupBGPadRight);
+   msgApi->RegisterSetting(endpointId, &pupBGPadTop);
+   msgApi->RegisterSetting(endpointId, &pupBGPadBottom);
+   //msgApi->RegisterSetting(endpointId, &pupBGFrameOverlayPath);
+   msgApi->RegisterSetting(endpointId, &pupSVPadLeft);
+   msgApi->RegisterSetting(endpointId, &pupSVPadRight);
+   msgApi->RegisterSetting(endpointId, &pupSVPadTop);
+   msgApi->RegisterSetting(endpointId, &pupSVPadBottom);
+   //msgApi->RegisterSetting(endpointId, &pupSVFrameOverlayPath);
+   msgApi->RegisterSetting(endpointId, &pupTopperPadLeft);
+   msgApi->RegisterSetting(endpointId, &pupTopperPadRight);
+   msgApi->RegisterSetting(endpointId, &pupTopperPadTop);
+   msgApi->RegisterSetting(endpointId, &pupTopperPadBottom);
+   //msgApi->RegisterSetting(endpointId, &pupTopperFrameOverlayPath);
    m_msgApi->SubscribeMsg(m_endpointId, m_getAuxRendererId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 }
@@ -217,6 +253,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
       // copy playlists ?
       pScreen = existing;
    }
+   pScreen->SetMainVolume(m_mainVolume);
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
    m_screenOrder.push_back(pScreen);
 
@@ -632,12 +669,39 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
 
+   float volume = pupMainVolume_Get();
+   if (volume != me->m_mainVolume)
+   {
+      me->m_mainVolume = volume;
+      for (auto [key, screen] : me->m_screenMap)
+         screen->SetMainVolume(volume);
+   }
+
+   int padLeft = 0, padRight = 0, padTop = 0, padBottom = 0;
    std::shared_ptr<PUPScreen> rootScreen = nullptr;
    switch (renderCtx->window)
    {
-   case VPXWindowId::VPXWINDOW_Topper: rootScreen = me->GetScreen(0); break;
-   case VPXWindowId::VPXWINDOW_Backglass: rootScreen = me->GetScreen(2); break;
-   case VPXWindowId::VPXWINDOW_ScoreView: rootScreen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
+   case VPXWindowId::VPXWINDOW_Topper:
+      rootScreen = me->GetScreen(0);
+      padLeft = pupTopperPadLeft_Get();
+      padRight = pupTopperPadRight_Get();
+      padTop = pupTopperPadTop_Get();
+      padBottom = pupTopperPadBottom_Get();
+      break;
+   case VPXWindowId::VPXWINDOW_Backglass:
+      rootScreen = me->GetScreen(2);
+      padLeft = pupBGPadLeft_Get();
+      padRight = pupBGPadRight_Get();
+      padTop = pupBGPadTop_Get();
+      padBottom = pupBGPadBottom_Get();
+      break;
+   case VPXWindowId::VPXWINDOW_ScoreView:
+      rootScreen = me->GetScreen(5); // TODO select 1 or 5 (user settings ?)
+      padLeft = pupSVPadLeft_Get();
+      padRight = pupSVPadRight_Get();
+      padTop = pupSVPadTop_Get();
+      padBottom = pupSVPadBottom_Get();
+      break;
    default: break;
    }
    if (rootScreen == nullptr || rootScreen->GetCustomPos() != nullptr)
@@ -648,7 +712,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
-   rootScreen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
+   rootScreen->SetBounds(padLeft, padTop, static_cast<int>(renderCtx->srcWidth) - padLeft - padRight, static_cast<int>(renderCtx->srcHeight) - padTop - padBottom);
 
    // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
    std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });

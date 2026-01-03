@@ -140,17 +140,24 @@ void PUPScreen::LoadTriggers()
    }
 }
 
+void PUPScreen::SetMainVolume(float volume)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_mainVolume = volume;
+   m_pMediaPlayerManager->SetVolume(m_mainVolume * m_volume);
+}
+
 void PUPScreen::SetVolume(float volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_volume = volume;
-   m_pMediaPlayerManager->SetVolume(volume);
+   m_pMediaPlayerManager->SetVolume(m_mainVolume * m_volume);
 }
 
 void PUPScreen::SetVolumeCurrent(float volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   m_pMediaPlayerManager->SetVolume(volume);
+   m_pMediaPlayerManager->SetVolume(m_mainVolume * volume);
 }
 
 void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
@@ -253,14 +260,16 @@ uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t 
    return interval;
 }
 
-void PUPScreen::SetSize(int w, int h)
+void PUPScreen::SetBounds(int x, int y, int w, int h)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_rect = m_pCustomPos ? m_pCustomPos->ScaledRect(w, h) : SDL_Rect { 0, 0, w, h };
+   m_rect.x = x;
+   m_rect.y = y;
    m_pMediaPlayerManager->SetBounds(m_rect);
 
    for (auto pChildren : m_children)
-      pChildren->SetSize(w, h);
+      pChildren->SetBounds(x, y, w, h);
 }
 
 void PUPScreen::SetCustomPos(const string& szCustomPos)

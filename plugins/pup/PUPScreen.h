@@ -50,12 +50,13 @@ public:
    bool IsTransparent() const { return m_transparent; }
 
    float GetVolume() const { return m_volume; }
+   void SetMainVolume(float volume); // Set user defined global volume (allow to mute)
    void SetVolume(float volume); // Set default, and apply it to played media
    void SetVolumeCurrent(float volume); // Only modifiy volume of currently playing medias
 
    const std::unique_ptr<PUPCustomPos>& GetCustomPos() const { return m_pCustomPos; }
    void SetCustomPos(const string& szCustomPos);
-   void SetSize(int w, int h);
+   void SetBounds(int x, int y, int w, int h);
 
    void AddChild(std::shared_ptr<PUPScreen> pScreen);
    const PUPScreen* GetParent() const { return m_pParent; }
@@ -107,6 +108,7 @@ private:
 
    Mode m_mode;
    bool m_transparent;
+   float m_mainVolume = 1.f;
    float m_volume;
    std::unique_ptr<PUPCustomPos> m_pCustomPos;
    SDL_Rect m_rect;
