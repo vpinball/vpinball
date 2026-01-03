@@ -62,7 +62,7 @@ vec3 ReinhardToneMap(vec3 color)
 }
 
 #if defined(TARGET_essl)
-	#define texFetch(tex, pos, size) texture2DLod(tex, float2(pos) / size, 0.0)
+	#define texFetch(tex, pos, size) texture2DLod(tex, vec2(pos) / size, 0.0)
 #else
 	#define texFetch(tex, pos, size) texelFetch(tex, pos, 0)
 #endif
