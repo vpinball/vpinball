@@ -33,8 +33,6 @@ PUPMediaPlayer::PUPMediaPlayer(const string& name)
 PUPMediaPlayer::~PUPMediaPlayer()
 {
    Stop();
-   m_commandQueue.wait_until_empty();
-   m_commandQueue.wait_until_nothing_in_flight();
 }
 
 bool PUPMediaPlayer::IsPlaying() const

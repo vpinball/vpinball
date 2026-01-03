@@ -15,6 +15,7 @@ static string GetPlayerName(PUPScreen* pScreen, bool isMain)
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    : m_pBackgroundPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, false)))
    , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, true)))
+   , m_pendingEndCallbackListMutex(std::make_shared<std::mutex>())
    , m_pScreen(pScreen)
    , m_bounds()
 {
@@ -165,16 +166,11 @@ void PUPMediaManager::SetMask(const string& path)
 
 void PUPMediaManager::OnPlayerEnd(PUPMediaPlayer* player)
 {
-   AsyncCallback::DispatchOnMainThread(m_pScreen->GetManager()->GetMsgAPI(), m_pendingEndCallbackList, m_pendingEndCallbackListMutex,
-      [this, player]()
-      {
-         if (player == &m_pMainPlayer->player)
-         {
-            LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
-            m_pBackgroundPlayer->player.Pause(false);
-         }
-      }
-   );
+   if (player == &m_pMainPlayer->player)
+   {
+      LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
+      m_pBackgroundPlayer->player.Pause(false);
+   }
 }
 
 bool PUPMediaManager::IsPlaying() const {

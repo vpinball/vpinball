@@ -119,6 +119,7 @@ private:
    unsigned int m_onInputSrcChangedId = 0, m_getInputSrcId = 0;
    unsigned int m_onSerumTriggerId = 0, m_onDmdTriggerId = 0;
    DevSrcId m_pinmameDevSrc {};
+   int m_PMSolenoidIndex = -1;
    unsigned int m_nPMSolenoids = 0;
    int m_PMGIIndex = -1;
    unsigned int m_nPMGIs = 0;
@@ -138,9 +139,7 @@ private:
    DisplaySrcId m_dmdId {};
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    std::queue<uint8_t*> m_triggerDmdQueue;
-   uint8_t m_rgbFrame[128 * 32 * 3] {};
-   uint8_t m_palette4[4 * 3] {};
-   uint8_t m_palette16[16 * 3] {};
+   uint8_t m_idFrame[128 * 32] {};
    
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);

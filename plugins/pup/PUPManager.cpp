@@ -15,20 +15,6 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
 {
-   static constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
-   for (int i = 0; i < 4; i++)
-   {
-      m_palette4[i * 3 + 0] = (mapping4[i] * 0xFF) / 0xF; // R
-      m_palette4[i * 3 + 1] = (mapping4[i] * 0x45) / 0xF; // G
-      m_palette4[i * 3 + 2] = (mapping4[i] * 0x00) / 0xF; // B
-   }
-   for (int i = 0; i < 16; i++)
-   {
-      m_palette16[i * 3 + 0] = (i * 0xFF) / 0xF; // R
-      m_palette16[i * 3 + 1] = (i * 0x45) / 0xF; // G
-      m_palette16[i * 3 + 2] = (i * 0x00) / 0xF; // B
-   }
-
    m_msgApi->SubscribeMsg(m_endpointId, m_getAuxRendererId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 }
@@ -98,19 +84,6 @@ void PUPManager::LoadConfig(const string& szRomName)
    // Load Fonts
 
    LoadFonts();
-
-   // Setup DMD triggers
-   m_dmd = std::make_unique<PUPDMD::DMD>();
-   m_dmd->Load(m_szRootPath.c_str(), szRomName.c_str());
-
-   m_dmd->SetLogCallback(
-      [](const char* format, va_list args, const void* userData)
-      {
-         char buffer[1024];
-         vsnprintf(buffer, sizeof(buffer), format, args);
-         LOGD(buffer);
-      },
-      this);
 
    // Load screens and start them
 
@@ -371,7 +344,7 @@ void PUPManager::ProcessQueue()
 {
    SetThreadName("PUPManager.ProcessQueue"s);
    vector<AsyncCallback*> pendingCallbackList;
-   std::mutex pendingCallbackListMutex;
+   std::shared_ptr<std::mutex> pendingCallbackListMutex = std::make_shared<std::mutex>();
    while (m_isRunning)
    {
       std::unique_lock<std::mutex> lock(m_queueMutex);
@@ -393,26 +366,39 @@ void PUPManager::ProcessQueue()
          const uint8_t* const __restrict frame = m_triggerDmdQueue.front();
          m_triggerDmdQueue.pop();
 
-         const uint8_t* __restrict palette;
-         if (m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2)
-            palette = m_palette4;
-         else if (m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)
-            palette = m_palette16;
-         else
-            return;
+         // Unsupported frame format ? just flush the queue
+         if (m_dmdId.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 && m_dmdId.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)
+         {
+            delete[] frame;
+            continue;
+         }
+
+         // Lazily loads DMD capture until we have a DMD and its format
+         if (m_dmd == nullptr)
+         {
+            m_dmd = std::make_unique<PUPDMD::DMD>();
+            m_dmd->SetLogCallback(
+               [](const char* format, va_list args, const void* userData)
+               {
+                  char buffer[1024];
+                  vsnprintf(buffer, sizeof(buffer), format, args);
+                  LOGD(buffer);
+               },
+               this);
+            m_dmd->Load(m_szPath.c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+            memset(m_idFrame, 0, sizeof(m_idFrame));
+         }
 
          // Reproduce legacy behavior for backward compatibility (scaling, padding, coloring)
          // This is very hacky and should be replaced by identification against the raw identify frame.
          if (m_dmdId.width == 128 && m_dmdId.height == 32)
          {
-            for (unsigned int i = 0; i < 128 * 32; i++)
-               memcpy(&m_rgbFrame[i * 3], &palette[frame[i] * 3], 3);
+            dmdTrigger = m_dmd->MatchIndexed(frame, 128, 32);
          }
-         else if (m_dmdId.width == 128 && m_dmdId.height < 32)
+         else if (m_dmdId.width == 128 && m_dmdId.height == 16)
          {
-            const unsigned int ofsY = ((32 - m_dmdId.height) / 2) * 128;
-            for (unsigned int i = 0; i < 128 * 16; i++)
-               memcpy(&m_rgbFrame[(ofsY + i) * 3], &palette[frame[i] * 3], 3);
+            memcpy(&m_idFrame[128 * 8], frame, 128 * 16);
+            dmdTrigger = m_dmd->MatchIndexed(m_idFrame, 128, 32);
          }
          else if (m_dmdId.width <= 256 && m_dmdId.height == 64)
          {
@@ -447,10 +433,10 @@ void PUPManager::ProcessQueue()
                         sum += weight;
                      }
                   }
-                  const int l = (int)roundf(lum / sum);
-                  memcpy(&m_rgbFrame[(y * 128 + ofsX + x) * 3], &palette[l * 3], 3);
+                  m_idFrame[y * 128 + ofsX + x] = (int)roundf(lum / sum);
                }
             }
+            dmdTrigger = m_dmd->MatchIndexed(m_idFrame, 128, 32);
          }
          else
          {
@@ -458,7 +444,6 @@ void PUPManager::ProcessQueue()
          }
          delete[] frame;
 
-         dmdTrigger = m_dmd ? m_dmd->Match(m_rgbFrame, 128, 32, false) : -1;
          if (dmdTrigger == 0) // 0 is unmatched for libpupdmd, but D0 is init trigger for PUP
             dmdTrigger = -1;
          else
@@ -504,7 +489,7 @@ void PUPManager::ProcessQueue()
                   break;
                case 'S': // PinMAME solenoid state
                   if (0 < trigger.m_number && static_cast<unsigned int>(trigger.m_number) <= m_nPMSolenoids)
-                     trigger.m_value = m_pinmameDevSrc.GetFloatState(trigger.m_number - 1) > 0.5f ? 1 : 0;
+                     trigger.m_value = m_pinmameDevSrc.GetFloatState(m_PMSolenoidIndex + trigger.m_number - 1) > 0.5f ? 1 : 0;
                   break;
                case 'G': // PinMAME GI state
                   // FIXME likely needs legacy value (0..8 for WPC, 0/9 for others) for backward compatibility
@@ -537,7 +522,7 @@ void PUPManager::ProcessQueue()
                for (auto trigger : triggers)
                {
                   // Dispatch trigger action to main thread
-                  AsyncCallback::DispatchOnMainThread(m_msgApi, pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
+                  AsyncCallback::DispatchOnMainThread("TriggerCB"s, m_msgApi, pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
                }
             }
          }
@@ -573,7 +558,6 @@ void PUPManager::Start()
    m_getInputSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
    m_onInputSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
 
-   memset(m_rgbFrame, 0, sizeof(m_rgbFrame));
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDevSrcChangedId, OnDevSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onInputSrcChangedId, OnInputSrcChanged, this);
@@ -748,6 +732,7 @@ void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, voi
    PUPManager* me = static_cast<PUPManager*>(userData);
    std::lock_guard<std::mutex> lock(me->m_queueMutex);
    delete[] me->m_pinmameDevSrc.deviceDefs;
+   me->m_PMSolenoidIndex = -1;
    me->m_nPMSolenoids = 0;
    me->m_PMGIIndex = -1;
    me->m_nPMGIs = 0;
@@ -791,7 +776,11 @@ void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, voi
          me->m_nPMLamps++;
       }
       else if ((me->m_PMGIIndex == -1) && (me->m_PMLampIndex == -1))
+      {
+         if (me->m_PMSolenoidIndex == -1)
+            me->m_PMSolenoidIndex = i;
          me->m_nPMSolenoids++;
+      }
    }
 }
 
