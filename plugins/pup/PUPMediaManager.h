@@ -14,7 +14,7 @@ public:
    PUPMediaManager(PUPScreen* pScreen);
    ~PUPMediaManager();
 
-   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
+   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Pause();
    void Resume();
    void SetAsBackGround(bool isBackground);
@@ -46,7 +46,6 @@ private:
       string szPath;
       float volume = 1.0f;
       int priority = 0;
-      bool isBackground = false;
    };
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
