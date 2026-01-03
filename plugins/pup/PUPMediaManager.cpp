@@ -13,11 +13,12 @@ static string GetPlayerName(PUPScreen* pScreen, bool isMain)
 }
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
-   : m_pScreen(pScreen)
+   : m_pBackgroundPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, false)))
    , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, true)))
-   , m_pBackgroundPlayer(nullptr)
+   , m_pScreen(pScreen)
    , m_bounds()
 {
+   m_pBackgroundPlayer->player.SetOnEndCallback([this](PUPMediaPlayer* player) { OnPlayerEnd(player); });
    m_pMainPlayer->player.SetOnEndCallback([this](PUPMediaPlayer* player) { OnPlayerEnd(player); });
 }
 
@@ -26,9 +27,10 @@ PUPMediaManager::~PUPMediaManager()
    AsyncCallback::InvalidateAllPending(m_pendingEndCallbackList, m_pendingEndCallbackListMutex);
 }
 
-void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
+void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
-   if (skipSamePriority && IsPlaying() && !m_pMainPlayer->isBackground && priority <= m_pMainPlayer->priority) {
+   if (!background && skipSamePriority && m_pMainPlayer->player.IsPlaying() && priority <= m_pMainPlayer->priority)
+   {
       LOGE("Skipping same priority, screen={%s}, playlist={%s}, playFile=%s, priority=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), priority);
       return;
    }
@@ -40,28 +42,25 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
    }
 
    LOGD("> Play screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d, length=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.c_str(), volume, priority, length);
-
-   if (m_pMainPlayer->isBackground)
+   if (background)
    {
-      LOGD(". Background video {%s} paused while playing {%s}", m_pMainPlayer->szPath.c_str(), szPath.c_str());
-      std::swap(m_pBackgroundPlayer, m_pMainPlayer);
-      m_pBackgroundPlayer->player.SetName(GetPlayerName(m_pScreen, false));
-      m_pBackgroundPlayer->player.Pause(true);
-      if (m_pMainPlayer == nullptr)
-      {
-         m_pMainPlayer = std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(m_pScreen, true));
-         m_pMainPlayer->player.SetOnEndCallback([this](PUPMediaPlayer* player) { OnPlayerEnd(player); });
-      }
-      else
-         m_pMainPlayer->player.SetName(GetPlayerName(m_pScreen, true));
+      m_pBackgroundPlayer->player.Play(szPath);
+      m_pBackgroundPlayer->player.SetLoop(true);
+      m_pBackgroundPlayer->player.SetVolume(volume);
+      m_pBackgroundPlayer->szPath = szPath;
+      m_pBackgroundPlayer->volume = volume;
    }
-   
-   m_pMainPlayer->player.Play(szPath);
-   m_pMainPlayer->player.SetVolume(volume);
-   m_pMainPlayer->player.SetLength(length);
-   m_pMainPlayer->szPath = szPath;
-   m_pMainPlayer->volume = volume;
-   m_pMainPlayer->priority = priority;
+   else
+   {
+      m_pMainPlayer->player.Play(szPath);
+      m_pMainPlayer->player.SetVolume(volume);
+      m_pMainPlayer->player.SetLength(length);
+      m_pMainPlayer->szPath = szPath;
+      m_pMainPlayer->volume = volume;
+      m_pMainPlayer->priority = priority;
+   }
+   if (m_pMainPlayer->player.IsPlaying())
+      m_pBackgroundPlayer->player.Pause(true);
 }
 
 void PUPMediaManager::Pause()
@@ -77,18 +76,19 @@ void PUPMediaManager::Resume()
 void PUPMediaManager::SetAsBackGround(bool isBackground)
 {
    if (isBackground) {
-      if (m_pBackgroundPlayer) {
-         LOGD("Replacing background player, screen={%s}", m_pScreen->ToString(false).c_str());
-         m_pBackgroundPlayer = nullptr;
-      }
-      m_pMainPlayer->isBackground = true;
-      m_pMainPlayer->player.SetLoop(true);
+      LOGD("Replacing background player, screen={%s}", m_pScreen->ToString(false).c_str());
+      std::swap(m_pMainPlayer, m_pBackgroundPlayer);
+      m_pMainPlayer->player.Stop();
+      m_pBackgroundPlayer->player.SetLoop(true);
    }
-   else if (m_pBackgroundPlayer) {
-      LOGD("Removing looping from background player, screen={%s}", m_pScreen->ToString(false).c_str());
-      m_pMainPlayer->isBackground = true;
-      m_pBackgroundPlayer->player.SetLoop(false);
+   else {
+      LOGD("Making background player the main player (no looping), screen={%s}", m_pScreen->ToString(false).c_str());
+      std::swap(m_pMainPlayer, m_pBackgroundPlayer);
+      m_pMainPlayer->player.SetLoop(false);
+      m_pBackgroundPlayer->player.Stop();
    }
+   m_pBackgroundPlayer->player.SetName(GetPlayerName(m_pScreen, false));
+   m_pMainPlayer->player.SetName(GetPlayerName(m_pScreen, true));
 }
 
 void PUPMediaManager::SetLoop(bool isLoop)
@@ -103,8 +103,7 @@ void PUPMediaManager::SetMaxLength(int length)
 
 void PUPMediaManager::SetVolume(float volume)
 {
-   if (m_pBackgroundPlayer)
-      m_pBackgroundPlayer->player.SetVolume(volume);
+   m_pBackgroundPlayer->player.SetVolume(volume);
    m_pMainPlayer->player.SetVolume(volume);
 }
 
@@ -139,8 +138,7 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
 void PUPMediaManager::SetBounds(const SDL_Rect& rect)
 {
    m_bounds = rect;
-   if (m_pBackgroundPlayer)
-      m_pBackgroundPlayer->player.SetBounds(rect);
+   m_pBackgroundPlayer->player.SetBounds(rect);
    m_pMainPlayer->player.SetBounds(rect);
 }
 
@@ -161,8 +159,7 @@ void PUPMediaManager::SetMask(const string& path)
             *rgba = (*rgba == maskValue) ? 0x00000000u : 0xFFFFFFFFu;
       SDL_UnlockSurface(m_mask.get());
    }
-   if (m_pBackgroundPlayer)
-      m_pBackgroundPlayer->player.SetMask(m_mask);
+   m_pBackgroundPlayer->player.SetMask(m_mask);
    m_pMainPlayer->player.SetMask(m_mask);
 }
 
@@ -171,13 +168,10 @@ void PUPMediaManager::OnPlayerEnd(PUPMediaPlayer* player)
    AsyncCallback::DispatchOnMainThread(m_pScreen->GetManager()->GetMsgAPI(), m_pendingEndCallbackList, m_pendingEndCallbackListMutex,
       [this, player]()
       {
-         if (player == &m_pMainPlayer->player && m_pBackgroundPlayer != nullptr)
+         if (player == &m_pMainPlayer->player)
          {
             LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
-            std::swap(m_pBackgroundPlayer, m_pMainPlayer);
-            m_pBackgroundPlayer->player.SetName(GetPlayerName(m_pScreen, false));
-            m_pMainPlayer->player.SetName(GetPlayerName(m_pScreen, true));
-            m_pMainPlayer->player.Pause(false);
+            m_pBackgroundPlayer->player.Pause(false);
          }
       }
    );
@@ -187,9 +181,12 @@ bool PUPMediaManager::IsPlaying() const {
    return m_pMainPlayer->player.IsPlaying();
 }
 
-void PUPMediaManager::Render(VPXRenderContext2D* const ctx) {
-   if (!m_pScreen->IsPop() || m_pMainPlayer->player.IsPlaying())
+void PUPMediaManager::Render(VPXRenderContext2D* const ctx)
+{
+   if (m_pMainPlayer->player.IsPlaying())
       m_pMainPlayer->player.Render(ctx, m_bounds);
+   else if (m_pBackgroundPlayer->player.IsPlaying())
+      m_pBackgroundPlayer->player.Render(ctx, m_bounds);
 }
 
 }

@@ -89,19 +89,23 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
 {
    switch (m_playAction) {
    case PUPTrigger::Action::Normal:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); };
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false); };
       break;
 
    case PUPTrigger::Action::Loop:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); m_pScreen->SetLoop(true); };
+      m_action = [&]()
+      {
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+         m_pScreen->SetLoop(true);
+      };
       break;
 
    case PUPTrigger::Action::SetBG:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); m_pScreen->SetAsBackGround(true); };
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, true); };
       break;
 
    case PUPTrigger::Action::SkipSamePriority:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length); };
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length, false); };
       break;
 
    case PUPTrigger::Action::StopPlayer:

@@ -104,11 +104,8 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
       PUPCustomPos::CreateFromCSV(parts[7]), playlists);
 
    // Optional initial background playlist
-   if (!parts[2].empty())
-   {
-      screen->Play(parts[2], parts[3], screen->GetVolume(), -1);
-      screen->SetAsBackGround(true);
-   }
+   if (PUPPlaylist* const backgroundPlaylist = parts[2].empty() ? nullptr : screen->GetPlaylist(parts[2]); backgroundPlaylist)
+      screen->Play(backgroundPlaylist, parts[3], screen->GetVolume(), -1, false, 0, true);
 
    return screen;
 }
@@ -281,10 +278,10 @@ void PUPScreen::Play(const string& szPlaylist, const string& szPlayFile, float v
       LOGE("Playlist not found: screen={%s}, playlist=%s", ToString(false).c_str(), szPlaylist.c_str());
       return;
    }
-   Play(pPlaylist, szPlayFile, volume, priority, false, 0);
+   Play(pPlaylist, szPlayFile, volume, priority, false, 0, false);
 }
 
-void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
+void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
@@ -297,7 +294,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
       // At least, on The Getaway pup back, it shows that a ForcePopBack can be in front of a ForcePop if created afterward (so back is not against the parent Pup window)
       if (IsPop())
          m_pManager->SendScreenToFront(this);
-      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length);
+      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length, background);
       break;
 
    case PUPPlaylist::Function::Frames:

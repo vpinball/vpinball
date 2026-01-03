@@ -78,7 +78,7 @@ public:
    void SetMask(const string& path);
 
    void Play(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
-   void Play(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
+   void Play(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
