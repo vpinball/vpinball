@@ -113,9 +113,9 @@ vec3 ReinhardToneMap(vec3 color)
 	// Setup the function which returns input image color
 	vec3 CrtsFetch(vec2 uv) {
 		#if defined(TARGET_essl)
-		return InvGamma(texelFetch(displayTex, uv * crtSize, 0).rgb);
-		#else
 		return InvGamma(texture2DLod(displayTex, uv, 0.0).rgb);
+		#else
+		return InvGamma(texelFetch(displayTex, ivec2(uv * crtSize), 0).rgb);
 		#endif
 	}
 	
