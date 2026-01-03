@@ -26,16 +26,15 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
 
    // Initialize legacy nudging.
    m_legacyNudgeBack = Vertex2D(0.f, 0.f); 
-   m_nudgeAcceleration.SetZero();
 
    // Initialize new nudging.
+   m_nudgeAcceleration.SetZero();
+   m_nudgeVelocity.SetZero();
+   m_nudgeDisplacement.SetZero();
    m_tableVel.SetZero();
    m_tableDisplacement.SetZero();
    m_tableVelOld.SetZero();
    m_tableAcceleration.SetZero();
-
-   // Initialize velocity-based accelerometer sensor input.
-   m_prevSensorTableVelocity.SetZero();
 
    // Table movement (displacement u) is modeled as a mass-spring-damper system
    //   u'' = -k u - c u'
@@ -313,6 +312,10 @@ void PhysicsEngine::UpdateNudge(float dtime)
       // Simulate hardware nudge by getting the cabinet acceleration (optionally through velocity sensor) and applying it directly to the ball
       Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
       m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
+
+      // Evaluate visual table displacement due to sensor nudge
+      m_nudgeVelocity += (float)PHYS_FACTOR * m_nudgeAcceleration;
+      m_nudgeDisplacement += (float)PHYS_FACTOR * m_nudgeVelocity;
    }
    // legacy/VP9 style keyboard nudging, by directly applying a force to the balls
    else if (m_legacyNudgeTime != 0)
@@ -425,9 +428,9 @@ Vertex2D PhysicsEngine::GetScreenNudge() const
 {
    // in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
    if (m_legacyNudge)
-      return {m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f)};
+      return { m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f) };
    else
-      return {m_tableDisplacement.x, -m_tableDisplacement.y};
+      return { m_tableDisplacement.x + m_nudgeDisplacement.x, -m_tableDisplacement.y - m_nudgeDisplacement.y };
 }
 
 AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()

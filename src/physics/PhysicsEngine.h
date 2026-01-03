@@ -114,11 +114,8 @@ private:
    // Legacy nudge: apply a given acceleration for a given amount of time
    // Hardware nudge: acquire acceleration and apply it (eventually deriving it from acquired velocity)
    Vertex3Ds m_nudgeAcceleration; // used by both hardware nudge and legacy keyboard nudge
-   // External accelerometer velocity input.  This is for newer
-   // pin cab I/O controllers that can integrate acceleration
-   // samples on the device side to compute the instantaneous
-   // cabinet velocity, and pass the velocity data to the host.
-   Vertex3Ds m_prevSensorTableVelocity; // Used to compute acceleration from acquired velocities
+   Vertex3Ds m_nudgeVelocity; // Derived from nudge acceleration to compute visual screen nudge
+   Vertex3Ds m_nudgeDisplacement; // Derived from nudge acceleration to compute visual screen nudge
 
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge = false;
