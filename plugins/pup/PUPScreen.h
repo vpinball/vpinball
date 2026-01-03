@@ -88,7 +88,8 @@ public:
    void SetLength(int length);
    void SetAsBackGround(int mode);
 
-   bool IsPlaying();
+   bool IsMainPlaying() const;
+   bool IsBackgroundPlaying() const;
 
    const SDL_Rect& GetRect() const { return m_rect; }
    void Render(VPXRenderContext2D* const ctx);

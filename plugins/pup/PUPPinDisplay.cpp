@@ -157,7 +157,7 @@ void PUPPinDisplay::CloseApp()
 bool PUPPinDisplay::GetisPlaying(int screenNum) const
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   return pScreen ? pScreen->IsPlaying() : false;
+   return pScreen ? pScreen->IsMainPlaying() : false;
 }
 
 void PUPPinDisplay::SetisPlaying(int screenNum, bool value)
@@ -182,18 +182,18 @@ void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
       pScreen->SetLoop(LoopState);
 }
 
-void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
+void PUPPinDisplay::SetBackGround(int screenNum, int mode)
 {
    // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->SetAsBackGround(Mode);
+      pScreen->SetAsBackGround(mode);
 }
 
-void PUPPinDisplay::BlockPlay(int screenNum, int Mode)
+void PUPPinDisplay::BlockPlay(int screenNum, int mode)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   NOT_IMPLEMENTED("Not implemented: screenNum=%d, mode=%d", screenNum, Mode);
+   NOT_IMPLEMENTED("Not implemented: screenNum=%d, mode=%d", screenNum, mode);
 }
 
 void PUPPinDisplay::SetScreen(int screenNum)
@@ -633,10 +633,10 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    }
 }
 
-void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, const string& Special)
+void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int mode, const string& Special)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   NOT_IMPLEMENTED("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", screenNum, StartPos, EndPos, Mode, Special.c_str());
+   NOT_IMPLEMENTED("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", screenNum, StartPos, EndPos, mode, Special.c_str());
 }
 
 void PUPPinDisplay::PuPClose()

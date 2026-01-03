@@ -119,7 +119,7 @@ void PUPManager::Unload()
 {
    Stop();
 
-   m_screens.clear();
+   m_screenOrder.clear();
    m_screenMap.clear();
 
    UnloadFonts();
@@ -218,7 +218,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
       pScreen = existing;
    }
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
-   m_screens.push_back(pScreen);
+   m_screenOrder.push_back(pScreen);
 
    const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos();
    if (pCustomPos) {
@@ -264,14 +264,25 @@ bool PUPManager::AddScreen(int screenNum)
    return AddScreen(std::move(pScreen));
 }
 
-void PUPManager::SendScreenToFront(const PUPScreen* screen)
+void PUPManager::SendScreenToBack(const PUPScreen* screen)
 {
-   auto it = std::ranges::find_if(m_screens, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
-   if (it != m_screens.end())
+   auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
+   if (it != m_screenOrder.end())
    {
       auto item = std::move(*it);
-      m_screens.erase(it);
-      m_screens.push_back(item);
+      m_screenOrder.erase(it);
+      m_screenOrder.insert(m_screenOrder.begin(), item);
+   }
+}
+
+void PUPManager::SendScreenToFront(const PUPScreen* screen)
+{
+   auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
+   if (it != m_screenOrder.end())
+   {
+      auto item = std::move(*it);
+      m_screenOrder.erase(it);
+      m_screenOrder.push_back(item);
    }
 }
 
@@ -466,7 +477,7 @@ void PUPManager::ProcessQueue()
          }
       }
 
-      for (auto screen : m_screens)
+      for (auto [key, screen] : m_screenMap)
       {
          for (auto& [cmd, triggers] : screen->GetTriggers())
          {
@@ -639,8 +650,11 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    renderCtx->srcHeight = renderCtx->outHeight;
    rootScreen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
 
+   // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
+   std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
+
    // Render all children of rootScreen according to the global shared render order
-   for (auto screen : me->m_screens)
+   for (auto screen : me->m_screenOrder)
    {
       const PUPScreen* parent = screen.get();
       while (parent && parent != rootScreen.get())

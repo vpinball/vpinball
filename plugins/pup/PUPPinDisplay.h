@@ -68,7 +68,7 @@ public:
    string GetVersion() const;
    // void GrabDC2(int pWidth, int pHeight, const string& wintitle, SAFEARRAY **pixels);
    void playevent(int ScreenNum, const string& playlist, const string& playfilename, int volume, int priority, int playtype, int Seconds, const string& Special);
-   void SetPosVideo(int ScreenNum, int StartPos, int EndPos, int Mode, const string& Special);
+   void SetPosVideo(int ScreenNum, int StartPos, int EndPos, int mode, const string& Special);
    void PuPClose();
 
 private:

@@ -289,11 +289,29 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
    switch (pPlaylist->GetFunction())
    {
    case PUPPlaylist::Function::Default:
-      // In original PupPlayer, Pop screens are recreated when play is call and therefore placed at the top of there z order stack (normal or topmost)
-      // TODO PopBack is somewhat unclear: it pops (i.e. creates the window, defaulting to in front) but keeping at the back of... what ? VPX ?
-      // At least, on The Getaway pup back, it shows that a ForcePopBack can be in front of a ForcePop if created afterward (so back is not against the parent Pup window)
-      if (IsPop())
+      switch (m_mode)
+      {
+      case Mode::Off:
+         return;
+
+      case Mode::ForceBack:
+      case Mode::ForcePopBack:
+         m_pManager->SendScreenToBack(this);
+         break;
+
+      case Mode::ForceOn:
+      case Mode::ForcePop:
          m_pManager->SendScreenToFront(this);
+         break;
+
+      case Mode::MusicOnly:
+         // No window ordering as we are only playing music
+         break;
+
+      case Mode::Show:
+         // What should we do here ?
+         break;
+      }
       m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length, background);
       break;
 
@@ -370,23 +388,34 @@ void PUPScreen::SetAsBackGround(int mode)
    m_pMediaPlayerManager->SetAsBackGround(mode != 0);
 }
 
-bool PUPScreen::IsPlaying() {
+bool PUPScreen::IsMainPlaying() const {
    assert(std::this_thread::get_id() == m_apiThread);
-   return m_pMediaPlayerManager->IsPlaying();
+   return m_pMediaPlayerManager->IsMainPlaying();
+}
+
+bool PUPScreen::IsBackgroundPlaying() const
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   return m_pMediaPlayerManager->IsBackgroundPlaying();
 }
 
 void PUPScreen::Render(VPXRenderContext2D* const ctx) {
    assert(std::this_thread::get_id() == m_apiThread);
-   if (!IsPop() || IsPlaying())
-   {
-      m_background.Render(ctx, m_rect);
-      m_pMediaPlayerManager->Render(ctx);
-      // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
-      for (PUPLabel* pLabel : m_labels)
-         pLabel->Render(ctx, m_rect, m_pagenum);
-      // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
-      m_overlay.Render(ctx, m_rect);
-   }
+
+   // Pop screen window are dynamically created/destroyed when playing starts/ends
+   if (IsPop() && !IsMainPlaying())
+      return;
+
+   if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
+      return;
+
+   m_background.Render(ctx, m_rect);
+   m_pMediaPlayerManager->Render(ctx);
+   // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
+   for (PUPLabel* pLabel : m_labels)
+      pLabel->Render(ctx, m_rect, m_pagenum);
+   // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
+   m_overlay.Render(ctx, m_rect);
 }
 
 string PUPScreen::ToString(bool full) const

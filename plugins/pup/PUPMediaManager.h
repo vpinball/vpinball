@@ -25,7 +25,8 @@ public:
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void Render(VPXRenderContext2D* const ctx);
-   bool IsPlaying() const;
+   bool IsMainPlaying() const;
+   bool IsBackgroundPlaying() const;
 
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const string& path);
