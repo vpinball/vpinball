@@ -264,8 +264,8 @@ void PUPScreen::SetBounds(int x, int y, int w, int h)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_rect = m_pCustomPos ? m_pCustomPos->ScaledRect(w, h) : SDL_Rect { 0, 0, w, h };
-   m_rect.x = x;
-   m_rect.y = y;
+   m_rect.x += x;
+   m_rect.y += y;
    m_pMediaPlayerManager->SetBounds(m_rect);
 
    for (auto pChildren : m_children)
@@ -321,7 +321,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
          // What should we do here ?
          break;
       }
-      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length, background);
+      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_mainVolume * (m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume), priority, skipSamePriority, length, background);
       break;
 
    case PUPPlaylist::Function::Frames:

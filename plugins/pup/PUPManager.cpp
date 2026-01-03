@@ -36,6 +36,7 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    , m_endpointId(endpointId)
 {
    msgApi->RegisterSetting(endpointId, &pupMainVolume);
+   m_mainVolume = pupMainVolume_Get();
    msgApi->RegisterSetting(endpointId, &pupBGPadLeft);
    msgApi->RegisterSetting(endpointId, &pupBGPadRight);
    msgApi->RegisterSetting(endpointId, &pupBGPadTop);
