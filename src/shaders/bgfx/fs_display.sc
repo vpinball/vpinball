@@ -62,11 +62,9 @@ vec3 ReinhardToneMap(vec3 color)
 }
 
 #if defined(TARGET_essl)
-	#if defined(CRT)
-		#define texelFetch(tex, pos, lod) texture2DLod(tex, vec2(pos) / crtSize, float(lod))
-	#elif defined(DMD)
-		#define texelFetch(tex, pos, lod) texture2DLod(tex, vec2(pos) / dmdSize, float(lod))
-	#endif
+	#define texFetch(tex, pos, size) texture2DLod(tex, float2(pos) / size, 0.0)
+#else
+	#define texFetch(tex, pos, size) texelFetch(tex, pos, 0)
 #endif
 
 
@@ -120,7 +118,7 @@ vec3 ReinhardToneMap(vec3 color)
 	#define CRTS_MASK_SHADOW 1
 	// Setup the function which returns input image color
 	vec3 CrtsFetch(vec2 uv) {
-		return InvGamma(texelFetch(displayTex, ivec2(uv * crtSize), 0).rgb);
+		return InvGamma(texFetch(displayTex, ivec2(uv * crtSize), crtSize).rgb);
 	}
 	
 	#include "fs_crt_lottes.fs"
@@ -208,9 +206,9 @@ void main()
 					float light = mix(sharp, diffuse, roughness);
 					unlitLum += light;
 					if (coloredDMD) // RGB data (maybe sRGB, but this is handled by the hardware sampler)
-						litLum += light * texelFetch(displayTex, dotUv, 0).rgb * lit;
+						litLum += light * texFetch(displayTex, dotUv, dmdSize).rgb * lit;
 					else // linear brightness data
-						litLum += light * texelFetch(displayTex, dotUv, 0).r * lit;
+						litLum += light * texFetch(displayTex, dotUv, dmdSize).r * lit;
 				}
 			}
 		
@@ -219,7 +217,7 @@ void main()
 		vec3 litLum;
 		if (crtMode == 0.0) // Pixelated
 		{
-			litLum = texelFetch(displayTex,  displayUv * crtSize, 0).rgb;
+			litLum = texFetch(displayTex, displayUv * crtSize, crtSize).rgb;
 		}
 		else if (crtMode == 1.0) // Smoothed
 		{
