@@ -96,7 +96,7 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
       if (saveDiff)
       {
          std::shared_ptr<BaseTexture> diff = BaseTexture::Create(bmp1->width(), bmp1->height(), BaseTexture::SRGB);
-         uint8_t* const __restrict diffData = diff->data();
+         uint8_t* const __restrict diffData = (uint8_t*)diff->data();
          for (size_t i = 0; i < dataSize; ++i)
          {
             uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];

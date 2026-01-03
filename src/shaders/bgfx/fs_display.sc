@@ -217,7 +217,7 @@ void main()
 		vec3 litLum;
 		if (crtMode == 0.0) // Pixelated
 		{
-			litLum = texFetch(displayTex, displayUv * crtSize, crtSize).rgb;
+			litLum = texFetch(displayTex, ivec2(displayUv * crtSize), crtSize).rgb;
 		}
 		else if (crtMode == 1.0) // Smoothed
 		{
