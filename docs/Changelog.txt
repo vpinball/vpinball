@@ -38,6 +38,8 @@ FEATURES:
       - Perform a keyboard nudge by applying an impulse to a physics model of the cabinet (spring-mass model)
       - Acquire cabinet velocity from sensor and apply it to the physics model of the cabinet (same spring-mass model as for the keyboard nudge)
 
+- add support to visual screen nudge to sensor based nudge (strength/disabling is available in the 'Nudge/Tilt Settings' page).
+
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11/12, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off)
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency, better nudging, more stable gameplay emulation, as well as a performance boost
