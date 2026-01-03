@@ -89,8 +89,9 @@ extern void StopAudioStream(const CtlResId& id);
 class AsyncCallback
 {
 public:
-   AsyncCallback(vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
-      : m_pendingList(pendingList)
+   AsyncCallback(const string &name, vector<AsyncCallback *> &pendingList, std::shared_ptr<std::mutex> pendingListMutex, std::function<void()> callback)
+      : m_name(name)
+      , m_pendingList(pendingList)
       , m_pendingListMutex(pendingListMutex)
       , m_callback(callback)
    {
@@ -98,32 +99,33 @@ public:
 
    void DispatchOnMainThread(const MsgPluginAPI* msgApi)
    {
-      std::lock_guard<std::mutex> lock(m_pendingListMutex);
+      std::lock_guard<std::mutex> lock(*m_pendingListMutex);
       m_pendingList.push_back(this);
       msgApi->RunOnMainThread(0, AsyncCallback::ProcessCallback, this);
    }
 
    void Invalidate() { m_valid = false; }
 
-   static void DispatchOnMainThread(const MsgPluginAPI* msgApi, vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
+   static void DispatchOnMainThread(
+      const string& name, const MsgPluginAPI* msgApi, vector<AsyncCallback*>& pendingList, std::shared_ptr<std::mutex> pendingListMutex, std::function<void()> callback)
    {
-      AsyncCallback* cb = new AsyncCallback(pendingList, pendingListMutex, callback);
+      AsyncCallback* cb = new AsyncCallback(name, pendingList, pendingListMutex, callback);
       cb->DispatchOnMainThread(msgApi);
    }
 
    // Invalidate pending triggers as their execution context is not valid any more
-   static void InvalidateAllPending(vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex)
+   static void InvalidateAllPending(vector<AsyncCallback*>& pendingList, std::shared_ptr<std::mutex> pendingListMutex)
    {
-      std::lock_guard lock(pendingListMutex);
+      std::lock_guard lock(*pendingListMutex);
       std::for_each(pendingList.begin(), pendingList.end(), [](AsyncCallback* cb) { cb->Invalidate(); });
    }
 
    static void ProcessCallback(void* userdata)
    {
       AsyncCallback* tcb = static_cast<AsyncCallback*>(userdata);
+      std::unique_lock<std::mutex> lock(*(tcb->m_pendingListMutex));
       if (tcb->m_valid)
       {
-         std::unique_lock lock(tcb->m_pendingListMutex);
          auto it = std::ranges::find(tcb->m_pendingList, tcb);
          if (it != tcb->m_pendingList.end())
             tcb->m_pendingList.erase(it);
@@ -134,9 +136,10 @@ public:
    }
 
 private:
+   const string m_name;
    bool m_valid = true;
    vector<AsyncCallback*>& m_pendingList;
-   std::mutex& m_pendingListMutex;
+   std::shared_ptr<std::mutex> m_pendingListMutex;
    std::function<void()> m_callback;
 };
 

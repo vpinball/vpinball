@@ -11,7 +11,7 @@ class PUPScreen;
 class PUPMediaManager final
 {
 public:
-   PUPMediaManager(PUPScreen* pScreen);
+   explicit PUPMediaManager(PUPScreen* pScreen);
    ~PUPMediaManager();
 
    void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
@@ -36,11 +36,11 @@ private:
    class PUPMediaManagerPlayer final
    {
    public:
-      PUPMediaManagerPlayer(const string& name)
+      explicit PUPMediaManagerPlayer(const string& name)
          : player(name)
       {
       }
-      ~PUPMediaManagerPlayer() { }
+      ~PUPMediaManagerPlayer() = default;
 
       PUPMediaPlayer player;
       string szPath;
@@ -54,7 +54,7 @@ private:
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
 
    vector<AsyncCallback*> m_pendingEndCallbackList;
-   std::mutex m_pendingEndCallbackListMutex;
+   std::shared_ptr<std::mutex> m_pendingEndCallbackListMutex;
 
    PUPScreen* const m_pScreen;
 
