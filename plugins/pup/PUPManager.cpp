@@ -346,7 +346,7 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
       return;
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
-      m_triggerDataQueue.push_back({ data.type, data.number, data.value });
+      m_triggerDataQueue.push_back(data);
    }
    m_queueCondVar.notify_one();
 }
