@@ -141,6 +141,7 @@ private:
       uint32_t endpointId;
       msgpi_msg_callback callback;
       void* context;
+      bool unregistered = false;
    };
    struct MsgEntry
    {
@@ -151,6 +152,7 @@ private:
       std::vector<CallbackEntry> callbacks;
    };
    std::vector<MsgEntry> m_msgs;
+   bool m_deferredUnregisterMsg = false;
    int m_broadcastInProgress = 0;
    std::vector<std::function<void(void)>> m_deferredAfterBroadCastRunnables;
 
