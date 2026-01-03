@@ -314,8 +314,9 @@ void PhysicsEngine::UpdateNudge(float dtime)
       m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
 
       // Evaluate visual table displacement due to sensor nudge
-      m_nudgeVelocity += (float)PHYS_FACTOR * m_nudgeAcceleration;
-      m_nudgeDisplacement += (float)PHYS_FACTOR * m_nudgeVelocity;
+      // Always apply a damping factor to limit drifting when using a 'bad' nudge sensor
+      m_nudgeVelocity = 0.975f * m_nudgeVelocity + (float) PHYS_FACTOR * m_nudgeAcceleration;
+      m_nudgeDisplacement = 0.975f * m_nudgeDisplacement + (float) PHYS_FACTOR * m_nudgeVelocity;
    }
    // legacy/VP9 style keyboard nudging, by directly applying a force to the balls
    else if (m_legacyNudgeTime != 0)
