@@ -353,7 +353,7 @@ enum option_names
 void showDisplayIDs()
 {
    TTF_Init();
-   string path = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+   string path = g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
    TTF_Font* pFont = TTF_OpenFont(path.c_str(), 200);
    if (!pFont) {
       PLOGI << "Failed to load font: " << SDL_GetError();
@@ -979,8 +979,8 @@ BOOL VPApp::InitInstance()
    if (m_iniFileName.empty())
    {
       // first check if there is a .ini next to the .exe, otherwise use the default location
-      if (FileExists(m_vpinball.m_myPath + "VPinballX.ini"))
-         m_vpinball.SetPrefPath(m_vpinball.m_myPath);
+      if (FileExists(m_vpinball.GetAppPath() + "VPinballX.ini"))
+         m_vpinball.SetPrefPath(m_vpinball.GetAppPath());
       m_iniFileName = m_vpinball.GetPrefPath() + "VPinballX.ini";
    }
 
@@ -1002,9 +1002,9 @@ BOOL VPApp::InitInstance()
    PLOGI << "Settings file was loaded from " << m_iniFileName;
 
    PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
-   PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
-   PLOGI << "m_myPath=" << m_vpinball.m_myPath;
-   PLOGI << "GetPrefPath()=" << m_vpinball.GetPrefPath();
+   PLOGI << "Number of logical CPU core: " << m_vpinball.GetLogicalNumberOfProcessors();
+   PLOGI << "Application path: " << m_vpinball.GetAppPath();
+   PLOGI << "Data path: " << m_vpinball.GetPrefPath();
 
    #ifdef __STANDALONE__
       TTF_Init();

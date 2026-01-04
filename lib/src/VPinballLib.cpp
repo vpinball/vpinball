@@ -190,9 +190,9 @@ void VPinballLib::Init(VPinballEventCallback callback)
       Logger::GetInstance()->SetupLogger(true);
 
       PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-      PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
-      PLOGI << "m_myPath=" << g_pvp->m_myPath;
-      PLOGI << "m_myPrefPath=" << g_pvp->GetPrefPath();
+      PLOGI << "Number of logical CPU core: " << g_pvp->GetLogicalNumberOfProcessors();
+      PLOGI << "Application path: " << g_pvp->GetAppPath();
+      PLOGI << "Data path: " << g_pvp->GetPrefPath();
 
       if (!DirExists(PATH_USER)) {
          std::error_code ec;

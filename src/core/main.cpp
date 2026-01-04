@@ -217,7 +217,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(module), functionName.c_str()));
          }
       };
-      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_pvp->m_myPath + "plugins",
+      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_pvp->GetAppPath() + "plugins",
          [](MsgPI::MsgPlugin& plugin)
          {
             VPX::Properties::PropertyRegistry::PropId enableId;

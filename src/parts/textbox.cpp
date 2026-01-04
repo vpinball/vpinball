@@ -843,9 +843,11 @@ TTF_Font* Textbox::LoadFont()
       styles.push_back("-Italic"s);
    styles.push_back("-Regular"s);
 
+   const string tablePath = PathFromFilename(GetPTable()->m_filename);
+
    string path;
    for (const auto& szStyle : styles) {
-      path = find_case_insensitive_file_path(g_pvp->m_currentTablePath + fontName + szStyle + ".ttf");
+      path = find_case_insensitive_file_path(tablePath + fontName + szStyle + ".ttf");
       if (!path.empty()) {
          pFont = TTF_OpenFont(path.c_str(), m_fontSize);
          if (pFont) {
@@ -856,10 +858,10 @@ TTF_Font* Textbox::LoadFont()
    }
 
    if (!pFont) {
-      path = g_pvp->m_currentTablePath + fontName + styles[0] + ".ttf";
+      path = tablePath + fontName + styles[0] + ".ttf";
       PLOGW << "Unable to locate font: path=" << path;
 
-      path = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+      path = g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
       pFont = TTF_OpenFont(path.c_str(), m_fontSize);
       if (pFont) {
          PLOGW << "Default font loaded: path=" << path;

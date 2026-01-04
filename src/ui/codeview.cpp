@@ -3153,7 +3153,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 static string GetTextFileFromDirectory(const string& filename, const string& dirname)
 {
    if (!dirname.empty())
-      return g_pvp->m_myPath + dirname + filename;
+      return g_pvp->GetAppPath() + dirname + filename;
    // else: use current directory
    return filename;
 }
