@@ -48,8 +48,14 @@ vec3 approx_bump_normal(const vec2 coords, const vec2 offs, const float scale, c
 
     const float lpx = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x+offs.x,coords.y)).xyz, lumw);
     const float lmx = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x-offs.x,coords.y)).xyz, lumw);
-    const float lpy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y)).xyz, lumw);
-    const float lmy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y)).xyz, lumw);
+    #if TEX_V_IS_UP
+        // OpenGL and OpenGL ES have reversed render targets
+        const float lpy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y)).xyz, lumw);
+        const float lmy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y)).xyz, lumw);
+    #else
+        const float lpy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y+offs.y)).xyz, lumw);
+        const float lmy = dot(texStereoNoLod(tex_fb_filtered, vec2(coords.x,coords.y-offs.y)).xyz, lumw);
+    #endif
 
     const float dpx = texStereoNoLod(tex_depth, vec2(coords.x + offs.x, coords.y)).x;
     const float dmx = texStereoNoLod(tex_depth, vec2(coords.x - offs.x, coords.y)).x;
@@ -89,7 +95,12 @@ void main()
 	normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
 	normal_b = normalize(mix(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
 	
-	const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
+	#if TEX_V_IS_UP
+		// OpenGL and OpenGL ES have reversed render targets
+		const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
+	#else
+		const vec3 V = normalize(vec3(0.5-u, -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
+	#endif
 
 	const float fresnel = (SSR_bumpHeight_fresnelRefl_scale_FS.y + (1.0-SSR_bumpHeight_fresnelRefl_scale_FS.y) * pow(1.0-saturate(dot(V,normal_b)),5.)) // fresnel for falloff towards silhouette
 	                     * SSR_bumpHeight_fresnelRefl_scale_FS.z // user scale
