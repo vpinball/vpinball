@@ -86,6 +86,8 @@ typedef struct _tagSORTDATA
 SORTDATA SortData;
 
 VPinball::VPinball()
+   : m_appPath(EvaluateAppPath())
+   , m_appPathWide(MakeWString(m_appPath))
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
    m_closing = false;
@@ -115,7 +117,6 @@ VPinball::VPinball()
 
    m_hbmInPlayMode = nullptr;
 
-   GetMyPath(); //Store path of vpinball.exe in m_myPath and m_wMyPath
    SetPrefPath(GetDefaultPrefPath()); //Store preference path of vpinball.exe in GetPrefPath()
 
 #ifndef __STANDALONE__
@@ -160,34 +161,32 @@ VPinball::~VPinball()
 #endif
 }
 
-//Store path of exe (without the exe's filename) in Class Variable
-//Stores path as string in m_myPath (8 bit Ansi)
-//Stores path as wstring in m_wMyPath (16 bit Unicode)
-void VPinball::GetMyPath()
+// Evaluate path of exe (without the exe's filename)
+string VPinball::EvaluateAppPath()
 {
+   string appPath;
 #ifndef __STANDALONE__
    string path = GetExecutablePath();
    const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
-   m_myPath = pos != string::npos ? path.substr(0,pos + 1) : path;
+   appPath = pos != string::npos ? path.substr(0,pos + 1) : path;
 #else
 #ifdef __ANDROID__
-   m_myPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
+   appPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    char *szPath = SDL_GetPrefPath("../..", "Documents");
-   m_myPath = szPath;
+   appPath = szPath;
    SDL_free(szPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
    char *szPath = SDL_GetPrefPath(NULL, "Documents");
-   m_myPath = szPath;
+   appPath = szPath;
    SDL_free(szPath);
 #else
    const char* szPath = SDL_GetBasePath();
-   m_myPath = szPath;
+   appPath = szPath;
 #endif
 #endif
 
-   // store 2x
-   m_wMyPath = MakeWString(m_myPath);
+   return appPath;
 }
 
 string VPinball::GetDefaultPrefPath()
@@ -216,17 +215,17 @@ string VPinball::GetDefaultPrefPath()
 }
 
 void VPinball::SetPrefPath(const string& path) {
-   m_myPrefPath = path;
-   if (!DirExists(m_myPrefPath))
+   m_dataPath = path;
+   if (!DirExists(m_dataPath))
    {
       std::error_code ec;
-      if (std::filesystem::create_directory(m_myPrefPath, ec))
+      if (std::filesystem::create_directory(m_dataPath, ec))
       {
-         PLOGI << "Pref path created: " << m_myPrefPath;
+         PLOGI << "Pref path created: " << m_dataPath;
       }
       else
       {
-         PLOGE << "Unable to create pref path: " << m_myPrefPath;
+         PLOGE << "Unable to create pref path: " << m_dataPath;
       }
    }
    bool gPVPVWasNull = g_pvp == nullptr;
@@ -1080,7 +1079,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       return;
    }
 
-   m_currentTablePath = PathFromFilename(filename);
+   const string tablePath = PathFromFilename(filename);
 
    CloseAllDialogs();
 
@@ -1117,28 +1116,28 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 
       // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
       // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
-      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".pov"; !FileExists(ppt->GetSettingsFileName()) && FileExists(filenameAuto))
+      if (const string filenameAuto = tablePath + ppt->m_title + ".pov"; !FileExists(ppt->GetSettingsFileName()) && FileExists(filenameAuto))
          ppt->ImportBackdropPOV(filenameAuto);
-      else if (const string filenameAuto2 = m_currentTablePath + "autopov.pov"; FileExists(filenameAuto2))
+      else if (const string filenameAuto2 = tablePath + "autopov.pov"; FileExists(filenameAuto2))
          ppt->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".vbs"; FileExists(filenameAuto)) // We check if there is a matching table vbs first
+      if (const string filenameAuto = tablePath + ppt->m_title + ".vbs"; FileExists(filenameAuto)) // We check if there is a matching table vbs first
          ppt->m_pcv->LoadFromFile(filenameAuto);
-      else if (const string filenameAuto2 = m_myPath + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_title + ".vbs"; FileExists(filenameAuto2))  // Otherwise we seek in the Scripts folder
+      else if (const string filenameAuto2 = GetAppPath() + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_title + ".vbs"; FileExists(filenameAuto2))  // Otherwise we seek in the Scripts folder
          ppt->m_pcv->LoadFromFile(filenameAuto2);
 
       // auto-import VPP settings, if it exists...
-      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
+      if (const string filenameAuto = tablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
          ppt->ImportVPP(filenameAuto);
-      else if (const string filenameAuto2 = m_currentTablePath + "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
+      else if (const string filenameAuto2 = tablePath + "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
          ppt->ImportVPP(filenameAuto2);
 
       // get the load path from the filename
-      m_settings.SetRecentDir_LoadDir(m_currentTablePath, false);
+      m_settings.SetRecentDir_LoadDir(tablePath, false);
 
       // make sure the load directory is the active directory
-      SetCurrentDirectory(m_currentTablePath.c_str());
+      SetCurrentDirectory(tablePath.c_str());
       UpdateRecentFileList(filename);
 
       PLOGI << "UI Post Load Start";
@@ -2536,7 +2535,7 @@ static inline string GetTextFileFromDirectory(const string& filename, const stri
 {
    string szPath;
    if (!dirname.empty())
-      szPath = g_pvp->m_myPath + dirname;
+      szPath = g_pvp->GetAppPath() + dirname;
    // else: use current directory
    return szPath + filename;
 }

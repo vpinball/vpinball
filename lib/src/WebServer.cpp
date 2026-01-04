@@ -80,7 +80,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          string uri(hm->uri.buf, hm->uri.len);
          if (!uri.empty() && uri.front() == '/') uri.erase(0, 1);
 
-         std::filesystem::path webBase = std::filesystem::path(g_pvp->m_myPath) / "assets" / "web";
+         std::filesystem::path webBase = std::filesystem::path(g_pvp->GetAppPath()) / "assets" / "web";
          std::filesystem::path asset = uri.empty() ? webBase / "vpx.html" : webBase / uri;
 
          if (!uri.empty() && std::filesystem::exists(asset))
@@ -281,7 +281,7 @@ void WebServer::Assets(struct mg_connection *c, struct mg_http_message* hm)
          return;
       }
 
-      std::filesystem::path fullPath = std::filesystem::path(g_pvp->m_myPath) / "assets" / assetPath;
+      std::filesystem::path fullPath = std::filesystem::path(g_pvp->GetAppPath()) / "assets" / assetPath;
 
       if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
          struct mg_http_serve_opts opts = {};
@@ -620,9 +620,7 @@ void WebServer::BroadcastStatus()
    if (s_statusConnections.empty()) return;
 
    bool running = g_pplayer != nullptr;
-   string currentTable = "";
-   if (running && !g_pvp->m_currentTablePath.empty())
-      currentTable = g_pvp->GetActiveTable()->m_filename;
+   string currentTable = running ? g_pplayer->m_ptable->m_filename : "";
 
    json j = {
       {"running", running},

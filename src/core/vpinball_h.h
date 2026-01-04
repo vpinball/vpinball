@@ -75,7 +75,6 @@ private:
    void CopyPasteElement(const CopyPasteModes mode);
    void InitTools();
    bool CanClose();
-   void GetMyPath();
    void UpdateRecentFileList(const string& filename);
 
 public:
@@ -223,16 +222,21 @@ public:
 
    int m_securitylevel;
 
-   string m_myPath;
-   wstring m_wMyPath;
-   string m_currentTablePath;
+   // Application folder (without the application filename, ending with a slash)
+   string GetAppPath() const { return m_appPath; }
+   wstring GetAppPathWide() const { return m_appPathWide; }
 
+   // Data folder for preferences, tables, music, etc. (ending with a slash)
    string GetDefaultPrefPath();
    void SetPrefPath(const string& path);
-   const string& GetPrefPath() const { return m_myPrefPath; }
+   const string& GetPrefPath() const { return m_dataPath; }
 
 private:
-   string m_myPrefPath;
+   string m_dataPath;
+
+   static string EvaluateAppPath();
+   const string m_appPath;
+   const wstring m_appPathWide;
 
 public:
 

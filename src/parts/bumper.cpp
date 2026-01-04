@@ -226,7 +226,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
-      m_baseTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp"));
+      m_baseTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp"));
       std::shared_ptr<IndexBuffer> baseIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       std::shared_ptr<VertexBuffer> baseVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -238,7 +238,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_skirtVisible)
    {
-      m_skirtTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp"));
+      m_skirtTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp"));
       std::shared_ptr<IndexBuffer> socketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       std::shared_ptr<VertexBuffer> socketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -250,7 +250,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_ringVisible)
    {
-      m_ringTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp"));
+      m_ringTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp"));
       std::shared_ptr<IndexBuffer> ringIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperRingNumIndices, bumperRingIndices);
       std::shared_ptr<VertexBuffer> ringVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -264,7 +264,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_capVisible)
    {
-      m_capTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp"));
+      m_capTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp"));
       std::shared_ptr<IndexBuffer> capIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperCapNumIndices, bumperCapIndices);
       std::shared_ptr<VertexBuffer> capVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;

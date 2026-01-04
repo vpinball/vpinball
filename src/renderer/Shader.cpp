@@ -2115,7 +2115,7 @@ void Shader::Load()
 void Shader::Load(const std::string& name)
 {
    m_shaderCodeName = name;
-   m_shaderPath = g_pvp->m_myPath
+   m_shaderPath = g_pvp->GetAppPath()
       + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
    PLOGI << "Parsing file " << name;
    ankerl::unordered_dense::map<string, string> values;

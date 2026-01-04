@@ -121,7 +121,6 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->GetLayersListDialog()->SetActiveTable(m_table);
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
-      m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_filename);
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
 #else 
