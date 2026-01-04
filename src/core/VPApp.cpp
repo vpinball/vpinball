@@ -243,6 +243,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "Audit"s,
    "listres"s,
    "listsnd"s,
+   "CaptureAttract"s,
    "c1"s,
    "c2"s,
    "c3"s,
@@ -287,6 +288,7 @@ static const string option_descs[] =
    "[table filename] Audit the table"s,
    "List available fullscreen resolutions"s,
    "List available sound devices"s,
+   "Capture an attract mode video"s,
    "Custom value 1"s,
    "Custom value 2"s,
    "Custom value 3"s,
@@ -331,6 +333,7 @@ enum option_names
    OPTION_AUDIT,
    OPTION_LISTRES,
    OPTION_LISTSND,
+   OPTION_CAPTURE_ATTRACT,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
    OPTION_CUSTOM3,
@@ -814,6 +817,11 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
       case OPTION_AUDIT:
       case OPTION_POV:
       case OPTION_EXTRACTVBS:
+         if (i + 1 >= nArgs)
+         {
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
+            exit(1);
+         }
          m_vpinball.m_povEdit = opt == OPTION_POVEDIT;
          m_play = (opt == OPTION_PLAY) || (opt == OPTION_POVEDIT);
          m_audit = opt == OPTION_AUDIT;
@@ -821,13 +829,40 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          m_extractScript = opt == OPTION_EXTRACTVBS;
          m_vpinball.m_open_minimized = opt != OPTION_EDIT;
          m_run = !(opt == OPTION_AUDIT || opt == OPTION_POV || opt == OPTION_EXTRACTVBS); // Don't run the UI
-         if (i + 1 >= nArgs)
-         {
-            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
-            exit(1);
-         }
          m_tableFileName = GetPathFromArg(szArglist[i + 1], false);
          i++;
+         break;
+
+      case OPTION_CAPTURE_ATTRACT:
+         if (i + 3 >= nArgs)
+         {
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by the number of frames to capture, the framerate and a valid table file path");
+            exit(1);
+         }
+         m_play = true;
+         m_vpinball.m_open_minimized = true;
+         m_run = true;
+         if (!try_parse_int(szArglist[i + 1], m_vpinball.m_captureAttract) || m_vpinball.m_captureAttract <= 0)
+         {
+            OnCommandLineError("Command Line Error"s, "Invalid number of frames");
+            exit(1);
+         }
+         if (!try_parse_int(szArglist[i + 2], m_vpinball.m_captureAttractFPS) || m_vpinball.m_captureAttractFPS <= 0)
+         {
+            OnCommandLineError("Command Line Error"s, "Invalid framerate");
+            exit(1);
+         }
+         m_tableFileName = GetPathFromArg(szArglist[i + 3], false);
+         if (i + 4 < nArgs && StrCompareNoCase("noloop"s, szArglist[i + 4]))
+         {
+            m_vpinball.m_captureAttractLoop = false;
+            i += 4;
+         }
+         else
+         {
+            m_vpinball.m_captureAttractLoop = true;
+            i += 3;
+         }
          break;
 
       case OPTION_INI:
@@ -1027,6 +1062,12 @@ BOOL VPApp::InitInstance()
 int VPApp::Run()
 {
    //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
+
+   if (m_vpinball.m_captureAttract)
+   {
+      PLOGI << "Video capture mode requested for " << m_vpinball.m_captureAttract << " frames at " << m_vpinball.m_captureAttractFPS << "FPS from table '" << m_tableFileName << "' "
+            << (m_vpinball.m_captureAttractLoop ? "with " : "without ") << "loop truncation";
+   }
 
    if (!m_tableFileName.empty())
    {

@@ -215,7 +215,7 @@ public:
    // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
    vector<VPX::Window*> m_outputWnd;
 
-   void CaptureScreenshot(const string& filename, std::function<void(bool)> callback, int delay = 3);
+   void CaptureScreenshot(VPX::Window* wnd, const string& filename, std::function<void(VPX::Window*, bool)> callback);
 
    int GetVisualLatencyCorrection() const { return m_visualLatencyCorrection; }
    void SetVisualLatencyCorrection(int latencyMs) { m_visualLatencyCorrection = latencyMs; }
@@ -245,8 +245,9 @@ private:
    int m_visualLatencyCorrection = -1;
 
    int m_screenshotFrameDelay = 0;
+   VPX::Window* m_screenshotWindow;
    string m_screenshotFilename;
-   std::function<void(bool)> m_screenshotCallback = [](bool) { };
+   std::function<void(VPX::Window*, bool)> m_screenshotCallback = [](VPX::Window*, bool) { };
 
 #if defined(ENABLE_BGFX)
 public:

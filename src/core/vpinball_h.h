@@ -254,6 +254,9 @@ public:
 
    // command line parameters
    int m_disEnableTrueFullscreen;
+   int m_captureAttract = 0; // Number of frames to capture for attract mode capture, 0 = disabled
+   int m_captureAttractFPS = 0;
+   bool m_captureAttractLoop = true;
    bool m_open_minimized;
    bool m_disable_pause_menu;
    bool m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else

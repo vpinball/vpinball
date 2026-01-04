@@ -490,35 +490,50 @@ bool BaseTexture::Save(const string& filepath) const
    const string ext = extension_from_path(filepath);
    bool success = false;
 
-#ifdef __STANDALONE__
-   SDL_Surface* pSurface = ToSDLSurface();
-   if (pSurface)
-   {
-      if (ext == "png")
-         success = IMG_SavePNG(pSurface, filepath.c_str());
-      else if (ext == "jpg" || ext == "jpeg")
-         success = IMG_SaveJPG(pSurface, filepath.c_str(), 75);
-      SDL_DestroySurface(pSurface);
-   }
+   // Create parent directory if needed
+   std::filesystem::create_directories(std::filesystem::path(filepath).parent_path());
 
-#else
-   FIBITMAP* bitmap = FreeImage_Allocate(m_width, m_height, m_format == SRGB ? 24 : 32);
-   if (bitmap)
+   if (ext == "bmp")
    {
-      uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
-      memcpy(bits, m_data, pitch() * m_height);
-      FreeImage_FlipVertical(bitmap);
-      if (ext == "png")
-         success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);
-      else if (ext == "jpg" || ext == "jpeg")
-         success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), 0);
-      else if (ext == "webp")
-         //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would better for our regression tests)
-         success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
-      FreeImage_Unload(bitmap);
+      if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
+      {
+         success = SDL_SaveBMP(pSurface, filepath.c_str());
+         SDL_DestroySurface(pSurface);
+      }
    }
+   else
+   {
+   #ifdef __STANDALONE__
+      if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
+      {
+         if (ext == "png")
+            success = IMG_SavePNG(pSurface, filepath.c_str());
+         else if (ext == "jpg" || ext == "jpeg")
+            success = IMG_SaveJPG(pSurface, filepath.c_str(), 75);
+         // Needs latest SDL3_image for WEBP support
+         //else if (ext == "webp")
+         //   success = IMG_SaveWEBP(pSurface, filepath.c_str(), 75);
+         SDL_DestroySurface(pSurface);
+      }
 
-#endif
+   #else
+      FIBITMAP* bitmap = FreeImage_Allocate(m_width, m_height, m_format == SRGB ? 24 : 32);
+      if (bitmap)
+      {
+         uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
+         memcpy(bits, m_data, pitch() * m_height);
+         FreeImage_FlipVertical(bitmap);
+         if (ext == "png")
+            success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);
+         else if (ext == "jpg" || ext == "jpeg")
+            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), 0);
+         else if (ext == "webp")
+            //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would better for our regression tests)
+            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
+         FreeImage_Unload(bitmap);
+      }
+   #endif
+   }
 
    return success;
 }

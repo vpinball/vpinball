@@ -30,4 +30,11 @@ VPX supports the following command line options:
 | | |
 | -Ini [filename]          | Use a custom settings file instead of loading it from the default location |
 | | |
+| -CaptureAttract [n frames] [framerate] [filename] [noloop] | Capture n attract frames of the given table into a 'Capture' folder, skipping startup, at the given framerate, with loop pattern detection and truncation (unless 'noloop' is specified) |
+| | |
+| -TournamentFile [table filename] [tournament filename] | Load a table and tournament file and convert to .png |
+| | |
+| -ListRes                 | List the available display resolution |
+| -ListSnd                 | List the available sound devices |
+| | |
 | -c1 [customparam] .. -c9 [customparam]   | Custom user parameters that can be accessed in the script via GetCustomParam(X) |

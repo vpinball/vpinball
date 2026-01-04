@@ -26,7 +26,12 @@
 -Ini [filename]         Use a custom settings file instead of loading it from the default location
 -TableIni [filename]    Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,...
 
+-CaptureAttract [n frames] [framerate] [filename] [noloop] Capture n attract frames of the given table into a 'Capture' folder, skipping startup, at the given framerate, with loop pattern detection and truncation (unless 'noloop' is specified)
+
 -TournamentFile [table filename] [tournament filename]  Load a table and tournament file and convert to .png
+
+-ListRes                List the available display resolution
+-ListSnd                List the available sound devices
 
 -v                      Displays the version
 

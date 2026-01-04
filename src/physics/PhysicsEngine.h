@@ -32,7 +32,7 @@ public:
    void OnFinishFrame();
 
    void StartPhysics();
-   void UpdatePhysics();
+   void UpdatePhysics(uint64_t targetTimeUs);
 
    bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }
    bool RecordContact(const CollisionEvent& newColl);
@@ -67,6 +67,9 @@ public:
 
    const vector<HitObject *>& GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
    vector<HitObject *> GetUIHitObjects(IEditable *editable);
+
+   uint64_t GetStartTime() const { return m_startTime_usec; }
+   uint64_t GetCurrentTime() const { return m_curPhysicsFrameTime; }
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);

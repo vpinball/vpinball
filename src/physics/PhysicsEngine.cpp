@@ -517,13 +517,13 @@ void PhysicsEngine::StartPhysics()
 #endif
 }
 
-void PhysicsEngine::UpdatePhysics()
+void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 {
    if (!g_pplayer) //!! meh, we have a race condition somewhere where we delete g_pplayer while still in use (e.g. if we have a script compile error and cancel the table start)
       return;
 
    g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
-   uint64_t initial_time_usec = usec();
+   uint64_t initial_time_usec = targetTimeUs;
 
    // DJRobX's crazy latency-reduction code
    uint64_t delta_frame = 0;
@@ -610,7 +610,7 @@ void PhysicsEngine::UpdatePhysics()
          const uint64_t targettime = ((uint64_t)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)g_pplayer->m_fps + 1))
-            g_pplayer->FireSyncController();
+            g_pplayer->FireSyncTimer(-2);
          if (basetime < targettime)
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
@@ -621,27 +621,32 @@ void PhysicsEngine::UpdatePhysics()
       #endif
       // end DJRobX's crazy code
 
-      const uint64_t cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
+      // Anti hung mechanism
+      if (g_pvp->m_captureAttract == 0)
+      {
+         const uint64_t cur_time_usec = usec()
+            - delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
-      // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
-      if ((cur_time_usec - initial_time_usec > 200000) || (m_physicsMaxLoops != 0 && m_phys_iterations > m_physicsMaxLoops))
-      {                                                             // can not keep up to real time
-         m_curPhysicsFrameTime  = initial_time_usec;                // skip physics forward ... slip-cycles -> 'slowed' down physics
-         m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
-         break;                                                     // go draw frame
+         // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
+         if ((cur_time_usec - initial_time_usec > 200000) || (m_physicsMaxLoops != 0 && m_phys_iterations > m_physicsMaxLoops))
+         { // can not keep up to real time
+            m_curPhysicsFrameTime = initial_time_usec; // skip physics forward ... slip-cycles -> 'slowed' down physics
+            m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
+            break; // go draw frame
+         }
+
+         //update keys, hid, plumb, nudge, timers, etc
+         //const uint32_t sim_msec = (uint32_t)(m_curPhysicsFrameTime / 1000);
+         const uint32_t cur_time_msec = (uint32_t)(cur_time_usec / 1000);
+
+         #if !defined(ENABLE_BGFX)
+         // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
+         g_pplayer->m_pininput.ProcessInput();
+         #endif
+
+         // FIXME remove or at least move legacy ushock to a plugin
+         ushock_output_update(/*sim_msec*/ cur_time_msec);
       }
-
-      //update keys, hid, plumb, nudge, timers, etc
-      //const uint32_t sim_msec = (uint32_t)(m_curPhysicsFrameTime / 1000);
-      const uint32_t cur_time_msec = (uint32_t)(cur_time_usec / 1000);
-
-      #if !defined(ENABLE_BGFX)
-      // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
-      g_pplayer->m_pininput.ProcessInput();
-      #endif
-
-      // FIXME remove or at least move legacy ushock to a plugin
-      ushock_output_update(/*sim_msec*/cur_time_msec);
 
       #ifdef ACCURATETIMERS
       g_pplayer->ApplyDeferredTimerChanges();
@@ -673,9 +678,6 @@ void PhysicsEngine::UpdatePhysics()
    assert(m_curPhysicsFrameTime < m_nextPhysicsFrameTime);
    assert(m_curPhysicsFrameTime <= initial_time_usec);
    assert(initial_time_usec <= m_nextPhysicsFrameTime);
-#ifndef __STANDALONE__
-   assert(g_pplayer->m_time_sec <= (double)(initial_time_usec - m_startTime_usec) / 1000000.0);
-#endif
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
    g_pplayer->m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;
