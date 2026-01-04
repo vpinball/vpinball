@@ -94,7 +94,12 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
    auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA);
    if (tex)
    {
-      memcpy(tex->data(), _data, _size);
+      for (int i = 0; i < _height; i++)
+      {
+         const uint8_t* src = static_cast<const uint8_t*>(_data) + i * _pitch;
+         uint8_t* dst = static_cast<uint8_t*>(tex->data()) + i * _width * 4;
+         bx::memCopy(dst, src, _width * 4);
+      }
       if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal)
       {
          uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
