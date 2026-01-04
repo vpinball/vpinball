@@ -121,15 +121,13 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    g_pvp->LoadFileName(GetAssetPath() + tablePath, false);
    struct CaptureState
    {
-      int frameIndex;
       string tmpScreenshotPath;
       bool done;
-   } state = { 0, GetAssetPath() + screenshotPath, false };
+   } state = { GetAssetPath() + screenshotPath, false };
    msgpi_msg_callback onPrepareFrame = [](const unsigned int msgId, void* context, void* msgData)
    {
       CaptureState* state = reinterpret_cast<CaptureState*>(context);
-      state->frameIndex++;
-      if (state->frameIndex == 25)
+      if (g_pplayer->m_overall_frames == 25)
          g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(state->tmpScreenshotPath,
             [state](bool success)
             {
@@ -189,6 +187,8 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    // Setup the vpx app with blank default settings
    Logger::GetInstance()->Init();
    VPApp vpx(hInstance);
+   const char* args[] = { "vpx-test.exe", "-ini", (GetAssetPath() + "VPinball.ini").c_str() };
+   vpx.ProcessCommandLine(3, args);
    vpx.InitInstance();
    const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    onPrepareFrameMsgId = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);

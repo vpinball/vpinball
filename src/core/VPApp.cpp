@@ -139,12 +139,12 @@ BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
 
-static char** CommandLineToArgvA(const char* const CmdLine, int* const _argc)
+static const char** CommandLineToArgvA(const char* const CmdLine, int* const _argc)
 {
    const size_t len = strlen(CmdLine);
    size_t i = ((len + 2) / 2) * sizeof(void*) + sizeof(void*);
 
-   char** argv = (char**)malloc(i + (len + 2) * sizeof(char));
+   const char** argv = (const char**)malloc(i + (len + 2) * sizeof(char));
    char* _argv = (char*)(((unsigned char*)argv) + i);
 
    int argc = 0;
@@ -212,7 +212,7 @@ static char** CommandLineToArgvA(const char* const CmdLine, int* const _argc)
 
 #ifdef __STANDALONE__
 int g_argc;
-char **g_argv;
+const char **g_argv;
 #endif
 
 static const string options[] = { // keep in sync with option_names & option_descs!
@@ -649,7 +649,7 @@ void VPApp::ProcessCommandLine()
 {
 #ifndef __STANDALONE__
    int nArgs;
-   char** szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
+   const char** szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
    ProcessCommandLine(nArgs, szArglist);
    free(szArglist);
 
@@ -659,7 +659,7 @@ void VPApp::ProcessCommandLine()
 #endif
 }
 
-void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
+void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
 {
    m_run = true;
    m_play = false;
@@ -751,7 +751,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_GLES: // global emission scale parameter handling
          if (i + 1 < nArgs)
          {
-            char* lpszStr;
+            const char* lpszStr;
             if ((szArglist[i + 1][0] == '-') || (szArglist[i + 1][0] == '/'))
                lpszStr = szArglist[i + 1] + 1;
             else

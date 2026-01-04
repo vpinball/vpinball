@@ -10,7 +10,7 @@ public:
    BOOL InitInstance() override;
 
    void ProcessCommandLine();
-   void ProcessCommandLine(int argc, char* argv[]);
+   void ProcessCommandLine(int argc, const char* argv[]);
 
    int Run() override;
 

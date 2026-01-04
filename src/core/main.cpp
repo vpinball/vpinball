@@ -273,8 +273,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
 #if defined(__STANDALONE__) && defined(__linux__) && !defined(__ANDROID__)
 extern int g_argc;
-extern char **g_argv;
-int main(int argc, char** argv) {
+extern const char **g_argv;
+int main(int argc, const char** argv) {
    struct sigaction sigIntHandler;
    sigIntHandler.sa_handler = OnSignalHandler;
    sigemptyset(&sigIntHandler.sa_mask);
