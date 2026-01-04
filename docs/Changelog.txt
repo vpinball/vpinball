@@ -151,6 +151,8 @@ FEATURES:
 
 - Table settings override will only save actual overrides, so only those settings that are different from application settings and default values
 
+- New commandline option to automatically capture an attract video
+
 - After many years of great service, 'Fake' 3D stereo mode has been removed, replaced by real stereo. Note that the 'Reshade' app could be used to get approximate 3D stereo if still wanted.
 
 FIXES:

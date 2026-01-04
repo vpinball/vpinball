@@ -118,8 +118,8 @@ void VPinballLib::AppIterate()
 
          m_captureInProgress = true;
 
-         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(imagePath,
-            [this, imagePath](bool success) {
+         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(g_pplayer->m_playfieldWnd, imagePath,
+            [this, imagePath](VPX::Window* wnd, bool success) {
                m_captureInProgress = false;
 
                if (success) {

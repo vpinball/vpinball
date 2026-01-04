@@ -116,7 +116,7 @@ public:
    HitBall *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    HitBall *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
 
-   void FireSyncController();
+   void FireSyncTimer(int timerValue);
 
 private:
    bool m_playing = true;

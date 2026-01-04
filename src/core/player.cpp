@@ -1151,11 +1151,11 @@ void Player::DestroyBall(HitBall *pHitBall)
 }
 
 
-void Player::FireSyncController()
+void Player::FireSyncTimer(int timerValue)
 {
    // Legacy implementation: timers with magic interval value have special behaviors: -2 for controller sync event
    for (HitTimer *const pht : m_vht)
-      if (pht->m_interval == -2)
+      if (pht->m_interval == timerValue)
       {
          m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
@@ -1464,6 +1464,223 @@ void Player::ProcessOSMessages()
    }
 };
 
+class AttractCapture
+{
+public:
+   AttractCapture(Player* player)
+      : m_player(player)
+      , m_captureTime(usec())
+      , m_captureStartupEndTime(usec())
+      , m_captureStartupEndPhysicsTime(usec())
+      , m_lightStates(g_pvp->m_captureAttract)
+   {
+      m_nLights = 0;
+      for (const auto &edit : m_player->m_ptable->m_vedit)
+         if (edit->GetItemType() == eItemLight)
+            m_nLights++;
+
+      m_captureRequestMask = 1;
+      if (m_player->m_backglassOutput.GetMode() == RenderOutput::OutputMode::OM_WINDOW)
+         m_captureRequestMask |= 2;
+      #if defined(ENABLE_BGFX)
+         if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal) // Metal backend does not support screenshot from other framebuffers
+            m_captureRequestMask &= 1;
+      #endif
+   }
+   
+   void Update()
+   {
+      if (!m_player->IsPlaying())
+         return;
+
+      std::lock_guard lock(m_captureMutex);
+
+      m_player->m_physics->UpdatePhysics(max(m_captureTime, m_player->m_physics->GetCurrentTime()));
+      m_player->FireSyncTimer(-2);
+      
+      // Fast forward to capture start time (startup +30s)
+      while (m_player->m_physics->GetCurrentTime() < m_player->m_physics->GetStartTime() + 30 * 1000000)
+      {
+         m_captureTime = min(m_captureTime + 1000000 / 120, m_player->m_physics->GetStartTime() + 30 * 1000000 + PHYSICS_STEPTIME);
+         m_player->ApplyDeferredTimerChanges();
+         m_player->m_overall_frames++;
+         const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
+         m_player->m_last_frame_time_msec = m_player->m_time_msec;
+         for (size_t i = 0; i < m_player->m_ptable->m_vedit.size(); ++i)
+            if (Hitable *const ph = m_player->m_ptable->m_vedit[i]->GetIHitable(); ph)
+               ph->UpdateAnimation(diff_time_msec);
+         m_player->FireSyncTimer(-1);
+         m_player->FireSyncTimer(-2);
+         m_player->m_physics->UpdatePhysics(m_captureTime);
+         MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+         m_captureStartupEndTime = usec();
+         m_captureStartupEndPhysicsTime = m_player->m_physics->GetCurrentTime();
+      }
+      
+      // Run 1s of normal emulation to stabilize
+      if (m_player->m_physics->GetCurrentTime() < m_captureStartupEndPhysicsTime + 1000000)
+      {
+         m_captureTime = m_captureStartupEndPhysicsTime + usec() - m_captureStartupEndTime;
+      }
+      
+      // Stepped emulation & rendering at the capture frequency
+      else if (m_captureRequested == 0 && m_player->GetCloseState() == Player::CS_PLAYING)
+      {
+         m_captureRequested = m_captureRequestMask;
+         m_player->m_renderer->m_renderDevice->CaptureScreenshot(m_player->m_playfieldWnd, GetFilename(VPXWindowId::VPXWINDOW_Playfield, m_captureFrameNumber, true), [this](VPX::Window* wnd, bool success) { OnCapture(wnd, success); });
+      }
+   }
+   
+private:
+   void OnCapture(Window* wnd, bool success)
+   {
+      std::lock_guard lock(m_captureMutex);
+
+      if (!success)
+      {
+         PLOGE << "Screenshot capture failed. Attract video capture cancelled.";
+         m_player->SetCloseState(Player::CloseState::CS_CLOSE_APP);
+         return;
+      }
+
+      // Request other outputs to be captured if any
+      const VPXWindowId wndId = wnd == m_player->m_playfieldWnd ? VPXWindowId::VPXWINDOW_Playfield : VPXWindowId::VPXWINDOW_Backglass;
+      if (wndId == VPXWindowId::VPXWINDOW_Playfield)
+         m_captureRequested &= ~1;
+      else if (wndId == VPXWindowId::VPXWINDOW_Backglass)
+         m_captureRequested &= ~2;
+      if (m_captureRequested & 2)
+      {
+         m_player->m_renderer->m_renderDevice->CaptureScreenshot(m_player->m_backglassOutput.GetWindow(), GetFilename(VPXWindowId::VPXWINDOW_Backglass, m_captureFrameNumber, true),
+            [this](VPX::Window *wnd, bool success) { OnCapture(wnd, success); });
+         return;
+      }
+      assert(m_captureRequested == 0);
+
+      // Store and log light state
+      std::stringstream ss;
+      for (const auto& edit : m_player->m_ptable->m_vedit)
+      {
+         if (edit->GetItemType() == eItemLight)
+         {
+            Light* const light = static_cast<Light*>(edit);
+            const float state = (light->m_d.m_intensity * light->m_d.m_intensity_scale) == 0.f ? 0.f :
+               clamp(light->m_currentIntensity / (light->m_d.m_intensity * light->m_d.m_intensity_scale), 0.f, 1.f);
+            m_lightStates[m_captureFrameNumber - 1].push_back(state);
+            if (static_cast<int>(state * 9.f) == 0)
+               ss << ' ';
+            else
+               ss << static_cast<int>(state * 9.f);
+         }
+      }
+      
+      // Evaluate best loop against previous frames
+      int minLoopLength = max(5, g_pvp->m_captureAttract / 4);
+      if (m_captureFrameNumber > minLoopLength)
+      {
+         float lowestDistance = FLT_MAX;
+         int bestStart = -1;
+         for (int j = 0; j < m_captureFrameNumber - minLoopLength; j++)
+         {
+            // distance favor longer loops with lowest difference between light states
+            float distance = 1.f;
+            for (int k = 0; k < m_nLights; k++)
+               distance += powf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k], 2.f);
+            distance = distance * 100.f / static_cast<float>(m_nLights); // Normalize against a 'standard' number of lights
+            distance = distance / static_cast<float>(m_captureFrameNumber - j); // Take loop length in account
+            if (distance < lowestDistance)
+            {
+               lowestDistance = distance;
+               bestStart = j;
+            }
+         }
+         ss << " Best loop: #" << std::setw(2) << (bestStart + 1) << ", length: " << std::setw(2) << (m_captureFrameNumber - bestStart) << " (error: " << lowestDistance << ')';
+         if (lowestDistance < m_bestLoopDistance)
+         {
+            m_bestLoopDistance = lowestDistance;
+            m_bestLoopStart = bestStart;
+            m_bestLoopEnd = m_captureFrameNumber - 1;
+         }
+      }
+
+      // Step simulation & request next frame
+      PLOGI << "Captured frame #" << std::setw(2) << m_captureFrameNumber << ", State of " << m_nLights << " lights : " << ss.str();
+      m_captureFrameNumber++;
+      m_captureTime += 1000000 / g_pvp->m_captureAttractFPS;
+      if (m_captureFrameNumber <= g_pvp->m_captureAttract)
+         return;
+      
+      // Capture is finished, process result and exit
+      m_player->SetCloseState(Player::CloseState::CS_CLOSE_APP);
+      if (!g_pvp->m_captureAttractLoop)
+         return;
+
+      // Evaluate the less lit frame to use it as the first of our loop since playback loop stutters are a bit less obvious on dark frames
+      float minLightFrame = FLT_MAX;
+      int minLightFrameIndex = -1;
+      for (int i = m_bestLoopStart; i < m_bestLoopEnd; i++)
+      {
+         float totalLight = 0.f;
+         for (int k = 0; k < m_nLights; k++)
+            totalLight += m_lightStates[i][k];
+         if (totalLight < minLightFrame)
+         {
+            minLightFrame = totalLight;
+            minLightFrameIndex = i - m_bestLoopStart;
+         }
+      }
+
+      PLOGI << "Truncating captured sequence to the best loop found from #" << (m_bestLoopStart + 1) << " to #" << m_bestLoopEnd; // Exclude last frame to actually get a loop
+      for (int w = 0; w < 2; w++)
+      {
+         const VPXWindowId wndId = w == 0 ? VPXWindowId::VPXWINDOW_Playfield : VPXWindowId::VPXWINDOW_Backglass;
+         if (wndId == VPXWindowId::VPXWINDOW_Backglass && ((m_captureRequestMask & 2) == 0))
+            continue;
+         for (int i = 0; i < m_bestLoopStart; i++)
+            std::filesystem::remove(GetFilename(wndId, i + 1, true));
+         for (int i = m_bestLoopStart; i < m_bestLoopEnd; i++)
+            std::filesystem::rename(GetFilename(wndId, i + 1, true), GetFilename(wndId, i - m_bestLoopStart + 1, true));
+         for (int i = m_bestLoopEnd; i <= g_pvp->m_captureAttract; i++)
+            std::filesystem::remove(GetFilename(wndId, i + 1, true));
+         for (int i = 0; i < m_bestLoopEnd - m_bestLoopStart; i++)
+            if (i < minLightFrameIndex)
+               std::filesystem::rename(GetFilename(wndId, i + 1, true), GetFilename(wndId, i - minLightFrameIndex + 1 + (m_bestLoopEnd - m_bestLoopStart), false));
+            else
+               std::filesystem::rename(GetFilename(wndId, i + 1, true), GetFilename(wndId, i - minLightFrameIndex + 1, false));
+      }
+   }
+
+   string GetFilename(VPXWindowId id, int index, bool isTmp) const
+   {
+      // We use bmp file as they are dramatically faster to save and they are not meant to be kept anyway (they will be converted to video right after capture)
+      std::stringstream ss;
+      ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture\\"
+         << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
+             id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
+         << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.bmp" : ".bmp");
+      return ss.str();
+   };
+
+   Player *const m_player;
+
+   std::mutex m_captureMutex;
+
+   int m_captureRequestMask;
+   int m_captureFrameNumber = 1;
+   int m_captureRequested = 0;
+   
+   uint64_t m_captureTime;
+   uint64_t m_captureStartupEndTime;
+   uint64_t m_captureStartupEndPhysicsTime;
+   
+   int m_nLights;
+   vector<vector<float>> m_lightStates;
+   
+   int m_bestLoopStart = -1;
+   int m_bestLoopEnd = -1;
+   double m_bestLoopDistance = FLT_MAX;
+};
+
 void Player::UpdateGameLogic()
 {
    #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1473,12 +1690,19 @@ void Player::UpdateGameLogic()
 
    ProcessOSMessages();
 
-   if (!IsEditorMode())
+   if (g_pvp->m_captureAttract)
+   {
+      static std::unique_ptr<AttractCapture> capture;
+      if (capture == nullptr)
+         capture = std::make_unique<AttractCapture>(this);
+      capture->Update();
+   }
+   else if (!IsEditorMode())
    {
       m_pininput.ProcessInput(); // Trigger key events to sync with controller
-      m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
+      m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
       // TODO These updates should also be done directly in the physics engine after collision events
-      FireSyncController(); // Trigger script sync event (to sync solenoids back)
+      FireSyncTimer(-2); // Trigger script sync event (to sync solenoids back)
    }
 
    MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
