@@ -293,6 +293,8 @@
  * That's it!
  */
 
+#define EDGE_DETECTION_MODE 2 // only 1 and 2 supported, Marty-original had: 0=Luminance edge detection 1=Color edge detection (max) 2=Color edge detection (weighted) 3=Depth edge detection
+
 //-----------------------------------------------------------------------------
 // SMAA Presets
 
@@ -673,7 +675,7 @@ void SMAAMovc(bool4 cond, inout float4 variable, float4 value) {
  * Edge Detection Vertex Shader
  */
 void SMAAEdgeDetectionVS(float2 texcoord,
-                         inout float4 offset[3]) {
+                         out float4 offset[3]) {
     offset[0] = mad(SMAA_RT_METRICS.xyxy, float4(-1.0, 0.0, 0.0, -1.0), texcoord.xyxy);
     offset[1] = mad(SMAA_RT_METRICS.xyxy, float4( 1.0, 0.0, 0.0,  1.0), texcoord.xyxy);
     offset[2] = mad(SMAA_RT_METRICS.xyxy, float4(-2.0, 0.0, 0.0, -2.0), texcoord.xyxy);
@@ -684,7 +686,7 @@ void SMAAEdgeDetectionVS(float2 texcoord,
  */
 void SMAABlendingWeightCalculationVS(float2 texcoord,
                                      out float2 pixcoord,
-                                     inout float4 offset[3]) {
+                                     out float4 offset[3]) {
     pixcoord = texcoord * SMAA_RT_METRICS.zw;
 
     // We will use these offsets for the searches later on (see @PSEUDO_GATHER4):
@@ -709,6 +711,16 @@ void SMAANeighborhoodBlendingVS(float2 texcoord,
 #if SMAA_INCLUDE_PS
 //-----------------------------------------------------------------------------
 // Edge Detection Pixel Shaders (First Pass)
+
+float edge_metric(float3 A, float3 B)
+{
+    float3 t = abs(A - B);
+#if (EDGE_DETECTION_MODE == 2)
+    return dot(t, float3(0.25, 0.5, 0.25) * 1.33); // tweaked from Martys version
+#else
+    return max(max(t.r, t.g), t.b);
+#endif
+}
 
 /**
  * Luma Edge Detection
@@ -801,13 +813,9 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     float3 C = SMAAStereoSamplePoint(colorTex, texcoord).rgb;
 
     float3 Cleft = SMAAStereoSamplePoint(colorTex, offset[0].xy).rgb;
-    float3 t = abs(C - Cleft);
-    delta.x = max(max(t.r, t.g), t.b);
-
+    delta.x = edge_metric(C, Cleft);
     float3 Ctop  = SMAAStereoSamplePoint(colorTex, offset[0].zw).rgb;
-    t = abs(C - Ctop);
-    delta.y = max(max(t.r, t.g), t.b);
-
+    delta.y = edge_metric(C, Ctop);
     // We do the usual threshold:
     float2 edges = step(threshold, delta.xy);
 
@@ -823,24 +831,17 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Calculate right and bottom deltas:
     float3 Cright = SMAAStereoSamplePoint(colorTex, offset[1].xy).rgb;
-    t = abs(C - Cright);
-    delta.z = max(max(t.r, t.g), t.b);
-
+    delta.z = edge_metric(C, Cright);
     float3 Cbottom  = SMAAStereoSamplePoint(colorTex, offset[1].zw).rgb;
-    t = abs(C - Cbottom);
-    delta.w = max(max(t.r, t.g), t.b);
-
+    delta.w = edge_metric(C, Cbottom);
     // Calculate the maximum delta in the direct neighborhood:
     float2 maxDelta = max(delta.xy, delta.zw);
 
     // Calculate left-left and top-top deltas:
     float3 Cleftleft  = SMAAStereoSamplePoint(colorTex, offset[2].xy).rgb;
-    t = abs(Cleft - Cleftleft);
-    delta.z = max(max(t.r, t.g), t.b);
-
+    delta.z = edge_metric(Cleft, Cleftleft);
     float3 Ctoptop = SMAAStereoSamplePoint(colorTex, offset[2].zw).rgb;
-    t = abs(Ctop - Ctoptop);
-    delta.w = max(max(t.r, t.g), t.b);
+    delta.w = edge_metric(Ctop, Ctoptop);
 
     // Calculate the final maximum delta:
     maxDelta = max(maxDelta.xy, delta.zw);
@@ -848,8 +849,6 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 
     // Local contrast adaptation:
     edges.xy *= step(finalDelta, SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR * delta.xy);
-
-    edges.xy = SMAAStereoSamplePoint(colorTex, texcoord).rg;
     return edges;
 }
 #endif
