@@ -241,9 +241,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "v"s,
    "exit"s, // (ab)used by frontend, not handled by us
    "Audit"s,
-#ifdef __STANDALONE__
    "listres"s,
-#endif
    "listsnd"s,
    "c1"s,
    "c2"s,
