@@ -293,7 +293,7 @@
  * That's it!
  */
 
-#define EDGE_DETECTION_MODE 1 // only 1 and 2 supported, Marty-original had: 0=Luminance edge detection 1=Color edge detection (max) 2=Color edge detection (weighted) 3=Depth edge detection
+#define EDGE_DETECTION_MODE 2 // only 1 and 2 supported, Marty-original had: 0=Luminance edge detection 1=Color edge detection (max) 2=Color edge detection (weighted) 3=Depth edge detection
 
 //-----------------------------------------------------------------------------
 // SMAA Presets
@@ -716,7 +716,7 @@ float edge_metric(float3 A, float3 B)
 {
     float3 t = abs(A - B);
 #if (EDGE_DETECTION_MODE == 2)
-    return dot(t, float3(0.229, 0.587, 0.114) * 1.33);
+    return dot(t, float3(0.25, 0.5, 0.25) * 1.33); // tweaked from Martys version
 #else
     return max(max(t.r, t.g), t.b);
 #endif

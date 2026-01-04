@@ -155,6 +155,8 @@ FEATURES:
 
 FIXES:
 
+- fix SMAA looking worse compared to 10.7.X (GL still a bit worse than DX though), and slightly improve its quality in general
+
 - allow for larger inclination value range
 
 - fix 0-scaled rubber crash (like it can happen if invalid UI-inputs like 'Scale' are mapped to 0)
