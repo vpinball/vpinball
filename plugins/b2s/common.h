@@ -82,6 +82,6 @@ extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTexture
 // The following function are duplicates from the main VPX codebase
 string find_case_insensitive_file_path(const string &szPath);
 string TitleAndPathFromFilename(const string &filename);
-vector<unsigned char> base64_decode(string encoded_string);
+string base64_decode(char *value);
 
 }

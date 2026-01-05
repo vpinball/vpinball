@@ -6,7 +6,21 @@
 #include <filesystem>
 #include <charconv>
 
-namespace B2S {
+#include <cstddef> // for size_t, ptrdiff_t
+// Define ssize_t for Windows
+#if defined(_WIN32) && !defined(__SSIZE_T_DEFINED)
+#if defined(_WIN64)
+typedef __int64 ssize_t;
+#else
+typedef int ssize_t;
+#endif
+#define __SSIZE_T_DEFINED
+#endif
+
+#include "base64.h"
+
+namespace B2S
+{
 
 constexpr inline char cLower(char c)
 {
@@ -96,56 +110,31 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-vector<unsigned char> base64_decode(string encoded_string)
+// Wraps up https://github.com/czkz/base64 public domain decoder
+string base64_decode(char* value)
 {
-   static const string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                      "abcdefghijklmnopqrstuvwxyz"
-                                      "0123456789+/"s;
-
-   std::erase(encoded_string, '\r');
-   std::erase(encoded_string, '\n');
-
-   int in_len = static_cast<int>(encoded_string.length());
-   int i = 0, in_ = 0;
-   unsigned char char_array_4[4], char_array_3[3];
-   vector<unsigned char> ret;
-
-   while (in_len-- && (encoded_string[in_] != '=') && (std::isalnum(encoded_string[in_]) || (encoded_string[in_] == '+') || (encoded_string[in_] == '/')))
+   // Modify string in place to remove CR/LF characters
+   // This is not correct and breaks the original file but speeds up the process and saves memory
+   const char* valueSrc = value;
+   char* valueDst = value;
+   for (;; valueSrc++)
    {
-      char_array_4[i++] = encoded_string[in_];
-      in_++;
-      if (i == 4)
+      char c = *valueSrc;
+      if (c == '\0')
       {
-         for (i = 0; i < 4; i++)
-            char_array_4[i] = (unsigned char)base64_chars.find(char_array_4[i]);
-
-         char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-         char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-         char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-         for (i = 0; i < 3; i++)
-            ret.push_back(char_array_3[i]);
-         i = 0;
+         *valueDst = '\0';
+         break;
+      }
+      if (c != '\r' && c != '\n')
+      {
+         *valueDst = c;
+         valueDst++;
       }
    }
-
-   if (i)
-   {
-      for (int j = i; j < 4; j++)
-         char_array_4[j] = 0;
-
-      for (int j = 0; j < 4; j++)
-         char_array_4[j] = (unsigned char)base64_chars.find(char_array_4[j]);
-
-      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-      for (int j = 0; (j < i - 1); j++)
-         ret.push_back(char_array_3[j]);
-   }
-
-   return ret;
+   string encoded_string = value;
+   //std::erase(encoded_string, '\r');
+   //std::erase(encoded_string, '\n');
+   return from_base64(encoded_string);
 }
 
 }
