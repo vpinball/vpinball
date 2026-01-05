@@ -6,7 +6,7 @@ namespace B2SLegacy {
 class Sound final
 {
 public:
-   Sound(const vector<unsigned char>& stream);
+   Sound(const string& stream);
    ~Sound();
 
    uint8_t* GetStream() const { return m_pStream; }
