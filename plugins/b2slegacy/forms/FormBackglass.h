@@ -81,8 +81,8 @@ private:
    void CheckBulbs(int romid, eRomIDType romidtype, bool rominverted, eDualMode dualmode);
    SDL_Rect GetBoundingRectangle(VPXTexture pImage);
    VPXTexture CropImageToTransparency(VPXTexture pImage, VPXTexture pOffImage, SDL_Point& loc, SDL_Rect& size);
-   VPXTexture Base64ToImage(const string& image);
-   Sound* Base64ToWav(const string& data);
+   VPXTexture Base64ToImage(string image);
+   Sound* Base64ToWav(string data);
    uint32_t String2Color(const string& color);
    VPXTexture ResizeTexture(VPXTexture original, int newWidth, int newHeight);
    VPXTexture RotateTexture(VPXTexture source, int angle);
