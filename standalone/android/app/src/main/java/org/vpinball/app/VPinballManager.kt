@@ -45,6 +45,7 @@ object VPinballManager : KoinComponent {
 
     private var lastProgressEvent: VPinballEvent? = null
     private var lastProgress: Int? = null
+    private var isStarted = false
 
     fun initialize(context: Context) {
         this.context = context.applicationContext
@@ -77,6 +78,9 @@ object VPinballManager : KoinComponent {
     }
 
     fun startup() {
+        if (isStarted) return
+        isStarted = true
+
         runCatching { FileUtils.copyAssets(context.assets, "", context.filesDir) }
 
         vpinballJNI.VPinballInit { value, jsonData ->

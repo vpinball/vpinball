@@ -1,17 +1,17 @@
 [versions]
-agp = "8.13.1"
+agp = "8.13.2"
 browser = "1.8.0"
-kotlin = "2.1.0"
+kotlin = "2.3.0"
 coreKtx = "1.15.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.11.00"
+composeBom = "2025.12.00"
 haze = "1.1.1"
-kotlinx-datetime = "0.6.1"
-kotlinx-serialization = "1.7.3"
-koin = "4.0.0"
+kotlinx-datetime = "0.7.1"
+kotlinx-serialization = "1.9.0"
+koin = "4.1.1"
 ktfmt = "0.21.0"
-material3 = "1.4.0-alpha04"
+material3 = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

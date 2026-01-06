@@ -19,11 +19,8 @@ class MainApplication : Application() {
 
         SDL.setupJNI()
         SDL.initialize()
-        SDL.setContext(this)
 
         VPinballManager.initialize(this)
-        VPinballManager.startup()
-        TableManager.initialize(this)
     }
 
     private fun loadNativeLibraries() {
