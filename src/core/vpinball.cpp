@@ -197,7 +197,7 @@ string VPinball::GetDefaultPrefPath()
    // That would look something like: "C:\Users\bob\AppData\Roaming\VPinballX\"
    path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
 #elif defined(__ANDROID__)
-   char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
+   char *szPrefPath = SDL_GetPrefPath(NULL, "");
    path = szPrefPath;
    SDL_free(szPrefPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
