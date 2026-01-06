@@ -88,10 +88,15 @@ Private Const conFlipRetSpeed	 = 0.137 ' Flipper return speed
 Function CheckScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exists, will load it.
 	CheckScript = False
 	On Error Resume Next
-	Dim TablesDirectory:TablesDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"tables\"
-	Dim ScriptsDirectory:ScriptsDirectory = Left(UserDirectory,InStrRev(UserDirectory,"\",InStrRev(UserDirectory,"\")-1))&"scripts\"
 	Dim check:Set check = CreateObject("Scripting.FileSystemObject")
-	If check.FileExists(tablesdirectory & file) Or check.FileExists(scriptsdirectory & file) Or check.FileExists(file) Then CheckScript = True
+	If check.FileExists(file) Then ' file is directly specified with path
+		CheckScript = True
+	ElseIf check.FileExists(ScriptsDirectory & file) Then ' file is in main application Scripts directory (core scripts)
+		CheckScript = True
+	Else
+		Dim TablesDirectory:TablesDirectory = Left(ActiveTable.FileName,InStrRev(ActiveTable.FileName,"\",InStrRev(ActiveTable.FileName,"\")-1))
+		If check.FileExists(TablesDirectory & file) Then CheckScript = True ' file is in current table directory
+	End If
 	On Error Goto 0
 End Function
 

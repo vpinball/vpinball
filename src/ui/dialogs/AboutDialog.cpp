@@ -26,11 +26,7 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          GetDlgItem(IDC_ABOUT_VERSION).SetWindowText(VP_VERSION_STRING_FULL_LITERAL);
 
          {
-            std::ifstream file(g_pvp->GetAppPath() + "Changelog.txt");
-            if (!file.is_open())
-               file = std::ifstream(g_pvp->GetAppPath() + "Doc"  + PATH_SEPARATOR_CHAR + "Changelog.txt");
-            if (!file.is_open())
-               file = std::ifstream(g_pvp->GetAppPath() + "docs" + PATH_SEPARATOR_CHAR + "Changelog.txt");
+            std::ifstream file(g_pvp->GetAppPath(VPinball::AppSubFolder::Docs, "Changelog.txt"));
             string line, text;
             while (std::getline(file, line))
             {

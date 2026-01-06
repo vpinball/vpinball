@@ -87,7 +87,6 @@ SORTDATA SortData;
 
 VPinball::VPinball()
    : m_appPath(EvaluateAppPath())
-   , m_appPathWide(MakeWString(m_appPath))
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
    m_closing = false;
@@ -117,7 +116,7 @@ VPinball::VPinball()
 
    m_hbmInPlayMode = nullptr;
 
-   SetPrefPath(GetDefaultPrefPath()); //Store preference path of vpinball.exe in GetPrefPath()
+   SetPrefPath(GetDefaultPrefPath());
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -162,86 +161,247 @@ VPinball::~VPinball()
 }
 
 // Evaluate path of exe (without the exe's filename)
-string VPinball::EvaluateAppPath()
+std::filesystem::path VPinball::EvaluateAppPath()
 {
    string appPath;
-#ifndef __STANDALONE__
-   string path = GetExecutablePath();
-   const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
-   appPath = pos != string::npos ? path.substr(0,pos + 1) : path;
-#else
 #ifdef __ANDROID__
+   // Android may not open files in the APK ressources through fopen so we copy them outside of the apk in the internal storage
    appPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
-   char *szPath = SDL_GetPrefPath("../..", "Documents");
-   appPath = szPath;
-   SDL_free(szPath);
-#elif defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
-   char *szPath = SDL_GetPrefPath(NULL, "Documents");
-   appPath = szPath;
-   SDL_free(szPath);
+   // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
+   // FIXME still app path is for readonly files, so shouldn't it just be SDL_GetBasePath() ?
+   path = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
 #else
-   const char* szPath = SDL_GetBasePath();
-   appPath = szPath;
+   appPath = SDL_GetBasePath();
 #endif
-#endif
-
-   return appPath;
+   return std::filesystem::path(appPath);
 }
 
-string VPinball::GetDefaultPrefPath()
+std::filesystem::path VPinball::GetDefaultPrefPath() const
 {
    string path;
-#ifdef _WIN32
-   // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
-   // That would look something like: "C:\Users\bob\AppData\Roaming\VPinballX\"
-   path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
-#elif defined(__ANDROID__)
+#if defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, "");
    path = szPrefPath;
    SDL_free(szPrefPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
-   char *szPrefPath = SDL_GetPrefPath("../..", "Documents");
-   path = szPrefPath;
-   SDL_free(szPrefPath);
-#elif defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
-   char *szPrefPath = SDL_GetPrefPath(NULL, "Documents");
-   path = szPrefPath;
-   SDL_free(szPrefPath);
+   // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
+   path = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
 #else
-   path = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR;
+   char *szPrefPath = SDL_GetPrefPath(nullptr, "VPinballX");
+   path = szPrefPath;
+   SDL_free(szPrefPath);
 #endif
-   return path;
+   return std::filesystem::path(path);
 }
 
-void VPinball::SetPrefPath(const string& path) {
-   m_dataPath = path;
-   if (!DirExists(m_dataPath))
+void VPinball::SetPrefPath(const std::filesystem::path &path)
+{
+   m_prefPath = path;
+   if (!DirExists(m_prefPath))
    {
       std::error_code ec;
-      if (std::filesystem::create_directory(m_dataPath, ec))
+      if (std::filesystem::create_directory(m_prefPath, ec))
       {
-         PLOGI << "Pref path created: " << m_dataPath;
+         PLOGI << "Pref path created: " << m_prefPath;
       }
       else
       {
-         PLOGE << "Unable to create pref path: " << m_dataPath;
+         PLOGE << "Unable to create pref path: " << m_prefPath;
       }
    }
-   bool gPVPVWasNull = g_pvp == nullptr;
-   if (gPVPVWasNull)
-      g_pvp = this;
-   Settings::SetRecentDir_ImportDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_LoadDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_FontDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_PhysicsDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_ImageDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_MaterialDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_SoundDir_Default(PATH_TABLES);
-   Settings::SetRecentDir_POVDir_Default(PATH_TABLES);
-   if (gPVPVWasNull)
-      g_pvp = nullptr;
+   UpdateFileLayoutMode();
 }
+
+void VPinball::UpdateFileLayoutMode()
+{
+   std::filesystem::path defaultPath = m_prefPath / "VPinballX.ini";
+   std::filesystem::path appPath = m_appPath / "VPinballX.ini";
+   if (FileExists(defaultPath))
+      m_fileLayoutMode = FileLayoutMode::AppPrefData;
+   else if (FileExists(appPath))
+      m_fileLayoutMode = FileLayoutMode::AppOnly;
+   else
+      m_fileLayoutMode = FileLayoutMode::AppPrefData;
+   PLOGI << "File layout mode set to " << (m_fileLayoutMode == FileLayoutMode::AppOnly ? "AppOnly" : "AppPrefData");
+}
+
+std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file) const
+{
+   std::filesystem::path path;
+   switch (sub)
+   {
+   // Readonly deployment files, always located along executable file
+   case AppSubFolder::Root: path = m_appPath; break;
+   case AppSubFolder::Assets: path = m_appPath / "assets"; break;
+   case AppSubFolder::Plugins: path = m_appPath / "plugins"; break;
+   case AppSubFolder::GLShaders:
+      path = m_appPath / ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV));
+      break;
+   case AppSubFolder::Docs:
+      // A bit hacky as doc files have moved over time, so we check the various locations they may be in
+      if (file.empty())
+         path = m_appPath / "docs"; 
+      else if (FileExists(m_appPath / file))
+         path = m_appPath;
+      else if (FileExists(m_appPath / "Doc" / file))
+         path = m_appPath / "Doc";
+      else if (FileExists(m_appPath / "docs" / file))
+         path = m_appPath / "docs";
+      break;
+
+   // Scripts are specials as the file is searched through a few different paths
+   // Maybe we should change this to be a table relative path instead (searching through the usual path but also inside table folder)
+   case AppSubFolder::Scripts:
+      if (file.empty())
+         // No file: just return the default read only core scripts folder
+         return m_appPath / "scripts";
+      else
+         // Search for the script file, without a table specified
+         return SearchScript(nullptr, file);
+      break;
+
+   // Application settings (read/write, not usually exposed to user)
+   case AppSubFolder::Preferences:
+      path = m_prefPath;
+      break;
+
+   // Read/write user documents
+   case AppSubFolder::Tables:
+      // This used to be a subfolder of the main application installation folder, but as this is not ok for most system, we simply go 
+      // to the system's defined user documents folder on first run. Later on, UI will use the last location visited.
+      path = std::filesystem::path(SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS));
+      break;
+
+   default: assert(false); break;
+   }
+
+   return file.empty() ? path : (path / file);
+}
+
+std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, const string &childDir) const
+{
+   std::filesystem::path path;
+   auto withSubFolder = [&sub, &childDir](const std::filesystem::path& basePath)
+   {
+      std::filesystem::path folder;
+      switch (sub)
+      {
+      case TableSubFolder::Music: folder = basePath / "music"; break;
+      case TableSubFolder::Cache: folder = basePath / "cache"; break;
+      case TableSubFolder::User: folder = basePath / "user"; break;
+      default: folder = basePath; break;
+      }
+      return childDir.empty() ? folder : (folder / childDir);
+   };
+
+   switch (m_fileLayoutMode)
+   {
+   // App/Pref/Data mode: table files are stored along table (to avoid mixing everything together and store files in a place with write access)
+   case FileLayoutMode::AppPrefData:
+      if (table != nullptr && !table->m_filename.empty() && FileExists(table->m_filename))
+      {
+         path = withSubFolder(PathFromFilename(table->m_filename));
+         if (sub == TableSubFolder::Cache)
+            path = path / table->m_title; // table's title is its file name without extension
+         if (!DirExists(path))
+         {
+            std::filesystem::create_directory(path);
+            string type;
+            switch (sub)
+            {
+            case TableSubFolder::Music: type = "Music"s; break;
+            case TableSubFolder::Cache: type = "Cache"s; break;
+            case TableSubFolder::User: type = "User"s; break;
+            }
+            PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
+         }
+      }
+      break;
+
+   // App mode: store everything inside the application path, needing write access to the application folder, defaulting to table then preference if folder has been removed after install
+   case FileLayoutMode::AppOnly:
+      switch (sub)
+      {
+      case TableSubFolder::Cache:
+         // Cache is stored inside preference directory with a sub folder per table title
+         path = GetAppPath(AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
+         break;
+
+      case TableSubFolder::User:
+         // Shared user folder along the application path. This requires write access to the application path
+         path = GetAppPath(AppSubFolder::Root) / "user"s;
+         if (!DirExists(path))
+         {
+            std::filesystem::create_directory(path);
+            PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
+         }
+         break;
+
+      default:
+         path = withSubFolder(m_appPath);
+         if (!DirExists(path))
+         {
+            if (table == nullptr || table->m_filename.empty() || !FileExists(table->m_filename))
+            {
+               // No table: defaults to preference folder (even if it does not exist)
+               path = withSubFolder(m_prefPath);
+            }
+            else
+            {
+               path = withSubFolder(PathFromFilename(table->m_filename));
+               if (!DirExists(path))
+               {
+                  path = withSubFolder(m_prefPath);
+                  if (!DirExists(path))
+                  {
+                     // Not found: defaults to folder along table
+                     path = withSubFolder(PathFromFilename(table->m_filename));
+                  }
+               }
+            }
+         }
+         break;
+      }
+      break;
+   }
+   return path;
+}
+
+std::filesystem::path VPinball::SearchScript(const PinTable* table, const string& script) const
+{
+   // Search along the table path first
+   if (table)
+   {
+      const auto tablePath = std::filesystem::path(PathFromFilename(table->m_filename));
+      if (string path = find_case_insensitive_file_path((tablePath / script).string()); !path.empty())
+         return path;
+      if (string path = find_case_insensitive_file_path((tablePath / "user"s / script).string()); !path.empty())
+         return path;
+      if (string path = find_case_insensitive_file_path((tablePath / "scripts"s / script).string()); !path.empty())
+         return path;
+   }
+
+   // Search in the application paths
+   if (string path = find_case_insensitive_file_path((m_appPath / script).string()); !path.empty())
+      return path;
+   if (string path = find_case_insensitive_file_path((m_appPath / "user"s / script).string()); !path.empty())
+      return path;
+   if (string path = find_case_insensitive_file_path((m_appPath / "scripts"s / script).string()); !path.empty())
+      return path;
+
+   // Search in the preference paths
+   if (string path = find_case_insensitive_file_path((m_prefPath / script).string()); !path.empty())
+      return path;
+   if (string path = find_case_insensitive_file_path((m_prefPath / "user"s / script).string()); !path.empty())
+      return path;
+   if (string path = find_case_insensitive_file_path((m_prefPath / "scripts"s / script).string()); !path.empty())
+      return path;
+
+   return std::filesystem::path();
+}
+
+
 
 //Post Work to the worker Thread
 //Creates Worker-Thread if not present
@@ -1122,10 +1282,8 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          ppt->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      if (const string filenameAuto = tablePath + ppt->m_title + ".vbs"; FileExists(filenameAuto)) // We check if there is a matching table vbs first
-         ppt->m_pcv->LoadFromFile(filenameAuto);
-      else if (const string filenameAuto2 = GetAppPath() + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_title + ".vbs"; FileExists(filenameAuto2))  // Otherwise we seek in the Scripts folder
-         ppt->m_pcv->LoadFromFile(filenameAuto2);
+      if (std::filesystem::path filenameAuto = SearchScript(ppt, ppt->m_title + ".vbs"); !filenameAuto.empty())
+         ppt->m_pcv->LoadFromFile(filenameAuto.string());
 
       // auto-import VPP settings, if it exists...
       if (const string filenameAuto = tablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
@@ -2531,15 +2689,6 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
 
 //
 
-static inline string GetTextFileFromDirectory(const string& filename, const string& dirname)
-{
-   string szPath;
-   if (!dirname.empty())
-      szPath = g_pvp->GetAppPath() + dirname;
-   // else: use current directory
-   return szPath + filename;
-}
-
 static constexpr uint8_t lookupRev[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
@@ -2621,29 +2770,26 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
    vbsFiles.push_back("core.vbs"s);
 
    for(const auto& i3 : vbsFiles)
-      for(size_t i2 = 0; i2 < std::size(defaultFileNameSearch); ++i2)
-         if(fopen_s(&f, GetTextFileFromDirectory(defaultFileNameSearch[i2] + i3, defaultPathSearch[i2]).c_str(), "rb") == 0 && f)
+      if (fopen_s(&f, g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts, i3).string().c_str(), "rb") == 0 && f)
+      {
+         uint8_t tmp[4096];
+         size_t r;
+         while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
          {
-            uint8_t tmp[4096];
-            size_t r;
-            while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+            for (unsigned int i = 0; i < r; ++i)
             {
-               for (unsigned int i = 0; i < r; ++i)
-               {
-                  dmd_data[dmd_data_c++] ^= reverse(tmp[i]);
-                  if (dmd_data_c == dmd_size)
-                     dmd_data_c = 0;
-               }
-
-               uint32_t md5[4];
-               generateMD5(tmp, r, (uint8_t *)md5);
-               for (unsigned int i = 0; i < 4; ++i)
-                  scriptsChecksum ^= md5[i];
+               dmd_data[dmd_data_c++] ^= reverse(tmp[i]);
+               if (dmd_data_c == dmd_size)
+                  dmd_data_c = 0;
             }
-            fclose(f);
 
-            break;
+            uint32_t md5[4];
+            generateMD5(tmp, r, (uint8_t *)md5);
+            for (unsigned int i = 0; i < 4; ++i)
+               scriptsChecksum ^= md5[i];
          }
+         fclose(f);
+      }
 
    //
 

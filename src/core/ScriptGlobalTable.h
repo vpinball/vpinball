@@ -148,8 +148,6 @@ public:
    END_COM_MAP()
 
 private:
-   bool GetTextFileFromDirectory(const string& filename, const string& dirname, BSTR *pContents);
-
    PinTable *m_pt = nullptr;
    VPinball *m_vpinball = nullptr;
 };

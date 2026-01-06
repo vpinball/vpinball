@@ -588,7 +588,7 @@ public:
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
    };
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
-   string m_shaderPath;
+   std::filesystem::path m_shaderPath;
 
    bool UseGeometryShader() const;
    bool parseFile(const string& fileNameRoot, const string& filename, int level, ankerl::unordered_dense::map<string, string>& values, const string& parentMode);

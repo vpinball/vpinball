@@ -586,7 +586,7 @@ BEGIN
     LTEXT           "Grid size",IDC_STATIC,206,162,29,8
     EDITTEXT        IDC_GRID_SIZE,237,160,27,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Default colors",IDC_DEFAULT_COLORS_BUTTON,299,159,50,14
-    CONTROL         "Store settings file (VPinballX.ini + BAMViewSettings.xml) in same folder as executable",IDC_STORE_INI_LOCATION,
+    CONTROL         "Store settings && user files in executable folder instead of system preference and table folder (Deprecated)",IDC_STORE_INI_LOCATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,184,343,10
     PUSHBUTTON      "Reset to Defaults",IDC_SET_DEFAULTS_BUTTON,5,203,81,14
     PUSHBUTTON      "Reset Window Positions",IDC_RESET_WINDOW_POS,91,203,81,14

@@ -34,7 +34,6 @@ private:
    
 #ifdef __STANDALONE__
    bool m_displayId = false;
-   string m_prefPath;
 #endif
    string m_tableFileName;
    string m_tableIniFileName;

@@ -181,7 +181,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
 
       g_pvp = new ::VPinball();
       g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
-      g_pvp->m_settings.SetIniPath(g_pvp->GetPrefPath() + "VPinballX.ini");
+      g_pvp->m_settings.SetIniPath(g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini").string());
       g_pvp->m_settings.Load(true);
       g_pvp->m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
       g_pvp->m_settings.Save();
@@ -191,18 +191,8 @@ void VPinballLib::Init(VPinballEventCallback callback)
 
       PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
       PLOGI << "Number of logical CPU core: " << g_pvp->GetLogicalNumberOfProcessors();
-      PLOGI << "Application path: " << g_pvp->GetAppPath();
-      PLOGI << "Data path: " << g_pvp->GetPrefPath();
-
-      if (!DirExists(PATH_USER)) {
-         std::error_code ec;
-         if (std::filesystem::create_directory(PATH_USER, ec)) {
-            PLOGI.printf("User path created: %s", PATH_USER.c_str());
-         }
-         else {
-            PLOGE.printf("Unable to create user path: %s", PATH_USER.c_str());
-         }
-      }
+      PLOGI << "Application path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
+      PLOGI << "Preference path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
 
       EditableRegistry::RegisterEditable<Ball>();
       EditableRegistry::RegisterEditable<Bumper>();
@@ -470,11 +460,11 @@ void VPinballLib::SaveValueBool(const string& sectionName, const string& key, bo
 
 VPINBALL_STATUS VPinballLib::ResetIni()
 {
-   string iniFilePath = g_pvp->GetPrefPath() + "VPinballX.ini";
+   std::filesystem::path iniFilePath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini");
    if (!std::filesystem::remove(iniFilePath))
     return VPINBALL_STATUS_FAILURE;
 
-   g_pvp->m_settings.SetIniPath(iniFilePath);
+   g_pvp->m_settings.SetIniPath(iniFilePath.string());
    g_pvp->m_settings.Load(true);
    g_pvp->m_settings.Save();
    return VPINBALL_STATUS_SUCCESS;
@@ -500,8 +490,8 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    if (!pActiveTable)
       return VPINBALL_STATUS_FAILURE;
 
-   string tempPath = g_pvp->GetPrefPath() + "temp_script.vbs";
-   pActiveTable->m_pcv->SaveToFile(tempPath);
+   std::filesystem::path tempPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "temp_script.vbs");
+   pActiveTable->m_pcv->SaveToFile(tempPath.string());
 
    std::filesystem::path tablePath(pActiveTable->m_filename);
    string vbsFilename = tablePath.stem().string() + ".vbs";

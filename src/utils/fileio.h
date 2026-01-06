@@ -5,6 +5,8 @@
 
 bool DirExists(const string& dirPath);
 bool FileExists(const string& filePath);
+bool DirExists(const std::filesystem::path& dirPath);
+bool FileExists(const std::filesystem::path& filePath);
 string TitleFromFilename(const string& filename);
 string ExtensionFromFilename(const string& filename);
 string PathFromFilename(const string& filename);

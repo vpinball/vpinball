@@ -198,16 +198,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
+   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BallEnv.exr").string()));
    m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false);
    ballTex = nullptr;
 
-   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
+   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "AODither.webp").string()));
    m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true);
    aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
-   std::shared_ptr<const BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
+   std::shared_ptr<const BaseTexture> envTex
+      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "EnvMap.webp").string()));
    m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling
@@ -1188,10 +1189,10 @@ void Renderer::UpdateStereoShaderState()
    }
 }
 
-static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const string& path)
+static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const std::filesystem::path& path)
 {
    if (tex == nullptr)
-      tex.reset(Texture::CreateFromFile(path, false));
+      tex.reset(Texture::CreateFromFile(path.string(), false));
    return tex.get();
 }
 
@@ -1246,24 +1247,24 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    switch (type)
    {
    case CTLPI_SEG_LAYOUT_7: segSDF = GetSegSDF(m_segDisplaySDF[family][0], 
-        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-gts.png"
-      : (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-bally.png"
-      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-atari.png"
-                                            : g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-williams.png"); break;
+        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-gts.png")
+      : (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-bally.png")
+      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-atari.png")
+                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-williams.png")); break;
    case CTLPI_SEG_LAYOUT_7C: segSDF = GetSegSDF(m_segDisplaySDF[family][1],
-        (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-bally.png"
-      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-atari.png"
-                                            : g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
+        (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-bally.png")
+      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-atari.png")
+                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-williams.png")); break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
-   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
-   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
-   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "9seg-gts.png")); break;
+   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "9seg-c-gts.png")); break;
+   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-d-williams.png")); break;
    case CTLPI_SEG_LAYOUT_14DC: segSDF = GetSegSDF(m_segDisplaySDF[family][7],
-        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-gts.png"
-                                            : g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
+        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-dc-gts.png")
+                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-dc-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "16seg.png")); break;
    }
    if (segSDF == nullptr)
       return;

@@ -861,7 +861,7 @@ TTF_Font* Textbox::LoadFont()
       path = tablePath + fontName + styles[0] + ".ttf";
       PLOGW << "Unable to locate font: path=" << path;
 
-      path = g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
       pFont = TTF_OpenFont(path.c_str(), m_fontSize);
       if (pFont) {
          PLOGW << "Default font loaded: path=" << path;

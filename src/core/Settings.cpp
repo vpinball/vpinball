@@ -134,6 +134,7 @@ void Settings::UpdateDefaults()
    auto& reg = GetRegistry();
 
    // Windows default depends on the display device specs
+   SDL_InitSubSystem(SDL_INIT_VIDEO);
    for (int i = 0; i < 4; i++)
    {
       VPX::RenderOutput::OutputMode mode = i == VPXWindowId::VPXWINDOW_Playfield ? VPX::RenderOutput::OutputMode::OM_WINDOW : (VPX::RenderOutput::OutputMode)GetWindow_Mode(i);
@@ -164,6 +165,7 @@ void Settings::UpdateDefaults()
       }
       }
    }
+   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 void Settings::Reset() { m_store.Reset(); }

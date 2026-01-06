@@ -203,7 +203,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    m_glassTopHeight = m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       m_rgcolorcustom[i] = RGB(0, 0, 0);
-   LoadGameFromFilename(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + path);
+   LoadGameFromFilename(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, path).string());
    m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
    m_settings.SetIniPath(string());
@@ -1147,7 +1147,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         Settings::SetRecentDir_LoadDir_Default(m_vpinball->GetAppPath() + "tables" + PATH_SEPARATOR_CHAR);
+         Settings::SetRecentDir_LoadDir_Default(m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string());
          szInitialDir = m_settings.GetRecentDir_LoadDir();
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();

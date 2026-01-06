@@ -118,34 +118,19 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
    {
       EndMusic();
 
-      const string tablePath = PathFromFilename(g_pplayer->m_ptable->m_filename);
       const string musicNameStr = MakeString(str);
-      if (!musicNameStr.empty())
+      if (musicNameStr.empty())
+         return S_OK;
+
+      string path = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music).string();
+      path = find_case_insensitive_file_path(path + musicNameStr);
+      if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
       {
-         bool success = false;
-         for (int i = 0; !success && i < 5; ++i)
-         {
-            string path;
-            switch (i)
-            {
-            case 0: break;
-            case 1: path = g_pvp->GetAppPath() + "music" + PATH_SEPARATOR_CHAR; break;
-            case 2: path = tablePath; break;
-            case 3: path = tablePath + "music" + PATH_SEPARATOR_CHAR; break;
-            case 4: path = PATH_MUSIC; break;
-            }
-            path = find_case_insensitive_file_path(path + musicNameStr);
-            if (!path.empty())
-               success = g_pplayer->m_audioPlayer->PlayMusic(path);
-         }
-         if (success)
-         {
-            g_pplayer->m_audioPlayer->SetMusicVolume(m_pt->m_TableMusicVolume * volume);
-         }
-         else
-         {
-            PLOGE << "Failed to stream music: " << musicNameStr;
-         }
+         g_pplayer->m_audioPlayer->SetMusicVolume(m_pt->m_TableMusicVolume * volume);
+      }
+      else
+      {
+         PLOGE << "Failed to stream music: " << musicNameStr;
       }
    }
    return S_OK;
@@ -327,32 +312,6 @@ STDMETHODIMP ScriptGlobalTable::get_VPXActionKey(LONG index, LONG *pVal)
    return S_OK;
 }
 
-bool ScriptGlobalTable::GetTextFileFromDirectory(const string &filename, const string &dirname, BSTR *pContents)
-{
-   string szPath;
-   if (!dirname.empty())
-      szPath = m_vpinball->GetAppPath() + dirname;
-   // else: use current directory
-   szPath += filename;
-   #ifdef __STANDALONE__
-   szPath = find_case_insensitive_file_path(szPath);
-   #endif
-   if (!szPath.empty()) {
-      std::ifstream scriptFile;
-      scriptFile.open(szPath, std::ifstream::in);
-      if (scriptFile.is_open()) {
-         std::stringstream buffer;
-         buffer << scriptFile.rdbuf();
-         string content = buffer.str();
-         if (filename.ends_with(".vbs"))
-            content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
-         *pContents = MakeWideBSTR(content);
-         return true;
-      }
-   }
-   return false;
-}
-
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
 {
    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
@@ -389,49 +348,43 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
    const string szFileName = MakeString(FileName);
-
-   for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
-      if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
+   std::filesystem::path file = g_pvp->SearchScript(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), szFileName);
+   if (!file.empty())
+   {
+      std::ifstream scriptFile;
+      scriptFile.open(file, std::ifstream::in);
+      if (scriptFile.is_open())
+      {
+         std::stringstream buffer;
+         buffer << scriptFile.rdbuf();
+         string content = buffer.str();
+         if (szFileName.ends_with(".vbs"))
+            content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
+         *pContents = MakeWideBSTR(content);
          return S_OK;
-
+      }
+   }
    PLOGE << "Unable to load file: " << szFileName;
-
    return E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->GetAppPath() + "user" + PATH_SEPARATOR_CHAR;
-   if (!DirExists(szPath))
-   {
-      const string tablePath = PathFromFilename(g_pplayer ? g_pplayer->m_ptable->m_filename : g_pvp->GetActiveTable() ? g_pvp->GetActiveTable()->m_filename : ""s);
-      szPath = tablePath + "user" + PATH_SEPARATOR_CHAR;
-      if (!DirExists(szPath))
-      {
-         szPath = PATH_USER;
-         if (!DirExists(szPath))
-            return E_FAIL;
-      }
-   }
-   *pVal = MakeWideBSTR(szPath);
-
+   auto table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
+   if (table == nullptr)
+      return E_FAIL;
+   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::User).string();
+   if (!DirExists(path))
+      return E_FAIL;
+   *pVal = MakeWideBSTR(path);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->GetAppPath() + "tables" + PATH_SEPARATOR_CHAR;
+   string szPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string();
    if (!DirExists(szPath))
-   {
-      const string tablePath = PathFromFilename(g_pplayer ? g_pplayer->m_ptable->m_filename : g_pvp->GetActiveTable() ? g_pvp->GetActiveTable()->m_filename : ""s);
-      szPath = tablePath + "tables" + PATH_SEPARATOR_CHAR;
-      if (!DirExists(szPath))
-      {
-         szPath = PATH_TABLES;
-         if (!DirExists(szPath))
-            return E_FAIL;
-      }
-   }
+      return E_FAIL;
    *pVal = MakeWideBSTR(szPath);
 
    return S_OK;
@@ -442,41 +395,23 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    // Optional sub directory parameter must be either missing or a string
    if (V_VT(&pSubDir) != VT_ERROR && V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
       return E_FAIL;
-
-   const string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
-   string szPath = m_vpinball->GetAppPath() + "music" + PATH_SEPARATOR_CHAR + endPath;
-   if (!DirExists(szPath))
-   {
-      const string tablePath = PathFromFilename(g_pplayer ? g_pplayer->m_ptable->m_filename : g_pvp->GetActiveTable() ? g_pvp->GetActiveTable()->m_filename : ""s);
-      szPath = tablePath + "music" + PATH_SEPARATOR_CHAR + endPath;
-      if (!DirExists(szPath))
-      {
-         szPath = PATH_MUSIC + endPath;
-         if (!DirExists(szPath))
-            return E_FAIL;
-      }
-   }
-   *pVal = MakeWideBSTR(szPath);
-
+   const string childDir = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
+   PinTable* table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
+   if (table == nullptr)
+      return E_FAIL;
+   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::Music, childDir).string();
+   if (!DirExists(path))
+      return E_FAIL;
+   *pVal = MakeWideBSTR(path);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->GetAppPath() + "scripts" + PATH_SEPARATOR_CHAR;
-   if (!DirExists(szPath))
-   {
-      const string tablePath = PathFromFilename(g_pplayer ? g_pplayer->m_ptable->m_filename : g_pvp->GetActiveTable() ? g_pvp->GetActiveTable()->m_filename : ""s);
-      szPath = tablePath + "scripts" + PATH_SEPARATOR_CHAR;
-      if (!DirExists(szPath))
-      {
-         szPath = PATH_SCRIPTS;
-         if (!DirExists(szPath))
-            return E_FAIL;
-      }
-   }
-   *pVal = MakeWideBSTR(szPath);
-
+   const string path = g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts).string();
+   if (!DirExists(path))
+      return E_FAIL;
+   *pVal = MakeWideBSTR(path);
    return S_OK;
 }
 
@@ -579,7 +514,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = m_vpinball->GetAppPathWide() + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
+   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -587,7 +522,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       // Registry file does not exist - create it
       if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         const wstring wzMkPath = m_vpinball->GetAppPathWide() + L"user";
+         const wstring wzMkPath = MakeWString(m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User).string());
          if (_wmkdir(wzMkPath.c_str()) != 0)
             return hr;
 
@@ -640,7 +575,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->GetPrefPath();
+      szIniPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Preferences);
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
@@ -671,7 +606,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = m_vpinball->GetAppPathWide() + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
+   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -728,7 +663,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->GetPrefPath();
+      szIniPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Preferences);
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
