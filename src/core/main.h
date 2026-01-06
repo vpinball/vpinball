@@ -45,10 +45,6 @@ extern "C" {
 #define PATH_SEPARATOR_CHAR '/'
 #define PATH_SEPARATOR_WCHAR L'/'
 #endif
-#define PATH_TABLES  (g_pvp->GetPrefPath() + "tables"  + PATH_SEPARATOR_CHAR)
-#define PATH_SCRIPTS (g_pvp->GetPrefPath() + "scripts" + PATH_SEPARATOR_CHAR)
-#define PATH_MUSIC   (g_pvp->GetPrefPath() + "music"   + PATH_SEPARATOR_CHAR)
-#define PATH_USER    (g_pvp->GetPrefPath() + "user"    + PATH_SEPARATOR_CHAR)
 
 #include <oleauto.h>
 
@@ -80,12 +76,6 @@ using namespace std::string_literals;
 using std::string;
 using std::wstring;
 using std::vector;
-
-// try to load the file from the current directory
-// if that fails, try the User, Scripts and Tables sub-directories under where VP was loaded from
-// if that also fails, try the standard installation path
-static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
-static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
 
 // RESULT codes
 #define S_FAIL MAKE_SCODE(SEVERITY_ERROR, FACILITY_CONTROL, 1004)

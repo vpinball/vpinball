@@ -67,6 +67,13 @@ FEATURES:
   The new input setup is stored along the old one to allow to use older versions of VPX together with newers.
   This change requires users to redefine their input settings in the new UI.
 
+- folder layout now conforms to platform requirements, with the application in its read only application folder (for example C:\Program Files under Windows),
+  its preferences (VPinballX.ini, ...) in the system preference folder (C:\Users\...\AppData\Roaming\VPinballX) and the data (tables, music, user folder, ...)
+  inside the user data folder hierarchy (C:\Users\...\Documents). This is supports creating one folder per table, to group the table file with all its support
+  folders & files (cache, music, flexdmd, ...), avoiding to mix files between tables.
+  The legacy behavior (everything in the application folder, mixing music, user, cache, scripts, ... files between all tables) is still available by checking
+  the corresponding option in the 'INI/Editor/UI Options' dialog. It requires the application to be installed in a folder with read/write access.
+
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The score view uses a layout defined in a 'scv' file placed along the table file
   matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
   define the layout.

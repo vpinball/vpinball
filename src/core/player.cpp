@@ -428,9 +428,9 @@ Player::Player(PinTable *const table, const int playMode)
       {
          try
          {
-            string dir = g_pvp->GetPrefPath() + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
-            std::filesystem::create_directories(std::filesystem::path(dir));
-            string path = dir + "used_textures.xml";
+            std::filesystem::path dir = g_pvp->GetTablePath(m_ptable, VPinball::TableSubFolder::Cache);
+            std::filesystem::create_directories(dir);
+            std::filesystem::path path = dir / "used_textures.xml";
             if (FileExists(path))
             {
                PLOGI << "Texture cache found at " << path;
@@ -742,13 +742,13 @@ Player::~Player()
    {
       try
       {
-         string dir = g_pvp->GetPrefPath() + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
-         std::filesystem::create_directories(std::filesystem::path(dir));
+         std::filesystem::path dir = g_pvp->GetTablePath(m_ptable, VPinball::TableSubFolder::Cache);
+         std::filesystem::create_directories(dir);
 
          tinyxml2::XMLDocument xmlDoc;
          tinyxml2::XMLElement *root;
          ankerl::unordered_dense::map<string, tinyxml2::XMLElement *> textureAge;
-         const string path = dir + "used_textures.xml";
+         const std::filesystem::path path = dir / "used_textures.xml";
          if (FileExists(path))
          {
             std::ifstream myFile(path);

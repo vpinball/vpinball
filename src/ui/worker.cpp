@@ -76,7 +76,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    FastIStorage * const pstgroot = pasp->pstg;
 
-   const wstring wzT = g_pvp->GetAppPathWide() + L"AutoSave" + std::to_wstring(pasp->tableindex) + L".vpx";
+   const wstring wzT = MakeWString(g_pvp->GetAppPath(VPinball::AppSubFolder::AutoSave, pasp->tableindex + ".vpx").string());
 
    STGOPTIONS stg;
    stg.usVersion = 1;

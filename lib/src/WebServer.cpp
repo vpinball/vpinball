@@ -80,7 +80,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          string uri(hm->uri.buf, hm->uri.len);
          if (!uri.empty() && uri.front() == '/') uri.erase(0, 1);
 
-         std::filesystem::path webBase = std::filesystem::path(g_pvp->GetAppPath()) / "assets" / "web";
+         std::filesystem::path webBase = std::filesystem::path(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets)) / "web";
          std::filesystem::path asset = uri.empty() ? webBase / "vpx.html" : webBase / uri;
 
          if (!uri.empty() && std::filesystem::exists(asset))
@@ -281,7 +281,7 @@ void WebServer::Assets(struct mg_connection *c, struct mg_http_message* hm)
          return;
       }
 
-      std::filesystem::path fullPath = std::filesystem::path(g_pvp->GetAppPath()) / "assets" / assetPath;
+      std::filesystem::path fullPath = std::filesystem::path(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets)) / assetPath;
 
       if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
          struct mg_http_serve_opts opts = {};
@@ -689,7 +689,7 @@ bool WebServer::ValidatePathParameter(struct mg_connection *c, struct mg_http_me
 
 std::filesystem::path WebServer::BuildPrefPath(const char* relativePath)
 {
-   return std::filesystem::path(g_pvp->GetPrefPath()) / relativePath;
+   return g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) / relativePath;
 }
 
 bool WebServer::Unzip(const char* pSource)

@@ -92,7 +92,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool logScript = g_pvp->m_settings.GetEditor_LogScriptOutput();
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool storeIniLocation = (g_pvp->GetPrefPath() == g_pvp->GetAppPath());
+    const bool storeIniLocation = (g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) == g_pvp->GetAppPath(VPinball::AppSubFolder::Root));
     SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, storeIniLocation ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int units = g_pvp->m_settings.GetEditor_Units();
@@ -318,19 +318,14 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SetEditor_LogScriptOutput(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
-    const bool storeIniLocation_checked = (g_pvp->GetPrefPath() == g_pvp->GetAppPath());
-    if (checked != storeIniLocation_checked)
-    {
-       // if checkbox changed, copy ini from one default location to the other
-       const string old = g_pvp->GetPrefPath();
-       if (storeIniLocation_checked)
-          g_pvp->SetPrefPath(g_pvp->GetDefaultPrefPath());
-       else
-          g_pvp->SetPrefPath(g_pvp->GetAppPath());
-       std::filesystem::rename(old + "VPinballX.ini", g_pvp->GetPrefPath() + "VPinballX.ini");
-       std::filesystem::rename(old + "BAMViewSettings.xml", g_pvp->GetPrefPath() + "BAMViewSettings.xml");
-       g_pvp->m_settings.SetIniPath(g_pvp->GetPrefPath() + "VPinballX.ini");
-    }
+    std::filesystem::path defaultPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini");
+    std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root, "VPinballX.ini");
+    // if needed, copy ini from one default location to the other, as this is the location of the ini file that defines the app behavior
+    if (checked && FileExists(defaultPath)) // moving to app folder
+       std::filesystem::rename(defaultPath, appPath);
+    else if (!checked && FileExists(appPath)) // moving to preferences folder
+       std::filesystem::rename(appPath, defaultPath);
+    g_pvp->m_settings.SetIniPath((checked ? appPath : defaultPath).string());
 
     // Go through and reset the autosave time on all the tables
     if (autosave)

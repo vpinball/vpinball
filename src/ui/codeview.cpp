@@ -3150,24 +3150,10 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 #endif
 }
 
-static string GetTextFileFromDirectory(const string& filename, const string& dirname)
-{
-   if (!dirname.empty())
-      return g_pvp->GetAppPath() + dirname + filename;
-   // else: use current directory
-   return filename;
-}
-
 void CodeViewer::ParseVPCore()
 {
 	std::ifstream fCore;
-	for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
-	{
-		fCore.open(GetTextFileFromDirectory(defaultFileNameSearch[i] + "core.vbs", defaultPathSearch[i]));
-		if (fCore.is_open())
-			break;
-	}
-
+   fCore.open(g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts, "core.vbs"));
 	if (!fCore.is_open())
 	{
 		MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);

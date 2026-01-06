@@ -1712,7 +1712,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
    ankerl::unordered_dense::map<string, string>::iterator currentElemIt = values.find(parentMode);
    string currentElement = (currentElemIt != values.end()) ? currentElemIt->second : string();
    std::ifstream glfxFile;
-   glfxFile.open(m_shaderPath + filename, std::ifstream::in);
+   glfxFile.open(m_shaderPath / filename, std::ifstream::in);
    if (glfxFile.is_open())
    {
       string line;
@@ -1932,14 +1932,13 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success))
    {
       std::ofstream shaderCode;
-      const string szPath = m_shaderPath + "log" + PATH_SEPARATOR_CHAR + shaderCodeName;
-      shaderCode.open(szPath + ".vert");
+      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".vert"));
       shaderCode << vertex;
       shaderCode.close();
-      shaderCode.open(szPath + ".geom");
+      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".geom"));
       shaderCode << geometry;
       shaderCode.close();
-      shaderCode.open(szPath + ".frag");
+      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".frag"));
       shaderCode << fragment;
       shaderCode.close();
    }
@@ -2115,8 +2114,7 @@ void Shader::Load()
 void Shader::Load(const std::string& name)
 {
    m_shaderCodeName = name;
-   m_shaderPath = g_pvp->GetAppPath()
-      + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
+   m_shaderPath = g_pvp->GetAppPath(VPinball::AppSubFolder::GLShaders);
    PLOGI << "Parsing file " << name;
    ankerl::unordered_dense::map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);

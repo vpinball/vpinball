@@ -11,37 +11,22 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 
 bool DirExists(const string& dirPath)
 {
-#ifdef _MSC_VER
-   const DWORD fileAtt = GetFileAttributesA(dirPath.c_str());
-
-   return (fileAtt != INVALID_FILE_ATTRIBUTES && (fileAtt & FILE_ATTRIBUTE_DIRECTORY));
-#else
-   struct stat info;
-   if (stat(dirPath.c_str(), &info) != 0)
-      return false;
-   return (info.st_mode & S_IFDIR);
-#endif
+   return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
 }
 
 bool FileExists(const string& filePath)
 {
-#ifdef _MSC_VER
-   //This will get the file attributes bitlist of the file
-   const DWORD fileAtt = GetFileAttributesA(filePath.c_str());
+   return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath);
+}
 
-   //If an error occurred it will equal to INVALID_FILE_ATTRIBUTES
-   if (fileAtt == INVALID_FILE_ATTRIBUTES)
-      return false;
+bool DirExists(const std::filesystem::path& dirPath)
+{
+   return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
+}
 
-   //If the path refers to a directory it should also not exist.
-   return ((fileAtt & FILE_ATTRIBUTE_DIRECTORY) == 0);
-#else
-   struct stat info;
-
-   if (stat(filePath.c_str(), &info) != 0)
-      return false;
-   return !(info.st_mode & S_IFDIR);
-#endif
+bool FileExists(const std::filesystem::path& filePath)
+{
+   return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath);
 }
 
 string ExtensionFromFilename(const string& filename)

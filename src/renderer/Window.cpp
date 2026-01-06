@@ -247,7 +247,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
 
-   if (auto icon = BaseTexture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png"); icon)
+   if (auto icon = BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "vpinball.png").string()); icon)
    {
       SDL_Surface* pSurface = icon->ToSDLSurface();
       if (pSurface)

@@ -248,7 +248,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerCup.webp").string()));
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
           indices = kickerCupIndices;
@@ -256,7 +256,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerWilliams:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerWilliams.webp").string()));
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
           indices = kickerWilliamsIndices;
@@ -264,7 +264,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerGottlieb:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerGottlieb.webp").string()));
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
           indices = kickerGottliebIndices;
@@ -272,7 +272,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup2:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerT1.webp").string()));
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
           indices = kickerT1Indices;
@@ -280,7 +280,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerHole:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerHoleWood.webp").string()));
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
           indices = kickerHoleIndices;
@@ -289,7 +289,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        default:
        case KickerHoleSimple:
        {
-          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp"));
+          m_texture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "KickerHoleWood.webp").string()));
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
           indices = kickerSimpleHoleIndices;

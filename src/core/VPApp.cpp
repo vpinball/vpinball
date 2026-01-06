@@ -253,9 +253,9 @@ static const string options[] = { // keep in sync with option_names & option_des
    "c7"s,
    "c8"s,
    "c9"s,
+   "PrefPath"s,
 #ifdef __STANDALONE__
    "displayid"s,
-   "PrefPath"s,
 #endif
    ""s
 };
@@ -298,9 +298,9 @@ static const string option_descs[] =
    "Custom value 7"s,
    "Custom value 8"s,
    "Custom value 9"s,
+   "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
    #ifdef __STANDALONE__
       "Visually display your screen ID(s)"s
-      "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
    #endif
    ""s
 };
@@ -343,9 +343,9 @@ enum option_names
    OPTION_CUSTOM7,
    OPTION_CUSTOM8,
    OPTION_CUSTOM9,
+   OPTION_PREFPATH,
    #ifdef __STANDALONE__
       OPTION_DISPLAYID,
-      OPTION_PREFPATH,
    #endif
    OPTION_INVALID,
 };
@@ -354,7 +354,7 @@ enum option_names
 void showDisplayIDs()
 {
    TTF_Init();
-   string path = g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+   string path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
    TTF_Font* pFont = TTF_OpenFont(path.c_str(), 200);
    if (!pFont) {
       PLOGI << "Failed to load font: " << SDL_GetError();
@@ -668,7 +668,6 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
    m_extractScript = false;
    m_audit = false;
 #ifdef __STANDALONE__
-   m_prefPath.clear();
    m_displayId = false;
 #endif
    m_tableFileName.clear();
@@ -959,6 +958,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          m_displayId = true;
          m_run = false;
          break;
+      #endif
 
       case OPTION_PREFPATH:
          if (i + 1 >= nArgs)
@@ -966,26 +966,24 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
             exit(1);
          }
-         m_prefPath = GetPathFromArg(szArglist[i + 1], false);
-         i++;
-         if (!m_prefPath.ends_with(PATH_SEPARATOR_CHAR))
-            m_prefPath += PATH_SEPARATOR_CHAR;
-
-         if (!DirExists(m_prefPath))
          {
-            std::error_code ec;
-            if (!std::filesystem::create_directory(m_prefPath, ec))
-            {
-               std::cout << "Visual Pinball Error"
-                         << "\n\n"
-                         << "Could not create preferences path: " << m_prefPath << "\n\n";
-               exit(1);
-            }
-         }
-         m_vpinball.SetPrefPath(m_prefPath);
-         break;
+            string prefPath = GetPathFromArg(szArglist[i + 1], false);
+            i++;
+            if (!prefPath.ends_with(PATH_SEPARATOR_CHAR))
+               prefPath += PATH_SEPARATOR_CHAR;
 
-      #endif
+            if (!DirExists(prefPath))
+            {
+               std::error_code ec;
+               if (!std::filesystem::create_directory(prefPath, ec))
+               {
+                  PLOGE << "Visual Pinball Error\n\nCould not create preferences path: " << prefPath << "\n\n";
+                  exit(1);
+               }
+            }
+            m_vpinball.SetPrefPath(prefPath);
+         }
+         break;
 
       default:
          assert(false);
@@ -1004,54 +1002,58 @@ BOOL VPApp::InitInstance()
 {
    m_vpinball.Create(nullptr);
 
-   defaultFileNameSearch[4] = PATH_USER;
-   defaultFileNameSearch[5] = PATH_SCRIPTS;
-   defaultFileNameSearch[6] = PATH_TABLES;
-
-   // Default ini path (can be overriden from command line via m_iniFileName)
+   // Define settings location and load them
    if (m_iniFileName.empty())
    {
-      // first check if there is a .ini next to the .exe, otherwise use the default location
-      if (FileExists(m_vpinball.GetAppPath() + "VPinballX.ini"))
-         m_vpinball.SetPrefPath(m_vpinball.GetAppPath());
-      m_iniFileName = m_vpinball.GetPrefPath() + "VPinballX.ini";
+      std::filesystem::path defaultPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini");
+      std::filesystem::path appPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Root, "VPinballX.ini");
+      if (FileExists(defaultPath))
+         m_iniFileName = defaultPath.string();
+      else if (FileExists(appPath))
+         m_iniFileName = appPath.string();
+      else
+         m_iniFileName = defaultPath.string();
    }
+   m_vpinball.m_settings.SetIniPath(m_iniFileName);
+   m_vpinball.m_settings.Load(true);
+
+   // The file layout must be defined before loading the settings file, so we apply the following rules:
+   // - if we have a settings location commandline override, we loads it and use the setting in it (to locate other files than the ini)
+   // - if not but we have a settings file in the default preference location, we use it and update the setting accordingly ('Table' layout mode)
+   // - if not but we have a settings file along the app executable, we use it and update the setting accordingly ('App' layout mode)
+   // - if we don't have anything, then we use the default ('Table' layout mode)
+
+   Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());
+   PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
+   PLOGI << "Settings file was loaded from " << m_iniFileName;
+   PLOGI << "Number of logical CPU core: " << m_vpinball.GetLogicalNumberOfProcessors();
+   PLOGI << "Application path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Root);
+   PLOGI << "Preference path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences);
+   
+   Settings::SetRecentDir_ImportDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_LoadDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_FontDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_PhysicsDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_ImageDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_MaterialDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_SoundDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_POVDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+
+   m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
+
+   m_vpinball.LoadEditorSetupFromSettings();
 
    SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
    if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
    {
       PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+      // FIXME this is not correct as we may be running something else than the player (extract vbs, ...)
       exit(1);
    }
-
-   m_vpinball.m_settings.SetIniPath(m_iniFileName);
-   m_vpinball.m_settings.Load(true);
-   m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
-   m_vpinball.LoadEditorSetupFromSettings();
-
-   Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());
-
-   PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-   PLOGI << "Settings file was loaded from " << m_iniFileName;
-
-   PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
-   PLOGI << "Number of logical CPU core: " << m_vpinball.GetLogicalNumberOfProcessors();
-   PLOGI << "Application path: " << m_vpinball.GetAppPath();
-   PLOGI << "Data path: " << m_vpinball.GetPrefPath();
-
+   
    #ifdef __STANDALONE__
+      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
       TTF_Init();
-
-      if (!DirExists(PATH_USER)) {
-         std::error_code ec;
-         if (std::filesystem::create_directory(PATH_USER, ec)) {
-            PLOGI << "User path created: " << PATH_USER;
-         }
-         else {
-            PLOGE << "Unable to create user path: " << PATH_USER;
-         }
-      }
-
       if (m_displayId)
          showDisplayIDs();
    #endif

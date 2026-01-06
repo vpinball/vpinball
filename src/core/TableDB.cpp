@@ -10,7 +10,7 @@
 void TableDB::Load()
 {
    m_data.clear();
-   std::ifstream dbFile(g_pvp->GetAppPath() + "assets" + PATH_SEPARATOR_CHAR + "TableSizes.csv");
+   std::ifstream dbFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "TableSizes.csv"));
    while (dbFile.good())
    {
       // Simple CSV parsing
