@@ -128,8 +128,8 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    {
       CaptureState* state = reinterpret_cast<CaptureState*>(context);
       if (g_pplayer->m_overall_frames == 25)
-         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(state->tmpScreenshotPath,
-            [state](bool success)
+         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(g_pplayer->m_playfieldWnd, state->tmpScreenshotPath,
+            [state](VPX::Window*, bool success)
             {
                #ifdef ENABLE_BGFX
                lastBgfxRenderer = bgfx::getRendererType();
