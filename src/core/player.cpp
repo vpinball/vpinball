@@ -428,9 +428,7 @@ Player::Player(PinTable *const table, const int playMode)
       {
          try
          {
-            std::filesystem::path dir = g_pvp->GetTablePath(m_ptable, VPinball::TableSubFolder::Cache);
-            std::filesystem::create_directories(dir);
-            std::filesystem::path path = dir / "used_textures.xml";
+            std::filesystem::path path = g_pvp->GetTablePath(m_ptable, VPinball::TableSubFolder::Cache) / "used_textures.xml";
             if (FileExists(path))
             {
                PLOGI << "Texture cache found at " << path;
@@ -743,8 +741,6 @@ Player::~Player()
       try
       {
          std::filesystem::path dir = g_pvp->GetTablePath(m_ptable, VPinball::TableSubFolder::Cache);
-         std::filesystem::create_directories(dir);
-
          tinyxml2::XMLDocument xmlDoc;
          tinyxml2::XMLElement *root;
          ankerl::unordered_dense::map<string, tinyxml2::XMLElement *> textureAge;

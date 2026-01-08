@@ -201,7 +201,7 @@ void VPinball::SetPrefPath(const std::filesystem::path &path)
    if (!DirExists(m_prefPath))
    {
       std::error_code ec;
-      if (std::filesystem::create_directory(m_prefPath, ec))
+      if (std::filesystem::create_directories(m_prefPath, ec))
       {
          PLOGI << "Pref path created: " << m_prefPath;
       }
@@ -306,7 +306,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
             path = path / table->m_title; // table's title is its file name without extension
          if (!DirExists(path))
          {
-            std::filesystem::create_directory(path);
+            std::filesystem::create_directories(path);
             string type;
             switch (sub)
             {
@@ -333,7 +333,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
          path = GetAppPath(AppSubFolder::Root) / "user"s;
          if (!DirExists(path))
          {
-            std::filesystem::create_directory(path);
+            std::filesystem::create_directories(path);
             PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
          }
          break;
