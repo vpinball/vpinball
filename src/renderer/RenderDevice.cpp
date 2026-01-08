@@ -1392,6 +1392,9 @@ RenderDevice::~RenderDevice()
       m_renderThread.join();
 
 #elif defined(ENABLE_OPENGL)
+   m_quadPNTDynMeshBuffer = nullptr;
+   m_quadPTDynMeshBuffer = nullptr;
+
    for (auto binding : m_samplerBindings)
    {
       std::shared_ptr<const Sampler> sampler = binding->sampler;
