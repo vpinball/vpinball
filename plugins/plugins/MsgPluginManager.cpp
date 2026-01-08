@@ -154,13 +154,14 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    // Note that if a callback is both unsbscribed and subscribed during a broadcast, the result is undefined (and will assert in debug build)
-#ifdef DEBUG
+   std::erase_if(pm.m_msgs[msgId].callbacks, [](const CallbackEntry& entry) { return entry.unregistered; });
+#ifdef _DEBUG
    // Callback are only allowed to be registered once per message
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       assert(entry.callback != callback);
 #endif
    if (pm.m_broadcastInProgress)
-      pm.m_deferredAfterBroadCastRunnables.push_back([endpointId, msgId, callback, userData]() { SubscribeMsg(endpointId, msgId, callback, userData); });
+      pm.m_deferredAfterBroadcastRunnables.push_back([endpointId, msgId, callback, userData]() { SubscribeMsg(endpointId, msgId, callback, userData); });
    else
       pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { endpointId, callback, userData });
 }
@@ -172,15 +173,12 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   for (std::vector<CallbackEntry>::iterator it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); ++it)
+   for (auto it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); ++it)
    {
-      if (it->callback == callback)
+      if (it->callback == callback && !it->unregistered)
       {
          if (pm.m_broadcastInProgress)
-         {
-            pm.m_deferredUnregisterMsg = true;
             it->unregistered = true;
-         }
          else
             pm.m_msgs[msgId].callbacks.erase(it);
          return;
@@ -198,20 +196,20 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    pm.m_broadcastInProgress++;
+   bool unregister = false;
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       if (!entry.unregistered)
          entry.callback(msgId, entry.context, data);
-   if (pm.m_deferredUnregisterMsg)
-   {
+      else
+         unregister = true;
+   if (unregister)
       std::erase_if(pm.m_msgs[msgId].callbacks, [](const CallbackEntry& entry) { return entry.unregistered; });
-      pm.m_deferredUnregisterMsg = false;
-   }
    pm.m_broadcastInProgress--;
-   if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadCastRunnables.empty())
+   if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadcastRunnables.empty())
    {
-      for (const auto& fn : pm.m_deferredAfterBroadCastRunnables)
+      for (const auto& fn : pm.m_deferredAfterBroadcastRunnables)
          fn();
-      pm.m_deferredAfterBroadCastRunnables.clear();
+      pm.m_deferredAfterBroadcastRunnables.clear();
    }
 }
 
