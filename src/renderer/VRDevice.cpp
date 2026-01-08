@@ -516,7 +516,7 @@ public:
       if (vkEnumerateInstanceVersion)
       {
          vkEnumerateInstanceVersion(&apiVersion);
-         PLOGI << "Vulkan API version: " << VK_VERSION_MAJOR(apiVersion) << "." << VK_VERSION_MINOR(apiVersion) << "." << VK_VERSION_PATCH(apiVersion);
+         PLOGI << "Vulkan API version: " << VK_VERSION_MAJOR(apiVersion) << '.' << VK_VERSION_MINOR(apiVersion) << '.' << VK_VERSION_PATCH(apiVersion);
       }
       else
       {
@@ -1352,7 +1352,7 @@ void VRDevice::CreateSession()
       XrGraphicsRequirementsVulkanKHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR };
       OPENXR_CHECK(xrGetVulkanGraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Vulkan graphics requirements.");
 
-      PLOGI << "OpenXR Vulkan requirements: min API version " << XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported) << "." << XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported);
+      PLOGI << "OpenXR Vulkan requirements: min API version " << XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported);
    }
 
    // Create an XrSessionCreateInfo structure.

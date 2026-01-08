@@ -3085,7 +3085,7 @@ void PinTable::SetCollectionName(Collection *pcol, string name, HWND hwndList, i
 {
 #ifndef __STANDALONE__
    if (name.length() >= std::size(pcol->m_wzName))
-      name = name.substr(0, std::size(pcol->m_wzName) - 1);
+      name.erase(std::size(pcol->m_wzName) - 1);
    const wstring wzT = MakeWString(name);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {

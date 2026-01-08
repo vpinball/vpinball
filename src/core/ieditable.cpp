@@ -195,7 +195,8 @@ void IEditable::SetName(const string& name)
    const string oldName = MakeString(GetScriptable()->m_wzName);
 
    wstring newName = MakeWString(name);
-   newName = newName.length() >= std::size(GetScriptable()->m_wzName) ? newName.substr(0, std::size(GetScriptable()->m_wzName)-1) : newName;
+   if(newName.length() >= std::size(GetScriptable()->m_wzName))
+      newName.erase(std::size(GetScriptable()->m_wzName)-1);
    const bool isEqual = newName == GetScriptable()->m_wzName;
    if(!isEqual && !pt->IsNameUnique(newName))
    {

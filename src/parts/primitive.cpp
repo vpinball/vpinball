@@ -37,7 +37,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    }
 #ifndef __STANDALONE__
    idx++;
-   name = name.substr(0,idx);
+   name.erase(idx);
    string sname = name + "*.obj";
    WIN32_FIND_DATA data;
    const HANDLE h = FindFirstFile(sname.c_str(), &data);

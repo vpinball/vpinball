@@ -269,7 +269,7 @@ static void SetPartGroup(ISelect* const me, string layerName)
          }
       }*/
       if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
-         layerName = layerName.substr(0, std::size(me->GetPTable()->m_wzName) - 1);
+         layerName.erase(std::size(me->GetPTable()->m_wzName) - 1);
       const wstring newName = MakeWString(layerName);
       const auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [&newName](const IEditable *editable) {
          return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName);
