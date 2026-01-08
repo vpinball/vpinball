@@ -186,7 +186,7 @@ void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
          visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
          visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
-         visual->dmdSize = vec2i(-1, -1);
+         visual->dmdSize = ivec2(-1, -1);
       }
       else if (key == "- SegDisplay")
       {

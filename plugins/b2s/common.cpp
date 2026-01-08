@@ -82,7 +82,7 @@ string find_case_insensitive_file_path(const string& szPath)
       auto parent = p.parent_path();
       string base;
       if (parent.empty() || parent == p) {
-         base = ".";
+         base = "."s;
       } else {
          base = self(self, parent.string());
          if (base.empty())
@@ -110,31 +110,23 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-// Wraps up https://github.com/czkz/base64 public domain decoder
-string base64_decode(char* value)
+// Wraps up https://github.com/czkz/base64 public domain decoder (plus extensions/optimizations)
+vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes)
 {
-   // Modify string in place to remove CR/LF characters
-   // This is not correct and breaks the original file but speeds up the process and saves memory
-   const char* valueSrc = value;
-   char* valueDst = value;
-   for (;; valueSrc++)
+   vector<uint8_t> ret(size_bytes);
+
+   // First remove any newlines or carriage returns from the input
+   uint8_t* __restrict dst = ret.data();
+   for (size_t i = 0; i < size_bytes; ++i)
    {
-      char c = *valueSrc;
-      if (c == '\0')
-      {
-         *valueDst = '\0';
-         break;
-      }
+      const char c = value[i];
       if (c != '\r' && c != '\n')
-      {
-         *valueDst = c;
-         valueDst++;
-      }
+         *dst++ = c;
    }
-   string encoded_string = value;
-   //std::erase(encoded_string, '\r');
-   //std::erase(encoded_string, '\n');
-   return from_base64(encoded_string);
+
+   const size_t newLen = from_base64_inplace(ret.data(), dst - ret.data());
+   ret.resize(newLen);
+   return ret; // will be moved
 }
 
 }

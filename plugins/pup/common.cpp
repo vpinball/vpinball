@@ -166,7 +166,7 @@ string find_case_insensitive_file_path(const string& szPath)
       auto parent = p.parent_path();
       string base;
       if (parent.empty() || parent == p) {
-         base = ".";
+         base = "."s;
       } else {
          base = self(self, parent.string());
          if (base.empty())
@@ -211,7 +211,7 @@ string find_case_insensitive_directory_path(const string& szPath)
       auto parent = p.parent_path();
       string base;
       if (parent.empty() || parent == p) {
-         base = ".";
+         base = "."s;
       } else {
          base = self(self, parent.string());
          if (base.empty())

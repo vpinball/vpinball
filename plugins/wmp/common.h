@@ -9,9 +9,10 @@
 #include "plugins/ControllerPlugin.h"
 
 #include <string>
-#include <memory>
-
+using namespace std::string_literals;
 using std::string;
+
+#include <memory>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR_CHAR '\\'

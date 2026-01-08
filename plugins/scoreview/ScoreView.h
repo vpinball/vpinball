@@ -11,20 +11,16 @@
 
 namespace ScoreView {
    
-class vec2i
+class ivec2 final
 {
 public:
-   constexpr vec2i() { }
-   constexpr vec2i(const int _x, const int _y)
-      : x(_x)
-      , y(_y)
-   {
-   }
+   constexpr ivec2() { }
+   constexpr ivec2(const int _x, const int _y) : x(_x), y(_y) { }
 
    int x, y;
 };
 
-class vec3
+class vec3 final
 {
 public:
    constexpr vec3() { }
@@ -38,7 +34,7 @@ public:
    float x, y, z;
 };
 
-class vec4
+class vec4 final
 {
 public:
    constexpr vec4() { }
@@ -102,7 +98,7 @@ private:
       int nElements;
       std::vector<float> xOffsets;
       // For DMD displays
-      vec2i dmdSize;
+      ivec2 dmdSize;
       // Live data (not serialized)
       VPXTexture glass;
       VPXTexture dmdTex;

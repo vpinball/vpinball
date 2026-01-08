@@ -46,29 +46,20 @@ PSC_USE_ERROR();
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
-class vec2
+class vec4 final
 {
 public:
-   vec2() { }
-   vec2(float px, float py) : x(px), y(py) { }
-
-   float x = 0.f, y = 0.f;
-};
-
-class vec4
-{
-public:
-   vec4() { }
-   vec4(float px, float py, float pz, float pw) : x(px), y(py), z(pz), w(pw) { }
+   constexpr vec4() { }
+   constexpr vec4(float px, float py, float pz, float pw) : x(px), y(py), z(pz), w(pw) { }
 
    float x = 0.f, y = 0.f, z = 0.f, w = 0.f;
 };
 
-class ivec4
+class ivec4 final
 {
 public:
-   ivec4() { }
-   ivec4(int px, int py, int pz, int pw) : x(px), y(py), z(pz), w(pw) { }
+   constexpr ivec4() { }
+   constexpr ivec4(int px, int py, int pz, int pw) : x(px), y(py), z(pz), w(pw) { }
 
    int x = 0, y = 0, z = 0, w = 0;
 };
@@ -82,6 +73,6 @@ extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTexture
 // The following function are duplicates from the main VPX codebase
 string find_case_insensitive_file_path(const string &szPath);
 string TitleAndPathFromFilename(const string &filename);
-string base64_decode(char *value);
+vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 
 }

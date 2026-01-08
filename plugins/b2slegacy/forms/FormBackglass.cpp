@@ -1685,27 +1685,28 @@ VPXTexture FormBackglass::CropImageToTransparency(VPXTexture pImage, VPXTexture 
    return result;
 }
 
-VPXTexture FormBackglass::Base64ToImage(string image)
+VPXTexture FormBackglass::Base64ToImage(const char* image)
 {
-   string decoded = base64_decode(image.data());
+   const size_t image_len = strlen(image);
+   vector<uint8_t> decoded = base64_decode(image, image_len);
    if (decoded.empty()) {
       LOGE("Base64ToImage: Failed to decode Base64 data");
       return nullptr;
    }
 
-   VPXTexture pImage = m_vpxApi->CreateTexture(reinterpret_cast<uint8_t*>(decoded.data()), static_cast<int>(decoded.size()));
+   VPXTexture pImage = m_vpxApi->CreateTexture(decoded.data(), static_cast<int>(decoded.size()));
    if (!pImage) {
-      size_t len = std::min<size_t>(image.size(), 40);
-      LOGE("Base64ToImage: Failed to create texture from data: %s", image.substr(0, len).c_str());
+      size_t len = std::min<size_t>(image_len, 40);
+      LOGE("Base64ToImage: Failed to create texture from data: %s", string(image, len).c_str());
    }
 
    return pImage;
 }
 
-Sound* FormBackglass::Base64ToWav(string data)
+Sound* FormBackglass::Base64ToWav(const char* data)
 {
-   string decoded = base64_decode(data.data());
-   return new Sound(decoded);
+   vector<uint8_t> decoded = base64_decode(data, strlen(data));
+   return new Sound(std::move(decoded));
 }
 
 uint32_t FormBackglass::String2Color(const string& color)

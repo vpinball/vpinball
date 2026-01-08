@@ -119,7 +119,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
       scaledH = static_cast<float>(m_frame.w);
    }
 
-   vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;
+   vec4 glassArea(0.f, 0.f, 0.f, 0.f), glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad(0.f, 0.f, 0.f, 0.f);
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
    ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
       // First layer: glass

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cassert>
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -14,8 +15,13 @@
 #include <memory>
 #include <algorithm>
 
+// Shared logging
 #include "plugins/LoggingPlugin.h"
+
+// Scriptable API
 #include "plugins/ScriptablePlugin.h"
+
+// VPX main API
 #include "plugins/VPXPlugin.h"
 
 #include <SDL3/SDL.h>
@@ -219,7 +225,7 @@ PSC_USE_ERROR();
 #ifndef RGB
 #define RGB(r,g,b) ((uint32_t)(((uint8_t)(r)|((uint16_t)((uint8_t)(g))<<8))|(((uint32_t)(uint8_t)(b))<<16)))
 #define GetRValue(rgb) ((uint8_t)(rgb))
-#define GetGValue(rgb) ((uint8_t)(((uint16_t)(rgb)) >> 8))
+#define GetGValue(rgb) ((uint8_t)((rgb)>> 8))
 #define GetBValue(rgb) ((uint8_t)((rgb)>>16))
 #endif
 
@@ -231,7 +237,7 @@ constexpr inline char cLower(char c)
 }
 
 string find_case_insensitive_file_path(const string &szPath);
-string base64_decode(char *value);
+vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 // trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
 int string_to_int(const string& str, int defaultValue);
@@ -242,38 +248,29 @@ bool is_string_numeric(const string& str);
 
 template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
 
-class vec2
+class vec3 final
 {
 public:
-   vec2() { }
-   vec2(float px, float py) : x(px), y(py) { }
-
-   float x = 0.f, y = 0.f;
-};
-
-class vec3
-{
-public:
-   vec3() { }
-   vec3(float px, float py, float pz) : x(px), y(py), z(pz) { }
+   constexpr vec3() { }
+   constexpr vec3(float px, float py, float pz) : x(px), y(py), z(pz) { }
 
    float x = 0.f, y = 0.f, z = 0.f;
 };
 
-class vec4
+class vec4 final
 {
 public:
-   vec4() { }
-   vec4(float px, float py, float pz, float pw) : x(px), y(py), z(pz), w(pw) { }
+   constexpr vec4() { }
+   constexpr vec4(float px, float py, float pz, float pw) : x(px), y(py), z(pz), w(pw) { }
 
    float x = 0.f, y = 0.f, z = 0.f, w = 0.f;
 };
 
-class ivec4
+class ivec4 final
 {
 public:
-   ivec4() { }
-   ivec4(int px, int py, int pz, int pw) : x(px), y(py), z(pz), w(pw) { }
+   constexpr ivec4() { }
+   constexpr ivec4(int px, int py, int pz, int pw) : x(px), y(py), z(pz), w(pw) { }
 
    int x = 0, y = 0, z = 0, w = 0;
 };

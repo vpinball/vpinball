@@ -1,16 +1,16 @@
 #pragma once
+
 #include <cstdint>
 #include <string>
-#include <string_view>
 
-[[nodiscard]] inline std::string to_base64(std::string_view data);
-[[nodiscard]] inline std::string to_base64(const void* data, size_t size_bytes);
+[[nodiscard]] inline std::string to_base64(const std::string& data);
+[[nodiscard]] inline std::string to_base64(const void* const data, const ssize_t len);
 
-[[nodiscard]] inline std::string from_base64(std::string_view data);
-[[nodiscard]] inline std::string from_base64(const void* data, size_t size_bytes);
+[[nodiscard]] inline std::string from_base64(const std::string& data);
+[[nodiscard]] inline std::string from_base64(const void* const data, const size_t size_bytes);
 
-inline void from_base64_inplace(std::string& data);
-inline size_t from_base64_inplace(void* data, size_t size_bytes);
+              inline void from_base64_inplace(std::string& data);
+[[nodiscard]] inline size_t from_base64_inplace(void* const data, const size_t size_bytes);
 
 static constexpr uint8_t base64_lut[256][7] = {
     "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff",
@@ -79,95 +79,89 @@ static constexpr uint8_t base64_lut[256][7] = {
     "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff", "\xff\xff\xff\xff\xff\xff",
 };
 
-[[nodiscard]] inline std::string to_base64(std::string_view data) {
-    constexpr std::string_view a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    const std::basic_string_view<char> s { data.data(), data.size() };
-    std::string ret;
-    const ssize_t origLen = s.size();
-    const ssize_t newLen = (origLen / 3 + (origLen%3!=0)) * 4;
-    ret.resize(newLen, '=');
-    char* out = ret.data();
+[[nodiscard]] inline std::string to_base64(const void* const data, const ssize_t len) {
+    static constexpr char a[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string ret((len+2)/3 * 4, '=');
 
-    ssize_t i; // Signed because (origLen - 2) can underflow
-    for (i = 0; i < origLen - 2; i += 3) {
-        out[i / 3 * 4 + 0] = a[ (s[i] & 0b11111100) >> 2 ];
-        out[i / 3 * 4 + 1] = a[ (s[i+0] & 0b00000011) << 4 | (s[i+1] & 0b11110000) >> 4 ];
-        out[i / 3 * 4 + 2] = a[ (s[i+1] & 0b00001111) << 2 | (s[i+2] & 0b11000000) >> 6 ];
-        out[i / 3 * 4 + 3] = a[ (s[i+2] & 0b00111111) ];
+    const uint8_t* const __restrict src = reinterpret_cast<const uint8_t*>(data);
+    ssize_t i,i2; // Signed because (len - 2) can underflow
+    for (i = 0, i2 = 0; i < len - 2; i += 3, i2 += 4) {
+        ret[i2+0] = a[ (src[i  ] & 0b11111100) >> 2 ];
+        ret[i2+1] = a[ (src[i+0] & 0b00000011) << 4 | (src[i+1] & 0b11110000) >> 4 ];
+        ret[i2+2] = a[ (src[i+1] & 0b00001111) << 2 | (src[i+2] & 0b11000000) >> 6 ];
+        ret[i2+3] = a[ (src[i+2] & 0b00111111) ];
     }
-    switch (origLen % 3) {
+    switch (len % 3) {
     case 2:
-        out[i / 3 * 4 + 0] = a[ (s[i] & 0b11111100) >> 2 ];
-        out[i / 3 * 4 + 1] = a[ (s[i+0] & 0b00000011) << 4 | (s[i+1] & 0b11110000) >> 4 ];
-        out[i / 3 * 4 + 2] = a[ (s[i+1] & 0b00001111) << 2 | (s[i+2] & 0b11000000) >> 6 ];
+        ret[i2+0] = a[ (src[i  ] & 0b11111100) >> 2 ];
+        ret[i2+1] = a[ (src[i+0] & 0b00000011) << 4 | (src[i+1] & 0b11110000) >> 4 ];
+        ret[i2+2] = a[ (src[i+1] & 0b00001111) << 2 /*| (src[i+2] & 0b11000000) >> 6*/ ];
         break;
     case 1:
-        out[i / 3 * 4 + 0] = a[ (s[i] & 0b11111100) >> 2 ];
-        out[i / 3 * 4 + 1] = a[ (s[i+0] & 0b00000011) << 4 | (s[i+1] & 0b11110000) >> 4 ];
+        ret[i2+0] = a[ (src[i  ] & 0b11111100) >> 2 ];
+        ret[i2+1] = a[ (src[i+0] & 0b00000011) << 4 /*| (src[i+1] & 0b11110000) >> 4*/ ];
         break;
     }
     return ret;
 }
 
 
-[[nodiscard]] inline std::string to_base64(const void* data, size_t size_bytes) {
-    return to_base64({ reinterpret_cast<const char*>(data), size_bytes });
+[[nodiscard]] inline std::string to_base64(const std::string& data) {
+    return to_base64(data.data(), data.size());
 }
 
 
-/// dstLen must be at least (3/4 * srcLen), even if there's less data encoded
-/// dst may be equal to src
-inline size_t from_base64(const void* src, size_t srcLen, void* dst, size_t dstLen) {
-    std::basic_string_view<char> data { reinterpret_cast<const char*>(src), srcLen };
-    const size_t origLen = data.size();
-    if (origLen == 0) {
+// dstLen must be at least (srcLen/4 *3), even if there's less data encoded
+// src and dst must not overlap
+[[nodiscard]] inline size_t from_base64(const uint8_t* const __restrict src, const size_t srcLen, uint8_t* const __restrict dst, const size_t dstLen) {
+    if (srcLen == 0 || (srcLen%4) != 0)
         return 0;
-    }
-    if (origLen % 4 != 0) {
+    size_t outLen = srcLen/4 * 3;
+    if (dstLen < outLen)
         return 0;
-    }
-    const size_t newLen = origLen / 4 * 3;
-    if (dstLen < newLen) {
-        return 0;
-    }
 
-    size_t outLen = newLen;
-    uint8_t* out = reinterpret_cast<uint8_t*>(dst);
-
-    for (size_t i = 0; i < origLen; i += 4) {
-        out[i / 4 * 3 + 0] = base64_lut[data[i+0]][0] | base64_lut[data[i+1]][1];
-        out[i / 4 * 3 + 1] = base64_lut[data[i+1]][2] | base64_lut[data[i+2]][3];
-        out[i / 4 * 3 + 2] = base64_lut[data[i+2]][4] | base64_lut[data[i+3]][5];
-    }
-    // Min possible data.size() is 4, so rbegin() + 3 <= rend()
-    // Min outLen is 3, so outLen-- will never underflow
-    for (auto it = data.rbegin(); it != data.rbegin() + 3; ++it) {
-        if (*it == '=') {
-            outLen--;
-        } else {
+    // Min possible srcLen is 4, Min outLen is 3, so --outLen will never underflow
+    for (size_t i = srcLen - 1; i >= srcLen - 3; --i, --outLen)
+        if (src[i] != '=')
             break;
-        }
+    for (size_t i = 0, i2 = 0; i < srcLen; i += 4, i2 += 3) {
+        dst[i2+0] = base64_lut[src[i+0]][0] | base64_lut[src[i+1]][1];
+        dst[i2+1] = base64_lut[src[i+1]][2] | base64_lut[src[i+2]][3];
+        dst[i2+2] = base64_lut[src[i+2]][4] | base64_lut[src[i+3]][5];
     }
     return outLen;
 }
 
-inline size_t from_base64_inplace(void* data, size_t size_bytes) {
-    return from_base64(data, size_bytes, data, size_bytes);
+[[nodiscard]] inline size_t from_base64_inplace(void* const data, const size_t size_bytes) {
+    if (size_bytes == 0 || (size_bytes%4) != 0)
+        return 0;
+    size_t outLen = size_bytes/4 * 3;
+
+    uint8_t* const d = reinterpret_cast<uint8_t*>(data);
+    // Min possible size_bytes is 4, Min outLen is 3, so --outLen will never underflow
+    for (size_t i = size_bytes - 1; i >= size_bytes - 3; --i, --outLen)
+        if (d[i] != '=')
+            break;
+    for (size_t i = 0, i2 = 0; i < size_bytes; i += 4, i2 += 3) {
+        d[i2+0] = base64_lut[d[i+0]][0] | base64_lut[d[i+1]][1];
+        d[i2+1] = base64_lut[d[i+1]][2] | base64_lut[d[i+2]][3];
+        d[i2+2] = base64_lut[d[i+2]][4] | base64_lut[d[i+3]][5];
+    }
+    return outLen;
 }
 
 inline void from_base64_inplace(std::string& data) {
-    auto newLen = from_base64(data.data(), data.size(), data.data(), data.size());
+    const size_t newLen = from_base64_inplace(data.data(), data.size());
     data.resize(newLen);
 }
 
-[[nodiscard]] inline std::string from_base64(const void* data, size_t size_bytes) {
-    std::string ret;
-    ret.resize(size_bytes / 4 * 3);
-    auto newLen = from_base64(data, size_bytes, ret.data(), ret.size());
+[[nodiscard]] inline std::string from_base64(const void* const data, const size_t size_bytes) {
+    std::string ret(size_bytes/4 * 3, '\0');
+    const size_t newLen = from_base64(reinterpret_cast<const uint8_t*>(data), size_bytes, reinterpret_cast<uint8_t*>(ret.data()), ret.size());
     ret.resize(newLen);
     return ret;
 }
 
-[[nodiscard]] inline std::string from_base64(std::string_view data) {
+[[nodiscard]] inline std::string from_base64(const std::string& data) {
     return from_base64(data.data(), data.size());
 }

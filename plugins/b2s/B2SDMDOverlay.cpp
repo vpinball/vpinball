@@ -98,10 +98,10 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    default: return;
    }
 
-   vec4 glassArea;
+   vec4 glassArea(0.f, 0.f, 0.f, 0.f);
    vec4 glassAmbient(1.f, 1.f, 1.f, 1.f);
    vec4 glassTint(1.f, 1.f, 1.f, 1.f);
-   vec4 glassPad;
+   vec4 glassPad(0.f, 0.f, 0.f, 0.f);
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
    ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
       // First layer: glass
