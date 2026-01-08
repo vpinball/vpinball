@@ -966,23 +966,8 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
             exit(1);
          }
-         {
-            string prefPath = GetPathFromArg(szArglist[i + 1], false);
-            i++;
-            if (!prefPath.ends_with(PATH_SEPARATOR_CHAR))
-               prefPath += PATH_SEPARATOR_CHAR;
-
-            if (!DirExists(prefPath))
-            {
-               std::error_code ec;
-               if (!std::filesystem::create_directory(prefPath, ec))
-               {
-                  PLOGE << "Visual Pinball Error\n\nCould not create preferences path: " << prefPath << "\n\n";
-                  exit(1);
-               }
-            }
-            m_vpinball.SetPrefPath(prefPath);
-         }
+         m_vpinball.SetPrefPath(GetPathFromArg(szArglist[i + 1], false));
+         i++;
          break;
 
       default:
