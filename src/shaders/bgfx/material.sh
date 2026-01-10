@@ -107,7 +107,7 @@ vec3 DoPointLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse
 // does /PI-corrected lookup/final color already
 vec3 DoEnvmapDiffuse(const vec3 N, const vec3 diffuse)
 {
-   const vec3 env = texture2DLod(tex_diffuse_env, ray_to_equirectangular_uv(N), 0.0).xyz;
+   const vec3 env = texNoLod(tex_diffuse_env, ray_to_equirectangular_uv(N)).xyz;
    return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
