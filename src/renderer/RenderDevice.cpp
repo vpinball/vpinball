@@ -449,8 +449,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       g_pplayer->m_vrDevice->CreateSession();
    #endif
 
-   // Enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI)
-   if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_vrDevice == nullptr))
+   // Enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
+   if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_vrDevice == nullptr) && (g_pvp->m_captureAttract == 0))
    {
       init.resolution.formatColor = bgfx::TextureFormat::RGB10A2;
       //init.resolution.formatColor = bgfx::TextureFormat::RGBA16F; // Also supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)

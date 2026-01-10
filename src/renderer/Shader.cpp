@@ -20,7 +20,6 @@
 #include "bx/readerwriter.h"
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
-#include "bgfx/embedded_shader.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #endif

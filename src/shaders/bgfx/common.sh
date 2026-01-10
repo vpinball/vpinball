@@ -20,6 +20,12 @@
 	#define TEX_V_IS_UP 0
 #endif
 
+#if BGFX_SHADER_MATRIX_COLUMN_MAJOR // GLSL/WGSL
+	#define mtxFromRows3(_0, _1, _2) transpose(mat3(_0, _1, _2))
+#else
+	#define mtxFromRows3(_0, _1, _2) mat3(_0, _1, _2)
+#endif
+
 #define texNoLod(tex, pos) texture2DLod(tex, pos, 0.0)
 
 #ifdef STEREO
