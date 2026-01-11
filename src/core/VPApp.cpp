@@ -243,6 +243,8 @@ static const string options[] = { // keep in sync with option_names & option_des
    "Audit"s,
    "listres"s,
    "listsnd"s,
+   "listctrl"s,
+   "listall"s,
    "CaptureAttract"s,
    "c1"s,
    "c2"s,
@@ -288,6 +290,8 @@ static const string option_descs[] =
    "[table filename] Audit the table"s,
    "List available fullscreen resolutions"s,
    "List available sound devices"s,
+   "List available controllers"s,
+   "List all devices (displays, sound, controllers)"s,
    "Capture an attract mode video"s,
    "Custom value 1"s,
    "Custom value 2"s,
@@ -333,6 +337,8 @@ enum option_names
    OPTION_AUDIT,
    OPTION_LISTRES,
    OPTION_LISTSND,
+   OPTION_LISTCTRL,
+   OPTION_LISTALL,
    OPTION_CAPTURE_ATTRACT,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
@@ -629,7 +635,9 @@ string VPApp::GetCommandLineHelp()
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
-      "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+      "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+      "\n-"  +options[OPTION_LISTCTRL]+             "  "+option_descs[OPTION_LISTCTRL]+
+      "\n-"  +options[OPTION_LISTALL]+              "  "+option_descs[OPTION_LISTALL]+
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
       "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
    #ifdef __STANDALONE__
@@ -904,33 +912,27 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          }
          break;
 
+#ifdef __STANDALONE__
       case OPTION_LISTSND:
-         // Set flag instead of processing immediately - device enumeration requires SDL initialization
-         PLOGI << "Available sound devices:";
-         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-         {
-            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-         }
-         exit(0);
+         m_listSnd = true;
+         m_run = false;
          break;
 
       case OPTION_LISTRES:
-         {
-            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
-            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
-            for (const auto& display : displays)
-            {
-               PLOGI << "Display " << display.displayName;
-               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
-               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
-               for (const auto& mode : VPX::Window::GetDisplayModes(display))
-               {
-                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-               }
-            }
-         }
-         exit(0);
+         m_listRes = true;
+         m_run = false;
          break;
+
+      case OPTION_LISTCTRL:
+         m_listCtrl = true;
+         m_run = false;
+         break;
+
+      case OPTION_LISTALL:
+         m_listAll = true;
+         m_run = false;
+         break;
+#endif
 
       #ifndef __STANDALONE__
       case OPTION_UNREGSERVER:
@@ -1042,6 +1044,78 @@ BOOL VPApp::InitInstance()
       TTF_Init();
       if (m_displayId)
          showDisplayIDs();
+
+      // Handle list commands after SDL and logger are initialized
+      if (m_listAll)
+      {
+         m_listRes = true;
+         m_listSnd = true;
+         m_listCtrl = true;
+      }
+      if (m_listSnd || m_listRes || m_listCtrl)
+      {
+         PLOGI << "Platform: " << SDL_GetPlatform();
+         int sdlVersion = SDL_GetVersion();
+         PLOGI << "SDL version: " << (sdlVersion / 1000000) << "." << ((sdlVersion / 1000) % 1000) << "." << (sdlVersion % 1000);
+         if (m_listRes)
+         {
+            PLOGI << "Available displays:";
+            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+            for (const auto& display : displays)
+            {
+               PLOGI << "  Display: " << display.displayName;
+               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+               PLOGI << "    Windowed fullscreen: " << displayMode->w << 'x' << displayMode->h << " @ " << displayMode->refresh_rate << "Hz";
+               for (const auto& mode : VPX::Window::GetDisplayModes(display))
+               {
+                  PLOGI << "    Fullscreen: " << mode.width << 'x' << mode.height << " @ " << mode.refreshrate << "Hz (depth=" << mode.depth << ")";
+               }
+            }
+         }
+         if (m_listSnd)
+         {
+            PLOGI << "Available sound devices:";
+            for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+            {
+               PLOGI << "  " << audioDevice.name << " (channels=" << audioDevice.channels << ")";
+            }
+         }
+         if (m_listCtrl)
+         {
+            PLOGI << "Available controllers:";
+            SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+            int numJoysticks = 0;
+            SDL_JoystickID* joysticks = SDL_GetJoysticks(&numJoysticks);
+            if (joysticks)
+            {
+               for (int i = 0; i < numJoysticks; i++)
+               {
+                  const char* name = SDL_GetJoystickNameForID(joysticks[i]);
+                  PLOGI << "  Controller: " << (name ? name : "Unknown");
+                  SDL_Joystick* joy = SDL_OpenJoystick(joysticks[i]);
+                  if (joy)
+                  {
+                     PLOGI << "    ID: " << joysticks[i];
+                     PLOGI << "    Axes: " << SDL_GetNumJoystickAxes(joy);
+                     PLOGI << "    Buttons: " << SDL_GetNumJoystickButtons(joy);
+                     PLOGI << "    Hats: " << SDL_GetNumJoystickHats(joy);
+                     Uint16 vendor = SDL_GetJoystickVendor(joy);
+                     Uint16 product = SDL_GetJoystickProduct(joy);
+                     if (vendor || product)
+                        PLOGI << "    Vendor/Product: " << std::hex << vendor << ":" << product << std::dec;
+                     const char* serial = SDL_GetJoystickSerial(joy);
+                     if (serial)
+                        PLOGI << "    Serial: " << serial;
+                     SDL_CloseJoystick(joy);
+                  }
+               }
+               SDL_free(joysticks);
+            }
+            if (numJoysticks == 0)
+               PLOGI << "  No controllers found";
+         }
+         exit(0);
+      }
    #endif
 
    return TRUE;
