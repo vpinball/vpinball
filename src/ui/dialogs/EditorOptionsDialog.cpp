@@ -92,8 +92,15 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool logScript = g_pvp->m_settings.GetEditor_LogScriptOutput();
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool storeIniLocation = (g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) == g_pvp->GetAppPath(VPinball::AppSubFolder::Root));
-    SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, storeIniLocation ? BST_CHECKED : BST_UNCHECKED, 0);
+    const std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
+    const std::filesystem::path prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
+    const std::filesystem::path iniPath = PathFromFilename(g_pvp->m_settings.GetIniPath());
+    if (iniPath == appPath)
+       SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_CHECKED, 0);
+    else if (iniPath == prefPath)
+       SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_UNCHECKED, 0);
+    else // Running using a custom ini defined on the commandline => disable
+       SendDlgItemMessage(IDC_STORE_INI_LOCATION, WM_ENABLE, (WPARAM)FALSE, 0);
 
     const int units = g_pvp->m_settings.GetEditor_Units();
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
@@ -318,14 +325,18 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SetEditor_LogScriptOutput(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
-    std::filesystem::path defaultPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini");
-    std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root, "VPinballX.ini");
-    // if needed, copy ini from one default location to the other, as this is the location of the ini file that defines the app behavior
-    if (checked && FileExists(defaultPath)) // moving to app folder
-       std::filesystem::rename(defaultPath, appPath);
-    else if (!checked && FileExists(appPath)) // moving to preferences folder
-       std::filesystem::rename(appPath, defaultPath);
-    g_pvp->m_settings.SetIniPath((checked ? appPath : defaultPath).string());
+    const std::filesystem::path prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) / "VPinballX.ini";
+    const std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root) / "VPinballX.ini";
+    const std::filesystem::path iniPath = g_pvp->m_settings.GetIniPath();
+    if (iniPath == prefPath || iniPath == appPath) // Not available when running from a custom ini speccified on the commandline
+    {
+       // if needed, copy ini from one default location to the other, as this is the location of the ini file that defines the app behavior
+       if (checked && FileExists(prefPath)) // moving to app folder
+          std::filesystem::rename(prefPath, appPath);
+       else if (!checked && FileExists(appPath)) // moving to preferences folder
+          std::filesystem::rename(appPath, prefPath);
+       g_pvp->m_settings.SetIniPath((checked ? appPath : prefPath).string());
+    }
 
     // Go through and reset the autosave time on all the tables
     if (autosave)
