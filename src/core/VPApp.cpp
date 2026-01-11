@@ -991,8 +991,8 @@ BOOL VPApp::InitInstance()
    // Define settings location and load them
    if (m_iniFileName.empty())
    {
-      std::filesystem::path defaultPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini");
-      std::filesystem::path appPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Root, "VPinballX.ini");
+      std::filesystem::path defaultPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences) / "VPinballX.ini";
+      std::filesystem::path appPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Root) / "VPinballX.ini";
       if (FileExists(defaultPath))
          m_iniFileName = defaultPath.string();
       else if (FileExists(appPath))
