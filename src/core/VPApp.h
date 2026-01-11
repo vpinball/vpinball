@@ -34,6 +34,10 @@ private:
    
 #ifdef __STANDALONE__
    bool m_displayId = false;
+   bool m_listSnd = false;
+   bool m_listRes = false;
+   bool m_listCtrl = false;
+   bool m_listAll = false;
 #endif
    string m_tableFileName;
    string m_tableIniFileName;
