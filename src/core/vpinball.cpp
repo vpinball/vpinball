@@ -279,7 +279,7 @@ std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file)
    return file.empty() ? path : (path / file);
 }
 
-std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, bool createSubDir) const
+std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, bool searchForWriting) const
 {
    std::filesystem::path path;
    auto withSubFolder = [&sub](const std::filesystem::path& basePath)
@@ -303,17 +303,28 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
          path = withSubFolder(PathFromFilename(table->m_filename));
          if (sub == TableSubFolder::Cache)
             path = path / table->m_title; // table's title is its file name without extension
-         if (createSubDir && !DirExists(path))
+         if (!DirExists(path))
          {
-            std::filesystem::create_directories(path);
-            string type;
-            switch (sub)
+            if (searchForWriting)
             {
-            case TableSubFolder::Music: type = "Music"s; break;
-            case TableSubFolder::Cache: type = "Cache"s; break;
-            case TableSubFolder::User: type = "User"s; break;
+               std::filesystem::create_directories(path);
+               string type;
+               switch (sub)
+               {
+               case TableSubFolder::Music: type = "Music"s; break;
+               case TableSubFolder::Cache: type = "Cache"s; break;
+               case TableSubFolder::User: type = "User"s; break;
+               }
+               PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
             }
-            PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
+            else
+            {
+               // Not found and path searched for read only, retry in app mode only which was the only file layout used before 10.8.1
+               // This ease the transition, especially for music (if the user did not migrate it) and user folders (which will read for previous plays, but saved in new location)
+               const_cast<VPinball*>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
+               path = GetTablePath(table, sub, searchForWriting);
+               const_cast<VPinball *>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
+            }
          }
       }
       break;
@@ -325,14 +336,14 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
       case TableSubFolder::Cache:
          // Cache is stored inside preference directory with a sub folder per table title
          path = GetAppPath(AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
-         if (createSubDir && !DirExists(path))
+         if (searchForWriting && !DirExists(path))
             std::filesystem::create_directories(path);
          break;
 
       case TableSubFolder::User:
          // Shared user folder along the application path. This requires write access to the application path
          path = GetAppPath(AppSubFolder::Root) / "user"s;
-         if (createSubDir && !DirExists(path))
+         if (searchForWriting && !DirExists(path))
          {
             std::filesystem::create_directories(path);
             PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
