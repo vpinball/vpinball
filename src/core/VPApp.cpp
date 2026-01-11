@@ -630,8 +630,9 @@ string VPApp::GetCommandLineHelp()
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
       "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
-   #ifdef __STANDALONE__
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
+      "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
+   #ifdef __STANDALONE__
       "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
    #endif
       "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
