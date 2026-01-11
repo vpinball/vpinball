@@ -263,7 +263,7 @@ public:
       Cache, // 'cache/table_name/' folder along table file, used to cache player data (used textures to be loaded in GPU mem, compressed textures,...)
       User, // 'user' folder along table file, used to save user data (highscores, settings,...)
    };
-   std::filesystem::path GetTablePath(const PinTable* table, TableSubFolder sub, const string& childDir = ""s) const;
+   std::filesystem::path GetTablePath(const PinTable* table, TableSubFolder sub, bool createSubDir) const;
 
    std::filesystem::path SearchScript(const PinTable* table, const string& script) const;
 
