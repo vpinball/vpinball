@@ -122,7 +122,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       if (musicNameStr.empty())
          return S_OK;
 
-      string path = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music).string();
+      string path = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music, false).string();
       path = find_case_insensitive_file_path(path + musicNameStr);
       if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
       {
@@ -373,7 +373,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    auto table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
    if (table == nullptr)
       return E_FAIL;
-   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::User).string();
+   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::User, true).string();
    if (!DirExists(path))
       return E_FAIL;
    *pVal = MakeWideBSTR(path);
@@ -399,7 +399,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    PinTable* table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
    if (table == nullptr)
       return E_FAIL;
-   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::Music, childDir).string();
+   const string path = (g_pvp->GetTablePath(table, VPinball::TableSubFolder::Music, false) / childDir).string();
    if (!DirExists(path))
       return E_FAIL;
    *pVal = MakeWideBSTR(path);
@@ -514,7 +514,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User) / "VPReg.stg").string());
+   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User, true) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -522,10 +522,6 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       // Registry file does not exist - create it
       if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         const wstring wzMkPath = MakeWString(m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User).string());
-         if (_wmkdir(wzMkPath.c_str()) != 0)
-            return hr;
-
          if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
             return hr;
       }
@@ -606,7 +602,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User) / "VPReg.stg").string());
+   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User, false) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))

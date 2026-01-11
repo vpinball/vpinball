@@ -279,20 +279,19 @@ std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file)
    return file.empty() ? path : (path / file);
 }
 
-std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, const string &childDir) const
+std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, bool createSubDir) const
 {
    std::filesystem::path path;
-   auto withSubFolder = [&sub, &childDir](const std::filesystem::path& basePath)
+   auto withSubFolder = [&sub](const std::filesystem::path& basePath)
    {
       std::filesystem::path folder;
       switch (sub)
       {
-      case TableSubFolder::Music: folder = basePath / "music"; break;
-      case TableSubFolder::Cache: folder = basePath / "cache"; break;
-      case TableSubFolder::User: folder = basePath / "user"; break;
-      default: folder = basePath; break;
+      case TableSubFolder::Music: return basePath / "music"; break;
+      case TableSubFolder::Cache: return basePath / "cache"; break;
+      case TableSubFolder::User: return basePath / "user"; break;
+      default: return basePath; break;
       }
-      return childDir.empty() ? folder : (folder / childDir);
    };
 
    switch (m_fileLayoutMode)
@@ -304,7 +303,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
          path = withSubFolder(PathFromFilename(table->m_filename));
          if (sub == TableSubFolder::Cache)
             path = path / table->m_title; // table's title is its file name without extension
-         if (!DirExists(path))
+         if (createSubDir && !DirExists(path))
          {
             std::filesystem::create_directories(path);
             string type;
@@ -326,12 +325,14 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
       case TableSubFolder::Cache:
          // Cache is stored inside preference directory with a sub folder per table title
          path = GetAppPath(AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
+         if (createSubDir && !DirExists(path))
+            std::filesystem::create_directories(path);
          break;
 
       case TableSubFolder::User:
          // Shared user folder along the application path. This requires write access to the application path
          path = GetAppPath(AppSubFolder::Root) / "user"s;
-         if (!DirExists(path))
+         if (createSubDir && !DirExists(path))
          {
             std::filesystem::create_directories(path);
             PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
@@ -355,7 +356,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
                   path = withSubFolder(m_prefPath);
                   if (!DirExists(path))
                   {
-                     // Not found: defaults to folder along table
+                     // Not found: defaults to folder along table, not creating the dirs (backward compatiblity behavior)
                      path = withSubFolder(PathFromFilename(table->m_filename));
                   }
                }
