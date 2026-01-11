@@ -22,9 +22,13 @@ void main()
 	v_texcoord2 = offset[0];
 	v_texcoord3 = offset[1];
 	v_texcoord4 = offset[2];
-    gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-    #ifdef STEREO
-       gl_Layer = gl_InstanceID;
-       v_eye = layer.x + gl_InstanceID;
-    #endif
+#if TEX_V_IS_UP
+	gl_Position = vec4(a_position.x, -a_position.y, 0.0, 1.0);
+#else
+	gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
+#endif
+	#ifdef STEREO
+		gl_Layer = gl_InstanceID;
+		v_eye = layer.x + gl_InstanceID;
+	#endif
 }

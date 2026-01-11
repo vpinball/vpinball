@@ -17,9 +17,9 @@ void main()
 	offset[1] = v_texcoord3;
 	offset[2] = v_texcoord4;
 #if BGFX_SHADER_LANGUAGE_GLSL
-	vec2 rg = SMAALumaEdgeDetectionPS(v_texcoord0, offset, tex_fb_filtered);
+	vec2 rg = SMAAColorEdgeDetectionPS(v_texcoord0, offset, tex_fb_filtered);
 #else
-	vec2 rg = SMAALumaEdgeDetectionPS(v_texcoord0, offset, tex_fb_filtered.m_texture);
+	vec2 rg = SMAAColorEdgeDetectionPS(v_texcoord0, offset, tex_fb_filtered.m_texture);
 #endif
 	gl_FragColor = vec4(rg.r, rg.g, 0.0, 0.0);
 }
