@@ -59,8 +59,14 @@ vec3 approx_bump_normal(const vec2 coords, const vec2 offs, const float scale, c
 
     const float dpx = texStereoNoLod(tex_depth, vec2(coords.x + offs.x, coords.y)).x;
     const float dmx = texStereoNoLod(tex_depth, vec2(coords.x - offs.x, coords.y)).x;
-    const float dpy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y + offs.y)).x;
-    const float dmy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y - offs.y)).x;
+    #if TEX_V_IS_UP
+        // OpenGL and OpenGL ES have reversed render targets
+        const float dpy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y - offs.y)).x;
+        const float dmy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y + offs.y)).x;
+    #else
+        const float dpy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y + offs.y)).x;
+        const float dmy = texStereoNoLod(tex_depth, vec2(coords.x, coords.y - offs.y)).x;
+    #endif
 
     const vec2 xymult = max(1.0 - vec2(abs(dmx - dpx), abs(dmy - dpy)) * sharpness, 0.0);
 
