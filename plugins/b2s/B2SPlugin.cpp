@@ -175,7 +175,17 @@ static void OnGameStart(const unsigned int, void*, void*)
    if (loadedB2S.valid())
       loadedB2S.get(); // Flush any loading in progress to trigger texture destruction and void memory leaks
 
-   string b2sFilename = find_case_insensitive_file_path(TitleAndPathFromFilename(tableInfo.path) + ".directb2s");
+   // Search for an exact match (same file name with .directb2s extension)
+   const string tablePath = TitleAndPathFromFilename(tableInfo.path);
+   string b2sFilename = find_case_insensitive_file_path(tablePath + ".directb2s");
+   if (b2sFilename.empty())
+   {
+      // Search a file matching the template 'name (producer year) infos.vpx' (so same filename up to the last ')')
+      if (size_t pos = tablePath.rfind(')'); pos != std::string::npos)
+      {
+         b2sFilename = find_case_insensitive_file_path(tablePath.substr(0, pos + 1) + ".directb2s");
+      }
+   }
    if (!b2sFilename.empty())
    {
       auto loadFile = [](const string& path)
