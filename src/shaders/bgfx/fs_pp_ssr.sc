@@ -123,7 +123,11 @@ void main()
 
 	const float ushift = /*hash(v_texcoord0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	                     /*fract(*/texNoLod(tex_ao_dither, v_texcoord0/(64.0*w_h_height.xy)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
-	const vec2 offsMul = normal_b.xy * (/*w_h_height.xy*/ vec2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./float(samples))); //!! makes it more resolution independent?? test with 4xSSAA
+	/*const*/ vec2 offsMul = normal_b.xy * (/*w_h_height.xy*/ vec2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./float(samples))); //!! makes it more resolution independent?? test with 4xSSAA
+	#if TEX_V_IS_UP
+		// OpenGL and OpenGL ES have reversed render targets
+		offsMul.y = -offsMul.y;
+	#endif
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
 	vec3 refl = vec3(0.,0.,0.);
@@ -131,7 +135,7 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const vec2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const vec3 col = texStereoNoLod(tex_fb_filtered, offs).xyz;
+		const vec3 col = texStereoNoLod(tex_fb_filtered, offs).rgb;
 		if (!isnan(col.r) && !isnan(col.g) && !isnan(col.b))
 		{
 			const float w = sqrt(float(i-1)/samples_float); //!! fake falloff for samples more far away

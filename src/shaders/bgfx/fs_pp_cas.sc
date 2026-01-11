@@ -48,14 +48,14 @@ void main()
 	const vec2 um1 = u - w_h_height.xy;
 	const vec2 up1 = u + w_h_height.xy;
 
-	const vec3 a = texStereoNoLod(tex_fb_unfiltered,        um1          ).xyz;
-	const vec3 b = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   um1.y)).xyz;
-	const vec3 c = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, um1.y)).xyz;
-	const vec3 d = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, u.y  )).xyz;
-	const vec3 g = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, up1.y)).xyz;
-	const vec3 f = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, u.y  )).xyz;
-	const vec3 h = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   up1.y)).xyz;
-	const vec3 i = texStereoNoLod(tex_fb_unfiltered,        up1          ).xyz;
+	const vec3 a = texStereoNoLod(tex_fb_unfiltered,      um1          ).rgb;
+	const vec3 b = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   um1.y)).rgb;
+	const vec3 c = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, um1.y)).rgb;
+	const vec3 d = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, u.y  )).rgb;
+	const vec3 g = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, up1.y)).rgb;
+	const vec3 f = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, u.y  )).rgb;
+	const vec3 h = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   up1.y)).rgb;
+	const vec3 i = texStereoNoLod(tex_fb_unfiltered,      up1          ).rgb;
 
 	// Soft min and max.
 	//  a b c             b

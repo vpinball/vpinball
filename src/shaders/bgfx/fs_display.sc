@@ -62,7 +62,7 @@ vec3 ReinhardToneMap(vec3 color)
 }
 
 #if defined(TARGET_essl)
-	#define texFetch(tex, pos, size) texture2DLod(tex, vec2(pos) / size, 0.0)
+	#define texFetch(tex, pos, size) texNoLod(tex, vec2(pos) / size)
 #else
 	#define texFetch(tex, pos, size) texelFetch(tex, pos, 0)
 #endif
@@ -184,7 +184,7 @@ void main()
 		//float unlitLum = dot(unlitLum4, vec4_splat(1.0));
 		vec3 litLum = max(max(litLum4.x, litLum4.y), max(litLum4.z, litLum4.w)) * lit;
 		float unlitLum = max(max(unlitLum4.x, unlitLum4.y), max(unlitLum4.z, unlitLum4.w));
-		
+
 	#elif defined(DMD)
 		float unlitLum = 0.0;
 		vec3 litLum = vec3_splat(0.0);
@@ -211,7 +211,7 @@ void main()
 						litLum += light * texFetch(displayTex, dotUv, dmdSize).r * lit;
 				}
 			}
-		
+
 	#elif defined(CRT)
 		float unlitLum = 0.0;
 		vec3 litLum;
@@ -240,7 +240,7 @@ void main()
 			  CrtsTone(1.0,0.0,0.7,0.5));
 		}
 		litLum *= lit;
-		
+
 	#endif
 
 	// Shading is a mix of basic shading (just tinted texture ambient if any) and transmitted (tinted emitter ambient + light)

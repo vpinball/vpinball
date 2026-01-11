@@ -98,7 +98,7 @@ vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 {
    vec3 tn;
    if (noMipMaps)
-      tn = texture2DLod(tex_base_normalmap, uv, 0.0).xyz * (255./127.) - (128./127.);
+      tn = texNoLod(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
    else
       tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
 
@@ -124,7 +124,7 @@ vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
    // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal.xyz, N)) * mirrorFactor * texStereo(tex_reflection, (screenCoord.xy + vec2_splat(0.5)) * w_h_height.xy).rgb;
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * texStereo(tex_reflection, (screenCoord.xy + vec2_splat(0.5)) * w_h_height.xy).rgb;
 }
 
 // Compute refractions from screen space probe
@@ -154,7 +154,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const vec3 unbiased = vec3(1.0, 0.0, 0.0);
    //const vec3 biased = vec3(0.0, 1.0, 0.0);
-   //const vec3 unbiased = texture2D(tex_refraction, screenCoord.xy).rgb;
+   //const vec3 unbiased = texture2D(tex_refraction, screenCoord.xy * w_h_height.xy).rgb;
    //const vec3 biased = texture2D(tex_refraction, uv).rgb;
    //return mix(unbiased, biased, saturate((d - fragCoord.z) / fragCoord.w));
 
@@ -204,10 +204,10 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       // Full basic material shading
       #ifdef TEX
          vec4 pixel;
-		 if (noMipMaps)
-		    pixel = texture2DLod(tex_base_color, v_texcoord0, 0.0);
-		 else
-		    pixel = texture2D(tex_base_color, v_texcoord0);
+         if (noMipMaps)
+            pixel = texNoLod(tex_base_color, v_texcoord0);
+         else
+            pixel = texture2D(tex_base_color, v_texcoord0);
          #ifdef AT
             if (pixel.a <= alphaTestValue.x)
                discard; //stop the pixel shader if alpha test should reject pixel
@@ -266,9 +266,9 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       {
          // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color to background
          #ifdef STEREO
-			color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
+            color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
          #else
-			color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
+            color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
          #endif
          color.a = 1.0;
       }

@@ -152,10 +152,10 @@ void main()
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
     const vec4 proj = mul(mProj, vec4(playfield_hit, 1.0));
     #if TEX_V_IS_UP
-		// OpenGL and OpenGL ES have reversed render targets
-		const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, proj.y) * (0.5 / proj.w);
+        // OpenGL and OpenGL ES have reversed render targets
+        const vec2 uvp = vec2(0.5, 0.5) + proj.xy               * (0.5 / proj.w);
     #else
-		const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
+        const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
     #endif
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb

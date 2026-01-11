@@ -97,7 +97,7 @@ vec3 DoPointLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse
    if (!is_metal)
        ambient += diffuse;
 
-   const vec3 result = Out * lightEmission[i].xyz * fAtten + ambient * cAmbient_LightRange.xyz;
+   const vec3 result = Out * lightEmission[i].rgb * fAtten + ambient * cAmbient_LightRange.xyz;
    if (fDisableLighting_top_below.x != 0.0)
        return mix(result,diffuse,fDisableLighting_top_below.x);
    else
@@ -124,7 +124,7 @@ vec3 DoEnvmapGlossy(const vec3 N, const vec3 V, const vec2 Ruv, const vec3 gloss
 vec3 DoEnvmap2ndLayer(const vec3 color1stLayer, const vec3 pos, const vec3 N, const vec3 V, const float NdotV, const vec2 Ruv, const vec3 specular)
 {
    const vec3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_Thickness.z); //!! ?
-   const vec3 env = texture2DLod(tex_env, Ruv, 0.0).xyz;
+   const vec3 env = texNoLod(tex_env, Ruv).xyz;
    return mix(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 

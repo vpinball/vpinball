@@ -43,7 +43,7 @@ void main()
 
 	const vec2 u = v_texcoord0;
 
-	const vec3 mid = texStereoNoLod(tex_fb_unfiltered, u).xyz;
+	const vec3 mid = texStereoNoLod(tex_fb_unfiltered, u).rgb;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = texStereoNoLod(tex_depth, u).x;
@@ -55,17 +55,17 @@ void main()
 	}
 
 	const ARRAY_BEGIN(vec3, e, 9)
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y -w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x              , u.y -w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y -w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y -w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x              , u.y -w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y -w_h_height.y)).rgb,
 
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y)).rgb,
 		mid,
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y)).rgb,
 
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y +w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x              , u.y +w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y +w_h_height.y)).xyz
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y +w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x              , u.y +w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, vec2(u.x +w_h_height.x, u.y +w_h_height.y)).rgb
 	ARRAY_END();
 
 	// Bilateral Blur (crippled)

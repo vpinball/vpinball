@@ -40,19 +40,19 @@ EARLY_DEPTH_STENCIL void main()
    {
       pixel1 = texture2D(tex_flasher_A, v_texcoord0);
       if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
-	  {
-		gl_FragColor = vec4_splat(0.0);
-		return;
-	  }
+      {
+         gl_FragColor = vec4_splat(0.0);
+         return;
+      }
    }
    BRANCH if (flasherMode == 1.)
    {
       pixel2 = texture2D(tex_flasher_B, v_texcoord0);
       if (pixel2.a <= alphaTestValueAB_filterMode_addBlend.y)
-	  {
-		gl_FragColor = vec4_splat(0.0);
-		return;
-	  }
+      {
+         gl_FragColor = vec4_splat(0.0);
+         return;
+      }
    }
 
    vec4 result = staticColor_Alpha; // Mode 2 wires this through

@@ -20,7 +20,7 @@ uniform vec4 w_h_height;
 SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
 SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
 
-// Some of the texFetch are unfiltered, but since they are aligned ot exact texel coords, this does not need a dedicated sampler
+// Some of the texFetch are unfiltered, but since they are aligned to exact texel coords, this does not need a dedicated sampler
 #define tex_fb_unfiltered tex_fb_filtered
 
 

@@ -148,7 +148,7 @@ void main()
 		#ifdef TEX
 			vec4 l;
 			if (noMipMaps)
-				l = texture2DLod(tex_sprite, v_texcoord0, 0.0);
+				l = texNoLod(tex_sprite, v_texcoord0);
 			else
 				l = texture2D(tex_sprite, v_texcoord0);
 			if (l.a < alphaTestValue.x)
