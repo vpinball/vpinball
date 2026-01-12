@@ -5,6 +5,8 @@
 #include "PointOfViewSettingsPage.h"
 #include "core/TableDB.h"
 
+#include <regex>
+
 namespace VPX::InGameUI
 {
 
@@ -120,7 +122,14 @@ void PointOfViewSettingsPage::UpdateDefaults()
          { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
             TableDB db;
             db.Load();
-            int bestSizeMatch = db.GetBestSizeMatch(m_player->m_ptable->GetTableWidth(), m_player->m_ptable->GetHeight(), topHeight);
+            std::regex yearRegex(R"(\(.*?\s(\d{4})\))");
+            std::smatch match;
+            int yearHint = -1;
+            if (std::regex_search(m_player->m_ptable->m_title, match, yearRegex))
+               yearHint = std::stoi(match[1].str());
+            else if (std::regex_search(m_player->m_ptable->m_tableName, match, yearRegex))
+               yearHint = std::stoi(match[1].str());
+            int bestSizeMatch = db.GetBestSizeMatch(m_player->m_ptable->GetTableWidth(), m_player->m_ptable->GetHeight(), topHeight, -1, yearHint);
             if (bestSizeMatch >= 0)
             {
                bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
