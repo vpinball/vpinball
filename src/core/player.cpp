@@ -1486,9 +1486,6 @@ public:
    
    void Update()
    {
-      if (!m_player->IsPlaying())
-         return;
-
       std::lock_guard lock(m_captureMutex);
 
       m_player->m_physics->UpdatePhysics(max(m_captureTime, m_player->m_physics->GetCurrentTime()));
