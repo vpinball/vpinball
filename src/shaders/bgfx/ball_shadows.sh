@@ -13,7 +13,7 @@ float get_light_ball_shadow(const vec3 light_pos, const vec3 light_dir, const fl
 	for (int i = 0; i < NUM_BALLS; i++)
 	{
 		const float ball_r = balls[i].w;
-		if (ball_r == 0.0) // early out as soon as first 'invalid' ball is detected
+		BRANCH if (ball_r == 0.0) // early out as soon as first 'invalid' ball is detected
 			return result;
 		const vec3 ball_pos = balls[i].xyz;
 		const vec3 light_ball_ray = ball_pos - light_pos;

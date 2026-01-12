@@ -33,7 +33,12 @@ vec3 get_nonunit_normal(const float depth0, const vec2 u, const float v_eye) // 
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
 #endif
 {
-   const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   #if TEX_V_IS_UP
+      // OpenGL and OpenGL ES have reversed render targets
+      const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y - w_h_height.y)).x;
+   #else
+      const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   #endif
    const float depth2 = texStereoNoLod(tex_depth, vec2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
@@ -100,7 +105,7 @@ void main()
 	#endif
 	normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
 	normal_b = normalize(mix(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
-	
+
 	#if TEX_V_IS_UP
 		// OpenGL and OpenGL ES have reversed render targets
 		const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?

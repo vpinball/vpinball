@@ -30,7 +30,12 @@ vec3 get_nonunit_normal(const float depth0, const vec2 u, const float v_eye) // 
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
 #endif
 {
-   const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   #if TEX_V_IS_UP
+      // OpenGL and OpenGL ES have reversed render targets
+      const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y - w_h_height.y)).x;
+   #else
+      const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   #endif
    const float depth2 = texStereoNoLod(tex_depth, vec2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
