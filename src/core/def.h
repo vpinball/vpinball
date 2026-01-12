@@ -860,7 +860,6 @@ string string_replace_all(const string& szStr, const string& szFrom, const strin
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
 string create_hex_dump(const uint8_t* buffer, size_t size);
-vector<unsigned char> base64_decode(string encoded_string);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
 #endif
