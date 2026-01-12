@@ -1193,8 +1193,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	m_scriptError = true;
 
-	if (g_pplayer)
-		g_pplayer->LockForegroundWindow(false);
+   if (g_pplayer)
+   {
+      g_pplayer->LockForegroundWindow(false);
+      // Cancel capture and close app if in capture attract mode
+      if (g_pvp->m_captureAttract)
+         g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
+   }
 
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 #ifndef __STANDALONE__
