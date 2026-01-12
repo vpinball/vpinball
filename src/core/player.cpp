@@ -1645,12 +1645,16 @@ private:
 
    string GetFilename(VPXWindowId id, int index, bool isTmp) const
    {
-      // We use bmp file as they are dramatically faster to save and they are not meant to be kept anyway (they will be converted to video right after capture)
+      // The critical path is disk access and memory management:
+      // - png are well compressed but far to slow
+      // - bmp are fast to save but huge on disk (multiple time faster than png, but huge)
+      // - qoi are both faster to save and small enough on disk (twice faster than bmp)
+      // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
       std::stringstream ss;
       ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture\\"
          << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
              id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
-         << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.bmp" : ".bmp");
+         << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.qoi" : ".qoi");
       return ss.str();
    };
 

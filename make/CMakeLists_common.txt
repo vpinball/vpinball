@@ -388,6 +388,7 @@ set(VPX_SOURCES
    third-party/include/implot/implot_items.cpp
    third-party/include/implot/implot_internal.h
    third-party/include/mINI/ini.h
+   third-party/include/qoi/qoi.h
    third-party/include/progmesh.cpp
    third-party/include/progmesh.h
    third-party/include/progmesh_vecmatquat_minimal.h

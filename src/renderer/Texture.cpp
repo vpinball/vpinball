@@ -26,6 +26,9 @@
 #include <iostream>
 #endif
 
+#define QOI_API static
+#define QOI_IMPLEMENTATION
+#include "qoi/qoi.h"
 static inline int GetPixelSize(const BaseTexture::Format format)
 {
    switch (format)
@@ -500,6 +503,11 @@ bool BaseTexture::Save(const string& filepath) const
          success = SDL_SaveBMP(pSurface, filepath.c_str());
          SDL_DestroySurface(pSurface);
       }
+   }
+   else if (ext == "qoi")
+   {
+      qoi_desc desc { .width = m_width, .height = m_height, .channels = static_cast<unsigned char>(m_format == SRGB ? 3 :4), .colorspace = QOI_SRGB };
+      success = qoi_write(filepath.c_str(), m_data, &desc);
    }
    else
    {
