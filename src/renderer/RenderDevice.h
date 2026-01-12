@@ -245,7 +245,7 @@ private:
    int m_visualLatencyCorrection = -1;
 
    int m_screenshotFrameDelay = 0;
-   VPX::Window* m_screenshotWindow;
+   VPX::Window* m_screenshotWindow = nullptr;
    string m_screenshotFilename;
    std::function<void(VPX::Window*, bool)> m_screenshotCallback = [](VPX::Window*, bool) { };
 
