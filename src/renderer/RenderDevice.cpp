@@ -94,6 +94,8 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
    // - DX11 apply an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
    // - Metal & DX12 do not implement the framebuffer selection and always capture from the base swapchain and return data on the swapchain format
    // - OpenGL & Vulkan seems to be ok (always returning 4 byte BGRA, eventually after convertion if backbuffer format is not BGRA)
+   VPX::Window* wnd = m_rd.m_screenshotWindow;
+   m_rd.m_screenshotWindow = nullptr;
    bool success = false;
    auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA);
    if (tex)
@@ -114,7 +116,7 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
          tex->FlipY();
       success = tex->Save(_filePath);
    }
-   m_rd.m_screenshotCallback(m_rd.m_screenshotWindow, success);
+   m_rd.m_screenshotCallback(wnd, success);
 }
 
 #elif defined(ENABLE_OPENGL)
@@ -677,10 +679,17 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
-            if (rd->m_screenshotFrameDelay > 0) {
+            if (rd->m_screenshotWindow)
+            {
                rd->m_screenshotFrameDelay--;
                if (rd->m_screenshotFrameDelay == 0)
                   bgfx::requestScreenShot(rd->m_screenshotWindow->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename.c_str());
+               else if (rd->m_screenshotFrameDelay < -60)
+               {
+                  // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
+                  PLOGE << "Screenshot capture timed out. Requesting it again";
+                  bgfx::requestScreenShot(rd->m_screenshotWindow->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename.c_str());
+               }
             }
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
