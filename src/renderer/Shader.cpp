@@ -997,7 +997,9 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    if ((ShaderUniform::coreUniforms[uniformName].type != SUT_Sampler) && memcmp(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize) == 0)
    {
       #if defined(ENABLE_BGFX)
-      return;
+      // For some reason, BGFX's OpenGL backend does not persist uniform state correctly so we disable state optimization
+      if (bgfx::getRendererType() != bgfx::RendererType::OpenGL)
+         return;
 
       #elif defined(ENABLE_OPENGL)
       if (ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock)
