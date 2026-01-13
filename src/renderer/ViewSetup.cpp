@@ -66,12 +66,18 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
       glassNotification(std::format("Missing glass position guessed to be {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight), VPUTOCM(topHeight)));
    }
 
+   // Reset rotation against screen orientation
+   if (mMode != VLM_WINDOW)
+      mViewportRotation = 0.f;
+   mViewportRotation = GetRotation(static_cast<int>(1080.f * aspect), 1080);
+
    mMode = VLM_WINDOW;
    mViewHOfs = 0.f;
    mSceneScaleX = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
    mSceneScaleY = allowNonUniformStretch ? 1.f : mSceneScaleX;
    mWindowBottomZOfs = bottomHeight;
    mWindowTopZOfs = topHeight;
+
    SetViewPosFromPlayerPosition(table, playerPos, table->m_settings.GetPlayer_ScreenInclination());
 
    if (allowNonUniformStretch)
