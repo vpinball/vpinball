@@ -34,6 +34,101 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
    mViewZ = pos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
+void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
+{
+   const Settings& settings = table->m_settings; 
+   const float screenWidth = settings.GetPlayer_ScreenWidth();
+   const float screenHeight = settings.GetPlayer_ScreenHeight();
+   if (screenWidth <= 1.f || screenHeight <= 1.f)
+   {
+      PLOGE << "Screen dimensions must be defined before using automatic point of view";
+      return;
+   }
+
+   // Evaluate glass heights by analyzing table elements bounds, eventually reporting discrepancies
+   Vertex2D glass = table->EvaluateGlassHeight();
+   float bottomHeight = glass.x;
+   float topHeight = glass.y;
+   if (table->m_glassTopHeight != table->m_glassBottomHeight)
+   {
+      // If table already define a glass height, use it  (detected by the glass not being horizontal which was the default in previous version),
+      // We compare and propose the value to the user if there is a large enough difference
+      if (VPUTOINCHES(fabs(topHeight - table->m_glassTopHeight)) > 1.f || VPUTOINCHES(fabs(bottomHeight - table->m_glassBottomHeight)) > 1.f)
+      {
+         glassNotification(std::format("Glass position was evaluated to {:.2f}cm / {:.2f}cm\nIt differs from the defined glass position {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight),
+            VPUTOCM(topHeight), VPUTOCM(table->m_glassBottomHeight), VPUTOCM(table->m_glassTopHeight)));
+      }
+      topHeight = table->m_glassTopHeight;
+      bottomHeight = table->m_glassBottomHeight;
+   }
+   else
+   {
+      glassNotification(std::format("Missing glass position guessed to be {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight), VPUTOCM(topHeight)));
+   }
+
+   mMode = VLM_WINDOW;
+   mViewHOfs = 0.f;
+   mSceneScaleX = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
+   mSceneScaleY = allowNonUniformStretch ? 1.f : mSceneScaleX;
+   mWindowBottomZOfs = bottomHeight;
+   mWindowTopZOfs = topHeight;
+   SetViewPosFromPlayerPosition(table, playerPos, table->m_settings.GetPlayer_ScreenInclination());
+
+   if (allowNonUniformStretch)
+   {
+      // Vertical stretch (non uniform scale) to fit the table on screen, without any vertical offset
+      mViewVOfs = 0.f;
+   }
+   else
+   {
+      // Uniform scale fitted on table width (to avoid stretching the table) leading to hiding part of the apron and/or the top of the table
+      // Compute default vertical offset to always get the rest flipper position at the same point on screen, eventually moving up if it
+      // would lead to a gap at the top
+
+      // Find flipper rest position
+      constexpr float margin = INCHESTOVPU(4.f); // margin to exclude invisible flippers used for other purposes like animating diverters
+      float bottomY = table->m_bottom - INCHESTOVPU(10.f);
+      for (IEditable* edit : table->m_vedit)
+      {
+         if (edit->GetItemType() != eItemFlipper)
+            continue;
+         const Flipper* const flipper = static_cast<Flipper*>(edit);
+         float flipperBottomY = flipper->m_d.m_Center.y;
+         const float bottomDY = -min(sinf(ANGTORAD(90.f - flipper->m_d.m_StartAngle)), sinf(ANGTORAD(90.f - flipper->m_d.m_EndAngle)));
+         flipperBottomY += bottomDY * max(flipper->m_d.m_FlipperRadiusMin, flipper->m_d.m_FlipperRadiusMax);
+         flipperBottomY += flipper->m_d.m_EndRadius;
+         if ((flipper->m_d.m_Center.x > table->m_left + margin) && (flipper->m_d.m_Center.x < table->m_right - margin)
+            && (flipperBottomY < table->m_bottom - margin))
+            bottomY = max(bottomY, flipperBottomY);
+      }
+
+      // Compute the right vertical offset by doing a simple dichotomy search
+      ModelViewProj mvp;
+      float posMin = -100.f;
+      float posMax = +100.f;
+      constexpr float targetPos = -0.9f; // target position of the bottom of the flipper bat in clip space coordinate (-1 at bottom of screen, 1 at top of screen)
+      for (int i = 0; i < 20; i++)
+      {
+         mViewVOfs = 0.5f * (posMin + posMax);
+         ComputeMVP(table, aspect, false, mvp);
+         Vertex3Ds bottomFlipper(table->m_right * 0.5f, bottomY, 0.f);
+         mvp.GetModelViewProj(0).MultiplyVector(bottomFlipper);
+         Vertex3Ds backTop(table->m_right * 0.5f, 0.f, mWindowTopZOfs);
+         mvp.GetModelViewProj(0).MultiplyVector(backTop);
+         // PLOGD << "Vertical offset fitting: [" << posMin << " - " << posMax << "] " << defViewSetup.mViewVOfs << " => Flipper: " << bottomFlipper.y << ", BackTop: " << backTop.y;
+         const float delta = bottomFlipper.y - targetPos;
+         if (backTop.y < 1.0) // Don't create a gap at the top
+            posMax = mViewVOfs;
+         else if (fabs(delta) < 0.001f)
+            break;
+         else if (delta > 0.f)
+            posMin = mViewVOfs;
+         else
+            posMax = mViewVOfs;
+      }
+   }
+}
+
 void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id)
 {
    auto selectProp = [id](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
