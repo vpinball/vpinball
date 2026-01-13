@@ -62,24 +62,16 @@ void GraphicSettingsPage::BuildPage()
          m_player->m_ptable->SetViewSetupOverride(ViewSetupID::BG_INVALID);
       }));
 
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
    {
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propPlayer_CabinetAutofitMode, //
-         [this]() { return m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitMode(); }, // Live (same as persisted for the time being)
+         [this]() { return m_player->GetCabinetAutoFitMode(); }, // Live
          [this](int, int v)
          {
-            m_player->m_ptable->m_settings.SetPlayer_CabinetAutofitMode(v, false);
-            m_notificationId = m_player->m_liveUI->PushNotification("This property is directly saved and can not be overriden per table (yet)."s, 3000, m_notificationId);
+            m_player->SetCabinetAutoFitMode(v);
             if (v != 0)
-            {
-               Vertex3Ds playerPos(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerY(),
-                  m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
-               m_player->m_ptable->GetViewSetup().SetWindowAutofit(
-                  m_player->m_ptable, playerPos, m_player->m_renderer->GetDisplayAspectRatio(), m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitMode() == 2, [](string) { });
                OnStaticRenderDirty();
-            }
          }));
    }
 

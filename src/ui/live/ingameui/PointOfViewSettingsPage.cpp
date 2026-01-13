@@ -115,10 +115,8 @@ void PointOfViewSettingsPage::UpdateDefaults()
          return;
       }
       const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mSceneScaleY == m_player->m_ptable->GetViewSetup().mSceneScaleX);
-      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_renderer->GetDisplayAspectRatio(), isFitted, [this](string info)
-         {
-            m_glassNotifId = m_player->m_liveUI->PushNotification(info, 10000, m_glassNotifId);
-         });
+      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_renderer->GetDisplayAspectRatio(), isFitted,
+         [this](string info) { m_glassNotifId = m_player->m_liveUI->PushNotification(info, 10000, m_glassNotifId); });
    }
    else if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); m_player->m_ptable->GetViewMode() == BG_DESKTOP && !portrait)
    { // Desktop
@@ -429,17 +427,30 @@ void PointOfViewSettingsPage::BuildPage()
       break;
 
    case VLM_WINDOW:
-      AddItem(std::move(hOfs));
-      AddItem(std::move(vOfs));
-      AddItem(std::move(lockScale));
-      AddItem(std::move(xScale));
-      AddItem(std::move(yScale));
-      AddItem(std::move(wndTopZ));
-      AddItem(std::move(wndBotZ));
-      AddItem(std::move(playerX));
-      AddItem(std::move(playerY));
-      AddItem(std::move(playerZ));
-      AddItem(std::move(vpRotation));
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_CabinetAutofitMode, //
+         [this]() { return m_player->GetCabinetAutoFitMode(); }, // Live
+         [this](int, int v)
+         {
+            m_player->SetCabinetAutoFitMode(v);
+            if (v != 0)
+               OnPointOfViewChanged();
+            BuildPage();
+         }));
+      if (m_player->GetCabinetAutoFitMode() == 0)
+      {
+         AddItem(std::move(hOfs));
+         AddItem(std::move(vOfs));
+         AddItem(std::move(lockScale));
+         AddItem(std::move(xScale));
+         AddItem(std::move(yScale));
+         AddItem(std::move(wndTopZ));
+         AddItem(std::move(wndBotZ));
+         AddItem(std::move(playerX));
+         AddItem(std::move(playerY));
+         AddItem(std::move(playerZ));
+         AddItem(std::move(vpRotation));
+      }
       break;
    }
 }
