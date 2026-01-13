@@ -1296,6 +1296,14 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       // auto-import VBS table script, if it exists...
       if (std::filesystem::path filenameAuto = SearchScript(ppt, ppt->m_title + ".vbs"); !filenameAuto.empty())
          ppt->m_pcv->LoadFromFile(filenameAuto.string());
+      else
+      {
+         const auto folder = std::filesystem::path(ppt->m_filename).parent_path();
+         string folderVbs = (folder / (folder.filename().string() + ".vbs")).string();
+         folderVbs = find_case_insensitive_file_path(folderVbs);
+         if (!folderVbs.empty())
+            ppt->m_pcv->LoadFromFile(folderVbs);
+      }
 
       // auto-import VPP settings, if it exists...
       if (const string filenameAuto = tablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
