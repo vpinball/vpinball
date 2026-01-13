@@ -24,8 +24,8 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
 {
    assert(mMode == VLM_WINDOW);
    const float realToVirtual = GetRealToVirtualScale(table);
-   const float screenBotZ = GetWindowBottomZOffset(table);
-   const float screenTopZ = GetWindowTopZOffset(table);
+   const float screenBotZ = GetWindowBottomZOffset();
+   const float screenTopZ = GetWindowTopZOffset();
    // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
    const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(screenInclination));
    const vec3 pos = rotx.MultiplyVectorNoPerspective(CMTOVPU(playerPos));
@@ -129,21 +129,15 @@ void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupI
       setFloat(mLayback, Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback);
 }
 
-float ViewSetup::GetWindowTopZOffset(const PinTable* const table) const
+float ViewSetup::GetWindowTopZOffset() const
 {
-   if (mMode == VLM_WINDOW)
-      return mWindowTopZOfs;
-   else
-      return 0.f;
+   return mMode == VLM_WINDOW ? mWindowTopZOfs : 0.f;
 }
 
-float ViewSetup::GetWindowBottomZOffset(const PinTable* const table) const
+float ViewSetup::GetWindowBottomZOffset() const
 {
    // result is in the table coordinate system (so, usually between 0 and table->bottomglassheight)
-   if (mMode == VLM_WINDOW)
-      return mWindowBottomZOfs;
-   else
-      return 0.f;
+   return mMode == VLM_WINDOW ? mWindowBottomZOfs : 0.f;
 }
 
 int2 ViewSetup::GetUnsquashedViewport(const StereoMode mode, const int viewportWidth, const int viewportHeight)
@@ -204,7 +198,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
 {
    if (mMode == VLM_WINDOW)
    {
-      const float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
+      const float windowBotZ = GetWindowBottomZOffset(), windowTopZ = GetWindowTopZOffset();
       const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
@@ -220,7 +214,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    const bool isLegacy = mMode == VLM_LEGACY;
    const bool isWindow = mMode == VLM_WINDOW;
    float camx = cam.x, camy = cam.y, camz = cam.z;
-   const float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
+   const float windowBotZ = GetWindowBottomZOffset(), windowTopZ = GetWindowTopZOffset();
 
    // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
    const float realToVirtual = GetRealToVirtualScale(table);
@@ -562,4 +556,35 @@ vec3 ViewSetup::FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const f
    const float ydist = (maxyintercept - minyintercept) / (slopey * 2.0f);
    const float xdist = (maxxintercept - minxintercept) / (slopex * 2.0f);
    return vec3((maxxintercept + minxintercept) * 0.5f, (maxyintercept + minyintercept) * 0.5f, max(ydist, xdist) + xlatez);
+}
+
+void ViewSetup::DebugLog() const
+{
+   PLOGD << "ViewSetup debug log: " << reinterpret_cast<uintptr_t>(this);
+   PLOGD << ". mMode:             " << mMode;
+   PLOGD << ". mSceneScaleX:      " << mSceneScaleX;
+   PLOGD << ". mSceneScaleY:      " << mSceneScaleY;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mSceneScaleZ:      " << mSceneScaleZ;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mViewX:            " << mViewX;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mViewY:            " << mViewY;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mViewZ:            " << mViewZ;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mLookAt:           " << mLookAt;
+   PLOGD << ". mViewportRotation: " << mViewportRotation;
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      PLOGD << ". mFOV:              " << mFOV;
+   if (mMode == VLM_LEGACY)
+      PLOGD << ". mLayback:          " << mLayback;
+   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
+      PLOGD << ". mViewHOfs:         " << mViewHOfs;
+   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
+      PLOGD << ". mViewVOfs:         " << mViewVOfs;
+   if (mMode == VLM_WINDOW)
+      PLOGD << ". mWindowTopZOfs:    " << mWindowTopZOfs;
+   if (mMode == VLM_WINDOW)
+      PLOGD << ". mWindowBottomZOfs: " << mWindowBottomZOfs;
 }

@@ -173,16 +173,23 @@ void PointOfViewSettingsPage::UpdateDefaults()
          defViewSetup.mSceneScaleY = isFitted ? 1.f : scale;
          defViewSetup.mWindowBottomZOfs = bottomHeight;
          defViewSetup.mWindowTopZOfs = topHeight;
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         defViewSetup.SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
+
          if (isFitted)
          {
-            // Non uniform scale to shrink the table inside the screen, including the apron => no need for a vertical offset
+            // Vertical stretch (non uniform scale) to fit the table on screen, without any vertical offset
             defViewSetup.mViewVOfs = 0.f;
          }
          else
          {
-            // Uniform scale to fit the table inside the screen, eventually hiding the apron => adjust vertical offset based on lowest flipper position
+            // Uniform scale fitted on table width (to avoid stretching the table) leading to hiding part of the apron and/or the top of the table
+            // Compute default vertical offset to always get the rest flipper position at the same point on screen, eventually moving up if it
+            // would lead to a gap at the top
+
+            // Find flipper rest position
             constexpr float margin = INCHESTOVPU(4.f); // margin to exclude invisible flippers used for other purposes like animating diverters
-            float bottomY = m_player->m_ptable->m_top;
+            float bottomY = m_player->m_ptable->m_bottom - INCHESTOVPU(10.f);
             for (IEditable* edit : m_player->m_ptable->m_vedit)
             {
                if (edit->GetItemType() != eItemFlipper)
@@ -191,15 +198,37 @@ void PointOfViewSettingsPage::UpdateDefaults()
                float flipperBottomY = flipper->m_d.m_Center.y;
                const float bottomDY = -min(sinf(ANGTORAD(90.f - flipper->m_d.m_StartAngle)), sinf(ANGTORAD(90.f - flipper->m_d.m_EndAngle)));
                flipperBottomY += bottomDY * max(flipper->m_d.m_FlipperRadiusMin, flipper->m_d.m_FlipperRadiusMax);
-               PLOGD << flipperBottomY;
+               flipperBottomY += flipper->m_d.m_EndRadius;
                if ((flipper->m_d.m_Center.x > m_player->m_ptable->m_left + margin)
                   && (flipper->m_d.m_Center.x < m_player->m_ptable->m_right - margin)
                   && (flipperBottomY < m_player->m_ptable->m_bottom - margin))
                   bottomY = max(bottomY, flipperBottomY);
             }
-            float offset = m_player->m_ptable->m_bottom - bottomY;
-            // We should compute a proper offset based on the point of view. For the time being, we apply a simple magic offset which seems fine enough
-            defViewSetup.mViewVOfs = VPUTOCM(offset) - 15.5f;
+
+            // Compute the right vertical offset by doing a simple dichotomy search
+            ModelViewProj mvp;
+            float posMin = -100.f;
+            float posMax = +100.f;
+            constexpr float targetPos = -0.9f; // target position of the bottom of the flipper bat in clip space coordinate (-1 at bottom of screen, 1 at top of screen)
+            for (int i = 0; i < 20; i++)
+            {
+               defViewSetup.mViewVOfs = 0.5f * (posMin + posMax);
+               defViewSetup.ComputeMVP(m_player->m_ptable, m_player->m_playfieldWnd->GetAspectRatio(), false, mvp);
+               Vertex3Ds bottomFlipper(m_player->m_ptable->m_right * 0.5f, bottomY, 0.f);
+               mvp.GetModelViewProj(0).MultiplyVector(bottomFlipper);
+               Vertex3Ds backTop(m_player->m_ptable->m_right * 0.5f, 0.f, defViewSetup.mWindowTopZOfs);
+               mvp.GetModelViewProj(0).MultiplyVector(backTop);
+               // PLOGD << "Vertical offset fitting: [" << posMin << " - " << posMax << "] " << defViewSetup.mViewVOfs << " => Flipper: " << bottomFlipper.y << ", BackTop: " << backTop.y;
+               const float delta = bottomFlipper.y - targetPos;
+               if (backTop.y < 1.0) // Don't create a gap at the top
+                  posMax = defViewSetup.mViewVOfs;
+               else if (fabs(delta) < 0.001f)
+                  break;
+               else if (delta > 0.f)
+                  posMin = defViewSetup.mViewVOfs;
+               else
+                  posMax = defViewSetup.mViewVOfs;
+            }
          }
       }
    }
