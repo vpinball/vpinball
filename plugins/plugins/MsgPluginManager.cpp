@@ -337,7 +337,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& i
    return plugin;
 }
 
-void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback)
+void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::filesystem::path& pluginDir, const std::function<void(MsgPlugin&)>& callback)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (!std::filesystem::exists(pluginDir))
