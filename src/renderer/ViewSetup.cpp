@@ -34,7 +34,7 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
    mViewZ = pos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
-void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
+void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
 {
    const Settings& settings = table->m_settings; 
    const float screenWidth = settings.GetPlayer_ScreenWidth();
@@ -112,7 +112,7 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
       ModelViewProj mvp;
       float posMin = -100.f;
       float posMax = +100.f;
-      constexpr float targetPos = -0.9f; // target position of the bottom of the flipper bat in clip space coordinate (-1 at bottom of screen, 1 at top of screen)
+      const float targetPos = -1.f + 2.f * flipperPos; // target position of the bottom of the flipper bat in clip space coordinate (-1 at bottom of screen, 1 at top of screen)
       for (int i = 0; i < 20; i++)
       {
          mViewVOfs = 0.5f * (posMin + posMax);

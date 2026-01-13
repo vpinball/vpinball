@@ -73,6 +73,17 @@ void GraphicSettingsPage::BuildPage()
             if (v != 0)
                OnStaticRenderDirty();
          }));
+      if (m_player->GetCabinetAutoFitMode() == 1)
+      {
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propPlayer_CabinetAutofitPos, 100.f, "%4.1f %%"s, //
+            [this]() { return m_player->GetCabinetAutoFitPos(); },
+            [this](float, float v)
+            {
+               m_player->SetCabinetAutoFitPos(v);
+               OnStaticRenderDirty();
+            }));
+      }
    }
 
 

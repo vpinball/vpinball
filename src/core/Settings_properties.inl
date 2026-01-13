@@ -152,6 +152,7 @@ PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail for balls a
 PropEnum(Player, BGSet, "View Mode"s, "Select between desktop, cabinet or 'full single screen' viewing mode configurations (if a table has set them up correctly)"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Full Single Screen"s);
 PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between manual setup, automatic fitting without visual stretch or automatic fitting with table stretching"s, int, 0,
    "Manual"s, "Fit Table"s, "Fit Screen"s);
+PropFloat(Player, CabinetAutofitPos, "Cabinet Autofit Pos"s, "Relative lower flipper bat position when using automatic view fitting (0% for bottom of screen, 100% for top)"s, 0.f, 0.2f, 0.05f);
 
 // Aliasing & sharpening
 PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
