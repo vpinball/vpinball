@@ -940,6 +940,20 @@ void Renderer::DrawBackground()
    }
 }
 
+int Renderer::GetDisplayWidth() const
+{
+   return m_stereo3D == STEREO_SBS ? (GetBackBufferTexture()->GetWidth() * 2) : GetBackBufferTexture()->GetWidth();
+}
+
+int Renderer::GetDisplayHeight() const
+{
+   return (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT) ? (GetBackBufferTexture()->GetHeight() * 2) : GetBackBufferTexture()->GetHeight();
+}
+
+float Renderer::GetDisplayAspectRatio() const
+{
+   return (float)((double)GetDisplayWidth() / (double)GetDisplayHeight());
+}
 
 // Setup the tables camera / rotation / scale.
 //
@@ -961,9 +975,7 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    #elif defined(ENABLE_DX9)
    constexpr bool stereo = false;
    #endif
-   const int bbWidth = m_stereo3D == STEREO_SBS ? (GetBackBufferTexture()->GetWidth() * 2) : GetBackBufferTexture()->GetWidth();
-   const int bbHeight = (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT) ? (GetBackBufferTexture()->GetHeight() * 2) : GetBackBufferTexture()->GetHeight();
-   viewSetup.ComputeMVP(m_table, (float)((double)bbWidth / (double)bbHeight), stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)bbWidth, ypixoff / (float)bbHeight);
+   viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
    SetupShaders();
 }
 

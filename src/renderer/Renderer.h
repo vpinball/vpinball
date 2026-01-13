@@ -23,6 +23,9 @@ public:
    bool IsStereo() const { return m_pOffscreenBackBufferTexture1->m_type == SurfaceType::RT_STEREO; }
    colorFormat GetRenderFormat() const { return m_pOffscreenBackBufferTexture1->GetColorFormat(); }
 
+   int GetDisplayWidth() const; // Playfield display width, taking in consideration stretching applied by some stereo modes
+   int GetDisplayHeight() const; // Playfield display width, taking in consideration stretching applied by some stereo modes
+   float GetDisplayAspectRatio() const;
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
    const ModelViewProj& GetMVP() const { return *m_mvp; }

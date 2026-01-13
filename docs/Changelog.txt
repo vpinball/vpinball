@@ -158,6 +158,8 @@ FEATURES:
   . Add setting pages, moving lots of settings inside these pages
   . Navigation using flipper input has been unified: magna buttons allow to move, while flipper buttons allow to select
 
+- For cabinet users, a new option in the graphic settings allow to enable automatic window camera fitting at table startup, based on table or screen fitting.
+
 - Performance overlay has been improved with better insights and its display state is now persistent
 
 - Table settings override will only save actual overrides, so only those settings that are different from application settings and default values
