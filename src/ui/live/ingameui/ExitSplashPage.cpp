@@ -114,13 +114,15 @@ void ExitSplashPage::Render(float elapsedMs)
 
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
          | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-      ImGui::SetNextWindowBgAlpha(0.5f * (1.f - fabs(GetOpenCloseAnimPos())));
+      ImGui::SetNextWindowBgAlpha(0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
+      ImGui::PushStyleVar(ImGuiStyleVar_Alpha,0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
       ImGui::Begin((std::to_string(reinterpret_cast<uint64_t>(this)) + ".back").c_str(), nullptr, window_flags);
       m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
       ImGui::Markdown(info.str().c_str(), info.str().length(), m_player->m_liveUI->GetMarkdownConfig());
       ImGui::End();
+      ImGui::PopStyleVar();
    }
   
    InGameUIPage::Render(elapsedMs);

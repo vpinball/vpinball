@@ -195,7 +195,7 @@ void NudgeSettingsPage::Render(float elapsed)
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowPos(ImVec2(GetWindowPos().x, GetWindowPos().y - winSize.y - style.ItemSpacing.y));
-   ImGui::SetNextWindowBgAlpha(0.5f);
+   ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
