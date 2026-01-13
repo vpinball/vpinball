@@ -115,7 +115,7 @@ void PointOfViewSettingsPage::UpdateDefaults()
          return;
       }
       const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mSceneScaleY == m_player->m_ptable->GetViewSetup().mSceneScaleX);
-      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_playfieldWnd->GetAspectRatio(), isFitted, [this](string info)
+      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_renderer->GetDisplayAspectRatio(), isFitted, [this](string info)
          {
             m_glassNotifId = m_player->m_liveUI->PushNotification(info, 10000, m_glassNotifId);
          });
