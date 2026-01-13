@@ -12,9 +12,9 @@ void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
    {
       // statics as they need to survive as C string after this function returns
       static string path;
-      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Root).string();
+      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
       static string prefPath;
-      prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences).string();
+      prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
       info->path = path.c_str();
       info->prefPath = prefPath.c_str();
    }

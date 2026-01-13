@@ -181,7 +181,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
 
       g_pvp = new ::VPinball();
       g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
-      g_pvp->m_settings.SetIniPath(g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini").string());
+      g_pvp->m_settings.SetIniPath(g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "VPinballX.ini").string() + PATH_SEPARATOR_CHAR);
       g_pvp->m_settings.Load(true);
       g_pvp->m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
       g_pvp->m_settings.Save();
@@ -464,7 +464,7 @@ VPINBALL_STATUS VPinballLib::ResetIni()
    if (!std::filesystem::remove(iniFilePath))
     return VPINBALL_STATUS_FAILURE;
 
-   g_pvp->m_settings.SetIniPath(iniFilePath.string());
+   g_pvp->m_settings.SetIniPath(iniFilePath.string() + PATH_SEPARATOR_CHAR);
    g_pvp->m_settings.Load(true);
    g_pvp->m_settings.Save();
    return VPINBALL_STATUS_SUCCESS;

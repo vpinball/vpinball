@@ -1147,7 +1147,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         Settings::SetRecentDir_LoadDir_Default(m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string());
+         Settings::SetRecentDir_LoadDir_Default(m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
          szInitialDir = m_settings.GetRecentDir_LoadDir();
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();

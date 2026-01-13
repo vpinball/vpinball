@@ -1016,14 +1016,14 @@ BOOL VPApp::InitInstance()
    PLOGI << "Application path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences);
    
-   Settings::SetRecentDir_ImportDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_LoadDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_FontDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_PhysicsDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_ImageDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_MaterialDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_SoundDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
-   Settings::SetRecentDir_POVDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string());
+   Settings::SetRecentDir_ImportDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_LoadDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_FontDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_PhysicsDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_ImageDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_MaterialDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_SoundDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_POVDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
 
    m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
 

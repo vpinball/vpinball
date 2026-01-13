@@ -17,6 +17,7 @@
 #include <mutex>
 #include <memory>
 #include <functional>
+#include <filesystem>
 
 namespace MsgPI
 {
@@ -99,7 +100,7 @@ public:
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
 
    std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
-   void ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
+   void ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::filesystem::path& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const std::vector<std::shared_ptr<MsgPlugin>> GetPlugins() const { return m_plugins; }
    void LoadPlugin(MsgPlugin& plugin);
