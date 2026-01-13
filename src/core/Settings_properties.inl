@@ -150,6 +150,8 @@ PropEnum(Player, PFReflection, "Reflection Quality"s,
 PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 1536 : 16384);
 PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail for balls and ramps"s, 1, 10, 10);
 PropEnum(Player, BGSet, "View Mode"s, "Select between desktop, cabinet or 'full single screen' viewing mode configurations (if a table has set them up correctly)"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Full Single Screen"s);
+PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between manual setup, automatic fitting without visual stretch or automatic fitting with table stretching"s, int, 0,
+   "Manual"s, "Fit Table"s, "Fit Screen"s);
 
 // Aliasing & sharpening
 PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,

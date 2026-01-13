@@ -562,6 +562,13 @@ Player::Player(PinTable *const table, const int playMode)
    PLOGI << "Initializing renderer"; // For profiling
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
+   // Apply cabinet autofit
+   if (m_ptable->m_settings.GetPlayer_CabinetAutofitMode() != 0)
+   {
+      Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
+      m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_ptable->m_settings.GetPlayer_CabinetAutofitMode() == 2, [](string) { });
+   }
+
    // Setup rendering and timers
    RenderState state;
    state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
