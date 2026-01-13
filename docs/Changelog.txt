@@ -69,10 +69,13 @@ FEATURES:
 
 - folder layout now conforms to platform requirements, with the application in its read only application folder (for example C:\Program Files under Windows),
   its preferences (VPinballX.ini, ...) in the system preference folder (C:\Users\...\AppData\Roaming\VPinballX) and the data (tables, music, user folder, ...)
-  inside the user data folder hierarchy (C:\Users\...\Documents). This supports creating one folder per table, to group the table file with all its support
-  folders & files (cache, music, flexdmd, ...), avoiding to mix files between tables.
+  inside the user data folder hierarchy (C:\Users\...\Documents). 
   The legacy behavior (everything in the application folder, mixing music, user, cache, scripts, ... files between all tables) is still available by checking
   the corresponding option in the 'INI/Editor/UI Options' dialog. It requires the application to be installed in a folder with read/write access.
+- This supports creating one folder per table, to group the table file with all its support folders & files (cache, music, flexdmd, ...), avoiding to mix files
+  between tables, also allowing a common install procedure for other virtual pinball components (Frontend, B2S, PinUp videos, ...).
+- Custom settings 'ini' or script 'vbs' are searched along the table matching the table filename. If not found they are also searched along the table matching
+  the folder name. This allows to share custom settings/script for different versions of a table placed together in a folder.
 
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The score view uses a layout defined in a 'scv' file placed along the table file
   matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to

@@ -105,11 +105,6 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    //lparam holds HWND of the MDI frame that is about to be activated
    if (GetHwnd() == (HWND)wparam)
    {
-      if (!m_table->m_filename.empty())
-      {
-         m_table->m_settings.SetIniPath(m_table->GetSettingsFileName());
-         m_table->m_settings.Save();
-      }
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;
    }

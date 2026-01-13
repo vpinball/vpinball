@@ -553,6 +553,7 @@ public:
 
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
 
+   // Override automatic ini path (used for commandline override)
    void SetSettingsFileName(const string &path)
    {
       m_iniFileName = FileExists(path) ? path : string();
@@ -560,17 +561,33 @@ public:
       m_settings.Load(false);
    }
 
+   // Get the ini file name to use for this table (either overridden or derived from table or folder name)
    string GetSettingsFileName() const
    {
+      // Overriden externally (on command line)
       if (!m_iniFileName.empty() && FileExists(m_iniFileName))
          return m_iniFileName;
-      string INIFilename = m_filename;
-      if (ReplaceExtensionFromFilename(INIFilename, "ini"s))
-         return INIFilename;
-      return string();
+
+      // Not overriden and table file not yet saved => No table ini file available
+      string tableIni = m_filename;
+      if (!FileExists(m_filename) || !ReplaceExtensionFromFilename(tableIni, "ini"s))
+         return string();
+
+      // Table ini file alongside table file, name matching table filename
+      if (FileExists(tableIni))
+         return tableIni;
+
+      // Table ini file alongside table file, name matching folder name
+      const auto folder = std::filesystem::path(m_filename).parent_path();
+      string folderIni = (folder / (folder.filename().string() + ".ini")).string();
+      folderIni = find_case_insensitive_file_path(folderIni);
+      if (!folderIni.empty())
+         return folderIni;
+
+      // No existing file: defaults to ini file alongside table file, name matching table filename
+      return tableIni;
    }
 
-   string m_iniFileName;
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    PinTable * m_liveBaseTable = nullptr; // Defined when this table is a live shallow copy of another table
@@ -578,6 +595,8 @@ public:
    template <class T> T *GetStartupFromLive(T *obj) { return static_cast<T *>(m_liveToStartup[obj]); }
 
 private:
+   string m_iniFileName;
+
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
