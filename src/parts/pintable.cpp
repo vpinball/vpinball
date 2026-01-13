@@ -7825,7 +7825,7 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
             return propId;
          }
       }
-      auto prop = std::make_unique<VPX::Properties::EnumPropertyDef>("TableOption"s, optId, name, ""s, false, static_cast<int>(minValue), static_cast<int>(defaultValue), literals);
+      auto prop = std::make_unique<VPX::Properties::EnumPropertyDef>("TableOption"s, optId, name, ""s, true, static_cast<int>(minValue), static_cast<int>(defaultValue), literals);
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
       m_tableOptions.emplace_back(propId, 1.f, ""s, static_cast<float>(m_settings.GetInt(propId)));
       return propId;
