@@ -243,6 +243,8 @@ static const string options[] = { // keep in sync with option_names & option_des
    "Audit"s,
    "listres"s,
    "listsnd"s,
+   "listctrl"s,
+   "listall"s,
    "CaptureAttract"s,
    "c1"s,
    "c2"s,
@@ -288,6 +290,8 @@ static const string option_descs[] =
    "[table filename] Audit the table"s,
    "List available fullscreen resolutions"s,
    "List available sound devices"s,
+   "List available controllers"s,
+   "List all devices (displays, sound, controllers)"s,
    "Capture an attract mode video"s,
    "Custom value 1"s,
    "Custom value 2"s,
@@ -333,6 +337,8 @@ enum option_names
    OPTION_AUDIT,
    OPTION_LISTRES,
    OPTION_LISTSND,
+   OPTION_LISTCTRL,
+   OPTION_LISTALL,
    OPTION_CAPTURE_ATTRACT,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
@@ -354,10 +360,11 @@ enum option_names
 void showDisplayIDs()
 {
    TTF_Init();
-   string path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
-   TTF_Font* pFont = TTF_OpenFont(path.c_str(), 200);
-   if (!pFont) {
-      PLOGI << "Failed to load font: " << SDL_GetError();
+   string fontPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
+   TTF_Font* pFontLarge = TTF_OpenFont(fontPath.c_str(), 72);
+   TTF_Font* pFontSmall = TTF_OpenFont(fontPath.c_str(), 24);
+   if (!pFontLarge || !pFontSmall) {
+      PLOGE << "Failed to load font: " << SDL_GetError();
       TTF_Quit();
       return;
    }
@@ -369,64 +376,148 @@ void showDisplayIDs()
    }
    SDL_HideCursor();
 
-   int displayCount;
-   SDL_DisplayID* pDisplays = SDL_GetDisplays(&displayCount);
-   SDL_Window* pWindows[displayCount];
-   SDL_Renderer* pRenderers[displayCount];
+   vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+   vector<SDL_Window*> windows;
+   vector<SDL_Renderer*> renderers;
 
-   for (int i = 0; i < displayCount; i++) {
-      // get bounds and create windows on each display
+   for (const auto& display : displays) {
       SDL_Rect displayBounds;
-      SDL_GetDisplayBounds(pDisplays[i], &displayBounds);
-      PLOGI << "DisplayID: " <<  pDisplays[i] << " bounds: " << displayBounds.x << 'x' << displayBounds.y << " Res: " << displayBounds.w << 'x' << displayBounds.h;
-      pWindows[i] = SDL_CreateWindow("Display", displayBounds.w, displayBounds.h, 0);
-      if (!pWindows[i])
-         continue;
-      SDL_SetWindowPosition(pWindows[i],  displayBounds.x,  displayBounds.y);
-      while(!SDL_SyncWindow(pWindows[i])) {}
+      SDL_GetDisplayBounds(display.display, &displayBounds);
+      PLOGI << "Display: " << display.displayName << " bounds: " << displayBounds.x << 'x' << displayBounds.y << " Res: " << displayBounds.w << 'x' << displayBounds.h;
 
-      pRenderers[i] = SDL_CreateRenderer(pWindows[i], NULL);
-      if (!pRenderers[i])
+      // Create fullscreen window on this display
+      SDL_Window* pWindow = SDL_CreateWindow(display.displayName.c_str(), displayBounds.w, displayBounds.h, SDL_WINDOW_BORDERLESS);
+      if (!pWindow) {
+         PLOGE << "Failed to create window: " << SDL_GetError();
+         windows.push_back(nullptr);
+         renderers.push_back(nullptr);
          continue;
-      SDL_RenderClear(pRenderers[i]);
+      }
 
-      // put display number on renderer
-      SDL_Color white = {255, 255, 255};
-      SDL_Surface* pSurface = TTF_RenderText_Solid_Wrapped(pFont, (std::to_string(pDisplays[i]) + "\n(" + std::to_string(displayBounds.x) + 'x' + std::to_string(displayBounds.y) + ')').c_str(), 0, white, 900);
-      if (!pSurface)
+      // Use fullscreen mode to position on the correct display
+      const SDL_DisplayMode* desktopMode = SDL_GetDesktopDisplayMode(display.display);
+      if (desktopMode)
+         SDL_SetWindowFullscreenMode(pWindow, desktopMode);
+      SDL_SetWindowFullscreen(pWindow, true);
+      SDL_SyncWindow(pWindow);
+
+      SDL_Renderer* pRenderer = SDL_CreateRenderer(pWindow, NULL);
+      if (!pRenderer) {
+         SDL_DestroyWindow(pWindow);
+         windows.push_back(nullptr);
+         renderers.push_back(nullptr);
          continue;
-      float textWidth = pSurface->w;
-      float textHeight = pSurface->h;
-      SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderers[i], pSurface);
-      if (pTexture) {
-         SDL_FRect rect = {(displayBounds.w - textWidth) / 2.0f, (displayBounds.h - textHeight) / 2.0f, textWidth, textHeight};
+      }
 
-         if (displayBounds.h > displayBounds.w) {  // detect if display is rotated and rotate 90 degrees
-            SDL_FPoint center = {pSurface->w / 2.0f, pSurface->h / 2.0f};
-            SDL_RenderTextureRotated(pRenderers[i], pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
+      windows.push_back(pWindow);
+      renderers.push_back(pRenderer);
+
+      // Clear to dark background
+      SDL_SetRenderDrawColor(pRenderer, 32, 32, 32, 255);
+      SDL_RenderClear(pRenderer);
+
+      // Build display info text
+      string displayName = display.displayName;
+      const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+      string currentRes = std::to_string(displayMode->w) + "x" + std::to_string(displayMode->h) + " @ " + std::to_string((int)displayMode->refresh_rate) + "Hz";
+
+      // Get supported resolutions
+      string resolutions = "Supported resolutions:\n";
+      vector<VPX::Window::VideoMode> modes = VPX::Window::GetDisplayModes(display);
+      for (const auto& mode : modes) {
+         resolutions += "  " + std::to_string(mode.width) + "x" + std::to_string(mode.height) + " @ " + std::to_string(mode.refreshrate) + "Hz\n";
+      }
+
+      SDL_Color white = {255, 255, 255, 255};
+      SDL_Color gray = {180, 180, 180, 255};
+
+      float yOffset = 50.0f;
+      bool rotated = displayBounds.h > displayBounds.w;
+
+      // Render display name (large)
+      SDL_Surface* pSurfaceName = TTF_RenderText_Blended_Wrapped(pFontLarge, displayName.c_str(), 0, white, displayBounds.w - 100);
+      if (pSurfaceName) {
+         SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderer, pSurfaceName);
+         if (pTexture) {
+            SDL_FRect rect = {50.0f, yOffset, (float)pSurfaceName->w, (float)pSurfaceName->h};
+            if (rotated) {
+               rect = {yOffset, 50.0f, (float)pSurfaceName->w, (float)pSurfaceName->h};
+               SDL_FPoint center = {pSurfaceName->w / 2.0f, pSurfaceName->h / 2.0f};
+               SDL_RenderTextureRotated(pRenderer, pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
+            } else {
+               SDL_RenderTexture(pRenderer, pTexture, NULL, &rect);
+            }
+            yOffset += pSurfaceName->h + 20;
+            SDL_DestroyTexture(pTexture);
          }
-         else
-            SDL_RenderTexture(pRenderers[i], pTexture, NULL, &rect);
-
-         SDL_DestroyTexture(pTexture);
+         SDL_DestroySurface(pSurfaceName);
       }
-      SDL_DestroySurface(pSurface);
 
-      SDL_RenderPresent(pRenderers[i]);
+      // Render current resolution
+      SDL_Surface* pSurfaceRes = TTF_RenderText_Blended_Wrapped(pFontSmall, ("Current: " + currentRes).c_str(), 0, gray, displayBounds.w - 100);
+      if (pSurfaceRes) {
+         SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderer, pSurfaceRes);
+         if (pTexture) {
+            SDL_FRect rect = {50.0f, yOffset, (float)pSurfaceRes->w, (float)pSurfaceRes->h};
+            if (rotated) {
+               rect = {yOffset, 50.0f, (float)pSurfaceRes->w, (float)pSurfaceRes->h};
+               SDL_FPoint center = {pSurfaceRes->w / 2.0f, pSurfaceRes->h / 2.0f};
+               SDL_RenderTextureRotated(pRenderer, pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
+            } else {
+               SDL_RenderTexture(pRenderer, pTexture, NULL, &rect);
+            }
+            yOffset += pSurfaceRes->h + 30;
+            SDL_DestroyTexture(pTexture);
+         }
+         SDL_DestroySurface(pSurfaceRes);
+      }
+
+      // Render supported resolutions
+      SDL_Surface* pSurfaceModes = TTF_RenderText_Blended_Wrapped(pFontSmall, resolutions.c_str(), 0, gray, displayBounds.w - 100);
+      if (pSurfaceModes) {
+         SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderer, pSurfaceModes);
+         if (pTexture) {
+            SDL_FRect rect = {50.0f, yOffset, (float)pSurfaceModes->w, (float)pSurfaceModes->h};
+            if (rotated) {
+               rect = {yOffset, 50.0f, (float)pSurfaceModes->w, (float)pSurfaceModes->h};
+               SDL_FPoint center = {pSurfaceModes->w / 2.0f, pSurfaceModes->h / 2.0f};
+               SDL_RenderTextureRotated(pRenderer, pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
+            } else {
+               SDL_RenderTexture(pRenderer, pTexture, NULL, &rect);
+            }
+            SDL_DestroyTexture(pTexture);
+         }
+         SDL_DestroySurface(pSurfaceModes);
+      }
+
+      SDL_RenderPresent(pRenderer);
    }
 
+   // Wait for 'q', Escape, or window close
    SDL_Event e;
-   while (e.type != SDL_EVENT_KEY_DOWN)
-      SDL_PollEvent(&e);
-
-   for (int i=0; i < displayCount; i++) {
-      if (pWindows[i]) {
-         if (pRenderers[i])
-            SDL_DestroyRenderer(pRenderers[i]);
-         SDL_DestroyWindow(pWindows[i]);
+   bool running = true;
+   while (running) {
+      while (SDL_PollEvent(&e)) {
+         if (e.type == SDL_EVENT_QUIT)
+            running = false;
+         else if (e.type == SDL_EVENT_KEY_DOWN) {
+            if (e.key.key == SDLK_Q || e.key.key == SDLK_ESCAPE)
+               running = false;
+         }
       }
+      SDL_Delay(10);
    }
 
+   // Cleanup
+   for (size_t i = 0; i < windows.size(); i++) {
+      if (renderers[i])
+         SDL_DestroyRenderer(renderers[i]);
+      if (windows[i])
+         SDL_DestroyWindow(windows[i]);
+   }
+
+   TTF_CloseFont(pFontLarge);
+   TTF_CloseFont(pFontSmall);
    TTF_Quit();
    SDL_Quit();
 }
@@ -629,7 +720,9 @@ string VPApp::GetCommandLineHelp()
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
-      "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+      "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+      "\n-"  +options[OPTION_LISTCTRL]+             "  "+option_descs[OPTION_LISTCTRL]+
+      "\n-"  +options[OPTION_LISTALL]+              "  "+option_descs[OPTION_LISTALL]+
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
       "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
    #ifdef __STANDALONE__
@@ -904,33 +997,27 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          }
          break;
 
+#ifdef __STANDALONE__
       case OPTION_LISTSND:
-         // Set flag instead of processing immediately - device enumeration requires SDL initialization
-         PLOGI << "Available sound devices:";
-         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-         {
-            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-         }
-         exit(0);
+         m_listSnd = true;
+         m_run = false;
          break;
 
       case OPTION_LISTRES:
-         {
-            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
-            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
-            for (const auto& display : displays)
-            {
-               PLOGI << "Display " << display.displayName;
-               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
-               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
-               for (const auto& mode : VPX::Window::GetDisplayModes(display))
-               {
-                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-               }
-            }
-         }
-         exit(0);
+         m_listRes = true;
+         m_run = false;
          break;
+
+      case OPTION_LISTCTRL:
+         m_listCtrl = true;
+         m_run = false;
+         break;
+
+      case OPTION_LISTALL:
+         m_listAll = true;
+         m_run = false;
+         break;
+#endif
 
       #ifndef __STANDALONE__
       case OPTION_UNREGSERVER:
@@ -1042,6 +1129,78 @@ BOOL VPApp::InitInstance()
       TTF_Init();
       if (m_displayId)
          showDisplayIDs();
+
+      // Handle list commands after SDL and logger are initialized
+      if (m_listAll)
+      {
+         m_listRes = true;
+         m_listSnd = true;
+         m_listCtrl = true;
+      }
+      if (m_listSnd || m_listRes || m_listCtrl)
+      {
+         PLOGI << "Platform: " << SDL_GetPlatform();
+         int sdlVersion = SDL_GetVersion();
+         PLOGI << "SDL version: " << (sdlVersion / 1000000) << "." << ((sdlVersion / 1000) % 1000) << "." << (sdlVersion % 1000);
+         if (m_listRes)
+         {
+            PLOGI << "Available displays:";
+            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+            for (const auto& display : displays)
+            {
+               PLOGI << "  Display: " << display.displayName;
+               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+               PLOGI << "    Windowed fullscreen: " << displayMode->w << 'x' << displayMode->h << " @ " << displayMode->refresh_rate << "Hz";
+               for (const auto& mode : VPX::Window::GetDisplayModes(display))
+               {
+                  PLOGI << "    Fullscreen: " << mode.width << 'x' << mode.height << " @ " << mode.refreshrate << "Hz (depth=" << mode.depth << ")";
+               }
+            }
+         }
+         if (m_listSnd)
+         {
+            PLOGI << "Available sound devices:";
+            for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+            {
+               PLOGI << "  " << audioDevice.name << " (channels=" << audioDevice.channels << ")";
+            }
+         }
+         if (m_listCtrl)
+         {
+            PLOGI << "Available controllers:";
+            SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+            int numJoysticks = 0;
+            SDL_JoystickID* joysticks = SDL_GetJoysticks(&numJoysticks);
+            if (joysticks)
+            {
+               for (int i = 0; i < numJoysticks; i++)
+               {
+                  const char* name = SDL_GetJoystickNameForID(joysticks[i]);
+                  PLOGI << "  Controller: " << (name ? name : "Unknown");
+                  SDL_Joystick* joy = SDL_OpenJoystick(joysticks[i]);
+                  if (joy)
+                  {
+                     PLOGI << "    ID: " << joysticks[i];
+                     PLOGI << "    Axes: " << SDL_GetNumJoystickAxes(joy);
+                     PLOGI << "    Buttons: " << SDL_GetNumJoystickButtons(joy);
+                     PLOGI << "    Hats: " << SDL_GetNumJoystickHats(joy);
+                     Uint16 vendor = SDL_GetJoystickVendor(joy);
+                     Uint16 product = SDL_GetJoystickProduct(joy);
+                     if (vendor || product)
+                        PLOGI << "    Vendor/Product: " << std::hex << vendor << ":" << product << std::dec;
+                     const char* serial = SDL_GetJoystickSerial(joy);
+                     if (serial)
+                        PLOGI << "    Serial: " << serial;
+                     SDL_CloseJoystick(joy);
+                  }
+               }
+               SDL_free(joysticks);
+            }
+            if (numJoysticks == 0)
+               PLOGI << "  No controllers found";
+         }
+         exit(0);
+      }
    #endif
 
    return TRUE;
