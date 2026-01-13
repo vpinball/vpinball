@@ -1663,7 +1663,7 @@ private:
       // - qoi are both faster to save and small enough on disk (twice faster than bmp)
       // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
       std::stringstream ss;
-      ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture\\"
+      ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture" << PATH_SEPARATOR_CHAR
          << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
              id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
          << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.qoi" : ".qoi");
