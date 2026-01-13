@@ -54,7 +54,7 @@ void PerfUI::RenderFPS()
    const ImGuiIO &io = ImGui::GetIO();
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.5f);
+   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
    if (m_player->m_vrDevice == nullptr)
       ImGui::SetNextWindowPos(ImVec2(8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(0.f, 1.f));
    else if (m_showPerf == PerfMode::PM_STATS) // VR with stats
@@ -269,7 +269,7 @@ void PerfUI::RenderFPS()
    else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
       ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
    #endif
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.5f);
+   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
    ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar);
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
    ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
