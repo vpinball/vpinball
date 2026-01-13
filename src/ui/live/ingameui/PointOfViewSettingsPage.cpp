@@ -11,7 +11,7 @@ namespace VPX::InGameUI
 {
 
 PointOfViewSettingsPage::PointOfViewSettingsPage()
-   : InGameUIPage("Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s, SaveMode::Table)
+   : InGameUIPage("Point of View Table Override"s, "Point of view's settings page:\nOptions to override the table's rendering's point of view"s, SaveMode::Table)
 {
 }
 
@@ -115,7 +115,8 @@ void PointOfViewSettingsPage::UpdateDefaults()
          return;
       }
       const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mSceneScaleY == m_player->m_ptable->GetViewSetup().mSceneScaleX);
-      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_renderer->GetDisplayAspectRatio(), isFitted,
+      defViewSetup.SetWindowAutofit(m_player->m_ptable, m_playerPos, m_player->m_renderer->GetDisplayAspectRatio(), 
+         m_player->GetCabinetAutoFitPos(), isFitted,
          [this](string info) { m_glassNotifId = m_player->m_liveUI->PushNotification(info, 10000, m_glassNotifId); });
    }
    else if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); m_player->m_ptable->GetViewMode() == BG_DESKTOP && !portrait)
@@ -450,6 +451,17 @@ void PointOfViewSettingsPage::BuildPage()
          AddItem(std::move(playerY));
          AddItem(std::move(playerZ));
          AddItem(std::move(vpRotation));
+      }
+      else if (m_player->GetCabinetAutoFitMode() == 1)
+      {
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propPlayer_CabinetAutofitPos, 100.f, "%4.1f %%"s, //
+            [this]() { return m_player->GetCabinetAutoFitPos(); },
+            [this](float, float v)
+            {
+               m_player->SetCabinetAutoFitPos(v);
+               OnPointOfViewChanged();
+            }));
       }
       break;
    }

@@ -28,7 +28,8 @@ public:
    void SetWindowModeFromSettings(const PinTable* const table);
    void SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination);
 
-   void SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification);
+   void SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch,
+      const std::function<void(string)>& glassNotification);
 
    float GetRealToVirtualScale(const PinTable* const table) const;
    float GetRotation(const StereoMode mode, const int viewportWidth, const int viewportHeight) const;

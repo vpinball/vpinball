@@ -222,6 +222,8 @@ public:
 
    int GetCabinetAutoFitMode() const { return m_cabinetAutoFitMode; }
    void SetCabinetAutoFitMode(int mode);
+   float GetCabinetAutoFitPos() const { return m_cabinetAutoFitPos; }
+   void SetCabinetAutoFitPos(float pos);
 
 private:
    void PrepareFrame();
@@ -232,6 +234,7 @@ private:
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
 
    int m_cabinetAutoFitMode = 0;
+   float m_cabinetAutoFitPos = 0.05f;
 #pragma endregion
 
 
