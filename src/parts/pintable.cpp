@@ -3623,6 +3623,100 @@ const WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element)
     return nullptr;
 }
 
+Vertex2D PinTable::EvaluateGlassHeight() const
+{
+   Vertex2D result(0.f, 0.f);
+   constexpr float marginX = INCHESTOVPU(1.0f);
+   constexpr float marginY = INCHESTOVPU(0.1f);
+   constexpr float marginZ = INCHESTOVPU(0.1f);
+   auto submitVertex = [this, &result](const Vertex3Ds &v)
+   {
+      // Reject vertices below, or outside left and right limits
+      if (v.z < -marginZ || v.x < m_left - marginX || v.x > m_right + marginX)
+         return;
+      // Bottom area (y around 2100)
+      if (v.y >= m_bottom - marginY && v.y <= m_bottom + marginY && v.z <= INCHESTOVPU(4.f))
+         result.x = max(result.x, v.z);
+      // Top area (y = 0)
+      if (v.y >= m_top - marginY && v.y <= m_top + marginY && v.z <= INCHESTOVPU(12.f))
+         result.y = max(result.y, v.z);
+   };
+
+   auto intersect = [](const RenderVertex& v1, const RenderVertex& v2, float y)
+   {
+      if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY) || (fabs(v2.y - v1.y) < 0.0001f))
+         return Vertex2D(FLT_MAX, FLT_MAX);
+      const float alpha = (y - v1.y) / (v2.y - v1.y);
+      return Vertex2D(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha));
+   };
+
+   for (IEditable* edit : m_vedit)
+   {
+      if (edit->GetPartGroup() != nullptr && edit->GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+         continue;
+      Vertex2D prevResult = result;
+      switch (edit->GetItemType())
+      {
+      case eItemPrimitive:
+         if (Primitive *const prim = static_cast<Primitive *>(edit); prim->m_d.m_use3DMesh && prim->m_d.m_visible)
+         {
+            const Matrix3D& modelMat = prim->RecalculateMatrices();
+            for (const Vertex3D_NoTex2 &v : prim->m_mesh.m_vertices)
+               submitVertex(modelMat.MultiplyVectorNoPerspective(Vertex3Ds(v.x, v.y, v.z)));
+         }
+         break;
+
+      case eItemSurface:
+         if (const Surface *const surf = static_cast<Surface *>(edit); surf->m_d.m_visible)
+         {
+            vector<RenderVertex> vertices;
+            surf->GetRgVertex(vertices, true);
+            RenderVertex prev = vertices.back();
+            for (const auto &v : vertices)
+            {
+               if (Vertex2D pt = intersect(prev, v, m_bottom); pt.x != FLT_MAX)
+                  submitVertex(Vertex3Ds(pt.x, pt.y, max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop)));
+               if (Vertex2D pt = intersect(prev, v, m_top); pt.x != FLT_MAX)
+                  submitVertex(Vertex3Ds(pt.x, pt.y, max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop)));
+               prev = v;
+            }
+         }
+         break;
+
+      case eItemRamp:
+         if (const Ramp *const ramp = static_cast<Ramp *>(edit); ramp->m_d.m_visible)
+         {
+            vector<RenderVertex> vertices;
+            ramp->GetRgVertex(vertices, false);
+            RenderVertex prev = vertices.back();
+            bool first = true; // Skip first as we do not loop
+            for (const auto &v : vertices)
+            {
+               if (!first)
+               {
+                  if (Vertex2D pt = intersect(prev, v, m_bottom); pt.x != FLT_MAX)
+                     submitVertex(Vertex3Ds(pt.x, pt.y, ramp->GetSurfaceHeight(pt.x, pt.y)));
+                  if (Vertex2D pt = intersect(prev, v, m_top); pt.x != FLT_MAX)
+                     submitVertex(Vertex3Ds(pt.x, pt.y, ramp->GetSurfaceHeight(pt.x, pt.y)));
+               }
+               first = false;
+               prev = v;
+            }
+         }
+         break;
+
+      default:
+         // Other parts are not considered
+         continue;
+      }
+      if (prevResult != result)
+      {
+         PLOGI << "Evaluated glass height pushed up by " << edit->GetName() << " to " << VPUTOINCHES(result.x) << " - " << VPUTOINCHES(result.y);
+      }
+   }
+   return result;
+}
+
 void PinTable::LockElements()
 {
    BeginUndo();

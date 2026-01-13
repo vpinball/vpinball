@@ -544,7 +544,7 @@ void Primitive::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const boo
 
 // Ported at: VisualPinball.Engine/VPT/Primitive/PrimitiveMeshGenerator.cs
 
-void Primitive::RecalculateMatrices()
+const Matrix3D& Primitive::RecalculateMatrices()
 {
    // scale * rotation * translation
 
@@ -560,6 +560,7 @@ void Primitive::RecalculateMatrices()
    m_fullMatrix = (Matrix3D::MatrixScale(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z)
                  * RTmatrix)
                  * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
+   return m_fullMatrix;
 }
 
 // recalculate vertices for editor display & physics setup

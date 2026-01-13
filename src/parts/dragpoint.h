@@ -147,7 +147,6 @@ public:
 
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
 
-protected:
    template <typename T>
    void GetRgVertex(vector<T> &vv, const bool loop = true, const float accuracy = 4.f) const // 4 = maximum precision that we allow for
    {
