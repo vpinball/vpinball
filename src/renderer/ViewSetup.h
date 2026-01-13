@@ -28,8 +28,6 @@ public:
    void SetWindowModeFromSettings(const PinTable* const table);
    void SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination);
 
-   float GetWindowTopZOffset(const PinTable* const table) const;
-   float GetWindowBottomZOffset(const PinTable* const table) const;
    float GetRealToVirtualScale(const PinTable* const table) const;
    float GetRotation(const StereoMode mode, const int viewportWidth, const int viewportHeight) const;
    float GetRotation(const int viewportWidth, const int viewportHeight) const;
@@ -39,8 +37,13 @@ public:
    void ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp,
                    const vec3& cam = vec3(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f) const;
 
+   void DebugLog() const;
+
 private:
-   static vec3 FitCameraToVertices(const vector<Vertex3Ds>& pvvertex3D, const float aspect, const float rotation, const float inclination, const float FOV, const float xlatez, const float layback);
+   float GetWindowTopZOffset() const;
+   float GetWindowBottomZOffset() const;
+   static vec3 FitCameraToVertices(
+      const vector<Vertex3Ds>& pvvertex3D, const float aspect, const float rotation, const float inclination, const float FOV, const float xlatez, const float layback);
 
 public:
    ViewLayoutMode mMode = VLM_LEGACY;
