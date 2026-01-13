@@ -150,12 +150,13 @@ FEATURES:
   . Add selection and display filters
   . Allow to display physics collider as a red overlay
   . Fix invalid overlays (missing parts, incorrect position)
-  . Navigation using flipper input has been unified: magna buttons allow to move, while flipper buttons allow to select
+  . 3 render modes are available, switchable using the 'Z' key: render, wireframe, passthrough wireframe
 
 - InGameUI (used to be called LiveUI or TweakUI):
   . Supports all player modes (VR, XR, cabinet, desktop) and all screen orientations
   . Add mouse interaction support
   . Add setting pages, moving lots of settings inside these pages
+  . Navigation using flipper input has been unified: magna buttons allow to move, while flipper buttons allow to select
 
 - Performance overlay has been improved with better insights and its display state is now persistent
 
