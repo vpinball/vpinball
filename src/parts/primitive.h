@@ -313,7 +313,7 @@ public:
    void RenderBlueprint(Sur *psur, const bool solid) final;
    void UpdateStatusBarInfo() final;
 
-   void RecalculateMatrices();
+   const Matrix3D &RecalculateMatrices();
    void TransformVertices();
 
    void setInPlayState(const bool newVal);

@@ -116,10 +116,32 @@ void PointOfViewSettingsPage::UpdateDefaults()
       }
       else
       {
-         float topHeight = m_player->m_ptable->m_glassTopHeight;
-         float bottomHeight = m_player->m_ptable->m_glassBottomHeight;
-         if (bottomHeight == topHeight)
-         { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
+         // Guess glass height by analyzing table elements bounds
+         Vertex2D glass = m_player->m_ptable->EvaluateGlassHeight();
+         float bottomHeight = glass.x;
+         float topHeight = glass.y;
+         if (m_player->m_ptable->m_glassTopHeight != m_player->m_ptable->m_glassBottomHeight)
+         {
+            // If table already define a glass height, use it  (detected by the glass not being horizontal which was the default in previous version),
+            // We compare and propose the value to the user if there is a large enough difference
+            if (VPUTOINCHES(fabs(topHeight - m_player->m_ptable->m_glassTopHeight)) > 1.f || VPUTOINCHES(fabs(bottomHeight - m_player->m_ptable->m_glassBottomHeight)) > 1.f)
+            {
+               m_glassNotifId = m_player->m_liveUI->PushNotification(
+                  std::format("Glass position was evaluated to {:.2f}cm / {:.2f}cm\nIt differs from the defined glass position {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight),
+                     VPUTOCM(topHeight), VPUTOCM(m_player->m_ptable->m_glassBottomHeight), VPUTOCM(m_player->m_ptable->m_glassTopHeight)),
+                  10000, m_glassNotifId);
+            }
+            topHeight = m_player->m_ptable->m_glassTopHeight;
+            bottomHeight = m_player->m_ptable->m_glassBottomHeight;
+         }
+         else
+         {
+            m_glassNotifId = m_player->m_liveUI->PushNotification(
+               std::format("Missing glass position guessed to be {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight), VPUTOCM(topHeight)), 10000, m_glassNotifId);
+         }
+         // Previous logic which was based on searching through the table dimension database (but it lacks precise glass height informations)
+         if (false && bottomHeight == topHeight)
+         {
             TableDB db;
             db.Load();
             std::regex yearRegex(R"(\(.*?\s(\d{4})\))");
@@ -134,25 +156,51 @@ void PointOfViewSettingsPage::UpdateDefaults()
             {
                bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
                topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
-               m_glassNotifId = m_player->m_liveUI->PushNotification("Missing glass position guessed to be " + std::to_string(db.m_data[bestSizeMatch].glassBottom) + "\" / "
-                     + std::to_string(db.m_data[bestSizeMatch].glassTop) + "\" (" + db.m_data[bestSizeMatch].name + ')',
-                  5000, m_glassNotifId);
+               m_glassNotifId = m_player->m_liveUI->PushNotification(
+                  std::format("Missing glass position guessed to be {:.2f}\" / {:.2f}\" ({})", db.m_data[bestSizeMatch].glassBottom, db.m_data[bestSizeMatch].glassTop, db.m_data[bestSizeMatch].name),
+                  10000, m_glassNotifId);
             }
             else
             {
-               m_glassNotifId = m_player->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 5000, m_glassNotifId);
+               m_glassNotifId = m_player->m_liveUI->PushNotification("The table is missing glass position and no good guess was found."s, 10000, m_glassNotifId);
             }
          }
          const float scale = (screenHeight / m_player->m_ptable->GetTableWidth()) * (m_player->m_ptable->GetHeight() / screenWidth);
-         const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mViewVOfs == -2.8f)
-            && (m_player->m_ptable->GetViewSetup().mSceneScaleY == scale) && (m_player->m_ptable->GetViewSetup().mSceneScaleX == scale);
+         const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mSceneScaleY == scale) && (m_player->m_ptable->GetViewSetup().mSceneScaleX == scale);
          defViewSetup.mMode = VLM_WINDOW;
          defViewSetup.mViewHOfs = 0.f;
-         defViewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
          defViewSetup.mSceneScaleX = scale;
          defViewSetup.mSceneScaleY = isFitted ? 1.f : scale;
          defViewSetup.mWindowBottomZOfs = bottomHeight;
          defViewSetup.mWindowTopZOfs = topHeight;
+         if (isFitted)
+         {
+            // Non uniform scale to shrink the table inside the screen, including the apron => no need for a vertical offset
+            defViewSetup.mViewVOfs = 0.f;
+         }
+         else
+         {
+            // Uniform scale to fit the table inside the screen, eventually hiding the apron => adjust vertical offset based on lowest flipper position
+            constexpr float margin = INCHESTOVPU(4.f); // margin to exclude invisible flippers used for other purposes like animating diverters
+            float bottomY = m_player->m_ptable->m_top;
+            for (IEditable* edit : m_player->m_ptable->m_vedit)
+            {
+               if (edit->GetItemType() != eItemFlipper)
+                  continue;
+               const Flipper* const flipper = static_cast<Flipper*>(edit);
+               float flipperBottomY = flipper->m_d.m_Center.y;
+               const float bottomDY = -min(sinf(ANGTORAD(90.f - flipper->m_d.m_StartAngle)), sinf(ANGTORAD(90.f - flipper->m_d.m_EndAngle)));
+               flipperBottomY += bottomDY * max(flipper->m_d.m_FlipperRadiusMin, flipper->m_d.m_FlipperRadiusMax);
+               PLOGD << flipperBottomY;
+               if ((flipper->m_d.m_Center.x > m_player->m_ptable->m_left + margin)
+                  && (flipper->m_d.m_Center.x < m_player->m_ptable->m_right - margin)
+                  && (flipperBottomY < m_player->m_ptable->m_bottom - margin))
+                  bottomY = max(bottomY, flipperBottomY);
+            }
+            float offset = m_player->m_ptable->m_bottom - bottomY;
+            // We should compute a proper offset based on the point of view. For the time being, we apply a simple magic offset which seems fine enough
+            defViewSetup.mViewVOfs = VPUTOCM(offset) - 15.5f;
+         }
       }
    }
    else if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); m_player->m_ptable->GetViewMode() == BG_DESKTOP && !portrait)
