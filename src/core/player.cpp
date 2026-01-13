@@ -563,11 +563,7 @@ Player::Player(PinTable *const table, const int playMode)
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
    // Apply cabinet autofit
-   if (m_ptable->m_settings.GetPlayer_CabinetAutofitMode() != 0)
-   {
-      Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
-      m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_ptable->m_settings.GetPlayer_CabinetAutofitMode() == 2, [](string) { });
-   }
+   SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
 
    // Setup rendering and timers
    RenderState state;
@@ -1153,6 +1149,15 @@ void Player::DestroyBall(HitBall *pHitBall)
       m_liveUI->m_ballControl.SetDraggedBall(nullptr);
 }
 
+void Player::SetCabinetAutoFitMode(int mode)
+{
+   m_cabinetAutoFitMode = mode;
+   if (m_cabinetAutoFitMode != 0)
+   {
+      Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
+      m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_cabinetAutoFitMode == 2, [](string) { });
+   }
+}
 
 void Player::FireSyncTimer(int timerValue)
 {

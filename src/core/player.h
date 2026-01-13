@@ -220,6 +220,9 @@ public:
    bool m_headTracking = false;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
+   int GetCabinetAutoFitMode() const { return m_cabinetAutoFitMode; }
+   void SetCabinetAutoFitMode(int mode);
+
 private:
    void PrepareFrame();
    void SubmitFrame();
@@ -227,6 +230,8 @@ private:
 
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
+
+   int m_cabinetAutoFitMode = 0;
 #pragma endregion
 
 
