@@ -106,12 +106,9 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
          uint8_t* dst = static_cast<uint8_t*>(tex->data()) + i * _width * 4;
          bx::memCopy(dst, src, _width * 4);
       }
-      if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal)
-      {
-         uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
-         for (uint32_t i = 0; i < _width * _height; i++)
-            std::swap(pixels[i * 4], pixels[i * 4 + 2]);
-      }
+      uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
+      for (uint32_t i = 0; i < _width * _height; i++)
+         std::swap(pixels[i * 4], pixels[i * 4 + 2]);
       if (_yflip)
          tex->FlipY();
       success = tex->Save(_filePath);
