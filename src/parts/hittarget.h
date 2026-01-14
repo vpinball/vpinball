@@ -177,7 +177,7 @@ public:
 
    HitTargetData m_d;
 
-   bool m_hitEvent;
+   bool m_hitEvent = false;
 
 private:
    void UpdateTarget();

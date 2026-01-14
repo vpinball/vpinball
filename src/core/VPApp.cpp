@@ -241,8 +241,6 @@ static const string options[] = { // keep in sync with option_names & option_des
    "v"s,
    "exit"s, // (ab)used by frontend, not handled by us
    "Audit"s,
-   "listres"s,
-   "listsnd"s,
    "CaptureAttract"s,
    "c1"s,
    "c2"s,
@@ -253,8 +251,10 @@ static const string options[] = { // keep in sync with option_names & option_des
    "c7"s,
    "c8"s,
    "c9"s,
-   "PrefPath"s,
 #ifdef __STANDALONE__
+   "listres"s,
+   "listsnd"s,
+   "PrefPath"s,
    "displayid"s,
 #endif
    ""s
@@ -286,8 +286,6 @@ static const string option_descs[] =
    "Displays the version"s,
    string(),
    "[table filename] Audit the table"s,
-   "List available fullscreen resolutions"s,
-   "List available sound devices"s,
    "Capture an attract mode video"s,
    "Custom value 1"s,
    "Custom value 2"s,
@@ -298,8 +296,10 @@ static const string option_descs[] =
    "Custom value 7"s,
    "Custom value 8"s,
    "Custom value 9"s,
-   "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
    #ifdef __STANDALONE__
+      "List available fullscreen resolutions"s,
+      "List available sound devices"s,
+      "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
       "Visually display your screen ID(s)"s
    #endif
    ""s
@@ -331,8 +331,6 @@ enum option_names
    OPTION_VERSION,
    OPTION_FRONTEND_EXIT,
    OPTION_AUDIT,
-   OPTION_LISTRES,
-   OPTION_LISTSND,
    OPTION_CAPTURE_ATTRACT,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
@@ -343,8 +341,10 @@ enum option_names
    OPTION_CUSTOM7,
    OPTION_CUSTOM8,
    OPTION_CUSTOM9,
-   OPTION_PREFPATH,
    #ifdef __STANDALONE__
+      OPTION_LISTRES,
+      OPTION_LISTSND,
+      OPTION_PREFPATH,
       OPTION_DISPLAYID,
    #endif
    OPTION_INVALID,
@@ -628,11 +628,11 @@ string VPApp::GetCommandLineHelp()
       "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
+      "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
+   #ifdef __STANDALONE__
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
       "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
-      "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
-   #ifdef __STANDALONE__
       "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
    #endif
       "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
@@ -741,14 +741,17 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          break;
       }
 
+      // FIXME remove as this is now handled by the ini system
       case OPTION_DISABLETRUEFULLSCREEN:
          m_vpinball.m_disEnableTrueFullscreen = 0;
          break;
 
+      // FIXME remove as this is now handled by the ini system
       case OPTION_ENABLETRUEFULLSCREEN:
          m_vpinball.m_disEnableTrueFullscreen = 1;
          break;
 
+      // FIXME remove as this is now handled by the ini system
       case OPTION_GLES: // global emission scale parameter handling
          if (i + 1 < nArgs)
          {
@@ -904,34 +907,6 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          }
          break;
 
-      case OPTION_LISTSND:
-         // Set flag instead of processing immediately - device enumeration requires SDL initialization
-         PLOGI << "Available sound devices:";
-         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-         {
-            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-         }
-         exit(0);
-         break;
-
-      case OPTION_LISTRES:
-         {
-            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
-            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
-            for (const auto& display : displays)
-            {
-               PLOGI << "Display " << display.displayName;
-               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
-               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
-               for (const auto& mode : VPX::Window::GetDisplayModes(display))
-               {
-                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-               }
-            }
-         }
-         exit(0);
-         break;
-
       #ifndef __STANDALONE__
       case OPTION_UNREGSERVER:
       {
@@ -955,11 +930,41 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
       #endif
 
       #ifdef __STANDALONE__
+      // FIXME remove as this is now handled in the InGame UI
+      case OPTION_LISTSND:
+         // Set flag instead of processing immediately - device enumeration requires SDL initialization
+         PLOGI << "Available sound devices:";
+         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+         {
+            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
+         }
+         exit(0);
+         break;
+
+      // FIXME remove as this is now handled in the InGame UI
+      case OPTION_LISTRES:
+         {
+            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
+            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+            for (const auto& display : displays)
+            {
+               PLOGI << "Display " << display.displayName;
+               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
+               for (const auto& mode : VPX::Window::GetDisplayModes(display))
+               {
+                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
+               }
+            }
+         }
+         exit(0);
+         break;
+
+      // FIXME remove as this is now handled in the InGame UI
       case OPTION_DISPLAYID:
          m_displayId = true;
          m_run = false;
          break;
-      #endif
 
       case OPTION_PREFPATH:
          if (i + 1 >= nArgs)
@@ -967,9 +972,25 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
             exit(1);
          }
-         m_vpinball.SetPrefPath(GetPathFromArg(szArglist[i + 1], false));
+         {
+            string path = GetPathFromArg(szArglist[i + 1], false);
+            if (!DirExists(path))
+            {
+               std::error_code ec;
+               if (std::filesystem::create_directories(path, ec))
+               {
+                  PLOGI << "Pref path created: " << path;
+               }
+               else
+               {
+                  PLOGE << "Unable to create pref path: " << path;
+               }
+            }
+            m_vpinball.SetPrefPath(path);
+         }
          i++;
          break;
+      #endif
 
       default:
          assert(false);
