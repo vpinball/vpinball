@@ -116,7 +116,7 @@ VPinball::VPinball()
 
    m_hbmInPlayMode = nullptr;
 
-   SetPrefPath(GetDefaultPrefPath());
+   SetupPrefPath();
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -177,7 +177,7 @@ std::filesystem::path VPinball::EvaluateAppPath()
    return std::filesystem::path(appPath);
 }
 
-std::filesystem::path VPinball::GetDefaultPrefPath() const
+void VPinball::SetupPrefPath()
 {
    string path;
 #if defined(__ANDROID__)
@@ -192,7 +192,63 @@ std::filesystem::path VPinball::GetDefaultPrefPath() const
    path = szPrefPath;
    SDL_free(szPrefPath);
 #endif
-   return std::filesystem::path(path);
+
+   // Preference are stored per minor version (grouping all revision together, as revisions are not allowed to need user setup changes)
+   const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
+   m_prefPath = std::filesystem::path(path) / versionPath;
+
+   // Setup new install
+   if (!DirExists(m_prefPath))
+   {
+      // Search for a previous istall
+      std::filesystem::path prevPref;
+      for (int major = VP_VERSION_MAJOR; prevPref.empty() && major >= 10; major--)
+      {
+         for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
+         {
+            const string testVersion = std::format("{}.{}", major, minor);
+            if (auto testPath = std::filesystem::path(path) / testVersion; DirExists(testPath))
+               prevPref = testPath;
+         }
+      }
+      if (prevPref.empty() && DirExists(std::filesystem::path(path)))
+         prevPref = std::filesystem::path(path);
+
+      // Create new install and migrate settings
+      std::error_code ec;
+      if (std::filesystem::create_directories(m_prefPath, ec))
+      {
+         PLOGI << "New preference folder created: " << m_prefPath;
+         if (!prevPref.empty())
+         {
+            PLOGI << "Initializing new preference folder from previous install in: " << prevPref;
+            for (const auto &entry : std::filesystem::recursive_directory_iterator(prevPref))
+            {
+               // Handle the first upgrade where settings used to be stored in %AppData%/VPinballX and no in %AppData%/VPinballX/version, so the new folder is a child of the old one
+               if (entry.path() == m_prefPath)
+                  continue;
+               try
+               {
+                  std::filesystem::path destPath = m_prefPath / std::filesystem::relative(entry.path(), prevPref);
+                  if (std::filesystem::is_directory(entry.status()))
+                     std::filesystem::create_directories(destPath);
+                  else
+                     std::filesystem::copy_file(entry.path(), destPath, std::filesystem::copy_options::overwrite_existing);
+               }
+               catch (const std::filesystem::filesystem_error &e)
+               {
+                  PLOGE << "Error processing " << entry.path() << ": " << e.what() << '\n';
+               }
+            }
+         }
+      }
+      else
+      {
+         PLOGE << "Unable to create pref path: " << m_prefPath;
+      }
+   }
+   
+   UpdateFileLayoutMode();
 }
 
 void VPinball::SetPrefPath(const std::filesystem::path &path)
@@ -200,15 +256,8 @@ void VPinball::SetPrefPath(const std::filesystem::path &path)
    m_prefPath = path;
    if (!DirExists(m_prefPath))
    {
-      std::error_code ec;
-      if (std::filesystem::create_directories(m_prefPath, ec))
-      {
-         PLOGI << "Pref path created: " << m_prefPath;
-      }
-      else
-      {
-         PLOGE << "Unable to create pref path: " << m_prefPath;
-      }
+      PLOGE << "Custom pref path is missing, aborting: " << m_prefPath;
+      exit(1);
    }
    UpdateFileLayoutMode();
 }
