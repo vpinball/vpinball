@@ -117,6 +117,7 @@ VPinball::VPinball()
    m_hbmInPlayMode = nullptr;
 
    SetupPrefPath();
+   UpdateFileLayoutMode();
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -179,76 +180,151 @@ std::filesystem::path VPinball::EvaluateAppPath()
 
 void VPinball::SetupPrefPath()
 {
-   string path;
+   string basePrefPath;
 #if defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, "");
-   path = szPrefPath;
+   basePrefPath = szPrefPath;
    SDL_free(szPrefPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
    // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
-   path = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
+   basePrefPath = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
 #else
    char *szPrefPath = SDL_GetPrefPath(nullptr, "VPinballX");
-   path = szPrefPath;
+   basePrefPath = szPrefPath;
    SDL_free(szPrefPath);
 #endif
 
-   // Preference are stored per minor version (grouping all revision together, as revisions are not allowed to need user setup changes)
+   // Preference are stored per minor version (grouping all minor revision together, as minor revisions are not allowed to need user setup changes)
    const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
-   m_prefPath = std::filesystem::path(path) / versionPath;
+   m_prefPath = std::filesystem::path(basePrefPath) / versionPath;
+   if (DirExists(m_prefPath))
+      return;
 
-   // Setup new install
-   if (!DirExists(m_prefPath))
+   // We need to migrate, fix or setup the install for proper operation
+   if (std::error_code ec; !std::filesystem::create_directories(m_prefPath, ec))
    {
-      // Search for a previous istall
-      std::filesystem::path prevPref;
-      for (int major = VP_VERSION_MAJOR; prevPref.empty() && major >= 10; major--)
-      {
-         for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
-         {
-            const string testVersion = std::format("{}.{}", major, minor);
-            if (auto testPath = std::filesystem::path(path) / testVersion; DirExists(testPath))
-               prevPref = testPath;
-         }
-      }
-      if (prevPref.empty() && DirExists(std::filesystem::path(path)))
-         prevPref = std::filesystem::path(path);
+      PLOGE << "Unable to create pref path: " << m_prefPath;
+      return;
+   }
+   PLOGI << "New preference folder created: " << m_prefPath;
 
-      // Create new install and migrate settings
-      std::error_code ec;
-      if (std::filesystem::create_directories(m_prefPath, ec))
+   // The user may have enabled the legacy file layout mode (ini along exe) and deleted the preference folder after upgrading to this version
+   // In this situation, we do not want to do anything else than recreating the pref folder (which we just did)
+   if (FileExists(GetAppPath(AppSubFolder::Root) / "VPinballX.ini"))
+   {
+      mINI::INIStructure m_ini;
+      if (mINI::INIFile(GetAppPath(AppSubFolder::Root) / "VPinballX.ini").read(m_ini) && m_ini.has("Version") && m_ini["Version"].has("VPinball"))
       {
-         PLOGI << "New preference folder created: " << m_prefPath;
-         if (!prevPref.empty())
-         {
-            PLOGI << "Initializing new preference folder from previous install in: " << prevPref;
-            for (const auto &entry : std::filesystem::recursive_directory_iterator(prevPref))
-            {
-               // Handle the first upgrade where settings used to be stored in %AppData%/VPinballX and no in %AppData%/VPinballX/version, so the new folder is a child of the old one
-               if (entry.path() == m_prefPath)
-                  continue;
-               try
-               {
-                  std::filesystem::path destPath = m_prefPath / std::filesystem::relative(entry.path(), prevPref);
-                  if (std::filesystem::is_directory(entry.status()))
-                     std::filesystem::create_directories(destPath);
-                  else
-                     std::filesystem::copy_file(entry.path(), destPath, std::filesystem::copy_options::overwrite_existing);
-               }
-               catch (const std::filesystem::filesystem_error &e)
-               {
-                  PLOGE << "Error processing " << entry.path() << ": " << e.what() << '\n';
-               }
-            }
-         }
-      }
-      else
-      {
-         PLOGE << "Unable to create pref path: " << m_prefPath;
+         const string existingVersionString = m_ini["Version"]["VPinball"];
+         std::istringstream iss(existingVersionString);
+         std::string token;
+         int minor;
+         int major;
+         if ((iss >> token) && try_parse_int(token, major) && (major == VP_VERSION_MAJOR) && (iss >> token) && try_parse_int(token, minor) && (minor == VP_VERSION_MINOR))
+            return;
       }
    }
-   
-   UpdateFileLayoutMode();
+
+   // Try to migrate settings from a previous install folder, we test:
+   // - Folders corresponding to previous location, so %AppData%/VPinballX/major.minor
+   // - Base %AppData%/VPinballX which was used before migrating to the 'major.minor' subfolder layout
+   std::filesystem::path prevPref;
+   for (int major = VP_VERSION_MAJOR; prevPref.empty() && major >= 10; major--)
+   {
+      for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
+      {
+         const string testVersion = std::format("{}.{}", major, minor);
+         if (auto testPath = std::filesystem::path(basePrefPath) / testVersion; DirExists(testPath))
+            prevPref = testPath;
+      }
+   }
+   if (prevPref.empty() && DirExists(std::filesystem::path(basePrefPath)))
+      prevPref = std::filesystem::path(basePrefPath);
+   if (!prevPref.empty())
+   {
+      PLOGI << "Initializing new preference folder from previous install in: " << prevPref;
+      for (const auto &entry : std::filesystem::recursive_directory_iterator(prevPref))
+      {
+         // Handle upgrading from settings stored in %AppData%/VPinballX and not in %AppData%/VPinballX/version, so the new folder is a child of the old one
+         if (entry.path() == m_prefPath)
+            continue;
+         try
+         {
+            std::filesystem::path destPath = m_prefPath / std::filesystem::relative(entry.path(), prevPref);
+            if (std::filesystem::is_directory(entry.status()))
+               std::filesystem::create_directories(destPath);
+            else
+               std::filesystem::copy_file(entry.path(), destPath, std::filesystem::copy_options::overwrite_existing);
+         }
+         catch (const std::filesystem::filesystem_error &e)
+         {
+            PLOGE << "Error processing " << entry.path() << ": " << e.what() << '\n';
+         }
+      }
+   }
+
+   // If we did not find a setting file to migrate but we have an old setting file along the exe, use it for the migration
+   if (!FileExists(m_prefPath / "VPinballX.ini") && FileExists(GetAppPath(AppSubFolder::Root) / "VPinballX.ini"))
+   {
+      PLOGI << "Initializing preferences from old settings file: " << (GetAppPath(AppSubFolder::Root) / "VPinballX.ini");
+      std::filesystem::copy_file(GetAppPath(AppSubFolder::Root) / "VPinballX.ini", m_prefPath / "VPinballX.ini");
+   }
+
+   // If we did not find any settings file, migrate settings from Windows registry (used before 10.8)
+#ifdef _WIN32
+   if (!FileExists(m_prefPath / "VPinballX.ini"))
+   {
+      PLOGI << "Initializing preferences from Window registry";
+      mINI::INIStructure ini;
+      const vector<string> regKeys
+         = { "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s,
+              "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s, "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s,
+              "DefaultProps\\LightSequence"s, "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
+              "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s, "Defaults\\Camera"s };
+      for (const string& regKey : regKeys)
+      {
+         string regpath = (regKey == "Controller"s ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s) + regKey;
+         HKEY hk;
+         LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
+         if (res != ERROR_SUCCESS)
+            continue;
+         for (DWORD Index = 0;; ++Index)
+         {
+            DWORD dwSize = MAX_PATH;
+            TCHAR szName[MAX_PATH];
+            res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+            if (res == ERROR_NO_MORE_ITEMS)
+               break;
+            if (res != ERROR_SUCCESS || dwSize == 0 || szName[0] == '\0')
+               continue;
+            dwSize = MAXSTRING;
+            BYTE pvalue[MAXSTRING];
+            DWORD type = REG_NONE;
+            res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
+            if (res != ERROR_SUCCESS)
+               continue;
+            if (type == REG_SZ)
+            {
+               string value((char *)pvalue);
+               // old Win32xx and Win32xx 9+ docker keys
+               if (value == "Dock Windows"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+                  continue;
+               if (value == "Dock Settings"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
+                  continue;
+               ini[regKey][szName] = value;
+            }
+            else if (type == REG_DWORD)
+               ini[regKey][szName] = std::to_string(*(DWORD *)pvalue);
+         }
+         RegCloseKey(hk);
+      }
+      mINI::INIFile file(m_prefPath / "VPinballX.ini");
+      if (!file.write(ini, true))
+      {
+         PLOGE << "Failed to save imported settings.";
+      }
+   }
+#endif
 }
 
 void VPinball::SetPrefPath(const std::filesystem::path &path)
