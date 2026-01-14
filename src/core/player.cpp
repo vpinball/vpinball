@@ -1540,15 +1540,28 @@ public:
       }
       
       // Stepped emulation & rendering at the capture frequency
-      else if (m_captureRequested == 0 && m_player->GetCloseState() == Player::CS_PLAYING)
+      else if (!m_captureRequested && m_player->GetCloseState() == Player::CS_PLAYING)
       {
-         m_captureRequested = m_captureRequestMask;
-         m_player->m_renderer->m_renderDevice->CaptureScreenshot(m_player->m_playfieldWnd, GetFilename(VPXWindowId::VPXWINDOW_Playfield, m_captureFrameNumber, true), [this](VPX::Window* wnd, bool success) { OnCapture(wnd, success); });
+         m_captureRequested = true;
+         switch (m_captureRequestMask)
+         {
+         case 1:
+            m_player->m_renderer->m_renderDevice->CaptureScreenshot(
+               { m_player->m_playfieldWnd }, { GetFilename(VPXWindowId::VPXWINDOW_Playfield, m_captureFrameNumber, true) },
+               [this](bool success) { OnCapture(success); }, 1);
+            break;
+         case 3:
+            m_player->m_renderer->m_renderDevice->CaptureScreenshot(
+               { m_player->m_playfieldWnd, m_player->m_backglassOutput.GetWindow() },
+               { GetFilename(VPXWindowId::VPXWINDOW_Playfield, m_captureFrameNumber, true), GetFilename(VPXWindowId::VPXWINDOW_Backglass, m_captureFrameNumber, true) },
+               [this](bool success) { OnCapture(success); }, 1);
+            break;
+         }
       }
    }
    
 private:
-   void OnCapture(Window* wnd, bool success)
+   void OnCapture(bool success)
    {
       std::lock_guard lock(m_captureMutex);
 
@@ -1559,19 +1572,8 @@ private:
          return;
       }
 
-      // Request other outputs to be captured if any
-      const VPXWindowId wndId = wnd == m_player->m_playfieldWnd ? VPXWindowId::VPXWINDOW_Playfield : VPXWindowId::VPXWINDOW_Backglass;
-      if (wndId == VPXWindowId::VPXWINDOW_Playfield)
-         m_captureRequested &= ~1;
-      else if (wndId == VPXWindowId::VPXWINDOW_Backglass)
-         m_captureRequested &= ~2;
-      if (m_captureRequested & 2)
-      {
-         m_player->m_renderer->m_renderDevice->CaptureScreenshot(m_player->m_backglassOutput.GetWindow(), GetFilename(VPXWindowId::VPXWINDOW_Backglass, m_captureFrameNumber, true),
-            [this](VPX::Window *wnd, bool success) { OnCapture(wnd, success); });
-         return;
-      }
-      assert(m_captureRequested == 0);
+      // Request next capture (from main thread)
+      m_captureRequested = false;
 
       // Store and log light state
       std::stringstream ss;
@@ -1687,7 +1689,7 @@ private:
 
    int m_captureRequestMask;
    int m_captureFrameNumber = 1;
-   int m_captureRequested = 0;
+   bool m_captureRequested = false;
    
    uint64_t m_captureTime;
    uint64_t m_captureStartupEndTime;
