@@ -109,7 +109,7 @@ void VPinballLib::AppIterate()
 
          std::filesystem::path tablePath(pActiveTable->m_filename);
          string imageFilename = tablePath.stem().string() + ".jpg";
-         string imagePath = tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + imageFilename;
+         std::filesystem::path imagePath = tablePath.parent_path() / imageFilename;
 
          if (std::filesystem::exists(imagePath)) {
             g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
@@ -118,15 +118,15 @@ void VPinballLib::AppIterate()
 
          m_captureInProgress = true;
 
-         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(g_pplayer->m_playfieldWnd, imagePath,
-            [this, imagePath](VPX::Window* wnd, bool success) {
+         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot({ g_pplayer->m_playfieldWnd }, { imagePath },
+            [this, imagePath](bool success) {
                m_captureInProgress = false;
 
                if (success) {
-                  PLOGI.printf("Screenshot saved: %s", imagePath.c_str());
+                  PLOGI.printf("Screenshot saved: %s", imagePath.string().c_str());
                }
                else {
-                  PLOGE.printf("Failed to save screenshot: %s", imagePath.c_str());
+                  PLOGE.printf("Failed to save screenshot: %s", imagePath.string().c_str());
                }
 
                g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
