@@ -66,14 +66,13 @@ void PluginSettingsPage::BuildPage()
    }
 
    AddItem(std::make_unique<InGameUIItem>( //
-      *Settings::GetRegistry().GetBoolProperty(enablePropId), //
+      enablePropId, //
       [this]()
       {
          const MsgPluginManager& manager = MsgPluginManager::GetInstance();
          auto plugin = manager.GetPlugin(m_pluginId);
          return plugin ? plugin->IsLoaded() : false;
       }, // Live
-      [enablePropId](Settings& settings) { return settings.GetBool(enablePropId); }, // Persisted
       [this](bool v)
       {
          MsgPluginManager& manager = MsgPluginManager::GetInstance();
@@ -83,14 +82,7 @@ void PluginSettingsPage::BuildPage()
          else if (!v && plugin.IsLoaded())
             manager.UnloadPlugin(plugin);
          BuildPage();
-      }, //
-      [enablePropId](Settings& settings) {
-         settings.Reset(enablePropId);
-      }, //
-      [enablePropId](bool v, Settings& settings, bool isTableOverride) {
-         Settings::GetRegistry().Register(Settings::GetRegistry().GetBoolProperty(enablePropId)->WithDefault(v));
-         settings.Set(enablePropId, v, isTableOverride);
-      }));
+      })).m_excludeFromDefault = true;
 
    if (!plugin->IsLoaded())
       return;

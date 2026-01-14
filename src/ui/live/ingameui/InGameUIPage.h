@@ -17,7 +17,7 @@ public:
    Settings& GetSettings();
 
    void ClearItems();
-   void AddItem(std::unique_ptr<InGameUIItem> item);
+   InGameUIItem& AddItem(std::unique_ptr<InGameUIItem> item);
 
    virtual void Open(bool isBackwardAnimation);
    virtual void Close(bool isBackwardAnimation);

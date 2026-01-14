@@ -43,7 +43,11 @@ void InGameUIPage::Close(bool isBackwardAnimation)
 
 void InGameUIPage::ClearItems() { m_items.clear(); }
 
-void InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item) { m_items.push_back(std::move(item)); }
+InGameUIItem& InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item)
+{
+   m_items.push_back(std::move(item));
+   return *m_items.back();
+}
 
 Settings& InGameUIPage::GetSettings() { return m_player->m_ptable->m_settings; }
 
@@ -58,7 +62,7 @@ bool InGameUIPage::IsAdjustable() const
 bool InGameUIPage::IsDefaults() const
 {
    for (const auto& item : m_items)
-      if (!item->IsDefaultValue())
+      if (!item->m_excludeFromDefault && !item->IsDefaultValue())
          return false;
    return true;
 }
@@ -102,7 +106,8 @@ void InGameUIPage::ResetToDefaults()
    assert(!m_resettingToDefaults);
    m_resettingToDefaults = true;
    for (size_t i = 0; i < m_items.size(); i++)
-      m_items[i]->ResetToDefault();
+      if (!m_items[i]->m_excludeFromDefault)
+         m_items[i]->ResetToDefault();
    m_resetNotifId = g_pplayer->m_liveUI->PushNotification("Settings reset to defaults"s, 5000, m_resetNotifId);
    if (IsDefaults())
       m_selectedItem = 0;
