@@ -13,6 +13,22 @@ FEATURES:
 
 - add -v command line option to just output the version and quit
 
+- Folder layout has been redesigned:
+  . Folder layout now conforms to platform requirements, with the application in its read only application folder (for example C:\Program Files under Windows),
+    its preferences (VPinballX.ini, ...) in the system preference folder (C:\Users\...\AppData\Roaming\VPinballX) and the data (tables, music, user folder, ...)
+    inside the user data folder hierarchy (C:\Users\...\Documents). For preferences, a subfolder per minor version is created (10.8, 10.9, ...) to allow having
+    multiple versions of VPX on the same computer, each using its own settings without conflicting.
+  . On first run, the application will automatically create its setup, importing settings from previous installation if any.
+  . The new file layout supports creating one folder per table, to group the table file with all its support folders & files (cache, music, flexdmd, ...), avoiding
+    to mix files between tables, also allowing a common install procedure for other virtual pinball components (Frontend, B2S, PinUp videos, ...).
+  . Custom settings 'ini' or script 'vbs' are searched along the table matching the table filename as before, but, now, if not found they are also searched along 
+    the table, named after the folder name. This allows to share files for different versions of a table by placeing them together in the table folder.
+  . To ease transition, when a file is searched for reading (for example, a table requesting a music file), it is first searched along the table as per the new
+    file layout, and if not found, it is also searched according to the legacy layout.
+  . The legacy behavior (everything in the application folder, mixing music, user, cache, scripts, ... files between all tables) is still available by checking
+    the corresponding option in the 'INI/Editor/UI Options' dialog. It requires the application to be installed in a folder with read/write access. It breaks
+    the ability to have multiple version of VPX on a single computer without setting conflicts.
+
 - add "Surface" to the "Select Element" list
 - add overall GPU memory used, and overall file size to the image dialog
 
@@ -66,16 +82,6 @@ FEATURES:
   . the hardware acceleration filter may not be enabled anymore for keyboard nudge (as it is not supposed to be used for keyboard nudge)
   The new input setup is stored along the old one to allow to use older versions of VPX together with newers.
   This change requires users to redefine their input settings in the new UI.
-
-- folder layout now conforms to platform requirements, with the application in its read only application folder (for example C:\Program Files under Windows),
-  its preferences (VPinballX.ini, ...) in the system preference folder (C:\Users\...\AppData\Roaming\VPinballX) and the data (tables, music, user folder, ...)
-  inside the user data folder hierarchy (C:\Users\...\Documents). 
-  The legacy behavior (everything in the application folder, mixing music, user, cache, scripts, ... files between all tables) is still available by checking
-  the corresponding option in the 'INI/Editor/UI Options' dialog. It requires the application to be installed in a folder with read/write access.
-- This supports creating one folder per table, to group the table file with all its support folders & files (cache, music, flexdmd, ...), avoiding to mix files
-  between tables, also allowing a common install procedure for other virtual pinball components (Frontend, B2S, PinUp videos, ...).
-- Custom settings 'ini' or script 'vbs' are searched along the table matching the table filename. If not found they are also searched along the table matching
-  the folder name. This allows to share custom settings/script for different versions of a table placed together in a folder.
 
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The score view uses a layout defined in a 'scv' file placed along the table file
   matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
