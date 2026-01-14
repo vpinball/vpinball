@@ -228,8 +228,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
                   std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
             if (g_pvp->m_settings.GetBool(enableId))
             {
-               // Define default as current state (otherwise, reset to default would not only reset its properties, but also disable it)
-               Settings::GetRegistry().Register(Settings::GetRegistry().GetBoolProperty(enableId)->WithDefault(true));
                plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
             }
             else
