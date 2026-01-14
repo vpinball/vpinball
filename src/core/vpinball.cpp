@@ -234,7 +234,7 @@ void VPinball::SetupPrefPath()
       for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
       {
          const string testVersion = std::format("{}.{}", major, minor);
-         if (auto testPath = std::filesystem::path(basePrefPath) / testVersion; DirExists(testPath))
+         if (auto testPath = std::filesystem::path(basePrefPath) / testVersion; testPath != m_prefPath && DirExists(testPath))
             prevPref = testPath;
       }
    }
