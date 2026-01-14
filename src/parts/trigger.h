@@ -127,10 +127,10 @@ private:
 
    float m_animHeightOffset;
    float m_vertexBuffer_animHeightOffset;
-   bool m_hitEvent;
-   bool m_unhitEvent;
-   bool m_doAnimation;
-   bool m_moveDown;
+   bool m_hitEvent = false;
+   bool m_unhitEvent = false;
+   bool m_doAnimation = false;
+   bool m_moveDown = false;
 
    Vertex3Ds m_boundingSphereCenter;
 
