@@ -1438,42 +1438,9 @@ void Player::ProcessOSMessages()
          break;
       }
 
+      // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
       if (isPFWnd)
-      {
-         // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
-         const int orientation = m_liveUI->GetUIOrientation();
-         auto applyPFRotation = [orientation](const float x, const float y, float& rx, float& ry)
-         {
-            switch (orientation)
-            {
-            case 0:
-               rx = x;
-               ry = y;
-               break;
-            case 1:
-               rx = y;
-               ry = ImGui::GetIO().DisplaySize.y - x;
-               break;
-            case 2:
-               rx = x;
-               ry = ImGui::GetIO().DisplaySize.y - y;
-               break;
-            case 3:
-               rx = ImGui::GetIO().DisplaySize.x - y;
-               ry = x;
-               break;
-            default: assert(false); return;
-            }
-         };
-         if (e.type == SDL_EVENT_MOUSE_MOTION)
-         {
-            SDL_Event rotatedEvent = e;
-            applyPFRotation(e.motion.x, e.motion.y, rotatedEvent.motion.x, rotatedEvent.motion.y);
-            ImGui_ImplSDL3_ProcessEvent(&rotatedEvent);
-         }
-         else
-            ImGui_ImplSDL3_ProcessEvent(&e);
-      }
+         m_liveUI->HandleSDLEvent(e);
 
       m_pininput.HandleSDLEvent(e);
 

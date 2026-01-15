@@ -26,6 +26,12 @@
 
 ImGui::MarkdownConfig LiveUI::markdown_config;
 
+// Implementation of supporting function for logging of all math objects
+namespace plog
+{
+Record &operator<<(Record &record, const ImVec2 &pt) { return record << '(' << pt.x << ", " << pt.y << ')'; }
+}
+
 LiveUI::LiveUI(RenderDevice *const rd)
    : m_inGameUI(*this) 
    , m_editorUI(*this)
@@ -236,6 +242,33 @@ void LiveUI::UpdateScale()
    }
 }
 
+void LiveUI::AddMousePosEvent(bool isTouch, float x, float y) const
+{
+   ImGuiIO &io = ImGui::GetIO();
+   io.AddMouseSourceEvent(isTouch ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
+   switch (m_rotate)
+   {
+   case 0: io.AddMousePosEvent(x, y); break;
+   case 1: io.AddMousePosEvent(y, io.DisplaySize.y - x); break;
+   case 2: io.AddMousePosEvent(x, io.DisplaySize.y - y); break;
+   case 3: io.AddMousePosEvent(io.DisplaySize.x - y, x); break;
+   default: assert(false); return;
+   }
+}
+
+void LiveUI::HandleSDLEvent(SDL_Event &e) const
+{
+   if (e.type == SDL_EVENT_MOUSE_MOTION)
+   {
+      // Custom implementation of ImGui_ImplSDL3_ProcessEvent supporting screen rotation and event filtering
+      AddMousePosEvent(e.motion.which == SDL_TOUCH_MOUSEID, e.motion.x, e.motion.y);
+   }
+   else
+   {
+      ImGui_ImplSDL3_ProcessEvent(&e);
+   }
+}
+
 void LiveUI::NewFrame()
 {
    UpdateScale();
@@ -283,23 +316,14 @@ void LiveUI::NewFrame()
             want_capture = true;
       SDL_CaptureMouse(want_capture);
    }
-   // Update mouse position to latest global state (needed when dragging main windows)
-   SDL_Window *focused_window = SDL_GetKeyboardFocus();
-   if (!SDL_GetWindowRelativeMouseMode(focused_window))
+
+   // Late mouse position update to latest (async) global state (needed when dragging main windows)
    {
-      float mouse_x_global, mouse_y_global;
-      int window_x, window_y;
-      SDL_GetGlobalMouseState(&mouse_x_global, &mouse_y_global);
-      SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-      const ImVec2 mousePos(mouse_x_global - (float)window_x, mouse_y_global - (float)window_y);
-      switch (m_rotate)
-      {
-      case 0: ImGui::GetIO().AddMousePosEvent(mousePos.x, mousePos.y); break;
-      case 1: ImGui::GetIO().AddMousePosEvent(mousePos.y, io.DisplaySize.y - mousePos.x); break;
-      case 2: ImGui::GetIO().AddMousePosEvent(mousePos.x, io.DisplaySize.y - mousePos.y); break;
-      case 3: ImGui::GetIO().AddMousePosEvent(io.DisplaySize.x - mousePos.y, mousePos.x); break;
-      default: assert(false); return;
-      }
+      SDL_Point windowPos;
+      SDL_FPoint globalMouse;
+      SDL_GetGlobalMouseState(&globalMouse.x, &globalMouse.y);
+      SDL_GetWindowPosition(m_player->m_playfieldWnd->GetCore(), &windowPos.x, &windowPos.y);
+      AddMousePosEvent(false, globalMouse.x - static_cast<float>(windowPos.x), globalMouse.y - static_cast<float>(windowPos.y));
    }
 
    // We implement our own keyboard navigation using flipper keys
