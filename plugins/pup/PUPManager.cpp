@@ -67,8 +67,10 @@ PUPManager::~PUPManager()
 
 void PUPManager::SetGameDir(const string& szRomName)
 {
-   // If root path is not defined, look next to table like we do for pinmame folder
-   if (m_szRootPath.empty()) {
+   string path;
+
+   // First search for pupvideos along the table file
+   {
       VPXPluginAPI* vpxApi = nullptr;
       unsigned int getVpxApiId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
       m_msgApi->BroadcastMsg(m_endpointId, getVpxApiId, &vpxApi);
@@ -78,20 +80,17 @@ void PUPManager::SetGameDir(const string& szRomName)
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         m_szRootPath = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pupvideos");
-
-         if (!m_szRootPath.empty()) {
-            LOGI("PUP folder was found at '%s'", m_szRootPath.c_str());
-         }
+         path = find_case_insensitive_directory_path((tablePath.parent_path() / "pupvideos" / szRomName).string());
       }
    }
 
-   const string path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+   // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
+   if (path.empty() && !m_szRootPath.empty())
+      path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+
    if (path.empty())
-   {
-      LOGI("No pupvideos folder found, not initializing PUP");
       return;
-   }
+
    if (path == m_szPath)
       return;
 

@@ -55,7 +55,7 @@ public:
    void LabelInit(int screenNum);
    const string& GetGetGame() const;
    void SetGetGame(const string& value);
-   const string& GetGetRoot() const;
+   string GetGetRoot() const;
    void SetGetRoot(const string& value);
    void SoundAdd(const string& sname, const string& fname, int svol, double sX, double sy, const string& SP);
    void SoundPlay(const string& sname);

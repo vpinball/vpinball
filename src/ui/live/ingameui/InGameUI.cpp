@@ -185,10 +185,11 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       return;
 
    // If user has moved the mouse, disable flipper navigation
-   if (ImGui::GetMousePos() != m_prevMousePos)
+   if (m_useFlipperNav)
    {
+      ImVec2 delta = m_prevMousePos - ImGui::GetMousePos();
+      m_useFlipperNav &= fabs(delta.x) <= 3.f && fabs(delta.y) <= 3.f;
       m_prevMousePos = ImGui::GetMousePos();
-      m_useFlipperNav = false;
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))

@@ -110,6 +110,9 @@ public:
    // Custom render callback for CustomRender items
    const std::function<void(int, const InGameUIItem*)> m_customRender;
 
+   // UI behavior
+   bool m_excludeFromDefault = false; // If set this item is not reseted to its default value when user request a reset
+
 private:
    string m_defMappingString;
    string m_initialMappingString;

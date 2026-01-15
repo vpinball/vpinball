@@ -4,6 +4,8 @@
 
 #include "InGameUIPage.h"
 
+#include "imgui/imgui_internal.h"
+
 #include "SensorSetupPage.h"
 #include "fonts/IconsForkAwesome.h"
 
@@ -43,7 +45,11 @@ void InGameUIPage::Close(bool isBackwardAnimation)
 
 void InGameUIPage::ClearItems() { m_items.clear(); }
 
-void InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item) { m_items.push_back(std::move(item)); }
+InGameUIItem& InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item)
+{
+   m_items.push_back(std::move(item));
+   return *m_items.back();
+}
 
 Settings& InGameUIPage::GetSettings() { return m_player->m_ptable->m_settings; }
 
@@ -58,7 +64,7 @@ bool InGameUIPage::IsAdjustable() const
 bool InGameUIPage::IsDefaults() const
 {
    for (const auto& item : m_items)
-      if (!item->IsDefaultValue())
+      if (!item->m_excludeFromDefault && !item->IsDefaultValue())
          return false;
    return true;
 }
@@ -102,7 +108,8 @@ void InGameUIPage::ResetToDefaults()
    assert(!m_resettingToDefaults);
    m_resettingToDefaults = true;
    for (size_t i = 0; i < m_items.size(); i++)
-      m_items[i]->ResetToDefault();
+      if (!m_items[i]->m_excludeFromDefault)
+         m_items[i]->ResetToDefault();
    m_resetNotifId = g_pplayer->m_liveUI->PushNotification("Settings reset to defaults"s, 5000, m_resetNotifId);
    if (IsDefaults())
       m_selectedItem = 0;
@@ -365,7 +372,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 
 void InGameUIPage::Render(float elapsedS)
 {
-   const ImGuiIO& io = ImGui::GetIO();
+   ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
 
    if (m_openAnimTarget != m_openAnimPos)
@@ -755,15 +762,28 @@ void InGameUIPage::Render(float elapsedS)
             TextWithEllipsis(prop->m_label, maxLabelWidth);
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             int v = item->GetIntValue();
-            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::SliderInt(("##" + prop->m_label).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+            const auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+            if (((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) || (Settings::m_propPlayer_PlayfieldHeight.index == id.value().index)) && !m_player->m_liveUI->m_inGameUI.IsFlipperNav())
+            {
+               // Special handling for editing main window size as mouse interaction would break (since the control is moved/resized while interacted)
+               const float butWidth = ImGui::CalcTextSize(ICON_FK_ARROWS_H, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+               ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - ImGui::GetStyle().ItemSpacing.x - butWidth);
+               ImGui::InputInt(("##" + prop->m_label).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
+               ImGui::SameLine();
+               if (ImGui::Button((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_FK_ARROWS_H : ICON_FK_ARROWS_V))
+                  v = prop->m_max;
+            }
+            else
+            {
+               ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::SliderInt(("##" + prop->m_label).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+            }
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-               id.has_value() && g_pvp->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
+            else if (id.has_value() && g_pvp->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);

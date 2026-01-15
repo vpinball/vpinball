@@ -1177,13 +1177,21 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_currentFrame = -1.f;
    m_isBackGlassImage = IsBackglass();
 
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
-   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_mesh.m_indices);
-   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, indexBuffer, true);
+   if (m_mesh.NumVertices() > 0 && !m_mesh.m_indices.empty())
+   {
+      std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
+      std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_mesh.m_indices);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, indexBuffer, true);
 
-   // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
-   RecalculateMatrices();
-   m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
+      // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
+      RecalculateMatrices();
+      m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
+   }
+   else
+   {
+      m_meshBuffer = nullptr;
+      m_skipRendering = true;
+   }
    m_vertexBufferRegenerate = false;
 }
 

@@ -94,8 +94,15 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
    // - DX11 apply an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
    // - Metal & DX12 do not implement the framebuffer selection and always capture from the base swapchain and return data on the swapchain format
    // - OpenGL & Vulkan seems to be ok (always returning 4 byte BGRA, eventually after convertion if backbuffer format is not BGRA)
-   VPX::Window* wnd = m_rd.m_screenshotWindow;
-   m_rd.m_screenshotWindow = nullptr;
+   int index = -1;
+   std::filesystem::path path(_filePath);
+   for (int i = 0; i < m_rd.m_screenshotFilename.size(); i++)
+      if (m_rd.m_screenshotFilename[i] == path)
+      {
+         index = i;
+         break;
+      }
+   m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
    bool success = false;
    auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA);
    if (tex)
@@ -113,7 +120,9 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
          tex->FlipY();
       success = tex->Save(_filePath);
    }
-   m_rd.m_screenshotCallback(wnd, success);
+   m_rd.m_screenshotSuccess &= success;
+   if (m_rd.m_screenshotFilename.empty())
+      m_rd.m_screenshotCallback(m_rd.m_screenshotSuccess);
 }
 
 #elif defined(ENABLE_OPENGL)
@@ -197,10 +206,10 @@ void RenderDevice::CaptureGLScreenshot()
          glReadBuffer(GL_BACK);
          glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
          tex->FlipY();
-         success = tex->Save(m_screenshotFilename);
+         success = tex->Save(m_screenshotFilename[0].string());
       }
    #endif
-   m_screenshotCallback(m_screenshotWindow, success);
+   m_screenshotCallback(success);
 }
 
 #elif defined(ENABLE_DX9)
@@ -228,7 +237,7 @@ void RenderDevice::CaptureDX9Screenshot()
    IDirect3DSurface9* pBackBuffer = NULL;
    if (FAILED(pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
    {
-      m_screenshotCallback(m_screenshotWindow, false);
+      m_screenshotCallback(false);
       return;
    }
    D3DSURFACE_DESC desc;
@@ -237,14 +246,14 @@ void RenderDevice::CaptureDX9Screenshot()
    if (FAILED(pd3dDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &pSurface, NULL)))
    {
       pBackBuffer->Release();
-      m_screenshotCallback(m_screenshotWindow, false);
+      m_screenshotCallback(false);
       return;
    }
    if (FAILED(pd3dDevice->GetRenderTargetData(pBackBuffer, pSurface)))
    {
       pSurface->Release();
       pBackBuffer->Release();
-      m_screenshotCallback(m_screenshotWindow, false);
+      m_screenshotCallback(false);
       return;
    }
    D3DLOCKED_RECT lockedRect;
@@ -252,7 +261,7 @@ void RenderDevice::CaptureDX9Screenshot()
    {
       pSurface->Release();
       pBackBuffer->Release();
-      m_screenshotCallback(m_screenshotWindow, false);
+      m_screenshotCallback(false);
       return;
    }
    auto tex = BaseTexture::Create(desc.Width, desc.Height, BaseTexture::SRGBA);
@@ -264,11 +273,11 @@ void RenderDevice::CaptureDX9Screenshot()
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
             bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
-      success = tex->Save(m_screenshotFilename);
+      success = tex->Save(m_screenshotFilename[0].string());
    }
    pSurface->Release();
    pBackBuffer->Release();
-   m_screenshotCallback(m_screenshotWindow, success);
+   m_screenshotCallback(success);
 }
 
 #endif
@@ -562,7 +571,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             if (rd->m_screenshotFrameDelay > 0) {
                rd->m_screenshotFrameDelay--;
                if (rd->m_screenshotFrameDelay == 0)
-                  bgfx::requestScreenShot(rd->m_screenshotWindow->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename.c_str());
+                  for (int i = 0; i < rd->m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
             }
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
@@ -595,7 +605,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_renderProfiler->ExitProfileSection();
          if (!rd->m_framePending)
             continue;
-         const bool useVSync = g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC;
+         const bool useVSync = (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC) && (g_pvp->m_captureAttract == 0);
          const bool noSync = rd->m_frameNoSync;
          const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
          g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
@@ -676,16 +686,18 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
-            if (rd->m_screenshotWindow)
+            if (!rd->m_screenshotWindow.empty())
             {
                rd->m_screenshotFrameDelay--;
                if (rd->m_screenshotFrameDelay == 0)
-                  bgfx::requestScreenShot(rd->m_screenshotWindow->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename.c_str());
+                  for (int i = 0; i < rd->m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
                else if (rd->m_screenshotFrameDelay < -60)
                {
                   // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
                   PLOGE << "Screenshot capture timed out. Requesting it again";
-                  bgfx::requestScreenShot(rd->m_screenshotWindow->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename.c_str());
+                  for (int i = 0; i < rd->m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
                }
             }
             #ifdef MSVC_CONCURRENCY_VIEWER
@@ -709,19 +721,20 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
 #endif
 
-void RenderDevice::CaptureScreenshot(VPX::Window* wnd, const string& filename, std::function<void(VPX::Window*, bool)> callback)
+void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay)
 {
-   if (m_screenshotFrameDelay > 0)
+   assert(frameDelay >= 1);
+   if (!m_screenshotFilename.empty())
    {
       PLOGE << "Screenshot capture already in progress.";
-      callback(wnd, false);
+      callback(false);
       return;
    }
-
+   m_screenshotSuccess = true;
    m_screenshotWindow = wnd;
    m_screenshotFilename = filename;
    m_screenshotCallback = callback;
-   m_screenshotFrameDelay = 3;
+   m_screenshotFrameDelay = frameDelay;
 }
 
 RenderDevice::RenderDevice(

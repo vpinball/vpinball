@@ -58,16 +58,13 @@ void PluginSettingsPage::BuildPage()
 
    const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin." + m_pluginId, "Enable"s).value();
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
-   auto plugin = manager.GetPlugin(m_pluginId); 
+   auto plugin = manager.GetPlugin(m_pluginId);
    if (plugin == nullptr)
    {
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Internal error..."s));
       return;
    }
 
-   // Consider the current state of the plugin as the default to avoid always returning to off state
-   const bool isEnabled = plugin->IsLoaded();
-   Settings::GetRegistry().Register(Settings::GetRegistry().GetBoolProperty(enablePropId)->WithDefault(isEnabled));
    AddItem(std::make_unique<InGameUIItem>( //
       enablePropId, //
       [this]()
@@ -75,7 +72,7 @@ void PluginSettingsPage::BuildPage()
          const MsgPluginManager& manager = MsgPluginManager::GetInstance();
          auto plugin = manager.GetPlugin(m_pluginId);
          return plugin ? plugin->IsLoaded() : false;
-      }, //
+      }, // Live
       [this](bool v)
       {
          MsgPluginManager& manager = MsgPluginManager::GetInstance();
@@ -85,9 +82,9 @@ void PluginSettingsPage::BuildPage()
          else if (!v && plugin.IsLoaded())
             manager.UnloadPlugin(plugin);
          BuildPage();
-      }));
+      })).m_excludeFromDefault = true;
 
-   if (!isEnabled)
+   if (!plugin->IsLoaded())
       return;
 
    for (const auto& option : VPXPluginAPIImpl::GetInstance().GetPluginSettings())

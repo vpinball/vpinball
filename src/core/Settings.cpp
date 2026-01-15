@@ -181,8 +181,6 @@ bool Settings::Load(const bool createDefault)
    else if (createDefault)
    {
       PLOGI << "Settings file was not found at '" << m_store.GetIniPath() << "', creating a default one";
-
-      // Load failed: generate a default setting file
       try
       {
          m_store.GenerateTemplate(m_store.GetIniPath());
@@ -195,84 +193,6 @@ bool Settings::Load(const bool createDefault)
       {
          PLOGE << "Loading of default settings file failed";
       }
-
-      #ifdef _WIN32
-      /*
-      // For Windows, get settings values from windows registry (which was used to store settings before 10.8)
-      for (unsigned int j = 0; j < Section::Plugin00; j++)
-      {
-         // We do not save version of played tables in the ini file
-         if (j == Section::Version)
-            continue;
-
-         const string regpath = (j == Section::Controller ? "Software\\Visual Pinball\\" : "Software\\Visual Pinball\\VP10\\") + m_settingKeys[j];
-
-         HKEY hk;
-         LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
-         if (res != ERROR_SUCCESS)
-            continue;
-
-         for (DWORD Index = 0;; ++Index)
-         {
-            DWORD dwSize = MAX_PATH;
-            TCHAR szName[MAX_PATH];
-            res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
-            if (res == ERROR_NO_MORE_ITEMS)
-               break;
-            if (res != ERROR_SUCCESS || dwSize == 0 || szName[0] == '\0')
-               continue;
-
-            BYTE pvalue[MAXSTRING];
-            dwSize = std::size(pvalue);
-            DWORD type = REG_NONE;
-            res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
-            if (res != ERROR_SUCCESS)
-            {
-               PLOGI << "Settings '" << m_settingKeys[j] << '/' << szName << "' was not imported. Failure cause: failed to get value";
-               continue;
-            }
-
-            // old Win32xx and Win32xx 9+ docker keys
-            if ((char *)pvalue == "Dock Windows"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
-               continue;
-            if ((char *)pvalue == "Dock Settings"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
-               continue;
-
-            string copy;
-            if (type == REG_SZ)
-               copy = reinterpret_cast<char*>(pvalue);
-            else if (type == REG_DWORD)
-               copy = std::to_string(*reinterpret_cast<uint32_t *>(pvalue));
-            else
-            {
-               continue;
-               assert(!"Bad Registry Key");
-            }
-
-            string name(szName);
-            if (!m_ini[m_settingKeys[j]].has(name))
-            {
-               // Search for a case insensitive match
-               for (const auto& item : m_ini[m_settingKeys[j]])
-               {
-                  if (StrCompareNoCase(name, item.first))
-                  {
-                     name = item.first;
-                     break;
-                  }
-               }
-            }
-
-            if (m_ini[m_settingKeys[j]].has(name))
-               m_ini[m_settingKeys[j]][name] = copy;
-            else
-            {
-               PLOGI << "Settings '" << m_settingKeys[j] << '/' << szName << "' was not imported (value in registry: " << copy << "). Failure cause: name not found";
-            }
-         }
-         RegCloseKey(hk);
-      }*/
-      #endif
       UpdateDefaults();
       return true;
    }
