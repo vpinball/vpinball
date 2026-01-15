@@ -3,8 +3,6 @@
 #include "core/stdafx.h"
 #include "DisplaySettingsPage.h"
 
-#include "imgui/imgui_internal.h"
-
 namespace VPX::InGameUI
 {
 
@@ -106,6 +104,16 @@ void DisplaySettingsPage::Close(bool isBackwardAnimation)
    InGameUIPage::Close(isBackwardAnimation);
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
+}
+
+void DisplaySettingsPage::OnStaticRenderDirty()
+{
+   if (!m_staticPrepassDisabled)
+   {
+      m_player->m_renderer->DisableStaticPrePass(true);
+      m_staticPrepassDisabled = true;
+   }
+   m_player->m_renderer->InitLayout();
 }
 
 VPX::RenderOutput& DisplaySettingsPage::GetOutput(VPXWindowId wndId)
@@ -296,8 +304,10 @@ void DisplaySettingsPage::BuildWindowPage()
    }
    else
    {
-      const int maxWidth = m_displays[wndDisplay].width;
-      const int maxHeight = m_displays[wndDisplay].height;
+      const int containerWidth = m_displays[wndDisplay].width;
+      const int containerHeight = m_displays[wndDisplay].height;
+      const int maxWidth = m_arLock == 0 ? m_displays[wndDisplay].width : min(containerWidth, (m_displays[wndDisplay].height * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y);
+      const int maxHeight = m_arLock == 0 ? m_displays[wndDisplay].height : min(containerHeight, (m_displays[wndDisplay].width * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x);
 
       vector<string> arNames;
       for (const int2& aspectRatio : aspectRatios)
@@ -322,7 +332,7 @@ void DisplaySettingsPage::BuildWindowPage()
       if (m_isMainWindow)
       { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to re-setup everything)
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId)));
+         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(0, min(maxWidth, containerWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Width[m_wndId], "%d"s, //
             [this]() { return m_player->m_ptable->m_settings.GetWindow_Width(m_wndId); }, //
@@ -344,7 +354,7 @@ void DisplaySettingsPage::BuildWindowPage()
             })).m_excludeFromDefault = true;
 
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(0, maxHeight - m_player->m_ptable->m_settings.GetWindow_WndY(m_wndId)));
+         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(0, min(maxHeight, containerHeight - m_player->m_ptable->m_settings.GetWindow_WndY(m_wndId))));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Height[m_wndId], "%d"s, //
             [this]() { return m_player->m_ptable->m_settings.GetWindow_Height(m_wndId); }, //
@@ -368,12 +378,13 @@ void DisplaySettingsPage::BuildWindowPage()
       else
       #endif
       {
-         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxWidth - wndPos.x));
+         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, min(maxWidth, containerWidth - wndPos.x)));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Width[m_wndId], "%d"s, //
             [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth(); }, //
-            [this](int, int v)
+            [this, containerWidth](int prev, int v)
             {
+               // Apply AR constraint
                Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
                SDL_Point size { v, wnd->GetHeight() };
                if (m_arLock != 0)
@@ -387,23 +398,28 @@ void DisplaySettingsPage::BuildWindowPage()
                   size.y = h;
                }
                size.x = v;
+
+               if (m_isMainWindow)
+                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("You have changed main window size\nRendering will be stretched until you restart the game"s, 5000, m_delayApplyNotifId);
+
+               // Center scale
+               SDL_Point pos;
+               wnd->GetPos(pos.x, pos.y);
+               pos.x -= (v - prev) / 2;
+               pos.x = clamp(pos.x, 0, containerWidth - v);
+
+               wnd->SetPos(pos.x, pos.y);
                wnd->SetSize(size.x, size.y);
-               if (m_isMainWindow) // Avoid buggy resizing when changing main window size
-                  ImGui::ClearActiveID();
-               if (!m_staticPrepassDisabled)
-               {
-                  m_player->m_renderer->DisableStaticPrePass(true);
-                  m_staticPrepassDisabled = true;
-               }
-               m_player->m_renderer->InitLayout();
+
+               OnStaticRenderDirty();
                BuildPage();
             })).m_excludeFromDefault = true;
 
-         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxHeight - wndPos.y));
+         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, min(maxHeight, containerHeight - wndPos.y)));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Height[m_wndId], "%d"s, //
             [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetHeight(); }, //
-            [this](int, int v)
+            [this, containerHeight](int prev, int v)
             {
                Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
                SDL_Point size { wnd->GetWidth(), v };
@@ -418,20 +434,25 @@ void DisplaySettingsPage::BuildWindowPage()
                   size.x = w;
                }
                size.y = v;
+
+               if (m_isMainWindow)
+                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("You have changed main window size\nRendering will be stretched until you restart the game"s, 5000, m_delayApplyNotifId);
+
+               // Center scale
+               SDL_Point pos;
+               wnd->GetPos(pos.x, pos.y);
+               pos.y -= (v - prev) / 2;
+               pos.y = clamp(pos.y, 0, containerHeight - v);
+
+               wnd->SetPos(pos.x, pos.y);
                wnd->SetSize(size.x, size.y);
-               if (m_isMainWindow) // Avoid buggy resizing when changing main window size
-                  ImGui::ClearActiveID();
-               if (!m_staticPrepassDisabled)
-               {
-                  m_player->m_renderer->DisableStaticPrePass(true);
-                  m_staticPrepassDisabled = true;
-               }
-               m_player->m_renderer->InitLayout();
+
+               OnStaticRenderDirty();
                BuildPage();
             })).m_excludeFromDefault = true;
       }
 
-      Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, maxWidth - wndSize.x));
+      Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propWindow_WndX[m_wndId], "%d"s, //
          [this, wndDisplay]()
@@ -456,7 +477,7 @@ void DisplaySettingsPage::BuildWindowPage()
             BuildPage();
          })).m_excludeFromDefault = true;
 
-      Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_wndId)->WithRange(0, maxHeight - wndSize.y));
+      Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_wndId)->WithRange(0, containerHeight - wndSize.y));
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propWindow_WndY[m_wndId], "%d"s, //
          [this, wndDisplay]()
@@ -592,8 +613,9 @@ void DisplaySettingsPage::BuildEmbeddedPage()
 void DisplaySettingsPage::Render(float elapsedS)
 {
    InGameUIPage::Render(elapsedS);
-
-   if (!IsWindowHovered() && SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+   if (!IsWindowHovered() // Don't drag when mouse is hovering the InGameUI
+      && (SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore()) // Only apply for main playfield window (and its embedded windows)
+      && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) // Only drag with left mouse button
    {
       if (m_isMainWindow)
       { // Drag main window

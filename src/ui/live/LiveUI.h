@@ -63,10 +63,13 @@ public:
    static ImGuiKey GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk);
    static void CenteredText(const string &text);
 
+   void HandleSDLEvent(SDL_Event &e) const;
+
 private:
    void SetupImGuiStyle(const bool isEditor) const;
    
    void NewFrame();
+   void AddMousePosEvent(bool isTouch, float x, float y) const;
    void UpdateScale();
 
    vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
@@ -111,3 +114,8 @@ private:
    ImFont *m_overlayBoldFont = nullptr;
    ImFont *m_overlayFont = nullptr;
 };
+
+namespace plog
+{
+Record &operator<<(Record &record, const ImVec2 &pt);
+}
