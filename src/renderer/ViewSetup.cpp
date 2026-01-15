@@ -119,12 +119,19 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
          ComputeMVP(table, aspect, false, mvp);
          Vertex3Ds bottomFlipper(table->m_right * 0.5f, bottomY, 0.f);
          mvp.GetModelViewProj(0).MultiplyVector(bottomFlipper);
-         Vertex3Ds backTop(table->m_right * 0.5f, 0.f, mWindowTopZOfs);
+         Vertex3Ds backTop(table->m_right * 0.5f, table->m_top, mWindowTopZOfs);
          mvp.GetModelViewProj(0).MultiplyVector(backTop);
+         Vertex3Ds bottomDown(table->m_right * 0.5f, table->m_bottom, mWindowBottomZOfs);
+         mvp.GetModelViewProj(0).MultiplyVector(bottomDown);
          // PLOGD << "Vertical offset fitting: [" << posMin << " - " << posMax << "] " << defViewSetup.mViewVOfs << " => Flipper: " << bottomFlipper.y << ", BackTop: " << backTop.y;
          const float delta = bottomFlipper.y - targetPos;
-         if (backTop.y < 1.0) // Don't create a gap at the top
+         // Rule 1: limit the bottom gap to 5% of screen height
+         if (bottomDown.y > -1.0f + 0.05f / 2.f)
+            posMin = mViewVOfs;
+         // Rule 2: don't create a gap at the top
+         else if (backTop.y < 1.0f)
             posMax = mViewVOfs;
+         // Rule 3: place flipper bat bottom at the user selected relative height position
          else if (fabs(delta) < 0.001f)
             break;
          else if (delta > 0.f)
