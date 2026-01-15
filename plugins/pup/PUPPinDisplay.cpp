@@ -527,9 +527,13 @@ void PUPPinDisplay::SetGetGame(const string& value)
    NOT_IMPLEMENTED("Not implemented: value=%s", value.c_str());
 }
 
-const string& PUPPinDisplay::GetGetRoot() const
+string PUPPinDisplay::GetGetRoot() const
 {
-   return m_pupManager.GetRootPath();
+   // The return path is either the default one when not playing or the one actually being played (which may be a per table or a global folder)
+   if (m_pupManager.GetPath().empty())
+      return m_pupManager.GetRootPath();
+   else
+      return std::filesystem::path(m_pupManager.GetPath()).parent_path().string() + PATH_SEPARATOR_CHAR;
 }
 
 void PUPPinDisplay::SetGetRoot(const string& value)
