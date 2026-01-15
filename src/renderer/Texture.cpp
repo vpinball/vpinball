@@ -28,6 +28,7 @@
 
 #define QOI_API static
 #define QOI_IMPLEMENTATION
+#define QOI_NO_STDIO
 #include "qoi/qoi.h"
 static inline int GetPixelSize(const BaseTexture::Format format)
 {
@@ -507,7 +508,25 @@ bool BaseTexture::Save(const string& filepath) const
    else if (ext == "qoi")
    {
       qoi_desc desc { .width = m_width, .height = m_height, .channels = static_cast<unsigned char>(m_format == SRGB ? 3 :4), .colorspace = QOI_SRGB };
-      success = qoi_write(filepath.c_str(), m_data, &desc);
+      int size;
+      void* encoded = qoi_encode(m_data, &desc, &size);
+      if (encoded)
+      {
+         try
+         {
+            if (std::ofstream file(filepath, std::ios::binary | std::ios::trunc); file)
+            {
+                  file.write(reinterpret_cast<const char*>(encoded), size);
+                  file.close();
+                  success = true;
+            }
+         }
+         catch (const std::filesystem::filesystem_error& e)
+         {
+            PLOGE << "Failed to save file " << filepath.c_str() << ": " << e.what();
+         }
+         QOI_FREE(encoded);
+      }
    }
    else
    {
