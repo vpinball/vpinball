@@ -258,7 +258,7 @@ void VPinball::SetupPrefPath()
          }
          catch (const std::filesystem::filesystem_error &e)
          {
-            PLOGE << "Error processing " << entry.path() << ": " << e.what() << '\n';
+            PLOGE << "Error processing " << entry.path() << ": " << e.what();
          }
       }
    }
