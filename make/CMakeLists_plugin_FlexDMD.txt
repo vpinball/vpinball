@@ -185,6 +185,11 @@ if(BUILD_SHARED)
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/flexdmd/libiconv-2.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/flexdmd/libbz2-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/flexdmd/liblzma-5.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/flexdmd/libwinpthread-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/flexdmd/zlib1.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC64.dll" "${PLUGINS_DIR}/flexdmd/AVCODEC64-61.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT64.dll" "${PLUGINS_DIR}/flexdmd/AVFORMAT64-61.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL64.dll" "${PLUGINS_DIR}/flexdmd/AVUTIL64-59.dll"
@@ -195,6 +200,11 @@ if(BUILD_SHARED)
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/flexdmd/libiconv-2.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/flexdmd/libbz2-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/flexdmd/liblzma-5.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/flexdmd/libwinpthread-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/flexdmd/zlib1.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC.dll" "${PLUGINS_DIR}/flexdmd/AVCODEC-61.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT.dll" "${PLUGINS_DIR}/flexdmd/AVFORMAT-61.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL.dll" "${PLUGINS_DIR}/flexdmd/AVUTIL-59.dll"
