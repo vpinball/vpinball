@@ -244,6 +244,8 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
    if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
    {
       LOGI("Replacing previously defined PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
+      if (existing->GetParent())
+         existing->GetParent()->ReplaceChild(existing, pScreen);
       for (const auto& [key, screen] : m_screenMap)
       {
          if (screen->GetParent() == existing.get())

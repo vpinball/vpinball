@@ -59,7 +59,8 @@ public:
    void SetBounds(int x, int y, int w, int h);
 
    void AddChild(std::shared_ptr<PUPScreen> pScreen);
-   const PUPScreen* GetParent() const { return m_pParent; }
+   void ReplaceChild(std::shared_ptr<PUPScreen> pChild, std::shared_ptr<PUPScreen> pScreen);
+   PUPScreen* GetParent() const { return m_pParent; }
 
    void AddTrigger(PUPTrigger* pTrigger);
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
