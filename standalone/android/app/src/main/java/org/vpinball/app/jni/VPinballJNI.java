@@ -15,6 +15,7 @@ public class VPinballJNI {
     public native void VPinballSaveValueBool(String sectionName, String key, boolean value);
     public native int VPinballResetIni();
     public native void VPinballUpdateWebServer();
+    public native String VPinballGetPath(int pathType);
     public native int VPinballLoadTable(String path);
     public native int VPinballExtractTableScript();
     public native int VPinballPlay();

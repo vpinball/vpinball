@@ -13,6 +13,7 @@ import java.io.OutputStream
 import org.json.JSONArray
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballSettingsSection
+import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 
 object SAFFileSystem {
     private lateinit var context: Context
@@ -35,25 +36,21 @@ object SAFFileSystem {
             return
         }
 
-        VPinballManager.saveValue(VPinballSettingsSection.STANDALONE, "TablesPath", uri.toString())
+        VPinballManager.saveValue(VPinballSettingsSection.STANDALONE, "SAFPath", uri.toString())
         uriCache.clear()
     }
 
     fun getExternalStorageUri(): Uri? {
-        val tablesPath = VPinballManager.getTablesPath()
-        return if (isSAFPath(tablesPath)) {
-            tablesPath.toUri()
-        } else {
-            null
-        }
+        val safPath = VPinballManager.loadValue(STANDALONE, "SAFPath", "")
+        return if (safPath.isNotEmpty()) safPath.toUri() else null
     }
 
     fun isUsingSAF(): Boolean {
-        return isSAFPath(VPinballManager.getTablesPath())
+        return VPinballManager.loadValue(STANDALONE, "SAFPath", "").isNotEmpty()
     }
 
     fun clearExternalStorageUri() {
-        VPinballManager.saveValue(VPinballSettingsSection.STANDALONE, "TablesPath", "")
+        VPinballManager.saveValue(VPinballSettingsSection.STANDALONE, "SAFPath", "")
         uriCache.clear()
     }
 

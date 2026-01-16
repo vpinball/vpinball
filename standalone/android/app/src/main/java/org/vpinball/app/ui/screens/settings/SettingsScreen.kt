@@ -81,6 +81,7 @@ import org.vpinball.app.jni.VPinballDisplayText
 import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballStorageMode
 import org.vpinball.app.jni.VPinballViewMode
 import org.vpinball.app.ui.screens.common.RoundedCard
@@ -329,7 +330,7 @@ fun SettingsScreen(
                         ActionRow(
                             label = "Export vpinball.log...",
                             labelColor = Color.VpxRed,
-                            onClick = { onViewFile(File(VPinballManager.getFilesDir(), "vpinball.log")) },
+                            onClick = { onViewFile(File(VPinballManager.getPath(VPinballPath.PREFERENCES), "vpinball.log")) },
                             showDisclosure = false,
                         )
                     }
@@ -340,7 +341,7 @@ fun SettingsScreen(
                         ActionRow(
                             label = "Export VPinballX.ini...",
                             labelColor = Color.VpxRed,
-                            onClick = { onViewFile(File(VPinballManager.getFilesDir(), "VPinballX.ini")) },
+                            onClick = { onViewFile(File(VPinballManager.getPath(VPinballPath.PREFERENCES), "VPinballX.ini")) },
                             showDisclosure = false,
                         )
                     }

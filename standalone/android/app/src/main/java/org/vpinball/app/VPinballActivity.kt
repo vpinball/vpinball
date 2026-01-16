@@ -10,7 +10,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import org.libsdl.app.SDL
 import org.vpinball.app.ui.VPinballContent
 
 class VPinballActivity : ComponentActivity() {
@@ -19,10 +18,9 @@ class VPinballActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        SDL.setContext(this)
-        VPinballManager.setMainActivity(this)
-        VPinballManager.startup()
-        TableManager.initialize(this)
+        VPinballManager.onActivityReady(this)
+
+        VPinballManager.whenReady { TableManager.initialize(this) }
 
         setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()

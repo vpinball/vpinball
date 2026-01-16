@@ -13,6 +13,7 @@ import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
@@ -85,18 +86,18 @@ class SettingsViewModel : ViewModel() {
         renderingModeOverride = (VPinballManager.loadValue(STANDALONE, "RenderingModeOverride", 2) == 2)
         gfxBackend = VPinballGfxBackend.fromString(VPinballManager.loadValue(PLAYER, "GfxBackend", VPinballGfxBackend.OPENGLES.value))
 
-        val savedTablesPath = VPinballManager.loadValue(STANDALONE, "TablesPath", "")
-        storageMode = VPinballStorageMode.fromTablesPath(savedTablesPath)
+        val savedSAFPath = VPinballManager.loadValue(STANDALONE, "SAFPath", "")
+        storageMode = VPinballStorageMode.fromSAFPath(savedSAFPath)
 
         currentTablesPath =
             when (storageMode) {
-                VPinballStorageMode.INTERNAL -> ""
+                VPinballStorageMode.INTERNAL -> VPinballManager.getPath(VPinballPath.TABLES)
                 VPinballStorageMode.CUSTOM -> {
                     if (SAFFileSystem.isUsingSAF()) {
                         val displayPath = SAFFileSystem.getExternalStorageDisplayPath()
-                        if (displayPath.isNotEmpty()) displayPath else savedTablesPath
+                        if (displayPath.isNotEmpty()) displayPath else savedSAFPath
                     } else {
-                        savedTablesPath
+                        savedSAFPath
                     }
                 }
             }
@@ -157,7 +158,7 @@ class SettingsViewModel : ViewModel() {
             VPinballStorageMode.INTERNAL -> {
                 SAFFileSystem.clearExternalStorageUri()
                 storageMode = VPinballStorageMode.INTERNAL
-                currentTablesPath = VPinballManager.getTablesPath()
+                currentTablesPath = VPinballManager.getPath(VPinballPath.TABLES)
                 needsTableReload = true
             }
             VPinballStorageMode.CUSTOM -> {
@@ -171,7 +172,7 @@ class SettingsViewModel : ViewModel() {
         storageMode = VPinballStorageMode.CUSTOM
 
         val displayPath = SAFFileSystem.getExternalStorageDisplayPath()
-        currentTablesPath = if (displayPath.isNotEmpty()) displayPath else VPinballManager.getTablesPath()
+        currentTablesPath = if (displayPath.isNotEmpty()) displayPath else VPinballManager.getPath(VPinballPath.TABLES)
 
         needsTableReload = true
     }

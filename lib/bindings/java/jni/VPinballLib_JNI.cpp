@@ -156,6 +156,11 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballUpdateWebSe
    VPinballUpdateWebServer();
 }
 
+JNIEXPORT jstring JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballGetPath(JNIEnv* env, jobject obj, jint pathType)
+{
+   return env->NewStringUTF(VPinballGetPath(static_cast<VPINBALL_PATH>(pathType)));
+}
+
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadTable(JNIEnv* env, jobject obj, jstring path)
 {
    const char* pPath = env->GetStringUTFChars(path, nullptr);

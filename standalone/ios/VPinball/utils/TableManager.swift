@@ -159,13 +159,8 @@ class TableManager: ObservableObject {
     }
 
     private func loadTablesPath() {
-        tablesPath = VPinballManager.shared.getTablesPath()
-
-        if !tablesPath.hasSuffix("/") {
-            tablesPath += "/"
-        }
-
-        tablesJSONPath = (tablesPath as NSString).appendingPathComponent("tables.json")
+        tablesPath = VPinballManager.shared.getPath(.tables)
+        tablesJSONPath = (VPinballManager.shared.getPath(.preferences) as NSString).appendingPathComponent("tables.json")
 
         if !TableFileOperations.exists(tablesPath) {
             _ = TableFileOperations.createDirectory(tablesPath)

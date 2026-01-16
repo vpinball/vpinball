@@ -193,6 +193,8 @@ void VPinballLib::Init(VPinballEventCallback callback)
       PLOGI << "Number of logical CPU cores: " << g_pvp->GetLogicalNumberOfProcessors();
       PLOGI << "Application path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
       PLOGI << "Preference path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
+      PLOGI << "Assets path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Assets);
+      PLOGI << "Tables path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Tables);
 
       EditableRegistry::RegisterEditable<Ball>();
       EditableRegistry::RegisterEditable<Bumper>();
@@ -226,6 +228,8 @@ void VPinballLib::Init(VPinballEventCallback callback)
       }
 
       lib->UpdateWebServer();
+
+      SendEvent(VPINBALL_EVENT_INIT_COMPLETE, nullptr);
    }, this, true);
 }
 
@@ -234,10 +238,9 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
    m_eventCallback = [callback](VPINBALL_EVENT event, void* data) -> void* {
       thread_local string jsonString;
       const char* jsonData = nullptr;
+      nlohmann::json j;
 
       if (data != nullptr) {
-         nlohmann::json j;
-
          switch(event) {
             case VPINBALL_EVENT_LOADING_ITEMS:
             case VPINBALL_EVENT_LOADING_SOUNDS:
@@ -464,7 +467,7 @@ VPINBALL_STATUS VPinballLib::ResetIni()
    if (!std::filesystem::remove(iniFilePath))
     return VPINBALL_STATUS_FAILURE;
 
-   g_pvp->m_settings.SetIniPath(iniFilePath.string() + PATH_SEPARATOR_CHAR);
+   g_pvp->m_settings.SetIniPath(iniFilePath.string());
    g_pvp->m_settings.Load(true);
    g_pvp->m_settings.Save();
    return VPINBALL_STATUS_SUCCESS;
@@ -473,6 +476,22 @@ VPINBALL_STATUS VPinballLib::ResetIni()
 void VPinballLib::UpdateWebServer()
 {
    m_webServer.Update();
+}
+
+std::filesystem::path VPinballLib::GetPath(VPINBALL_PATH pathType)
+{
+   switch (pathType) {
+      case VPINBALL_PATH_ROOT:
+         return g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
+      case VPINBALL_PATH_TABLES:
+         return g_pvp->GetAppPath(VPinball::AppSubFolder::Tables);
+      case VPINBALL_PATH_PREFERENCES:
+         return g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
+      case VPINBALL_PATH_ASSETS:
+         return g_pvp->GetAppPath(VPinball::AppSubFolder::Assets);
+      default:
+         return {};
+   }
 }
 
 VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
@@ -494,9 +513,7 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    pActiveTable->m_pcv->SaveToFile(tempPath.string());
 
    std::filesystem::path tablePath(pActiveTable->m_filename);
-   string vbsFilename = tablePath.stem().string() + ".vbs";
-
-   string destPath = tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + vbsFilename;
+   std::filesystem::path destPath = tablePath.parent_path() / (tablePath.stem().string() + ".vbs");
 
    try {
       std::filesystem::copy_file(tempPath, destPath, std::filesystem::copy_options::overwrite_existing);

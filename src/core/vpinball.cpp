@@ -393,9 +393,13 @@ std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file)
 
    // Read/write user documents
    case AppSubFolder::Tables:
-      // This used to be a subfolder of the main application installation folder, but as this is not ok for most system, we simply go 
+      // This used to be a subfolder of the main application installation folder, but as this is not ok for most system, we simply go
       // to the system's defined user documents folder on first run. Later on, UI will use the last location visited.
-      path = std::filesystem::path(SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS));
+      // Note: SDL_GetUserFolder returns NULL on Android (see SDL_sysfilesystem.c), so use app path instead (usually /data/data/org.vpinball.vpinball/files)
+      if (g_isAndroid)
+         path = m_appPath;
+      else
+         path = std::filesystem::path(SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS));
       break;
 
    default: assert(false); break;

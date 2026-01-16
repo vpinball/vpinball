@@ -129,6 +129,13 @@ VPINBALLAPI void VPinballUpdateWebServer()
    VPinballLib::VPinballLib::Instance().UpdateWebServer();
 }
 
+VPINBALLAPI const char* VPinballGetPath(VPINBALL_PATH pathType)
+{
+   thread_local string path;
+   path = VPinballLib::VPinballLib::Instance().GetPath(pathType).string();
+   return path.c_str();
+}
+
 VPINBALLAPI VPINBALL_STATUS VPinballLoadTable(const char* pPath)
 {
    if (pPath == nullptr)
