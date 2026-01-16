@@ -448,7 +448,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
                // This ease the transition, especially for music (if the user did not migrate it) and user folders (which will read for previous plays, but saved in new location)
                const_cast<VPinball*>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
                path = GetTablePath(table, sub, searchForWriting);
-               const_cast<VPinball *>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
+               const_cast<VPinball *>(this)->m_fileLayoutMode = FileLayoutMode::AppPrefData;
             }
          }
       }
