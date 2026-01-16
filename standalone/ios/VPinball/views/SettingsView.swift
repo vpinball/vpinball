@@ -291,11 +291,10 @@ struct SettingsView: View {
                    role: .cancel) {}
         }
         .fullScreenCover(item: $showExport) { exportFile in
-            if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent(exportFile.name) {
-                CodeView(url: url,
-                         language: exportFile.language,
-                         allowsClear: exportFile.allowsClear)
-            }
+            let url = URL(fileURLWithPath: vpinballManager.getPath(.preferences)).appendingPathComponent(exportFile.name)
+            CodeView(url: url,
+                     language: exportFile.language,
+                     allowsClear: exportFile.allowsClear)
         }
         .sheet(isPresented: $showContactUs) {
             MailComposeViewControllerView(result: self.$result)

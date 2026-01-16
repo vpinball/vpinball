@@ -14,6 +14,7 @@ import org.vpinball.app.Table
 import org.vpinball.app.TableManager
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballLogLevel
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 
 private const val MAX_IMAGE_QUALITY = 80
@@ -60,7 +61,7 @@ suspend fun Table.resetImage() {
 }
 
 fun Table.hasScriptFile(): Boolean {
-    val tablesPath = VPinballManager.getTablesPath()
+    val tablesPath = VPinballManager.getPath(VPinballPath.TABLES)
     val scriptRelativePath = path.substringBeforeLast('.') + ".vbs"
     val scriptFullPath =
         if (SAFFileSystem.isUsingSAF()) {
@@ -77,7 +78,7 @@ fun Table.hasScriptFile(): Boolean {
 }
 
 fun Table.hasIniFile(): Boolean {
-    val tablesPath = VPinballManager.getTablesPath()
+    val tablesPath = VPinballManager.getPath(VPinballPath.TABLES)
     val iniRelativePath = path.substringBeforeLast('.') + ".ini"
     val iniFullPath =
         if (SAFFileSystem.isUsingSAF()) {

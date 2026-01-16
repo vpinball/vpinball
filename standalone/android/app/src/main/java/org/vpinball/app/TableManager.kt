@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.vpinball.app.jni.VPinballLogLevel
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStatus
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
@@ -26,6 +27,7 @@ class TableManager(private val context: Context) {
     private val _tables = MutableStateFlow<List<Table>>(emptyList())
     val tables: StateFlow<List<Table>> = _tables.asStateFlow()
 
+    private var safPath: String = ""
     private var tablesPath: String = ""
     private var tablesJSONPath: String = ""
     private var requiresStaging: Boolean = false
@@ -34,12 +36,12 @@ class TableManager(private val context: Context) {
     private val fileOps = TableFileOperations { tablesPath }
 
     init {
-        loadTablesPath()
+        loadPaths()
     }
 
     suspend fun refresh(onProgress: ((Int, String) -> Unit)? = null) {
         withContext(Dispatchers.IO) {
-            loadTablesPath()
+            loadPaths()
             loadTables(onProgress)
         }
     }
@@ -183,33 +185,30 @@ class TableManager(private val context: Context) {
     }
 
     fun resetTableIni(table: Table): Boolean {
-        loadTablesPath()
+        loadPaths()
         val iniRelativePath = table.path.substringBeforeLast('.') + ".ini"
         val iniFullPath = buildPath(iniRelativePath)
         return fileOps.delete(iniFullPath)
     }
 
-    private fun loadTablesPath() {
-        val customPath = VPinballManager.loadValue(STANDALONE, "TablesPath", "")
+    private fun loadPaths() {
+        safPath = VPinballManager.loadValue(STANDALONE, "SAFPath", "")
 
         tablesPath =
-            if (customPath.isNotEmpty()) {
-                customPath
+            if (safPath.isNotEmpty()) {
+                if (!safPath.endsWith("/")) "$safPath/" else safPath
             } else {
-                File(context.filesDir, "tables").absolutePath
+                val path = VPinballManager.getPath(VPinballPath.TABLES)
+                if (!path.endsWith("/")) "$path/" else path
             }
 
-        if (!tablesPath.endsWith("/")) {
-            tablesPath += "/"
-        }
-
-        requiresStaging = SAFFileSystem.isSAFPath(tablesPath)
+        requiresStaging = safPath.isNotEmpty()
 
         tablesJSONPath =
-            if (requiresStaging) {
-                "${tablesPath}tables.json"
+            if (safPath.isEmpty()) {
+                File(VPinballManager.getPath(VPinballPath.PREFERENCES), "tables.json").absolutePath
             } else {
-                File(tablesPath, "tables.json").absolutePath
+                "${tablesPath}tables.json"
             }
 
         if (!requiresStaging && !fileOps.exists(tablesPath)) {
@@ -602,7 +601,7 @@ class TableManager(private val context: Context) {
                 if (requiresStaging) {
                     withContext(Dispatchers.Main) { onProgress?.invoke(10, "Copying files") }
 
-                    val stagingBaseDir = File(context.cacheDir, "staged_export")
+                    val stagingBaseDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf")
                     val stagingTableDir = File(stagingBaseDir, tableDir)
 
                     if (stagingTableDir.exists()) {
@@ -659,12 +658,24 @@ class TableManager(private val context: Context) {
         return fullPath
     }
 
+    private fun cleanupSafCache(maxCached: Int = 10) {
+        val safDir = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf")
+        if (!safDir.exists()) return
+
+        val folders = safDir.listFiles()?.filter { it.isDirectory } ?: return
+        if (folders.size <= maxCached) return
+
+        folders.sortedBy { it.lastModified() }.take(folders.size - maxCached).forEach { fileOps.deleteDirectory(it.absolutePath) }
+    }
+
     private fun performStageToCache(table: Table, onProgress: ((Int, String) -> Unit)?): String? {
+        cleanupSafCache()
+
         val tableDir = File(table.path).parent ?: ""
         val fileName = File(table.path).name
 
         onProgress?.invoke(10, "Staging table...")
-        val cachePath = File(context.filesDir, "staging_cache/$tableDir").absolutePath
+        val cachePath = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir").absolutePath
 
         if (fileOps.exists(cachePath)) {
             fileOps.deleteDirectory(cachePath)
@@ -745,7 +756,7 @@ class TableManager(private val context: Context) {
 
         if (requiresStaging) {
             onProgress?.invoke(10, "Staging table...")
-            cachePath = File(context.filesDir, "staging_cache/$tableDir").absolutePath
+            cachePath = File(VPinballManager.getPath(VPinballPath.PREFERENCES), "saf/$tableDir").absolutePath
 
             if (fileOps.exists(cachePath)) {
                 fileOps.deleteDirectory(cachePath)

@@ -27,12 +27,12 @@ struct Table: Codable, Identifiable, Hashable {
     }
 
     var imagePath: String {
-        let tablesPath = VPinballManager.shared.getTablesPath()
+        let tablesPath = VPinballManager.shared.getPath(.tables)
         return (tablesPath as NSString).appendingPathComponent(image)
     }
 
     var fullPath: String {
-        let tablesPath = VPinballManager.shared.getTablesPath()
+        let tablesPath = VPinballManager.shared.getPath(.tables)
         return (tablesPath as NSString).appendingPathComponent(path)
     }
 

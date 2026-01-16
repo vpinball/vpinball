@@ -65,6 +65,7 @@ enum TableFileOperations {
 
     static func listFiles(_ path: String, ext: String) -> [String] {
         var files: [String] = []
+        let preferencesPath = VPinballManager.shared.getPath(.preferences)
 
         if let enumerator = FileManager.default.enumerator(atPath: path) {
             while let file = enumerator.nextObject() as? String {
@@ -74,7 +75,11 @@ enum TableFileOperations {
                 if FileManager.default.fileExists(atPath: fullPath,
                                                   isDirectory: &isDirectory)
                 {
-                    if !isDirectory.boolValue {
+                    if isDirectory.boolValue {
+                        if fullPath == preferencesPath {
+                            enumerator.skipDescendants()
+                        }
+                    } else {
                         if ext.isEmpty || (fullPath as NSString).pathExtension.lowercased() == ext.lowercased().replacingOccurrences(of: ".",
                                                                                                                                      with: "")
                         {

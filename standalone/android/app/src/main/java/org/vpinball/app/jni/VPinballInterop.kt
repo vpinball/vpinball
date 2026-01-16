@@ -15,6 +15,13 @@ enum class VPinballLogLevel(val value: Int) {
     ERROR(3),
 }
 
+enum class VPinballPath(val value: Int) {
+    ROOT(0),
+    TABLES(1),
+    PREFERENCES(2),
+    ASSETS(3),
+}
+
 enum class VPinballStatus(val value: Int) {
     SUCCESS(0),
     FAILURE(1),
@@ -85,8 +92,8 @@ enum class VPinballStorageMode(override val text: String) : VPinballDisplayText 
     CUSTOM("Custom");
 
     companion object {
-        fun fromTablesPath(tablesPath: String): VPinballStorageMode {
-            return if (tablesPath.isEmpty()) INTERNAL else CUSTOM
+        fun fromSAFPath(safPath: String): VPinballStorageMode {
+            return if (safPath.isEmpty()) INTERNAL else CUSTOM
         }
     }
 }
@@ -94,18 +101,19 @@ enum class VPinballStorageMode(override val text: String) : VPinballDisplayText 
 // VPinball Event Enums
 
 enum class VPinballEvent(val value: Int) {
-    LOADING_ITEMS(0),
-    LOADING_SOUNDS(1),
-    LOADING_IMAGES(2),
-    LOADING_FONTS(3),
-    LOADING_COLLECTIONS(4),
-    PRERENDERING(5),
-    PLAYER_STARTED(6),
-    RUMBLE(7),
-    SCRIPT_ERROR(8),
-    PLAYER_CLOSED(9),
-    WEB_SERVER(10),
-    COMMAND(11);
+    INIT_COMPLETE(0),
+    LOADING_ITEMS(1),
+    LOADING_SOUNDS(2),
+    LOADING_IMAGES(3),
+    LOADING_FONTS(4),
+    LOADING_COLLECTIONS(5),
+    PRERENDERING(6),
+    PLAYER_STARTED(7),
+    RUMBLE(8),
+    SCRIPT_ERROR(9),
+    PLAYER_CLOSED(10),
+    WEB_SERVER(11),
+    COMMAND(12);
 
     val text: String?
         get() =

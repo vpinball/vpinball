@@ -129,10 +129,7 @@ struct CodeView: View {
 }
 
 #Preview {
-    let documentsDirectory = FileManager.default.urls(for: .documentDirectory,
-                                                      in: .userDomainMask).first!
-
-    let url = documentsDirectory.appendingPathComponent("vpinball.log")
+    let url = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences)).appendingPathComponent("vpinball.log")
 
     return CodeView(url: url,
                     language: .log,

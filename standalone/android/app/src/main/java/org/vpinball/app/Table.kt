@@ -2,6 +2,7 @@ package org.vpinball.app
 
 import java.io.File
 import kotlinx.serialization.Serializable
+import org.vpinball.app.jni.VPinballPath
 
 @Serializable
 data class Table(val uuid: String, val name: String, val path: String, val image: String, val createdAt: Long, val modifiedAt: Long) {
@@ -10,7 +11,7 @@ data class Table(val uuid: String, val name: String, val path: String, val image
 
     val fullPath: String
         get() {
-            val tablesPath = VPinballManager.getTablesPath()
+            val tablesPath = VPinballManager.getPath(VPinballPath.TABLES)
             return if (SAFFileSystem.isUsingSAF()) {
                 "$tablesPath/$path"
             } else {
@@ -39,7 +40,7 @@ data class Table(val uuid: String, val name: String, val path: String, val image
 
     val imagePath: String
         get() {
-            val tablesPath = VPinballManager.getTablesPath()
+            val tablesPath = VPinballManager.getPath(VPinballPath.TABLES)
             return if (SAFFileSystem.isUsingSAF()) {
                 "$tablesPath/$image"
             } else {

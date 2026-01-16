@@ -8,6 +8,7 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import org.vpinball.app.jni.VPinballLogLevel
+import org.vpinball.app.jni.VPinballPath
 
 class TableFileOperations(private val getTablesPath: () -> String) {
     private fun toRelativePath(path: String): String {
@@ -152,14 +153,20 @@ class TableFileOperations(private val getTablesPath: () -> String) {
             return files
         }
 
+        val preferencesPath = VPinballManager.getPath(VPinballPath.PREFERENCES)
+        val assetsPath = VPinballManager.getPath(VPinballPath.ASSETS)
+
         try {
-            File(path).walkTopDown().forEach { file ->
-                if (file.isFile) {
-                    if (ext.isEmpty() || file.extension.lowercase() == ext.lowercase().removePrefix(".")) {
-                        files.add(file.absolutePath)
+            File(path)
+                .walkTopDown()
+                .onEnter { dir -> dir.absolutePath != preferencesPath && dir.absolutePath != assetsPath }
+                .forEach { file ->
+                    if (file.isFile) {
+                        if (ext.isEmpty() || file.extension.lowercase() == ext.lowercase().removePrefix(".")) {
+                            files.add(file.absolutePath)
+                        }
                     }
                 }
-            }
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Error listing files in $path: ${e.message}")
         }

@@ -14,10 +14,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
+import org.libsdl.app.SDL
 import org.vpinball.app.jni.VPinballCommandData
 import org.vpinball.app.jni.VPinballEvent
 import org.vpinball.app.jni.VPinballJNI
 import org.vpinball.app.jni.VPinballLogLevel
+import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballProgressData
 import org.vpinball.app.jni.VPinballRumbleData
 import org.vpinball.app.jni.VPinballScriptErrorData
@@ -33,7 +35,6 @@ object VPinballManager : KoinComponent {
     val vpinballJNI: VPinballJNI = VPinballJNI()
 
     private lateinit var context: Context
-    private lateinit var filesDir: File
     private lateinit var cacheDir: File
     private lateinit var displaySize: Size
     private lateinit var vibrator: Vibrator
@@ -45,12 +46,19 @@ object VPinballManager : KoinComponent {
 
     private var lastProgressEvent: VPinballEvent? = null
     private var lastProgress: Int? = null
-    private var isStarted = false
+
+    enum class InitState {
+        NOT_INITIALIZED,
+        SDL_READY,
+        INITIALIZED,
+    }
+
+    private var initState = InitState.NOT_INITIALIZED
+    private val initLock = Object()
+    private val pendingCallbacks = mutableListOf<() -> Unit>()
 
     fun initialize(context: Context) {
         this.context = context.applicationContext
-
-        filesDir = context.filesDir
         cacheDir = context.cacheDir
 
         val displayMetrics = context.resources.displayMetrics
@@ -69,25 +77,37 @@ object VPinballManager : KoinComponent {
         SAFFileSystem.initialize(context)
     }
 
-    fun setPlayerActivity(activity: VPinballPlayerActivity?) {
-        playerActivity = activity
+    fun onActivityReady(activity: VPinballActivity) {
+        synchronized(initLock) {
+            mainActivity = activity
+            SDL.setContext(activity)
+
+            if (initState != InitState.NOT_INITIALIZED) {
+                return
+            }
+
+            initState = InitState.SDL_READY
+            performInit()
+        }
     }
 
-    fun setMainActivity(activity: VPinballActivity?) {
-        mainActivity = activity
-    }
-
-    fun startup() {
-        if (isStarted) return
-        isStarted = true
-
-        runCatching { FileUtils.copyAssets(context.assets, "", context.filesDir) }
-
+    private fun performInit() {
         vpinballJNI.VPinballInit { value, jsonData ->
             mainActivity?.let { activity ->
                 val viewModel = activity.viewModel
                 val event = VPinballEvent.entries.find { it.ordinal == value }
                 when (event) {
+                    VPinballEvent.INIT_COMPLETE -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            runCatching { FileUtils.copyAssets(context.assets, "", File(vpinballJNI.VPinballGetPath(VPinballPath.ROOT.value))) }
+
+                            synchronized(initLock) {
+                                initState = InitState.INITIALIZED
+                                pendingCallbacks.forEach { callback -> CoroutineScope(Dispatchers.Main).launch { callback() } }
+                                pendingCallbacks.clear()
+                            }
+                        }
+                    }
                     VPinballEvent.LOADING_ITEMS,
                     VPinballEvent.LOADING_SOUNDS,
                     VPinballEvent.LOADING_IMAGES,
@@ -245,12 +265,33 @@ object VPinballManager : KoinComponent {
         }
     }
 
-    fun getDisplaySize(): Size {
-        return displaySize
+    fun whenReady(callback: () -> Unit) {
+        synchronized(initLock) {
+            if (initState == InitState.INITIALIZED) {
+                callback()
+            } else {
+                pendingCallbacks.add(callback)
+            }
+        }
     }
 
-    fun getFilesDir(): File {
-        return filesDir
+    fun isInitialized(): Boolean = synchronized(initLock) { initState == InitState.INITIALIZED }
+
+    fun setPlayerActivity(activity: VPinballPlayerActivity?) {
+        playerActivity = activity
+    }
+
+    fun setMainActivity(activity: VPinballActivity?) {
+        synchronized(initLock) {
+            mainActivity = activity
+            if (activity != null) {
+                SDL.setContext(activity)
+            }
+        }
+    }
+
+    fun getDisplaySize(): Size {
+        return displaySize
     }
 
     fun getCacheDir(): File {
@@ -377,8 +418,5 @@ object VPinballManager : KoinComponent {
         }
     }
 
-    fun getTablesPath(): String {
-        val customPath = loadValue(STANDALONE, "TablesPath", "")
-        return customPath.ifEmpty { File(filesDir, "tables").absolutePath }
-    }
+    fun getPath(pathType: VPinballPath): String = vpinballJNI.VPinballGetPath(pathType.value)
 }

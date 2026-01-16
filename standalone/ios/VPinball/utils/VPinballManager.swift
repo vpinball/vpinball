@@ -281,12 +281,7 @@ class VPinballManager {
         VPinballUpdateWebServer()
     }
 
-    func getTablesPath() -> String {
-        let customPath = loadValue(.standalone, "TablesPath", "")
-        if customPath.isEmpty {
-            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].path
-            return (documentsPath as NSString).appendingPathComponent("tables")
-        }
-        return customPath
+    func getPath(_ pathType: VPinballPath) -> String {
+        return String(cString: VPinballGetPath(pathType.rawValue))
     }
 }
