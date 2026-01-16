@@ -320,16 +320,29 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // Setup Serum on the selected DMD
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
-   if (serumPathProp_Get()[0] == '\0')
-   {
-      VPXTableInfo tableInfo;
-      vpxApi->GetTableInfo(&tableInfo);
-      std::filesystem::path tablePath = tableInfo.path;
-      string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame" + PATH_SEPARATOR_CHAR + "altcolor");
-      if (!path.empty())
-         serumPathProp_Set(path.c_str());
-   }
-   pSerum = Serum_Load(serumPathProp_Get(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
+
+   VPXTableInfo tableInfo;
+   vpxApi->GetTableInfo(&tableInfo);
+   std::filesystem::path tablePath = tableInfo.path;
+
+   string serumPath = serumPathProp_Get();
+   const string crz = string(msg->gameId) + ".cRZ";
+   const string cromc = string(msg->gameId) + ".cROMc";
+
+   // Priority 1: serum folder
+   if (string path1 = find_case_insensitive_directory_path((tablePath.parent_path() / "serum" / crz).string()); !path1.empty())
+      serumPath = path1;
+   else if (string path2 = find_case_insensitive_directory_path((tablePath.parent_path() / "serum" / cromc).string()); !path2.empty())
+      serumPath = path2;
+
+   // Priority 2: pinmame/altcolor folder
+   else if (string path3 = find_case_insensitive_directory_path((tablePath.parent_path() / "pinmame" / "altcolor" / crz).string()); !path3.empty())
+      serumPath = path3;
+   else if (string path4 = find_case_insensitive_directory_path((tablePath.parent_path() / "pinmame" / "altcolor" / cromc).string()); !path4.empty())
+      serumPath = path4;
+
+   // Default to global user setup folder if no table specific file is found
+   pSerum = Serum_Load(serumPath.c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
    {
