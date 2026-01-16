@@ -36,8 +36,6 @@ PUPScreen::PUPScreen(PUPManager* manager, PUPScreen::Mode mode, int screenNum, c
    , m_pCustomPos(std::move(pCustomPos))
    , m_apiThread(std::this_thread::get_id())
 {
-   memset(&m_background, 0, sizeof(m_background));
-   memset(&m_overlay, 0, sizeof(m_overlay));
    m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
 
    for (const PUPPlaylist* pPlaylist : playlists) {

@@ -241,17 +241,17 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
    std::unique_lock<std::mutex> lock(m_queueMutex);
 
-   std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum());
-   if (existing)
+   if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
    {
-      LOGI("Warning redefinition of existing PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
-      existing->SetMode(pScreen->GetMode());
-      existing->SetVolume(pScreen->GetVolume());
-      // existing->SetCustomPos(pScreen->GetCustomPos());
-      // copy triggers ?
-      // copy labels ?
-      // copy playlists ?
-      pScreen = existing;
+      LOGI("Replacing previously defined PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
+      for (const auto& [key, screen] : m_screenMap)
+      {
+         if (screen->GetParent() == existing.get())
+         {
+            pScreen->AddChild(screen);
+         }
+      }
+      std::erase(m_screenOrder, existing);
    }
    pScreen->SetMainVolume(m_mainVolume);
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
