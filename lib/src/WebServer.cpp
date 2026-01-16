@@ -307,7 +307,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 
    PLOGD.printf("Retrieving file list: q=%s", q.c_str());
 
-   string path = BuildPrefPath(q.c_str());
+   string path = BuildTablePath(q.c_str());
    if (!q.empty())
       path += PATH_SEPARATOR_CHAR;
 
@@ -361,7 +361,7 @@ void WebServer::Download(struct mg_connection *c, struct mg_http_message* hm)
 
    PLOGI.printf("Downloading file: q=%s", q.c_str());
 
-   string path = BuildPrefPath(q.c_str());
+   string path = BuildTablePath(q.c_str());
 
    struct mg_http_serve_opts opts = {};
    mg_http_serve_file(c, hm, path.c_str(), &opts);
@@ -391,7 +391,7 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_get_var(&hm->query, "length", lengthStr, sizeof(lengthStr));
    long length = lengthStr[0] ? strtol(lengthStr, nullptr, 10) : 0;
 
-   string path = BuildPrefPath(q);
+   string path = BuildTablePath(q);
 
    if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500) == length) {
       if (*q == '\0' && file == "VPinballX.ini") {
@@ -409,7 +409,7 @@ void WebServer::Delete(struct mg_connection *c, struct mg_http_message* hm)
    if (!ValidatePathParameter(c, hm, "q", q))
       return;
 
-   string path = BuildPrefPath(q.c_str());
+   string path = BuildTablePath(q.c_str());
 
    if (std::filesystem::is_regular_file(path)) {
       if (std::filesystem::remove(path.c_str())) {
@@ -441,7 +441,7 @@ void WebServer::Rename(struct mg_connection *c, struct mg_http_message* hm)
    if (!ValidatePathParameter(c, hm, "name", newName))
       return;
 
-   string oldPath = BuildPrefPath(q.c_str());
+   string oldPath = BuildTablePath(q.c_str());
    std::filesystem::path oldFile(oldPath);
 
    if (!std::filesystem::exists(oldFile)) {
@@ -475,7 +475,7 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = BuildPrefPath(q);
+   string path = BuildTablePath(q);
 
    std::error_code ec;
    if (std::filesystem::create_directory(path, ec)) {
@@ -496,7 +496,7 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = BuildPrefPath(q);
+   string path = BuildTablePath(q);
 
    if (std::filesystem::is_regular_file(path)) {
       const string ext = extension_from_path(path);
@@ -687,9 +687,9 @@ bool WebServer::ValidatePathParameter(struct mg_connection *c, struct mg_http_me
    return true;
 }
 
-std::filesystem::path WebServer::BuildPrefPath(const char* relativePath)
+std::filesystem::path WebServer::BuildTablePath(const char* relativePath)
 {
-   return g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) / relativePath;
+   return g_pvp->GetAppPath(VPinball::AppSubFolder::Tables) / relativePath;
 }
 
 bool WebServer::Unzip(const char* pSource)

@@ -45,7 +45,7 @@ private:
 
    string GetIPAddress();
    bool ValidatePathParameter(struct mg_connection *c, struct mg_http_message* hm, const char* paramName, string& outValue);
-   std::filesystem::path BuildPrefPath(const char* relativePath);
+   std::filesystem::path BuildTablePath(const char* relativePath);
    bool Unzip(const char* pSource);
 
    struct mg_mgr m_mgr;
