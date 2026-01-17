@@ -581,10 +581,10 @@ public:
 
       // Table ini file alongside table file, name matching folder name
       const auto folder = std::filesystem::path(m_filename).parent_path();
-      string folderIni = (folder / (folder.filename().string() + ".ini")).string();
+      std::filesystem::path folderIni = folder / (folder.filename().string() + ".ini");
       folderIni = find_case_insensitive_file_path(folderIni);
       if (!folderIni.empty())
-         return folderIni;
+         return folderIni.string();
 
       // No existing file: defaults to ini file alongside table file, name matching table filename
       return tableIni;

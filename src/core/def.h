@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <charconv>
+#include <filesystem>
 
 #include <vector>
 using std::vector;
@@ -802,8 +803,8 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 vector<uint8_t> read_file(const string& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
 string normalize_path_separators(const string& szPath);
-string find_case_insensitive_file_path(const string& szPath);
-string find_case_insensitive_directory_path(const string& szPath);
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
+std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
 string extension_from_path(const string& path);
 bool path_has_extension(const string& path, const string& extension);
 inline string trim_string(const string& str)
