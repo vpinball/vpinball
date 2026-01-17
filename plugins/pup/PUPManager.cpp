@@ -30,7 +30,7 @@ MSGPI_INT_VAL_SETTING(pupTopperPadTop, "TopperPadTop", "Topper Top Pad", "Top Pa
 MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad", "Bottom Padding of topper", true, 0, 4096, 0);
 MSGPI_STRING_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an ovelray on the topper display", true, "", 1024);
 
-PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
+PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
@@ -67,7 +67,7 @@ PUPManager::~PUPManager()
 
 void PUPManager::SetGameDir(const string& szRomName)
 {
-   string path;
+   std::filesystem::path path;
 
    // First search for pupvideos along the table file
    {
@@ -80,13 +80,13 @@ void PUPManager::SetGameDir(const string& szRomName)
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         path = find_case_insensitive_directory_path((tablePath.parent_path() / "pupvideos" / szRomName).string());
+         path = find_case_insensitive_directory_path(tablePath.parent_path() / "pupvideos" / szRomName);
       }
    }
 
    // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
    if (path.empty() && !m_szRootPath.empty())
-      path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+      path = find_case_insensitive_directory_path(m_szRootPath / szRomName);
 
    if (path.empty())
       return;
@@ -97,7 +97,7 @@ void PUPManager::SetGameDir(const string& szRomName)
    std::lock_guard<std::mutex> lock(m_queueMutex);
 
    m_szPath = path;
-   LOGI("PUP path: %s", m_szPath.c_str());
+   LOGI("PUP path: %s", m_szPath.string().c_str());
 
    // Load Fonts
    LoadFonts();
@@ -123,7 +123,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    // Load screens and start them
 
-   string szScreensPath = find_case_insensitive_file_path(m_szPath + "screens.pup");
+   std::filesystem::path szScreensPath = find_case_insensitive_file_path(m_szPath / "screens.pup");
    if (!szScreensPath.empty()) {
       std::ifstream screensFile;
       screensFile.open(szScreensPath, std::ifstream::in);
@@ -181,7 +181,7 @@ void PUPManager::UnloadFonts()
 void PUPManager::LoadFonts()
 {
    UnloadFonts();
-   string szFontsPath = find_case_insensitive_directory_path(m_szPath + "FONTS");
+   std::filesystem::path szFontsPath = find_case_insensitive_directory_path(m_szPath / "FONTS");
    if (!szFontsPath.empty())
    {
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath))
@@ -211,7 +211,7 @@ void PUPManager::LoadFonts()
 
 void PUPManager::LoadPlaylists()
 {
-   string szPlaylistsPath = find_case_insensitive_file_path(GetPath() + "playlists.pup");
+   std::filesystem::path szPlaylistsPath = find_case_insensitive_file_path(GetPath() / "playlists.pup");
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
@@ -435,7 +435,7 @@ void PUPManager::ProcessQueue()
                   LOGD(buffer);
                },
                this);
-            m_dmd->Load(m_szPath.c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+            m_dmd->Load(m_szPath.string().c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
             memset(m_idFrame, 0, sizeof(m_idFrame));
          }
 

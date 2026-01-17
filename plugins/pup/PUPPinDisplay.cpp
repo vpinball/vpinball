@@ -531,9 +531,9 @@ string PUPPinDisplay::GetGetRoot() const
 {
    // The return path is either the default one when not playing or the one actually being played (which may be a per table or a global folder)
    if (m_pupManager.GetPath().empty())
-      return m_pupManager.GetRootPath();
+      return m_pupManager.GetRootPath().string();
    else
-      return std::filesystem::path(m_pupManager.GetPath()).parent_path().string() + PATH_SEPARATOR_CHAR;
+      return (m_pupManager.GetPath().parent_path() / "").string();
 }
 
 void PUPPinDisplay::SetGetRoot(const string& value)

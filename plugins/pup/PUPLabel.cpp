@@ -78,7 +78,7 @@ void PUPLabel::SetCaption(const string& szCaption)
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
             if (pPlaylist)
             {
-               string szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
+               std::filesystem::path szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
                if (!szPath.empty())
                {
                   m_szPath = szPath;
@@ -458,7 +458,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
       dest.x, dest.y, dest.w, dest.h);
 }
 
-PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath)
+PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath)
 {
    SetThreadName("PUPLabel.Upd." + m_szName);
 
@@ -467,7 +467,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    // Handle Image 'labels'
    if (type == PUP_LABEL_TYPE_IMAGE)
    {
-      SDL_Surface* image = IMG_Load(szPath.c_str());
+      SDL_Surface* image = IMG_Load(szPath.string().c_str());
       if (image && image->format != SDL_PIXELFORMAT_RGBA32) {
          SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
          SDL_DestroySurface(image);
@@ -484,7 +484,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    }
    else if (type == PUP_LABEL_TYPE_GIF)
    {
-      rs.m_pAnimation = IMG_LoadAnimation(szPath.c_str());
+      rs.m_pAnimation = IMG_LoadAnimation(szPath.string().c_str());
       if (rs.m_pAnimation) {
          SDL_Surface* image = rs.m_pAnimation->frames[0];
          if (image) {
@@ -614,7 +614,7 @@ string PUPLabel::ToString() const
       + (m_yAlign == PUP_LABEL_YALIGN_TOP         ? "TOP"
             : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER"
                                                   : "BOTTOM")
-      + ", xPos=" + std::to_string(m_xPos) + ", yPos=" + std::to_string(m_yPos) + ", pagenum=" + std::to_string(m_pagenum) + ", szPath=" + m_szPath;
+      + ", xPos=" + std::to_string(m_xPos) + ", yPos=" + std::to_string(m_yPos) + ", pagenum=" + std::to_string(m_pagenum) + ", szPath=" + m_szPath.string();
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, int lengthMs, int foregroundColor, int flashingPeriod)
