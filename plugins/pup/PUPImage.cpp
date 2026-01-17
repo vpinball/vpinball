@@ -17,7 +17,7 @@ PUPImage::~PUPImage()
       DeleteTexture(m_pTexture);
 }
 
-void PUPImage::Load(const string& szFile)
+void PUPImage::Load(const std::filesystem::path& szFile)
 {
    m_file = szFile;
 
@@ -26,7 +26,7 @@ void PUPImage::Load(const string& szFile)
       m_pTexture = nullptr;
    }
 
-   m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(szFile.c_str()), SDL_DestroySurface);
+   m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(szFile.string().c_str()), SDL_DestroySurface);
    if (m_pSurface && m_pSurface->format != SDL_PIXELFORMAT_RGBA32)
       m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(SDL_ConvertSurface(m_pSurface.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
 }

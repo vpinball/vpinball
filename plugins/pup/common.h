@@ -156,8 +156,8 @@ string string_replace_all(const string &szStr, const string &szFrom, const strin
 string string_replace_all(const string &szStr, const string &szFrom, const char szTo, const size_t offs = 0);
 string extension_from_path(const string &path);
 string normalize_path_separators(const string &szPath);
-string find_case_insensitive_file_path(const string &szPath);
-string find_case_insensitive_directory_path(const string &szPath);
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path &searchedFile);
+std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path &searchedFile);
 bool StrCompareNoCase(const string &strA, const string &strB);
 string lowerCase(string input);
 void SetThreadName(const string &name);

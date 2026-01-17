@@ -32,7 +32,7 @@ public:
    PUPPlaylist::Function GetFunction() const { return m_function; }
    const string& GetPlayFile(const string& szFilename);
    const string& GetNextPlayFile();
-   string GetPlayFilePath(const string& szFilename);
+   std::filesystem::path GetPlayFilePath(const string& szFilename);
    string ToString() const;
 
    static const string& ToString(Function value);
@@ -48,7 +48,7 @@ private:
    int m_lastIndex;
    vector<string> m_files;
    ankerl::unordered_dense::map<string, string> m_fileMap;
-   string m_szBasePath;
+   std::filesystem::path m_szBasePath;
 };
 
 }

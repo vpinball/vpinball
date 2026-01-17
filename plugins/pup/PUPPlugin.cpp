@@ -271,14 +271,11 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    scriptApi->SetCOMObjectOverride("PinUpPlayer.PinDisplay", PUPPinDisplay_SCD);
 
    msgApi->RegisterSetting(endpointId, &pupPathProp);
-   string pupFolder = pupPathProp_Get();
-   string rootPath = normalize_path_separators(pupFolder);
-   if (!rootPath.ends_with(PATH_SEPARATOR_CHAR))
-      rootPath += PATH_SEPARATOR_CHAR;
-   rootPath = find_case_insensitive_directory_path(rootPath + "pupvideos");
+   std::filesystem::path pupFolder = pupPathProp_Get();
+   std::filesystem::path rootPath = find_case_insensitive_directory_path(pupFolder / "pupvideos");
    if (rootPath.empty())
    {
-      LOGW("PUP folder was not found (settings is '%s')", pupFolder.c_str());
+      LOGW("PUP folder was not found (settings is '%s')", pupFolder.string().c_str());
    }
    pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
 }

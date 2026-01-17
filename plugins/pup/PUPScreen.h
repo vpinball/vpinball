@@ -77,7 +77,7 @@ public:
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
 
-   void SetMask(const string& path);
+   void SetMask(const std::filesystem::path& path);
 
    void Play(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
    void Play(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);

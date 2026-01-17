@@ -14,10 +14,10 @@ public:
    PUPMediaPlayer(const string& name);
    ~PUPMediaPlayer();
 
-   void Play(const string& filename);
+   void Play(const std::filesystem::path& filename);
    bool IsPlaying() const;
    void Pause(bool pause);
-   const string& GetFilename() const { return m_filename; }
+   const std::filesystem::path& GetFilename() const { return m_filename; }
    int GetPriority() const { return m_priority; }
    void Stop();
    void SetVolume(float volume);
@@ -42,7 +42,7 @@ private:
 
    std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
 
-   string m_filename;
+   std::filesystem::path m_filename;
    uint64_t m_startTimestamp = 0; // timestamp in ms when the play command was called
    bool m_loop = false;
    int m_playIndex = 0;

@@ -36,13 +36,13 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
       return;
    }
 
-   string szPath = pPlaylist->GetPlayFilePath(szPlayFile);
+   std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (szPath.empty()) {
       LOGE("PlayFile not found: screen={%s}, playlist={%s}, playFile=%s", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str());
       return;
    }
 
-   LOGD("> Play screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d, length=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.c_str(), volume, priority, length);
+   LOGD("> Play screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d, length=%d, background=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.string().c_str(), volume, priority, length, background);
    if (background)
    {
       m_pBackgroundPlayer->player.Play(szPath);
@@ -126,7 +126,7 @@ void PUPMediaManager::Stop(int priority)
 
 void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
-   string szPath = pPlaylist->GetPlayFilePath(szPlayFile);
+   std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && szPath == m_pMainPlayer->szPath) {
       LOGD("Main player stopping playback: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
       Stop();
@@ -143,11 +143,11 @@ void PUPMediaManager::SetBounds(const SDL_Rect& rect)
    m_pMainPlayer->player.SetBounds(rect);
 }
 
-void PUPMediaManager::SetMask(const string& path)
+void PUPMediaManager::SetMask(const std::filesystem::path& path)
 {
    // Defines a transparency mask from the pixel at 0,0 that is applied to the rendering inside this screen
    m_mask.reset();
-   m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(path.c_str()), SDL_DestroySurface);
+   m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(path.string().c_str()), SDL_DestroySurface);
    if (m_mask && m_mask->format != SDL_PIXELFORMAT_RGBA32)
       m_mask = std::shared_ptr<SDL_Surface>(SDL_ConvertSurface(m_mask.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
    if (m_mask)
