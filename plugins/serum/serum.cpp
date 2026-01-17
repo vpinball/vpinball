@@ -325,24 +325,24 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    vpxApi->GetTableInfo(&tableInfo);
    std::filesystem::path tablePath = tableInfo.path;
 
-   string serumPath = serumPathProp_Get();
-   const string crz = string(msg->gameId) + ".cRZ";
-   const string cromc = string(msg->gameId) + ".cROMc";
+   std::filesystem::path serumPath = serumPathProp_Get();
+   const std::filesystem::path crz = string(msg->gameId) + ".cRZ";
+   const std::filesystem::path cromc = string(msg->gameId) + ".cROMc";
 
-   // Priority 1: serum folder
-   if (string path1 = find_case_insensitive_directory_path((tablePath.parent_path() / "serum" / crz).string()); !path1.empty())
-      serumPath = path1;
-   else if (string path2 = find_case_insensitive_directory_path((tablePath.parent_path() / "serum" / cromc).string()); !path2.empty())
-      serumPath = path2;
+   // Priority 1: serum/rom/rom.crz
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / crz); !path1.empty())
+      serumPath = path1.parent_path().parent_path();
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / cromc); !path2.empty())
+      serumPath = path2.parent_path().parent_path();
 
-   // Priority 2: pinmame/altcolor folder
-   else if (string path3 = find_case_insensitive_directory_path((tablePath.parent_path() / "pinmame" / "altcolor" / crz).string()); !path3.empty())
-      serumPath = path3;
-   else if (string path4 = find_case_insensitive_directory_path((tablePath.parent_path() / "pinmame" / "altcolor" / cromc).string()); !path4.empty())
-      serumPath = path4;
+   // Priority 2: pinmame/altcolor/rom/rom.crz
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / crz); !path3.empty())
+      serumPath = path3.parent_path().parent_path();
+   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / cromc); !path4.empty())
+      serumPath = path4.parent_path().parent_path();
 
    // Default to global user setup folder if no table specific file is found
-   pSerum = Serum_Load(serumPath.c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
+   pSerum = Serum_Load(serumPath.string().c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
    {
