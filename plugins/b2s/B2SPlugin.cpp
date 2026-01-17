@@ -177,33 +177,25 @@ static void OnGameStart(const unsigned int, void*, void*)
       loadedB2S.get(); // Flush any loading in progress to trigger texture destruction and void memory leaks
 
    // Search for an exact match (same file name with .directb2s extension)
-   const string tablePath = TitleAndPathFromFilename(tableInfo.path);
-   string b2sFilename = find_case_insensitive_file_path(tablePath + ".directb2s");
+   const std::filesystem::path tablePath(tableInfo.path);
+   std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
    
    // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
    if (b2sFilename.empty())
    {
-      std::filesystem::path fsPath(tableInfo.path);
-      string folderName = fsPath.parent_path().filename().string();
-      b2sFilename = find_case_insensitive_file_path(folderName + ".directb2s");
+      const string folderName = tablePath.parent_path().filename().string();
+      b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / (folderName + ".directb2s"));
    }
-
-   // Search a file matching the template 'name (producer year) infos.vpx' (so same filename up to the last ')')
-   /* if (b2sFilename.empty())
-   {
-      if (size_t pos = tablePath.rfind(')'); pos != std::string::npos)
-         b2sFilename = find_case_insensitive_file_path(tablePath.substr(0, pos + 1) + ".directb2s");
-   }*/
 
    if (!b2sFilename.empty())
    {
-      auto loadFile = [](const string& path)
+      auto loadFile = [](const std::filesystem::path& path)
       {
          std::shared_ptr<B2STable> b2s;
          try
          {
             tinyxml2::XMLDocument b2sTree;
-            b2sTree.LoadFile(path.c_str());
+            b2sTree.LoadFile(path.string().c_str());
             if (b2sTree.FirstChildElement("DirectB2SData"))
                b2s = std::make_shared<B2STable>(*b2sTree.FirstChildElement("DirectB2SData"));
          }

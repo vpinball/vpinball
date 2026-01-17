@@ -40,74 +40,38 @@ string string_to_lower(string str)
    return str;
 }
 
-string normalize_path_separators(const string& szPath)
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile)
 {
-   string szResult = szPath;
-
-   #if '/' == PATH_SEPARATOR_CHAR
-      std::ranges::replace(szResult.begin(), szResult.end(), '\\', PATH_SEPARATOR_CHAR);
-   #else
-      std::ranges::replace(szResult.begin(), szResult.end(), '/', PATH_SEPARATOR_CHAR);
-   #endif
-
-   auto end = std::unique(szResult.begin(), szResult.end(),
-      [](char a, char b) { return a == b && a == PATH_SEPARATOR_CHAR; });
-   szResult.erase(end, szResult.end());
-
-   return szResult;
-}
-
-string extension_from_path(const string& path)
-{
-   const size_t pos = path.find_last_of('.');
-   return pos != string::npos ? string_to_lower(path.substr(pos + 1)) : string();
-}
-
-// same as removing the file extension
-string TitleAndPathFromFilename(const string& filename)
-{
-   return filename.substr(0, filename.find_last_of('.')); // in case no '.' is found, will then copy full filename
-}
-
-string find_case_insensitive_file_path(const string& szPath)
-{
-   auto fn = [&](auto& self, const string& s) -> string {
-      string path = normalize_path_separators(s);
-      std::filesystem::path p = std::filesystem::path(path).lexically_normal();
+   auto fn = [](const auto& self, std::filesystem::path path)
+   {
       std::error_code ec;
+      path = path.lexically_normal();
+      if (std::filesystem::exists(path, ec))
+         return path;
 
-      if (std::filesystem::exists(p, ec))
-         return p.string();
+      const auto& parent = path.parent_path();
+      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
+      if (base.empty())
+         return base;
 
-      auto parent = p.parent_path();
-      string base;
-      if (parent.empty() || parent == p) {
-         base = "."s;
-      } else {
-         base = self(self, parent.string());
-         if (base.empty())
-            return string();
-      }
-
-      for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
-         if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
-            auto found = ent.path().string();
-            if (found != path) {
+      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
+      {
+         if (!ec && StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
+         {
+            const auto& found = ent.path();
+            if (found != path)
+            {
                LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
             }
             return found;
          }
       }
 
-      return string();
+      return std::filesystem::path();
    };
 
-   string result = fn(fn, szPath);
-   if (!result.empty()) {
-      std::filesystem::path p = std::filesystem::absolute(result);
-      return p.string();
-   }
-   return string();
+   const std::filesystem::path result = fn(fn, searchedFile);
+   return result.empty() ? result : std::filesystem::absolute(result);
 }
 
 // Wraps up https://github.com/czkz/base64 public domain decoder (plus extensions/optimizations)

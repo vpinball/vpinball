@@ -19,6 +19,7 @@ using std::vector;
 #include <cstdlib>
 #include <memory> // needed for std::shared_ptr on Linux
 #include <functional>
+#include <filesystem>
 
 // Shared logging
 #include "plugins/LoggingPlugin.h"
@@ -39,12 +40,6 @@ LPI_USE();
 #define LOGE LPI_LOGE
 
 PSC_USE_ERROR();
-
-#ifdef _MSC_VER
-#define PATH_SEPARATOR_CHAR '\\'
-#else
-#define PATH_SEPARATOR_CHAR '/'
-#endif
 
 class vec4 final
 {
@@ -71,8 +66,7 @@ extern void DeleteTexture(VPXTexture texture);
 extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const void *image);
 
 // The following function are duplicates from the main VPX codebase
-string find_case_insensitive_file_path(const string &szPath);
-string TitleAndPathFromFilename(const string &filename);
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path &searchedFile);
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 
 }
