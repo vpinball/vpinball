@@ -491,6 +491,10 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       {
          V_DISPATCH(cv) = new DynamicDispatch(this, typeDef.classDef->classDef, sv.vObject);
       }
+      else
+      {
+         assert(false);
+      }
       break;
 
    case TypeDef::TD_ARRAY:
