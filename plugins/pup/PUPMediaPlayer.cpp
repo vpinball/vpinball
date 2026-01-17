@@ -78,7 +78,11 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename)
    {
       LOGD("> Playing filename=%s", filename.string().c_str());
 
+      //Should we do the callback when we are switching from a video to another ?
+      //std::function<void(PUPMediaPlayer*)> onEndCallback = m_onEndCallback;
+      //m_onEndCallback = [](PUPMediaPlayer*) { };
       StopBlocking();
+      //m_onEndCallback = onEndCallback;
 
       std::lock_guard<std::mutex> lock(m_mutex);
 

@@ -305,6 +305,7 @@ bool PUPManager::AddScreen(int screenNum)
 
 void PUPManager::SendScreenToBack(const PUPScreen* screen)
 {
+   LOGD("Send screen to back %d", screen->GetScreenNum());
    auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
    if (it != m_screenOrder.end())
    {
@@ -316,6 +317,7 @@ void PUPManager::SendScreenToBack(const PUPScreen* screen)
 
 void PUPManager::SendScreenToFront(const PUPScreen* screen)
 {
+   LOGD("Send screen to front %d", screen->GetScreenNum());
    auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
    if (it != m_screenOrder.end())
    {
@@ -718,6 +720,15 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
    std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
+
+   // Helper to log screen order as this is really a mess to recreate correctly
+   if (false)
+   {
+      std::stringstream ss;
+      for (size_t i = 0; i < me->m_screenOrder.size(); i++)
+         ss << (i == 0 ? "" : ", ") << me->m_screenOrder[i]->GetScreenNum() << (me->m_screenOrder[i]->IsBackgroundPlaying() ? 'B' : 'F');
+      LOGD("PUP Screen order: %s", ss.str().c_str());
+   }
 
    // Render all children of rootScreen according to the global shared render order
    for (auto screen : me->m_screenOrder)

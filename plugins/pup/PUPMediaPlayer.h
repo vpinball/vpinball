@@ -11,7 +11,7 @@ namespace PUP {
 class PUPMediaPlayer final
 {
 public:
-   PUPMediaPlayer(const string& name);
+   explicit PUPMediaPlayer(const string& name);
    ~PUPMediaPlayer();
 
    void Play(const std::filesystem::path& filename);
@@ -26,7 +26,7 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
    void SetName(const string& name);
-   void SetOnEndCallback(std::function<void(PUPMediaPlayer*)> onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }
+   void SetOnEndCallback(const std::function<void(PUPMediaPlayer*)>& onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);
 
