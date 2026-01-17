@@ -123,10 +123,10 @@ private:
    int m_numVertices = 0;
    int m_numIndices = 0;
 
-   PropertyPane *m_propVisual;
+   PropertyPane *m_propVisual = nullptr;
 
-   float m_animHeightOffset;
-   float m_vertexBuffer_animHeightOffset;
+   float m_animHeightOffset = 0.f;
+   float m_vertexBuffer_animHeightOffset = -FLT_MAX;
    bool m_hitEvent = false;
    bool m_unhitEvent = false;
    bool m_doAnimation = false;
