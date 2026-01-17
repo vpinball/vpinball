@@ -21,13 +21,6 @@ HitTarget::HitTarget()
 {
    m_d.m_depthBias = 0.0f;
    m_d.m_reflectionEnabled = true;
-
-   m_propPosition = nullptr;
-   m_propVisual = nullptr;
-   m_moveAnimation = false;
-   m_moveDown = true;
-   m_moveAnimationOffset = 0.0f;
-   m_timeStamp = 0;
 }
 
 HitTarget::~HitTarget()
@@ -125,7 +118,6 @@ HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, co
    SetDefaults(false);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
-   m_hitEvent = false;
    UpdateStatusBarInfo();
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
@@ -229,6 +221,8 @@ static constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
 
 void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   m_hitEvent = false;
+
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
       return;
 

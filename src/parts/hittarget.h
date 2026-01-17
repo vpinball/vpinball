@@ -202,8 +202,8 @@ private:
    // Vertices for editor display & hit shape
    vector<Vertex3Ds> m_hitUIVertices;
    vector<Vertex3D_NoTex2> m_transformedVertices;
-   uint32_t m_timeStamp;
-   float m_moveAnimationOffset;
-   bool  m_moveAnimation;
-   bool  m_moveDown;
+   uint32_t m_timeStamp = 0;
+   float m_moveAnimationOffset = 0.0f;
+   bool m_moveAnimation = false;
+   bool m_moveDown = true;
 };
