@@ -301,7 +301,7 @@ void PUPScreen::Play(const string& szPlaylist, const string& szPlayFile, float v
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
+   //LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    switch (pPlaylist->GetFunction())
    {
@@ -312,11 +312,17 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
          return;
 
       case Mode::ForceBack:
+         // Don't send to back: this is only done on creation
+         break;
+
       case Mode::ForcePopBack:
          m_pManager->SendScreenToBack(this);
          break;
 
       case Mode::ForceOn:
+         // Don't send to front: this is only done on creation
+         break;
+
       case Mode::ForcePop:
          m_pManager->SendScreenToFront(this);
          break;
