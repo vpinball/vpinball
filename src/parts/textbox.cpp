@@ -843,31 +843,31 @@ TTF_Font* Textbox::LoadFont()
       styles.push_back("-Italic"s);
    styles.push_back("-Regular"s);
 
-   const string tablePath = PathFromFilename(GetPTable()->m_filename);
+   const std::filesystem::path tablePath = PathFromFilename(GetPTable()->m_filename);
 
-   string path;
+   std::filesystem::path path;
    for (const auto& szStyle : styles) {
-      path = find_case_insensitive_file_path(tablePath + fontName + szStyle + ".ttf");
+      path = find_case_insensitive_file_path(tablePath / (fontName + szStyle + ".ttf"));
       if (!path.empty()) {
-         pFont = TTF_OpenFont(path.c_str(), m_fontSize);
+         pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
          if (pFont) {
-            PLOGI << "Font loaded: path=" << path;
+            PLOGI << "Font loaded: path=" << path.string();
             break;
          }
       }
    }
 
    if (!pFont) {
-      path = tablePath + fontName + styles[0] + ".ttf";
-      PLOGW << "Unable to locate font: path=" << path;
+      path = tablePath / (fontName + styles[0] + ".ttf");
+      PLOGW << "Unable to locate font: path=" << path.string();
 
-      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
-      pFont = TTF_OpenFont(path.c_str(), m_fontSize);
+      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets) / "LiberationSans-Regular.ttf";
+      pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
       if (pFont) {
-         PLOGW << "Default font loaded: path=" << path;
+         PLOGW << "Default font loaded: path=" << path.string();
       }
       else {
-         PLOGW << "Unable to load font: path=" << path;
+         PLOGW << "Unable to load font: path=" << path.string();
          return nullptr;
       }
    }

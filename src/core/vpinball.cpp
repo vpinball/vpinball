@@ -511,28 +511,28 @@ std::filesystem::path VPinball::SearchScript(const PinTable* table, const string
    if (table)
    {
       const auto tablePath = std::filesystem::path(PathFromFilename(table->m_filename));
-      if (string path = find_case_insensitive_file_path((tablePath / script).string()); !path.empty())
+      if (auto path = find_case_insensitive_file_path(tablePath / script); !path.empty())
          return path;
-      if (string path = find_case_insensitive_file_path((tablePath / "user"s / script).string()); !path.empty())
+      if (auto path = find_case_insensitive_file_path(tablePath / "user"s / script); !path.empty())
          return path;
-      if (string path = find_case_insensitive_file_path((tablePath / "scripts"s / script).string()); !path.empty())
+      if (auto path = find_case_insensitive_file_path(tablePath / "scripts"s / script); !path.empty())
          return path;
    }
 
    // Search in the application paths
-   if (string path = find_case_insensitive_file_path((m_appPath / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_appPath / script); !path.empty())
       return path;
-   if (string path = find_case_insensitive_file_path((m_appPath / "user"s / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_appPath / "user"s / script); !path.empty())
       return path;
-   if (string path = find_case_insensitive_file_path((m_appPath / "scripts"s / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_appPath / "scripts"s / script); !path.empty())
       return path;
 
    // Search in the preference paths
-   if (string path = find_case_insensitive_file_path((m_prefPath / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_prefPath / script); !path.empty())
       return path;
-   if (string path = find_case_insensitive_file_path((m_prefPath / "user"s / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_prefPath / "user"s / script); !path.empty())
       return path;
-   if (string path = find_case_insensitive_file_path((m_prefPath / "scripts"s / script).string()); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_prefPath / "scripts"s / script); !path.empty())
       return path;
 
    return std::filesystem::path();
@@ -1424,10 +1424,10 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       else
       {
          const auto folder = std::filesystem::path(ppt->m_filename).parent_path();
-         string folderVbs = (folder / (folder.filename().string() + ".vbs")).string();
+         std::filesystem::path folderVbs = folder / (folder.filename().string() + ".vbs");
          folderVbs = find_case_insensitive_file_path(folderVbs);
          if (!folderVbs.empty())
-            ppt->m_pcv->LoadFromFile(folderVbs);
+            ppt->m_pcv->LoadFromFile(folderVbs.string());
       }
 
       // auto-import VPP settings, if it exists...
