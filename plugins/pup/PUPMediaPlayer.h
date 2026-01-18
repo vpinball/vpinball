@@ -14,7 +14,7 @@ public:
    explicit PUPMediaPlayer(const string& name);
    ~PUPMediaPlayer();
 
-   void Play(const std::filesystem::path& filename);
+   void Play(const std::filesystem::path& filename, float volume);
    bool IsPlaying() const;
    void Pause(bool pause);
    const std::filesystem::path& GetFilename() const { return m_filename; }

@@ -72,9 +72,10 @@ void PUPMediaPlayer::SetMask(std::shared_ptr<SDL_Surface> mask)
    });
 }
 
-void PUPMediaPlayer::Play(const std::filesystem::path& filename)
+void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
 {
-   m_commandQueue.enqueue([this, filename]()
+   m_commandQueue.enqueue(
+      [this, filename, volume]()
    {
       LOGD("> Playing filename=%s", filename.string().c_str());
 
@@ -87,7 +88,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename)
       std::lock_guard<std::mutex> lock(m_mutex);
 
       m_filename = filename;
-      m_volume = 0.0f;
+      m_volume = volume;
       m_loop = false;
       m_startTimestamp = SDL_GetTicks();
 
@@ -263,7 +264,7 @@ void PUPMediaPlayer::SetLoop(bool loop)
 {
    m_commandQueue.enqueue([this, loop]()
    {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if (m_loop != loop)
       {
          LOGD("setting loop: loop=%d", loop);
@@ -276,7 +277,7 @@ void PUPMediaPlayer::SetVolume(float volume)
 {
    m_commandQueue.enqueue([this, volume]()
    {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if (m_volume != volume)
       {
          LOGD("setting volume: volume=%.1f%%", volume);
@@ -289,7 +290,7 @@ void PUPMediaPlayer::SetLength(int length)
 {
    m_commandQueue.enqueue([this, length]()
    {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if (m_length != length)
       {
          LOGD("setting length: length=%d", length);
@@ -300,7 +301,7 @@ void PUPMediaPlayer::SetLength(int length)
 
 void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
+   std::lock_guard lock(m_mutex);
 
    if (!m_running)
       return;
@@ -638,9 +639,6 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
 
 void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
 {
-   if (m_volume == 0.0f)
-      return;
-
    // If we have decoded enough data and we did not loop, then wait (if requested). Our aim is to enqueue up to our playing position + a reasonnable buffer
    if (sync && m_pAudioLoop == pFrame->opaque && AV_NOPTS_VALUE != pFrame->pts)
    {
@@ -694,7 +692,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
       return;
    }
    assert(nConverted == pFrame->nb_samples); // Since we are not resampling we expect the same number of samples or sync will be lost
-   if (nConverted > 0)
+   if (nConverted > 0 && m_volume > 0.0f)
    {
       AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
       audioUpdate->id.id = m_audioResId.id;

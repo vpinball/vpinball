@@ -46,17 +46,15 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
    if (background)
    {
       m_isBackgroundPlaying = true;
-      m_pBackgroundPlayer->player.Play(szPath);
+      m_pBackgroundPlayer->player.Play(szPath, volume);
       m_pBackgroundPlayer->player.SetLoop(true);
-      m_pBackgroundPlayer->player.SetVolume(volume);
       m_pBackgroundPlayer->szPath = szPath;
       m_pBackgroundPlayer->volume = volume;
    }
    else
    {
       m_isFrontPlaying = true;
-      m_pMainPlayer->player.Play(szPath);
-      m_pMainPlayer->player.SetVolume(volume);
+      m_pMainPlayer->player.Play(szPath, volume);
       m_pMainPlayer->player.SetLength(length);
       m_pMainPlayer->szPath = szPath;
       m_pMainPlayer->volume = volume;
