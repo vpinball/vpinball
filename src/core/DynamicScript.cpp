@@ -773,6 +773,11 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    {
       memberDef.Call(nativeObject, memberIndex, args, &retValue);
    }
+   catch (const std::exception& e)
+   {
+      PLOGE << "Standard exception occurred while processing script call: " << e.what();
+      return DISP_E_EXCEPTION;
+   }
    catch (...)
    {
       PLOGE << "Exception occured while processing script call";

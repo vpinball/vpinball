@@ -72,7 +72,8 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
    return triggers;
 }
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume,
+   int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction)
    : m_szDescript(szDescript)
    , m_szTrigger(szTrigger)
    , m_pScreen(pScreen)
@@ -162,7 +163,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       return nullptr;
    }
 
-   string szPlayFile = parts[6];
+   std::filesystem::path szPlayFile = parts[6];
    if (!szPlayFile.empty()) {
       szPlayFile = pPlaylist->GetPlayFile(szPlayFile);
       if (szPlayFile.empty()) {
@@ -270,7 +271,7 @@ string PUPTrigger::ToString() const {
       ", trigger=" + m_szTrigger +
       ", screen={" + m_pScreen->ToString() + '}' +
       ", playlist={" + m_pPlaylist->ToString() + '}' +
-      ", playFile=" + m_szPlayFile +
+      ", playFile=" + m_szPlayFile.string() + // FIXME this may cause an exception
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
       ", length=" + std::to_string(m_length) +

@@ -26,7 +26,7 @@ namespace PUP {
      AlphaSort=0 is Randomize checked
 */
 
-static const string emptyString;
+static const std::filesystem::path emptyPath;
 
 PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
 {
@@ -57,8 +57,8 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const stri
 
    for (const auto& entry : std::filesystem::directory_iterator(m_szBasePath)) {
       if (entry.is_regular_file()) {
-         string szFilename = entry.path().filename().string();
-         if (!szFilename.empty() && szFilename[0] != '.') {
+         std::filesystem::path szFilename = entry.path().filename();
+         if (!szFilename.empty() && szFilename != ".") {
             m_files.push_back(szFilename);
             m_fileMap[lowerCase(szFilename)] = szFilename;
          }
@@ -89,8 +89,8 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
    bool hasFiles = false;
    for (const auto& entry : std::filesystem::directory_iterator(szFolderPath)) {
       if (entry.is_regular_file()) {
-         string szFilename = entry.path().filename().string();
-         if (!szFilename.empty() && szFilename[0] != '.') {
+         std::filesystem::path szFilename = entry.path().filename();
+         if (!szFilename.empty() && szFilename != ".") {
             hasFiles = true;
             break;
          }
@@ -114,16 +114,16 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
    return pPlaylist;
 }
 
-const string& PUPPlaylist::GetPlayFile(const string& szFilename)
+std::filesystem::path PUPPlaylist::GetPlayFile(const std::filesystem::path& szFilename)
 {
-   ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
-   return it != m_fileMap.end() ? it->second : emptyString;
+   ankerl::unordered_dense::map<std::filesystem::path, std::filesystem::path>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
+   return it != m_fileMap.end() ? it->second : emptyPath;
 }
 
-const string& PUPPlaylist::GetNextPlayFile()
+const std::filesystem::path& PUPPlaylist::GetNextPlayFile()
 {
    if (!m_randomize) {
-      const string& file = m_files[m_lastIndex];
+      const std::filesystem::path& file = m_files[m_lastIndex];
       if (++m_lastIndex >= (int)m_files.size())
          m_lastIndex = 0;
       return file;
@@ -131,17 +131,17 @@ const string& PUPPlaylist::GetNextPlayFile()
    return m_files[rand() % m_files.size()];
 }
 
-std::filesystem::path PUPPlaylist::GetPlayFilePath(const string& szFilename)
+std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& szFilename)
 {
    if (m_files.empty())
-      return emptyString;
+      return emptyPath;
 
    if (!szFilename.empty()) {
-      ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
+      ankerl::unordered_dense::map<std::filesystem::path, std::filesystem::path>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
          return m_szBasePath / it->second;
       else
-         return emptyString;
+         return emptyPath;
    }
    else
       return m_szBasePath / GetNextPlayFile();

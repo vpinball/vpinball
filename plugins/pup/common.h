@@ -160,6 +160,7 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
 std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path &searchedFile);
 bool StrCompareNoCase(const string &strA, const string &strB);
 string lowerCase(string input);
+std::filesystem::path lowerCase(std::filesystem::path input);
 void SetThreadName(const string &name);
 
 }

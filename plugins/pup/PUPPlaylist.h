@@ -30,9 +30,9 @@ public:
    float GetVolume() const { return m_volume; }
    int GetPriority() const { return m_priority; }
    PUPPlaylist::Function GetFunction() const { return m_function; }
-   const string& GetPlayFile(const string& szFilename);
-   const string& GetNextPlayFile();
-   std::filesystem::path GetPlayFilePath(const string& szFilename);
+   std::filesystem::path GetPlayFile(const std::filesystem::path& szFilename);
+   const std::filesystem::path& GetNextPlayFile();
+   std::filesystem::path GetPlayFilePath(const std::filesystem::path& szFilename);
    string ToString() const;
 
    static const string& ToString(Function value);
@@ -46,8 +46,8 @@ private:
    int m_priority;
    PUPPlaylist::Function m_function;
    int m_lastIndex;
-   vector<string> m_files;
-   ankerl::unordered_dense::map<string, string> m_fileMap;
+   vector<std::filesystem::path> m_files;
+   ankerl::unordered_dense::map<std::filesystem::path, std::filesystem::path> m_fileMap;
    std::filesystem::path m_szBasePath;
 };
 
