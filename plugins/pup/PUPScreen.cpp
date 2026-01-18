@@ -247,6 +247,7 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
 void PUPScreen::SetPage(int pagenum, int seconds)
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   std::lock_guard lock(m_screenMutex);
    if (m_pageTimer)
       SDL_RemoveTimer(m_pageTimer);
    m_pageTimer = 0;
@@ -260,8 +261,9 @@ void PUPScreen::SetPage(int pagenum, int seconds)
 
 uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval)
 {
+   // Note: this callback is called on SDL thread (so not API thread) so we need to sync against concurrent changes
    PUPScreen* me = static_cast<PUPScreen*>(param);
-   assert(std::this_thread::get_id() == me->m_apiThread);
+   std::lock_guard lock(me->m_screenMutex);
    SDL_RemoveTimer(me->m_pageTimer);
    me->m_pageTimer = 0;
    me->m_pagenum = me->m_defaultPagenum;
@@ -422,7 +424,7 @@ bool PUPScreen::IsBackgroundPlaying() const
    return m_pMediaPlayerManager->IsBackgroundPlaying();
 }
 
-void PUPScreen::Render(VPXRenderContext2D* const ctx) {
+void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    assert(std::this_thread::get_id() == m_apiThread);
 
    // Pop screen window are dynamically created/destroyed when playing starts/ends
@@ -432,13 +434,21 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx) {
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
 
-   m_background.Render(ctx, m_rect);
-   m_pMediaPlayerManager->Render(ctx);
-   // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
-   for (PUPLabel* pLabel : m_labels)
-      pLabel->Render(ctx, m_rect, m_pagenum);
-   // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
-   m_overlay.Render(ctx, m_rect);
+   switch (pass)
+   {
+   case 0:
+      m_background.Render(ctx, m_rect);
+      m_pMediaPlayerManager->Render(ctx);
+      m_overlay.Render(ctx, m_rect);
+      break;
+
+   case 1:
+      // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
+      for (PUPLabel* pLabel : m_labels)
+         pLabel->Render(ctx, m_rect, m_pagenum);
+      // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
+      break;
+   }
 }
 
 string PUPScreen::ToString(bool full) const

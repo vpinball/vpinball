@@ -20,6 +20,7 @@ Label::Label(const FlexDMD* pFlexDMD, Font* pFont, const string& text, const str
    }
 
    m_autopack = pFlexDMD->GetRuntimeVersion() <= 1008;
+   m_text = text + "_"; // To force bounds update
    SetText(text);
    Pack();
 }

@@ -55,6 +55,9 @@
 #include "lib/src/VPinballLib.h"
 #endif
 
+// Define to 1 to get full BGFX log in debug build
+#define LOG_BGFX 0
+
 
 #if defined(ENABLE_BGFX)
 void RenderDevice::tBGFXCallback::fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str)
@@ -68,6 +71,7 @@ void RenderDevice::tBGFXCallback::fatal(const char* _filePath, uint16_t _line, b
 
 void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList)
 {
+   #if LOG_BGFX
    char temp[2048];
    char* out = temp;
    va_list argListCopy;
@@ -86,6 +90,7 @@ void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _li
    if (total > 0 && out[total - 1] == '\n')
       out[total - 1] = '\0';
    PLOGI << out;
+   #endif
 }
 
 void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip)

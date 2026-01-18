@@ -94,7 +94,7 @@ public:
    bool IsBackgroundPlaying() const;
 
    const SDL_Rect& GetRect() const { return m_rect; }
-   void Render(VPXRenderContext2D* const ctx);
+   void Render(VPXRenderContext2D* const ctx, int pass);
 
    static const string& ToString(Mode mode);
 
@@ -127,6 +127,7 @@ private:
    PUPScreen* m_pParent = nullptr;
    vector<std::shared_ptr<PUPScreen>> m_children;
    const std::thread::id m_apiThread;
+   std::mutex m_screenMutex;
 };
 
 }
