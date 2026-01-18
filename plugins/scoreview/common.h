@@ -59,7 +59,6 @@ string TrimLeading(const string& str, const string& whitespace);
 string TrimTrailing(const string& str, const string& whitespace);
 bool try_parse_float(const string& str, float& value);
 bool try_parse_int(const string& str, int& value);
-string find_case_insensitive_file_path(const string& szPath);
 string PathFromFilename(const string& filename);
 string GetPluginPath();
 

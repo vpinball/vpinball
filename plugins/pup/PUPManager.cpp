@@ -386,7 +386,7 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
    if (data.value == 0)
       return;
    {
-      std::lock_guard<std::mutex> lock(m_queueMutex);
+      std::lock_guard lock(m_queueMutex);
       m_triggerDataQueue.push_back(data);
    }
    m_queueCondVar.notify_one();
@@ -396,10 +396,10 @@ void PUPManager::ProcessQueue()
 {
    SetThreadName("PUPManager.ProcessQueue"s);
    vector<AsyncCallback*> pendingCallbackList;
-   std::shared_ptr<std::mutex> pendingCallbackListMutex = std::make_shared<std::mutex>();
+   std::shared_ptr pendingCallbackListMutex = std::make_shared<std::mutex>();
    while (m_isRunning)
    {
-      std::unique_lock<std::mutex> lock(m_queueMutex);
+      std::unique_lock lock(m_queueMutex);
       m_queueCondVar.wait_for(lock, std::chrono::microseconds(16666), [this] { return !m_triggerDataQueue.empty() || !m_triggerDmdQueue.empty() || !m_isRunning; });
 
       if (!m_isRunning)
@@ -525,6 +525,9 @@ void PUPManager::ProcessQueue()
             bool wasTriggered = triggers[0]->IsTriggered();
             for (auto& trigger : triggers[0]->GetTriggers())
             {
+               // Trigger value automatically get back to 0 unless held (for example by a controller switch)
+               trigger.m_value = 0;
+
                switch (trigger.m_type)
                {
                case 'W': // PinMAME switch state
@@ -562,9 +565,8 @@ void PUPManager::ProcessQueue()
                   // FIXME implement
                   break;
                }
-
                // Apply triggers defined through scripting, after controller events to allow overriding them
-               for (auto& triggerData : m_triggerDataQueue)
+               for (const auto& triggerData : m_triggerDataQueue)
                   if ((trigger.m_type == triggerData.type) && (trigger.m_number == triggerData.number))
                      trigger.m_value = triggerData.value;
             }
@@ -721,24 +723,35 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
    std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
 
-   // Helper to log screen order as this is really a mess to recreate correctly
+   // Helper to log screen order to help debug rendering order
    if (false)
    {
       std::stringstream ss;
-      for (size_t i = 0; i < me->m_screenOrder.size(); i++)
-         ss << (i == 0 ? "" : ", ") << me->m_screenOrder[i]->GetScreenNum() << (me->m_screenOrder[i]->IsBackgroundPlaying() ? 'B' : 'F');
+      for (auto screen : me->m_screenOrder)
+      {
+         const PUPScreen* parent = screen.get();
+         while (parent && parent != rootScreen.get())
+            parent = parent->GetParent();
+         if (parent && screen->GetMode() != PUPScreen::Mode::Off && screen->GetMode() != PUPScreen::Mode::MusicOnly)
+            ss << (ss.str().empty() ? "" : ", ") << screen->GetScreenNum() << (screen->IsBackgroundPlaying() ? 'B' : 'F');
+      }
       LOGD("PUP Screen order: %s", ss.str().c_str());
    }
 
    // Render all children of rootScreen according to the global shared render order
-   for (auto screen : me->m_screenOrder)
+   // This is done in 2 passes: first the video/ovelrays, then the active labels
+   for (int pass = 0; pass < 2; pass++)
    {
-      const PUPScreen* parent = screen.get();
-      while (parent && parent != rootScreen.get())
-         parent = parent->GetParent();
-      if (parent)
-         screen->Render(renderCtx);
+      for (auto screen : me->m_screenOrder)
+      {
+         const PUPScreen* parent = screen.get();
+         while (parent && parent != rootScreen.get())
+            parent = parent->GetParent();
+         if (parent)
+            screen->Render(renderCtx, pass);
+      }
    }
+
    return true;
 }
 

@@ -30,6 +30,7 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
    float yPos, int pagenum, bool visible)
    : m_pManager(manager)
    , m_szName(szName)
+   , m_pFont(szFont.empty() ? nullptr : manager->GetFont(szFont))
    , m_size(size)
    , m_color(color)
    , m_angle(angle)
@@ -39,7 +40,6 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
    , m_yPos(yPos)
    , m_visible(visible)
    , m_pagenum(pagenum)
-   , m_pFont(szFont.empty() ? nullptr : manager->GetFont(szFont))
 {
    if (!szFont.empty() && !m_pFont)
    {
@@ -175,7 +175,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          m_pScreen->SendLabelToFront(this);
 
       {
-         std::lock_guard<std::mutex> lock(m_mutex);
+         std::lock_guard lock(m_mutex);
 
          if (json["size"s].exists())
          {
@@ -358,9 +358,9 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    }
 }
 
-void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum)
+void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
+   std::lock_guard lock(m_mutex);
 
    if (!m_visible || pagenum != m_pagenum || m_szCaption.empty() || (m_animation && !m_animation->m_visible))
       return;
@@ -383,12 +383,12 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
       m_dirty = false;
       if (!m_szPath.empty())
          m_pendingTextureUpdate = std::async(std::launch::async, [this]() {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::lock_guard lock(m_mutex);
             return UpdateImageTexture(m_type, m_szPath);
          });
       else if (m_pFont)
          m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::lock_guard lock(m_mutex);
             return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, fontColor, m_shadowState, m_shadowColor, { m_xoffset, m_yoffset} );
          });
    }

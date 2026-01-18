@@ -44,7 +44,7 @@ public:
    void SetCaption(const string& szCaption);
    void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
-   void Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum);
    const string& GetName() const { return m_szName; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;
