@@ -79,11 +79,11 @@ public:
 
    void SetMask(const std::filesystem::path& path);
 
-   void Play(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
-   void Play(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
+   void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority);
+   void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Stop();
    void Stop(int priority);
-   void Stop(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
+   void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
    void Pause();
    void Resume();
    void SetLoop(int state);

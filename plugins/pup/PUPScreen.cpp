@@ -288,7 +288,7 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
    m_pCustomPos = PUPCustomPos::CreateFromCSV(szCustomPos);
 }
 
-void PUPScreen::Play(const string& szPlaylist, const string& szPlayFile, float volume, int priority)
+void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    PUPPlaylist* const pPlaylist = GetPlaylist(szPlaylist);
@@ -300,7 +300,7 @@ void PUPScreen::Play(const string& szPlaylist, const string& szPlayFile, float v
    Play(pPlaylist, szPlayFile, volume, priority, false, 0, false);
 }
 
-void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
+void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    //LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
@@ -377,7 +377,7 @@ void PUPScreen::Stop(int priority)
    m_pMediaPlayerManager->Stop(priority);
 }
 
-void PUPScreen::Stop(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
+void PUPScreen::Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_pMediaPlayerManager->Stop(pPlaylist, szPlayFile);

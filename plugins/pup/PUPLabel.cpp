@@ -64,7 +64,7 @@ void PUPLabel::SetCaption(const string& szCaption)
    szText = string_replace_all(szText, "\\r"s, '\n');
 
    {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::lock_guard lock(m_mutex);
       if (m_szCaption != szText)
       {
          m_type = PUP_LABEL_TYPE_TEXT;
@@ -105,7 +105,7 @@ void PUPLabel::SetCaption(const string& szCaption)
 
 void PUPLabel::SetVisible(bool visible)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
+   std::lock_guard lock(m_mutex);
    m_visible = visible;
 }
 

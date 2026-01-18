@@ -28,7 +28,7 @@ PUPMediaManager::~PUPMediaManager()
    AsyncCallback::InvalidateAllPending(m_pendingEndCallbackList, m_pendingEndCallbackListMutex);
 }
 
-void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
+void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    if (!background && skipSamePriority && IsMainPlaying() && priority <= m_pMainPlayer->priority)
    {
@@ -129,7 +129,7 @@ void PUPMediaManager::Stop(int priority)
    }
 }
 
-void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
+void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile)
 {
    std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && szPath == m_pMainPlayer->szPath) {

@@ -47,7 +47,7 @@ public:
    const string& GetDescription() const { return m_szDescript; }
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
-   const string& GetPlayFile() const { return m_szPlayFile; }
+   const std::filesystem::path& GetPlayFile() const { return m_szPlayFile; }
    const string& GetTrigger() const { return m_szTrigger; }
    vector<PUPTriggerCondition>& GetTriggers() { return m_conditions; }
    bool IsTriggered() const { return std::ranges::all_of(m_conditions, [](const PUPTriggerCondition& x) { return x.IsTriggered(); }); }
@@ -66,13 +66,13 @@ public:
    std::function<void()> Trigger();
 
 private:
-   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction);
+   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction);
    const string m_szDescript;
    const string m_szTrigger;
    vector<PUPTriggerCondition> m_conditions;
    PUPScreen* const m_pScreen;
    PUPPlaylist* const m_pPlaylist;
-   const string m_szPlayFile;
+   const std::filesystem::path m_szPlayFile;
    const bool m_active;
    const float m_volume;
    const int m_priority;

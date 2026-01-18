@@ -130,6 +130,19 @@ string lowerCase(string input)
    return input;
 }
 
+inline void StrToLower(std::filesystem::path& path)
+{
+   std::u8string str = path.u8string();
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
+   path = str;
+}
+
+std::filesystem::path lowerCase(std::filesystem::path input)
+{
+   StrToLower(input);
+   return input;
+}
+
 string extension_from_path(const string& path)
 {
    const size_t pos = path.find_last_of('.');

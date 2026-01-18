@@ -14,7 +14,7 @@ public:
    explicit PUPMediaManager(PUPScreen* pScreen);
    ~PUPMediaManager();
 
-   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
+   void Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Pause();
    void Resume();
    void SetAsBackGround(bool isBackground);
@@ -23,7 +23,7 @@ public:
    void SetVolume(float volume);
    void Stop();
    void Stop(int priority);
-   void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
+   void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
    void Render(VPXRenderContext2D* const ctx);
    bool IsMainPlaying() const;
    bool IsBackgroundPlaying() const;
