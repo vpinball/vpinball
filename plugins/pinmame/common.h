@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
+#include <filesystem>
 
 #include <string>
 using namespace std::string_literals;
@@ -31,15 +32,9 @@ LPI_USE();
 
 PSC_USE_ERROR();
 
-#ifdef _MSC_VER
-#define PATH_SEPARATOR_CHAR '\\'
-#else
-#define PATH_SEPARATOR_CHAR '/'
-#endif
+std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
 
-string find_case_insensitive_directory_path(const string& szPath);
-
-// copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
+   // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
 inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const char* const __restrict src)
 {
    if (!dest || dest_size == 0)

@@ -123,8 +123,8 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
          return S_OK;
 
       std::filesystem::path musicDir = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music, false);
-      const string path = find_case_insensitive_file_path((musicDir / musicNameStr).string());
-      if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path))
+      const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicNameStr);
+      if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path.string()))
       {
          g_pplayer->m_audioPlayer->SetMusicVolume(m_pt->m_TableMusicVolume * volume);
       }

@@ -72,13 +72,17 @@ void PUPMediaPlayer::SetMask(std::shared_ptr<SDL_Surface> mask)
    });
 }
 
-void PUPMediaPlayer::Play(const string& filename)
+void PUPMediaPlayer::Play(const std::filesystem::path& filename)
 {
    m_commandQueue.enqueue([this, filename]()
    {
-      LOGD("> Playing filename=%s", filename.c_str());
+      LOGD("> Playing filename=%s", filename.string().c_str());
 
+      //Should we do the callback when we are switching from a video to another ?
+      //std::function<void(PUPMediaPlayer*)> onEndCallback = m_onEndCallback;
+      //m_onEndCallback = [](PUPMediaPlayer*) { };
       StopBlocking();
+      //m_onEndCallback = onEndCallback;
 
       std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -88,7 +92,7 @@ void PUPMediaPlayer::Play(const string& filename)
       m_startTimestamp = SDL_GetTicks();
 
       // Open file
-      if (m_libAv._avformat_open_input(&m_pFormatContext, filename.c_str(), NULL, NULL) != 0)
+      if (m_libAv._avformat_open_input(&m_pFormatContext, filename.string().c_str(), NULL, NULL) != 0)
       {
          LOGE("Unable to open: filename=%s", filename.c_str());
          return;
@@ -201,7 +205,7 @@ void PUPMediaPlayer::StopBlocking()
 {
    if (IsPlaying())
    {
-      LOGD("Stop: %s", m_filename.c_str());
+      LOGD("Stop: %s", m_filename.string().c_str());
    }
 
    // Stop decoder thread and flush queue
@@ -479,7 +483,7 @@ void PUPMediaPlayer::Run()
       m_onEndCallback(this);
    }
 
-   LOGD("Play done %s", m_filename.c_str());
+   LOGD("Play done %s", m_filename.string().c_str());
 }
 
 void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)

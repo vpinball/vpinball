@@ -320,16 +320,29 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // Setup Serum on the selected DMD
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
-   if (serumPathProp_Get()[0] == '\0')
-   {
-      VPXTableInfo tableInfo;
-      vpxApi->GetTableInfo(&tableInfo);
-      std::filesystem::path tablePath = tableInfo.path;
-      string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame" + PATH_SEPARATOR_CHAR + "altcolor");
-      if (!path.empty())
-         serumPathProp_Set(path.c_str());
-   }
-   pSerum = Serum_Load(serumPathProp_Get(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
+
+   VPXTableInfo tableInfo;
+   vpxApi->GetTableInfo(&tableInfo);
+   std::filesystem::path tablePath = tableInfo.path;
+
+   std::filesystem::path serumPath = serumPathProp_Get();
+   const std::filesystem::path crz = string(msg->gameId) + ".cRZ";
+   const std::filesystem::path cromc = string(msg->gameId) + ".cROMc";
+
+   // Priority 1: serum/rom/rom.crz
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / crz); !path1.empty())
+      serumPath = path1.parent_path().parent_path();
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / cromc); !path2.empty())
+      serumPath = path2.parent_path().parent_path();
+
+   // Priority 2: pinmame/altcolor/rom/rom.crz
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / crz); !path3.empty())
+      serumPath = path3.parent_path().parent_path();
+   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / cromc); !path4.empty())
+      serumPath = path4.parent_path().parent_path();
+
+   // Default to global user setup folder if no table specific file is found
+   pSerum = Serum_Load(serumPath.string().c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
    {

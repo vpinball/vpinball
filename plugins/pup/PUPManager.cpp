@@ -30,7 +30,7 @@ MSGPI_INT_VAL_SETTING(pupTopperPadTop, "TopperPadTop", "Topper Top Pad", "Top Pa
 MSGPI_INT_VAL_SETTING(pupTopperPadBottom, "TopperPadBottom", "Topper Bottom Pad", "Bottom Padding of topper", true, 0, 4096, 0);
 MSGPI_STRING_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Topper Frame Overlay", "Path to an image that will be rendered as an ovelray on the topper display", true, "", 1024);
 
-PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
+PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
@@ -67,7 +67,7 @@ PUPManager::~PUPManager()
 
 void PUPManager::SetGameDir(const string& szRomName)
 {
-   string path;
+   std::filesystem::path path;
 
    // First search for pupvideos along the table file
    {
@@ -80,13 +80,13 @@ void PUPManager::SetGameDir(const string& szRomName)
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         path = find_case_insensitive_directory_path((tablePath.parent_path() / "pupvideos" / szRomName).string());
+         path = find_case_insensitive_directory_path(tablePath.parent_path() / "pupvideos" / szRomName);
       }
    }
 
    // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
    if (path.empty() && !m_szRootPath.empty())
-      path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+      path = find_case_insensitive_directory_path(m_szRootPath / szRomName);
 
    if (path.empty())
       return;
@@ -97,7 +97,7 @@ void PUPManager::SetGameDir(const string& szRomName)
    std::lock_guard<std::mutex> lock(m_queueMutex);
 
    m_szPath = path;
-   LOGI("PUP path: %s", m_szPath.c_str());
+   LOGI("PUP path: %s", m_szPath.string().c_str());
 
    // Load Fonts
    LoadFonts();
@@ -123,7 +123,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    // Load screens and start them
 
-   string szScreensPath = find_case_insensitive_file_path(m_szPath + "screens.pup");
+   std::filesystem::path szScreensPath = find_case_insensitive_file_path(m_szPath / "screens.pup");
    if (!szScreensPath.empty()) {
       std::ifstream screensFile;
       screensFile.open(szScreensPath, std::ifstream::in);
@@ -181,7 +181,7 @@ void PUPManager::UnloadFonts()
 void PUPManager::LoadFonts()
 {
    UnloadFonts();
-   string szFontsPath = find_case_insensitive_directory_path(m_szPath + "FONTS");
+   std::filesystem::path szFontsPath = find_case_insensitive_directory_path(m_szPath / "FONTS");
    if (!szFontsPath.empty())
    {
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath))
@@ -211,7 +211,7 @@ void PUPManager::LoadFonts()
 
 void PUPManager::LoadPlaylists()
 {
-   string szPlaylistsPath = find_case_insensitive_file_path(GetPath() + "playlists.pup");
+   std::filesystem::path szPlaylistsPath = find_case_insensitive_file_path(GetPath() / "playlists.pup");
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
@@ -241,17 +241,19 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
    std::unique_lock<std::mutex> lock(m_queueMutex);
 
-   std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum());
-   if (existing)
+   if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
    {
-      LOGI("Warning redefinition of existing PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
-      existing->SetMode(pScreen->GetMode());
-      existing->SetVolume(pScreen->GetVolume());
-      // existing->SetCustomPos(pScreen->GetCustomPos());
-      // copy triggers ?
-      // copy labels ?
-      // copy playlists ?
-      pScreen = existing;
+      LOGI("Replacing previously defined PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
+      if (existing->GetParent())
+         existing->GetParent()->ReplaceChild(existing, pScreen);
+      for (const auto& [key, screen] : m_screenMap)
+      {
+         if (screen->GetParent() == existing.get())
+         {
+            pScreen->AddChild(screen);
+         }
+      }
+      std::erase(m_screenOrder, existing);
    }
    pScreen->SetMainVolume(m_mainVolume);
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
@@ -303,6 +305,7 @@ bool PUPManager::AddScreen(int screenNum)
 
 void PUPManager::SendScreenToBack(const PUPScreen* screen)
 {
+   LOGD("Send screen to back %d", screen->GetScreenNum());
    auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
    if (it != m_screenOrder.end())
    {
@@ -314,6 +317,7 @@ void PUPManager::SendScreenToBack(const PUPScreen* screen)
 
 void PUPManager::SendScreenToFront(const PUPScreen* screen)
 {
+   LOGD("Send screen to front %d", screen->GetScreenNum());
    auto it = std::ranges::find_if(m_screenOrder, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
    if (it != m_screenOrder.end())
    {
@@ -433,7 +437,7 @@ void PUPManager::ProcessQueue()
                   LOGD(buffer);
                },
                this);
-            m_dmd->Load(m_szPath.c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+            m_dmd->Load(m_szPath.string().c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
             memset(m_idFrame, 0, sizeof(m_idFrame));
          }
 
@@ -716,6 +720,15 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
    std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
+
+   // Helper to log screen order as this is really a mess to recreate correctly
+   if (false)
+   {
+      std::stringstream ss;
+      for (size_t i = 0; i < me->m_screenOrder.size(); i++)
+         ss << (i == 0 ? "" : ", ") << me->m_screenOrder[i]->GetScreenNum() << (me->m_screenOrder[i]->IsBackgroundPlaying() ? 'B' : 'F');
+      LOGD("PUP Screen order: %s", ss.str().c_str());
+   }
 
    // Render all children of rootScreen according to the global shared render order
    for (auto screen : me->m_screenOrder)

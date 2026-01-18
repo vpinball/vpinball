@@ -36,8 +36,6 @@ PUPScreen::PUPScreen(PUPManager* manager, PUPScreen::Mode mode, int screenNum, c
    , m_pCustomPos(std::move(pCustomPos))
    , m_apiThread(std::this_thread::get_id())
 {
-   memset(&m_background, 0, sizeof(m_background));
-   memset(&m_overlay, 0, sizeof(m_overlay));
    m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
 
    for (const PUPPlaylist* pPlaylist : playlists) {
@@ -124,7 +122,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateDefault(PUPManager* manager, int scr
 void PUPScreen::LoadTriggers()
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   string szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() + "triggers.pup");
+   std::filesystem::path szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() / "triggers.pup");
    std::ifstream triggersFile;
    triggersFile.open(szPlaylistsPath, std::ifstream::in);
    if (triggersFile.is_open())
@@ -167,6 +165,16 @@ void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
    pScreen->m_pParent = this;
 }
 
+void PUPScreen::ReplaceChild(std::shared_ptr<PUPScreen> pChild, std::shared_ptr<PUPScreen> pScreen)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   for (int i = 0; i < m_children.size(); i++)
+      if (m_children[i] == pChild)
+         m_children[i] = pScreen;
+   pChild->m_pParent = nullptr;
+   pScreen->m_pParent = this;
+}
+   
 void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -293,7 +301,7 @@ void PUPScreen::Play(const string& szPlaylist, const string& szPlayFile, float v
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
+   //LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    switch (pPlaylist->GetFunction())
    {
@@ -304,11 +312,17 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
          return;
 
       case Mode::ForceBack:
+         // Don't send to back: this is only done on creation
+         break;
+
       case Mode::ForcePopBack:
          m_pManager->SendScreenToBack(this);
          break;
 
       case Mode::ForceOn:
+         // Don't send to front: this is only done on creation
+         break;
+
       case Mode::ForcePop:
          m_pManager->SendScreenToFront(this);
          break;
@@ -343,7 +357,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
    }
 }
 
-void PUPScreen::SetMask(const string& path)
+void PUPScreen::SetMask(const std::filesystem::path& path)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_pMediaPlayerManager->SetMask(path);

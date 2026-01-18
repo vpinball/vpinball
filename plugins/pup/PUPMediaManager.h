@@ -29,7 +29,7 @@ public:
    bool IsBackgroundPlaying() const;
 
    void SetBounds(const SDL_Rect& rect);
-   void SetMask(const string& path);
+   void SetMask(const std::filesystem::path& path);
 
 private:
    void OnPlayerEnd(PUPMediaPlayer* player);
@@ -44,12 +44,15 @@ private:
       ~PUPMediaManagerPlayer() = default;
 
       PUPMediaPlayer player;
-      string szPath;
+      std::filesystem::path szPath;
       float volume = 1.0f;
       int priority = 0;
    };
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
+
+   bool m_isBackgroundPlaying = false;
+   bool m_isFrontPlaying = false;
 
    std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
