@@ -23,16 +23,6 @@ constexpr inline float clampLightState(const float state)
    return state;
 }
 
-Light::Light() : m_lightcenter(this)
-{
-   m_menuid = IDR_SURFACEMENU;
-   m_d.m_depthBias = 0.0f;
-   m_d.m_shape = ShapeCustom;
-   m_d.m_visible = true;
-   m_roundLight = false;
-   m_propVisual = nullptr;
-}
-
 Light::~Light()
 {
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object

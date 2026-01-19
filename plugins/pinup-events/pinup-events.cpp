@@ -208,7 +208,8 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 #endif
    if (fullpath.empty())
       return;
-   fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
+   fullpath.erase(fullpath.find_last_of(_T("\\/")));
+   fullpath += _T('\\');
    #if (INTPTR_MAX == INT32_MAX)
       fullpath += _T("dmddevicePUP.DLL");
    #else

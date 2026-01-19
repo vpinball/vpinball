@@ -17,12 +17,6 @@
 #include "renderer/VertexBuffer.h"
 #include "renderer/IndexBuffer.h"
 
-HitTarget::HitTarget()
-{
-   m_d.m_depthBias = 0.0f;
-   m_d.m_reflectionEnabled = true;
-}
-
 HitTarget::~HitTarget()
 {
    assert(m_rd == nullptr);

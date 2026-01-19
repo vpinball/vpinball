@@ -255,7 +255,7 @@ public:
    STDMETHOD(get_RefractionProbe)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_RefractionProbe)(/*[in]*/ BSTR newVal);
 
-   Primitive();
+   Primitive() { }
    virtual ~Primitive();
 
    BEGIN_COM_MAP(Primitive)

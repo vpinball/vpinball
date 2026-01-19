@@ -303,8 +303,8 @@ QOI_API void *qoi_decode(const void *data, int size, qoi_desc *desc, int channel
 Implementation */
 
 #ifdef QOI_IMPLEMENTATION
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef QOI_MALLOC
 	#define QOI_MALLOC(sz) malloc(sz)
@@ -594,7 +594,7 @@ QOI_API void *qoi_decode(const void *data, int size, qoi_desc *desc, int channel
 }
 
 #ifndef QOI_NO_STDIO
-#include <stdio.h>
+#include <cstdio>
 
 QOI_API int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	FILE *f = fopen(filename, "wb");
@@ -642,7 +642,7 @@ QOI_API void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 		return NULL;
 	}
 
-	bytes_read = fread(data, 1, size, f);
+	bytes_read = (int)fread(data, 1, size, f);
 	fclose(f);
 	pixels = (bytes_read != size) ? NULL : qoi_decode(data, bytes_read, desc, channels);
 	QOI_FREE(data);

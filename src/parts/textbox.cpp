@@ -7,11 +7,6 @@
 #include "renderer/captureExt.h"
 #endif
 
-Textbox::Textbox()
-{
-   m_backglass = true; // Textbox is always located on backdrop
-}
-
 Textbox::~Textbox()
 {
    assert(m_rd == nullptr);

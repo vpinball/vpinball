@@ -14,10 +14,6 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 
-Kicker::Kicker()
-{
-}
-
 Kicker::~Kicker()
 {
    assert(m_rd == nullptr);

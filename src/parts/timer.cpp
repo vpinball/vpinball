@@ -2,10 +2,6 @@
 
 #include "core/stdafx.h"
 
-Timer::Timer()
-{
-}
-
 Timer::~Timer()
 {
 }

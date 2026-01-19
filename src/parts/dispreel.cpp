@@ -3,11 +3,6 @@
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 
-DispReel::DispReel()
-{
-   m_backglass = true; // DispReel is always located on backdrop
-}
-
 DispReel::~DispReel()
 {
    assert(m_rd == nullptr);

@@ -47,7 +47,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Textbox();
+   Textbox() { m_backglass = true; } // Textbox is always located on backdrop
    virtual ~Textbox();
 
    BEGIN_COM_MAP(Textbox)

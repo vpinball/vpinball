@@ -23,12 +23,12 @@ FEATURES:
   . The new file layout supports creating one folder per table, to group the table file with all its support folders & files (cache, music, flexdmd, ...), avoiding
     to mix files between tables, also allowing for a common install procedure of other virtual pinball components (Frontend, B2S, PinUp videos, ...).
   . Custom settings 'ini's or script 'vbs's are searched along the table file, matching the table filename as before, but now, if not found, these are also searched alongside 
-    the table, named after the folder name. This allows to share files for different versions of a table by placing these together in the table folder.
+    the table, named after the folder name. This allows to share files for different versions of a table by placing these together inside the table folder.
   . To ease transition, when a file is searched for reading (for example, a table requesting a music file), it is first searched alongside the table as per the new
     file layout, and if not found, it is also searched for according to the legacy layout.
   . The legacy behavior (everything in the application folder, so mixing all music, user, cache, scripts, ... -files between all tables) is still available by checking
     the corresponding option in the 'INI->Editor->UI Options' dialog. It requires the application to be installed in a folder with read/write access. It breaks
-    the ability to have multiple versions of VPX on a single computer without setting conflicts.
+    the ability to have multiple versions of VPX installed on a single computer without their settings conflicting.
 
 - add "Surface" to the "Select Element" list
 - add overall GPU memory used, and overall file size to the image dialog

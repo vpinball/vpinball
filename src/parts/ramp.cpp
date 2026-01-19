@@ -5,19 +5,6 @@
 #include "utils/objloader.h"
 #include "renderer/Shader.h"
 
-Ramp::Ramp()
-{
-   m_menuid = IDR_SURFACEMENU;
-   m_d.m_collidable = true;
-   m_d.m_visible = true;
-   m_d.m_depthBias = 0.0f;
-   m_d.m_wireDiameter = 6.0f;
-   m_d.m_wireDistanceX = 38.0f;
-   m_d.m_wireDistanceY = 88.0f;
-   m_propPosition = nullptr;
-   m_rgheightInit = nullptr;
-}
-
 Ramp::~Ramp()
 {
    assert(m_rd == nullptr);
@@ -1024,7 +1011,7 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
       const int i2 = (i == (numRings - 1)) ? i : i + 1;
       const float height = m_rgheightInit[i];
 
-      Vertex3Ds tangent(midPoints[i2].x - midPoints[i].x, midPoints[i2].y - midPoints[i].y, m_rgheightInit[i2]- m_rgheightInit[i]);
+      Vertex3Ds tangent(midPoints[i2].x - midPoints[i].x, midPoints[i2].y - midPoints[i].y, m_rgheightInit[i2] - m_rgheightInit[i]);
       if (i == numRings - 1)
       {
          // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)

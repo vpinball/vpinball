@@ -3,11 +3,6 @@
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 
-Plunger::Plunger()
-{
-   m_phitplunger = nullptr;
-}
-
 Plunger::~Plunger()
 {
    assert(m_rd == nullptr);

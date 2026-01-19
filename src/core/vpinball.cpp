@@ -213,9 +213,9 @@ void VPinball::SetupPrefPath()
    if (FileExists(GetAppPath(AppSubFolder::Root) / "VPinballX.ini"))
    {
       mINI::INIStructure m_ini;
-      if (mINI::INIFile(GetAppPath(AppSubFolder::Root) / "VPinballX.ini").read(m_ini) && m_ini.has("Version") && m_ini["Version"].has("VPinball"))
+      if (mINI::INIFile(GetAppPath(AppSubFolder::Root) / "VPinballX.ini").read(m_ini) && m_ini.has("Version"s) && m_ini["Version"s].has("VPinball"s))
       {
-         const string existingVersionString = m_ini["Version"]["VPinball"];
+         const string existingVersionString = m_ini["Version"s]["VPinball"s];
          std::istringstream iss(existingVersionString);
          std::string token;
          int minor;
@@ -276,7 +276,7 @@ void VPinball::SetupPrefPath()
    {
       PLOGI << "Initializing preferences from Window registry";
       mINI::INIStructure ini;
-      const vector<string> regKeys
+      static const vector<string> regKeys
          = { "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s,
               "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s, "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s,
               "DefaultProps\\LightSequence"s, "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,

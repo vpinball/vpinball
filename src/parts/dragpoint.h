@@ -108,7 +108,7 @@ private:
 class IHaveDragPoints
 {
 public:
-   IHaveDragPoints();
+   IHaveDragPoints() { }
 
    virtual ~IHaveDragPoints();
 
@@ -142,8 +142,8 @@ public:
 
    friend class DragPoint;
 
-   PropertyPane *m_propVisuals;
-   PropertyPane *m_propPosition;
+   PropertyPane *m_propVisuals = nullptr;
+   PropertyPane *m_propPosition = nullptr;
 
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
 

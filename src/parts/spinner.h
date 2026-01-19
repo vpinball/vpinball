@@ -45,7 +45,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Spinner();
+   Spinner() { }
    virtual ~Spinner();
 
    BEGIN_COM_MAP(Spinner)
@@ -94,7 +94,7 @@ public:
 private:
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
@@ -103,10 +103,10 @@ private:
 
    float m_posZ;
 
-   HitSpinner *m_phitspinner;
+   HitSpinner *m_phitspinner = nullptr;
    float m_lastAngle;
 
-   float m_vertexBuffer_spinneranimangle;
+   float m_vertexBuffer_spinneranimangle = -FLT_MAX;
 
    // ISpinner
 public:

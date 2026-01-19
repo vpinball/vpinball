@@ -46,7 +46,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Kicker();
+   Kicker() { }
    virtual ~Kicker();
 
    BEGIN_COM_MAP(Kicker)

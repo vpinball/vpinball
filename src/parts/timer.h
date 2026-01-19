@@ -47,7 +47,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Timer();
+   Timer() { }
    virtual ~Timer();
 
    //HRESULT Init(PinTable * const ptable, const float x, const float y);
@@ -95,5 +95,5 @@ public:
    TimerData m_d;
 
 private:
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 };

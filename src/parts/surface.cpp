@@ -7,16 +7,6 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 
-Surface::Surface()
-{
-   m_menuid = IDR_SURFACEMENU;
-
-   m_d.m_collidable = true;
-   m_d.m_slingshotAnimation = true;
-   m_d.m_inner = true;
-   m_d.m_isBottomSolid = false;
-}
-
 Surface::~Surface()
 {
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object

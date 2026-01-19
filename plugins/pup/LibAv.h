@@ -156,7 +156,8 @@ private:
       #else
       std::string basepath(path);
       #endif
-      basepath = basepath.substr(0, basepath.find_last_of(_T("\\/"))) + _T('\\');
+      basepath.erase(basepath.find_last_of(_T("\\/")));
+      basepath += _T('\\');
 
       hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avcodec64-61.dll"): _T("avcodec-61.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)

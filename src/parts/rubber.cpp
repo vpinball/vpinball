@@ -5,18 +5,6 @@
 #include "utils/objloader.h"
 #include "renderer/Shader.h"
 
-Rubber::Rubber()
-{
-   m_menuid = IDR_SURFACEMENU;
-   m_d.m_collidable = true;
-   m_d.m_visible = true;
-   m_propPosition = nullptr;
-   m_propVisual = nullptr;
-   m_ptable = nullptr;
-   m_d.m_tdr.m_TimerEnabled = false;
-   m_d.m_tdr.m_TimerInterval = 0;
-}
-
 Rubber::~Rubber()
 {
    assert(m_rd == nullptr);

@@ -75,7 +75,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Flipper();
+   Flipper() { }
    virtual ~Flipper();
 
    STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER, VIEW_PLAYFIELD)

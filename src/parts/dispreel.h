@@ -51,7 +51,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   DispReel();
+   DispReel() { m_backglass = true; } // DispReel is always located on backdrop
    virtual ~DispReel();
 
    BEGIN_COM_MAP(DispReel)

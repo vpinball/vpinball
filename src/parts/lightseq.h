@@ -190,7 +190,7 @@ public:
    LightSeqData m_d;
 
 private:
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    void     SetupTracers(const SequencerState Animation, int TailLength, int Repeat, int Pause);
    bool     ProcessTracer(_tracer * const pTracer, const LightState State);

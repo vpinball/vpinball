@@ -66,7 +66,7 @@ public:
 
    static constexpr float DROP_TARGET_LIMIT = 52.0f;
 
-   HitTarget();
+   HitTarget() { m_d.m_depthBias = 0.0f; m_d.m_reflectionEnabled = true; }
    virtual ~HitTarget();
 
    BEGIN_COM_MAP(HitTarget)
@@ -204,6 +204,6 @@ private:
    vector<Vertex3D_NoTex2> m_transformedVertices;
    uint32_t m_timeStamp = 0;
    float m_moveAnimationOffset = 0.0f;
-   bool m_moveAnimation = false;
-   bool m_moveDown = true;
+   bool  m_moveAnimation = false;
+   bool  m_moveDown = true;
 };

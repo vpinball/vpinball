@@ -34,7 +34,7 @@ static inline bool StrCompareNoCase(const string& strA, const string& strB)
    return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-string string_to_lower(string str)
+static string string_to_lower(string str)
 {
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
    return str;

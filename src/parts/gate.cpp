@@ -11,10 +11,6 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 
-Gate::Gate()
-{
-}
-
 Gate::~Gate()
 {
    assert(m_rd == nullptr);

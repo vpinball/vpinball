@@ -9,11 +9,6 @@
 #endif
 #include "core/VPXPluginAPIImpl.h"
 
-Flasher::Flasher()
-{
-   m_menuid = IDR_SURFACEMENU;
-}
-
 Flasher::~Flasher()
 {
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object

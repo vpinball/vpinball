@@ -5,12 +5,6 @@
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;
 
-IHaveDragPoints::IHaveDragPoints()
-{
-    m_propVisuals = nullptr;
-    m_propPosition = nullptr;
-}
-
 IHaveDragPoints::~IHaveDragPoints()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)

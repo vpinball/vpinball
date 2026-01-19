@@ -83,10 +83,6 @@ static constexpr float vertsBaseTopf[13 * 3] =
 
 static const Vertex3Ds* const vertsBaseTop = (const Vertex3Ds*)vertsBaseTopf;
 
-Flipper::Flipper()
-{
-}
-
 Flipper::~Flipper()
 {
    assert(m_phitflipper == nullptr);

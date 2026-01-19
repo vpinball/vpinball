@@ -134,7 +134,7 @@ public:
    // Remove the comment from the line above if you don't want your object to
    // support aggregation.
 
-   Plunger();
+   Plunger() { }
    virtual ~Plunger();
 
    STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, VIEW_PLAYFIELD)

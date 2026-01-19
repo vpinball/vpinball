@@ -10,11 +10,6 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 
-Bumper::Bumper()
-{
-   m_d.m_ringDropOffset = 0.0f;
-}
-
 Bumper::~Bumper()
 {
    assert(m_rd == nullptr);

@@ -8,12 +8,6 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 
-Spinner::Spinner()
-{
-   m_phitspinner = nullptr;
-   m_vertexBuffer_spinneranimangle = -FLT_MAX;
-}
-
 Spinner::~Spinner()
 {
    assert(m_rd == nullptr);

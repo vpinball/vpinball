@@ -53,7 +53,17 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Ramp();
+   Ramp()
+   {
+      m_menuid = IDR_SURFACEMENU;
+      m_propPosition = nullptr;
+      m_d.m_collidable = true;
+      m_d.m_visible = true;
+      m_d.m_depthBias = 0.0f;
+      m_d.m_wireDiameter = 6.0f;
+      m_d.m_wireDistanceX = 38.0f;
+      m_d.m_wireDistanceY = 88.0f;
+   }
    virtual ~Ramp();
 
    BEGIN_COM_MAP(Ramp)
@@ -123,7 +133,7 @@ private:
    RenderDevice *m_rd = nullptr;
 
    int m_rampVertex;
-   float *m_rgheightInit;
+   float *m_rgheightInit = nullptr;
 
    int m_numVertices = 0;      // this goes along with dynamicVertexBuffer
    int m_numIndices = 0;

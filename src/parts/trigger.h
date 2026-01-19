@@ -46,7 +46,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Trigger();
+   Trigger() { m_menuid = IDR_SURFACEMENU; }
    virtual ~Trigger();
 
    BEGIN_COM_MAP(Trigger)
@@ -110,7 +110,7 @@ private:
    void InitShape(float x, float y);
    void GenerateMesh();
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    TriggerHitCircle *m_ptriggerhitcircle = nullptr;
    Hit3DPoly *m_ptriggerhitpoly = nullptr;

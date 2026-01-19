@@ -190,10 +190,6 @@ void Mesh::UpdateBounds()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Primitive::Primitive()
-{
-}
-
 Primitive::~Primitive()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression

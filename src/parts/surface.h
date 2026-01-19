@@ -56,7 +56,14 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
 
-   Surface();
+   Surface()
+   {
+      m_menuid = IDR_SURFACEMENU;
+      m_d.m_collidable = true;
+      m_d.m_slingshotAnimation = true;
+      m_d.m_inner = true;
+      m_d.m_isBottomSolid = false;
+   }
    virtual ~Surface();
 
    //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick);

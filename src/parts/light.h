@@ -84,7 +84,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Light();
+   Light() : m_lightcenter(this) { m_menuid = IDR_SURFACEMENU; m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
    virtual ~Light();
 
    BEGIN_COM_MAP(Light)
@@ -197,7 +197,7 @@ private:
    };
 
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
@@ -208,7 +208,7 @@ private:
    std::shared_ptr<MeshBuffer> m_lightmapMeshEdgeBuffer;
    std::shared_ptr<MeshBuffer> m_bulbSocketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_bulbLightMeshBuffer;
-   PropertyPane *m_propVisual;
+   PropertyPane *m_propVisual = nullptr;
 
    vector<RenderVertex> m_vvertex;
 
@@ -217,7 +217,7 @@ private:
    bool  m_lightmapMeshBufferDirty = false;
    void UpdateMeshBuffer();
 
-   bool  m_roundLight; // pre-VPX compatibility
+   bool  m_roundLight = false; // pre-VPX compatibility
 
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;

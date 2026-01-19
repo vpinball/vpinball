@@ -50,7 +50,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Bumper();
+   Bumper() { m_d.m_ringDropOffset = 0.0f; }
    virtual ~Bumper();
 
    BEGIN_COM_MAP(Bumper)
@@ -153,7 +153,7 @@ private:
    void GenerateRingMesh(Vertex3D_NoTex2 *buf) const;
    void GenerateCapMesh(Vertex3D_NoTex2 *buf) const;
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_baseMeshBuffer;

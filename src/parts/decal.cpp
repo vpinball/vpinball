@@ -12,10 +12,6 @@
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 
-Decal::Decal()
-{
-}
-
 Decal::~Decal()
 {
    assert(m_rd == nullptr);

@@ -45,7 +45,15 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Rubber();
+   Rubber()
+   {
+      m_menuid = IDR_SURFACEMENU;
+      m_propPosition = nullptr;
+      m_d.m_collidable = true;
+      m_d.m_visible = true;
+      m_d.m_tdr.m_TimerEnabled = false;
+      m_d.m_tdr.m_TimerInterval = 0;
+   }
    virtual ~Rubber();
 
    BEGIN_COM_MAP(Rubber)
@@ -113,7 +121,7 @@ private:
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
    void SetupHitObject(class PhysicsEngine *physics, HitObject *obj, const bool isUI);
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
@@ -133,7 +141,7 @@ private:
 
    Vertex3Ds m_middlePoint;
 
-   PropertyPane *m_propVisual;
+   PropertyPane *m_propVisual = nullptr;
 
    void GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy = -1.f) const;
 

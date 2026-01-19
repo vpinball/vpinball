@@ -9,12 +9,6 @@
 #include "meshes/triggerInderMesh.h"
 #include "renderer/Shader.h"
 
-Trigger::Trigger()
-   : m_ptable(nullptr)
-{
-   m_menuid = IDR_SURFACEMENU;
-}
-
 Trigger::~Trigger()
 {
    assert(m_rd == nullptr);
