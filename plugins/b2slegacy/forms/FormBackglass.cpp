@@ -357,35 +357,35 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 
 void FormBackglass::LoadB2SData()
 {
-   const string szFilename = find_case_insensitive_file_path(title_and_path_from_filename(m_pB2SData->GetTableFileName()) + ".directb2s");
-   if (szFilename.empty()) {
+   const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
+   const std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   if (b2sFilename.empty()) {
       LOGD("No directb2s file found");
       throw std::exception();
    }
 
-   LOGI("directb2s file found at: %s", szFilename.c_str());
+   LOGI("directb2s file found at: %s", b2sFilename.string().c_str());
 
-   m_pB2SData->SetBackglassFileName(szFilename);
+   m_pB2SData->SetBackglassFileName(b2sFilename.string());
 
-   std::ifstream infile(szFilename);
+   std::ifstream infile(b2sFilename);
    if (!infile.good())
       throw std::exception();
 
    tinyxml2::XMLDocument b2sTree;
    std::stringstream buffer;
-   std::ifstream myFile(szFilename.c_str());
+   std::ifstream myFile(b2sFilename);
    buffer << myFile.rdbuf();
    myFile.close();
 
    auto xml = buffer.str();
    if (b2sTree.Parse(xml.c_str(), xml.size())) {
-      LOGE("Failed to parse directb2s file: %s", szFilename.c_str());
+      LOGE("Failed to parse directb2s file: %s", b2sFilename.string().c_str());
       throw std::exception();
    }
 
-   // try to get into the file and read some XML
    if (!b2sTree.FirstChildElement("DirectB2SData")) {
-      LOGE("Invalid directb2s file: %s", szFilename.c_str());
+      LOGE("Invalid directb2s file: %s", b2sFilename.string().c_str());
       throw std::exception();
    }
 
