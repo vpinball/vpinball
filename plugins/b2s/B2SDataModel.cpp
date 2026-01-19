@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "B2SDataModel.h"
+#include "B2SServer.h"
 
 #include "tinyxml2/tinyxml2.h"
 
@@ -118,6 +119,17 @@ template <class T> static vector<T> GetList(const tinyxml2::XMLNode& doc, const 
    return list;
 }
 
+template <class T> static vector<std::unique_ptr<T>> GetPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName)
+{
+   vector<std::unique_ptr<T>> list;
+   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
+   if (node == nullptr)
+      return list;
+   for (auto subNode = node->FirstChildElement(subNodeName.c_str()); subNode != nullptr; subNode = subNode->NextSiblingElement(subNodeName.c_str()))
+      list.emplace_back(std::make_unique<T>(*subNode));
+   return list;
+}
+
 template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD)
 {
    vector<T> list;
@@ -129,6 +141,21 @@ template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc
       bool isBackglass = subNode->Attribute("Parent", "Backglass") != nullptr;
       if (isBackglass == !isDMD)
          list.emplace_back(*subNode);
+   }
+   return list;
+}
+
+template <class T> static vector<std::unique_ptr<T>> GetFilteredPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD)
+{
+   vector<std::unique_ptr<T>> list;
+   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
+   if (node == nullptr)
+      return list;
+   for (auto subNode = node->FirstChildElement(subNodeName.c_str()); subNode != nullptr; subNode = subNode->NextSiblingElement(subNodeName.c_str()))
+   {
+      bool isBackglass = subNode->Attribute("Parent", "Backglass") != nullptr;
+      if (isBackglass == !isDMD)
+         list.emplace_back(std::make_unique<T>(*subNode));
    }
    return list;
 }
@@ -154,9 +181,9 @@ B2SSound::B2SSound(const tinyxml2::XMLNode& root)
 B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    : m_id(GetIntAttribute(root, ""s, "RomID"s, 0))
    , m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
-   , m_b2sId(GetIntAttribute(root, ""s, "B2SID"s, 0))
+   , m_b2sId(GetIntAttribute(root, ""s, "B2SID"s, -1))
    , m_b2sValue(GetIntAttribute(root, ""s, "B2SValue"s, 0))
-   , m_romId(GetIntAttribute(root, ""s, "RomID"s, 0))
+   , m_romId(GetIntAttribute(root, ""s, "RomID"s, -1))
    , m_romIdType(static_cast<B2SRomIDType>(GetIntAttribute(root, ""s, "RomIDType"s, 0)))
    , m_romInverted(GetBoolAttribute(root, ""s, "RomInverted"s, false))
    , m_initialState(GetBoolAttribute(root, ""s, "InitialState"s, false))
@@ -190,44 +217,6 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    else
       m_brightness = m_initialState ? 1.f : 0.f;
 }
-B2SBulb::B2SBulb(B2SBulb&& other) noexcept
-   : m_id(other.m_id)
-   , m_name(other.m_name)
-   , m_b2sId(other.m_b2sId)
-   , m_b2sValue(other.m_b2sValue)
-   , m_romId(other.m_romId)
-   , m_romIdType(other.m_romIdType)
-   , m_romInverted(other.m_romInverted)
-   , m_initialState(other.m_initialState)
-   , m_dualMode(other.m_dualMode)
-   , m_intensity(other.m_intensity)
-   , m_zOrder(other.m_zOrder)
-   , m_lightColor(other.m_lightColor)
-   , m_dodgeColor(other.m_dodgeColor)
-   , m_illuminationMode(other.m_illuminationMode)
-   , m_visible(other.m_visible)
-   , m_locationX(other.m_locationX)
-   , m_locationY(other.m_locationY)
-   , m_width(other.m_width)
-   , m_height(other.m_height)
-   , m_isImageSnippit(other.m_isImageSnippit)
-   , m_snippitType(other.m_snippitType)
-   , m_snippitRotatingSteps(other.m_snippitRotatingSteps)
-   , m_snippitRotatingInterval(other.m_snippitRotatingInterval)
-   , m_snippitRotatingDirection(other.m_snippitRotatingDirection)
-   , m_snippitRotatingStopBehaviour(other.m_snippitRotatingStopBehaviour)
-   , m_image(other.m_image)
-   , m_offImage(other.m_offImage)
-   , m_text(other.m_text)
-   , m_textAlignment(other.m_textAlignment)
-   , m_fontName(other.m_fontName)
-   , m_fontSize(other.m_fontSize)
-   , m_fontStyle(other.m_fontStyle)
-   , m_brightness(other.m_brightness)
-{
-   other.m_image = nullptr; // Ressource is transfered, avoid destruction
-   other.m_offImage = nullptr; // Ressource is transfered, avoid destruction
-}
 
 B2SBulb::~B2SBulb()
 {
@@ -235,9 +224,16 @@ B2SBulb::~B2SBulb()
    DeleteTexture(m_offImage);
 }
 
-void B2SBulb::Render(VPXRenderContext2D* ctx) const
+void B2SBulb::Render(VPXRenderContext2D* ctx, B2SServer* server)
 {
-   m_romUpdater();
+   if (m_b2sId >= 0 && server)
+   {
+      m_brightness = server->GetState(m_b2sId);
+   }
+   else
+   {
+      m_romUpdater();
+   }
    float rotation = 0.f;
    if (m_snippitType == B2SSnippitType::MechRotatingImage)
       rotation = 360.f * (m_mechRot / static_cast<float>(m_snippitRotatingSteps));
@@ -270,6 +266,59 @@ B2SImage::B2SImage(const tinyxml2::XMLNode& root)
 B2SImage::~B2SImage()
 {
    DeleteTexture(m_image);
+}
+
+
+B2SReelImage::B2SReelImage(const tinyxml2::XMLNode& root)
+   : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
+   , m_countOfIntermediate(GetIntAttribute(root, ""s, "CountOfIntermediates"s, 0))
+   , m_image(GetTextureAttribute(root, ""s, "Image"s))
+{
+}
+
+B2SReelImage::~B2SReelImage()
+{
+   DeleteTexture(m_image);
+}
+
+
+B2SReel::B2SReel(const tinyxml2::XMLNode& root)
+   : m_images(GetNode(root, "Reels"s) ? GetPtrList<B2SReelImage>(*GetNode(root, "Reels"s), "Images"s, "Image"s) : vector<std::unique_ptr<B2SReelImage>>())
+{
+}
+
+B2SScore::B2SScore(const tinyxml2::XMLNode& root)
+   : m_id(GetIntAttribute(root, ""s, "ID"s, 0))
+   , m_b2sStartDigit(GetIntAttribute(root, ""s, "B2SStartDigit"s, 0))
+   , m_b2sScoreType(GetIntAttribute(root, ""s, "B2SScoreType"s, 0))
+   , m_b2sPlayerNo(GetIntAttribute(root, ""s, "B2SPlayerNo"s, 0))
+   , m_reelType(GetStringAttribute(root, ""s, "ReelType"s, ""s))
+   , m_reelIlluLocation(GetIntAttribute(root, ""s, "ReelIlluLocation"s, 0))
+   , m_reelIlluIntensity(GetIntAttribute(root, ""s, "B2SStartDigit"s, 0))
+   , m_reelIlluB2SID(GetIntAttribute(root, ""s, "ReelIlluB2SID"s, 0))
+   , m_reelIlluB2SIDType(GetIntAttribute(root, ""s, "ReelIlluB2SIDType"s, 0))
+   , m_reelIlluB2SValue(GetIntAttribute(root, ""s, "ReelIlluB2SValue"s, 0))
+   , m_reelLitColor(GetColorAttribute(root, ""s, "ReelLitColor"s, vec4(1.f, 1.f, 1.f, 1.f)))
+   , m_reelDarkColor(GetColorAttribute(root, ""s, "ReelDarkColor"s, vec4(0.f, 0.f, 0.f, 1.f)))
+   , m_glow(GetIntAttribute(root, ""s, "Glow"s, 0))
+   , m_thickness(GetIntAttribute(root, ""s, "Thickness"s, 0))
+   , m_shear(GetIntAttribute(root, ""s, "Shear"s, 0))
+   , m_digits(GetIntAttribute(root, ""s, "Digits"s, 0))
+   , m_spacing(GetIntAttribute(root, ""s, "Spacing"s, 0))
+   , m_displayState(GetIntAttribute(root, ""s, "DisplayState"s, 0))
+   , m_locX(GetIntAttribute(root, ""s, "LocX"s, 0))
+   , m_locY(GetIntAttribute(root, ""s, "LocY"s, 0))
+   , m_width(GetIntAttribute(root, ""s, "Width"s, 0))
+   , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
+{
+}
+
+B2SScores::B2SScores(const tinyxml2::XMLNode& root, const bool isDMD)
+   : m_reelCountOfIntermediates(GetIntAttribute(root, "Scores"s, "ReelCountOfIntermediates"s, 0))
+   , m_reelRollingDirection(GetStringAttribute(root, "Scores"s, "ReelRollingDirection"s, "Up"s) == "Up"s ? B2SReelRollingDirection::Up : B2SReelRollingDirection::Down)
+   , m_reelRollingInterval(GetIntAttribute(root, "Scores"s, "ReelRollingInterval"s, 0))
+   , m_scores(GetFilteredList<B2SScore>(root, "Scores"s, "Score"s, isDMD))
+{
 }
 
 
@@ -355,9 +404,12 @@ B2STable::B2STable(const tinyxml2::XMLNode& root)
    , m_backglassOffImage(GetImageAttribute(root, "Images/BackglassOffImage"s))
    , m_dmdImage(GetImageAttribute(root, "Images/DMDImage"s))
    , m_sounds(GetList<B2SSound>(root, "Sounds"s, "Sound"s))
-   , m_backglassIlluminations(GetFilteredList<B2SBulb>(root, "Illumination"s, "Bulb"s, false))
+   , m_reels(root)
+   , m_backglassScores(root, false)
+   , m_dmdScores(root, true)
+   , m_backglassIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, false))
    , m_backglassAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, false))
-   , m_dmdIlluminations(GetFilteredList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
+   , m_dmdIlluminations(GetFilteredPtrList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
 {
 }

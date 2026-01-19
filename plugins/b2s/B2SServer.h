@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <climits>
 
+#include <unordered_dense.h>
+
 namespace B2S {
 
 class B2SServer final
@@ -93,6 +95,13 @@ public:
    void B2SPlaySound(const string& soundName) { } // FIXME
    void B2SStopSound(const string& soundName) { } // FIXME
    void B2SMapSound(int digit, const string& soundName) { } // FIXME
+
+   void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
+   float GetState(int b2sId) const;
+
+private:
+   std::function<void(B2SServer*)> m_onDestroyHandler;
+   ankerl::unordered_dense::map<int, float> m_states;
 };
 
 }
