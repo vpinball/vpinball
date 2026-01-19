@@ -122,8 +122,10 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       if (musicNameStr.empty())
          return S_OK;
 
+      const std::filesystem::path musicPath = normalize_path_separators(musicNameStr);
+
       std::filesystem::path musicDir = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music, false);
-      const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicNameStr);
+      const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicPath);
       if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path.string()))
       {
          g_pplayer->m_audioPlayer->SetMusicVolume(m_pt->m_TableMusicVolume * volume);
@@ -348,8 +350,8 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
    const string szFileName = MakeString(FileName);
-   std::filesystem::path file = g_pvp->SearchScript(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), szFileName);
-   if (!file.empty())
+   const std::filesystem::path filepath = normalize_path_separators(szFileName);
+   if (std::filesystem::path file = g_pvp->SearchScript(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), filepath); !file.empty())
    {
       std::ifstream scriptFile;
       scriptFile.open(file, std::ifstream::in);

@@ -253,7 +253,7 @@ public:
       Preferences,
       AutoSave,
    };
-   std::filesystem::path GetAppPath(AppSubFolder sub, const string& file = ""s) const;
+   std::filesystem::path GetAppPath(AppSubFolder sub, const std::filesystem::path& file = std::filesystem::path()) const;
 
    // Table folders for things like 'music', 'cache', 'user' (to save highscore),...
    enum class TableSubFolder
@@ -265,7 +265,7 @@ public:
    };
    std::filesystem::path GetTablePath(const PinTable* table, TableSubFolder sub, bool searchForWriting) const;
 
-   std::filesystem::path SearchScript(const PinTable* table, const string& script) const;
+   std::filesystem::path SearchScript(const PinTable* table, const std::filesystem::path& script) const;
 
    // Allow to change the preference r/w folder used for user settings
    void SetPrefPath(const std::filesystem::path& path);

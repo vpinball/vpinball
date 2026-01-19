@@ -351,7 +351,7 @@ void VPinball::UpdateFileLayoutMode()
    PLOGI << "File layout mode set to " << (m_fileLayoutMode == FileLayoutMode::AppOnly ? "AppOnly" : "AppPrefData");
 }
 
-std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file) const
+std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const std::filesystem::path& file) const
 {
    std::filesystem::path path;
    switch (sub)
@@ -509,7 +509,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
    return path;
 }
 
-std::filesystem::path VPinball::SearchScript(const PinTable* table, const string& script) const
+std::filesystem::path VPinball::SearchScript(const PinTable *table, const std::filesystem::path &script) const
 {
    // Search along the table path first
    if (table)
@@ -1423,7 +1423,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          ppt->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      if (std::filesystem::path filenameAuto = SearchScript(ppt, ppt->m_title + ".vbs"); !filenameAuto.empty())
+      if (std::filesystem::path filenameAuto = SearchScript(ppt, std::filesystem::path(ppt->m_title + ".vbs")); !filenameAuto.empty())
          ppt->m_pcv->LoadFromFile(filenameAuto.string());
       else
       {
