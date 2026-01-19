@@ -23,12 +23,12 @@ public:
 
    bool IsPinMAMEDriven() const;
 
-   bool Render(VPXRenderContext2D* context);
+   bool Render(VPXRenderContext2D* context, class B2SServer* server);
 
 private:
    std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
-   bool RenderBackglass(VPXRenderContext2D* context);
-   bool RenderScoreView(VPXRenderContext2D* context);
+   bool RenderBackglass(VPXRenderContext2D* context, class B2SServer* server);
+   bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
 
    std::shared_ptr<B2STable> m_b2s;
 

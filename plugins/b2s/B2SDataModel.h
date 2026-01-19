@@ -20,29 +20,11 @@ enum class B2SRomIDType
 class B2SImage final
 {
 public:
-   B2SImage()
-      : m_image(nullptr)
-      , m_filename()
-      , m_romId(0)
-      , m_romIdType(B2SRomIDType::NotDefined)
-   {
-   }
-   B2SImage(B2SImage&& other) noexcept
-      : m_image(other.m_image)
-      , m_filename(other.m_filename)
-      , m_romId(other.m_romId)
-      , m_romIdType(other.m_romIdType)
-      , m_romUpdater(other.m_romUpdater)
-   {
-      other.m_image = nullptr; // Ressource is transfered, avoid destruction
-   }
-   B2SImage(const B2SImage&) = delete;
-   B2SImage& operator=(const B2SImage&) = delete;
-   B2SImage(const tinyxml2::XMLNode& root);
+   explicit B2SImage(const tinyxml2::XMLNode& root);
    ~B2SImage();
 
 public:
-   VPXTexture m_image; // Should be const, but needed to be set to null by move constructor (should use an unique_ptr instead ?)
+   const VPXTexture m_image;
    const string m_filename;
    const int m_romId;
    const B2SRomIDType m_romIdType;
@@ -55,11 +37,74 @@ public:
 class B2SReelImage final
 {
 public:
-   B2SReelImage(const tinyxml2::XMLNode& image);
+   explicit B2SReelImage(const tinyxml2::XMLNode& image);
+   ~B2SReelImage();
 
 public:
    const string m_name;
+   const int m_countOfIntermediate;
    const VPXTexture m_image;
+};
+
+
+class B2SReel final
+{
+public:
+   explicit B2SReel(const tinyxml2::XMLNode& root);
+
+public:
+   const vector<std::unique_ptr<B2SReelImage>> m_images;
+};
+
+
+class B2SScore final
+{
+public:
+   explicit B2SScore(const tinyxml2::XMLNode& root);
+
+public:
+   const int m_id;
+   const int m_b2sStartDigit;
+   const int m_b2sScoreType;
+   const int m_b2sPlayerNo;
+   const string m_reelType;
+   const int m_reelIlluLocation;
+   const int m_reelIlluIntensity;
+   const int m_reelIlluB2SID;
+   const int m_reelIlluB2SIDType;
+   const int m_reelIlluB2SValue;
+   const vec4 m_reelLitColor;
+   const vec4 m_reelDarkColor;
+   const int m_glow;
+   const int m_thickness;
+   const int m_shear;
+   const int m_digits;
+   const int m_spacing;
+   const int m_displayState;
+   const int m_locX;
+   const int m_locY;
+   const int m_width;
+   const int m_height;
+};
+
+
+enum class B2SReelRollingDirection
+{
+   Up = 0,
+   Down = 1,
+};
+
+
+class B2SScores final
+{
+public:
+   explicit B2SScores(const tinyxml2::XMLNode& root, const bool isDMD);
+
+public:
+   const int m_reelCountOfIntermediates;
+   const B2SReelRollingDirection m_reelRollingDirection;
+   const int m_reelRollingInterval;
+   const vector<B2SScore> m_scores;
 };
 
 
@@ -106,10 +151,7 @@ enum class B2SDualMode2
 class B2SBulb final
 {
 public:
-   B2SBulb(const tinyxml2::XMLNode& root);
-   B2SBulb(B2SBulb&& other) noexcept;
-   B2SBulb(const B2SBulb&) = delete;
-   B2SBulb& operator=(const B2SBulb&) = delete;
+   explicit B2SBulb(const tinyxml2::XMLNode& root);
    ~B2SBulb();
 
 public:
@@ -138,8 +180,8 @@ public:
    const int m_snippitRotatingInterval;
    const B2SSnippitRotationDirection m_snippitRotatingDirection;
    const B2SSnippitRotationStopBehaviour m_snippitRotatingStopBehaviour;
-   VPXTexture m_image; // Should be const, but needed to be set to null by move constructor (should use an unique_ptr instead ?)
-   VPXTexture m_offImage; // Should be const, but needed to be set to null by move constructor (should use an unique_ptr instead ?)
+   const VPXTexture m_image;
+   const VPXTexture m_offImage;
    const string m_text;
    const int m_textAlignment;
    const string m_fontName;
@@ -147,7 +189,7 @@ public:
    const int m_fontStyle;
 
 public:
-   void Render(VPXRenderContext2D* ctx) const;
+   void Render(VPXRenderContext2D* ctx, class B2SServer* server);
 
    std::function<void()> m_romUpdater = []() { };
    float m_brightness = 0.f;
@@ -158,7 +200,7 @@ public:
 class B2SSound final
 {
 public:
-   B2SSound(const tinyxml2::XMLNode& root);
+   explicit B2SSound(const tinyxml2::XMLNode& root);
 
 public:
    const string m_name;
@@ -179,7 +221,7 @@ enum class B2SDMDType
 class B2SAnimationStep final
 {
 public:
-   B2SAnimationStep(const tinyxml2::XMLNode& root);
+   explicit B2SAnimationStep(const tinyxml2::XMLNode& root);
 
 public:
    const int m_step;
@@ -223,7 +265,7 @@ enum class B2SAnimationStopBehaviour
 class B2SAnimation final
 {
 public:
-   B2SAnimation(const tinyxml2::XMLNode& root);
+   explicit B2SAnimation(const tinyxml2::XMLNode& root);
 
    void Update(float elapsedInS);
 
@@ -258,7 +300,7 @@ private:
 class B2STable final
 {
 public:
-   B2STable(const tinyxml2::XMLNode& root); // Create from the root 'DirectB2SData' node
+   explicit B2STable(const tinyxml2::XMLNode& root); // Create from the root 'DirectB2SData' node
 
 public:
    const string m_version;
@@ -284,15 +326,17 @@ public:
    const B2SImage m_thumbnailImage;
    const B2SImage m_backglassImage;
    B2SImage m_backglassOnImage;
-   const B2SImage m_backglassOffImage;
+   B2SImage m_backglassOffImage;
    const B2SImage m_dmdImage;
    const vector<B2SSound> m_sounds;
-   vector<B2SBulb> m_backglassIlluminations;
+   const B2SReel m_reels;
+   const B2SScores m_backglassScores;
+   const B2SScores m_dmdScores;
+   vector<std::unique_ptr<B2SBulb>> m_backglassIlluminations;
    vector<B2SAnimation> m_backglassAnimations;
-   const vector<B2SBulb> m_dmdIlluminations;
+   vector<std::unique_ptr<B2SBulb>> m_dmdIlluminations;
    vector<B2SAnimation> m_dmdAnimations;
    // Missing Scores
-   // Missing Reels
 };
 
 }

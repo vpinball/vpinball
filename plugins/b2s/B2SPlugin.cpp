@@ -28,6 +28,7 @@ static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
 static std::thread::id apiThread;
 
+static B2SServer* server = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
@@ -226,14 +227,14 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
       return false;
    if (renderer)
    {
-      return renderer->Render(ctx);
+      return renderer->Render(ctx, server);
    }
    else if (loadedB2S.valid())
    {
       if (loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       {
          renderer = std::make_unique<B2SRenderer>(msgApi, endpointId, loadedB2S.get());
-         renderer->Render(ctx);
+         renderer->Render(ctx, server);
       }
       return true; // Until loaded, we assume that the file will succeed loading with the expected backglass/score view
    }
@@ -265,8 +266,15 @@ static void RegisterServerObject(void*)
       RegisterB2SServerSCD(regLambda);
       B2SServer_SCD->CreateObject = []()
       {
-         auto server = new B2SServer();
-         return static_cast<void*>(server);
+         auto pServer = new B2SServer();
+         server = pServer;
+         pServer->SetOnDestroyHandler(
+            [](B2SServer* pServer)
+            {
+               if (server == pServer)
+                  server = nullptr;
+            });
+         return static_cast<void*>(pServer);
       };
       scriptApi->SubmitTypeLibrary();
       scriptApi->SetCOMObjectOverride("B2S.Server", B2SServer_SCD);

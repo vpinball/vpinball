@@ -3,6 +3,7 @@
 #include "common.h"
 
 #include "B2SRenderer.h"
+#include "B2SServer.h"
 
 #include <vector>
 #include <algorithm>
@@ -64,8 +65,8 @@ bool B2SRenderer::IsPinMAMEDriven() const
 {
    if (m_b2s->m_backglassOnImage.m_image && m_b2s->m_backglassOnImage.m_romIdType != B2SRomIDType::NotDefined)
       return true;
-   return std::ranges::any_of(m_b2s->m_backglassIlluminations, [](const B2SBulb& bulb) {
-      return bulb.m_romIdType != B2SRomIDType::NotDefined; });
+   return std::ranges::any_of(m_b2s->m_backglassIlluminations, [](const std::unique_ptr<B2SBulb>& bulb) {
+      return bulb->m_romIdType != B2SRomIDType::NotDefined; });
 }
 
 void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
@@ -82,7 +83,7 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
    if (me->m_b2s->m_backglassOnImage.m_image)
       me->m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
    for (auto& bulb : me->m_b2s->m_backglassIlluminations)
-      bulb.m_romUpdater = []() { /* No ROM source */ };
+      bulb->m_romUpdater = []() { /* No ROM source */ };
 
    unsigned int pinmameEndpoint = me->m_msgApi->GetPluginEndpoint("PinMAME");
    if (pinmameEndpoint == 0)
@@ -138,10 +139,10 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
       me->m_b2s->m_backglassOnImage.m_romUpdater = me->ResolveRomPropUpdater(&me->m_b2s->m_backglassOnImage.m_brightness, me->m_b2s->m_backglassOnImage.m_romIdType, me->m_b2s->m_backglassOnImage.m_romId);
 
    for (auto& bulb : me->m_b2s->m_backglassIlluminations)
-      switch (bulb.m_snippitType)
+      switch (bulb->m_snippitType)
       {
-      case B2SSnippitType::StandardImage:bulb.m_romUpdater = me->ResolveRomPropUpdater(&bulb.m_brightness, bulb.m_romIdType, bulb.m_romId); break;
-      case B2SSnippitType::MechRotatingImage: bulb.m_romUpdater = me->ResolveRomPropUpdater(&bulb.m_mechRot, bulb.m_romIdType, bulb.m_romId); break;
+      case B2SSnippitType::StandardImage: bulb->m_romUpdater = me->ResolveRomPropUpdater(&bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = me->ResolveRomPropUpdater(&bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
       case B2SSnippitType::SelfRotatingImage: break;
       }
 }
@@ -205,17 +206,17 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
    return []() { /* No ROM source */ };
 }
 
-bool B2SRenderer::Render(VPXRenderContext2D* ctx)
+bool B2SRenderer::Render(VPXRenderContext2D* ctx, B2SServer* server)
 {
    switch (ctx->window)
    {
-   case VPXWindowId::VPXWINDOW_Backglass: return RenderBackglass(ctx);
-   case VPXWindowId::VPXWINDOW_ScoreView: return RenderScoreView(ctx);
+   case VPXWindowId::VPXWINDOW_Backglass: return RenderBackglass(ctx, server);
+   case VPXWindowId::VPXWINDOW_ScoreView: return RenderScoreView(ctx, server);
    default: return false;
    }
 }
 
-bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
+bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 {
    ctx->srcWidth = m_b2sWidth;
    ctx->srcHeight = m_b2sHeight;
@@ -259,7 +260,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
 
    // Draw illuminations
    for (const auto& bulb : m_b2s->m_backglassIlluminations)
-      bulb.Render(ctx);
+      bulb->Render(ctx, server);
 
    // Draw DMD overlay if enabled and available
    m_backglassDmdOverlay.Render(ctx);
@@ -267,7 +268,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    return true;
 }
 
-bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx)
+bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 {
    if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
       return false;
@@ -291,7 +292,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx)
 
    // Draw illuminations
    for (const auto& bulb : m_b2s->m_dmdIlluminations)
-      bulb.Render(ctx);
+      bulb->Render(ctx, server);
 
    // Draw DMD overlay if enabled and available
    m_scoreViewDmdOverlay.Render(ctx);
