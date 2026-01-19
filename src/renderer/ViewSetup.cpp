@@ -672,27 +672,26 @@ void ViewSetup::DebugLog() const
    PLOGD << ". mMode:             " << mMode;
    PLOGD << ". mSceneScaleX:      " << mSceneScaleX;
    PLOGD << ". mSceneScaleY:      " << mSceneScaleY;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA) {
       PLOGD << ". mSceneScaleZ:      " << mSceneScaleZ;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
       PLOGD << ". mViewX:            " << mViewX;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
       PLOGD << ". mViewY:            " << mViewY;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
       PLOGD << ". mViewZ:            " << mViewZ;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
       PLOGD << ". mLookAt:           " << mLookAt;
+   }
    PLOGD << ". mViewportRotation: " << mViewportRotation;
-   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA) {
       PLOGD << ". mFOV:              " << mFOV;
-   if (mMode == VLM_LEGACY)
+   }
+   if (mMode == VLM_LEGACY) {
       PLOGD << ". mLayback:          " << mLayback;
-   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
+   }
+   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW) {
       PLOGD << ". mViewHOfs:         " << mViewHOfs;
-   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
       PLOGD << ". mViewVOfs:         " << mViewVOfs;
-   if (mMode == VLM_WINDOW)
+   }
+   if (mMode == VLM_WINDOW) {
       PLOGD << ". mWindowTopZOfs:    " << mWindowTopZOfs;
-   if (mMode == VLM_WINDOW)
       PLOGD << ". mWindowBottomZOfs: " << mWindowBottomZOfs;
+   }
 }
