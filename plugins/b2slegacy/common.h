@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <memory>
 #include <algorithm>
+#include <filesystem>
 
 // Shared logging
 #include "plugins/LoggingPlugin.h"
@@ -216,12 +217,6 @@ LPI_USE();
 
 PSC_USE_ERROR();
 
-#ifdef _MSC_VER
-#define PATH_SEPARATOR_CHAR '\\'
-#else
-#define PATH_SEPARATOR_CHAR '/'
-#endif
-
 #ifndef RGB
 #define RGB(r,g,b) ((uint32_t)(((uint8_t)(r)|((uint16_t)((uint8_t)(g))<<8))|(((uint32_t)(uint8_t)(b))<<16)))
 #define GetRValue(rgb) ((uint8_t)(rgb))
@@ -236,12 +231,10 @@ constexpr inline char cLower(char c)
    return c;
 }
 
-string find_case_insensitive_file_path(const string &szPath);
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
-// trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
 int string_to_int(const string& str, int defaultValue);
-string title_and_path_from_filename(const string& filename);
 bool is_string_numeric(const string& str);
 
 }
