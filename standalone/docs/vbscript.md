@@ -139,9 +139,136 @@ DTArray(i)(4) = DTCheckBrick(Activeball,DTArray(i)(2))
 DTArray(i).animate = DTCheckBrick(Activeball,DTArray(i).prim) ' move to class approach
 ```
 
->[!Note] 
-This is one of the most common issues. It can be automatically patched by [vpxtool](https://github.com/francisdb/vpxtool).  
-See: [[DTArray Drop Targets]](https://github.com/vpinball/vpinball/tree/standalone/standalone#dtarray-drop-targets), [[STArray Standup Targets]](https://github.com/vpinball/vpinball/tree/standalone/standalone#starray-standup-targets), and [[Wine Bug #53877]](https://bugs.winehq.org/show_bug.cgi?id=53877)
+>[!Note]
+This is one of the most common issues. It can be automatically patched by [vpxtool](https://github.com/francisdb/vpxtool).
+See: [[Wine Bug #53877]](https://bugs.winehq.org/show_bug.cgi?id=53877)
+
+<details>
+<summary>DTArray (Drop Targets) Workaround</summary>
+<br/>
+
+**1) Add the `DropTarget` class:**
+
+```vbscript
+Class DropTarget
+Private m_primary, m_secondary, m_prim, m_sw, m_animate, m_isDropped
+
+Public Property Get Primary(): Set Primary = m_primary: End Property
+Public Property Let Primary(input): Set m_primary = input: End Property
+
+Public Property Get Secondary(): Set Secondary = m_secondary: End Property
+Public Property Let Secondary(input): Set m_secondary = input: End Property
+
+Public Property Get Prim(): Set Prim = m_prim: End Property
+Public Property Let Prim(input): Set m_prim = input: End Property
+
+Public Property Get Sw(): Sw = m_sw: End Property
+Public Property Let Sw(input): m_sw = input: End Property
+
+Public Property Get Animate(): Animate = m_animate: End Property
+Public Property Let Animate(input): m_animate = input: End Property
+
+Public Property Get IsDropped(): IsDropped = m_isDropped: End Property
+Public Property Let IsDropped(input): m_isDropped = input: End Property
+
+Public default Function init(primary, secondary, prim, sw, animate, isDropped)
+Set m_primary = primary
+Set m_secondary = secondary
+Set m_prim = prim
+m_sw = sw
+m_animate = animate
+m_isDropped = isDropped
+
+Set Init = Me
+End Function
+End Class
+```
+
+**2) Update DT definitions to use `DropTarget` instead of `Array`:**
+
+```vbscript
+' Before:
+DT7 = Array(dt1, dt1a, pdt1, 7, 0, false)
+DT27 = Array(dt2, dt2a, pdt2, 27, 0, false)
+DT37 = Array(dt3, dt3a, pdt3, 37, 0, false)
+
+' After:
+Set DT7 = (new DropTarget)(dt1, dt1a, pdt1, 7, 0, false)
+Set DT27 = (new DropTarget)(dt2, dt2a, pdt2, 27, 0, false)
+Set DT37 = (new DropTarget)(dt3, dt3a, pdt3, 37, 0, false)
+```
+
+**3) Search and replace array indices with properties:**
+
+| From | To | Vi Command |
+| --- | --- | --- |
+| `DTArray(i)(0)` | `DTArray(i).primary` | `:%s/DTArray(i)(0)/DTArray(i).primary/g` |
+| `DTArray(i)(1)` | `DTArray(i).secondary` | `:%s/DTArray(i)(1)/DTArray(i).secondary/g` |
+| `DTArray(i)(2)` | `DTArray(i).prim` | `:%s/DTArray(i)(2)/DTArray(i).prim/g` |
+| `DTArray(i)(3)` | `DTArray(i).sw` | `:%s/DTArray(i)(3)/DTArray(i).sw/g` |
+| `DTArray(i)(4)` | `DTArray(i).animate` | `:%s/DTArray(i)(4)/DTArray(i).animate/g` |
+| `DTArray(i)(5)` | `DTArray(i).isDropped` | `:%s/DTArray(i)(5)/DTArray(i).isDropped/g` |
+| `DTArray(ind)(5)` | `DTArray(ind).isDropped` | `:%s/DTArray(ind)(5)/DTArray(ind).isDropped/g` |
+
+</details>
+
+<details>
+<summary>STArray (Standup Targets) Workaround</summary>
+<br/>
+
+**1) Add the `StandupTarget` class:**
+
+```vbscript
+Class StandupTarget
+Private m_primary, m_prim, m_sw, m_animate
+
+Public Property Get Primary(): Set Primary = m_primary: End Property
+Public Property Let Primary(input): Set m_primary = input: End Property
+
+Public Property Get Prim(): Set Prim = m_prim: End Property
+Public Property Let Prim(input): Set m_prim = input: End Property
+
+Public Property Get Sw(): Sw = m_sw: End Property
+Public Property Let Sw(input): m_sw = input: End Property
+
+Public Property Get Animate(): Animate = m_animate: End Property
+Public Property Let Animate(input): m_animate = input: End Property
+
+Public default Function init(primary, prim, sw, animate)
+Set m_primary = primary
+Set m_prim = prim
+m_sw = sw
+m_animate = animate
+
+Set Init = Me
+End Function
+End Class
+```
+
+**2) Update ST definitions to use `StandupTarget` instead of `Array`:**
+
+```vbscript
+' Before:
+ST41 = Array(sw41, Target_Rect_Fat_011_BM_Lit_Room, 41, 0)
+ST42 = Array(sw42, Target_Rect_Fat_010_BM_Lit_Room, 42, 0)
+ST43 = Array(sw43, Target_Rect_Fat_005_BM_Lit_Room, 43, 0)
+
+' After:
+Set ST41 = (new StandupTarget)(sw41, Target_Rect_Fat_011_BM_Lit_Room, 41, 0)
+Set ST42 = (new StandupTarget)(sw42, Target_Rect_Fat_010_BM_Lit_Room, 42, 0)
+Set ST43 = (new StandupTarget)(sw43, Target_Rect_Fat_005_BM_Lit_Room, 43, 0)
+```
+
+**3) Search and replace array indices with properties:**
+
+| From | To | Vi Command |
+| --- | --- | --- |
+| `STArray(i)(0)` | `STArray(i).primary` | `:%s/STArray(i)(0)/STArray(i).primary/g` |
+| `STArray(i)(1)` | `STArray(i).prim` | `:%s/STArray(i)(1)/STArray(i).prim/g` |
+| `STArray(i)(2)` | `STArray(i).sw` | `:%s/STArray(i)(2)/STArray(i).sw/g` |
+| `STArray(i)(3)` | `STArray(i).animate` | `:%s/STArray(i)(3)/STArray(i).animate/g` |
+
+</details>
 
 ---
 
