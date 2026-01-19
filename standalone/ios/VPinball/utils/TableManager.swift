@@ -1,6 +1,11 @@
 import SwiftUI
 import UniformTypeIdentifiers
-import ZIPFoundation
+
+private var zipProgressHandler: ((Int, Int) -> Void)?
+
+private let zipCallback: VPinballZipCallback = { current, total, _ in
+    zipProgressHandler?(Int(current), Int(total))
+}
 
 @MainActor
 class TableManager: ObservableObject {
@@ -401,41 +406,26 @@ class TableManager: ObservableObject {
             _ = TableFileOperations.deleteDirectory(tempDir)
         }
 
-        do {
-            let archive = try Archive(url: URL(fileURLWithPath: path),
-                                      accessMode: .read)
-
-            let entries = Array(archive)
-            let totalEntries = entries.count
-            var processedEntries = 0
-
-            VPinballManager.log(.info, "Archive has \(totalEntries) total entries")
-
-            for entry in entries {
-                let entryPath = (tempDir as NSString).appendingPathComponent(entry.path)
-
-                if entry.type == .directory {
-                    try FileManager.default.createDirectory(atPath: entryPath,
-                                                            withIntermediateDirectories: true)
-                } else {
-                    let parentDir = (entryPath as NSString).deletingLastPathComponent
-                    try FileManager.default.createDirectory(atPath: parentDir,
-                                                            withIntermediateDirectories: true)
-                    _ = try archive.extract(entry, to: URL(fileURLWithPath: entryPath))
-                }
-
-                processedEntries += 1
-                if totalEntries > 0 {
-                    let extractProgress = 60 + Int((Double(processedEntries) / Double(totalEntries)) * 35)
+        zipProgressHandler = { current, total in
+            if total > 0 {
+                let extractProgress = 60 + (current * 35 / total)
+                Task { @MainActor in
                     await onProgress?(extractProgress)
                 }
             }
+        }
 
-            VPinballManager.log(.info, "Archive extraction complete, extracted \(processedEntries) entries")
-        } catch {
-            VPinballManager.log(.error, "Archive extraction failed: \(error)")
+        let result = await Task.detached {
+            VPinballZipExtract(path.cstring, tempDir.cstring, zipCallback)
+        }.value
+        zipProgressHandler = nil
+
+        if VPinballStatus(rawValue: result) != .success {
+            VPinballManager.log(.error, "Archive extraction failed")
             return []
         }
+
+        VPinballManager.log(.info, "Archive extraction complete")
 
         let vpxFiles = TableFileOperations.listFiles(tempDir, ext: ".vpx")
 
@@ -668,16 +658,19 @@ class TableManager: ObservableObject {
 
         await onProgress?(60, "Compressing")
 
-        do {
-            let archive = try Archive(url: URL(fileURLWithPath: tempFile), accessMode: .create)
-            try await TableFileOperations.addDirectoryToArchive(archive: archive,
-                                                                directoryPath: tableDirToCompress,
-                                                                basePath: tableDirToCompress)
-            { progress in
-                let adjustedProgress = 60 + (progress * 39 / 100)
+        zipProgressHandler = { current, total in
+            let adjustedProgress = 60 + (current * 39 / max(total, 1))
+            Task { @MainActor in
                 await onProgress?(adjustedProgress, "Compressing")
             }
-        } catch {
+        }
+
+        let result = await Task.detached {
+            VPinballZipCreate(tableDirToCompress.cstring, tempFile.cstring, zipCallback)
+        }.value
+        zipProgressHandler = nil
+
+        if VPinballStatus(rawValue: result) != .success {
             return nil
         }
 

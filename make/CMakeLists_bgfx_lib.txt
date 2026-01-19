@@ -51,6 +51,8 @@ set(VPINBALL_SOURCES
    lib/src/VPinballLib.cpp
    lib/src/WebServer.h
    lib/src/WebServer.cpp
+   lib/src/ZipUtils.h
+   lib/src/ZipUtils.cpp
    lib/include/vpinball/VPinballLib_C.h
    lib/src/VPinballLib_C.cpp
    lib/src/VPXProgress.h

@@ -153,6 +153,10 @@ fun interface VPinballEventCallback {
     fun onEvent(event: Int, jsonData: String?)
 }
 
+fun interface VPinballZipCallback {
+    fun onProgress(current: Int, total: Int, filename: String)
+}
+
 // VPinball Objects
 
 @Serializable data class VPinballProgressData(val progress: Int)

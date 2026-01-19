@@ -90,7 +90,7 @@ jobs:
           cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
       - name: Build app
         run: |
-          sudo xcode-select -switch /Applications/Xcode_16.4.app
+          sudo xcode-select -switch /Applications/Xcode_26.2.app
           MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
           CURRENT_PROJECT_VERSION="${{ needs.version.outputs.version_full }}"
           cd standalone/ios

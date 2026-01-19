@@ -242,3 +242,11 @@ func VPinballPlay() -> CInt
 
 @_silgen_name("VPinballStop")
 func VPinballStop()
+
+typealias VPinballZipCallback = @convention(c) (CInt, CInt, UnsafePointer<CChar>?) -> Void
+
+@_silgen_name("VPinballZipCreate")
+func VPinballZipCreate(_ pSourcePath: UnsafePointer<CChar>, _ pDestPath: UnsafePointer<CChar>, _ callback: VPinballZipCallback?) -> CInt
+
+@_silgen_name("VPinballZipExtract")
+func VPinballZipExtract(_ pSourcePath: UnsafePointer<CChar>, _ pDestPath: UnsafePointer<CChar>, _ callback: VPinballZipCallback?) -> CInt

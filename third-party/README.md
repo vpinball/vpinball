@@ -259,9 +259,3 @@ Liberation Sans
 - Upstream: ?
 - Version: ?
 - License: unclear state
-
-### ZIPFoundation
-
-- Upstream: https://github.com/weichsel/ZIPFoundation
-- Version: 0.9.20
-- License: MIT
