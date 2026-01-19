@@ -620,7 +620,7 @@ void WebServer::BroadcastStatus()
    if (s_statusConnections.empty()) return;
 
    bool running = g_pplayer != nullptr;
-   string currentTable = running ? g_pplayer->m_ptable->m_filename : "";
+   string currentTable = running ? g_pplayer->m_ptable->m_filename : ""s;
 
    json j = {
       {"running", running},

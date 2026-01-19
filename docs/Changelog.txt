@@ -12,22 +12,23 @@ Note that these changes need explicit configuration updates when upgrading to 10
 FEATURES:
 
 - add -v command line option to just output the version and quit
+- add -CaptureAttract command line option to automatically capture an attract video
 
 - Folder layout has been redesigned:
-  . Folder layout now conforms to platform requirements, with the application in its read only application folder (for example C:\Program Files under Windows),
-    its preferences (VPinballX.ini, ...) in the system preference folder (C:\Users\...\AppData\Roaming\VPinballX) and the data (tables, music, user folder, ...)
-    inside the user data folder hierarchy (C:\Users\...\Documents). For preferences, a subfolder per minor version is created (10.8, 10.9, ...) to allow having
-    multiple versions of VPX on the same computer, each using its own settings without conflicting.
-  . On first run, the application will automatically create its setup, importing settings from previous installation if any.
+  . Folder layout now conforms to platform requirements, with the application stored in its read-only application folder (for example 'C:\Program Files' under Windows),
+    its preferences (VPinballX.ini, ...) in the system preference folder (e.g. 'C:\Users\...\AppData\Roaming\VPinballX') and the data (tables, music, user folder, ...)
+    inside the user data folder hierarchy (e.g. 'C:\Users\...\Documents'). For preferences, a subfolder per minor version is created (10.8, 10.9, ...) to allow for having
+    multiple versions of VPX on the same computer, each using its own settings without conflicts.
+  . On its first run, the application will automatically create its setup, importing all settings from a previous installation, if any.
   . The new file layout supports creating one folder per table, to group the table file with all its support folders & files (cache, music, flexdmd, ...), avoiding
-    to mix files between tables, also allowing a common install procedure for other virtual pinball components (Frontend, B2S, PinUp videos, ...).
-  . Custom settings 'ini' or script 'vbs' are searched along the table matching the table filename as before, but, now, if not found they are also searched along 
-    the table, named after the folder name. This allows to share files for different versions of a table by placeing them together in the table folder.
-  . To ease transition, when a file is searched for reading (for example, a table requesting a music file), it is first searched along the table as per the new
-    file layout, and if not found, it is also searched according to the legacy layout.
-  . The legacy behavior (everything in the application folder, mixing music, user, cache, scripts, ... files between all tables) is still available by checking
-    the corresponding option in the 'INI/Editor/UI Options' dialog. It requires the application to be installed in a folder with read/write access. It breaks
-    the ability to have multiple version of VPX on a single computer without setting conflicts.
+    to mix files between tables, also allowing for a common install procedure of other virtual pinball components (Frontend, B2S, PinUp videos, ...).
+  . Custom settings 'ini's or script 'vbs's are searched along the table file, matching the table filename as before, but now, if not found, these are also searched alongside 
+    the table, named after the folder name. This allows to share files for different versions of a table by placing these together in the table folder.
+  . To ease transition, when a file is searched for reading (for example, a table requesting a music file), it is first searched alongside the table as per the new
+    file layout, and if not found, it is also searched for according to the legacy layout.
+  . The legacy behavior (everything in the application folder, so mixing all music, user, cache, scripts, ... -files between all tables) is still available by checking
+    the corresponding option in the 'INI->Editor->UI Options' dialog. It requires the application to be installed in a folder with read/write access. It breaks
+    the ability to have multiple versions of VPX on a single computer without setting conflicts.
 
 - add "Surface" to the "Select Element" list
 - add overall GPU memory used, and overall file size to the image dialog
@@ -164,19 +165,17 @@ FEATURES:
   . Add setting pages, moving lots of settings inside these pages
   . Navigation using flipper input has been unified: magna buttons allow to move, while flipper buttons allow to select
 
-- For cabinet users, a new option in the graphic settings allow to enable automatic window camera fitting at table startup, based on table or screen fitting.
+- for cabinet users, a new option in the graphic settings allows to enable an automatic window camera fitting at table startup, based on table or screen fitting
 
-- Performance overlay has been improved with better insights and its display state is now persistent
+- performance overlay has been improved with better insights and its display state is now persistent
 
-- Table settings override will only save actual overrides, so only those settings that are different from application settings and default values
+- table settings override will only save actual overrides, so only those settings that are different from application settings and default values
 
-- New commandline option to automatically capture an attract video
-
-- After many years of great service, 'Fake' 3D stereo mode has been removed, replaced by real stereo. Note that the 'Reshade' app could be used to get approximate 3D stereo if still wanted.
+- after many years of great service, 'Fake' 3D stereo mode has been removed, replaced by real stereo. Note that the 'Reshade' app could be used to get approximate 3D stereo if still wanted.
 
 FIXES:
 
-- fix SMAA looking worse compared to 10.7.X (GL still a bit worse than DX though), and slightly improve its quality in general
+- fix SMAA looking worse compared to 10.7.X, and slightly improve its quality in general
 
 - allow for larger inclination value range
 

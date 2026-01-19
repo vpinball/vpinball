@@ -307,7 +307,7 @@ void EditorUI::RenderUI()
          case PredefinedView::Front: text = "Front"s; break;
          case PredefinedView::Back: text = "Back"s; break;
          }
-         ImGui::TextUnformatted((text + (m_perspectiveCam ? " Perspective"s : " Orthographic"s)).c_str());
+         ImGui::TextUnformatted((text + (m_perspectiveCam ? " Perspective" : " Orthographic")).c_str());
          break;
       }
       case ViewMode::DesktopBackdrop: ImGui::TextUnformatted("Desktop Backdrop"); break;
@@ -374,23 +374,23 @@ void EditorUI::RenderUI()
          //const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
          //float zNear, zFar;
          //m_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
-         const float zNear = 5.f;
-         const float zFar = 50000.f;
+         constexpr float zNear = 5.f;
+         constexpr float zFar = 50000.f;
          m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       else
       {
-         const float zNear = 0.5f;
-         const float zFar = 50000.f;
-         float viewHeight = m_camDistance;
-         float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
+         constexpr float zNear = 0.5f;
+         constexpr float zFar = 50000.f;
+         const float viewHeight = m_camDistance;
+         const float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
          m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
       }
    }
 
    // Selection manipulator
    Matrix3D transform;
-   bool isSelectionTransformValid = GetSelectionTransform(transform);
+   const bool isSelectionTransformValid = GetSelectionTransform(transform);
    if (isSelectionTransformValid)
    {
       float camViewLH[16];
@@ -422,7 +422,7 @@ void EditorUI::RenderUI()
 
       if (isSelectionTransformValid)
       {
-         ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
+         const ImVec2 pos = ctx.Project(transform.GetOrthoNormalPos());
          overlayDrawList->AddCircleFilled(pos, 3.f * m_liveUI.GetDPI(), IM_COL32(255, 255, 255, 255), 16);
       }
 
@@ -578,9 +578,9 @@ void EditorUI::RenderUI()
                   selectionIndex = i + 1;
                if (i == selectionIndex)
                {
-                  size_t p = selectionIndex % vhoHit.size();
+                  const size_t p = selectionIndex % vhoHit.size();
                   const IEditable *select = vhoHit[p].m_obj->m_editable;
-                  auto it = std::ranges::find_if(m_editables, [select](const std::shared_ptr<EditableUIPart> &part) { return part->GetEditable() == select; });
+                  const auto it = std::ranges::find_if(m_editables, [select](const std::shared_ptr<EditableUIPart> &part) { return part->GetEditable() == select; });
                   if (it != m_editables.end())
                      m_selection = Selection(*it);
                }
@@ -857,7 +857,7 @@ void EditorUI::UpdateEditableList()
    bool needSort = false;
    for (const auto &edit : m_table->m_vedit)
    {
-      auto it = std::ranges::find_if(m_editables, [edit](const auto &uiPart) { return uiPart->GetEditable() == edit; });
+      const auto it = std::ranges::find_if(m_editables, [edit](const auto &uiPart) { return uiPart->GetEditable() == edit; });
       if (it == m_editables.end()) // New part
       {
          std::shared_ptr<EditableUIPart> uiPart;
@@ -1554,7 +1554,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
             continue;
          if (probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY && primitive->m_d.m_szRefractionProbe == probe->GetName())
             continue;
-         auto it = std::ranges::find_if(m_editables, [editable](const auto part) { return part->GetEditable() == editable; });
+         const auto it = std::ranges::find_if(m_editables, [editable](const auto part) { return part->GetEditable() == editable; });
          if (it == m_editables.end())
             continue;
          if (ImGui::Selectable(primitive->GetName().c_str()))
@@ -1663,8 +1663,8 @@ void EditorUI::RenderContext::DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, I
 {
    if (m_drawlist)
    {
-      ImVec2 p1 = Project(a);
-      ImVec2 p2 = Project(b);
+      const ImVec2 p1 = Project(a);
+      const ImVec2 p2 = Project(b);
       m_drawlist->AddLine(p1, p2, color);
    }
    // TODO also render when running in 3D (for logic parts like timers,...)
@@ -1675,11 +1675,11 @@ void EditorUI::RenderContext::DrawCircle(const Vertex3Ds &center, const Vertex3D
    if (m_drawlist)
    {
       ImVec2 prev;
-      const int n = 32;
+      constexpr int n = 32;
       for (int i = 0; i <= n; i++)
       {
-         float c = radius * cos(2.f * i * M_PIf / n);
-         float s = radius * sin(2.f * i * M_PIf / n);
+         const float c = radius * cos((float)i * (float)(2. * M_PI / n));
+         const float s = radius * sin((float)i * (float)(2. * M_PI / n));
          const ImVec2 p = Project(Vertex3Ds(center.x + c * x.x + s * y.x, center.y + c * x.y + s * y.y, center.z + c * x.z + s * y.z));
          if (i > 0)
             GetDrawList()->AddLine(prev, p, color, 1.f);
@@ -1698,8 +1698,8 @@ void EditorUI::RenderContext::DrawHitObjects(IEditable *editable) const
          const ImVec2 pt = Project(v);
          return Vertex2D(pt.x, pt.y);
       };
-      ImU32 color = GetColor(m_isSelected);
-      ImU32 alpha = (color & 0x00FFFFFF) | 0x20000000;
+      const ImU32 color = GetColor(m_isSelected);
+      const ImU32 alpha = (color & 0x00FFFFFFu) | 0x20000000u;
       ImGui::PushStyleColor(ImGuiCol_PlotLines, color);
       ImGui::PushStyleColor(ImGuiCol_PlotHistogram, alpha);
       for (auto pho : m_player->m_physics->GetUIHitObjects(editable))

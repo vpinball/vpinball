@@ -326,8 +326,8 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    std::filesystem::path tablePath = tableInfo.path;
 
    std::filesystem::path serumPath = serumPathProp_Get();
-   const std::filesystem::path crz = string(msg->gameId) + ".cRZ";
-   const std::filesystem::path cromc = string(msg->gameId) + ".cROMc";
+   const std::filesystem::path crz = msg->gameId + ".cRZ"s;
+   const std::filesystem::path cromc = msg->gameId + ".cROMc"s;
 
    // Priority 1: serum/rom/rom.crz
    if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / crz); !path1.empty())

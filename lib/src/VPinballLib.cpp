@@ -190,7 +190,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
       Logger::GetInstance()->SetupLogger(true);
 
       PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-      PLOGI << "Number of logical CPU core: " << g_pvp->GetLogicalNumberOfProcessors();
+      PLOGI << "Number of logical CPU cores: " << g_pvp->GetLogicalNumberOfProcessors();
       PLOGI << "Application path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
       PLOGI << "Preference path: " << g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
 

@@ -809,7 +809,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             if (FileExists(m_tableFileName))
                i++;
             else
-               m_tableFileName = ""s;
+               m_tableFileName.clear();
          }
          break;
       #endif
@@ -847,12 +847,12 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          m_run = true;
          if (!try_parse_int(szArglist[i + 1], m_vpinball.m_captureAttract) || m_vpinball.m_captureAttract <= 0)
          {
-            OnCommandLineError("Command Line Error"s, "Invalid number of frames");
+            OnCommandLineError("Command Line Error"s, "Invalid number of frames"s);
             exit(1);
          }
          if (!try_parse_int(szArglist[i + 2], m_vpinball.m_captureAttractFPS) || m_vpinball.m_captureAttractFPS <= 0)
          {
-            OnCommandLineError("Command Line Error"s, "Invalid framerate");
+            OnCommandLineError("Command Line Error"s, "Invalid framerate"s);
             exit(1);
          }
          m_tableFileName = GetPathFromArg(szArglist[i + 3], false);
@@ -1033,7 +1033,7 @@ BOOL VPApp::InitInstance()
    Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;
-   PLOGI << "Number of logical CPU core: " << m_vpinball.GetLogicalNumberOfProcessors();
+   PLOGI << "Number of logical CPU cores: " << m_vpinball.GetLogicalNumberOfProcessors();
    PLOGI << "Application path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences);
    

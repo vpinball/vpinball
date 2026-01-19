@@ -113,7 +113,7 @@ void NudgeSettingsPage::Close(bool isBackwardAnimation)
 
 void NudgeSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>(msec() / 1000.);
+   const float t = static_cast<float>((double)msec() / 1000.);
    Vertex2D nudge = m_player->m_pininput.GetNudge();
    m_nudgeXPlot.AddPoint(t, nudge.x);
    m_nudgeYPlot.AddPoint(t, nudge.y);

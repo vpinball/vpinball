@@ -53,7 +53,7 @@ void PlungerSettingsPage::Close(bool isBackwardAnimation)
 
 void PlungerSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>(msec() / 1000.);
+   const float t = static_cast<float>((double)msec() / 1000.);
    m_positionPlot.AddPoint(t, m_player->m_pininput.GetPlungerPos());
    m_velocityPlot.AddPoint(t, m_player->m_pininput.GetPlungerSpeed());
 }

@@ -1638,9 +1638,9 @@ private:
    string GetFilename(VPXWindowId id, int index, bool isTmp) const
    {
       // The critical path is disk access and memory management:
-      // - png are well compressed but far to slow
-      // - bmp are fast to save but huge on disk (multiple time faster than png, but huge)
-      // - qoi are both faster to save and small enough on disk (twice faster than bmp)
+      // - png is well compressed but far too slow
+      // - bmp is fast to save but huge on disk (multiple times faster than png, but huge)
+      // - qoi is both faster to save and small enough on disk (twice faster than bmp)
       // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
       std::stringstream ss;
       ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture" << PATH_SEPARATOR_CHAR

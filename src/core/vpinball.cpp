@@ -375,7 +375,7 @@ std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const string &file)
          path = m_appPath / "docs";
       break;
 
-   // Scripts are specials as the file is searched through a few different paths
+   // Scripts are special as the file is searched through a few different paths
    // Maybe we should change this to be a table relative path instead (searching through the usual path but also inside table folder)
    case AppSubFolder::Scripts:
       if (file.empty())

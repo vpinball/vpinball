@@ -2680,7 +2680,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          // - table could then define to reject this user settings
          // - user could define in commandline to finally override the value
          // Now the logic is the same as all other settings:
-         // - table defines the default value, then user defines if he wants to override this value (through app/table settings or commandline)
+         // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
          bool overwriteGlobalDayNight;
          pbr->GetBool(overwriteGlobalDayNight);
          if (overwriteGlobalDayNight)
@@ -7804,7 +7804,7 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
       SafeArrayUnaccessData(psa);
    }
 
-   const bool isPercent = unit == 1;
+   const bool isPercent = (unit == 1);
    if (!literals.empty())
    {
       // Detect & implement On/Off, True/False, Hide/Show as a toggle
@@ -8490,4 +8490,3 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    return S_OK;
 }
-
