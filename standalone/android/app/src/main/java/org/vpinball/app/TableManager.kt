@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import java.io.File
-import java.io.FileOutputStream
 import java.util.UUID
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +18,7 @@ import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStatus
+import org.vpinball.app.jni.VPinballZipCallback
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 
 class TableManager(private val context: Context) {
@@ -433,32 +431,22 @@ class TableManager(private val context: Context) {
         }
 
         try {
-            var processedEntries = 0
-            ZipFile(path).use { zipFile ->
-                val totalEntries = zipFile.size()
-
-                val entries = zipFile.entries()
-                while (entries.hasMoreElements()) {
-                    val entry = entries.nextElement()
-                    val entryPath = File(tempDir, entry.name).absolutePath
-
-                    if (entry.isDirectory) {
-                        fileOps.createDirectory(entryPath)
-                    } else {
-                        val parentDir = File(entryPath).parent
-                        if (parentDir != null) {
-                            fileOps.createDirectory(parentDir)
+            val result =
+                VPinballManager.vpinballJNI.VPinballZipExtract(
+                    path,
+                    tempDir,
+                    VPinballZipCallback { current, total, _ ->
+                        if (total > 0) {
+                            val extractProgress = 60 + ((current.toDouble() / total) * 35).toInt()
+                            runBlocking(Dispatchers.Main) { onProgress?.invoke(extractProgress) }
                         }
+                    },
+                )
 
-                        zipFile.getInputStream(entry).use { input -> FileOutputStream(entryPath).use { output -> input.copyTo(output) } }
-                    }
-
-                    processedEntries++
-                    if (totalEntries > 0) {
-                        val extractProgress = 60 + ((processedEntries.toDouble() / totalEntries) * 35).toInt()
-                        onProgress?.invoke(extractProgress)
-                    }
-                }
+            if (result != VPinballStatus.SUCCESS.value) {
+                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract archive")
+                fileOps.deleteDirectory(tempDir)
+                return emptyList()
             }
 
             val vpxFiles = fileOps.listFiles(tempDir, ".vpx")
@@ -626,12 +614,20 @@ class TableManager(private val context: Context) {
 
             withContext(Dispatchers.Main) { onProgress?.invoke(60, "Compressing") }
 
-            delay(100) // Give UI time to render
+            delay(100)
 
-            ZipOutputStream(FileOutputStream(tempFile)).use { zip ->
-                fileOps.addDirectoryToZip(zip, tableDirToCompressFinal, tableDirToCompressFinal) { progress ->
-                    runBlocking(Dispatchers.Main) { onProgress?.invoke(60 + (progress * 39 / 100), "Compressing") }
-                }
+            val result =
+                VPinballManager.vpinballJNI.VPinballZipCreate(
+                    tableDirToCompressFinal,
+                    tempFile.absolutePath,
+                    VPinballZipCallback { current, total, _ ->
+                        runBlocking(Dispatchers.Main) { onProgress?.invoke(60 + (current * 39 / maxOf(total, 1)), "Compressing") }
+                    },
+                )
+
+            if (result != VPinballStatus.SUCCESS.value) {
+                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to create zip")
+                return null
             }
 
             withContext(Dispatchers.Main) { onProgress?.invoke(100, "Complete") }

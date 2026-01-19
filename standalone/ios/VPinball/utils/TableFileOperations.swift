@@ -1,5 +1,4 @@
 import Foundation
-import ZIPFoundation
 
 enum TableFileOperations {
     static func exists(_ path: String) -> Bool {
@@ -126,55 +125,6 @@ enum TableFileOperations {
             return true
         } catch {
             return false
-        }
-    }
-
-    static func addDirectoryToArchive(archive: Archive, directoryPath: String, basePath: String, onProgress: ((Int) async -> Void)? = nil) async throws {
-        let fileManager = FileManager.default
-        let enumerator = fileManager.enumerator(atPath: directoryPath)
-
-        var allFiles: [String] = []
-        while let file = enumerator?.nextObject() as? String {
-            allFiles.append(file)
-        }
-
-        let fileCount = allFiles.filter { file in
-            let fullPath = (directoryPath as NSString).appendingPathComponent(file)
-            var isDirectory: ObjCBool = false
-            fileManager.fileExists(atPath: fullPath,
-                                   isDirectory: &isDirectory)
-            return !isDirectory.boolValue
-        }.count
-
-        var processedFiles = 0
-
-        for file in allFiles {
-            let fullPath = (directoryPath as NSString).appendingPathComponent(file)
-            var isDirectory: ObjCBool = false
-
-            if fileManager.fileExists(atPath: fullPath,
-                                      isDirectory: &isDirectory)
-            {
-                let relativePath = String(fullPath.dropFirst(basePath.count + 1))
-
-                if isDirectory.boolValue {
-                    try archive.addEntry(with: relativePath + "/",
-                                         type: .directory,
-                                         uncompressedSize: 0,
-                                         provider: { (_: Int64, _: Int) -> Data in
-                                             return Data()
-                                         })
-                } else {
-                    try archive.addEntry(with: relativePath,
-                                         relativeTo: URL(fileURLWithPath: basePath))
-
-                    processedFiles += 1
-                    if fileCount > 0 {
-                        let progress = (processedFiles * 100) / fileCount
-                        await onProgress?(progress)
-                    }
-                }
-            }
         }
     }
 }

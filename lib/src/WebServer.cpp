@@ -5,9 +5,9 @@
 #include "WebServer.h"
 
 #include "VPinballLib.h"
+#include "ZipUtils.h"
 
 #include <nlohmann/json.hpp>
-#include <zip.h>
 #include <chrono>
 #include <sstream>
 #include <iomanip>
@@ -498,10 +498,11 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
 
    string path = BuildTablePath(q);
 
-   if (std::filesystem::is_regular_file(path)) {
+   const std::filesystem::path filePath(path);
+   if (std::filesystem::is_regular_file(filePath)) {
       const string ext = extension_from_path(path);
       if (ext == "zip" || ext == "vpxz") {
-         if (Unzip(path.c_str())) {
+         if (ZipUtils::Unzip(filePath, filePath.parent_path(), nullptr)) {
             PLOGI.printf("File unzipped: q=%s", path.c_str());
             SetLastUpdate();
             mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
@@ -692,49 +693,3 @@ std::filesystem::path WebServer::BuildTablePath(const char* relativePath)
    return g_pvp->GetAppPath(VPinball::AppSubFolder::Tables) / relativePath;
 }
 
-bool WebServer::Unzip(const char* pSource)
-{
-   int error = 0;
-   zip_t* zip_archive = zip_open(pSource, ZIP_RDONLY, &error);
-   if (!zip_archive) {
-      PLOGE.printf("Unable to unzip file: source=%s", pSource);
-      return false;
-   }
-
-   bool success = true;
-   zip_int64_t file_count = zip_get_num_entries(zip_archive, 0);
-
-   for (zip_uint64_t i = 0; i < (zip_uint64_t)file_count; ++i) {
-      zip_stat_t file_stat;
-      if (zip_stat_index(zip_archive, i, ZIP_STAT_NAME, &file_stat) != 0) {
-         success = false;
-         continue;
-      }
-
-      string filename = file_stat.name;
-      if (filename.rfind("__MACOSX", 0) == 0)
-         continue;
-
-      std::filesystem::path path = std::filesystem::path(pSource).parent_path() / filename;
-      if (filename.back() == '/')
-         std::filesystem::create_directories(path);
-      else {
-         std::filesystem::create_directories(path.parent_path());
-         zip_file_t* zip_file = zip_fopen_index(zip_archive, i, 0);
-         if (!zip_file) {
-             PLOGE.printf("Unable to extract file: %s", path.string().c_str());
-             success = false;
-             continue;
-         }
-         std::ofstream ofs(path, std::ios::binary);
-         char buf[4096];
-         zip_int64_t len;
-         while ((len = zip_fread(zip_file, buf, sizeof(buf))) > 0)
-            ofs.write(buf, len);
-         zip_fclose(zip_file);
-      }
-   }
-
-   zip_close(zip_archive);
-   return success;
-}

@@ -29,7 +29,6 @@
 		C16266452C29955E0002FD15 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663B2C29955E0002FD15 /* SplashView.swift */; };
 		C16266462C29955E0002FD15 /* DocumentPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663C2C29955E0002FD15 /* DocumentPickerView.swift */; };
 		C16266482C29955E0002FD15 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16266402C29955E0002FD15 /* Extensions.swift */; };
-		C18B50682E9C6C5B00BF76FE /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = C18B50672E9C6C5B00BF76FE /* ZIPFoundation */; };
 		C1920AF62C67BCE000483104 /* TableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF52C67BCE000483104 /* TableImageView.swift */; };
 		C1920AF82C67CBC700483104 /* TableListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF72C67CBC700483104 /* TableListView.swift */; };
 		C1920AFA2C68E22E00483104 /* TableListButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF92C68E22E00483104 /* TableListButton.swift */; };
@@ -118,7 +117,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C19651892C46EE31002BAED9 /* VPinballFramework.framework in Frameworks */,
-				C18B50682E9C6C5B00BF76FE /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,7 +252,6 @@
 			);
 			name = VPinball;
 			packageProductDependencies = (
-				C18B50672E9C6C5B00BF76FE /* ZIPFoundation */,
 			);
 			productName = VPinball;
 			productReference = C11419012C277D9800582B6F /* Visual Pinball.app */;
@@ -286,7 +283,6 @@
 			);
 			mainGroup = C11418F82C277D9800582B6F;
 			packageReferences = (
-				C18B50662E9C6C5B00BF76FE /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = C11419022C277D9800582B6F /* Products */;
 			projectDirPath = "";
@@ -632,25 +628,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		C18B50662E9C6C5B00BF76FE /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.20;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		C18B50672E9C6C5B00BF76FE /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C18B50662E9C6C5B00BF76FE /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C11418F92C277D9800582B6F /* Project object */;
 }

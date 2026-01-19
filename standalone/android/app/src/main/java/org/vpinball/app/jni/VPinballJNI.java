@@ -21,4 +21,6 @@ public class VPinballJNI {
     public native int VPinballPlay();
     public native void VPinballStop();
     public native boolean VPinballInitOpenXR(Object activity);
+    public native int VPinballZipCreate(String sourcePath, String destPath, VPinballZipCallback callback);
+    public native int VPinballZipExtract(String sourcePath, String destPath, VPinballZipCallback callback);
 }

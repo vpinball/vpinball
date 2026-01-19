@@ -184,6 +184,71 @@ JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballStop(JNIEnv
    return VPinballStop();
 }
 
+struct ZipCallbackContext {
+   JNIEnv* env;
+   jobject callback;
+   jmethodID onProgressMethod;
+};
+
+static ZipCallbackContext* g_zipCallbackContext = nullptr;
+
+static void ZipProgressCallbackHandler(int current, int total, const char* filename)
+{
+   if (!g_zipCallbackContext || !g_zipCallbackContext->callback)
+      return;
+
+   JNIEnv* env = g_zipCallbackContext->env;
+   jstring filenameStr = filename ? env->NewStringUTF(filename) : nullptr;
+   env->CallVoidMethod(g_zipCallbackContext->callback, g_zipCallbackContext->onProgressMethod, current, total, filenameStr);
+
+   if (filenameStr)
+      env->DeleteLocalRef(filenameStr);
+}
+
+JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballZipCreate(JNIEnv* env, jobject obj, jstring sourcePath, jstring destPath, jobject callback)
+{
+   const char* pSourcePath = env->GetStringUTFChars(sourcePath, nullptr);
+   const char* pDestPath = env->GetStringUTFChars(destPath, nullptr);
+
+   ZipCallbackContext context = { env, nullptr, nullptr };
+   if (callback) {
+      context.callback = callback;
+      jclass callbackClass = env->GetObjectClass(callback);
+      context.onProgressMethod = env->GetMethodID(callbackClass, "onProgress", "(IILjava/lang/String;)V");
+      g_zipCallbackContext = &context;
+   }
+
+   VPINBALL_STATUS status = VPinballZipCreate(pSourcePath, pDestPath, callback ? ZipProgressCallbackHandler : nullptr);
+
+   g_zipCallbackContext = nullptr;
+   env->ReleaseStringUTFChars(destPath, pDestPath);
+   env->ReleaseStringUTFChars(sourcePath, pSourcePath);
+
+   return status;
+}
+
+JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballZipExtract(JNIEnv* env, jobject obj, jstring sourcePath, jstring destPath, jobject callback)
+{
+   const char* pSourcePath = env->GetStringUTFChars(sourcePath, nullptr);
+   const char* pDestPath = env->GetStringUTFChars(destPath, nullptr);
+
+   ZipCallbackContext context = { env, nullptr, nullptr };
+   if (callback) {
+      context.callback = callback;
+      jclass callbackClass = env->GetObjectClass(callback);
+      context.onProgressMethod = env->GetMethodID(callbackClass, "onProgress", "(IILjava/lang/String;)V");
+      g_zipCallbackContext = &context;
+   }
+
+   VPINBALL_STATUS status = VPinballZipExtract(pSourcePath, pDestPath, callback ? ZipProgressCallbackHandler : nullptr);
+
+   g_zipCallbackContext = nullptr;
+   env->ReleaseStringUTFChars(destPath, pDestPath);
+   env->ReleaseStringUTFChars(sourcePath, pSourcePath);
+
+   return status;
+}
+
 #ifdef ENABLE_XR
 JNIEXPORT jboolean JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballInitOpenXR(JNIEnv* env, jobject obj, jobject activity)
 {
