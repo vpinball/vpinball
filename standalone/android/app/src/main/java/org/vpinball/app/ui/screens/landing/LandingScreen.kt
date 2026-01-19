@@ -72,7 +72,7 @@ import org.vpinball.app.TableManager
 import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.ui.screens.common.ProgressOverlay
-import org.vpinball.app.ui.screens.settings.SettingsModalBottomSheet
+import org.vpinball.app.ui.screens.settings.SettingsBottomSheet
 import org.vpinball.app.ui.theme.DarkBlack
 import org.vpinball.app.ui.theme.LightBlack
 import org.vpinball.app.ui.theme.VPinballTheme
@@ -205,13 +205,6 @@ fun LandingScreen(
         searchTextFieldState.clearText()
         focusManager.clearFocus()
     }
-
-    SettingsModalBottomSheet(
-        webServerURL = webServerURL,
-        show = showSettingsDialog,
-        onDismissRequest = { showSettingsDialog = false },
-        onViewFile = onViewFile,
-    )
 
     Scaffold(
         modifier = modifier.fillMaxSize().haze(state = hazeState),
@@ -490,6 +483,13 @@ fun LandingScreen(
 
         ProgressOverlay(title = displayTitle, progress = displayProgress, status = displayStatus, hazeState = hazeState)
     }
+
+    SettingsBottomSheet(
+        webServerURL = webServerURL,
+        show = showSettingsDialog,
+        onDismissRequest = { showSettingsDialog = false },
+        onViewFile = onViewFile,
+    )
 }
 
 @Preview
