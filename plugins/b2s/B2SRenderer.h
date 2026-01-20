@@ -21,14 +21,14 @@ public:
    B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
    ~B2SRenderer();
 
-   bool IsPinMAMEDriven() const;
-
    bool Render(VPXRenderContext2D* context, class B2SServer* server);
 
 private:
    std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
    bool RenderBackglass(VPXRenderContext2D* context, class B2SServer* server);
    bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
+   void RenderBulbs(VPXRenderContext2D* ctx, B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs);
+   void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores);
 
    std::shared_ptr<B2STable> m_b2s;
 
@@ -45,6 +45,11 @@ private:
    unsigned int m_nLamps = 0;
    int m_mechIndex = -1;
    unsigned int m_nMechs = 0;
+
+   unsigned int m_getSegSrcMsgId = 0;
+   unsigned int m_onSegChangedMsgId = 0;
+   static void OnSegSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   vector<SegSrcId> m_segDisplays;
 
    ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;

@@ -52,8 +52,24 @@ class B2SReel final
 public:
    explicit B2SReel(const tinyxml2::XMLNode& root);
 
+   B2SReelImage* GetImage(const string& name, int index) const;
+
 public:
    const vector<std::unique_ptr<B2SReelImage>> m_images;
+};
+
+
+enum class B2SScoreRenderer
+{
+   Reel, Dream7, LED, RenderedLED, ImportedLED
+};
+
+
+enum class B2SScoreType
+{
+   NotUsed = 0,
+   Scores = 1,
+   Credits = 2
 };
 
 
@@ -65,7 +81,7 @@ public:
 public:
    const int m_id;
    const int m_b2sStartDigit;
-   const int m_b2sScoreType;
+   const B2SScoreType m_b2sScoreType;
    const int m_b2sPlayerNo;
    const string m_reelType;
    const int m_reelIlluLocation;
@@ -85,6 +101,9 @@ public:
    const int m_locY;
    const int m_width;
    const int m_height;
+   const string m_soundName;
+
+   const B2SScoreRenderer m_scoreType;
 };
 
 
@@ -189,8 +208,6 @@ public:
    const int m_fontStyle;
 
 public:
-   void Render(VPXRenderContext2D* ctx, class B2SServer* server);
-
    std::function<void()> m_romUpdater = []() { };
    float m_brightness = 0.f;
    float m_mechRot = 0.f;

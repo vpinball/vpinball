@@ -45,14 +45,14 @@ public:
    void B2SSetLEDDisplay(int, string) { } // FIXME
    void B2SSetReel(int, int) { } // FIXME
    void B2SSetScore(int, int) { } // FIXME
-   void B2SSetScorePlayer(int playerno, int score) { } // FIXME
+   void B2SSetScorePlayer(int playerno, int score);
    void B2SSetScorePlayer1(int score) { B2SSetScorePlayer(1, score); }
    void B2SSetScorePlayer2(int score) { B2SSetScorePlayer(2, score); }
    void B2SSetScorePlayer3(int score) { B2SSetScorePlayer(3, score); }
    void B2SSetScorePlayer4(int score) { B2SSetScorePlayer(4, score); }
    void B2SSetScorePlayer5(int score) { B2SSetScorePlayer(5, score); }
    void B2SSetScorePlayer6(int score) { B2SSetScorePlayer(6, score); }
-   void B2SSetScoreDigit(int, int) { } // FIXME
+   void B2SSetScoreDigit(int digit, int value);
 
    void B2SSetData(int id, int value);
    void B2SSetData(const std::string& group, int value);
@@ -98,10 +98,15 @@ public:
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
+   float GetScoreDigit(int digit) const;
+   int GetPlayerScore(int player) const;
 
 private:
    std::function<void(B2SServer*)> m_onDestroyHandler;
    ankerl::unordered_dense::map<int, float> m_states;
+   
+   ankerl::unordered_dense::map<int, int> m_playerScores;
+   ankerl::unordered_dense::map<int, float> m_scoreDigits;
 };
 
 }
