@@ -33,7 +33,12 @@ class SettingsModel: ObservableObject {
     func load() {
         // General
 
-        haptics = vpinballManager.loadValue(.standalone, "Haptics", true)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            haptics = false
+            vpinballManager.saveValue(.standalone, "Haptics", false)
+        } else {
+            haptics = vpinballManager.loadValue(.standalone, "Haptics", true)
+        }
         renderingModeOverride = (vpinballManager.loadValue(.standalone, "RenderingModeOverride", 2) == 2)
 
         // External DMD
