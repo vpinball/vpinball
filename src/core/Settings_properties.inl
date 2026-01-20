@@ -219,7 +219,7 @@ PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may
    100); // Hacky: This should be a table override, not a player property as it overrides table data
 
 // VR settings
-PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 1, "Enabled"s, "Autodetect"s, "Disabled"s);
+PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
 PropFloat(PlayerVR, Orientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
 PropFloat(PlayerVR, TableX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
 PropFloat(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
