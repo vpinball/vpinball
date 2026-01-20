@@ -63,15 +63,17 @@ struct SettingsView: View {
             ScrollViewReader { proxy in
                 List {
                     Section("General") {
-                        VStack(alignment: .leading) {
-                            Toggle(isOn: $settingsModel.haptics) {
-                                Text("Haptics")
-                            }
-                            .tint(Color.vpxRed)
+                        if UIDevice.current.userInterfaceIdiom != .pad {
+                            VStack(alignment: .leading) {
+                                Toggle(isOn: $settingsModel.haptics) {
+                                    Text("Haptics")
+                                }
+                                .tint(Color.vpxRed)
 
-                            Text("Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.")
-                                .font(.footnote)
-                                .foregroundStyle(Color.secondary)
+                                Text("Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.")
+                                    .font(.footnote)
+                                    .foregroundStyle(Color.secondary)
+                            }
                         }
 
                         VStack(alignment: .leading) {
