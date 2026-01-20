@@ -41,32 +41,51 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
    m_dmdHeight = dmdTexInfo ? static_cast<float>(dmdTexInfo->height) : 768.f;
 
-   if (IsPinMAMEDriven())
-   {
-      m_getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-      m_onDevChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
-      m_msgApi->SubscribeMsg(m_endpointId, m_onDevChangedMsgId, OnDevSrcChanged, this);
-      OnDevSrcChanged(m_onDevChangedMsgId, this, nullptr);
-   }
+   m_getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+   m_onDevChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onDevChangedMsgId, OnDevSrcChanged, this);
+   OnDevSrcChanged(m_onDevChangedMsgId, this, nullptr);
+
+   m_getSegSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
+   m_onSegChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onSegChangedMsgId, OnSegSrcChanged, this);
+   OnSegSrcChanged(m_onSegChangedMsgId, this, nullptr);
 }
 
 B2SRenderer::~B2SRenderer()
 {
-   if (IsPinMAMEDriven())
-   {
-      m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
-      m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
-      m_msgApi->ReleaseMsgID(m_getDevSrcMsgId);
-   }
+   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
+   m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getDevSrcMsgId);
    delete[] m_deviceStateSrc.deviceDefs;
+
+   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged);
+   m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);
+   m_segDisplays.clear();
 }
 
-bool B2SRenderer::IsPinMAMEDriven() const
+void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
 {
-   if (m_b2s->m_backglassOnImage.m_image && m_b2s->m_backglassOnImage.m_romIdType != B2SRomIDType::NotDefined)
-      return true;
-   return std::ranges::any_of(m_b2s->m_backglassIlluminations, [](const std::unique_ptr<B2SBulb>& bulb) {
-      return bulb->m_romIdType != B2SRomIDType::NotDefined; });
+   auto me = static_cast<B2SRenderer*>(userData);
+   me->m_segDisplays.clear();
+
+   unsigned int pinmameEndpoint = me->m_msgApi->GetPluginEndpoint("PinMAME");
+   if (pinmameEndpoint == 0)
+      return;
+
+   GetSegSrcMsg getSrcMsg = { 0, 0, nullptr };
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   vector<SegSrcId> entries(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, entries.data() };
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   for (unsigned int i = 0; i < getSrcMsg.count; i++)
+   {
+      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint)
+      {
+         me->m_segDisplays.push_back(getSrcMsg.entries[i]);
+      }
+   }
 }
 
 void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
@@ -216,6 +235,138 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx, B2SServer* server)
    }
 }
 
+void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs)
+{
+   for (const auto& bulb : bulbs)
+   {
+      if (bulb->m_b2sId >= 0 && server)
+      {
+         bulb->m_brightness = server->GetState(bulb->m_b2sId);
+      }
+      else
+      {
+         bulb->m_romUpdater();
+      }
+      float rotation = 0.f;
+      if (bulb->m_snippitType == B2SSnippitType::MechRotatingImage)
+         rotation = 360.f * (bulb->m_mechRot / static_cast<float>(bulb->m_snippitRotatingSteps));
+      if (bulb->m_offImage && bulb->m_brightness < 1.f)
+      {
+         const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_offImage);
+         ctx->DrawImage(ctx, bulb->m_offImage, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, 1.f,
+            0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
+            static_cast<float>(bulbTex->width) * 0.5f, static_cast<float>(bulbTex->height) * 0.5f, rotation,
+            static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+      }
+      {
+         const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_image);
+         ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness,
+            0.f, 0.f, static_cast<float>(bulbTex->width), static_cast<float>(bulbTex->height),
+            static_cast<float>(bulbTex->width) * 0.5f, static_cast<float>(bulbTex->height) * 0.5f, rotation,
+            static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
+      }
+   }
+}
+
+void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores)
+{
+   if (server == nullptr)
+      return;
+
+   int digitIndex = 1;
+   for (const auto& display : m_segDisplays)
+   {
+      SegDisplayFrame state = display.GetState(display.id);
+      for (int i = 0; i < display.nElements; i++)
+      {
+         int bitState = 0;
+         for (int j = 0; j < 16; j++)
+            if (state.frame[i * 16 + j] > 0.5f)
+               bitState |= 1 << j;
+         int ret;
+         switch (bitState & ~0x80) // Remove the comma
+         {
+         // 7-segment stuff
+         case 0x003F: ret = 0; break;
+         case 0x0006: ret = 1; break;
+         case 0x005B: ret = 2; break;
+         case 0x004F: ret = 3; break;
+         case 0x0066: ret = 4; break;
+         case 0x006D: ret = 5; break;
+         case 0x007D: ret = 6; break;
+         case 0x0007: ret = 7; break;
+         case 0x007F: ret = 8; break;
+         case 0x006F: ret = 9; break;
+         // Additional 10-segment stuff
+         case 0x0300: ret = 1; break;
+         case 0x007C: ret = 6; break;
+         case 0x0067: ret = 9; break;
+         // Default is empty
+         default: ret = -1; break;
+         }
+         server->B2SSetScoreDigit(digitIndex, ret);
+         digitIndex++;
+      }
+   }
+
+   digitIndex = 1;
+   for (const auto& reel : scores.m_scores)
+   {
+      const float width = (static_cast<float>(reel.m_width) - 0.5f * static_cast<float>((reel.m_digits - 1) * reel.m_spacing)) / static_cast<float>(reel.m_digits);
+      for (int i = 0; i < reel.m_digits; i++)
+      {
+         const float x = static_cast<float>(reel.m_locX) + static_cast<float>(i) * (width + 0.5f * static_cast<float>(reel.m_spacing));
+         int digit = 0;
+         if (reel.m_b2sPlayerNo != 0)
+         {
+            int score = abs(server->GetPlayerScore(reel.m_b2sPlayerNo));
+            for (int j = 0; j < (reel.m_digits - 1 - i); ++j)
+               score /= 10;
+            digit = score % 10;
+         }
+         else
+         {
+            const int index = reel.m_b2sStartDigit > 0 ? (reel.m_b2sStartDigit + i) : digitIndex;
+            digit = static_cast<int>(server->GetScoreDigit(index));
+         }
+         digitIndex++;
+
+         switch (reel.m_scoreType)
+         {
+         case B2SScoreRenderer::LED:
+            // Black Pyramid (Bally 1984)
+         case B2SScoreRenderer::ImportedLED:
+            // Apache! (Taito 1978)
+         case B2SScoreRenderer::Reel:
+            // Volkan Steel and Metal (Original 2023), Hang Glider (Bally 1976) => Simple reels, no animations
+            // ? => Simple reels with animations & sounds
+            // LED & ImportedLED seems to be the same as reel but without animation
+            {
+               const B2SReelImage* reelImage = m_b2s->m_reels.GetImage(reel.m_reelType, digit);
+               if (reelImage && reelImage->m_image)
+               {
+                  const VPXTextureInfo* texInfo = GetTextureInfo(reelImage->m_image);
+                  ctx->DrawImage(ctx, reelImage->m_image, 1.f, 1.f, 1.f, 1.f, //
+                     0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), //
+                     0.f, 0.f, 0.f, // No rotation
+                     x, static_cast<float>(reel.m_locY), width, static_cast<float>(reel.m_height));
+               }
+            }
+            break;
+
+         case B2SScoreRenderer::Dream7:
+            // Asteroid Annie (Gottlieb 1980)
+            break;
+
+         case B2SScoreRenderer::RenderedLED:
+            // Did not find any backglass using this mode (very old mode superseeded by Dream7 ?)
+            break;
+         }
+      }
+   }
+}
+
+
 bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 {
    ctx->srcWidth = m_b2sWidth;
@@ -258,11 +409,9 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
    }
 
-   // Draw illuminations
-   for (const auto& bulb : m_b2s->m_backglassIlluminations)
-      bulb->Render(ctx, server);
-
-   // Draw DMD overlay if enabled and available
+   // Draw illuminations, scores and DMD overlay
+   RenderBulbs(ctx, server, m_b2s->m_backglassIlluminations);
+   RenderScores(ctx, server, m_b2s->m_backglassScores);
    m_backglassDmdOverlay.Render(ctx);
 
    return true;
@@ -290,11 +439,9 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
          0.f, 0.f, 0.f, // No rotation
          0.f, 0.f, m_dmdWidth, m_dmdHeight);
 
-   // Draw illuminations
-   for (const auto& bulb : m_b2s->m_dmdIlluminations)
-      bulb->Render(ctx, server);
-
-   // Draw DMD overlay if enabled and available
+   // Draw illuminations, scores and DMD overlay
+   RenderBulbs(ctx, server, m_b2s->m_dmdIlluminations);
+   RenderScores(ctx, server, m_b2s->m_dmdScores);
    m_scoreViewDmdOverlay.Render(ctx);
 
    return true;

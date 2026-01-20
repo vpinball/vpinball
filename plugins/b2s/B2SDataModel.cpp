@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include <charconv>
+#include <format>
 
 #include "common.h"
 #include "B2SDataModel.h"
@@ -170,6 +171,8 @@ static std::vector<std::string> GetStringList(const std::string& str, char delim
    return tokens;
 }
 
+static bool StartsWithCaseInsensitive(const std::string& str, const std::string& prepend) { return string_to_lower(str).starts_with(string_to_lower(prepend)); }
+
 
 B2SSound::B2SSound(const tinyxml2::XMLNode& root)
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
@@ -224,36 +227,6 @@ B2SBulb::~B2SBulb()
    DeleteTexture(m_offImage);
 }
 
-void B2SBulb::Render(VPXRenderContext2D* ctx, B2SServer* server)
-{
-   if (m_b2sId >= 0 && server)
-   {
-      m_brightness = server->GetState(m_b2sId);
-   }
-   else
-   {
-      m_romUpdater();
-   }
-   float rotation = 0.f;
-   if (m_snippitType == B2SSnippitType::MechRotatingImage)
-      rotation = 360.f * (m_mechRot / static_cast<float>(m_snippitRotatingSteps));
-   if (m_offImage && m_brightness < 1.f)
-   {
-      const VPXTextureInfo* const bulb = GetTextureInfo(m_offImage);
-      ctx->DrawImage(ctx, m_offImage, m_lightColor.x, m_lightColor.y, m_lightColor.z, 1.f,
-         0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
-         static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
-         static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
-   }
-   {
-      const VPXTextureInfo* const bulb = GetTextureInfo(m_image);
-      ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
-         0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
-         static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
-         static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
-   }
-}
-
 
 B2SImage::B2SImage(const tinyxml2::XMLNode& root)
    : m_image(GetTextureAttribute(root, ""s, "Value"s))
@@ -287,10 +260,40 @@ B2SReel::B2SReel(const tinyxml2::XMLNode& root)
 {
 }
 
+B2SReelImage* B2SReel::GetImage(const string& name, int index) const
+{
+   string imgName;
+   if (name.ends_with("_00"))
+   {
+      if (index < 0)
+         imgName = std::format("{}Empty", name.substr(0, name.length() - 2));
+      else
+         imgName = std::format("{}{:02}", name.substr(0, name.length() - 2), index);
+   }
+   else if (name.ends_with("_0"))
+   {
+      if (index < 0)
+         imgName = std::format("{}Empty", name.substr(0, name.length() - 1));
+      else
+         imgName = std::format("{}{:01}", name.substr(0, name.length() - 1), index);
+   }
+   else
+      return nullptr;
+   for (const auto& img : m_images)
+   {
+      if (img->m_name == imgName)
+      {
+         return img.get();
+      }
+   }
+   return nullptr;
+}
+
+
 B2SScore::B2SScore(const tinyxml2::XMLNode& root)
    : m_id(GetIntAttribute(root, ""s, "ID"s, 0))
    , m_b2sStartDigit(GetIntAttribute(root, ""s, "B2SStartDigit"s, 0))
-   , m_b2sScoreType(GetIntAttribute(root, ""s, "B2SScoreType"s, 0))
+   , m_b2sScoreType(static_cast<B2SScoreType>(GetIntAttribute(root, ""s, "B2SScoreType"s, 0)))
    , m_b2sPlayerNo(GetIntAttribute(root, ""s, "B2SPlayerNo"s, 0))
    , m_reelType(GetStringAttribute(root, ""s, "ReelType"s, ""s))
    , m_reelIlluLocation(GetIntAttribute(root, ""s, "ReelIlluLocation"s, 0))
@@ -310,6 +313,13 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root)
    , m_locY(GetIntAttribute(root, ""s, "LocY"s, 0))
    , m_width(GetIntAttribute(root, ""s, "Width"s, 0))
    , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
+   , m_soundName(GetStringAttribute(root, ""s, "Sound"s, "stille"s))
+   , m_scoreType(StartsWithCaseInsensitive(m_reelType, "dream7"s)  ? B2SScoreRenderer::Dream7
+           : StartsWithCaseInsensitive(m_reelType, "rendered"s)    ? B2SScoreRenderer::RenderedLED
+           : StartsWithCaseInsensitive(m_reelType, "LED"s)         ? B2SScoreRenderer::LED
+           : StartsWithCaseInsensitive(m_reelType, "ImportedLED"s) ? B2SScoreRenderer::ImportedLED
+                                                                   : B2SScoreRenderer::Reel
+   )
 {
 }
 

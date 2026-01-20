@@ -66,6 +66,7 @@ extern void DeleteTexture(VPXTexture texture);
 extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const void *image);
 
 // The following function are duplicates from the main VPX codebase
+string string_to_lower(string str);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path &searchedFile);
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 
