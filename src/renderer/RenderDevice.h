@@ -276,6 +276,7 @@ public:
    {
       ResetActiveView();
       bgfx::frame(); // BGFX always flips backbuffer when its render queue is submitted
+      m_uniformState->Clear(); // State caching is not maintained between frames
    }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;

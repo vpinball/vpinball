@@ -812,6 +812,7 @@ RenderDevice::RenderDevice(
    #endif
 
    init.callback = &m_bgfxCallback;
+   init.fallback = true;
 
    init.resolution.maxFrameLatency = clamp(maxPrerenderedFrames,0,255); // Maximum of Present operation queued (unrendered frame queued on GPU, waiting for an available backbuffer)
 
@@ -866,6 +867,7 @@ RenderDevice::RenderDevice(
    #endif // BX_PLATFORM_
    #ifdef DEBUG
    init.debug = true;
+   //init.profile = true;
    #endif
 
    ResetActiveView();
