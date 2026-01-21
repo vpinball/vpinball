@@ -185,7 +185,7 @@ CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
       }
       msg->id = id;
    }
-   msgApi->RunOnMainThread(0, [](void* userData) {
+   msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
       AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
       msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
       if (LibAV::LibAV::GetInstance().isLoaded)
@@ -205,7 +205,7 @@ void StopAudioStream(const CtlResId& id)
       AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
       memset(pendingAudioUpdate, 0, sizeof(AudioUpdateMsg));
       pendingAudioUpdate->id.id = id.id;
-      msgApi->RunOnMainThread(0,[](void* userData) {
+      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
          AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
          msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
          delete msg;

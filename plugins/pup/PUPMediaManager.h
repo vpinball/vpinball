@@ -57,9 +57,6 @@ private:
    std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
 
-   vector<AsyncCallback*> m_pendingEndCallbackList;
-   std::shared_ptr<std::mutex> m_pendingEndCallbackListMutex;
-
    PUPScreen* const m_pScreen;
 
    SDL_Rect m_bounds;

@@ -48,12 +48,16 @@ public:
 
 private:
    VPXPluginAPIImpl();
+   ~VPXPluginAPIImpl();
 
    // VPX API
    std::shared_ptr<MsgPI::MsgPlugin> m_vpxPlugin;
    static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    VPXPluginAPI m_api;
    const std::thread::id m_apiThread;
+   const unsigned int m_getVPXAPIMsgId;
+   const unsigned int m_onGameStartMsgId;
+   const unsigned int m_onGameEndMsgId;
 
    static void GetVpxInfo(VPXInfo* info);
    static void GetTableInfo(VPXTableInfo* info);
@@ -84,6 +88,7 @@ private:
    static void PluginLog(unsigned int level, const char* message);
 
    LoggingPluginAPI m_loggingApi;
+   const unsigned int m_getLoggingAPIMsgId;
 
    // Scriptable plugin API
    static void OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData);
@@ -98,10 +103,12 @@ private:
    ankerl::unordered_dense::map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;
    ScriptablePluginAPI m_scriptableApi;
+   const unsigned int m_getScriptingAPIMsgId;
 
    // Contribute VPX script controlled DMD through controller plugin API
-   unsigned int m_onDisplaySrcChg = 0;
    vector<Flasher*> m_dmdSources;
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static DisplayFrame ControllerOnGetRenderDMD(const CtlResId id);
+   const unsigned int m_onDisplaySrcChgMsgId;
+   const unsigned int m_onDisplayGetSrcMsgId;
 };

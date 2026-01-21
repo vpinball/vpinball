@@ -63,6 +63,7 @@ PUPManager::~PUPManager()
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_getAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
 }
 
 void PUPManager::SetGameDir(const string& szRomName)
@@ -395,8 +396,6 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
 void PUPManager::ProcessQueue()
 {
    SetThreadName("PUPManager.ProcessQueue"s);
-   vector<AsyncCallback*> pendingCallbackList;
-   std::shared_ptr pendingCallbackListMutex = std::make_shared<std::mutex>();
    while (m_isRunning)
    {
       std::unique_lock lock(m_queueMutex);
@@ -510,7 +509,7 @@ void PUPManager::ProcessQueue()
             };
             DmdEvent* event = new DmdEvent();
             *event = { m_msgApi, m_endpointId, m_onDmdTriggerId, dmdTrigger };
-            m_msgApi->RunOnMainThread(0, [](void* userData) {
+            m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) {
                DmdEvent* event = static_cast<DmdEvent*>(userData);
                event->msgApi->BroadcastMsg(event->endpointId, event->onDmdTriggerId, &event->dmdTrigger);
                delete event;
@@ -576,7 +575,9 @@ void PUPManager::ProcessQueue()
                for (auto trigger : triggers)
                {
                   // Dispatch trigger action to main thread
-                  AsyncCallback::DispatchOnMainThread("TriggerCB"s, m_msgApi, pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
+                  m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { 
+                     static_cast<PUPTrigger*>(userData)->Trigger()();
+                     }, trigger);
                }
             }
          }
@@ -585,9 +586,6 @@ void PUPManager::ProcessQueue()
       // Clear script triggers
       m_triggerDataQueue.clear();
    }
-
-   // Discard pending callbacks
-   AsyncCallback::InvalidateAllPending(pendingCallbackList, pendingCallbackListMutex);
 }
 
 void PUPManager::Start()
@@ -786,7 +784,7 @@ void PUPManager::OnPollDmd(void* userData)
       delete ctx;
       return;
    }
-   std::lock_guard<std::mutex> lock(ctx->manager->m_queueMutex);
+   std::lock_guard lock(ctx->manager->m_queueMutex);
    if (ctx->manager->m_dmdId.id.id != 0 && ctx->manager->m_dmdId.GetIdentifyFrame)
    {
       DisplayFrame idFrame = ctx->manager->m_dmdId.GetIdentifyFrame(ctx->manager->m_dmdId.id);
@@ -799,7 +797,7 @@ void PUPManager::OnPollDmd(void* userData)
          ctx->manager->m_queueCondVar.notify_one();
       }
    }
-   ctx->manager->m_msgApi->RunOnMainThread(1.0 / 60.0, OnPollDmd, ctx);
+   ctx->manager->m_msgApi->RunOnMainThread(ctx->manager->m_endpointId, 1.0 / 60.0, OnPollDmd, ctx);
 }
 
 // Broadcasted by Serum plugin when frame triggers are identified

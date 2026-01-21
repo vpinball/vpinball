@@ -174,10 +174,10 @@ static void ColorizeThread()
             
             // This assumes that we won't decode another frame with a pup trigger before the message will be processed on main thread (should be ok)
             if (pSerum->triggerID != 0xffffffff)
-               msgApi->RunOnMainThread(0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &pSerum->triggerID); }, nullptr);
+               msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &pSerum->triggerID); }, nullptr);
 
             if (newState)
-               msgApi->RunOnMainThread(0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr); }, nullptr);
+               msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr); }, nullptr);
          }
       }
       else if (state && state->m_hasAnimation)
@@ -393,5 +393,6 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
+   msgApi->FlushPendingCallbacks(endpointId);
    msgApi = nullptr;
 }

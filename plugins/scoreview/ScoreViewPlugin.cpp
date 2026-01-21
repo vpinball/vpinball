@@ -24,6 +24,7 @@ namespace ScoreView
 LPI_IMPLEMENT // Implement shared log support
 
 static const MsgPluginAPI* msgApi = nullptr;
+static unsigned int getVpxApiId;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
@@ -89,9 +90,7 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
    endpointId = sessionId;
    LPISetup(endpointId, msgApi);
 
-   unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
-   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
-   msgApi->ReleaseMsgID(getVpxApiId);
+   msgApi->BroadcastMsg(endpointId, getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &vpxApi);
 
    msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), OnGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
@@ -108,6 +107,9 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId, nullptr);
    msgApi->ReleaseMsgID(onGetAuxRendererId);
    msgApi->ReleaseMsgID(onAuxRendererChgId);
+   msgApi->ReleaseMsgID(onGameStartId);
+   msgApi->ReleaseMsgID(onGameEndId);
+   msgApi->ReleaseMsgID(getVpxApiId);
    vpxApi = nullptr;
    msgApi = nullptr;
 }

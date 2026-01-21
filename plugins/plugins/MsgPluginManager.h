@@ -11,6 +11,7 @@
 #include "MsgPlugin.h"
 
 #include <chrono>
+#include <list>
 #include <vector>
 #include <string>
 #include <thread>
@@ -133,7 +134,8 @@ private:
    static void MSGPIAPI ReleaseMsgID(const unsigned int msgId);
    static void MSGPIAPI RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef);
    static void MSGPIAPI SaveSetting(const uint32_t endpointId, MsgSettingDef* settingDef);
-   static void MSGPIAPI RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData);
+   static void MSGPIAPI RunOnMainThread(const uint32_t endpointId, const double delayInS, const msgpi_timer_callback callback, void* userData);
+   static void MSGPIAPI FlushPendingCallbacks(const uint32_t endpointId);
 
    std::vector<std::shared_ptr<MsgPlugin>> m_plugins;
 
@@ -142,7 +144,6 @@ private:
       uint32_t endpointId;
       msgpi_msg_callback callback;
       void* context;
-      bool unregistered = false;
    };
    struct MsgEntry
    {
@@ -150,19 +151,18 @@ private:
       std::string name_space;
       std::string name;
       unsigned int id;
-      std::vector<CallbackEntry> callbacks;
+      std::list<CallbackEntry> callbacks;
    };
    std::vector<MsgEntry> m_msgs;
-   int m_broadcastInProgress = 0;
-   std::vector<std::function<void(void)>> m_deferredAfterBroadcastRunnables;
 
    struct TimerEntry
    {
+      uint32_t endpointId;
       msgpi_timer_callback callback;
       void* userData;
       std::chrono::steady_clock::time_point time;
    };
-   std::vector<TimerEntry> m_timers;
+   std::list<TimerEntry> m_timers;
    std::mutex m_timerListMutex;
 
    std::function<void(const std::string& pluginId, SettingAction action, MsgSettingDef* settingDef)> m_settingHandler;

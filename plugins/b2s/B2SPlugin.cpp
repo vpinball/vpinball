@@ -26,6 +26,8 @@ static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
+static unsigned int onPluginLoaded, onPluginUnloaded;
+static bool serverRegistered = false;
 static std::thread::id apiThread;
 
 static B2SServer* server = nullptr;
@@ -216,9 +218,6 @@ static void OnGameEnd(const unsigned int, void*, void*)
    if (loadedB2S.valid())
       loadedB2S.get();
    renderer = nullptr;
-   if (pinmameInstance)
-      PSC_RELEASE(pinmameClassDef, pinmameInstance);
-   pinmameInstance = nullptr;
 }
 
 static int OnRender(VPXRenderContext2D* ctx, void*)
@@ -256,33 +255,43 @@ static void OnGetRenderer(const unsigned int, void*, void* msgData)
    }
 }
 
-// Only register if PinMAME is available
-static void RegisterServerObject(void*)
+// TODO we need to support a standalone mode when no PinMAME plugin is available
+
+static void RegisterServerObject()
 {
+   if (serverRegistered)
+      return;
+
    pinmameClassDef = scriptApi->GetClassDef("Controller");
-   if (pinmameClassDef != nullptr)
+   if (pinmameClassDef == nullptr)
+      return;
+
+   auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+   RegisterB2SServerSCD(regLambda);
+   B2SServer_SCD->CreateObject = []()
    {
-      auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
-      RegisterB2SServerSCD(regLambda);
-      B2SServer_SCD->CreateObject = []()
-      {
-         auto pServer = new B2SServer();
-         server = pServer;
-         pServer->SetOnDestroyHandler(
-            [](B2SServer* pServer)
-            {
-               if (server == pServer)
-                  server = nullptr;
-            });
-         return static_cast<void*>(pServer);
-      };
-      scriptApi->SubmitTypeLibrary();
-      scriptApi->SetCOMObjectOverride("B2S.Server", B2SServer_SCD);
-   }
-   else
-   {
-      msgApi->RunOnMainThread(0.1, RegisterServerObject, nullptr);
-   }
+      auto pServer = new B2SServer();
+      server = pServer;
+      pServer->SetOnDestroyHandler(
+         [](B2SServer* pServer)
+         {
+            if (server == pServer)
+               server = nullptr;
+         });
+      return static_cast<void*>(pServer);
+   };
+   scriptApi->SubmitTypeLibrary();
+   scriptApi->SetCOMObjectOverride("B2S.Server", B2SServer_SCD);
+   serverRegistered = true;
+}
+
+static void OnPluginLoaded(const unsigned int, void*, void* msgData)
+{
+   RegisterServerObject();
+}
+
+static void OnPluginUnloaded(const unsigned int, void*, void* msgData)
+{
 }
 
 }
@@ -306,17 +315,30 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 
+   msgApi->SubscribeMsg(endpointId, onPluginLoaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED), OnPluginLoaded, nullptr);
+   msgApi->SubscribeMsg(endpointId, onPluginUnloaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED), OnPluginUnloaded, nullptr);
+
    // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
-   RegisterServerObject(nullptr);
+
+   RegisterServerObject();
 }
 
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
 {
+   if (pinmameInstance)
+      PSC_RELEASE(pinmameClassDef, pinmameInstance);
+   pinmameInstance = nullptr;
+
+   serverRegistered = false;
    scriptApi->SetCOMObjectOverride("B2S.Server", nullptr);
    // TODO we should unregister the script API contribution
+   msgApi->UnsubscribeMsg(onPluginLoaded, OnPluginLoaded);
+   msgApi->UnsubscribeMsg(onPluginUnloaded, OnPluginUnloaded);
+   msgApi->ReleaseMsgID(onPluginLoaded);
+   msgApi->ReleaseMsgID(onPluginUnloaded);
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);

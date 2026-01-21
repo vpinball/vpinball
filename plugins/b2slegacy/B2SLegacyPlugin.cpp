@@ -186,7 +186,7 @@ static void RegisterServerObject(void*)
       scriptApi->SetCOMObjectOverride("B2S.Server", Server_SCD);
    }
    else
-      msgApi->RunOnMainThread(0.1, RegisterServerObject, nullptr);
+      msgApi->RunOnMainThread(endpointId, 0.1, RegisterServerObject, nullptr);
 }
 
 }
