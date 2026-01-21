@@ -219,7 +219,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
-   if (m_d.m_baseVisible)
+   // We always create all render data to support live editor
+   //if (m_d.m_baseVisible)
    {
       m_baseTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BumperBase.webp").string()));
       std::shared_ptr<IndexBuffer> baseIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperBaseNumIndices, bumperBaseIndices);
@@ -231,7 +232,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       m_baseMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Base", baseVertexBuffer, baseIndexBuffer, true);
    }
 
-   if (m_d.m_skirtVisible)
+   //if (m_d.m_skirtVisible)
    {
       m_skirtTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BumperSkirt.webp").string()));
       std::shared_ptr<IndexBuffer> socketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperSocketNumIndices, bumperSocketIndices);
@@ -243,7 +244,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       m_socketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
    }
 
-   if (m_d.m_ringVisible)
+   //if (m_d.m_ringVisible)
    {
       m_ringTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BumperRing.webp").string()));
       std::shared_ptr<IndexBuffer> ringIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperRingNumIndices, bumperRingIndices);
@@ -257,7 +258,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       m_ringMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
    }
 
-   if (m_d.m_capVisible)
+   //if (m_d.m_capVisible)
    {
       m_capTexture.reset(Texture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BumperCap.webp").string()));
       std::shared_ptr<IndexBuffer> capIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperCapNumIndices, bumperCapIndices);
