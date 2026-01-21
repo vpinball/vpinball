@@ -64,7 +64,7 @@ void FlexDMD::Render()
    if ((m_renderLockCount == 0) && elapsedMs > 2)
    {
       m_frameId++;
-      m_lum8FrameDirty = m_lumFrameDirty = m_rgbFrameDirty = m_rgbaFrameDirty = true;
+      m_lum8FrameDirty = m_lumFP32FrameDirty = m_lumFrameDirty = m_rgbFrameDirty = m_rgbaFrameDirty = true;
       m_lastRenderTick = tick;
       m_pStage->Update((float)((double)elapsedMs / 1000.0));
       if (m_pSurface == nullptr)
@@ -87,24 +87,42 @@ uint8_t* FlexDMD::UpdateLum8Frame()
       return m_lum8Frame;
    if (m_lum8Frame == nullptr)
       m_lum8Frame = new uint8_t[m_width * m_height];
-   if (m_pSurface == nullptr)
-      return m_lum8Frame;
-   if (m_renderLockCount > 0)
+   UpdateLumFP32Frame();
+   if (m_lumFP32Frame == nullptr)
       return m_lum8Frame;
    m_lum8FrameDirty = false;
+   const float* __restrict src = m_lumFP32Frame;
+   uint8_t* __restrict dst = m_lum8Frame;
+   for (int o = 0; o < m_height * m_width; o++)
+      *dst++ = static_cast<uint8_t>(*src++ * 255.0f);
+   return m_lum8Frame;
+}
+
+float* FlexDMD::UpdateLumFP32Frame()
+{
+   if ((m_lumFP32Frame != nullptr) && !m_lumFP32FrameDirty)
+      return m_lumFP32Frame;
+   if (m_lumFP32Frame == nullptr)
+      m_lumFP32Frame = new float[m_width * m_height];
+   if (m_pSurface == nullptr)
+      return m_lumFP32Frame;
+   if (m_renderLockCount > 0)
+      return m_lumFP32Frame;
+   m_lumFP32FrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
    const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
-   uint8_t* __restrict dst = m_lum8Frame;
-   for (int o = 0; o < m_height*m_width; o++)
-      {
-         const float r = static_cast<float>(*pixels++);
-         const float g = static_cast<float>(*pixels++);
-         const float b = static_cast<float>(*pixels++);
-         *dst++ = static_cast<uint8_t>(0.2126f * r + 0.7152f * g + 0.0722f * b);
-      }
+   float* __restrict dst = m_lumFP32Frame;
+   constexpr float scale = 1.0f / 255.0f;
+   for (int o = 0; o < m_height * m_width; o++)
+   {
+      const float r = static_cast<float>(*pixels++);
+      const float g = static_cast<float>(*pixels++);
+      const float b = static_cast<float>(*pixels++);
+      *dst++ = (0.2126f * r + 0.7152f * g + 0.0722f * b) * scale;
+   }
    SDL_UnlockSurface(surf);
-   return m_lum8Frame;
+   return m_lumFP32Frame;
 }
 
 void FlexDMD::UpdateLumFrame()

@@ -493,7 +493,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       }
       else
       {
-         assert(false);
+         V_DISPATCH(cv) = nullptr;
       }
       break;
 
