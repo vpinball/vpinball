@@ -15,7 +15,6 @@ static string GetPlayerName(PUPScreen* pScreen, bool isMain)
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    : m_pBackgroundPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, false)))
    , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, true)))
-   , m_pendingEndCallbackListMutex(std::make_shared<std::mutex>())
    , m_pScreen(pScreen)
    , m_bounds()
 {
@@ -25,7 +24,6 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 
 PUPMediaManager::~PUPMediaManager()
 {
-   AsyncCallback::InvalidateAllPending(m_pendingEndCallbackList, m_pendingEndCallbackListMutex);
 }
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)

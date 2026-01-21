@@ -76,12 +76,19 @@ MsgPluginManager::MsgPluginManager()
    m_api.RegisterSetting = RegisterSetting;
    m_api.SaveSetting = SaveSetting;
    m_api.RunOnMainThread = RunOnMainThread;
+   m_api.FlushPendingCallbacks = FlushPendingCallbacks;
 }
 
 MsgPluginManager::~MsgPluginManager()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_plugins.clear();
+   for (const auto& msg : m_msgs)
+      if (msg.refCount > 0)
+      {
+         assert(false);
+         // PLOGE << "Message " << msg.name_space << '.' << msg.name << " was not released (leaked reference count: " << msg.refCount << ')';
+      }
 }
 
 
@@ -123,6 +130,7 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
 {
    MsgPluginManager& pm = GetInstance();
    assert(std::this_thread::get_id() == pm.m_apiThread);
+
    MsgEntry* freeMsg = nullptr;
    for (MsgEntry& msg : pm.m_msgs)
       if (freeMsg == nullptr && msg.refCount == 0)
@@ -153,17 +161,12 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
-   // Note that if a callback is both unsbscribed and subscribed during a broadcast, the result is undefined (and will assert in debug build)
-   std::erase_if(pm.m_msgs[msgId].callbacks, [](const CallbackEntry& entry) { return entry.unregistered; });
 #ifdef _DEBUG
-   // Callback are only allowed to be registered once per message
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
-      assert(entry.callback != callback);
+      assert(entry.callback != callback); // Callback are only allowed to be registered once per message
 #endif
-   if (pm.m_broadcastInProgress)
-      pm.m_deferredAfterBroadcastRunnables.push_back([endpointId, msgId, callback, userData]() { SubscribeMsg(endpointId, msgId, callback, userData); });
-   else
-      pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { endpointId, callback, userData });
+
+   pm.m_msgs[msgId].callbacks.emplace_back(endpointId, callback, userData);
 }
 
 void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback)
@@ -173,19 +176,11 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   for (auto it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); ++it)
-   {
-      if (it->callback == callback && !it->unregistered)
-      {
-         if (pm.m_broadcastInProgress)
-            it->unregistered = true;
-         else
-            pm.m_msgs[msgId].callbacks.erase(it);
-         return;
-      }
-   }
-   // Detect invalid subscribe/unsubscribe pairs
-   assert(false);
+   
+   std::list<CallbackEntry>& callbacks = pm.m_msgs[msgId].callbacks;
+   const auto it = std::ranges::find_if(callbacks, [&callback](const CallbackEntry& entry) { return callback == entry.callback; });
+   assert(it != callbacks.end()); // Subscribe/Unsubscribe pairs must match
+   callbacks.erase(it);
 }
 
 void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data)
@@ -195,22 +190,9 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
-   pm.m_broadcastInProgress++;
-   bool unregister = false;
+
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
-      if (!entry.unregistered)
-         entry.callback(msgId, entry.context, data);
-      else
-         unregister = true;
-   if (unregister)
-      std::erase_if(pm.m_msgs[msgId].callbacks, [](const CallbackEntry& entry) { return entry.unregistered; });
-   pm.m_broadcastInProgress--;
-   if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadcastRunnables.empty())
-   {
-      for (const auto& fn : pm.m_deferredAfterBroadcastRunnables)
-         fn();
-      pm.m_deferredAfterBroadcastRunnables.clear();
-   }
+      entry.callback(msgId, entry.context, data);
 }
 
 void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
@@ -220,6 +202,7 @@ void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msg
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
+
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId == targetEndpointId)
       {
@@ -234,9 +217,14 @@ void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
+   
    pm.m_msgs[msgId].refCount--;
-   while (!pm.m_msgs.empty() && pm.m_msgs.back().refCount == 0)
-      pm.m_msgs.pop_back();
+   if (pm.m_msgs[msgId].refCount == 0)
+   {
+      assert(pm.m_msgs[msgId].callbacks.empty()); // Callbacks must be unsbscribed before destroying the message
+      while (!pm.m_msgs.empty() && pm.m_msgs.back().refCount == 0)
+         pm.m_msgs.pop_back();
+   }
 }
 
 void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
@@ -262,21 +250,23 @@ void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* set
    pm.m_settingHandler((*item)->m_id, SettingAction::Save, settingDef);
 }
 
-void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData)
+void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double delayInS, const msgpi_timer_callback callback, void* userData)
 {
    MsgPluginManager& pm = GetInstance();
+   assert(callback != nullptr);
+
    if (delayInS <= 0. && std::this_thread::get_id() == pm.m_apiThread)
    {
       callback(userData);
       return;
    }
-   std::unique_lock<std::mutex> lock(pm.m_timerListMutex);
+   std::unique_lock lock(pm.m_timerListMutex);
    if (delayInS < 0.)
    {
-      pm.m_timers.insert(pm.m_timers.begin(), TimerEntry { callback, userData, std::chrono::steady_clock::now() });
+      pm.m_timers.emplace(pm.m_timers.begin(), endpointId, callback, userData, std::chrono::steady_clock::now());
 #ifdef _MSC_VER
       // Wake up message loop
-      PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
+      PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
 #endif
       // FIXME block cleanly until processed
       lock.unlock();
@@ -285,12 +275,40 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    }
    else
    {
-      auto timer = TimerEntry { callback, userData, std::chrono::steady_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
+      auto timer = TimerEntry { endpointId, callback, userData, std::chrono::steady_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
       pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry& a, const TimerEntry& b) { return a.time < b.time; }), timer);
 #ifdef _MSC_VER
       // Wake up message loop
-      PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
+      PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
 #endif
+   }
+}
+
+void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
+{
+   MsgPluginManager& pm = GetInstance();
+   assert(std::this_thread::get_id() == pm.m_apiThread);
+   
+   bool modified = true; // The callbacks may result in new callbacks being registered, so continue until we have no more pending ones
+   while (modified)
+   {
+      std::list<TimerEntry> timers;
+      {
+         modified = false;
+         const std::lock_guard lock(pm.m_timerListMutex);
+         for (auto it = pm.m_timers.begin(); it != pm.m_timers.end();)
+         {
+            if (it->endpointId == endpointId)
+            {
+               modified = true;
+               timers.push_back(*it);
+               it = pm.m_timers.erase(it);
+            }
+         }
+      }
+      // Release lock before calling callbacks to avoid deadlock
+      for (const auto& it : timers)
+         it.callback(it.userData);
    }
 }
 
@@ -299,11 +317,11 @@ void MsgPluginManager::ProcessAsyncCallbacks()
    assert(std::this_thread::get_id() == m_apiThread);
    if (m_timers.empty())
       return;
-   std::vector<TimerEntry> timers;
+   std::list<TimerEntry> timers;
    {
-      const std::lock_guard<std::mutex> lock(m_timerListMutex);
+      const std::lock_guard lock(m_timerListMutex);
       const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-      for (std::vector<TimerEntry>::iterator it = m_timers.begin(); it < m_timers.end();)
+      for (auto it = m_timers.begin(); it != m_timers.end();)
       {
          if (it->time > now)
             break;
@@ -424,6 +442,21 @@ void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
 {
    m_settingHandler(plugin.m_id, SettingAction::UnregisterAll, nullptr);
    plugin.Unload();
+   bool invalidPlugin = false;
+   for (const auto& timer : m_timers)
+      if (timer.endpointId == plugin.m_endpointId)
+      {
+         invalidPlugin = true;
+         PLOGE << "Plugin '" << plugin.m_name << "' did not flush its deferred runnable while Unloading";
+      }
+   for (const auto& msg : m_msgs)
+      for (const auto& callback : msg.callbacks)
+         if (callback.endpointId == plugin.m_endpointId)
+         {
+            invalidPlugin = true;
+            PLOGE << "Plugin '" << plugin.m_name << "' leaked a callback for message " << msg.name_space << '.' << msg.name;
+         }
+   assert(!invalidPlugin);
 }
 
 void MsgPluginManager::UnloadPlugins()

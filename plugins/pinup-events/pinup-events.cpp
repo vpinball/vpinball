@@ -76,7 +76,7 @@ void onUpdateDMD(void* userData)
    else
       return;
 
-   msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
+   msgApi->RunOnMainThread(endpointId, 1. / 60., onUpdateDMD, nullptr);
    
    DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
 
@@ -283,5 +283,7 @@ MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginUnload()
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onSerumTriggerId);
    msgApi->ReleaseMsgID(getDmdSrcId);
+   dmdId.id.id = 0;
+   msgApi->FlushPendingCallbacks(endpointId);
    msgApi = nullptr;
 }

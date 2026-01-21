@@ -204,7 +204,8 @@ VPXTextureInfo* VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 
 void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
-   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, 
+   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(
+      VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0, 
       [](void* context) {
       VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
       if (tex)
@@ -479,18 +480,13 @@ void VPXPluginAPIImpl::OnGameStart()
    assert(m_dmdSources.empty());
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
 
-   unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   msgApi.SubscribeMsg(GetVPXEndPointId(), onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
-   msgApi.ReleaseMsgID(onDisplayGetSrcMsgId);
+   msgApi.SubscribeMsg(GetVPXEndPointId(), m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
 
-   unsigned int onGameStartMsgId = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
-   msgApi.BroadcastMsg(GetVPXEndPointId(), onGameStartMsgId, nullptr);
-   msgApi.ReleaseMsgID(onGameStartMsgId);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onGameStartMsgId, nullptr);
 
-   m_onDisplaySrcChg = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 
-      const InputManager& inputManager = g_pplayer->m_pininput;
+   const InputManager& inputManager = g_pplayer->m_pininput;
    m_actionMap[VPXACTION_LeftFlipper] = { inputManager.GetLeftFlipperActionId(), -1 };
    m_actionMap[VPXACTION_RightFlipper] = { inputManager.GetRightFlipperActionId(), -1 };
    m_actionMap[VPXACTION_StagedLeftFlipper] = { inputManager.GetStagedLeftFlipperActionId(), -1 };
@@ -522,18 +518,13 @@ void VPXPluginAPIImpl::OnGameEnd()
 {
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
 
-   unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   msgApi.UnsubscribeMsg(onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc);
-   msgApi.ReleaseMsgID(onDisplayGetSrcMsgId);
+   msgApi.UnsubscribeMsg(m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc);
 
    m_dmdSources.clear();
 
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
-   msgApi.ReleaseMsgID(m_onDisplaySrcChg);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 
-   unsigned int onGameEndMsgId = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
-   msgApi.BroadcastMsg(GetVPXEndPointId(), onGameEndMsgId, nullptr);
-   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onGameEndMsgId, nullptr);
 
    m_actionMap.clear();
 }
@@ -557,7 +548,7 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
    }
 
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 }
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
@@ -643,7 +634,15 @@ VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
    return instance;
 }
 
-VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
+VPXPluginAPIImpl::VPXPluginAPIImpl()
+   : m_apiThread(std::this_thread::get_id())
+   , m_getVPXAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API))
+   , m_onGameStartMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START))
+   , m_onGameEndMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END))
+   , m_getLoggingAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API))
+   , m_getScriptingAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
+   , m_onDisplaySrcChgMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
+   , m_onDisplayGetSrcMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
 {
    // Message host
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
@@ -674,11 +673,11 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
       [](const uint32_t, const MsgPluginAPI*) { /* Load: nothing to do */ }, //
       []() { /* Load: nothing to do */ });
    m_vpxPlugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
 
    // Logging API
    m_loggingApi.Log = PluginLog;
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API), &OnGetLoggingPluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, nullptr);
 
    // Scriptable API
    m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
@@ -688,7 +687,22 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_scriptableApi.SetCOMObjectOverride = SetCOMObjectOverride;
    m_scriptableApi.OnError = OnScriptError;
    m_scriptableApi.GetClassDef = GetClassDef;
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, nullptr);
+}
+
+VPXPluginAPIImpl::~VPXPluginAPIImpl()
+{
+   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI);
+   msgApi.ReleaseMsgID(m_getVPXAPIMsgId);
+   msgApi.UnsubscribeMsg(m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI);
+   msgApi.ReleaseMsgID(m_getLoggingAPIMsgId);
+   msgApi.UnsubscribeMsg(m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI);
+   msgApi.ReleaseMsgID(m_getScriptingAPIMsgId);
+   msgApi.ReleaseMsgID(m_onGameStartMsgId);
+   msgApi.ReleaseMsgID(m_onGameEndMsgId);
+   msgApi.ReleaseMsgID(m_onDisplayGetSrcMsgId);
+   msgApi.ReleaseMsgID(m_onDisplaySrcChgMsgId);
 }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)

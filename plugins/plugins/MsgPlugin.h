@@ -36,7 +36,7 @@
 //
 // To avoid message collision, each message is defined by a unique name in a 'namespace'
 // which is expected to be unique for each host/plugin. MsgId are allocated/retrieved
-// by using GetMsgID. If not needed anymore, host/plugin should call 'ReleaseMsgID' to
+// by using 'GetMsgID'. If not needed anymore, host/plugin must call 'ReleaseMsgID' to
 // avoid reaching the implementation dependent message limits.
 //
 // Plugins are instantiated on a thread selected by the host which may or may not be 
@@ -57,6 +57,13 @@
 // to the user as well as path for the native builds of the plugins for each supported platform.
 // Then, the plugin will be available for the end user to enable it from the host application.
 // 
+// When plugins are unloaded, they must clean up after them:
+// - ensure 'ReleaseMsgID' has been called for each 'GetMsgID'
+// - ensure 'UnsubscribeMsg' has been called for each 'SubscribeMsg'
+// - stop submitting runnables to 'RunOnMainThread', then call 'FlushPendingCallbacks'
+//   which will ensure all previously submitted callback are ran in an order corresponding 
+//   to their submission timing parameters.
+//
 // This header is a common header to be used both by host and plugins.
 
 
@@ -212,5 +219,6 @@ typedef struct MsgPluginAPI
    void(MSGPIAPI* RegisterSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Register a setting that the host will initialize either from a previously persisted value or the default
    void(MSGPIAPI* SaveSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Request the host to persist a setting
    // Threading
-   void (MSGPIAPI *RunOnMainThread)(const double delayInS, const msgpi_timer_callback callback, void* userData);
+   void (MSGPIAPI *RunOnMainThread)(const uint32_t endpointId, const double delayInS, const msgpi_timer_callback callback, void* userData);
+   void (MSGPIAPI *FlushPendingCallbacks)(const uint32_t endpointId);
 } MsgPluginAPI;

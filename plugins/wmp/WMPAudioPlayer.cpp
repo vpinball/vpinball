@@ -214,7 +214,7 @@ void WMPAudioPlayer::StartStreaming()
 
          AudioCallbackData* cbData = new AudioCallbackData{m_msgApi, m_endpointId, m_onAudioUpdateId, endMsg};
 
-         m_msgApi->RunOnMainThread(0, [](void* userData) {
+         m_msgApi->RunOnMainThread(m_endpointId, 0, [](void* userData) {
             AudioCallbackData* data = static_cast<AudioCallbackData*>(userData);
             data->msgApi->BroadcastMsg(data->endpointId, data->onAudioUpdateId, data->msg);
             delete data->msg;
@@ -245,7 +245,7 @@ void WMPAudioPlayer::StopStreaming()
 
    AudioCallbackData* cbData = new AudioCallbackData{m_msgApi, m_endpointId, m_onAudioUpdateId, pAudioUpdateMsg};
 
-   m_msgApi->RunOnMainThread(0, [](void* userData) {
+   m_msgApi->RunOnMainThread(m_endpointId, 0, [](void* userData) {
       AudioCallbackData* data = static_cast<AudioCallbackData*>(userData);
       data->msgApi->BroadcastMsg(data->endpointId, data->onAudioUpdateId, data->msg);
       delete data->msg;
@@ -273,7 +273,7 @@ void WMPAudioPlayer::SendAudioChunk(const float* samples, size_t frameCount)
 
    AudioCallbackData* cbData = new AudioCallbackData{m_msgApi, m_endpointId, m_onAudioUpdateId, pAudioUpdateMsg};
 
-   m_msgApi->RunOnMainThread(0, [](void* userData) {
+   m_msgApi->RunOnMainThread(m_endpointId, 0, [](void* userData) {
       AudioCallbackData* data = static_cast<AudioCallbackData*>(userData);
       data->msgApi->BroadcastMsg(data->endpointId, data->onAudioUpdateId, data->msg);
       delete[] data->msg->buffer;
