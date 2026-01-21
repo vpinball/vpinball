@@ -530,7 +530,7 @@ static DisplayFrame GetRenderFrame(const CtlResId id)
          if (pFlex->GetRenderMode() == RenderMode_DMD_RGB)
             return { pFlex->GetFrameId(), pFlex->UpdateRGBFrame() };
          else if ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4))
-            return { pFlex->GetFrameId(), pFlex->UpdateLum8Frame() };
+            return { pFlex->GetFrameId(), pFlex->UpdateLumFP32Frame() };
          return { 0, nullptr };
       }
    }

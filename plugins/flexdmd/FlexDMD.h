@@ -107,6 +107,7 @@ public:
 
    uint8_t* UpdateRGBFrame();
    uint8_t* UpdateLum8Frame();
+   float* UpdateLumFP32Frame();
    const uint16_t* GetSegFrame() const { return m_segData; }
    unsigned int GetFrameId() const { return m_frameId; }
 
@@ -124,6 +125,7 @@ private:
       delete m_pSurface; m_pSurface = nullptr;
       delete[] m_rgbFrame; m_rgbFrame = nullptr;
       delete[] m_lum8Frame; m_lum8Frame = nullptr;
+      delete[] m_lumFP32Frame; m_lumFP32Frame = nullptr;
       m_rgbaFrame.clear();
       m_lumFrame.clear();
    }
@@ -139,6 +141,9 @@ private:
 
    uint8_t* m_lum8Frame = nullptr;
    bool m_lum8FrameDirty = true;
+
+   float* m_lumFP32Frame = nullptr;
+   bool m_lumFP32FrameDirty = true;
 
    void UpdateLumFrame();
    std::vector<uint8_t> m_lumFrame;
