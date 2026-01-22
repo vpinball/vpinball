@@ -6,15 +6,19 @@
 
 #include <cstdint>
 #include <climits>
+#include <future>
 
 #include <unordered_dense.h>
+
+#include "B2SDataModel.h"
+#include "B2SRenderer.h"
 
 namespace B2S {
 
 class B2SServer final
 {
 public:
-   B2SServer();
+   B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* pinmameClassDef);
    ~B2SServer();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -96,17 +100,34 @@ public:
    void B2SStopSound(const string& soundName) { } // FIXME
    void B2SMapSound(int digit, const string& soundName) { } // FIXME
 
+   void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
+
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
    float GetScoreDigit(int digit) const;
    int GetPlayerScore(int player) const;
 
 private:
+   const MsgPluginAPI* const m_msgApi;
+   const unsigned int m_endpointId;
+   const VPXPluginAPI* const m_vpxApi;
+   const unsigned int m_onGetAuxRendererId;
+   const unsigned int m_onAuxRendererChgId;
+
+   std::future<std::shared_ptr<B2STable>> m_loadedB2S;
+   std::unique_ptr<B2SRenderer> m_renderer = nullptr;
+
+   const ScriptClassDef* m_pinmameClassDef;
+   void* const m_pinmame;
+
    std::function<void(B2SServer*)> m_onDestroyHandler;
    ankerl::unordered_dense::map<int, float> m_states;
    
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, float> m_scoreDigits;
+
+   static int OnRender(VPXRenderContext2D* ctx, void*);
+   static void OnGetRenderer(const unsigned int, void*, void* msgData);
 };
 
 }
