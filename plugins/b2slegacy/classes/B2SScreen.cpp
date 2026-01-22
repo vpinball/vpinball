@@ -120,12 +120,12 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
 
    m_dmdViewMode = dmdViewMode;
 
+   // VB uses CheckedState_Indeterminate
    // show or do not show the grill and do some more DMD stuff
-   bool showTheGrill = (m_dmdLocation.x == 0 && m_dmdLocation.y == 0);
-   if (m_pB2SSettings->GetHideGrill() == B2SSettingsCheckedState_Unchecked)
-      showTheGrill = true;
-   else if (m_pB2SSettings->GetHideGrill() == B2SSettingsCheckedState_Checked)
-      showTheGrill = false;
+   // bool showTheGrill = (m_dmdLocation.x == 0 && m_dmdLocation.y == 0);
+   // if (GetHideGrill() == CheckState.Unchecked) showTheGrill = true;
+   // else if (GetHideGrill() == CheckState.Checked) showTheGrill = false;
+   bool showTheGrill = !m_pB2SSettings->IsHideGrill();
 
    if (showTheGrill) {
       // show the grill

@@ -6,12 +6,11 @@
 
 namespace B2SLegacy {
 
-// FIXME not sure why these are not bool ?
-MSGPI_INT_VAL_SETTING(hideGrillProp, "B2SHideGrill", "B2SHideGrill", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
+MSGPI_BOOL_VAL_SETTING(hideGrillProp, "B2SHideGrill", "B2SHideGrill", "", true, false); // VB uses CheckedState_Indeterminate
 MSGPI_BOOL_VAL_SETTING(hideB2SProp, "B2SHideB2SDMD", "B2SHideB2SDMD", "", true, false);
 MSGPI_BOOL_VAL_SETTING(hideB2SBackglassProp, "B2SHideB2SBackglass", "B2SHideB2SBackglass", "", true, false);
-MSGPI_INT_VAL_SETTING(hideDMDProp, "B2SHideDMD", "B2SHideDMD", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
-MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDualMode_2_NotSet, eDualMode_2_Fantasy, eDualMode_2_NotSet);
+MSGPI_BOOL_VAL_SETTING(hideDMDProp, "B2SHideDMD", "B2SHideDMD", "", true, true); // VB uses CheckedState_Indeterminate
+MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDualMode_2_Authentic, eDualMode_2_Fantasy, eDualMode_2_Authentic);
 
 B2SSettings::B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId)
    : m_msgApi(msgApi)
@@ -34,10 +33,10 @@ void B2SSettings::Load(bool resetLogs)
    m_msgApi->RegisterSetting(m_endpointId, &hideB2SBackglassProp);
    m_msgApi->RegisterSetting(m_endpointId, &hideDMDProp);
    m_msgApi->RegisterSetting(m_endpointId, &dualModeProp);
-   m_hideGrill = (B2SSettingsCheckedState)hideGrillProp_Val;
+   m_hideGrill = hideGrillProp_Val;
    m_hideB2SDMD = hideB2SProp_Val;
    m_hideB2SBackglass = hideB2SBackglassProp_Val;
-   m_hideDMD = (B2SSettingsCheckedState)hideDMDProp_Val;
+   m_hideDMD = hideDMDProp_Val;
    m_currentDualMode = (eDualMode)dualModeProp_Val;
 }
 
@@ -59,10 +58,10 @@ void B2SSettings::ClearAll()
    m_glowBulbOn = false;
    m_glowIndex = -1;
    m_defaultGlow = -1;
-   m_hideGrill = B2SSettingsCheckedState_Indeterminate;
+   m_hideGrill = false; // VB uses CheckedState_Indeterminate
    m_hideB2SDMD = false;
    m_hideB2SBackglass = false;
-   m_hideDMD = B2SSettingsCheckedState_Indeterminate;
+   m_hideDMD = true; // VB uses CheckedState_Indeterminate
    m_animationSlowDowns.clear();
    m_allAnimationSlowDown = 1;
    m_currentDualMode = (eDualMode)eDualMode_2_NotSet;

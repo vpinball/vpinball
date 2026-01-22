@@ -58,8 +58,8 @@ public:
    void SetB2SName(const string& szB2SName) { m_szB2SName = szB2SName; Load(false); }
    void Load(bool resetLogs = true);
    void ClearAll();
-   B2SSettingsCheckedState GetHideGrill() const { return m_hideGrill; }
-   B2SSettingsCheckedState GetHideDMD() const { return m_hideDMD; }
+   bool IsHideGrill() const { return m_hideGrill; }
+   bool IsHideDMD() const { return m_hideDMD; }
    bool IsFormToFront() const { return m_formToFront; }
    std::map<string, int>* GetAnimationSlowDowns() { return &m_animationSlowDowns; }
    int GetAllAnimationSlowDown() const { return m_allAnimationSlowDown; }
@@ -82,10 +82,10 @@ private:
    bool m_glowBulbOn;
    int m_glowIndex;
    int m_defaultGlow;
-   B2SSettingsCheckedState m_hideGrill;
+   bool m_hideGrill;
    bool m_hideB2SDMD;
    bool m_hideB2SBackglass;
-   B2SSettingsCheckedState m_hideDMD;
+   bool m_hideDMD;
    eDualMode m_currentDualMode;
    string m_szGameName;
    bool m_gameNameFound;
