@@ -15,7 +15,6 @@ PinMAMEAPI::PinMAMEAPI(Server* server, ScriptClassDef* pinmameClassDef)
      m_changedLEDsIndex(-1),
      m_setSwitchIndex(-1)
 {
-   m_server->SetPinMAMEApi(this);
 
    if (!m_pinmameClassDef) {
       LOGE("No PinMAME Class Definition");
@@ -44,6 +43,9 @@ PinMAMEAPI::PinMAMEAPI(Server* server, ScriptClassDef* pinmameClassDef)
 
 PinMAMEAPI::~PinMAMEAPI()
 {
+   if (m_pinmameInstance && m_pinmameClassDef)
+      PSC_RELEASE(m_pinmameClassDef, m_pinmameInstance);
+   m_pinmameInstance = nullptr;
 }
 
 ScriptArray* PinMAMEAPI::GetChangedLamps()

@@ -94,11 +94,15 @@ public:
    void B2SPlaySound(const string& soundname);
    void B2SStopSound(const string& soundname);
    void B2SMapSound(int digit, const string& soundname);
+   string GetVPMBuildVersion() const { return ""s; }
+   bool GetLockDisplay() const { return false; }
+   void SetLockDisplay(bool lockDisplay) { }
    FormBackglass* GetFormBackglass() const { return m_pFormBackglass; }
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    PinMAMEAPI* GetPinMAMEApi() const { return m_pinmameApi; }
    void SetPinMAMEApi(PinMAMEAPI* pinmameApi) { m_pinmameApi = pinmameApi; }
    uint32_t GetEndpointId() const { return m_endpointId; }
+   void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
    void GetChangedSolenoids();
@@ -179,6 +183,7 @@ private:
    VPXPluginAPI* const m_vpxApi;
    const uint32_t m_endpointId;
    PinMAMEAPI* m_pinmameApi;
+   std::function<void(Server*)> m_onDestroyHandler;
 
    bool m_ready = false;
 };
