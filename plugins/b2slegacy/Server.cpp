@@ -64,6 +64,12 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
 
 Server::~Server()
 {
+   if (m_onDestroyHandler)
+      m_onDestroyHandler(this);
+
+   delete m_pinmameApi;
+   m_pinmameApi = nullptr;
+
    delete[] m_deviceStateSrc.deviceDefs;
 
    delete m_pTimer;
