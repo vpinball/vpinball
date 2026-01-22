@@ -89,7 +89,7 @@ cp make/CMakeLists_bgfx-macos-arm64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
 
-build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -105,7 +105,7 @@ cp make/CMakeLists_bgfx-macos-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
 
-build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -120,7 +120,7 @@ cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -194,7 +194,7 @@ cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -210,7 +210,7 @@ cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RK3588=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -225,7 +225,7 @@ cp make/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
@@ -240,7 +240,7 @@ cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RK3588=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
