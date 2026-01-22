@@ -104,13 +104,9 @@ struct CodeView: View {
     }
 
     func handleAppear() {
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data = data, let content = String(data: data,
-                                                     encoding: .utf8)
-            {
-                self.content = content
-            }
-        }.resume()
+        if let data = try? Data(contentsOf: url) {
+            content = String(decoding: data, as: UTF8.self)
+        }
     }
 
     func handleDone() {

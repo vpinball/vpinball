@@ -52,11 +52,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.InputStreamReader
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -215,10 +212,7 @@ fun CodeWebViewDialog(file: File, canClear: Boolean, onDismissRequest: () -> Uni
 
 private fun readFileContent(file: File): String {
     if (file.exists()) {
-        FileInputStream(file).use { inputStream ->
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            return reader.readText()
-        }
+        return file.readBytes().toString(Charsets.UTF_8)
     } else {
         return "File not found."
     }

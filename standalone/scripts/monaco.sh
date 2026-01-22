@@ -18,7 +18,7 @@ cat << 'EOF' > package.json
     "build": "vite build"
   },
   "dependencies": {
-    "monaco-editor": "^0.52.2"
+    "monaco-editor": "^0.55.1"
   },
   "devDependencies": {
     "vite": "^5.0.0"
