@@ -79,11 +79,12 @@ typedef enum {
     eLEDTypes_Dream7 = 2
 } eLEDTypes;
 
-typedef enum {
-    B2SSettingsCheckedState_Unchecked = 0,
-    B2SSettingsCheckedState_Checked = 1,
-    B2SSettingsCheckedState_Indeterminate = 2
-} B2SSettingsCheckedState;
+// VB uses CheckedState_Indeterminate
+// typedef enum {
+//     B2SSettingsCheckedState_Unchecked = 0,
+//     B2SSettingsCheckedState_Checked = 1,
+//     B2SSettingsCheckedState_Indeterminate = 2
+// } B2SSettingsCheckedState;
 
 typedef enum {
     eType_Undefined = 0,
