@@ -10,6 +10,8 @@
 
 namespace B2S {
 
+MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
+
 B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
    , m_msgApi(msgApi)
@@ -21,19 +23,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
            : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
                                                 : m_b2s->m_backglassOnImage.m_image)
 {
-   bool m_showGrill = false;
-   m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
-
-   m_scoreViewDmdOverlay.LoadSettings(msgApi, m_endpointId, true);
-   m_backglassDmdOverlay.LoadSettings(msgApi, m_endpointId, false);
-
-   const VPXTextureInfo* bgTexInfo = nullptr;
-   if (m_b2s->m_backglassImage.m_image)
-      bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
-   else if (m_b2s->m_backglassOffImage.m_image)
-      bgTexInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
-   m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
-   m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
+   m_scoreViewDmdOverlay.LoadSettings(true);
 
    const VPXTextureInfo* dmdTexInfo = nullptr;
    if (m_b2s->m_dmdImage.m_image)
@@ -63,6 +53,11 @@ B2SRenderer::~B2SRenderer()
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);
    m_segDisplays.clear();
+}
+
+void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
+{
+   msgApi->RegisterSetting(endpointId, &showGrillProp);
 }
 
 void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
@@ -258,6 +253,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, B2SServer* server, const 
             static_cast<float>(bulbTex->width) * 0.5f, static_cast<float>(bulbTex->height) * 0.5f, rotation,
             static_cast<float>(bulb->m_locationX), static_cast<float>(bulb->m_locationY), static_cast<float>(bulb->m_width), static_cast<float>(bulb->m_height));
       }
+      if (bulb->m_image)
       {
          const VPXTextureInfo* const bulbTex = GetTextureInfo(bulb->m_image);
          ctx->DrawImage(ctx, bulb->m_image, bulb->m_lightColor.x, bulb->m_lightColor.y, bulb->m_lightColor.z, bulb->m_brightness,
@@ -273,16 +269,43 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
    if (server == nullptr)
       return;
 
+   vector<SegElementType> segTypes;
+   vector<float> luminances;
+   vector<VPXSegDisplayRenderStyle> styles;
+   vector<VPXSegDisplayHint> hints;
    int digitIndex = 1;
    for (const auto& display : m_segDisplays)
    {
       SegDisplayFrame state = display.GetState(display.id);
-      for (int i = 0; i < display.nElements; i++)
+      for (unsigned int i = 0; i < display.nElements; i++)
       {
+         VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
+         VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+         if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_NEON_PLASMA)
+            style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+         else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_GREEN)
+            style = VPXSegDisplayRenderStyle::VPXSegStyle_GreenVFD;
+         else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_BLUE)
+         {
+            style = VPXSegDisplayRenderStyle::VPXSegStyle_BlueVFD;
+            if (display.hardware == CTLPI_SEG_HARDWARE_GTS1_4DIGIT //
+               || display.hardware == CTLPI_SEG_HARDWARE_GTS1_6DIGIT //
+               || display.hardware == CTLPI_SEG_HARDWARE_GTS80A_7DIGIT //
+               || display.hardware == CTLPI_SEG_HARDWARE_GTS80B_20DIGIT //
+            )
+               hint = VPXSegDisplayHint::Gottlieb;
+         }
+         segTypes.push_back(display.elementType[i]);
+         styles.push_back(style);
+         hints.push_back(hint);
+
          int bitState = 0;
          for (int j = 0; j < 16; j++)
+         {
+            luminances.push_back(state.frame[i * 16 + j]);
             if (state.frame[i * 16 + j] > 0.5f)
                bitState |= 1 << j;
+         }
          int ret;
          switch (bitState & ~0x80) // Remove the comma
          {
@@ -312,11 +335,16 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
    digitIndex = 1;
    for (const auto& reel : scores.m_scores)
    {
+      // Skip digits located on the grill when the grill is hidden
+      if (static_cast<float>(reel.m_locY) > ctx->srcHeight)
+         continue;
+
       const float width = (static_cast<float>(reel.m_width) - 0.5f * static_cast<float>((reel.m_digits - 1) * reel.m_spacing)) / static_cast<float>(reel.m_digits);
       for (int i = 0; i < reel.m_digits; i++)
       {
          const float x = static_cast<float>(reel.m_locX) + static_cast<float>(i) * (width + 0.5f * static_cast<float>(reel.m_spacing));
          int digit = 0;
+         int index = -1;
          if (reel.m_b2sPlayerNo != 0)
          {
             int score = abs(server->GetPlayerScore(reel.m_b2sPlayerNo));
@@ -326,7 +354,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
          }
          else
          {
-            const int index = reel.m_b2sStartDigit > 0 ? (reel.m_b2sStartDigit + i) : digitIndex;
+            index = reel.m_b2sStartDigit > 0 ? (reel.m_b2sStartDigit + i) : digitIndex;
             digit = static_cast<int>(server->GetScoreDigit(index));
          }
          digitIndex++;
@@ -337,10 +365,10 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
             // Black Pyramid (Bally 1984)
          case B2SScoreRenderer::ImportedLED:
             // Apache! (Taito 1978)
+            // LED & ImportedLED seem to be the same as reel but without animation
          case B2SScoreRenderer::Reel:
             // Volkan Steel and Metal (Original 2023), Hang Glider (Bally 1976) => Simple reels, no animations
             // ? => Simple reels with animations & sounds
-            // LED & ImportedLED seems to be the same as reel but without animation
             {
                const B2SReelImage* reelImage = m_b2s->m_reels.GetImage(reel.m_reelType, digit);
                if (reelImage && reelImage->m_image)
@@ -356,6 +384,30 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
 
          case B2SScoreRenderer::Dream7:
             // Asteroid Annie (Gottlieb 1980)
+            {
+               std::array<float, 16> brightness;
+               SegElementType segType = SegElementType::CTLPI_SEG_LAYOUT_14;
+               VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+               VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
+               if (index > 0 && index * 16 <= luminances.size())
+               {
+                  segType = segTypes[index-1];
+                  style = styles[index-1];
+                  hint = hints[index-1];
+                  memcpy(brightness.data(), luminances.data() + (index-1) * 16, 16 * sizeof(float));
+               }
+               ctx->DrawSegDisplay(ctx, style, hint,
+                  // First layer: glass
+                  nullptr, 1.f, 1.f, 1.f, 1.f, // Glass texture, tint and roughness
+                  0.f, 0.f, 0.f, 0.f, // Glass texture coordinates (inside overall glass texture, cut for each element)
+                  0.f, 0.f, 0.f, // Glass lighting from room
+                  // Second layer: emitter
+                  segType, brightness.data(), // Segment emitter type and brightness array
+                  1.f, 1.f, 1.f, 1.f, 1.f,  // Emitter tint, emitter brightness, emitter alpha
+                  0.f, 0.f, 0.f, 0.f, // Emitter padding (from glass border)
+                  // Render quad
+                  x, ctx->srcHeight - static_cast<float>(reel.m_locY + reel.m_height), width, static_cast<float>(reel.m_height));
+            }
             break;
 
          case B2SScoreRenderer::RenderedLED:
@@ -369,6 +421,19 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
 
 bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 {
+   // Update to latest settings state
+   m_grillCut = showGrillProp_Get() ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
+
+   const VPXTextureInfo* bgTexInfo = nullptr;
+   if (m_b2s->m_backglassImage.m_image)
+      bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
+   else if (m_b2s->m_backglassOffImage.m_image)
+      bgTexInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
+   m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
+   m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
+
+   m_backglassDmdOverlay.LoadSettings(false);
+
    ctx->srcWidth = m_b2sWidth;
    ctx->srcHeight = m_b2sHeight;
 
@@ -421,6 +486,9 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 {
    if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
       return false;
+
+   // Update to latest settings state
+   m_scoreViewDmdOverlay.LoadSettings(false);
 
    ctx->srcWidth = m_dmdWidth;
    ctx->srcHeight = m_dmdHeight;

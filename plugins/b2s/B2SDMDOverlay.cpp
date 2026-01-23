@@ -32,37 +32,47 @@ B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex,
 {
 }
 
-void B2SDMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId, bool isScoreView)
+void B2SDMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
+{
+   msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
+   msgApi->RegisterSetting(endpointId, &backglassDMDAutoPosProp);
+   msgApi->RegisterSetting(endpointId, &backglassDMDXProp);
+   msgApi->RegisterSetting(endpointId, &backglassDMDYProp);
+   msgApi->RegisterSetting(endpointId, &backglassDMDWProp);
+   msgApi->RegisterSetting(endpointId, &backglassDMDHProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDOverlayProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDAutoPosProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDXProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDYProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDWProp);
+   msgApi->RegisterSetting(endpointId, &scoreViewDMDHProp);
+}
+
+void B2SDMDOverlay::LoadSettings(bool isScoreView)
 {
    if (isScoreView)
    {
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDOverlayProp);
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDAutoPosProp);
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDXProp);
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDYProp);
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDWProp);
-      msgApi->RegisterSetting(endpointId, &scoreViewDMDHProp);
       m_enable = scoreViewDMDOverlayProp_Val != 0;
       m_detectDmdFrame = scoreViewDMDAutoPosProp_Val != 0;
-      m_frame.x = scoreViewDMDXProp_Val;
-      m_frame.y = scoreViewDMDYProp_Val;
-      m_frame.z = scoreViewDMDWProp_Val;
-      m_frame.w = scoreViewDMDHProp_Val;
+      if (!m_detectDmdFrame)
+      {
+         m_frame.x = scoreViewDMDXProp_Val;
+         m_frame.y = scoreViewDMDYProp_Val;
+         m_frame.z = scoreViewDMDWProp_Val;
+         m_frame.w = scoreViewDMDHProp_Val;
+      }
    }
    else
    {
-      msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
-      msgApi->RegisterSetting(endpointId, &backglassDMDAutoPosProp);
-      msgApi->RegisterSetting(endpointId, &backglassDMDXProp);
-      msgApi->RegisterSetting(endpointId, &backglassDMDYProp);
-      msgApi->RegisterSetting(endpointId, &backglassDMDWProp);
-      msgApi->RegisterSetting(endpointId, &backglassDMDHProp);
       m_enable = backglassDMDOverlayProp_Val != 0;
       m_detectDmdFrame = backglassDMDAutoPosProp_Val != 0;
-      m_frame.x = backglassDMDXProp_Val;
-      m_frame.y = backglassDMDYProp_Val;
-      m_frame.z = backglassDMDWProp_Val;
-      m_frame.w = backglassDMDHProp_Val;
+      if (!m_detectDmdFrame)
+      {
+         m_frame.x = backglassDMDXProp_Val;
+         m_frame.y = backglassDMDYProp_Val;
+         m_frame.z = backglassDMDWProp_Val;
+         m_frame.w = backglassDMDHProp_Val;
+      }
    }
 }
 
@@ -117,11 +127,9 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
 
 ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) const
 {
-   ivec4 subFrame;
-
    const VPXTextureInfo* const texInfo = GetTextureInfo(image);
    if (texInfo == nullptr)
-      return subFrame;
+      return ivec4();
 
    unsigned int pos_step;
    switch (texInfo->format)
@@ -132,65 +140,125 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
    default: pos_step = 0;
    }
 
-   // Find the largest dark rectangle in the background image
-   float maxHeuristic = 0.f;
-   std::stack<int> st;
-   vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
-   unsigned int pos = 0;
-   for (unsigned int y = 0; y < texInfo->height; ++y)
+   // Heuristic to select large rectangles, favoring screen centered ones
+   auto heuristic = [texW = static_cast<float>(texInfo->width)](const ivec4& frame)
+   { return static_cast<float>(frame.z) / texW - 1.f * fabs(0.5f - static_cast<float>(frame.x + frame.z / 2) / texW); };
+
+   const int padding = (2 * texInfo->width) / 1920;
+   float lumMin = 0.f;
+   float lumMax = 256.f;
+   ivec4 searchFrame(0, 0, texInfo->width, texInfo->height);
+   ivec4 bestFrame;
+   for (int search = 0; search < 7; search++)
    {
-      for (unsigned int x = 0; x < texInfo->width; ++x,pos+=pos_step)
+      float lumLimit = (lumMin + lumMax) * 0.5f;
+
+      LOGD("DMD area search thr: %f area is %d,%d %dx%d", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w);
+
+      // Find the largest dark rectangle in the background image
+      ivec4 subFrame;
+      ivec4 searchSubFrame;
+      std::stack<int> st;
+      vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
+      for (int y = searchFrame.y; y < (searchFrame.y + searchFrame.w); ++y)
       {
-         uint8_t lum = 0;
-         switch (texInfo->format)
+         unsigned int pos = (y * texInfo->width + searchFrame.x) * pos_step;
+         for (int x = searchFrame.x; x < (searchFrame.x + searchFrame.z); ++x, pos += pos_step)
          {
-         case VPXTEXFMT_BW32F: lum = static_cast<uint8_t>(255.f * static_cast<float*>(texInfo->data)[pos]); break;
-         case VPXTEXFMT_sRGB8:
-            lum = static_cast<uint8_t>(
-               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
-            break;
-         case VPXTEXFMT_sRGBA8:
-            lum = static_cast<uint8_t>(
-               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
-            break;
-         default: return subFrame;
+            float lum = 0;
+            switch (texInfo->format)
+            {
+            case VPXTEXFMT_BW32F:
+               lum = 255.f * static_cast<float*>(texInfo->data)[pos];
+               break;
+
+            case VPXTEXFMT_sRGB8:
+            case VPXTEXFMT_sRGBA8:
+               lum = 0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2];
+               break;
+
+            default: return ivec4();
+            }
+            if (lum < lumLimit)
+               heights[x] += 1;
+            else
+               heights[x] = 0;
          }
-         if (lum < 8)
-            heights[x] += 1;
-         else
-            heights[x] = 0;
+
+         // Evaluate each rectangle that can be formed with the heights of the columns
+         for (int x = searchFrame.x; x <= searchFrame.x + searchFrame.z; ++x)
+         {
+            while (!st.empty() && (x == (searchFrame.x + searchFrame.z) || heights[st.top()] > heights[x]))
+            {
+               const int height = heights[st.top()];
+               st.pop();
+               const int width = st.empty() ? (x - searchFrame.x) : (x - st.top() - 1);
+               if (width > 6 * padding && height > 3 * padding)
+               {
+                  ivec4 unpaddedFrame;
+                  unpaddedFrame.x = st.empty() ? searchFrame.x : st.top() + 1;
+                  unpaddedFrame.y = y - height + 1;
+                  unpaddedFrame.z = width;
+                  unpaddedFrame.w = height;
+                  // Extends search frame for next pass to include this area even if not selected
+                  if (searchSubFrame.x == 0)
+                     searchSubFrame = unpaddedFrame;
+                  else
+                  {
+                     ivec4 newSearchFrame;
+                     newSearchFrame.x = std::min(searchSubFrame.x, unpaddedFrame.x);
+                     newSearchFrame.y = std::min(searchSubFrame.y, unpaddedFrame.y);
+                     newSearchFrame.z = std::max(searchSubFrame.x + searchSubFrame.z, unpaddedFrame.x + unpaddedFrame.z) - newSearchFrame.x;
+                     newSearchFrame.w = std::max(searchSubFrame.y + searchSubFrame.w, unpaddedFrame.y + unpaddedFrame.w) - newSearchFrame.y;
+                     searchSubFrame = newSearchFrame;
+                  }
+                  // Add some padding and fit to searched aspect ratio
+                  ivec4 frame;
+                  frame.x = unpaddedFrame.x + padding;
+                  frame.y = unpaddedFrame.y + padding;
+                  frame.z = unpaddedFrame.z - 2 * padding;
+                  frame.w = unpaddedFrame.w - 2 * padding;
+                  if (const float ar = static_cast<float>(frame.z) / static_cast<float>(frame.w); ar > dmdAspectRatio)
+                  {
+                     const int w = static_cast<int>(static_cast<float>(frame.w) * dmdAspectRatio);
+                     frame.x += (frame.z - w) / 2;
+                     frame.z = w;
+                  }
+                  else
+                  {
+                     const int h = static_cast<int>(static_cast<float>(frame.z) / dmdAspectRatio);
+                     frame.y += (frame.w - h) / 2;
+                     frame.w = h;
+                  }
+                  // Selected area must be large enough (at least 1/3 of the backglass width)
+                  if ((3 * frame.z >= static_cast<int>(texInfo->width)) && (heuristic(frame) > heuristic(subFrame)))
+                     subFrame = frame;
+               }
+            }
+            if (x < (searchFrame.x + searchFrame.z))
+               st.push(x);
+         }
       }
 
-      // Evaluate each rectangle that can be formed with the heights of the columns
-      for (unsigned int x = 0; x <= texInfo->width; ++x)
+      LOGD("DMD area search %f -> %f, thr: %f lead to %d,%d %dx%d Heur:%f, PrevHeur: %f", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
+         heuristic(subFrame), heuristic(bestFrame));
+
+      // There are no heuristic between luminance levels, this can lead to unwanted behavior (for example drifting insde a box)
+      if (subFrame.w > 0) // && (bestFrame.w == 0 || (heuristic(subFrame) > 0.6f * heuristic(bestFrame))))
       {
-         while (!st.empty() && (x == texInfo->width || heights[st.top()] > heights[x]))
-         {
-            const int height = heights[st.top()];
-            st.pop();
-            const int width = st.empty() ? x : x - st.top() - 1;
-            const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-            const float arMatch = aspectRatio < dmdAspectRatio ? aspectRatio / dmdAspectRatio : dmdAspectRatio / aspectRatio;
-            const float heuristic = static_cast<float>(height * width) * sqrtf(arMatch);
-            if (heuristic > maxHeuristic)
-            {
-               maxHeuristic = heuristic;
-               subFrame.x = st.empty() ? 0 : st.top() + 1;
-               subFrame.y = texInfo->height - y - 1;
-               subFrame.z = width;
-               subFrame.w = height;
-            }
-         }
-         if (x < texInfo->width)
-            st.push(x);
+         lumMax = lumLimit;
+         bestFrame = subFrame;
+         searchFrame = searchSubFrame;
+      }
+      else
+      {
+         lumMin = lumLimit;
       }
    }
 
-   // Do not select a too small area
-   if (static_cast<unsigned int>(subFrame.z * subFrame.w) < texInfo->width * texInfo->height / 16)
-      subFrame = ivec4();
+   bestFrame.y = texInfo->height - 1 - bestFrame.y - bestFrame.w;
 
-   return subFrame;
+   return bestFrame;
 }
 
 }

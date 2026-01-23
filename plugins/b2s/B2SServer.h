@@ -113,6 +113,7 @@ private:
    const VPXPluginAPI* const m_vpxApi;
    const unsigned int m_onGetAuxRendererId;
    const unsigned int m_onAuxRendererChgId;
+   const AncillaryRendererDef m_ancillaryRendererDef;
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
    std::unique_ptr<B2SRenderer> m_renderer = nullptr;

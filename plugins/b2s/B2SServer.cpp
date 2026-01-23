@@ -12,6 +12,7 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    , m_vpxApi(vpxApi)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
+   , m_ancillaryRendererDef({ "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", this, OnRender })
    , m_pinmameClassDef(pinmameClassDef)
    , m_pinmame(pinmameClassDef ? pinmameClassDef->CreateObject() : nullptr)
 {
@@ -95,14 +96,14 @@ int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
    return false;
 }
 
-void B2SServer::OnGetRenderer(const unsigned int, void* server, void* msgData)
+void B2SServer::OnGetRenderer(const unsigned int, void* userData, void* msgData)
 {
-   static AncillaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", server, OnRender };
+   auto me = static_cast<B2SServer*>(userData);
    auto msg = static_cast<GetAncillaryRendererMsg*>(msgData);
    if ((msg->window == VPXWindowId::VPXWINDOW_Backglass) || (msg->window == VPXWindowId::VPXWINDOW_ScoreView))
    {
       if (msg->count < msg->maxEntryCount)
-         msg->entries[msg->count] = entry;
+         msg->entries[msg->count] = me->m_ancillaryRendererDef;
       msg->count++;
    }
 }
