@@ -27,6 +27,7 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, Pinmame
 
 Controller::~Controller()
 {
+   Stop();
    m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
