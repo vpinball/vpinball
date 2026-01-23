@@ -519,7 +519,7 @@ Player::Player(PinTable *const table, const int playMode)
                      if (isError)
                         m_liveUI->PushNotification("Image '" + image->m_name + "' was downsized due to low memory", 5000);
                   }
-                  PLOGI << "Image '" << image->m_name << "' loaded to " << (uploaded ? "GPU" : "RAM");
+                  PLOGD << "Image '" << image->m_name << "' loaded to " << (uploaded ? "GPU" : "RAM");
                }
                else if (resizeOnLowMem)
                {

@@ -37,14 +37,12 @@ bool LayeredINIPropertyStore::Load()
    mINI::INIFile file(m_path);
    if (file.read(m_ini))
    {
-      PLOGI << "Settings file was loaded from '" << m_path << '\'';
       for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
          LoadFromINI(id);
       return true;
    }
    else
    {
-      PLOGE << "Failed to load settings from '" << m_path << '\'';
       return false;
    }
 }

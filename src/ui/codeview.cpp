@@ -720,7 +720,6 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       m_pScript->GetScriptState(&state);
       if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
       {
-         PLOGI << "Sending Close to script interpreter #" << m_pScript;
          m_pScript->Close();
          const uint32_t startWaitTick = msec();
          while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
