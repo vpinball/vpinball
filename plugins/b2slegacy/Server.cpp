@@ -24,11 +24,16 @@ using namespace std::string_literals;
 
 namespace B2SLegacy {
 
-Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
-   : m_msgApi(msgApi),
-     m_vpxApi(vpxApi),
-     m_endpointId(endpointId),
-     m_pinmameApi(nullptr)
+Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex)
+   : m_msgApi(msgApi)
+   , m_vpxApi(vpxApi)
+   , m_endpointId(endpointId)
+   , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
+   , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
+   , m_onDevChangedMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG))
+   , m_pinmameClassDef(pinmameClassDef)
+   , m_pinmameMemberStartIndex(pinmameMemberStartIndex)
+   , m_pinmameApi(pinmameClassDef ? new PinMAMEAPI(this, pinmameClassDef) : nullptr)
 {
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
@@ -60,17 +65,28 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
    m_nLamps = 0;
    m_mechIndex = -1;
    m_nMechs = 0;
+
+   msgApi->SubscribeMsg(endpointId, m_onGetAuxRendererId, OnGetRendererStatic, this);
+   msgApi->SubscribeMsg(endpointId, m_onDevChangedMsgId, OnDevSrcChangedStatic, this);
+   msgApi->BroadcastMsg(endpointId, m_onAuxRendererChgId, nullptr);
 }
 
 Server::~Server()
 {
-   if (m_onDestroyHandler)
-      m_onDestroyHandler(this);
+   m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic);
+   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChangedStatic);
+   m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
+   m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
+   m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
+   m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
 
    delete m_pinmameApi;
    m_pinmameApi = nullptr;
 
    delete[] m_deviceStateSrc.deviceDefs;
+
+   if (m_onDestroyHandler)
+      m_onDestroyHandler(this);
 
    delete m_pTimer;
    delete m_pFormBackglass;
@@ -185,6 +201,42 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
 
    LOGI("B2SLegacy: Device state updated - Solenoids: %d, Lamps: %d, GI: %d, Mechs: %d",
         m_nSolenoids, m_nLamps, m_nGIs, m_nMechs);
+}
+
+int Server::OnRenderStatic(VPXRenderContext2D* ctx, void* userData)
+{
+   return static_cast<Server*>(userData)->OnRender(ctx, userData);
+}
+
+void Server::OnGetRendererStatic(const unsigned int, void* userData, void* msgData)
+{
+   auto me = static_cast<Server*>(userData);
+   auto msg = static_cast<GetAncillaryRendererMsg*>(msgData);
+
+   const AncillaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", me, OnRenderStatic };
+   const AncillaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", me, OnRenderStatic };
+
+   if (msg->window == VPXWindowId::VPXWINDOW_Backglass) {
+      if (msg->count < msg->maxEntryCount)
+         msg->entries[msg->count] = backglassEntry;
+      msg->count++;
+   }
+   else if (msg->window == VPXWindowId::VPXWINDOW_ScoreView) {
+      if (msg->count < msg->maxEntryCount)
+         msg->entries[msg->count] = dmdEntry;
+      msg->count++;
+   }
+}
+
+void Server::OnDevSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData)
+{
+   static_cast<Server*>(userData)->OnDevSrcChanged(msgId, userData, msgData);
+}
+
+void Server::ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
+{
+   if (m_pinmameApi)
+      m_pinmameApi->HandleCall(memberIndex + m_pinmameMemberStartIndex, m_pinmameMemberStartIndex, pArgs, pRet);
 }
 
 void Server::TimerElapsed(Timer* pTimer)

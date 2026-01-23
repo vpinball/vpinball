@@ -6,7 +6,7 @@
 #include <functional>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
-#include "plugins/ResURIResolver.h"
+#include "plugins/ControllerPlugin.h"
 
 namespace B2SLegacy {
 
@@ -15,7 +15,7 @@ class PinMAMEAPI;
 class Server
 {
 public:
-   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi);
+   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex);
    ~Server();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -100,8 +100,8 @@ public:
    FormBackglass* GetFormBackglass() const { return m_pFormBackglass; }
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    PinMAMEAPI* GetPinMAMEApi() const { return m_pinmameApi; }
-   void SetPinMAMEApi(PinMAMEAPI* pinmameApi) { m_pinmameApi = pinmameApi; }
    uint32_t GetEndpointId() const { return m_endpointId; }
+   void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
@@ -182,8 +182,20 @@ private:
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
    const uint32_t m_endpointId;
+
+   const unsigned int m_onGetAuxRendererId;
+   const unsigned int m_onAuxRendererChgId;
+   const unsigned int m_onDevChangedMsgId;
+
+   ScriptClassDef* const m_pinmameClassDef;
+   const int m_pinmameMemberStartIndex;
    PinMAMEAPI* m_pinmameApi;
+
    std::function<void(Server*)> m_onDestroyHandler;
+
+   static int OnRenderStatic(VPXRenderContext2D* ctx, void* userData);
+   static void OnGetRendererStatic(const unsigned int, void*, void* msgData);
+   static void OnDevSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData);
 
    bool m_ready = false;
 };

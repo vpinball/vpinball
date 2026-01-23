@@ -1,38 +1,25 @@
 // license:GPLv3+
 
 #include "common.h"
+#include "plugins/MsgPlugin.h"
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/LoggingPlugin.h"
 #include "plugins/VPXPlugin.h"
-#include "plugins/ControllerPlugin.h"
 
 #include "Server.h"
-#include "forms/FormDMD.h"
-#include "classes/B2SScreen.h"
-#include "utils/PinMAMEAPI.h"
 
 namespace B2SLegacy {
 
 LPI_IMPLEMENT
 
-static int OnRender(VPXRenderContext2D* const renderCtx, void* context);
-static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData);
-static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-
-///////////////////////////////////////////////////////////////////////////////
-// B2S Legacy plugin
-
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId = 0;
-static unsigned int onGetAuxRendererId = 0;
-static unsigned int onAuxRendererChgId = 0;
-static unsigned int getDevSrcMsgId = 0;
-static unsigned int onDevChangedMsgId = 0;
+static unsigned int getVpxApiId = 0;
+static unsigned int onPluginLoaded = 0;
+static unsigned int onPluginUnloaded = 0;
 static Server* server = nullptr;
-static unsigned int onGameStartId = 0;
-static unsigned int onGameEndId = 0;
 static bool serverRegistered = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,19 +28,6 @@ static bool serverRegistered = false;
 
 static ScriptClassDef* pinmameClassDef = nullptr;
 static int pinmameMemberStartIndex = 0;
-
-void MSGPIAPI ForwardPinMAMECall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
-{
-   if (!server)
-      return;
-
-   if (!server->GetPinMAMEApi()) {
-      assert(pinmameClassDef);
-      server->SetPinMAMEApi(new PinMAMEAPI(server, pinmameClassDef));
-   }
-
-   server->GetPinMAMEApi()->HandleCall(memberIndex, pinmameMemberStartIndex, pArgs, pRet);
-}
 
 PSC_CLASS_START(Server)
    PSC_FUNCTION0(Server, void, Dispose)
@@ -133,80 +107,51 @@ PSC_CLASS_START(Server)
       for (unsigned int i = 0; i < pinmameClassDef->nMembers; i++)
       {
          ScriptClassMemberDef member = pinmameClassDef->members[i];
-         member.Call = ForwardPinMAMECall;
+         member.Call = [](void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
+            {
+               static_cast<Server*>(me)->ForwardPinMAMECall(memberIndex - pinmameMemberStartIndex, pArgs, pRet);
+            };
          members.push_back(member);
       }
    }
 PSC_CLASS_END(Server)
 
-static int OnRender(VPXRenderContext2D* const renderCtx, void* context)
+static void OnPluginLoaded(const unsigned int, void*, void* msgData)
 {
-   return server ? server->OnRender(renderCtx, context) : 0;
-}
-
-static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
-{
-   GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
-
-   const AncillaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", server, OnRender };
-   const AncillaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", server, OnRender };
-
-   if (msg->window == VPXWindowId::VPXWINDOW_Backglass) {
-      if (msg->count < msg->maxEntryCount)
-         msg->entries[msg->count] = backglassEntry;
-      msg->count++;
-   }
-   else if (msg->window == VPXWindowId::VPXWINDOW_ScoreView) {
-      if (msg->count < msg->maxEntryCount)
-         msg->entries[msg->count] = dmdEntry;
-      msg->count++;
-   }
-}
-
-static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData)
-{
-   if (server)
-      server->OnDevSrcChanged(msgId, userData, msgData);
-}
-
-static void OnGameStart(const unsigned int, void*, void*)
-{
-}
-
-static void OnGameEnd(const unsigned int, void*, void*)
-{
-}
-
-static void RegisterServerObject(void*)
-{
-   if (serverRegistered)
-      return;
-
-   pinmameClassDef = scriptApi->GetClassDef("Controller");
-   if (pinmameClassDef == nullptr) {
-      msgApi->RunOnMainThread(endpointId, 0.1, RegisterServerObject, nullptr);
-      return;
-   }
-
-   auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
-   RegisterServerSCD(regLambda);
-   Server_SCD->CreateObject = []()
+   const char* pluginId = static_cast<const char*>(msgData);
+   if (strcmp(pluginId, "PinMAME") == 0 && !serverRegistered)
    {
-      auto pServer = new Server(msgApi, endpointId, vpxApi);
-      server = pServer;
-      pServer->SetOnDestroyHandler(
-         [](Server* pServer)
+      pinmameClassDef = scriptApi->GetClassDef("Controller");
+      if (pinmameClassDef)
+      {
+         auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+         RegisterServerSCD(regLambda);
+         Server_SCD->CreateObject = []()
          {
-            if (server == pServer)
-               server = nullptr;
-         });
-      msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
-      msgApi->SubscribeMsg(endpointId, onDevChangedMsgId, OnDevSrcChanged, nullptr);
-      return static_cast<void*>(pServer);
-   };
-   scriptApi->SubmitTypeLibrary();
-   scriptApi->SetCOMObjectOverride("B2S.Server", Server_SCD);
-   serverRegistered = true;
+            assert(server == nullptr);
+            server = new Server(msgApi, endpointId, vpxApi, pinmameClassDef, pinmameMemberStartIndex);
+            server->SetOnDestroyHandler(
+               [](Server* pServer)
+               {
+                  assert(server == pServer);
+                  server = nullptr;
+               });
+            return static_cast<void*>(server);
+         };
+         scriptApi->SubmitTypeLibrary();
+         scriptApi->SetCOMObjectOverride("B2S.Server", Server_SCD);
+         serverRegistered = true;
+      }
+   }
+}
+
+static void OnPluginUnloaded(const unsigned int, void*, void* msgData)
+{
+   const char* pluginId = static_cast<const char*>(msgData);
+   if (strcmp(pluginId, "PinMAME") == 0)
+   {
+      pinmameClassDef = nullptr;
+   }
 }
 
 }
@@ -219,40 +164,31 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
    endpointId = sessionId;
    LPISetup(endpointId, msgApi);
 
-   const unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+   getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
-   msgApi->ReleaseMsgID(getVpxApiId);
-
-   msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
-
-   getDevSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-   onDevChangedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
 
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
 
-   msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), OnGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, onPluginLoaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED), OnPluginLoaded, nullptr);
+   msgApi->SubscribeMsg(endpointId, onPluginUnloaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED), OnPluginUnloaded, nullptr);
 
-   RegisterServerObject(nullptr);
+   OnPluginLoaded(0, nullptr, const_cast<char*>("PinMAME"));
 }
 
 MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload()
 {
+   assert(server == nullptr);
    serverRegistered = false;
    scriptApi->SetCOMObjectOverride("B2S.Server", nullptr);
-   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
-   msgApi->BroadcastMsg(endpointId, onAuxRendererChgId, nullptr);
-   msgApi->ReleaseMsgID(onGetAuxRendererId);
-   msgApi->ReleaseMsgID(onAuxRendererChgId);
-   msgApi->UnsubscribeMsg(onDevChangedMsgId, OnDevSrcChanged);
-   msgApi->ReleaseMsgID(onDevChangedMsgId);
-   msgApi->ReleaseMsgID(getDevSrcMsgId);
-   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
-   msgApi->ReleaseMsgID(onGameStartId);
-   msgApi->ReleaseMsgID(onGameEndId);
+
+   msgApi->UnsubscribeMsg(onPluginLoaded, OnPluginLoaded);
+   msgApi->UnsubscribeMsg(onPluginUnloaded, OnPluginUnloaded);
+   msgApi->ReleaseMsgID(onPluginLoaded);
+   msgApi->ReleaseMsgID(onPluginUnloaded);
+   msgApi->ReleaseMsgID(getVpxApiId);
+
    vpxApi = nullptr;
    scriptApi = nullptr;
    msgApi = nullptr;
