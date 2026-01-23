@@ -20,7 +20,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId;
-static unsigned int getVpxApiId, onPluginLoaded, onPluginUnloaded;
+static unsigned int getVpxApiId, getScriptApiId, onPluginLoaded, onPluginUnloaded;
 static bool serverRegistered = false;
 static std::thread::id apiThread;
 
@@ -206,13 +206,14 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
 
+   getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
+
    msgApi->SubscribeMsg(endpointId, onPluginLoaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED), OnPluginLoaded, nullptr);
    msgApi->SubscribeMsg(endpointId, onPluginUnloaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED), OnPluginUnloaded, nullptr);
 
-   // Contribute our API to the script engine
-   const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
-   msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
-   msgApi->ReleaseMsgID(getScriptApiId);
+   B2SRenderer::RegisterSettings(msgApi, endpointId);
+   B2SDMDOverlay::RegisterSettings(msgApi, endpointId);
 
    RegisterServerObject();
 }
@@ -228,6 +229,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
    msgApi->ReleaseMsgID(onPluginLoaded);
    msgApi->ReleaseMsgID(onPluginUnloaded);
    msgApi->ReleaseMsgID(getVpxApiId);
+   msgApi->ReleaseMsgID(getScriptApiId);
    vpxApi = nullptr;
    msgApi = nullptr;
 }

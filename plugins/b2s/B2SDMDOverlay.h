@@ -13,8 +13,10 @@ class B2SDMDOverlay final
 {
 public:
    B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage);
-   void LoadSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId, bool isScoreView);
    void Render(VPXRenderContext2D* context);
+
+   static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
+   void LoadSettings(bool isScoreView);
 
 private:
    ivec4 SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) const;
