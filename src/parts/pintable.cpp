@@ -2033,8 +2033,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                feedback.SoundHasBeenProcessed(i + 1, csounds);
             }
 
-            PLOGI << "Sound loaded"; // For profiling
-
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
@@ -2071,8 +2069,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                         --i2;
                      }
 
-            PLOGI << "Image loaded"; // Profiling
-
             for (int i = 0; i < cfonts; i++)
             {
                const wstring wStmName = L"Font" + std::to_wstring(i);
@@ -2089,8 +2085,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                }
                feedback.FontHasBeenProcessed(i + 1, cfonts);
             }
-
-            PLOGI << "Font loaded"; // For profiling
 
             for (int i = 0; i < ccollection; i++)
             {
@@ -2111,17 +2105,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                feedback.CollectionHasBeenProcessed(i + 1, ccollection);
             }
 
-            PLOGI << "Collection loaded"; // For profiling
-
             for (size_t i = 0; i < m_vedit.size(); i++)
                m_vedit[i]->InitPostLoad();
 
-            PLOGI << "IEditable PostLoad performed"; // For profiling
-
             for (int i = 0; i < m_vcollection.size(); i++)
                m_vcollection[i].InitPostLoad(this);
-
-            PLOGI << "Collection PostLoad performed"; // For profiling
          }
          pstmGame->Release();
          feedback.Finalizing();
@@ -3650,7 +3638,9 @@ Vertex2D PinTable::EvaluateGlassHeight() const
       return Vertex2D(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha));
    };
 
-   for (IEditable* edit : m_vedit)
+   IEditable *upperEditableX = nullptr;
+   IEditable *upperEditableY = nullptr;
+   for (IEditable *edit : m_vedit)
    {
       if (edit->GetPartGroup() != nullptr && edit->GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
          continue;
@@ -3709,10 +3699,14 @@ Vertex2D PinTable::EvaluateGlassHeight() const
          // Other parts are not considered
          continue;
       }
-      if (prevResult != result)
-      {
-         PLOGI << "Evaluated glass height pushed up by " << edit->GetName() << " to " << VPUTOINCHES(result.x) << " - " << VPUTOINCHES(result.y);
-      }
+      if (prevResult.x != result.x)
+         upperEditableX = edit;
+      if (prevResult.y != result.y)
+         upperEditableY = edit;
+   }
+   if (upperEditableX && upperEditableY)
+   {
+      PLOGI << "Evaluated glass height to " << VPUTOINCHES(result.x) << "\" (" << upperEditableX->GetName() << ") - " << VPUTOINCHES(result.y) << "\" (" << upperEditableY->GetName() << ')';
    }
    return result;
 }

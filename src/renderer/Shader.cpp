@@ -1326,6 +1326,8 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          {
             bgfx::UniformInfo info;
             bgfx::getUniformInfo(uniforms[i], info);
+            if (const string uniName(info.name); uniName == "Point"s || uniName == "Linear") // Skip PointSampler/LinearSampler from SMAA.hlsl, wrongly identified as uniforms by shaderc
+               continue;
             const auto uniformIndex = getUniformByName(info.name);
             if (uniformIndex == SHADER_UNIFORM_INVALID)
             {
