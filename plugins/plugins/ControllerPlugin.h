@@ -71,13 +71,19 @@ typedef struct DeviceDef
 
 #define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStartMsg struct
 #define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends
+#define CTLPI_EVT_ON_SOUND_COMMAND    "OnSoundCommand"    // Broadcasted when controller receives sound command, msgData is a pointer to a CtlOnSoundCommandMsg struct
 
 struct CtlOnGameStartMsg
 {
    const char* gameId;
+   uint64_t hardwareGen;
 };
 
-
+struct CtlOnSoundCommandMsg
+{
+   unsigned int boardNo;
+   unsigned int cmd;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -296,8 +302,17 @@ typedef struct GetSegSrcMsg
 //
 // Audio streams (backglass, pinsound/altsound/gsound, ...)
 //
+// API supports multiple audio sources with priority override chain (similar to displays).
+// When multiple sources exist, the host walks the override chain to select the active source.
+//
 
-// Broadcasted when an audio stream is made available, updated or ended
+// Broadcasted after an audio source has been added, modified or removed, there is no message data
+#define CTLPI_AUDIO_ON_SRC_CHG_MSG "OnAudioChanged"
+
+// Request subscribers to fill up an array with the list of audio sources, message data is a pointer to a GetAudioSrcMsg structure
+#define CTLPI_AUDIO_GET_SRC_MSG    "GetAudio"
+
+// Broadcasted when an audio stream is updated with new samples
 #define CTLPI_AUDIO_ON_UPDATE_MSG "AudioUpdate"
 
 #define CTLPI_AUDIO_SRC_BACKGLASS_MONO       0
@@ -305,6 +320,24 @@ typedef struct GetSegSrcMsg
 
 #define CTLPI_AUDIO_FORMAT_SAMPLE_INT16      0
 #define CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT      1
+
+typedef struct AudioSrcId
+{
+   CtlResId id;                  // Unique Id of the audio source
+   CtlResId overrideId;          // If this source overrides another source, id of the overridden source, 0 otherwise
+   unsigned int type;            // The type of audio source (see CTLPI_AUDIO_SRC_xxx)
+   unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
+   double sampleRate;            // The sample rate
+} AudioSrcId;
+
+typedef struct GetAudioSrcMsg
+{
+   // Request
+   unsigned int maxEntryCount;   // see below
+   // Response
+   unsigned int count;           // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
+   AudioSrcId* entries;          // Pointer to an array of maxEntryCount entries to be filled
+} GetAudioSrcMsg;
 
 typedef struct AudioUpdateMsg
 {

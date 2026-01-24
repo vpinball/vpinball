@@ -266,9 +266,14 @@ public:
 private:
    int m_pauseMusicRefCount = 0;
 
-   // External audio sources
+   // External audio sources with priority override chain
    static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
+   static void OnAudioSrcChanged(const unsigned int msgId, void *userData, void *msgData);
+   void UpdateActiveAudioSource();
    unsigned int m_onAudioUpdatedMsgId;
+   unsigned int m_onAudioSrcChangedMsgId;
+   unsigned int m_getAudioSrcMsgId;
+   uint64_t m_activeAudioSourceId = 0;
    ankerl::unordered_dense::map<uint64_t, VPX::AudioPlayer::AudioStreamID> m_audioStreams;
 #pragma endregion
 

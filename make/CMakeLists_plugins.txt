@@ -17,6 +17,7 @@ else()
 endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_AlphaDMD.txt")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_AltSound.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_B2S.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_B2SLegacy.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_DMDUtil.txt")
