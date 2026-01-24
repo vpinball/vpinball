@@ -46,7 +46,7 @@ void BumperUIPart::Render(const EditorRenderContext& ctx)
    }
 
    const bool isUIVisible = m_bumper->IsVisible(m_bumper);
-   if (isUIVisible && (ctx.IsSelected() || (!m_baseVisible && !m_capVisible && !m_skirtVisible && !m_ringVisible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_baseVisible && !m_capVisible && !m_skirtVisible && !m_ringVisible && ctx.IsShowInvisible())))
    {
       m_bumper->m_d.m_baseVisible = true;
       m_bumper->m_d.m_capVisible = true;

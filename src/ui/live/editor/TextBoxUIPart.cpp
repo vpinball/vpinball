@@ -28,7 +28,7 @@ void TextBoxUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_textbox->m_d.m_visible;
 
    const bool isUIVisible = m_textbox->IsVisible(m_textbox);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_textbox->m_d.m_visible = true;
       //ctx.DrawWireframe(m_light);

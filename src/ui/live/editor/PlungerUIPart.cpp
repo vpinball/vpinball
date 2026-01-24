@@ -37,7 +37,7 @@ void PlungerUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_plunger->m_d.m_visible;
 
    const bool isUIVisible = m_plunger->IsVisible(m_plunger);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_plunger->m_d.m_visible = true;
       ctx.DrawHitObjects(m_plunger);

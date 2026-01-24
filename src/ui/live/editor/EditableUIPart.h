@@ -22,6 +22,7 @@ public:
    virtual bool NeedsLiveTableSync() const = 0;
    virtual ImU32 GetColor(bool selected) const = 0;
    virtual bool IsSelected() const = 0;
+   virtual bool IsShowInvisible() const = 0;
    virtual ViewMode GetViewMode() const = 0;
    virtual ImDrawList* GetDrawList() const = 0;
    virtual ImVec2 Project(const Vertex3Ds& point) const = 0;

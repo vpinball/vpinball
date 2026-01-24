@@ -19,7 +19,7 @@ void TimerUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& r
 void TimerUIPart::Render(const EditorRenderContext& ctx)
 {
    const bool isUIVisible = m_timer->IsVisible(m_timer);
-   if (isUIVisible && ctx.GetViewMode() != ViewMode::PreviewCam)
+   if (isUIVisible && ctx.IsShowInvisible())
    {
       const ImU32 color = ctx.GetColor(ctx.IsSelected());
       ctx.DrawCircle(Vertex3Ds(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y, 0.f), Vertex3Ds(1.f, 0.f, 0.f), Vertex3Ds(0.f, 1.f, 0.f), 18.f, color);
