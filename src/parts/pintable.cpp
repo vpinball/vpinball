@@ -3629,13 +3629,33 @@ Vertex2D PinTable::EvaluateGlassHeight() const
       if (v.y >= m_top - marginY && v.y <= m_top + marginY && v.z <= INCHESTOVPU(12.f))
          result.y = max(result.y, v.z);
    };
-
-   auto intersect = [](const RenderVertex& v1, const RenderVertex& v2, float y)
+   auto intersect2D = [](const RenderVertex &v1, const RenderVertex &v2, float y)
    {
-      if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY) || (fabs(v2.y - v1.y) < 0.0001f))
+      if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
          return Vertex2D(FLT_MAX, FLT_MAX);
+      if (fabs(v2.y - v1.y) < 0.01f)
+         return Vertex2D(v1.x, v1.y);
       const float alpha = (y - v1.y) / (v2.y - v1.y);
       return Vertex2D(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha));
+   };
+   auto submitEdge2D = [this, &intersect2D, &submitVertex](const RenderVertex &v1, const RenderVertex &v2, float y, float z)
+   {
+      if (Vertex2D pt = intersect2D(v1, v2, y); pt.x != FLT_MAX)
+         submitVertex(Vertex3Ds(pt.x, pt.y, z));
+   };
+   auto intersect3D = [](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
+   {
+      if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
+         return Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+      if (fabs(v2.y - v1.y) < 0.01f)
+         return Vertex3Ds(v1.x, v1.y, max(v1.z, v2.z));
+      const float alpha = (y - v1.y) / (v2.y - v1.y);
+      return Vertex3Ds(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha));
+   };
+   auto submitEdge3D = [this, &intersect3D, &submitVertex](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
+   {
+      if (Vertex3Ds pt = intersect3D(v1, v2, y); pt.x != FLT_MAX)
+         submitVertex(pt);
    };
 
    IEditable *upperEditableX = nullptr;
@@ -3651,8 +3671,24 @@ Vertex2D PinTable::EvaluateGlassHeight() const
          if (Primitive *const prim = static_cast<Primitive *>(edit); prim->m_d.m_use3DMesh && prim->m_d.m_visible)
          {
             const Matrix3D& modelMat = prim->RecalculateMatrices();
-            for (const Vertex3D_NoTex2 &v : prim->m_mesh.m_vertices)
-               submitVertex(modelMat.MultiplyVectorNoPerspective(Vertex3Ds(v.x, v.y, v.z)));
+            for (size_t i = 0; i < prim->m_mesh.m_indices.size(); i+=3)
+            {
+               const Vertex3D_NoTex2 &va = prim->m_mesh.m_vertices[prim->m_mesh.m_indices[i + 0]];
+               const Vertex3D_NoTex2 &vb = prim->m_mesh.m_vertices[prim->m_mesh.m_indices[i + 1]];
+               const Vertex3D_NoTex2 &vc = prim->m_mesh.m_vertices[prim->m_mesh.m_indices[i + 2]];
+               const Vertex3Ds a = modelMat * Vertex3Ds { va.x, va.y, va.z };
+               const Vertex3Ds b = modelMat * Vertex3Ds { vb.x, vb.y, vb.z };
+               const Vertex3Ds c = modelMat * Vertex3Ds { vc.x, vc.y, vc.z };
+               submitEdge3D(a, b, m_top);
+               submitEdge3D(b, c, m_top);
+               submitEdge3D(c, a, m_top);
+               submitEdge3D(a, b, m_bottom);
+               submitEdge3D(b, c, m_bottom);
+               submitEdge3D(c, a, m_bottom);
+               // This would be easier, but this miss most of the inersection points
+               //for (const Vertex3D_NoTex2 &v : prim->m_mesh.m_vertices)
+               //   submitVertex(modelMat * Vertex3Ds { v.x, v.y, v.z });
+            }
          }
          break;
 
@@ -3661,13 +3697,12 @@ Vertex2D PinTable::EvaluateGlassHeight() const
          {
             vector<RenderVertex> vertices;
             surf->GetRgVertex(vertices, true);
+            const float h = max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop);
             RenderVertex prev = vertices.back();
             for (const auto &v : vertices)
             {
-               if (Vertex2D pt = intersect(prev, v, m_bottom); pt.x != FLT_MAX)
-                  submitVertex(Vertex3Ds(pt.x, pt.y, max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop)));
-               if (Vertex2D pt = intersect(prev, v, m_top); pt.x != FLT_MAX)
-                  submitVertex(Vertex3Ds(pt.x, pt.y, max(surf->m_d.m_heightbottom, surf->m_d.m_heighttop)));
+               submitEdge2D(prev, v, m_bottom, h);
+               submitEdge2D(prev, v, m_top, h);
                prev = v;
             }
          }
@@ -3684,9 +3719,9 @@ Vertex2D PinTable::EvaluateGlassHeight() const
             {
                if (!first)
                {
-                  if (Vertex2D pt = intersect(prev, v, m_bottom); pt.x != FLT_MAX)
+                  if (Vertex2D pt = intersect2D(prev, v, m_bottom); pt.x != FLT_MAX)
                      submitVertex(Vertex3Ds(pt.x, pt.y, ramp->GetSurfaceHeight(pt.x, pt.y)));
-                  if (Vertex2D pt = intersect(prev, v, m_top); pt.x != FLT_MAX)
+                  if (Vertex2D pt = intersect2D(prev, v, m_top); pt.x != FLT_MAX)
                      submitVertex(Vertex3Ds(pt.x, pt.y, ramp->GetSurfaceHeight(pt.x, pt.y)));
                }
                first = false;

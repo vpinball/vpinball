@@ -562,10 +562,6 @@ Player::Player(PinTable *const table, const int playMode)
    PLOGI << "Initializing renderer"; // For profiling
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
-   // Apply cabinet autofit
-   SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
-   SetCabinetAutoFitPos(m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
-
    // Setup rendering and timers
    RenderState state;
    state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
@@ -619,6 +615,10 @@ Player::Player(PinTable *const table, const int playMode)
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
    }
+
+   // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
+   SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
+   SetCabinetAutoFitPos(m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();
