@@ -14,6 +14,8 @@ public:
    explicit PUPMediaPlayer(const string& name);
    ~PUPMediaPlayer();
 
+   void SetGameTime(double gameTime);
+
    void Play(const std::filesystem::path& filename, float volume);
    bool IsPlaying() const;
    void Pause(bool pause);
@@ -42,8 +44,12 @@ private:
 
    std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
 
+   double GetPlayTime() const;
+   bool m_syncOnGameTime = false;
+   double m_gameTime = -1.0;
+   double m_startTimestamp = 0.0; // timestamp in seconds when the play command was called
+
    std::filesystem::path m_filename;
-   uint64_t m_startTimestamp = 0; // timestamp in ms when the play command was called
    bool m_loop = false;
    int m_playIndex = 0;
    float m_volume = 100.f;

@@ -19,6 +19,9 @@ namespace LibAV
 #include <tchar.h>
 #endif
 
+#ifdef CDECL
+#undef CDECL
+#endif
 #ifdef _WIN64
    // Windows x64 always uses standard calling convention (implicit)
    #define CDECL

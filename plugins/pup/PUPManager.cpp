@@ -54,6 +54,8 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    //msgApi->RegisterSetting(endpointId, &pupTopperFrameOverlayPath);
    m_msgApi->SubscribeMsg(m_endpointId, m_getAuxRendererId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
+
+   m_msgApi->BroadcastMsg(m_endpointId, m_getVpxApiId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &m_vpxApi);
 }
 
 PUPManager::~PUPManager()
@@ -64,6 +66,7 @@ PUPManager::~PUPManager()
    m_msgApi->ReleaseMsgID(m_getAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
    m_msgApi->FlushPendingCallbacks(m_endpointId);
+   m_msgApi->ReleaseMsgID(m_getVpxApiId);
 }
 
 void PUPManager::SetGameDir(const string& szRomName)
@@ -71,18 +74,12 @@ void PUPManager::SetGameDir(const string& szRomName)
    std::filesystem::path path;
 
    // First search for pupvideos along the table file
+   if (m_vpxApi != nullptr)
    {
-      VPXPluginAPI* vpxApi = nullptr;
-      unsigned int getVpxApiId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
-      m_msgApi->BroadcastMsg(m_endpointId, getVpxApiId, &vpxApi);
-      m_msgApi->ReleaseMsgID(getVpxApiId);
-      if (vpxApi != nullptr)
-      {
-         VPXTableInfo tableInfo;
-         vpxApi->GetTableInfo(&tableInfo);
-         std::filesystem::path tablePath = tableInfo.path;
-         path = find_case_insensitive_directory_path(tablePath.parent_path() / "pupvideos" / szRomName);
-      }
+      VPXTableInfo tableInfo;
+      m_vpxApi->GetTableInfo(&tableInfo);
+      std::filesystem::path tablePath = tableInfo.path;
+      path = find_case_insensitive_directory_path(tablePath.parent_path() / "pupvideos" / szRomName);
    }
 
    // If we did not find the pup folder along the table, search for it in the global 'pupvideos' path if defined
@@ -95,7 +92,7 @@ void PUPManager::SetGameDir(const string& szRomName)
    if (path == m_szPath)
       return;
 
-   std::lock_guard<std::mutex> lock(m_queueMutex);
+   std::lock_guard lock(m_queueMutex);
 
    m_szPath = path;
    LOGI("PUP path: %s", m_szPath.string().c_str());
@@ -115,17 +112,14 @@ void PUPManager::LoadConfig(const string& szRomName)
       return;
 
    // Load playlists
-
    LoadPlaylists();
 
    // Load Fonts
-
    LoadFonts();
 
    // Load screens and start them
-
-   std::filesystem::path szScreensPath = find_case_insensitive_file_path(m_szPath / "screens.pup");
-   if (!szScreensPath.empty()) {
+   if (std::filesystem::path szScreensPath = find_case_insensitive_file_path(m_szPath / "screens.pup"); !szScreensPath.empty())
+   {
       std::ifstream screensFile;
       screensFile.open(szScreensPath, std::ifstream::in);
       if (screensFile.is_open()) {
@@ -147,8 +141,7 @@ void PUPManager::LoadConfig(const string& szRomName)
       LOGI("No screens.pup file found");
    }
 
-   // Queue initial event
-
+   // Queue initial game event
    QueueTriggerData({ 'D', 0, 1 });
 }
 
@@ -240,7 +233,7 @@ void PUPManager::LoadPlaylists()
 
 bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
-   std::unique_lock<std::mutex> lock(m_queueMutex);
+   std::unique_lock lock(m_queueMutex);
 
    if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
    {
@@ -270,12 +263,12 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
       else {
          lock.unlock();
          switch (pCustomPos->GetSourceScreen()) {
-         case 0: parent = std::move(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
-         case 1: parent = std::move(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
-         case 2: parent = std::move(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
-         case 3: parent = std::move(PUPScreen::CreateFromCSV(this, "3,\"Playfield\",\"\",,0,Off,0,"s, m_playlists)); break;
-         case 4: parent = std::move(PUPScreen::CreateFromCSV(this, "4,\"Music\",\"\",,0,MusicOnly,0,"s, m_playlists)); break;
-         case 5: parent = std::move(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
+         case 0: parent = std::move(PUPScreen::CreateFromCSV(this, R"(0,"Topper","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 1: parent = std::move(PUPScreen::CreateFromCSV(this, R"(1,"DMD","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 2: parent = std::move(PUPScreen::CreateFromCSV(this, R"(2,"Backglass","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 3: parent = std::move(PUPScreen::CreateFromCSV(this, R"(3,"Playfield","",,0,Off,0,)"s, m_playlists)); break;
+         case 4: parent = std::move(PUPScreen::CreateFromCSV(this, R"(4,"Music","",,0,MusicOnly,0,)"s, m_playlists)); break;
+         case 5: parent = std::move(PUPScreen::CreateFromCSV(this, R"(5,"FullDMD","",,0,ForceBack,0,)"s, m_playlists)); break;
          }
          if (parent)
             AddScreen(parent);
@@ -330,8 +323,7 @@ void PUPManager::SendScreenToFront(const PUPScreen* screen)
 
 std::shared_ptr<PUPScreen> PUPManager::GetScreen(int screenNum, bool logMissing) const
 {
-   const auto it = m_screenMap.find(screenNum);
-   if (it != m_screenMap.end())
+   if (const auto it = m_screenMap.find(screenNum); it != m_screenMap.end())
       return it->second;
    if (logMissing)
    {
@@ -517,7 +509,7 @@ void PUPManager::ProcessQueue()
          }
       }
 
-      for (auto [key, screen] : m_screenMap)
+      for (const auto& [key, screen] : m_screenMap)
       {
          for (auto& [cmd, triggers] : screen->GetTriggers())
          {
@@ -633,7 +625,7 @@ void PUPManager::Stop()
    m_pollDmdContext = nullptr;
 
    {
-      std::lock_guard<std::mutex> lock(m_queueMutex);
+      std::lock_guard lock(m_queueMutex);
       m_isRunning = false;
    }
 
@@ -673,15 +665,17 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
 
-   float volume = pupMainVolume_Get();
-   if (volume != me->m_mainVolume)
+   if (float volume = pupMainVolume_Get(); volume != me->m_mainVolume)
    {
       me->m_mainVolume = volume;
-      for (auto [key, screen] : me->m_screenMap)
+      for (const auto& [key, screen] : me->m_screenMap)
          screen->SetMainVolume(volume);
    }
 
-   int padLeft = 0, padRight = 0, padTop = 0, padBottom = 0;
+   int padLeft = 0;
+   int padRight = 0;
+   int padTop = 0;
+   int padBottom = 0;
    std::shared_ptr<PUPScreen> rootScreen = nullptr;
    switch (renderCtx->window)
    {
@@ -713,6 +707,13 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    if (!LibAV::LibAV::GetInstance().isLoaded)
       return false;
+
+   if (me->m_vpxApi)
+   {
+      double gameTime = me->m_vpxApi->GetGameTime();
+      for (const auto& [key, screen] : me->m_screenMap)
+         screen->SetGameTime(gameTime);
+   }
 
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
@@ -811,7 +812,7 @@ void PUPManager::OnSerumTrigger(const unsigned int eventId, void* userData, void
 void PUPManager::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard<std::mutex> lock(me->m_queueMutex);
+   std::lock_guard lock(me->m_queueMutex);
    me->m_dmdId.id.id = 0;
    unsigned int largest = 128;
    GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
@@ -832,7 +833,7 @@ void PUPManager::OnDMDSrcChanged(const unsigned int eventId, void* userData, voi
 void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard<std::mutex> lock(me->m_queueMutex);
+   std::lock_guard lock(me->m_queueMutex);
    delete[] me->m_pinmameDevSrc.deviceDefs;
    me->m_PMSolenoidIndex = -1;
    me->m_nPMSolenoids = 0;
@@ -889,7 +890,7 @@ void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, voi
 void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard<std::mutex> lock(me->m_queueMutex);
+   std::lock_guard lock(me->m_queueMutex);
    delete[] me->m_pinmameInputSrc.inputDefs;
    memset(&me->m_pinmameInputSrc, 0, sizeof(me->m_pinmameInputSrc));
    delete[] me->m_b2sInputSrc.inputDefs;

@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
-void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
+void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
    if (g_pvp != nullptr)
    {
@@ -24,7 +24,7 @@ void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
    }
 }
 
-void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
+void MSGPIAPI VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 {
    // Only valid in game
    if (g_pplayer != nullptr)
@@ -43,13 +43,13 @@ void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 ///////////////////////////////////////////////////////////////////////////////
 // User Input API
 
-unsigned int VPXPluginAPIImpl::PushNotification(const char* msg, const int lengthMs)
+unsigned int MSGPIAPI VPXPluginAPIImpl::PushNotification(const char* msg, const int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
    return g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
 }
 
-void VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs)
+void MSGPIAPI VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_liveUI->PushNotification(msg, lengthMs, handle);
@@ -59,13 +59,13 @@ void VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, const char*
 ///////////////////////////////////////////////////////////////////////////////
 // View API
 
-void VPXPluginAPIImpl::DisableStaticPrerendering(const BOOL disable)
+void MSGPIAPI VPXPluginAPIImpl::DisableStaticPrerendering(const BOOL disable)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
 }
 
-void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
+void MSGPIAPI VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    const ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
@@ -90,7 +90,7 @@ void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 
-void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
+void MSGPIAPI VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
@@ -104,7 +104,7 @@ void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 ///////////////////////////////////////////////////////////////////////////////
 // Input API
 
-void VPXPluginAPIImpl::SetActionState(const VPXAction actionId, const int isPressed)
+void MSGPIAPI VPXPluginAPIImpl::SetActionState(const VPXAction actionId, const int isPressed)
 {
    if (!g_pplayer)
       return; // No game in progress
@@ -120,7 +120,7 @@ void VPXPluginAPIImpl::SetActionState(const VPXAction actionId, const int isPres
    action->SetDirectState(it->second.second, isPressed != 0);
 }
 
-void VPXPluginAPIImpl::SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY)
+void MSGPIAPI VPXPluginAPIImpl::SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY)
 {
    if (!g_pplayer)
       return; // No game in progress
@@ -128,7 +128,7 @@ void VPXPluginAPIImpl::SetNudgeState(const int stateMask, const float nudgeAccel
    g_pplayer->m_pininput.SetNudge((stateMask & 1) != 0, nudgeAccelerationX, nudgeAccelerationY);
 }
 
-void VPXPluginAPIImpl::SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed)
+void MSGPIAPI VPXPluginAPIImpl::SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed)
 {
    if (!g_pplayer)
       return; // No game in progress
@@ -136,6 +136,16 @@ void VPXPluginAPIImpl::SetPlungerState(const int stateMask, const float plungerP
    g_pplayer->m_pininput.SetPlungerPos((stateMask & 1) == 0x01, plungerPos);
    g_pplayer->m_pininput.SetPlungerSpeed((stateMask & 3) == 0x03, plungerSpeed); // With speed and overriden
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Game State
+
+double MSGPIAPI VPXPluginAPIImpl::GetGameTime()
+{
+   return g_pplayer ? g_pplayer->m_time_sec : 0.0;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering
@@ -169,7 +179,7 @@ std::shared_ptr<BaseTexture> VPXPluginAPIImpl::GetTexture(VPXTexture texture) co
    return tex->tex;
 }
 
-void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image)
+void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image)
 {
    VPXTextureBlock** tex = reinterpret_cast<VPXTextureBlock**>(texture);
    if (*tex == nullptr)
@@ -185,7 +195,7 @@ void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height,
    UpdateVPXTextureInfo(*tex);
 }
 
-VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
+VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread and other rendering backends are single threaded
    // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
@@ -197,14 +207,14 @@ VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
    return reinterpret_cast<VPXTexture>(tex);
 }
 
-VPXTextureInfo* VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
+VPXTextureInfo* MSGPIAPI VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 {
    //assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
    VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(texture);
    return tex ? &tex->info : nullptr;
 }
 
-void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
+void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
    MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(
       VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0, 
@@ -224,7 +234,7 @@ void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 ///////////////////////////////////////////////////////////////////////////////
 // Shared logging support for plugin API
 
-void VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
+void MSGPIAPI VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    switch (level)
@@ -241,37 +251,37 @@ void VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
 ///////////////////////////////////////////////////////////////////////////////
 // Script support for plugin API
 
-void VPXPluginAPIImpl::RegisterScriptClass(ScriptClassDef* classDef)
+void MSGPIAPI VPXPluginAPIImpl::RegisterScriptClass(ScriptClassDef* classDef)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    pi.m_dynamicTypeLibrary.RegisterScriptClass(classDef);
 }
 
-void VPXPluginAPIImpl::RegisterScriptTypeAlias(const char* name, const char* aliasedType)
+void MSGPIAPI VPXPluginAPIImpl::RegisterScriptTypeAlias(const char* name, const char* aliasedType)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    pi.m_dynamicTypeLibrary.RegisterScriptTypeAlias(name, aliasedType);
 }
 
-void VPXPluginAPIImpl::RegisterScriptArray(ScriptArrayDef *arrayDef)
+void MSGPIAPI VPXPluginAPIImpl::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    pi.m_dynamicTypeLibrary.RegisterScriptArray(arrayDef);
 }
 
-void VPXPluginAPIImpl::SubmitTypeLibrary()
+void MSGPIAPI VPXPluginAPIImpl::SubmitTypeLibrary()
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    pi.m_dynamicTypeLibrary.ResolveAllClasses();
 }
 
-void VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
+void MSGPIAPI VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    // FIXME implement in DynamicDispatch
 }
 
-ScriptClassDef* VPXPluginAPIImpl::GetClassDef(const char* typeName)
+ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    return pi.m_dynamicTypeLibrary.ResolveClass(typeName);
@@ -280,7 +290,7 @@ ScriptClassDef* VPXPluginAPIImpl::GetClassDef(const char* typeName)
 ///////////////////////////////////////////////////////////////////////////////
 // API to support overriding legacy COM objects
 
-void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef)
+void MSGPIAPI VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    // FIXME remove when classDef is unregistered
@@ -665,6 +675,8 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.SetActionState = SetActionState;
    m_api.SetNudgeState = SetNudgeState;
    m_api.SetPlungerState = SetPlungerState;
+
+   m_api.GetGameTime = GetGameTime;
 
    m_api.CreateTexture = CreateTexture;
    m_api.UpdateTexture = UpdateTexture;
