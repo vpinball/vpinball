@@ -33,7 +33,7 @@ void TriggerUIPart::Render(const EditorRenderContext& ctx)
 
    const bool isUIVisible = m_trigger->IsVisible(m_trigger);
    const bool visible = m_visible && m_trigger->m_d.m_shape != TriggerShape::TriggerNone;
-   if (isUIVisible && (ctx.IsSelected() || (!visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!visible && ctx.IsShowInvisible())))
    {
       m_trigger->m_d.m_visible = true;
       ctx.DrawHitObjects(m_trigger);

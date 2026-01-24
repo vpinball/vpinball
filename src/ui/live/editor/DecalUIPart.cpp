@@ -32,7 +32,7 @@ void DecalUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_decal->m_d.m_visible;
 
    const bool isUIVisible = m_decal->IsVisible(m_decal);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_decal->m_d.m_visible = true;
       // ctx.DrawWireframe(m_decal);

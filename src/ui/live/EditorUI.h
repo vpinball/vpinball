@@ -198,6 +198,7 @@ private:
       bool NeedsLiveTableSync() const { return m_needsLiveTableSync; }
       ImU32 GetColor(bool selected) const { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
       bool IsSelected() const override { return m_isSelected; }
+      bool IsShowInvisible() const override;
       ViewMode GetViewMode() const override { return m_viewMode; }
       ImDrawList *GetDrawList() const override { return m_drawlist; }
 

@@ -27,7 +27,7 @@ void BallUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_ball->m_d.m_visible;
 
    const bool isUIVisible = m_ball->IsVisible(m_ball);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_ball->m_d.m_visible = true;
       ctx.DrawWireframe(m_ball);

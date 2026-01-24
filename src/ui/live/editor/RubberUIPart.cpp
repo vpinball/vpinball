@@ -34,7 +34,7 @@ void RubberUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_rubber->m_d.m_visible;
 
    const bool isUIVisible = m_rubber->IsVisible(m_rubber);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_rubber->m_d.m_visible = true;
       ctx.DrawWireframe(m_rubber);

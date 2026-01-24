@@ -32,7 +32,7 @@ void FlipperUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_flipper->m_d.m_visible;
 
    const bool isUIVisible = m_flipper->IsVisible(m_flipper);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_flipper->m_d.m_visible = true;
       ctx.DrawWireframe(m_flipper);

@@ -35,7 +35,7 @@ void LightUIPart::Render(const EditorRenderContext& ctx)
       m_visible = m_light->m_d.m_visible;
 
    const bool isUIVisible = m_light->IsVisible(m_light);
-   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.IsShowInvisible())))
    {
       m_light->m_d.m_visible = true;
       ctx.DrawWireframe(m_light);
