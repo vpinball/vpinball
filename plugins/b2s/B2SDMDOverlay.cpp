@@ -32,6 +32,13 @@ B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex,
 {
 }
 
+B2SDMDOverlay::~B2SDMDOverlay()
+{
+   m_stopSearching = true;
+   if (m_frameSearch.valid())
+      m_frameSearch.get();
+}
+
 void B2SDMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
    msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
@@ -72,6 +79,19 @@ void B2SDMDOverlay::LoadSettings(bool isScoreView)
          m_frame.y = backglassDMDYProp_Val;
          m_frame.z = backglassDMDWProp_Val;
          m_frame.w = backglassDMDHProp_Val;
+      }
+   }
+}
+
+void B2SDMDOverlay::UpdateBackgroundImage(VPXTexture backImage)
+{
+   if (m_backImage != backImage)
+   {
+      m_backImage = backImage;
+      if (m_detectDmdFrame)
+      {
+         m_frame = ivec4();
+         m_detectSrcId.id = 0;
       }
    }
 }
@@ -162,6 +182,9 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
       vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
       for (int y = searchFrame.y; y < (searchFrame.y + searchFrame.w); ++y)
       {
+         // If disabled while searching, just abort
+         if (!m_stopSearching)
+            return ivec4();
          unsigned int pos = (y * texInfo->width + searchFrame.x) * pos_step;
          for (int x = searchFrame.x; x < (searchFrame.x + searchFrame.z); ++x, pos += pos_step)
          {
