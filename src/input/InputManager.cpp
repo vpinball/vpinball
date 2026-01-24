@@ -671,9 +671,9 @@ void InputManager::CreateInputActions()
    m_rightNudgeActionId = addKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);
    m_centerNudgeActionId = addKeyAction("CenterNudge"s, "Center Nudge"s, SDL_SCANCODE_SPACE);
    m_tiltActionId = addKeyAction("Tilt"s, "Tilt"s, SDL_SCANCODE_T);
-   m_addCreditActionId[0] = addKeyAction("Credit1"s, "Credit (1)"s, SDL_SCANCODE_3);
+   m_addCreditActionId[0] = addKeyAction("Credit1"s, "Credit (1)"s, SDL_SCANCODE_5);
    m_addCreditActionId[1] = addKeyAction("Credit2"s, "Credit (2)"s, SDL_SCANCODE_4);
-   m_addCreditActionId[2] = addKeyAction("Credit3"s, "Credit (3)"s, SDL_SCANCODE_5);
+   m_addCreditActionId[2] = addKeyAction("Credit3"s, "Credit (3)"s, SDL_SCANCODE_3);
    m_addCreditActionId[3] = addKeyAction("Credit4"s, "Credit (4)"s, SDL_SCANCODE_6);
    m_startActionId = addKeyAction("Start"s, "Start"s, SDL_SCANCODE_1);
    m_extraBallActionId = addKeyAction("ExtraBall"s, "Extra Ball"s, SDL_SCANCODE_B);
