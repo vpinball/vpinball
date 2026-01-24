@@ -1,9 +1,10 @@
 'Last Updated in VBS v3.62
 
-'Please avoid using direct mappings (key number) should be avoided, as these only work with US keyboards,
+'Using direct mappings (key number) should be avoided, as these only work with US keyboards,
 'do not support mapping to other input systems (joystick, VR controller, ...), can't be redefined easily,
 'may conflict with existing or future input defaults, do not apply the user keyboard layout, and
 'only cover a subset of the keyboard.
+'
 'Using the action mappings provided by VPX should always be favored (see VPXActionKey).
 
 'Key codes that can be used in the mappings below:
@@ -87,9 +88,9 @@ Const keyVPMVolume	= 88                  '(F12) Show input box to set VPM Volume
 ' Cabinet switches
 Dim keyAddBall:		keyAddBall		= VPXActionKey(22) '(B)		Add extra ball
 Dim keyBangBack:	keyBangBack		= VPXActionKey(13) '(T)		Bang Back
-Dim keyInsertCoin1:	keyInsertCoin1	= VPXActionKey( 9) '(3)		Insert coin in slot 1
+Dim keyInsertCoin1:	keyInsertCoin1	= VPXActionKey( 9) '(5)		Insert coin in slot 1
 Dim keyInsertCoin2:	keyInsertCoin2	= VPXActionKey(10) '(4)		Insert coin in slot 2
-Dim keyInsertCoin3:	keyInsertCoin3	= VPXActionKey(11) '(5)		Insert coin in slot 3
+Dim keyInsertCoin3:	keyInsertCoin3	= VPXActionKey(11) '(3)		Insert coin in slot 3
 Dim keyInsertCoin4:	keyInsertCoin4	= VPXActionKey(12) '(6)		Insert coin in slot 4
 Dim keySlamDoorHit:	keySlamDoorHit	= VPXActionKey(23) '(Home)	Slam Tilt
 Dim keyCoinDoor:	keyCoinDoor		= VPXActionKey(24) '(End)	Opening/Closing Coin Door
