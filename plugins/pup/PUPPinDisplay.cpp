@@ -208,9 +208,10 @@ void PUPPinDisplay::SetScreenEx(int screenNum, int xpos, int ypos, int swidth, i
    if (!pScreen)
       return;
    switch (popup) {
-      case 0: pScreen->SetMode(PUPScreen::Mode::Show); break;
-      case 1: pScreen->SetMode(PUPScreen::Mode::ForcePop); break;
-      default: pScreen->SetMode(PUPScreen::Mode::MusicOnly); break;
+   case 0: pScreen->SetMode(PUPScreen::Mode::Show); break; // See Stranger Things
+   case 1: pScreen->SetMode(PUPScreen::Mode::ForcePop); break;
+   case 2: pScreen->SetMode(PUPScreen::Mode::MusicOnly); break; // See Stranger Things
+   default: pScreen->SetMode(PUPScreen::Mode::MusicOnly); break;
    }
    if (swidth && sheight) {
       // If not 0, this is used to define a custom screen size from script. The only known use case is when using PUPDMDControl to render to a real DMD

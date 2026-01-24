@@ -99,8 +99,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       m_filename = filename;
       m_volume = volume;
       m_loop = false;
+      m_paused = false;
       m_syncOnGameTime = m_gameTime >= 0.0;
-      m_startTimestamp = m_gameTime >= 0.0 ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+      m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
 
       // Open file
       if (m_libAv._avformat_open_input(&m_pFormatContext, filename.string().c_str(), NULL, NULL) != 0)

@@ -723,7 +723,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
 
    // Helper to log screen order to help debug rendering order
-   if (false)
+   if (false && renderCtx->window == VPXWindowId::VPXWINDOW_Backglass)
    {
       std::stringstream ss;
       for (auto screen : me->m_screenOrder)
@@ -738,8 +738,11 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    }
 
    // Render all children of rootScreen according to the global shared render order
-   // This is done in 2 passes: first the video/ovelrays, then the active labels
-   for (int pass = 0; pass < 2; pass++)
+   // This is done in 2 passes:
+   // - first the video
+   // - overlays
+   // - active labels
+   for (int pass = 0; pass < 3; pass++)
    {
       for (auto screen : me->m_screenOrder)
       {
