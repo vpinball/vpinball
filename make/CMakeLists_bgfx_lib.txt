@@ -162,6 +162,7 @@ target_link_libraries(vpinball PUBLIC
    swresample
    swscale
    zip
+   AltSoundPlugin
    AlphaDMDPlugin
    B2SPlugin
    B2SLegacyPlugin

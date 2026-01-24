@@ -632,7 +632,10 @@ Player::Player(PinTable *const table, const int playMode)
 
    m_onPrepareFrameMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_onAudioUpdatedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+   m_onAudioSrcChangedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG);
+   m_getAudioSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
    msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
+   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
 
    m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
    m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
@@ -734,6 +737,9 @@ Player::~Player()
    const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
    msgApi->ReleaseMsgID(m_onAudioUpdatedMsgId);
+   msgApi->UnsubscribeMsg(m_onAudioSrcChangedMsgId, OnAudioSrcChanged);
+   msgApi->ReleaseMsgID(m_onAudioSrcChangedMsgId);
+   msgApi->ReleaseMsgID(m_getAudioSrcMsgId);
    msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
    msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged);
    msgApi->ReleaseMsgID(m_getAuxRendererId);
@@ -2210,6 +2216,13 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
 {
    Player *me = static_cast<Player *>(userData);
    AudioUpdateMsg &msg = *static_cast<AudioUpdateMsg *>(msgData);
+
+   if (me->m_activeAudioSourceId == 0)
+      me->UpdateActiveAudioSource();
+
+   if (me->m_activeAudioSourceId != 0 && msg.id.id != me->m_activeAudioSourceId)
+      return;
+
    const auto &entry = me->m_audioStreams.find(msg.id.id);
    if (entry != me->m_audioStreams.end() && me->m_audioPlayer->IsOpened(entry->second))
    {
@@ -2237,6 +2250,69 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
          me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
          me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
+   }
+}
+
+void Player::OnAudioSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   Player *me = static_cast<Player *>(userData);
+   me->UpdateActiveAudioSource();
+}
+
+void Player::UpdateActiveAudioSource()
+{
+   const MsgPluginAPI &msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+
+   GetAudioSrcMsg getSrcMsg = { 0, 0, nullptr };
+   msgApi.BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
+
+   if (getSrcMsg.count == 0)
+   {
+      m_activeAudioSourceId = 0;
+      return;
+   }
+
+   vector<AudioSrcId> sources(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, sources.data() };
+   msgApi.BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
+
+   uint64_t activeId = 0;
+   for (const auto& src : sources)
+   {
+      if (src.overrideId.id == 0)
+      {
+         activeId = src.id.id;
+         break;
+      }
+   }
+
+   bool walkDownOverrides = (activeId != 0);
+   while (walkDownOverrides)
+   {
+      walkDownOverrides = false;
+      for (const auto& src : sources)
+      {
+         if (src.overrideId.id == activeId)
+         {
+            activeId = src.id.id;
+            walkDownOverrides = true;
+            break;
+         }
+      }
+   }
+
+   if (m_activeAudioSourceId != activeId)
+   {
+      if (m_activeAudioSourceId != 0)
+      {
+         const auto &entry = m_audioStreams.find(m_activeAudioSourceId);
+         if (entry != m_audioStreams.end() && m_audioPlayer->IsOpened(entry->second))
+         {
+            m_audioPlayer->CloseAudioStream(entry->second, false);
+            m_audioStreams.erase(entry);
+         }
+      }
+      m_activeAudioSourceId = activeId;
    }
 }
 

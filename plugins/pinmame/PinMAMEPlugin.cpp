@@ -234,19 +234,30 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
    }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Audio
 
 static unsigned int onAudioUpdateId;
+static unsigned int onAudioSrcChangedId;
+static unsigned int getAudioSrcId;
 static AudioUpdateMsg* audioSrc = nullptr;
+static AudioSrcId audioSrcDef = {};
+
+static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData)
+{
+   GetAudioSrcMsg* msg = static_cast<GetAudioSrcMsg*>(msgData);
+   if (audioSrc != nullptr && msg->count < msg->maxEntryCount)
+      memcpy(&msg->entries[msg->count], &audioSrcDef, sizeof(AudioSrcId));
+   if (audioSrc != nullptr)
+      msg->count++;
+}
 
 static void StopAudioStream()
 {
    if (audioSrc != nullptr)
    {
       // Send an end of stream message
-      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
+      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
       memcpy(pendingAudioUpdate, audioSrc, sizeof(AudioUpdateMsg));
       msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
             AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
@@ -255,6 +266,10 @@ static void StopAudioStream()
          }, pendingAudioUpdate);
       delete audioSrc;
       audioSrc = nullptr;
+      memset(&audioSrcDef, 0, sizeof(audioSrcDef));
+      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
+            msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
+         }, nullptr);
    }
 }
 
@@ -271,6 +286,15 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const 
       audioSrc->type = (p_audioInfo->channels == 1) ? CTLPI_AUDIO_SRC_BACKGLASS_MONO : CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
       audioSrc->format = (p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) ? CTLPI_AUDIO_FORMAT_SAMPLE_INT16 : CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
       audioSrc->sampleRate = p_audioInfo->sampleRate;
+
+      audioSrcDef.id = audioSrc->id;
+      audioSrcDef.overrideId = { 0, 0 };
+      audioSrcDef.type = audioSrc->type;
+      audioSrcDef.format = audioSrc->format;
+      audioSrcDef.sampleRate = audioSrc->sampleRate;
+      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
+            msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
+         }, nullptr);
    }
    else
    {
@@ -348,6 +372,9 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
    // Setup our contribution to the controller messages
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+   onAudioSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG);
+   getAudioSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
+   msgApi->SubscribeMsg(endpointId, getAudioSrcId, OnGetAudioSrc, nullptr);
 
    // Contribute our API to the script engine
    getScriptApiMsgId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
@@ -385,7 +412,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          NULL, // Console updated => TODO implement (for Stern SAM)
          NULL, // Is key pressed => TODO implement ?
          &OnLogMessage,
-         NULL, // &OnSoundCommand, => see https://github.com/vpinball/libaltsound (implement inside this plugin or as another plugin ?)
+         NULL, // Sound command callback - libpinmame broadcasts via message API directly
       };
 
       // Define pinmame directory (for ROM, NVRAM, ... eventually using VPX API if available)
@@ -449,6 +476,9 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
+   msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc);
+   msgApi->ReleaseMsgID(getAudioSrcId);
+   msgApi->ReleaseMsgID(onAudioSrcChangedId);
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    // TODO we should unregister the script API contribution
    msgApi->FlushPendingCallbacks(endpointId);

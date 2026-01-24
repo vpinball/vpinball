@@ -304,6 +304,8 @@ void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
                timers.push_back(*it);
                it = pm.m_timers.erase(it);
             }
+            else
+               ++it;
          }
       }
       // Release lock before calling callbacks to avoid deadlock
