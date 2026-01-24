@@ -7,6 +7,7 @@
 #include "plugins/VPXPlugin.h"
 
 #include "Server.h"
+#include "utils/DMDOverlay.h"
 
 namespace B2SLegacy {
 
@@ -173,6 +174,8 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
 
    msgApi->SubscribeMsg(endpointId, onPluginLoaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED), OnPluginLoaded, nullptr);
    msgApi->SubscribeMsg(endpointId, onPluginUnloaded = msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED), OnPluginUnloaded, nullptr);
+
+   DMDOverlay::RegisterSettings(msgApi, endpointId);
 
    OnPluginLoaded(0, nullptr, const_cast<char*>("PinMAME"));
 }
