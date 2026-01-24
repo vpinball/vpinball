@@ -103,7 +103,6 @@ jobs:
           cp -r build/${{ matrix.config }}/assets stage
           cp -r build/${{ matrix.config }}/plugins stage
           cp -r build/${{ matrix.config }}/scripts stage
-          cp -r build/${{ matrix.config }}/tables stage
           cp -r build/${{ matrix.config }}/docs stage
           tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
       - name: Upload artifacts

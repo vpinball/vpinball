@@ -177,7 +177,6 @@ jobs:
             cp -r build/${{ matrix.config }}/assets tmp
             cp -r build/${{ matrix.config }}/plugins tmp
             cp -r build/${{ matrix.config }}/scripts tmp
-            cp -r build/${{ matrix.config }}/tables tmp
             cp -r build/${{ matrix.config }}/docs tmp
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
             cp build/${{ matrix.config }}/*.dmg tmp
@@ -191,7 +190,6 @@ jobs:
             cp -r build/${{ matrix.config }}/assets stage
             cp -r build/${{ matrix.config }}/plugins stage
             cp -r build/${{ matrix.config }}/scripts stage
-            cp -r build/${{ matrix.config }}/tables stage
             cp -r build/${{ matrix.config }}/docs stage
             tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
           fi
@@ -271,7 +269,6 @@ jobs:
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
