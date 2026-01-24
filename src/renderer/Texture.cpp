@@ -100,6 +100,9 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const string& filename,
 std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    std::shared_ptr<BaseTexture> tex;
+
+   if (data == nullptr || size == 0)
+      return nullptr;
    
    // Try to load using fast JPG path via stbi if no texture resize must be triggered
    if (maxTexDimension == 0 && !resizeOnLowMem)
