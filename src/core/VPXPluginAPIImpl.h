@@ -59,46 +59,48 @@ private:
    const unsigned int m_onGameStartMsgId;
    const unsigned int m_onGameEndMsgId;
 
-   static void GetVpxInfo(VPXInfo* info);
-   static void GetTableInfo(VPXTableInfo* info);
+   static void MSGPIAPI GetVpxInfo(VPXInfo* info);
+   static void MSGPIAPI GetTableInfo(VPXTableInfo* info);
 
-   static unsigned int PushNotification(const char* msg, const int lengthMs);
-   static void UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs);
+   static unsigned int MSGPIAPI PushNotification(const char* msg, const int lengthMs);
+   static void MSGPIAPI UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs);
 
-   static void DisableStaticPrerendering(const BOOL disable);
-   static void GetActiveViewSetup(VPXViewSetupDef* view);
-   static void SetActiveViewSetup(VPXViewSetupDef* view);
+   static void MSGPIAPI DisableStaticPrerendering(const BOOL disable);
+   static void MSGPIAPI GetActiveViewSetup(VPXViewSetupDef* view);
+   static void MSGPIAPI SetActiveViewSetup(VPXViewSetupDef* view);
 
-   static void SetActionState(const VPXAction actionId, const int isPressed);
-   static void SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
-   static void SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
+   static void MSGPIAPI SetActionState(const VPXAction actionId, const int isPressed);
+   static void MSGPIAPI SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
+   static void MSGPIAPI SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
    ankerl::unordered_dense::map<VPXAction, std::pair<unsigned int, int>> m_actionMap;
 
-   static VPXTexture CreateTexture(uint8_t* rawData, int size);
-   static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
-   static VPXTextureInfo* GetTextureInfo(VPXTexture texture);
-   static void DeleteTexture(VPXTexture texture);
+   static double MSGPIAPI GetGameTime();
+
+   static VPXTexture MSGPIAPI CreateTexture(uint8_t* rawData, int size);
+   static void MSGPIAPI UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
+   static VPXTextureInfo* MSGPIAPI GetTextureInfo(VPXTexture texture);
+   static void MSGPIAPI DeleteTexture(VPXTexture texture);
 
    // Plugin settings
    void UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef);
    vector<PluginSetting> m_pluginSettings;
 
    // Plugin logging API
-   static void OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);
-   static void PluginLog(unsigned int level, const char* message);
+   static void MSGPIAPI OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   static void MSGPIAPI PluginLog(unsigned int level, const char* message);
 
    LoggingPluginAPI m_loggingApi;
    const unsigned int m_getLoggingAPIMsgId;
 
    // Scriptable plugin API
-   static void OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData);
-   static void RegisterScriptClass(ScriptClassDef* classDef);
-   static void RegisterScriptTypeAlias(const char* name, const char* aliasedType);
-   static void RegisterScriptArray(ScriptArrayDef *arrayDef);
-   static void SubmitTypeLibrary();
-   static void OnScriptError(unsigned int type, const char* message);
-   static void SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
-   static ScriptClassDef* GetClassDef(const char* typeName);
+   static void MSGPIAPI OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   static void MSGPIAPI RegisterScriptClass(ScriptClassDef* classDef);
+   static void MSGPIAPI RegisterScriptTypeAlias(const char* name, const char* aliasedType);
+   static void MSGPIAPI RegisterScriptArray(ScriptArrayDef* arrayDef);
+   static void MSGPIAPI SubmitTypeLibrary();
+   static void MSGPIAPI OnScriptError(unsigned int type, const char* message);
+   static void MSGPIAPI SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
+   static ScriptClassDef* MSGPIAPI GetClassDef(const char* typeName);
 
    ankerl::unordered_dense::map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;

@@ -389,7 +389,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                SegElementType segType = SegElementType::CTLPI_SEG_LAYOUT_14;
                VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
                VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
-               if (index > 0 && index * 16 <= luminances.size())
+               if (index > 0 && index * 16 <= (int)luminances.size())
                {
                   segType = segTypes[index-1];
                   style = styles[index-1];

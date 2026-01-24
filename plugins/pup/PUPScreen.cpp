@@ -288,6 +288,8 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
    m_pCustomPos = PUPCustomPos::CreateFromCSV(szCustomPos);
 }
 
+void PUPScreen::SetGameTime(double gameTime) { m_pMediaPlayerManager->SetGameTime(gameTime); }
+
 void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority)
 {
    assert(std::this_thread::get_id() == m_apiThread);

@@ -79,6 +79,8 @@ public:
 
    void SetMask(const std::filesystem::path& path);
 
+   void SetGameTime(double gameTime);
+
    void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority);
    void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Stop();

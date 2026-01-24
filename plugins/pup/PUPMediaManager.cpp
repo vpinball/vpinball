@@ -26,6 +26,12 @@ PUPMediaManager::~PUPMediaManager()
 {
 }
 
+void PUPMediaManager::SetGameTime(double gameTime)
+{
+   m_pBackgroundPlayer->player.SetGameTime(gameTime);
+   m_pMainPlayer->player.SetGameTime(gameTime);
+}
+
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    if (!background && skipSamePriority && IsMainPlaying() && priority <= m_pMainPlayer->priority)

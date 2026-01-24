@@ -256,6 +256,9 @@ typedef struct VPXPluginAPI
    void(MSGPIAPI* SetNudgeState)(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
    void(MSGPIAPI* SetPlungerState)(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
 
+   // Game state
+   double(MSGPIAPI* GetGameTime)(); // Game time in seconds
+
    // Rendering
    
    // Create a texture from encoded data (Webp, Exr, ...).

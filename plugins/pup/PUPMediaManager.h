@@ -14,6 +14,8 @@ public:
    explicit PUPMediaManager(PUPScreen* pScreen);
    ~PUPMediaManager();
 
+   void SetGameTime(double gameTime);
+
    void Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
    void Pause();
    void Resume();
