@@ -18,6 +18,8 @@
 
 #include <filesystem>
 
+#define LOG_PUPLABEL 0
+
 namespace PUP {
 
 #ifndef GetRValue
@@ -111,7 +113,9 @@ void PUPLabel::SetVisible(bool visible)
 
 void PUPLabel::SetSpecial(const string& szSpecial)
 {
+   #if LOG_PUPLABEL
    LOGD("PUPLabel::SetSpecial: name=%s, caption=%s, json=%s", m_szName.c_str(), m_szCaption.c_str(), szSpecial.c_str());
+   #endif
 
    string str = trim_string(szSpecial);
    if (str.empty())

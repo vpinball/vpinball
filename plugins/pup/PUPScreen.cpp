@@ -441,10 +441,13 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    case 0:
       m_background.Render(ctx, m_rect);
       m_pMediaPlayerManager->Render(ctx);
-      m_overlay.Render(ctx, m_rect);
       break;
 
    case 1:
+      m_overlay.Render(ctx, m_rect);
+      break;
+
+   case 2:
       // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
       for (PUPLabel* pLabel : m_labels)
          pLabel->Render(ctx, m_rect, m_pagenum);
