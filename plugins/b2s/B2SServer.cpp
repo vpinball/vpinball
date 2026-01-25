@@ -114,6 +114,7 @@ void B2SServer::ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, Script
 void B2SServer::B2SSetData(int id, int value)
 {
    m_states[id] = static_cast<float>(value);
+   // FIXME publish event (PUP waits for it as an Exxx event)
 }
 
 void B2SServer::B2SSetData(const std::string& group, int value)

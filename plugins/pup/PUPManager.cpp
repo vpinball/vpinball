@@ -264,11 +264,13 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
          lock.unlock();
          switch (pCustomPos->GetSourceScreen()) {
          case 0: parent = std::move(PUPScreen::CreateFromCSV(this, R"(0,"Topper","",,0,ForceBack,0,)"s, m_playlists)); break;
-         case 1: parent = std::move(PUPScreen::CreateFromCSV(this, R"(1,"DMD","",,0,ForceBack,0,)"s, m_playlists)); break;
-         case 2: parent = std::move(PUPScreen::CreateFromCSV(this, R"(2,"Backglass","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 1: parent = std::move(PUPScreen::CreateFromCSV(this, R"(1,"DMD 4x1","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 2: parent = std::move(PUPScreen::CreateFromCSV(this, R"(2,"Backglass 16x9","",,0,ForceBack,0,)"s, m_playlists)); break;
          case 3: parent = std::move(PUPScreen::CreateFromCSV(this, R"(3,"Playfield","",,0,Off,0,)"s, m_playlists)); break;
          case 4: parent = std::move(PUPScreen::CreateFromCSV(this, R"(4,"Music","",,0,MusicOnly,0,)"s, m_playlists)); break;
-         case 5: parent = std::move(PUPScreen::CreateFromCSV(this, R"(5,"FullDMD","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 5: parent = std::move(PUPScreen::CreateFromCSV(this, R"(5,"FullDMD 16x9","",,0,ForceBack,0,)"s, m_playlists)); break;
+         case 6: parent = std::move(PUPScreen::CreateFromCSV(this, R"(6,"Backglass 4x3-5x4","",,0,ForceBack,0,)"s, m_playlists)); break;
+         default: parent = std::move(PUPScreen::CreateFromCSV(this, "("s + std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
          }
          if (parent)
             AddScreen(parent);
@@ -687,14 +689,18 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       padBottom = pupTopperPadBottom_Get();
       break;
    case VPXWindowId::VPXWINDOW_Backglass:
-      rootScreen = me->GetScreen(2);
+      rootScreen = me->GetScreen(2); // select 2 or 6 (user settings ?)
+      if (rootScreen == nullptr || rootScreen->GetCustomPos() != nullptr)
+         rootScreen = me->GetScreen(6);
       padLeft = pupBGPadLeft_Get();
       padRight = pupBGPadRight_Get();
       padTop = pupBGPadTop_Get();
       padBottom = pupBGPadBottom_Get();
       break;
    case VPXWindowId::VPXWINDOW_ScoreView:
-      rootScreen = me->GetScreen(5); // TODO select 1 or 5 (user settings ?)
+      rootScreen = me->GetScreen(5); // select 1 or 5 (user settings ?)
+      if (rootScreen == nullptr || rootScreen->GetCustomPos() != nullptr)
+         rootScreen = me->GetScreen(1);
       padLeft = pupSVPadLeft_Get();
       padRight = pupSVPadRight_Get();
       padTop = pupSVPadTop_Get();
@@ -719,40 +725,75 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    renderCtx->srcHeight = renderCtx->outHeight;
    rootScreen->SetBounds(padLeft, padTop, static_cast<int>(renderCtx->srcWidth) - padLeft - padRight, static_cast<int>(renderCtx->srcHeight) - padTop - padBottom);
 
-   // Sort background screens before other screen, this is done on every render as state may have changed (end of main play and resume of background play)
-   std::stable_partition(me->m_screenOrder.begin(), me->m_screenOrder.end(), [](const auto& a) { return a->IsBackgroundPlaying(); });
-
-   // Helper to log screen order to help debug rendering order
-   if (false && renderCtx->window == VPXWindowId::VPXWINDOW_Backglass)
+   // Render all children of rootScreen according to the following render order:
+   // - Back screens (ForceBack or SetAsBackground)
+   //   0. underlay
+   //   1. video
+   //   2. overlay
+   // - Front (others)
+   //   0. underlay
+   //   1. video
+   //   2. overlay
+   // - active label page (not sure if back/front apply to label pages)
+   vector<std::shared_ptr<PUPScreen>> screens;
+   for (auto screen : me->m_screenOrder)
    {
-      std::stringstream ss;
-      for (auto screen : me->m_screenOrder)
-      {
-         const PUPScreen* parent = screen.get();
-         while (parent && parent != rootScreen.get())
-            parent = parent->GetParent();
-         if (parent && screen->GetMode() != PUPScreen::Mode::Off && screen->GetMode() != PUPScreen::Mode::MusicOnly)
-            ss << (ss.str().empty() ? "" : ", ") << screen->GetScreenNum() << (screen->IsBackgroundPlaying() ? 'B' : 'F');
-      }
-      LOGD("PUP Screen order: %s", ss.str().c_str());
+      const PUPScreen* parent = screen.get();
+      while (parent && parent != rootScreen.get())
+         parent = parent->GetParent();
+      if (parent)
+         screens.push_back(screen);
    }
-
-   // Render all children of rootScreen according to the global shared render order
-   // This is done in 2 passes:
-   // - first the video
-   // - overlays
-   // - active labels
+   #define LOG_RENDER 0
+   #if LOG_RENDER
+   std::stringstream renderLog;
+   renderLog << "Back [";
+   auto log = [](std::shared_ptr<PUPScreen> screen, int pass)
+   {
+      if (pass == 0 && screen->HasUnderlay())
+         renderLog << screen->GetScreenNum() << "u ";
+      else if (pass == 1 && (!screen->IsPop() || screen->IsMainPlaying()))
+         renderLog << screen->GetScreenNum() << " ";
+      else if (pass == 2 && screen->HasOverlay())
+         renderLog << screen->GetScreenNum() << "o ";
+   };
+   #else
+   auto log = [](std::shared_ptr<PUPScreen> screen, int pass) { };
+   #endif
    for (int pass = 0; pass < 3; pass++)
-   {
-      for (auto screen : me->m_screenOrder)
+      std::ranges::for_each(screens,
+         [&renderCtx, pass, &log](const auto& screen)
+         {
+            const bool isBack = screen->IsBackgroundPlaying() || screen->GetMode() == PUPScreen::Mode::ForceBack || screen->GetMode() == PUPScreen::Mode::ForcePopBack;
+            if (isBack)
+            {
+               log(screen, pass);
+               screen->Render(renderCtx, pass);
+            }
+         });
+   #if LOG_RENDER
+   renderLog << "] Front [";
+   #endif
+   for (int pass = 0; pass < 3; pass++)
+      std::ranges::for_each(screens,
+         [&renderCtx, pass, &log](const auto& screen)
+         {
+            const bool isBack = screen->IsBackgroundPlaying() || screen->GetMode() == PUPScreen::Mode::ForceBack || screen->GetMode() == PUPScreen::Mode::ForcePopBack;
+            if (!isBack && screen->GetMode() != PUPScreen::Mode::Off)
+            {
+               log(screen, pass);
+               screen->Render(renderCtx, pass);
+            }
+         });
+   #if LOG_RENDER
+   renderLog << "]";
+   LOGD("Render: %s", renderLog.str().c_str());
+   #endif
+   std::ranges::for_each(screens,
+      [&renderCtx](const auto& screen)
       {
-         const PUPScreen* parent = screen.get();
-         while (parent && parent != rootScreen.get())
-            parent = parent->GetParent();
-         if (parent)
-            screen->Render(renderCtx, pass);
-      }
-   }
+         screen->Render(renderCtx, 3);
+      });
 
    return true;
 }

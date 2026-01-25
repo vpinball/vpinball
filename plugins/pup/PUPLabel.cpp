@@ -18,7 +18,7 @@
 
 #include <filesystem>
 
-#define LOG_PUPLABEL 0
+#define LOG_PUPLABEL 1
 
 namespace PUP {
 
@@ -27,6 +27,8 @@ namespace PUP {
 #define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
 #define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
 #endif
+
+std::mutex PUPLabel::m_fontMutex;
 
 PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFont, float size, int color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos,
    float yPos, int pagenum, bool visible)
@@ -40,6 +42,7 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
    , m_yAlign(yAlign)
    , m_xPos(xPos)
    , m_yPos(yPos)
+   , m_onShowVisible(visible)
    , m_visible(visible)
    , m_pagenum(pagenum)
 {
@@ -141,7 +144,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                mColor = ?
          */
       {
-         std::lock_guard<std::mutex> lock(m_mutex);
+         std::lock_guard lock(m_mutex);
          switch (json["at"s].as<int>(0))
          {
          case 1:
@@ -172,188 +175,187 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       break;
    
    case 2:
-      if (json["zback"s].exists() && json["zback"s].as<int>() == 1)
-         m_pScreen->SendLabelToBack(this);
-
-      if (json["ztop"s].exists() && json["ztop"s].as<int>() == 1)
-         m_pScreen->SendLabelToFront(this);
-
+   {
+      std::lock_guard lock(m_mutex);
+      for (auto& [key, value] : json.as_object())
       {
-         std::lock_guard lock(m_mutex);
+         if (key == "mt"s)
+         {
 
-         if (json["size"s].exists())
+         }
+         else if (key == "zback"s)
+         {
+            if (value.as<int>() == 1)
+               m_pScreen->SendLabelToBack(this);
+         }
+         else if (key == "ztop"s)
+         {
+            if (value.as<int>() == 1)
+               m_pScreen->SendLabelToFront(this);
+         }
+         else if (key == "size"s)
          {
             m_size = static_cast<float>(json["size"s].as<double>());
             m_dirty = true;
          }
-
-         if (json["xpos"s].exists())
+         else if (key == "xpos"s)
          {
-            m_xPos = static_cast<float>(json["xpos"s].as<double>());
+            m_xPos = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["ypos"s].exists())
+         else if (key == "ypos"s)
          {
-            m_yPos = static_cast<float>(json["ypos"s].as<double>());
+            m_yPos = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["fname"s].exists())
+         else if (key == "fname"s)
          {
-            string szFont = json["fname"s].as_str();
+            string szFont = value.as_str();
             m_pFont = m_pManager->GetFont(szFont);
             if (!m_pFont)
                LOGE("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
             m_dirty = true;
          }
-
-         if (json["fonth"s].exists())
+         else if (key == "fonth"s)
          {
-            m_size = static_cast<float>(json["fonth"s].as<double>());
+            m_size = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["color"s].exists())
+         else if (key == "color"s)
          {
-            m_color = json["color"s].as<int>();
+            m_color = value.as<int>();
             m_dirty = true;
          }
-
-         if (json["xalign"s].exists())
+         else if (key == "xalign"s)
          {
-            m_xAlign = (PUP_LABEL_XALIGN)json["xalign"s].as<int>();
+            m_xAlign = (PUP_LABEL_XALIGN)value.as<int>();
             m_dirty = true;
          }
-
-         if (json["yalign"s].exists())
+         else if (key == "yalign"s)
          {
-            m_yAlign = (PUP_LABEL_YALIGN)json["yalign"s].as<int>();
+            m_yAlign = (PUP_LABEL_YALIGN)value.as<int>();
             m_dirty = true;
          }
-
-         if (json["pagenum"s].exists())
+         else if (key == "pagenum"s)
          {
-            m_pagenum = json["pagenum"s].as<int>();
+            m_pagenum = value.as<int>();
             m_dirty = true;
          }
-
-         if (json["stopani"s].exists())
+         else if (key == "stopani"s)
          {
             // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
             m_animation = nullptr;
             m_dirty = true;
          }
-
-         if (json["rotate"s].exists())
+         else if (key == "rotate"s)
          {
             // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
-            m_angle = static_cast<float>(json["rotate"s].as<double>() / 10.0);
+            m_angle = static_cast<float>(value.as<double>() / 10.0);
             m_dirty = true;
          }
-
-         if (json["zoom"s].exists())
+         else if (key == "zoom"s)
          {
             // 120 for 120% of current height, 80% etc...
             NOT_IMPLEMENTED("zoom not implemented");
             m_dirty = true;
          }
-
-         if (json["alpha"s].exists())
+         else if (key == "alpha"s)
          {
             // '0-255  255=full, 0=blank
             NOT_IMPLEMENTED("alpha not implemented");
             m_dirty = true;
          }
-
-         if (json["gradstate"s].exists() && json["gradcolor"s].exists())
+         else if (key == "gradstate"s)
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
             NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
             m_dirty = true;
          }
-
-         if (json["grayscale"s].exists())
+         else if (key == "gradcolor"s)
+         {
+            // color=gradcolor, gradstate = 0 (gradstate is percent)
+            NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
+            m_dirty = true;
+         }
+         else if (key == "grayscale"s)
          {
             // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
             NOT_IMPLEMENTED("filter not implemented");
             m_dirty = true;
          }
-
-         if (json["filter"s].exists())
+         else if (key == "filter"s)
          {
             // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
             NOT_IMPLEMENTED("filter not implemented");
             m_dirty = true;
          }
-
-         if (json["shadowcolor"s].exists())
+         else if (key == "shadowstate"s)
          {
-            m_shadowColor = json["shadowcolor"s].as<int>();
+            m_shadowState = value.as<int>();
             m_dirty = true;
          }
-
-         if (json["shadowtype"s].exists())
+         else if (key == "shadowcolor"s)
+         {
+            m_shadowColor = value.as<int>();
+            m_dirty = true;
+         }
+         else if (key == "shadowtype"s)
          {
             // ST = 1 (Shadow), ST = 2 (Border)
             NOT_IMPLEMENTED("shadowtype not implemented");
             m_dirty = true;
          }
-
-         if (json["xoffset"s].exists())
+         else if (key == "xoffset"s)
          {
-            m_xoffset = static_cast<float>(json["xoffset"s].as<double>());
+            m_xoffset = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["yoffset"s].exists())
+         else if (key == "yoffset"s)
          {
-            m_yoffset = static_cast<float>(json["yoffset"s].as<double>());
+            m_yoffset = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["anigif"s].exists())
+         else if (key == "anigif"s)
          {
-            m_anigif = json["anigif"s].as<int>();
+            m_anigif = value.as<int>();
             m_dirty = true;
          }
-
-         if (json["width"s].exists())
+         else if (key == "width"s)
          {
-            m_imageWidth = static_cast<float>(json["width"s].as<double>());
+            m_imageWidth = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["height"s].exists())
+         else if (key == "height"s)
          {
-            m_imageHeight = static_cast<float>(json["height"s].as<double>());
+            m_imageHeight = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-
-         if (json["autow"s].exists())
+         else if (key == "autow"s)
          {
             NOT_IMPLEMENTED("autow not implemented");
             m_dirty = true;
          }
-
-         if (json["autoh"s].exists())
+         else if (key == "autoh"s)
          {
             NOT_IMPLEMENTED("autoh not implemented");
             m_dirty = true;
          }
-
-         if (json["shadowstate"s].exists())
+         else if (key == "outline"s)
          {
-            m_shadowState = json["shadowstate"s].as<int>();
+            m_outline = value.as<int>();
             m_dirty = true;
          }
-
-         if (json["outline"s].exists())
+         else if (key == "bold"s)
          {
-            m_outline = (json["outline"s].as<int>() == 1);
+            m_bold = (value.as<int>() == 1);
             m_dirty = true;
+         }
+         else
+         {
+            NOT_IMPLEMENTED(key.c_str(), " not implemented");
          }
       }
+   }
       break;
 
    default:
@@ -513,117 +515,95 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
 {
    SetThreadName("PUPLabel.Upd." + m_szName);
 
-   // TTF_Font may not be accessed simultaneously from multiple thread so serialize updates using a mutex
-   static std::mutex fontMutex;
-   std::lock_guard<std::mutex> lock(fontMutex);
+   // TTF_Font may not be accessed simultaneously from multiple thread so serialize updates using a global static mutex
+   std::lock_guard lock(m_fontMutex);
 
    RenderState rs;
    rs.m_prerenderedHeight = outHeight;
    rs.m_prerenderedColor = color;
 
-   float height = (size / 100.0f) * static_cast<float>(outHeight);
-   TTF_SetFontSize(pFont, height);
+   const float fontHeight = (size / 100.0f) * static_cast<float>(outHeight);
+   TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
+   style |= m_bold ? TTF_STYLE_BOLD : 0;
+   TTF_SetFontSize(pFont, fontHeight);
+   // FIXME not yet implemented: TTF_SetFontOutline(pFont, m_outline);
    TTF_SetFontOutline(pFont, 0);
+   TTF_SetFontStyle(pFont, style);
+   TTF_SetFontHinting(pFont, TTF_HINTING_NORMAL);
 
-   SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
-   SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, szCaption.c_str(), szCaption.length(), textColor, 0);
+   string text = szCaption;
+   std::replace_if(text.begin(), text.end(), [pFont](char c) { return !TTF_FontHasGlyph(pFont, c); }, ' ');
+
+   SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), 255 };
+   SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), textColor, 0);
    if (!pTextSurface)
    {
       LOGE("Unable to render text: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
       return rs;
    }
 
-   SDL_Surface* pMergedSurface = nullptr;
-
-   if (shadowstate)
+   const auto xoffset = 0 * static_cast<int>(fontHeight * (offset.x / 100.0f));
+   const auto yoffset = 0 * static_cast<int>(fontHeight * (offset.y / 100.0f));
+   SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + abs(xoffset), pTextSurface->h + abs(yoffset), SDL_PIXELFORMAT_RGBA32);
+   if (!pMergedSurface)
    {
-      SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor) };
-      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pFont, szCaption.c_str(), szCaption.length(), shadowColor, 0);
-      if (!pShadowSurface)
+      LOGE("Unable to render text: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
+      return rs;
+   }
+   //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(SDL_GetPixelFormatDetails(pMergedSurface->format), nullptr, 255, 255, 0, 255));
+
+   if (shadowstate && (xoffset != 0 || yoffset != 0))
+   { // Shadow rendering
+      const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
+      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), shadowColor, 0);
+      if (pShadowSurface)
       {
-         LOGE("Unable to render text: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
-         delete pTextSurface;
-         return rs;
+         SDL_Rect shadowRect = { (xoffset < 0) ? 0 : xoffset, (yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
+         SDL_BlitSurface(pShadowSurface, nullptr, pMergedSurface, &shadowRect);
+
+         SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
+         SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
+         SDL_DestroySurface(pShadowSurface);
       }
-
-      int xoffset = (int)(((abs(offset.x) / 100.0f) * height) / 2.f);
-      int yoffset = (int)(((abs(offset.y) / 100.0f) * height) / 2.f);
-
-      pMergedSurface = SDL_CreateSurface(pTextSurface->w + xoffset, pTextSurface->h + yoffset, SDL_PIXELFORMAT_RGBA32);
-      if (pMergedSurface)
+      else
       {
-         //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
-         if (!m_outline)
-         {
-            SDL_Rect shadowRect = { (xoffset < 0) ? 0 : xoffset, (yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
-            SDL_BlitSurface(pShadowSurface, NULL, pMergedSurface, &shadowRect);
-
-            SDL_Rect textRect = { (xoffset > 0) ? 0 : xoffset, (yoffset > 0) ? 0 : yoffset, pTextSurface->w, pTextSurface->h };
-            SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, &textRect);
-         }
-         else
-         {
-            SDL_Rect shadowRects[8]
-               = { { 0, 0, pShadowSurface->w, pShadowSurface->h }, { xoffset / 2, 0, pShadowSurface->w, pShadowSurface->h }, { xoffset, 0, pShadowSurface->w, pShadowSurface->h },
-
-                    { 0, yoffset / 2, pShadowSurface->w, pShadowSurface->h }, { xoffset, yoffset / 2, pShadowSurface->w, pShadowSurface->h },
-
-                    { 0, yoffset, pShadowSurface->w, pShadowSurface->h }, { xoffset / 2, yoffset, pShadowSurface->w, pShadowSurface->h },
-                    { xoffset, yoffset, pShadowSurface->w, pShadowSurface->h } };
-
-            for (int i = 0; i < 8; ++i)
-               SDL_BlitSurface(pShadowSurface, NULL, pMergedSurface, &shadowRects[i]);
-
-            SDL_Rect textRect = { xoffset / 2, yoffset / 2, pTextSurface->w, pTextSurface->h };
-            SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, &textRect);
-         }
+         LOGE("Failed to render shadow: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
+         SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
+         SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
       }
-
-      SDL_DestroySurface(pShadowSurface);
    }
    else
-   {
-      pMergedSurface = SDL_CreateSurface(pTextSurface->w, pTextSurface->h, SDL_PIXELFORMAT_RGBA32);
-      if (pMergedSurface)
-      {
-         //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
-         SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, NULL);
-      }
+   { // BGRA to RGBA conversion
+      SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, nullptr);
    }
-
-   if (pMergedSurface)
-   {
-      rs.m_pTexture = CreateTexture(pMergedSurface);
-      if (rs.m_pTexture)
-      {
-         rs.m_width = static_cast<float>(pMergedSurface->w);
-         rs.m_height = static_cast<float>(pMergedSurface->h);
-      }
-      SDL_DestroySurface(pMergedSurface);
-   }
-
    SDL_DestroySurface(pTextSurface);
 
+   rs.m_pTexture = CreateTexture(pMergedSurface);
+   if (rs.m_pTexture)
+   {
+      rs.m_width = static_cast<float>(pMergedSurface->w);
+      rs.m_height = static_cast<float>(pMergedSurface->h);
+   }
+   SDL_DestroySurface(pMergedSurface);
    return rs;
 }
 
 string PUPLabel::ToString() const
 {
-   return "name=" + m_szName + ", caption=" + m_szCaption + ", visible=" + (m_visible ? "true" : "false") + ", size=" + std::to_string(m_size) + ", color=" + std::to_string(m_color)
-      + ", angle=" + std::to_string(m_angle) + ", xAlign="
-      + (m_xAlign == PUP_LABEL_XALIGN_LEFT        ? "LEFT"
+   return std::format("name={}, caption={}, visible={}, size={}, color={}, angle={}, xAlign={}, yAlign={}, xPos={}, yPos={}, pagenum={}, szPath={}", m_szName, m_szCaption,
+      (m_visible ? "true" : "false"), m_size, m_color, m_angle,
+      (m_xAlign == PUP_LABEL_XALIGN_LEFT          ? "LEFT"
             : m_xAlign == PUP_LABEL_XALIGN_CENTER ? "CENTER"
-                                                  : "RIGHT")
-      + ", yAlign="
-      + (m_yAlign == PUP_LABEL_YALIGN_TOP         ? "TOP"
+                                                  : "RIGHT"),
+      (m_yAlign == PUP_LABEL_YALIGN_TOP           ? "TOP"
             : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER"
-                                                  : "BOTTOM")
-      + ", xPos=" + std::to_string(m_xPos) + ", yPos=" + std::to_string(m_yPos) + ", pagenum=" + std::to_string(m_pagenum) + ", szPath=" + m_szPath.string();
+                                                  : "BOTTOM"),
+      m_xPos, m_yPos, m_pagenum, m_szPath.string());
 }
 
 PUPLabel::Animation::Animation(PUPLabel* label, int lengthMs, int foregroundColor, int flashingPeriod)
-   : m_label(label)
-   , m_color(label->m_color)
+   : m_color(label->m_color)
+   , m_label(label)
    , m_lengthMs(lengthMs)
    , m_foregroundColor(foregroundColor)
    , m_startTimestamp(SDL_GetTicks())
