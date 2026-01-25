@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "DOFStreamEvent.h"
+
 #include "common.h"
 
 #include "plugins/ControllerPlugin.h"
@@ -58,12 +60,6 @@
 
 namespace PUP {
 
-typedef struct {
-   char type;
-   int number;
-   int value;
-} PUPTriggerData;
-
 class PUPScreen;
 class PUPPlaylist;
 class PUPTrigger;
@@ -89,14 +85,15 @@ public:
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
 
-   void QueueTriggerData(PUPTriggerData data);
+   void QueueDOFEvent(char c, int id, int value);
 
 private:
-   void ProcessQueue();
    void UnloadFonts();
    void LoadFonts();
    void LoadPlaylists();
+
    void Start();
+   bool IsRunning() const { return m_dofEventStream != nullptr; }
    void Stop();
 
    float m_mainVolume = 1.f;
@@ -107,52 +104,24 @@ private:
    vector<TTF_Font*> m_fonts;
    ankerl::unordered_dense::map<string, TTF_Font*> m_fontMap;
    ankerl::unordered_dense::map<string, TTF_Font*> m_fontFilenameMap;
-   vector<PUPTriggerData> m_triggerDataQueue;
-   std::mutex m_queueMutex;
-   std::condition_variable m_queueCondVar;
-   bool m_isRunning = false;
-   std::thread m_thread;
    vector<PUPPlaylist*> m_playlists;
 
-   const MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
-   unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
-   unsigned int m_onDmdSrcChangedId = 0, m_getDmdSrcId = 0;
-   unsigned int m_onDevSrcChangedId = 0, m_getDevSrcId = 0;
-   unsigned int m_onInputSrcChangedId = 0, m_getInputSrcId = 0;
-   unsigned int m_onSerumTriggerId = 0, m_onDmdTriggerId = 0;
-   DevSrcId m_pinmameDevSrc {};
-   int m_PMSolenoidIndex = -1;
-   unsigned int m_nPMSolenoids = 0;
-   int m_PMGIIndex = -1;
-   unsigned int m_nPMGIs = 0;
-   int m_PMLampIndex = -1;
-   unsigned int m_nPMLamps = 0;
-   InputSrcId m_pinmameInputSrc {};
-   InputSrcId m_b2sInputSrc {};
-   unsigned int m_getVpxApiId = 0;
+   const MsgPluginAPI* const m_msgApi;
    const VPXPluginAPI* m_vpxApi = nullptr;
 
-   struct PollDmdContext
-   {
-      PollDmdContext(PUPManager* mng) { manager = mng; }
-      bool valid = true;
-      PUPManager* manager;
-   };
-   PollDmdContext* m_pollDmdContext = nullptr;
-   unsigned int m_lastFrameId = 0;
-   DisplaySrcId m_dmdId {};
    std::unique_ptr<PUPDMD::DMD> m_dmd;
-   std::queue<uint8_t*> m_triggerDmdQueue;
-   uint8_t m_idFrame[128 * 32] {};
+   std::array<uint8_t, 128 * 32> m_idFrame;
+   int ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame);
    
+   unsigned int m_getAuxRendererId = 0;
+   unsigned int m_onAuxRendererChgId = 0;
+   unsigned int m_getVpxApiId = 0;
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
-   static void OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData);
-   static void OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData);
-   static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData);
-   static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData);
-   static void OnPollDmd(void* userData);
+
+   std::mutex m_eventMutex;
+   std::unique_ptr<DOFEventStream> m_dofEventStream;
 };
 
 }

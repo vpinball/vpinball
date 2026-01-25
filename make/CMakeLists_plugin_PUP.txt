@@ -10,6 +10,8 @@ set(PUP_PLUGIN_SOURCES
    plugins/pup/common.cpp
    plugins/pup/common.cpp
    plugins/pup/LibAv.h
+   plugins/pup/DOFStreamEvent.h
+   plugins/pup/DOFStreamEvent.cpp
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
    plugins/pup/PUPCustomPos.cpp
