@@ -92,8 +92,10 @@ public:
    void SetLength(int length);
    void SetAsBackGround(int mode);
 
-   bool IsMainPlaying() const;
+   bool HasUnderlay() const { return !m_background.GetFile().empty(); }
    bool IsBackgroundPlaying() const;
+   bool IsMainPlaying() const;
+   bool HasOverlay() const { return !m_overlay.GetFile().empty(); }
 
    const SDL_Rect& GetRect() const { return m_rect; }
    void Render(VPXRenderContext2D* const ctx, int pass);

@@ -183,7 +183,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
       for (int y = searchFrame.y; y < (searchFrame.y + searchFrame.w); ++y)
       {
          // If disabled while searching, just abort
-         if (!m_stopSearching)
+         if (m_stopSearching)
             return ivec4();
          unsigned int pos = (y * texInfo->width + searchFrame.x) * pos_step;
          for (int x = searchFrame.x; x < (searchFrame.x + searchFrame.z); ++x, pos += pos_step)

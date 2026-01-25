@@ -42,6 +42,7 @@ public:
 
    const string& GetCaption() const { return m_szCaption; }
    void SetCaption(const string& szCaption);
+   bool GetOnShowVisible() const { return m_onShowVisible; }
    void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum);
@@ -61,6 +62,7 @@ private:
    PUP_LABEL_YALIGN m_yAlign;
    float m_xPos;
    float m_yPos;
+   bool m_onShowVisible;
    bool m_visible;
    string m_szCaption;
    int m_pagenum;
@@ -68,7 +70,8 @@ private:
    int m_shadowState = 0;
    float m_xoffset = 0;
    float m_yoffset = 0;
-   bool m_outline = false;
+   int m_outline = 0;
+   bool m_bold = false;
    PUPScreen* m_pScreen = nullptr;
    int m_anigif = 0;
 
@@ -78,6 +81,7 @@ private:
    float m_imageHeight = 0; // height of image (unused for text)
 
    std::mutex m_mutex;
+   static std::mutex m_fontMutex;
 
    class RenderState final
    {
