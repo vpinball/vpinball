@@ -32,8 +32,8 @@ MSGPI_STRING_VAL_SETTING(pupTopperFrameOverlayPath, "TopperFrameOverlay", "Toppe
 
 PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::filesystem::path& rootPath)
    : m_szRootPath(rootPath)
-   , m_msgApi(msgApi)
    , m_endpointId(endpointId)
+   , m_msgApi(msgApi)
 {
    msgApi->RegisterSetting(endpointId, &pupMainVolume);
    m_mainVolume = pupMainVolume_Get();
@@ -69,8 +69,40 @@ PUPManager::~PUPManager()
    m_msgApi->ReleaseMsgID(m_getVpxApiId);
 }
 
+void PUPManager::Start()
+{
+   LOGI("PUP Manager start");
+   assert(!IsRunning());
+   m_dofEventStream = std::make_unique<DOFEventStream>(m_msgApi, m_endpointId, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
+   m_dofEventStream->SetDMDHandler(
+      [](const GetDisplaySrcMsg& sources)
+      {
+         DisplaySrcId selected {};
+         unsigned int largest = 128;
+         for (unsigned int i = 0; i < sources.count; i++)
+         {
+            if (sources.entries[i].width >= largest && sources.entries[i].GetIdentifyFrame)
+            {
+               selected = sources.entries[i];
+               largest = sources.entries[i].width;
+            }
+         }
+         return selected;
+      },
+      [this](const DisplaySrcId& src, const uint8_t* frame) { return ProcessDmdFrame(src, frame); });
+}
+
+void PUPManager::Stop()
+{
+   LOGI("PUP Manager stop");
+   assert(IsRunning());
+   m_dofEventStream = nullptr;
+}
+
 void PUPManager::SetGameDir(const string& szRomName)
 {
+   assert(!IsRunning());
+
    std::filesystem::path path;
 
    // First search for pupvideos along the table file
@@ -91,8 +123,6 @@ void PUPManager::SetGameDir(const string& szRomName)
 
    if (path == m_szPath)
       return;
-
-   std::lock_guard lock(m_queueMutex);
 
    m_szPath = path;
    LOGI("PUP path: %s", m_szPath.string().c_str());
@@ -141,24 +171,27 @@ void PUPManager::LoadConfig(const string& szRomName)
       LOGI("No screens.pup file found");
    }
 
+   Start();
+
    // Queue initial game event
-   QueueTriggerData({ 'D', 0, 1 });
+   QueueDOFEvent('D', 0, 1);
 }
 
 void PUPManager::Unload()
 {
-   Stop();
+   if (IsRunning())
+      Stop();
 
    m_screenOrder.clear();
    m_screenMap.clear();
+
+   m_dmd = nullptr;
 
    UnloadFonts();
 
    for (auto& playlist : m_playlists)
       delete playlist;
    m_playlists.clear();
-
-   m_dmd = nullptr;
 
    m_szPath.clear();
 }
@@ -233,7 +266,7 @@ void PUPManager::LoadPlaylists()
 
 bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
-   std::unique_lock lock(m_queueMutex);
+   std::unique_lock lock(m_eventMutex);
 
    if (std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum()); existing)
    {
@@ -253,15 +286,14 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
    m_screenOrder.push_back(pScreen);
 
-   const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos();
-   if (pCustomPos) {
+   if (const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos(); pCustomPos)
+   {
       const auto it = m_screenMap.find(pCustomPos->GetSourceScreen());
       std::shared_ptr<PUPScreen> parent;
       if (it != m_screenMap.end()) {
          parent = it->second;
       }
       else {
-         lock.unlock();
          switch (pCustomPos->GetSourceScreen()) {
          case 0: parent = std::move(PUPScreen::CreateFromCSV(this, R"(0,"Topper","",,0,ForceBack,0,)"s, m_playlists)); break;
          case 1: parent = std::move(PUPScreen::CreateFromCSV(this, R"(1,"DMD 4x1","",,0,ForceBack,0,)"s, m_playlists)); break;
@@ -273,16 +305,14 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
          default: parent = std::move(PUPScreen::CreateFromCSV(this, "("s + std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
          }
          if (parent)
+         {
+            lock.unlock();
             AddScreen(parent);
-         lock.lock();
+            lock.lock();
+         }
       }
       if (parent && pScreen != parent)
          parent->AddChild(pScreen);
-   }
-
-   if (!m_isRunning) {
-      lock.unlock();
-      Start();
    }
 
    LOGI("Screen added: screen={%s}", pScreen->ToString().c_str());
@@ -293,10 +323,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 bool PUPManager::AddScreen(int screenNum)
 {
    std::unique_ptr<PUPScreen> pScreen = PUPScreen::CreateDefault(this, screenNum, m_playlists);
-   if (!pScreen)
-      return false;
-
-   return AddScreen(std::move(pScreen));
+   return pScreen ? AddScreen(std::move(pScreen)) : false;
 }
 
 void PUPManager::SendScreenToBack(const PUPScreen* screen)
@@ -376,296 +403,116 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
    return nullptr;
 }
 
-void PUPManager::QueueTriggerData(PUPTriggerData data)
+int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
 {
-   if (data.value == 0)
-      return;
+   // Unsupported frame format ?
+   if (src.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 && src.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)
+      return -1;
+
+   // Lazily loads DMD capture until we have a DMD and its format
+   if (m_dmd == nullptr)
    {
-      std::lock_guard lock(m_queueMutex);
-      m_triggerDataQueue.push_back(data);
+      m_dmd = std::make_unique<PUPDMD::DMD>();
+      m_dmd->SetLogCallback(
+         [](const char* format, va_list args, const void* userData)
+         {
+            char buffer[1024];
+            vsnprintf(buffer, sizeof(buffer), format, args);
+            LOGD(buffer);
+         },
+         this);
+      m_dmd->Load(m_szPath.string().c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
+      memset(m_idFrame.data(), 0, m_idFrame.size());
    }
-   m_queueCondVar.notify_one();
+
+   if (src.width == 128 && src.height == 32)
+      return static_cast<int>(m_dmd->MatchIndexed(frame, 128, 32));
+
+   // Reproduce legacy behavior for backward compatibility (scaling, padding, coloring)
+   // This is very hacky and should be replaced by identification against the raw identify frame.
+   if (src.width == 128 && src.height == 16)
+   {
+      memcpy(m_idFrame.data() + 128 * 8, frame, 128 * 16);
+      return static_cast<int>(m_dmd->MatchIndexed(m_idFrame.data(), 128, 32));
+   }
+
+   if (src.width <= 256 && src.height == 64)
+   {
+      // Resize with a triangle filter to mimic what original implementation in Freezy's DmdExt (https://github.com/freezy/dmd-extensions)
+      // does, that is to say:
+      // - convert from luminance to RGB (with hue = 0, sat = 1)
+      // - resize using Windows 8.1 API which in turn uses IWICBitmapScaler with Fant interpolation mode (hence the triangle filter)
+      // - convert back from RGB to HSL and send luminance to PinUp
+      //
+      // Some references regarding Fant scaling:
+      // - https://github.com/sarnold/urt/blob/master/tools/fant.c
+      // - https://photosauce.net/blog/post/examining-iwicbitmapscaler-and-the-wicbitmapinterpolationmode-values
+      //
+      // The Baywatch Pup pack was used to validate this (the filter is still a guess since Windows code is not available)
+      const unsigned int ofsX = (128 - (src.width / 2)) / 2;
+      for (unsigned int y = 0; y < 32; y++)
+      {
+         for (unsigned int x = 0; x < src.width / 2; x++)
+         {
+            float lum = 0., sum = 0.;
+            constexpr int radius = 1;
+            for (int dx = 1 - radius; dx <= radius; dx++)
+            {
+               for (int dy = 1 - radius; dy <= radius; dy++)
+               {
+                  const int px = x * 2 + dx;
+                  const int py = y * 2 + dy;
+                  const float weight = radius * radius - fabsf((float)dx - 0.5f) * fabsf((float)dy - 0.5f);
+                  if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < src.width //
+                     && /*py >= 0 &&*/ static_cast<unsigned int>(py) < src.height) // unsigned int tests include the >= 0 ones
+                     lum += static_cast<float>(frame[py * src.width + px]) * weight;
+                  sum += weight;
+               }
+            }
+            m_idFrame[y * 128 + ofsX + x] = (uint8_t)roundf(lum / sum);
+         }
+      }
+      return static_cast<int>(m_dmd->MatchIndexed(m_idFrame.data(), 128, 32));
+   }
+
+   return -1;
 }
 
-void PUPManager::ProcessQueue()
+void PUPManager::QueueDOFEvent(char c, int id, int value)
 {
-   SetThreadName("PUPManager.ProcessQueue"s);
-   while (m_isRunning)
+   LOGD("DOF Event %c%03d = %d", c, id, value);
+
+   std::lock_guard lock(m_eventMutex);
+   for (const auto& [key, screen] : m_screenMap)
    {
-      std::unique_lock lock(m_queueMutex);
-      m_queueCondVar.wait_for(lock, std::chrono::microseconds(16666), [this] { return !m_triggerDataQueue.empty() || !m_triggerDmdQueue.empty() || !m_isRunning; });
-
-      if (!m_isRunning)
+      for (auto& [cmd, triggers] : screen->GetTriggers())
       {
-         while (!m_triggerDmdQueue.empty())
+         const bool wasTriggered = triggers[0]->IsTriggered();
+         for (auto& trigger : triggers[0]->GetTriggers())
          {
-            delete[] m_triggerDmdQueue.front();
-            m_triggerDmdQueue.pop();
-         }
-         break;
-      }
-
-      int dmdTrigger = -1;
-      while (!m_triggerDmdQueue.empty())
-      {
-         const uint8_t* const __restrict frame = m_triggerDmdQueue.front();
-         m_triggerDmdQueue.pop();
-
-         // Unsupported frame format ? just flush the queue
-         if (m_dmdId.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 && m_dmdId.identifyFormat != CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)
-         {
-            delete[] frame;
-            continue;
-         }
-
-         // Lazily loads DMD capture until we have a DMD and its format
-         if (m_dmd == nullptr)
-         {
-            m_dmd = std::make_unique<PUPDMD::DMD>();
-            m_dmd->SetLogCallback(
-               [](const char* format, va_list args, const void* userData)
-               {
-                  char buffer[1024];
-                  vsnprintf(buffer, sizeof(buffer), format, args);
-                  LOGD(buffer);
-               },
-               this);
-            m_dmd->Load(m_szPath.string().c_str(), "", m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
-            memset(m_idFrame, 0, sizeof(m_idFrame));
-         }
-
-         // Reproduce legacy behavior for backward compatibility (scaling, padding, coloring)
-         // This is very hacky and should be replaced by identification against the raw identify frame.
-         if (m_dmdId.width == 128 && m_dmdId.height == 32)
-         {
-            dmdTrigger = m_dmd->MatchIndexed(frame, 128, 32);
-         }
-         else if (m_dmdId.width == 128 && m_dmdId.height == 16)
-         {
-            memcpy(&m_idFrame[128 * 8], frame, 128 * 16);
-            dmdTrigger = m_dmd->MatchIndexed(m_idFrame, 128, 32);
-         }
-         else if (m_dmdId.width <= 256 && m_dmdId.height == 64)
-         {
-            // Resize with a triangle filter to mimic what original implementation in Freezy's DmdExt (https://github.com/freezy/dmd-extensions)
-            // does, that is to say:
-            // - convert from luminance to RGB (with hue = 0, sat = 1)
-            // - resize using Windows 8.1 API which in turn uses IWICBitmapScaler with Fant interpolation mode (hence the triangle filter)
-            // - convert back from RGB to HSL and send luminance to PinUp
-            //
-            // Some references regarding Fant scaling:
-            // - https://github.com/sarnold/urt/blob/master/tools/fant.c
-            // - https://photosauce.net/blog/post/examining-iwicbitmapscaler-and-the-wicbitmapinterpolationmode-values
-            //
-            // The Baywatch Pup pack was used to validate this (the filter is still a guess since Windows code is not available)
-            const unsigned int ofsX = (128 - (m_dmdId.width / 2)) / 2;
-            for (unsigned int y = 0; y < 32; y++)
+            if (trigger.m_type == c && trigger.m_number == id)
             {
-               for (unsigned int x = 0; x < m_dmdId.width / 2; x++)
-               {
-                  float lum = 0., sum = 0.;
-                  constexpr int radius = 1;
-                  for (int dx = 1 - radius; dx <= radius; dx++)
-                  {
-                     for (int dy = 1 - radius; dy <= radius; dy++)
-                     {
-                        const int px = x * 2 + dx;
-                        const int py = y * 2 + dy;
-                        const float weight = radius * radius - fabsf((float)dx - 0.5f) * fabsf((float)dy - 0.5f);
-                        if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < m_dmdId.width
-                           && /*py >= 0 &&*/ static_cast<unsigned int>(py) < m_dmdId.height) // unsigned int tests include the >= 0 ones
-                           lum += static_cast<float>(frame[py * m_dmdId.width + px]) * weight;
-                        sum += weight;
-                     }
-                  }
-                  m_idFrame[y * 128 + ofsX + x] = (int)roundf(lum / sum);
-               }
+               trigger.m_value = value;
+               break;
             }
-            dmdTrigger = m_dmd->MatchIndexed(m_idFrame, 128, 32);
          }
-         else
+         const bool isTriggered = triggers[0]->IsTriggered();
+         if (isTriggered && !wasTriggered)
          {
-            // Unsupported DMD format (would need to implement a dedicated stretch fit, matching what is used elsewhere)
-         }
-         delete[] frame;
-
-         if (dmdTrigger == 0) // 0 is unmatched for libpupdmd, but D0 is init trigger for PUP
-            dmdTrigger = -1;
-         else
-         {
-            // Broadcast event on plugin message bus (avoid holding any reference as we don't know when this event will be processed and maybe the manager will be deleted by then)
-            struct DmdEvent
+            for (auto trigger : triggers)
             {
-               const MsgPluginAPI* msgApi;
-               uint32_t endpointId;
-               unsigned int onDmdTriggerId;
-               int dmdTrigger;
-            };
-            DmdEvent* event = new DmdEvent();
-            *event = { m_msgApi, m_endpointId, m_onDmdTriggerId, dmdTrigger };
-            m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) {
-               DmdEvent* event = static_cast<DmdEvent*>(userData);
-               event->msgApi->BroadcastMsg(event->endpointId, event->onDmdTriggerId, &event->dmdTrigger);
-               delete event;
-            }, event);
-         }
-      }
-
-      for (const auto& [key, screen] : m_screenMap)
-      {
-         for (auto& [cmd, triggers] : screen->GetTriggers())
-         {
-            bool wasTriggered = triggers[0]->IsTriggered();
-            for (auto& trigger : triggers[0]->GetTriggers())
-            {
-               // Trigger value automatically get back to 0 unless held (for example by a controller switch)
-               trigger.m_value = 0;
-
-               switch (trigger.m_type)
-               {
-               case 'W': // PinMAME switch state
-                  for (unsigned int i = 0; i < m_pinmameInputSrc.nInputs; i++)
-                     if (m_pinmameInputSrc.inputDefs[i].groupId == 0x0001 && m_pinmameInputSrc.inputDefs[i].deviceId == trigger.m_number)
-                        trigger.m_value = m_pinmameInputSrc.GetInputState(i) ? 1 : 0;
-                  break;
-               case 'N': // PinMAME mech state
-                  // FIXME implement
-                  break;
-               case 'L': // PinMAME lamp state
-                  if (0 < trigger.m_number && static_cast<unsigned int>(trigger.m_number) <= m_nPMLamps)
-                     trigger.m_value = m_pinmameDevSrc.GetFloatState(m_PMLampIndex + trigger.m_number - 1) > 0.5f ? 1 : 0;
-                  break;
-               case 'S': // PinMAME solenoid state
-                  if (0 < trigger.m_number && static_cast<unsigned int>(trigger.m_number) <= m_nPMSolenoids)
-                     trigger.m_value = m_pinmameDevSrc.GetFloatState(m_PMSolenoidIndex + trigger.m_number - 1) > 0.5f ? 1 : 0;
-                  break;
-               case 'G': // PinMAME GI state
-                  // FIXME likely needs legacy value (0..8 for WPC, 0/9 for others) for backward compatibility
-                  if (0 < trigger.m_number && static_cast<unsigned int>(trigger.m_number) <= m_nPMGIs)
-                     trigger.m_value = m_pinmameDevSrc.GetFloatState(m_PMGIIndex + trigger.m_number - 1) > 0.5f ? 1 : 0;
-                  break;
-               case 'D': // PinMAME Segment display state (also DMD frame identification Id implemented above)
-                  // FIXME implement alphanum segments
-                  trigger.m_value = (trigger.m_number == dmdTrigger) ? 1 : 0;
-                  break;
-               case 'E': // B2S Controller generic input state
-                  // FIXME implement
-                  break;
-               case 'B': // B2S Controller score digit
-                  // FIXME implement
-                  break;
-               case 'C': // B2S Controller score
-                  // FIXME implement
-                  break;
-               }
-               // Apply triggers defined through scripting, after controller events to allow overriding them
-               for (const auto& triggerData : m_triggerDataQueue)
-                  if ((trigger.m_type == triggerData.type) && (trigger.m_number == triggerData.number))
-                     trigger.m_value = triggerData.value;
-            }
-            bool isTriggered = triggers[0]->IsTriggered();
-            if (isTriggered && !wasTriggered)
-            {
-               for (auto trigger : triggers)
-               {
-                  // Dispatch trigger action to main thread
-                  m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { 
-                     static_cast<PUPTrigger*>(userData)->Trigger()();
-                     }, trigger);
-               }
+               // Dispatch trigger action on main thread
+               LOGD("Trigger %s", trigger->ToString().c_str());
+               m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
             }
          }
       }
-
-      // Clear script triggers
-      m_triggerDataQueue.clear();
    }
-}
-
-void PUPManager::Start()
-{
-   if (m_isRunning)
-      return;
-
-   LOGI("PUP start");
-
-   m_isRunning = true;
-   m_thread = std::thread(&PUPManager::ProcessQueue, this);
-
-   // Subscribe to message bus events
-   m_getDmdSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   m_onDmdSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-   m_onSerumTriggerId = m_msgApi->GetMsgID("Serum", "OnDmdTrigger");
-   m_onDmdTriggerId = m_msgApi->GetMsgID("PinUp", "OnDmdTrigger");
-
-   m_getDevSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-   m_onDevSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
-
-   m_getInputSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
-   m_onInputSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
-
-   m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onDevSrcChangedId, OnDevSrcChanged, this);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onInputSrcChangedId, OnInputSrcChanged, this);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onSerumTriggerId, OnSerumTrigger, this);
-   OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
-   OnDevSrcChanged(m_onDevSrcChangedId, this, nullptr);
-   OnInputSrcChanged(m_onInputSrcChangedId, this, nullptr);
-   
-   assert(m_pollDmdContext == nullptr);
-   m_pollDmdContext = new PollDmdContext(this);
-   OnPollDmd(m_pollDmdContext);
-}
-
-void PUPManager::Stop()
-{
-   if (!m_isRunning)
-      return;
-
-   assert(m_pollDmdContext);
-   m_pollDmdContext->valid = false;
-   m_pollDmdContext = nullptr;
-
-   {
-      std::lock_guard lock(m_queueMutex);
-      m_isRunning = false;
-   }
-
-   m_queueCondVar.notify_all();
-   if (m_thread.joinable())
-      m_thread.join();
-
-   m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onDevSrcChangedId, OnDevSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onInputSrcChangedId, OnInputSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger);
-   delete[] m_b2sInputSrc.inputDefs;
-   memset(&m_b2sInputSrc, 0, sizeof(m_b2sInputSrc));
-   delete[] m_pinmameInputSrc.inputDefs;
-   memset(&m_pinmameInputSrc, 0, sizeof(m_pinmameInputSrc));
-   delete[] m_pinmameDevSrc.deviceDefs;
-   memset(&m_pinmameDevSrc, 0, sizeof(m_pinmameDevSrc));
-   m_nPMSolenoids = 0;
-   m_PMGIIndex = -1;
-   m_nPMGIs = 0;
-   m_PMLampIndex = -1;
-   m_nPMLamps = 0;
-
-   m_msgApi->ReleaseMsgID(m_getDevSrcId);
-   m_msgApi->ReleaseMsgID(m_onDevSrcChangedId);
-
-   m_msgApi->ReleaseMsgID(m_getInputSrcId);
-   m_msgApi->ReleaseMsgID(m_onInputSrcChangedId);
-
-   m_msgApi->ReleaseMsgID(m_getDmdSrcId);
-   m_msgApi->ReleaseMsgID(m_onDmdSrcChangedId);
-   m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
-   m_msgApi->ReleaseMsgID(m_onDmdTriggerId);
 }
 
 int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
-   PUPManager* me = static_cast<PUPManager*>(context);
+   auto me = static_cast<PUPManager*>(context);
 
    if (float volume = pupMainVolume_Get(); volume != me->m_mainVolume)
    {
@@ -800,8 +647,8 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
 void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* msgData)
 {
-   PUPManager* me = static_cast<PUPManager*>(context);
-   GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
+   auto me = static_cast<PUPManager*>(context);
+   auto msg = static_cast<GetAncillaryRendererMsg*>(msgData);
    static constexpr AncillaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass || msg->window == VPXWindowId::VPXWINDOW_ScoreView || msg->window == VPXWindowId::VPXWINDOW_Topper)
    {
@@ -812,156 +659,6 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
       }
       msg->count++;
    }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// State polling for DMD keyframe identification and trigger detection
-//
-
-// Poll for an identify frame at least every 60 times per seconds
-void PUPManager::OnPollDmd(void* userData)
-{
-   PollDmdContext* ctx = static_cast<PollDmdContext*>(userData);
-   if (!ctx->valid)
-   {
-      // End of polling (we own the context object, so delete it)
-      delete ctx;
-      return;
-   }
-   std::lock_guard lock(ctx->manager->m_queueMutex);
-   if (ctx->manager->m_dmdId.id.id != 0 && ctx->manager->m_dmdId.GetIdentifyFrame)
-   {
-      DisplayFrame idFrame = ctx->manager->m_dmdId.GetIdentifyFrame(ctx->manager->m_dmdId.id);
-      if (idFrame.frameId != ctx->manager->m_lastFrameId && idFrame.frame)
-      {
-         ctx->manager->m_lastFrameId = idFrame.frameId;
-         uint8_t* frame = new uint8_t[ctx->manager->m_dmdId.width * ctx->manager->m_dmdId.height];
-         memcpy(frame, idFrame.frame, ctx->manager->m_dmdId.width * ctx->manager->m_dmdId.height);
-         ctx->manager->m_triggerDmdQueue.push(frame);
-         ctx->manager->m_queueCondVar.notify_one();
-      }
-   }
-   ctx->manager->m_msgApi->RunOnMainThread(ctx->manager->m_endpointId, 1.0 / 60.0, OnPollDmd, ctx);
-}
-
-// Broadcasted by Serum plugin when frame triggers are identified
-void PUPManager::OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
-{
-   PUPManager* me = static_cast<PUPManager*>(userData);
-   unsigned int* trigger = static_cast<unsigned int*>(eventData);
-   me->QueueTriggerData({ 'D', static_cast<int>(*trigger), 1 });
-}
-
-void PUPManager::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
-{
-   PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard lock(me->m_queueMutex);
-   me->m_dmdId.id.id = 0;
-   unsigned int largest = 128;
-   GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getDmdSrcId, &getSrcMsg);
-   getSrcMsg = { getSrcMsg.count, 0, new DisplaySrcId[getSrcMsg.count] };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getDmdSrcId, &getSrcMsg);
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
-   {
-      if (getSrcMsg.entries[i].width >= largest && getSrcMsg.entries[i].GetIdentifyFrame)
-      {
-         me->m_dmdId = getSrcMsg.entries[i];
-         largest = getSrcMsg.entries[i].width;
-      }
-   }
-   delete[] getSrcMsg.entries;
-}
-
-void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData)
-{
-   PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard lock(me->m_queueMutex);
-   delete[] me->m_pinmameDevSrc.deviceDefs;
-   me->m_PMSolenoidIndex = -1;
-   me->m_nPMSolenoids = 0;
-   me->m_PMGIIndex = -1;
-   me->m_nPMGIs = 0;
-   me->m_PMLampIndex = -1;
-   me->m_nPMLamps = 0;
-   memset(&me->m_pinmameDevSrc, 0, sizeof(me->m_pinmameDevSrc));
-   GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getDevSrcId, &getSrcMsg);
-   MsgEndpointInfo info;
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
-   {
-      memset(&info, 0, sizeof(info));
-      me->m_msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
-      DevSrcId* devSrc = nullptr;
-      if (info.id != nullptr && info.id == "PinMAME"s)
-         devSrc = &me->m_pinmameDevSrc;
-      else
-         continue;
-      *devSrc = getSrcMsg.entries[i];
-      if (devSrc->deviceDefs)
-      {
-         devSrc->deviceDefs = new DeviceDef[devSrc->nDevices];
-         memcpy(devSrc->deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
-      }
-   }
-   delete[] getSrcMsg.entries;
-
-   // Map PinMAME devices
-   for (unsigned int i = 0; i < me->m_pinmameDevSrc.nDevices; i++)
-   {
-      if (me->m_pinmameDevSrc.deviceDefs[i].groupId == 0x0100)
-      {
-         if (me->m_PMGIIndex == -1)
-            me->m_PMGIIndex = i;
-         me->m_nPMGIs++;
-      }
-      else if (me->m_pinmameDevSrc.deviceDefs[i].groupId == 0x0200)
-      {
-         if (me->m_PMLampIndex == -1)
-            me->m_PMLampIndex = i;
-         me->m_nPMLamps++;
-      }
-      else if ((me->m_PMGIIndex == -1) && (me->m_PMLampIndex == -1))
-      {
-         if (me->m_PMSolenoidIndex == -1)
-            me->m_PMSolenoidIndex = i;
-         me->m_nPMSolenoids++;
-      }
-   }
-}
-
-void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData)
-{
-   PUPManager* me = static_cast<PUPManager*>(userData);
-   std::lock_guard lock(me->m_queueMutex);
-   delete[] me->m_pinmameInputSrc.inputDefs;
-   memset(&me->m_pinmameInputSrc, 0, sizeof(me->m_pinmameInputSrc));
-   delete[] me->m_b2sInputSrc.inputDefs;
-   memset(&me->m_b2sInputSrc, 0, sizeof(me->m_b2sInputSrc));
-   GetInputSrcMsg getSrcMsg = { 1024, 0, new InputSrcId[1024] };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getInputSrcId, &getSrcMsg);
-   MsgEndpointInfo info;
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
-   {
-      memset(&info, 0, sizeof(info));
-      me->m_msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
-      InputSrcId* inputSrc = nullptr;
-      if (info.id != nullptr && info.id == "PinMAME"s)
-         inputSrc = &me->m_pinmameInputSrc;
-      else if (info.id != nullptr && info.id == "B2S"s)
-         inputSrc = &me->m_b2sInputSrc;
-      else
-         continue;
-      *inputSrc = getSrcMsg.entries[i];
-      if (inputSrc->inputDefs)
-      {
-         inputSrc->inputDefs = new DeviceDef[inputSrc->nInputs];
-         memcpy(inputSrc->inputDefs, getSrcMsg.entries[i].inputDefs, getSrcMsg.entries[i].nInputs * sizeof(DeviceDef));
-      }
-      break;
-   }
-   delete[] getSrcMsg.entries;
 }
 
 }

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <climits>
 #include <future>
+#include <stdint.h>
 
 #include <unordered_dense.h>
 
@@ -111,24 +112,42 @@ private:
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
    const VPXPluginAPI* const m_vpxApi;
-   const unsigned int m_onGetAuxRendererId;
-   const unsigned int m_onAuxRendererChgId;
-   const AncillaryRendererDef m_ancillaryRendererDef;
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
-   std::unique_ptr<B2SRenderer> m_renderer = nullptr;
-
+   std::function<void(B2SServer*)> m_onDestroyHandler;
    const ScriptClassDef* m_pinmameClassDef;
    void* const m_pinmame;
 
-   std::function<void(B2SServer*)> m_onDestroyHandler;
-   ankerl::unordered_dense::map<int, float> m_states;
-   
-   ankerl::unordered_dense::map<int, int> m_playerScores;
-   ankerl::unordered_dense::map<int, float> m_scoreDigits;
+   static B2SServer* m_singleton;
 
+   // Renderer
+   std::unique_ptr<B2SRenderer> m_renderer = nullptr;
+   const unsigned int m_onGetAuxRendererId;
+   const unsigned int m_onAuxRendererChgId;
+   const AncillaryRendererDef m_ancillaryRendererDef;
    static int OnRender(VPXRenderContext2D* ctx, void*);
    static void OnGetRenderer(const unsigned int, void*, void* msgData);
+
+   // Controller state
+   ankerl::unordered_dense::map<int, float> m_states;
+   ankerl::unordered_dense::map<int, int> m_playerScores;
+   ankerl::unordered_dense::map<int, float> m_scoreDigits;
+   const unsigned int m_onGetDevSrcId;
+   const unsigned int m_onDevSrcChgId;
+   DevSrcId m_devSrc {};
+   vector<string> m_devSrcNames;
+   void UpdateDevSrc();
+   struct ChgCallback
+   {
+      ctlpi_chg_callback m_callback;
+      unsigned int m_index;
+      void* m_context;
+   };
+   ankerl::unordered_dense::map<int, vector<ChgCallback>> m_stateChgCallbacks;
+   static void OnGetDevSrc(const unsigned int, void*, void* msgData);
+   static uint8_t MSGPIAPI GetByteState(const unsigned int deviceIndex);
+   static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
+   static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
 };
 
 }

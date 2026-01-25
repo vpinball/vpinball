@@ -10,6 +10,9 @@
     <ClCompile Include="../../plugins/pup/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/pup/DOFStreamEvent.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/pup/PUPPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -46,6 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../plugins/pup/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/pup/DOFStreamEvent.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/pup/LibAv.h">

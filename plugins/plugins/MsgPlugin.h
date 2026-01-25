@@ -102,8 +102,8 @@
 #endif
 
 // Callbacks
-typedef void (*msgpi_msg_callback)(const unsigned int msgId, void* context, void* msgData);
-typedef void (*msgpi_timer_callback)(void* userData);
+typedef void(MSGPIAPI* msgpi_msg_callback)(const unsigned int msgId, void* context, void* msgData);
+typedef void(MSGPIAPI* msgpi_timer_callback)(void* userData);
 
 typedef struct MsgEndpointInfo
 {

@@ -237,7 +237,7 @@ void PUPPinDisplay::B2SData(const string& tIndex, int Value)
    auto ec = std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), result).ec;
    assert(ec == std::errc{});
 
-   m_pupManager.QueueTriggerData({ tIndex[0], result, Value });
+   m_pupManager.QueueDOFEvent(tIndex[0], result, Value);
 }
 
 const string& PUPPinDisplay::GetB2SFilter() const
