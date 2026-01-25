@@ -171,7 +171,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) cons
    ivec4 bestFrame;
    for (int search = 0; search < 7; search++)
    {
-      float lumLimit = (lumMin + lumMax) * 0.5f;
+      const float lumLimit = (lumMin + lumMax) * 0.5f;
 
       LOGD("DMD area search thr: %f area is %d,%d %dx%d", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w);
 
@@ -197,7 +197,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) cons
 
             case VPXTEXFMT_sRGB8:
             case VPXTEXFMT_sRGBA8:
-               lum = 0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2];
+               lum = 0.299f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos]) + 0.587f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 1]) + 0.114f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 2]);
                break;
 
             default: return ivec4();

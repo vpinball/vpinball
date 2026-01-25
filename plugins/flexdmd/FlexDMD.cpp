@@ -94,7 +94,7 @@ uint8_t* FlexDMD::UpdateLum8Frame()
    const float* __restrict src = m_lumFP32Frame;
    uint8_t* __restrict dst = m_lum8Frame;
    for (int o = 0; o < m_height * m_width; o++)
-      *dst++ = static_cast<uint8_t>(*src++ * 255.0f);
+      *dst++ = static_cast<uint8_t>(static_cast<float>(*src++) * 255.0f);
    return m_lum8Frame;
 }
 
@@ -113,7 +113,7 @@ float* FlexDMD::UpdateLumFP32Frame()
    SDL_LockSurface(surf);
    const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    float* __restrict dst = m_lumFP32Frame;
-   constexpr float scale = 1.0f / 255.0f;
+   constexpr float scale = static_cast<float>(1.0 / 255.0);
    for (int o = 0; o < m_height * m_width; o++)
    {
       const float r = static_cast<float>(*pixels++);

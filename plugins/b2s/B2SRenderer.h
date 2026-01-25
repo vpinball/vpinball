@@ -14,7 +14,7 @@
 #include "plugins/ResURIResolver.h"
 
 namespace B2S {
-   
+
 class B2SRenderer final
 {
 public:

@@ -168,7 +168,7 @@ void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
 void PUPScreen::ReplaceChild(std::shared_ptr<PUPScreen> pChild, std::shared_ptr<PUPScreen> pScreen)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   for (int i = 0; i < m_children.size(); i++)
+   for (size_t i = 0; i < m_children.size(); i++)
       if (m_children[i] == pChild)
          m_children[i] = pScreen;
    pChild->m_pParent = nullptr;

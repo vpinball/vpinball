@@ -268,7 +268,8 @@ void Trigger::UIRenderPass2(Sur * const psur)
       psur->Line(m_d.m_vCenter.x - m_d.m_radius, m_d.m_vCenter.y, m_d.m_vCenter.x + m_d.m_radius, m_d.m_vCenter.y);
       psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - m_d.m_radius, m_d.m_vCenter.x, m_d.m_vCenter.y + m_d.m_radius);
 
-      const float r2 = m_d.m_radius * (float)sin(M_PI / 4.0);
+      static const/*expr*/ float sp4 = (float)sin(M_PI / 4.0);
+      const float r2 = m_d.m_radius * sp4;
 
       psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y - r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y + r2);
       psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
