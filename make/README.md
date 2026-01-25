@@ -217,15 +217,20 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 <details>
 <summary>linux-aarch64 (RPI)</summary>
 
+> Last version of Raspberry Pi OS (Trixie) is needed to be able to compile
+
+> [!NOTE]
+> Instructions for unsupported platforms are provided as-is and are not officially maintained by the team. Community contributions to improve and update them are welcome.
+
 ```
 sudo apt-get update
-sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev libwayland-dev
+sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev libwayland-dev autotools-dev libdrm-etnaviv1 libegl-dev libglvnd-core-dev libltdl-dev libspa-0.2-dev libxrender-dev cmake-data libdrm-freedreno1 libffi-dev libglvnd-dev libpciaccess-dev libwayland-bin m4 libcap-dev libdrm-tegra0 libgles-dev libjsoncpp26 librhash1 libxfixes-dev libgpiod-dev
 platforms/linux-aarch64/external.sh
 cp make/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
-build/VPinballX_BGFX -play src/assets/exampleTable.vpx
+build/VPinballX_GL -play src/assets/exampleTable.vpx
 ```
 </details>
 
