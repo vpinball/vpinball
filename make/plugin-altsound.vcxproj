@@ -163,6 +163,16 @@
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+
+        if $(Platform) EQU x64 (
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\altsound64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+        ) ELSE (
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\altsound\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\altsound.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\altsound\"
+        )
       </Command>
     </PostBuildEvent>
     <ClCompile>
@@ -182,6 +192,8 @@
     <Link>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Platform)'=='x64'">altsound64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">altsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
