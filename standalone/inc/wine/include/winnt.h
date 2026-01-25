@@ -2604,6 +2604,7 @@ static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
 #define IO_REPARSE_TAG_CLOUD_MASK       __MSABI_LONG(0x0000F000)
 #define IO_REPARSE_TAG_APPEXECLINK      __MSABI_LONG(0x8000001B)
 #define IO_REPARSE_TAG_PROJFS           __MSABI_LONG(0x9000001C)
+#define IO_REPARSE_TAG_LX_SYMLINK       __MSABI_LONG(0xA000001D)
 #define IO_REPARSE_TAG_STORAGE_SYNC     __MSABI_LONG(0x8000001E)
 #define IO_REPARSE_TAG_WCI_TOMBSTONE    __MSABI_LONG(0xA000001F)
 #define IO_REPARSE_TAG_UNHANDLED        __MSABI_LONG(0x80000020)
@@ -4247,48 +4248,57 @@ typedef enum _TOKEN_ELEVATION_TYPE {
  */
 
 typedef enum _TOKEN_INFORMATION_CLASS {
-  TokenUser = 1,
-  TokenGroups,
-  TokenPrivileges,
-  TokenOwner,
-  TokenPrimaryGroup,
-  TokenDefaultDacl,
-  TokenSource,
-  TokenType,
-  TokenImpersonationLevel,
-  TokenStatistics,
-  TokenRestrictedSids,
-  TokenSessionId,
-  TokenGroupsAndPrivileges,
-  TokenSessionReference,
-  TokenSandBoxInert,
-  TokenAuditPolicy,
-  TokenOrigin,
-  TokenElevationType,
-  TokenLinkedToken,
-  TokenElevation,
-  TokenHasRestrictions,
-  TokenAccessInformation,
-  TokenVirtualizationAllowed,
-  TokenVirtualizationEnabled,
-  TokenIntegrityLevel,
-  TokenUIAccess,
-  TokenMandatoryPolicy,
-  TokenLogonSid,
-  TokenIsAppContainer,
-  TokenCapabilities,
-  TokenAppContainerSid,
-  TokenAppContainerNumber,
-  TokenUserClaimAttributes,
-  TokenDeviceClaimAttributes,
-  TokenRestrictedUserClaimAttributes,
-  TokenRestrictedDeviceClaimAttributes,
-  TokenDeviceGroups,
-  TokenRestrictedDeviceGroups,
-  TokenSecurityAttributes,
-  TokenIsRestricted,
-  TokenProcessTrustLevel,
-  MaxTokenInfoClass
+    TokenUser = 1,
+    TokenGroups = 2,
+    TokenPrivileges = 3,
+    TokenOwner = 4,
+    TokenPrimaryGroup = 5,
+    TokenDefaultDacl = 6,
+    TokenSource = 7,
+    TokenType = 8,
+    TokenImpersonationLevel = 9,
+    TokenStatistics = 10,
+    TokenRestrictedSids = 11,
+    TokenSessionId = 12,
+    TokenGroupsAndPrivileges = 13,
+    TokenSessionReference = 14,
+    TokenSandBoxInert = 15,
+    TokenAuditPolicy = 16,
+    TokenOrigin = 17,
+    TokenElevationType = 18,
+    TokenLinkedToken = 19,
+    TokenElevation = 20,
+    TokenHasRestrictions = 21,
+    TokenAccessInformation = 22,
+    TokenVirtualizationAllowed = 23,
+    TokenVirtualizationEnabled = 24,
+    TokenIntegrityLevel = 25,
+    TokenUIAccess = 26,
+    TokenMandatoryPolicy = 27,
+    TokenLogonSid = 28,
+    TokenIsAppContainer = 29,
+    TokenCapabilities = 30,
+    TokenAppContainerSid = 31,
+    TokenAppContainerNumber = 32,
+    TokenUserClaimAttributes = 33,
+    TokenDeviceClaimAttributes = 34,
+    TokenRestrictedUserClaimAttributes = 35,
+    TokenRestrictedDeviceClaimAttributes = 36,
+    TokenDeviceGroups = 37,
+    TokenRestrictedDeviceGroups = 38,
+    TokenSecurityAttributes = 39,
+    TokenIsRestricted = 40,
+    TokenProcessTrustLevel = 41,
+    TokenPrivateNameSpace = 42,
+    TokenSingletonAttributes = 43,
+    TokenBnoIsolation = 44,
+    TokenChildProcessFlags = 45,
+    TokenIsLessPrivilegedAppContainer = 46,
+    TokenIsSandboxed = 47,
+    TokenIsAppSilo = 48,
+    TokenLoggingInformation = 49,
+    TokenLearningMode = 50,
+    MaxTokenInfoClass
 } TOKEN_INFORMATION_CLASS;
 
 #define DISABLE_MAX_PRIVILEGE        0x1
@@ -6547,15 +6557,57 @@ typedef struct _ACTIVATION_CONTEXT_DATA_DLL_REDIRECTION_PATH_SEGMENT
 typedef enum _JOBOBJECTINFOCLASS
 {
     JobObjectBasicAccountingInformation = 1,
-    JobObjectBasicLimitInformation,
-    JobObjectBasicProcessIdList,
-    JobObjectBasicUIRestrictions,
-    JobObjectSecurityLimitInformation,
-    JobObjectEndOfJobTimeInformation,
-    JobObjectAssociateCompletionPortInformation,
-    JobObjectBasicAndIoAccountingInformation,
-    JobObjectExtendedLimitInformation,
-    JobObjectJobSetInformation,
+    JobObjectBasicLimitInformation = 2,
+    JobObjectBasicProcessIdList = 3,
+    JobObjectBasicUIRestrictions = 4,
+    JobObjectSecurityLimitInformation = 5,
+    JobObjectEndOfJobTimeInformation = 6,
+    JobObjectAssociateCompletionPortInformation = 7,
+    JobObjectBasicAndIoAccountingInformation = 8,
+    JobObjectExtendedLimitInformation = 9,
+    JobObjectJobSetInformation = 10,
+    JobObjectGroupInformation = 11,
+    JobObjectNotificationLimitInformation = 12,
+    JobObjectLimitViolationInformation = 13,
+    JobObjectGroupInformationEx = 14,
+    JobObjectCpuRateControlInformation = 15,
+    JobObjectCompletionFilter = 16,
+    JobObjectCompletionCounter = 17,
+    JobObjectFreezeInformation = 18,
+    JobObjectExtendedAccountingInformation = 19,
+    JobObjectWakeInformation = 20,
+    JobObjectBackgroundInformation = 21,
+    JobObjectSchedulingRankBiasInformation = 22,
+    JobObjectTimerVirtualizationInformation = 23,
+    JobObjectCycleTimeNotification = 24,
+    JobObjectClearEvent = 25,
+    JobObjectInterferenceInformation = 26,
+    JobObjectClearPeakJobMemoryUsed = 27,
+    JobObjectMemoryUsageInformation = 28,
+    JobObjectSharedCommit = 29,
+    JobObjectContainerId = 30,
+    JobObjectIoRateControlInformation = 31,
+    JobObjectNetRateControlInformation = 32,
+    JobObjectNotificationLimitInformation2 = 33,
+    JobObjectLimitViolationInformation2 = 34,
+    JobObjectCreateSilo = 35,
+    JobObjectSiloBasicInformation = 36,
+    JobObjectSiloRootDirectory = 37,
+    JobObjectServerSiloBasicInformation = 38,
+    JobObjectServerSiloUserSharedData = 39,
+    JobObjectServerSiloInitialize = 40,
+    JobObjectServerSiloRunningState = 41,
+    JobObjectIoAttribution = 42,
+    JobObjectMemoryPartitionInformation = 43,
+    JobObjectContainerTelemetryId = 44,
+    JobObjectSiloSystemRoot = 45,
+    JobObjectEnergyTrackingState = 46,
+    JobObjectThreadImpersonationInformation = 47,
+    JobObjectIoPriorityLimit = 48,
+    JobObjectPagePriorityLimit = 49,
+    JobObjectServerSiloDiagnosticInformation = 50,
+    JobObjectNetworkAccountingInformation = 51,
+    JobObjectCpuPartition = 52,
     MaxJobObjectInfoClass
 } JOBOBJECTINFOCLASS;
 
@@ -7008,24 +7060,6 @@ typedef enum _FIRMWARE_TYPE
 
 #ifdef _MSC_VER
 
-#pragma intrinsic(_BitScanForward)
-#pragma intrinsic(_BitScanReverse)
-#pragma intrinsic(_InterlockedAnd)
-#pragma intrinsic(_InterlockedCompareExchange)
-#pragma intrinsic(_InterlockedCompareExchange64)
-#pragma intrinsic(_InterlockedCompareExchangePointer)
-#pragma intrinsic(_InterlockedExchange)
-#pragma intrinsic(_InterlockedExchangeAdd)
-#pragma intrinsic(_InterlockedExchangeAdd16)
-#pragma intrinsic(_InterlockedExchangePointer)
-#pragma intrinsic(_InterlockedIncrement)
-#pragma intrinsic(_InterlockedIncrement16)
-#pragma intrinsic(_InterlockedDecrement)
-#pragma intrinsic(_InterlockedDecrement16)
-#pragma intrinsic(_InterlockedOr)
-#pragma intrinsic(_InterlockedXor)
-#pragma intrinsic(__fastfail)
-
 BOOLEAN   _BitScanForward(unsigned long*,unsigned long);
 BOOLEAN   _BitScanReverse(unsigned long*,unsigned long);
 long      _InterlockedAnd(long volatile *,long);
@@ -7044,9 +7078,27 @@ long      _InterlockedOr(long volatile *,long);
 long      _InterlockedXor(long volatile *,long);
 DECLSPEC_NORETURN void __fastfail(unsigned int);
 
+#pragma intrinsic(_BitScanForward)
+#pragma intrinsic(_BitScanReverse)
+#pragma intrinsic(_InterlockedAnd)
+#pragma intrinsic(_InterlockedCompareExchange)
+#pragma intrinsic(_InterlockedCompareExchange64)
+#pragma intrinsic(_InterlockedCompareExchangePointer)
+#pragma intrinsic(_InterlockedExchange)
+#pragma intrinsic(_InterlockedExchangeAdd)
+#pragma intrinsic(_InterlockedExchangeAdd16)
+#pragma intrinsic(_InterlockedExchangePointer)
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedIncrement16)
+#pragma intrinsic(_InterlockedDecrement)
+#pragma intrinsic(_InterlockedDecrement16)
+#pragma intrinsic(_InterlockedOr)
+#pragma intrinsic(_InterlockedXor)
+#pragma intrinsic(__fastfail)
+
 #if !defined(__i386__) || __has_builtin(_InterlockedAnd64)
-#pragma intrinsic(_InterlockedAnd64)
 __int64   _InterlockedAnd64(__int64 volatile *, __int64);
+#pragma intrinsic(_InterlockedAnd64)
 #else
 static FORCEINLINE __int64 InterlockedAnd64( __int64 volatile *dest, __int64 val )
 {
@@ -7057,8 +7109,8 @@ static FORCEINLINE __int64 InterlockedAnd64( __int64 volatile *dest, __int64 val
 #endif
 
 #if !defined(__i386__) || __has_builtin(_InterlockedExchangeAdd64)
-#pragma intrinsic(_InterlockedExchangeAdd64)
 __int64   _InterlockedExchangeAdd64(__int64 volatile *, __int64);
+#pragma intrinsic(_InterlockedExchangeAdd64)
 #else
 static FORCEINLINE __int64 InterlockedExchangeAdd64( __int64 volatile *dest, __int64 val )
 {
@@ -7069,8 +7121,8 @@ static FORCEINLINE __int64 InterlockedExchangeAdd64( __int64 volatile *dest, __i
 #endif
 
 #if !defined(__i386__) || __has_builtin(_InterlockedDecrement64)
-#pragma intrinsic(_InterlockedDecrement64)
 __int64   _InterlockedDecrement64(__int64 volatile *);
+#pragma intrinsic(_InterlockedDecrement64)
 #else
 static FORCEINLINE __int64 InterlockedDecrement64( __int64 volatile *dest )
 {
@@ -7079,8 +7131,8 @@ static FORCEINLINE __int64 InterlockedDecrement64( __int64 volatile *dest )
 #endif
 
 #if !defined(__i386__) || __has_builtin(_InterlockedIncrement64)
-#pragma intrinsic(_InterlockedIncrement64)
 __int64   _InterlockedIncrement64(__int64 volatile *);
+#pragma intrinsic(_InterlockedIncrement64)
 #else
 static FORCEINLINE __int64 InterlockedIncrement64( __int64 volatile *dest )
 {
@@ -7089,8 +7141,8 @@ static FORCEINLINE __int64 InterlockedIncrement64( __int64 volatile *dest )
 #endif
 
 #if !defined(__i386__) || __has_builtin(_InterlockedOr64)
-#pragma intrinsic(_InterlockedOr64)
 __int64   _InterlockedOr64(__int64 volatile *, __int64);
+#pragma intrinsic(_InterlockedOr64)
 #else
 static FORCEINLINE __int64 InterlockedOr64( __int64 volatile *dest, __int64 val )
 {
@@ -7101,8 +7153,8 @@ static FORCEINLINE __int64 InterlockedOr64( __int64 volatile *dest, __int64 val 
 #endif
 
 #if !defined(__i386__) || __has_builtin(_InterlockedXor64)
-#pragma intrinsic(_InterlockedXor64)
 __int64   _InterlockedXor64(__int64 volatile *, __int64);
+#pragma intrinsic(_InterlockedXor64)
 #else
 static FORCEINLINE __int64 InterlockedXor64( __int64 volatile *dest, __int64 val )
 {
@@ -7139,8 +7191,8 @@ static FORCEINLINE void MemoryBarrier(void)
 
 #elif defined(__x86_64__)
 
-#pragma intrinsic(__faststorefence)
 void __faststorefence(void);
+#pragma intrinsic(__faststorefence)
 
 static FORCEINLINE void MemoryBarrier(void)
 {
@@ -7177,8 +7229,8 @@ static FORCEINLINE void MemoryBarrier(void)
 #endif  /* _MSC_VER >= 1700 */
 
 #if defined(__i386__) || defined(__x86_64__)
-#pragma intrinsic(_ReadWriteBarrier)
 void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 #endif  /* defined(__i386__) || defined(__x86_64__) */
 
 static void __wine_memory_barrier_acq_rel(void)
@@ -7513,8 +7565,8 @@ static FORCEINLINE DECLSPEC_NORETURN void __fastfail(unsigned int code)
 
 #if defined(_MSC_VER) && (!defined(__clang__) || !defined(__aarch64__) || __has_builtin(_InterlockedCompareExchange128))
 
-#pragma intrinsic(_InterlockedCompareExchange128)
 unsigned char _InterlockedCompareExchange128(volatile __int64 *, __int64, __int64, __int64 *);
+#pragma intrinsic(_InterlockedCompareExchange128)
 
 #else
 
