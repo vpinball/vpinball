@@ -1347,9 +1347,6 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.glfx">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FAAA.fxh">
-      <FileType>Document</FileType>
-    </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
       <FileType>Document</FileType>
     </None>

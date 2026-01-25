@@ -57,6 +57,19 @@ if "%vsv%" == "2026" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-altsound.vcxproj" "../.build/vsproject/plugin-altsound.vcxproj"
+copy /V /Y "plugin-altsound.vcxproj.filters" "../.build/vsproject/plugin-altsound.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-altsound.vcxproj" /out:"../.build/vsproject/plugin-altsound.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-altsound.vcxproj" /out:"../.build/vsproject/plugin-altsound.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-b2s.vcxproj" "../.build/vsproject/plugin-b2s.vcxproj"
 copy /V /Y "plugin-b2s.vcxproj.filters" "../.build/vsproject/plugin-b2s.vcxproj.filters"
 

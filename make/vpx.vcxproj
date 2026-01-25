@@ -74,6 +74,9 @@
     <ProjectReference Include="plugin-alphadmd.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-altsound.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77d}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-b2s.vcxproj">
       <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
     </ProjectReference>
