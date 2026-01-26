@@ -1647,7 +1647,7 @@ EditorUI::RenderContext::RenderContext(Player *player, ImDrawList *drawlist, Vie
 bool EditorUI::RenderContext::IsShowInvisible() const
 {
    // Don't show invisible part in Live edit mode as there is no editor visibility management in this mode
-   return m_player->m_ptable->m_liveBaseTable != nullptr && GetViewMode() != ViewMode::PreviewCam;
+   return (m_player->m_ptable->m_liveBaseTable == nullptr) && (GetViewMode() != ViewMode::PreviewCam);
 }
 
 ImVec2 EditorUI::RenderContext::Project(const Vertex3Ds &v) const
