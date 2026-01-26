@@ -224,7 +224,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
                   unpaddedFrame.z = width;
                   unpaddedFrame.w = height;
                   // Extends search frame for next pass to include this area even if not selected
-                  if (searchSubFrame.x == 0)
+                  if (searchSubFrame.z == 0)
                      searchSubFrame = unpaddedFrame;
                   else
                   {
