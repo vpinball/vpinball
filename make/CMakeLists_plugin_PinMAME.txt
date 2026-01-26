@@ -102,21 +102,23 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinMAMEPlugin>"
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      if (PluginArch STREQUAL "x64")
+   if(POST_BUILD_COPY_EXT_LIBS)
+      if(PluginPlatform STREQUAL "windows")
+         if (PluginArch STREQUAL "x64")
+            add_custom_command(TARGET PinMAMEPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pinmame64.dll" "${PLUGINS_DIR}/pinmame/pinmame64.dll"
+            )
+         elseif (PluginArch STREQUAL "x86")
+            add_custom_command(TARGET PinMAMEPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pinmame.dll" "${PLUGINS_DIR}/pinmame/pinmame.dll"
+            )
+         endif()
+      elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET PinMAMEPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pinmame64.dll" "${PLUGINS_DIR}/pinmame/pinmame64.dll"
-         )
-      elseif (PluginArch STREQUAL "x86")
-         add_custom_command(TARGET PinMAMEPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pinmame.dll" "${PLUGINS_DIR}/pinmame/pinmame.dll"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpinmame.so" "${PLUGINS_DIR}/pinmame/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpinmame.so.*" "${PLUGINS_DIR}/pinmame/"
          )
       endif()
-   elseif(PluginPlatform STREQUAL "linux")
-      add_custom_command(TARGET PinMAMEPlugin POST_BUILD
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpinmame.so" "${PLUGINS_DIR}/pinmame/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpinmame.so.*" "${PLUGINS_DIR}/pinmame/"
-      )
    endif()
 endif()
 

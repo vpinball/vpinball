@@ -83,37 +83,39 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:DOFPlugin>"
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      if (PluginArch STREQUAL "x64")
+   if(POST_BUILD_COPY_EXT_LIBS)
+      if(PluginPlatform STREQUAL "windows")
+         if (PluginArch STREQUAL "x64")
+            add_custom_command(TARGET DOFPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dof64.dll" "${PLUGINS_DIR}/dof/dof64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb64-1.0.dll" "${PLUGINS_DIR}/dof/libusb64-1.0.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport64.dll" "${PLUGINS_DIR}/dof/libserialport64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/hidapi64.dll" "${PLUGINS_DIR}/dof/hidapi64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libftdi164.dll" "${PLUGINS_DIR}/dof/libftdi164.dll"
+            )
+         elseif (PluginArch STREQUAL "x86")
+            add_custom_command(TARGET DOFPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dof.dll" "${PLUGINS_DIR}/dof/dof.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb-1.0.dll" "${PLUGINS_DIR}/dof/libusb-1.0.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport.dll" "${PLUGINS_DIR}/dof/libserialport.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/hidapi.dll" "${PLUGINS_DIR}/dof/hidapi.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libftdi1.dll" "${PLUGINS_DIR}/dof/libftdi1.dll"
+            )
+         endif()
+      elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET DOFPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dof64.dll" "${PLUGINS_DIR}/dof/dof64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb64-1.0.dll" "${PLUGINS_DIR}/dof/libusb64-1.0.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport64.dll" "${PLUGINS_DIR}/dof/libserialport64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/hidapi64.dll" "${PLUGINS_DIR}/dof/hidapi64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libftdi164.dll" "${PLUGINS_DIR}/dof/libftdi164.dll"
-         )
-      elseif (PluginArch STREQUAL "x86")
-         add_custom_command(TARGET DOFPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dof.dll" "${PLUGINS_DIR}/dof/dof.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb-1.0.dll" "${PLUGINS_DIR}/dof/libusb-1.0.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport.dll" "${PLUGINS_DIR}/dof/libserialport.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/hidapi.dll" "${PLUGINS_DIR}/dof/hidapi.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libftdi1.dll" "${PLUGINS_DIR}/dof/libftdi1.dll"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdof.so" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdof.so.*" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so.*" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so.*" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libhidapi-hidraw.so" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libhidapi-hidraw.so.*" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libftdi1.so" "${PLUGINS_DIR}/dof/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libftdi1.so.*" "${PLUGINS_DIR}/dof/"
          )
       endif()
-   elseif(PluginPlatform STREQUAL "linux")
-      add_custom_command(TARGET DOFPlugin POST_BUILD
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdof.so" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdof.so.*" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so.*" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so.*" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libhidapi-hidraw.so" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libhidapi-hidraw.so.*" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libftdi1.so" "${PLUGINS_DIR}/dof/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libftdi1.so.*" "${PLUGINS_DIR}/dof/"
-      )
    endif()
 endif()
 

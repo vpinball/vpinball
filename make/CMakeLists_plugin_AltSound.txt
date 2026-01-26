@@ -85,21 +85,23 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AltSoundPlugin>"
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      if (PluginArch STREQUAL "x64")
+   if(POST_BUILD_COPY_EXT_LIBS)
+      if(PluginPlatform STREQUAL "windows")
+         if (PluginArch STREQUAL "x64")
+            add_custom_command(TARGET AltSoundPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/altsound64.dll" "${PLUGINS_DIR}/altsound/altsound64.dll"
+            )
+         elseif (PluginArch STREQUAL "x86")
+            add_custom_command(TARGET AltSoundPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/altsound.dll" "${PLUGINS_DIR}/altsound/altsound.dll"
+            )
+         endif()
+      elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET AltSoundPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/altsound64.dll" "${PLUGINS_DIR}/altsound/altsound64.dll"
-         )
-      elseif (PluginArch STREQUAL "x86")
-         add_custom_command(TARGET AltSoundPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/altsound.dll" "${PLUGINS_DIR}/altsound/altsound.dll"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libaltsound.so" "${PLUGINS_DIR}/altsound/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libaltsound.so.*" "${PLUGINS_DIR}/altsound/"
          )
       endif()
-   elseif(PluginPlatform STREQUAL "linux")
-      add_custom_command(TARGET AltSoundPlugin POST_BUILD
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libaltsound.so" "${PLUGINS_DIR}/altsound/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libaltsound.so.*" "${PLUGINS_DIR}/altsound/"
-      )
    endif()
 endif()
 

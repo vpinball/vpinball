@@ -84,21 +84,23 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:SerumPlugin>"
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      if (PluginArch STREQUAL "x64")
+   if(POST_BUILD_COPY_EXT_LIBS)
+      if(PluginPlatform STREQUAL "windows")
+         if (PluginArch STREQUAL "x64")
+            add_custom_command(TARGET SerumPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum64.dll" "${PLUGINS_DIR}/serum/serum64.dll"
+            )
+         elseif (PluginArch STREQUAL "x86")
+            add_custom_command(TARGET SerumPlugin POST_BUILD
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum.dll" "${PLUGINS_DIR}/serum/serum.dll"
+            )
+         endif()
+      elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET SerumPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum64.dll" "${PLUGINS_DIR}/serum/serum64.dll"
-         )
-      elseif (PluginArch STREQUAL "x86")
-         add_custom_command(TARGET SerumPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum.dll" "${PLUGINS_DIR}/serum/serum.dll"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so" "${PLUGINS_DIR}/serum/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so.*" "${PLUGINS_DIR}/serum/"
          )
       endif()
-   elseif(PluginPlatform STREQUAL "linux")
-      add_custom_command(TARGET SerumPlugin POST_BUILD
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so" "${PLUGINS_DIR}/serum/"
-         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so.*" "${PLUGINS_DIR}/serum/"
-      )
    endif()
 endif()
 
