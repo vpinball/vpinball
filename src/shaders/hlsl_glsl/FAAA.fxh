@@ -154,8 +154,8 @@ float3 faaa(const float2 u)
 	if( horzSpan) posN.y += lengthSign * 0.5;
 	float2 posP = posN;
 	float2 offNP = offs;
-	if(!horzSpan) offNP.x = 0;
-	if( horzSpan) offNP.y = 0;
+	if(!horzSpan) offNP.x = 0.0;
+	if( horzSpan) offNP.y = 0.0;
 	posP += offNP * FAAAOffMult[0];
 	posN -= offNP * FAAAOffMult[0];
 	float lumaEndP = luma(texStereoNoLod(tex_fb_filtered, posP).xyz);
