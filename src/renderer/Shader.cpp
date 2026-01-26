@@ -978,7 +978,6 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
    #if defined(ENABLE_BGFX)
    bgfx::UniformHandle desc = m_uniformHandles[uniformName];
-   uint8_t* const __restrict dst = m_renderDevice->GetUniformState().GetUniformStatePtr(uniformName);
 
    #elif defined(ENABLE_OPENGL)
    uint8_t* const __restrict dst = m_boundState[m_state->m_technique]->m_state.data() + m_stateOffsets[uniformName];
@@ -994,12 +993,10 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    #endif
 
    const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[uniformName];
+   #if !defined(ENABLE_BGFX)
    if ((ShaderUniform::coreUniforms[uniformName].type != SUT_Sampler) && memcmp(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize) == 0)
    {
-      #if defined(ENABLE_BGFX)
-      return;
-
-      #elif defined(ENABLE_OPENGL)
+      #if defined(ENABLE_OPENGL)
       if (ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock)
       {
          glUniformBlockBinding(m_techniques[m_state->m_technique]->program, desc.location, 0);
@@ -1010,6 +1007,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       return;
       #endif
    }
+   #endif
    m_renderDevice->m_curParameterChanges++;
 
    switch (ShaderUniform::coreUniforms[uniformName].type)
@@ -1030,13 +1028,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          assert(ShaderUniform::coreUniforms[uniformName].count == 1);
          bool val = *(bool*)src;
-         *(bool*)dst = val;
          #if defined(ENABLE_BGFX)
          vec4 v(val ? 1.f : 0.f, 0.f, 0.f, 0.f);
          bgfx::setUniform(desc, &v);
          #elif defined(ENABLE_OPENGL)
+         *(bool*)dst = val;
          glUniform1i(desc.location, val);
          #elif defined(ENABLE_DX9)
+         *(bool*)dst = val;
          CHECKD3D(m_shader->SetBool(desc.handle, val));
          #endif
       }
@@ -1045,13 +1044,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          assert(ShaderUniform::coreUniforms[uniformName].count == 1);
          int val = *(int*)src;
-         *(int*)dst = val;
          #if defined(ENABLE_BGFX)
          vec4 v((float) val, 0.f, 0.f, 0.f);
          bgfx::setUniform(desc, &v);
          #elif defined(ENABLE_OPENGL)
+         *(int*)dst = val;
          glUniform1i(desc.location, val);
          #elif defined(ENABLE_DX9)
+         *(int*)dst = val;
          CHECKD3D(m_shader->SetInt(desc.handle, val));
          #endif
       }
@@ -1060,13 +1060,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          assert(ShaderUniform::coreUniforms[uniformName].count == 1);
          float val = *(float*)src;
-         *(float*)dst = val;
          #if defined(ENABLE_BGFX)
          vec4 v(val, 0.f, 0.f, 0.f);
          bgfx::setUniform(desc, &v);
          #elif defined(ENABLE_OPENGL)
+         *(float*)dst = val;
          glUniform1f(desc.location, val);
          #elif defined(ENABLE_DX9)
+         *(float*)dst = val;
          CHECKD3D(m_shader->SetFloat(desc.handle, val));
          #endif
       }
@@ -1074,13 +1075,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float2:
       {
          assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          #if defined(ENABLE_BGFX)
          vec4 v(((float*)src)[0], ((float*)src)[1], 0.f, 0.f);
          bgfx::setUniform(desc, &v);
          #elif defined(ENABLE_OPENGL)
+         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          glUniform2fv(desc.location, 1, (const GLfloat*)src);
          #elif defined(ENABLE_DX9)
+         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
          #endif
          break;
@@ -1088,47 +1090,51 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float3:
       {
          assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          #if defined(ENABLE_BGFX)
          vec4 v(((float*)src)[0], ((float*)src)[1], ((float*)src)[2], 0.f);
          bgfx::setUniform(desc, &v);
          #elif defined(ENABLE_OPENGL)
+         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          glUniform3fv(desc.location, 1, (const GLfloat*)src);
          #elif defined(ENABLE_DX9)
+         memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
          CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
          #endif
          break;
       }
    case SUT_Float4:
       assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       #if defined(ENABLE_BGFX)
       bgfx::setUniform(desc, src);
       #elif defined(ENABLE_OPENGL)
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       glUniform4fv(desc.location, 1, (const GLfloat*)src);
       #elif defined(ENABLE_DX9)
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       CHECKD3D(m_shader->SetVector(desc.handle, (D3DXVECTOR4*)src));
       #endif
       break;
    case SUT_Float4v:
-      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       #if defined(ENABLE_BGFX)
       bgfx::setUniform(desc, src, ShaderUniform::coreUniforms[uniformName].count);
       #elif defined(ENABLE_OPENGL)
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       glUniform4fv(desc.location, ShaderUniform::coreUniforms[uniformName].count, (const GLfloat*)src);
       #elif defined(ENABLE_DX9)
-      CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*) src, ShaderUniform::coreUniforms[uniformName].count * 4));
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
+      CHECKD3D(m_shader->SetFloatArray(desc.handle, (float*)src, ShaderUniform::coreUniforms[uniformName].count * 4));
       #endif
       break;
    case SUT_Float3x4:
    case SUT_Float4x3:
    case SUT_Float4x4:
-      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       #if defined(ENABLE_BGFX)
       bgfx::setUniform(desc, src, ShaderUniform::coreUniforms[uniformName].count);
       #elif defined(ENABLE_OPENGL)
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       glUniformMatrix4fv(desc.location, ShaderUniform::coreUniforms[uniformName].count, GL_FALSE, (const GLfloat*)src);
       #elif defined(ENABLE_DX9)
+      memcpy(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize);
       assert(ShaderUniform::coreUniforms[uniformName].count == 1);
       /*CHECKD3D(*/ m_shader->SetMatrix(desc.handle, (D3DXMATRIX*) src) /*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
       #endif
@@ -1145,8 +1151,6 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          const SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE: (SamplerFilter)((v >> 20) & 0x0F);
 
          #if defined(ENABLE_BGFX)
-         if (m_renderDevice->GetUniformState().GetTexture(uniformName) == texel)
-            return;
          uint32_t flags = BGFX_SAMPLER_W_CLAMP;
          switch (filter)
          {
