@@ -120,6 +120,16 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_frame.z == 0 || m_frame.w == 0)
       return;
 
+   if (m_detectDmdFrame && m_backImage)
+   {
+      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
+      if (texInfo)
+      {
+         ctx->srcWidth = static_cast<float>(texInfo->width);
+         ctx->srcHeight = static_cast<float>(texInfo->height);
+      }
+   }
+
    switch (dmd.source->frameFormat)
    {
    case CTLPI_DISPLAY_FORMAT_LUM32F: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
@@ -224,7 +234,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) cons
                   unpaddedFrame.z = width;
                   unpaddedFrame.w = height;
                   // Extends search frame for next pass to include this area even if not selected
-                  if (searchSubFrame.x == 0)
+                  if (searchSubFrame.z == 0)
                      searchSubFrame = unpaddedFrame;
                   else
                   {
