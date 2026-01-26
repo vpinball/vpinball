@@ -2,6 +2,7 @@
 
 #include "DOFStreamEvent.h"
 
+#include <cstring>
 #include <string>
 using std::string;
 using namespace std::string_literals;
