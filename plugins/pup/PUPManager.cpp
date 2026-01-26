@@ -480,7 +480,7 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
 
 void PUPManager::QueueDOFEvent(char c, int id, int value)
 {
-   LOGD("DOF Event %c%03d = %d", c, id, value);
+   // LOGD("DOF Event %c%03d = %d", c, id, value);
 
    std::lock_guard lock(m_eventMutex);
    for (const auto& [key, screen] : m_screenMap)
@@ -502,7 +502,6 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
             for (auto trigger : triggers)
             {
                // Dispatch trigger action on main thread
-               LOGD("Trigger %s", trigger->ToString().c_str());
                m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
             }
          }
@@ -595,7 +594,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    #if LOG_RENDER
    std::stringstream renderLog;
    renderLog << "Back [";
-   auto log = [](std::shared_ptr<PUPScreen> screen, int pass)
+   auto log = [&renderLog](std::shared_ptr<PUPScreen> screen, int pass)
    {
       if (pass == 0 && screen->HasUnderlay())
          renderLog << screen->GetScreenNum() << "u ";

@@ -47,28 +47,33 @@ private:
 
    unsigned int m_onDmdSrcChangedId = 0;
    unsigned int m_getDmdSrcId = 0;
+   unsigned int m_onSegSrcChangedId = 0;
+   unsigned int m_getSegSrcId = 0;
    unsigned int m_onDevSrcChangedId = 0;
    unsigned int m_getDevSrcId = 0;
    unsigned int m_onInputSrcChangedId = 0;
    unsigned int m_getInputSrcId = 0;
    unsigned int m_onSerumTriggerId = 0;
-   unsigned int m_onDmdTriggerId = 0;
 
    DevSrcId m_pmDevSrc {};
    std::vector<int> m_pmDeviceState;
    InputSrcId m_pmInputSrc {};
    std::vector<int> m_pmSwitchState;
+   std::vector<SegSrcId> m_pmSegSrc;
+   std::vector<uint16_t> m_pmLastSegFrame;
+   std::vector<unsigned int> m_pmLastSegFrameId;
+   static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* eventData);
 
    InputSrcId m_b2sInputSrc {};
    std::vector<int> m_b2sSwitchState;
    DevSrcId m_b2sDevSrc {};
    static void MSGPIAPI OnB2SStateChg(unsigned int index, void* context);
 
-   static void OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData);
-   unsigned int m_lastDmdFrameId = 0;
    DisplaySrcId m_dmdId {};
+   unsigned int m_lastDmdFrameId = 0;
    std::function<DisplaySrcId(const GetDisplaySrcMsg&)> m_selectDmd = [](const GetDisplaySrcMsg&) { return DisplaySrcId {}; };
    std::function<int(const DisplaySrcId&, const uint8_t*)> m_processDmd = [](const DisplaySrcId&, const uint8_t*) { return -1; };
+   static void OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData);
 
    static void OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData);
    static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData);

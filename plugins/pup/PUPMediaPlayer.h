@@ -17,10 +17,9 @@ public:
    void SetGameTime(double gameTime);
 
    void Play(const std::filesystem::path& filename, float volume);
-   bool IsPlaying() const;
-   void Pause(bool pause);
    const std::filesystem::path& GetFilename() const { return m_filename; }
-   int GetPriority() const { return m_priority; }
+   bool IsPlaying();
+   void Pause(bool pause);
    void Stop();
    void SetVolume(float volume);
    void SetLoop(bool loop);
@@ -42,6 +41,9 @@ private:
    string m_name;
    SDL_Rect m_bounds;
 
+   int m_pendingPlay = 0;
+   int m_pendingStop = 0;
+
    std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
 
    double GetPlayTime() const;
@@ -54,7 +56,6 @@ private:
    int m_playIndex = 0;
    float m_volume = 100.f;
    int m_length = 0;
-   int m_priority = -1;
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;

@@ -35,11 +35,10 @@ PUPMediaPlayer::~PUPMediaPlayer()
    Stop();
 }
 
-bool PUPMediaPlayer::IsPlaying() const
+bool PUPMediaPlayer::IsPlaying()
 {
-   // Not worth the lock (which can face the async opening of a video file)
-   //std::lock_guard<std::mutex> lock(m_mutex);
-   return m_running;
+   std::lock_guard lock(m_mutex);
+   return m_running || (m_pendingPlay > m_pendingStop);
 }
 
 void PUPMediaPlayer::SetName(const string& name)
@@ -83,6 +82,7 @@ double PUPMediaPlayer::GetPlayTime() const
 
 void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
 {
+   m_pendingPlay++;
    m_commandQueue.enqueue(
       [this, filename, volume]()
    {
@@ -107,6 +107,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       if (m_libAv._avformat_open_input(&m_pFormatContext, filename.string().c_str(), NULL, NULL) != 0)
       {
          LOGE("Unable to open: filename=%s", filename.c_str());
+         m_pendingPlay--;
          return;
       }
 
@@ -184,11 +185,13 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       {
          LOGE("No video or audio stream found: filename=%s", filename.c_str());
          StopBlocking();
+         m_pendingPlay--;
          return;
       }
 
       m_running = true;
       m_thread = std::thread(&PUPMediaPlayer::Run, this);
+      m_pendingPlay--;
    });
 }
 
@@ -201,16 +204,22 @@ void PUPMediaPlayer::Pause(bool pause)
          std::lock_guard lock(m_mutex);
          m_paused = pause;
          if (m_paused)
-            m_pauseTimestamp = static_cast<double>(SDL_GetTicks()) / 1000.0 - m_startTimestamp; // Freeze at the current playing time
+            m_pauseTimestamp = GetPlayTime(); // Freeze at the current playing time
          else
-            m_startTimestamp = static_cast<double>(SDL_GetTicks()) / 1000.0 - m_pauseTimestamp; // Adjust start time to restart from freeze point
+            m_startTimestamp = m_startTimestamp + GetPlayTime() - m_pauseTimestamp; // Adjust start time to restart from freeze point
       }
    });
 }
 
 void PUPMediaPlayer::Stop()
 {
-   m_commandQueue.enqueue([this]() { StopBlocking(); });
+   m_pendingStop++;
+   m_commandQueue.enqueue(
+      [this]()
+      {
+         StopBlocking();
+         m_pendingStop--;
+      });
 }
 
 void PUPMediaPlayer::StopBlocking()
