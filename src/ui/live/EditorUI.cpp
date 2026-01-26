@@ -1550,9 +1550,9 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
          if (editable->GetItemType() != eItemPrimitive)
             continue;
          const Primitive *const primitive = static_cast<const Primitive *>(editable);
-         if (probe->GetType() == RenderProbe::PLANE_REFLECTION && primitive->m_d.m_szReflectionProbe != probe->GetName())
+         if ((probe->GetType() == RenderProbe::PLANE_REFLECTION) && (primitive->m_d.m_szReflectionProbe != probe->GetName()))
             continue;
-         if (probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY && primitive->m_d.m_szRefractionProbe == probe->GetName())
+         if ((probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY) && (primitive->m_d.m_szRefractionProbe != probe->GetName()))
             continue;
          const auto it = std::ranges::find_if(m_editables, [editable](const auto part) { return part->GetEditable() == editable; });
          if (it == m_editables.end())
