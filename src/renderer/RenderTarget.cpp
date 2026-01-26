@@ -605,7 +605,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
       bgfx::setVertexBuffer(0, &tvb);
       bgfx::setInstanceCount(1);
       bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
-      bgfx::submit(m_rd->m_activeViewId, shader->GetCore(), BGFX_DISCARD_ALL & ~BGFX_DISCARD_STATE);
+      bgfx::submit(m_rd->m_activeViewId, shader->GetCore());
       shader->End();
    }
    

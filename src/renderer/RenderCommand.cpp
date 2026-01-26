@@ -149,7 +149,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::setVertexBuffer(0, &tvb);
          bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
-         bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore(), BGFX_DISCARD_ALL & ~BGFX_DISCARD_STATE);
+         bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
 
          #elif defined(ENABLE_OPENGL)
          void* bufvb;
@@ -187,7 +187,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::setVertexBuffer(0, &tvb);
          bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
-         bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore(), BGFX_DISCARD_ALL & ~BGFX_DISCARD_STATE);
+         bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
 
          #elif defined(ENABLE_OPENGL)
          void* bufvb;
@@ -246,7 +246,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS);
             else
                assert(false); // Unsupported primitive type
-            bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore(), BGFX_DISCARD_ALL & ~BGFX_DISCARD_STATE);
+            bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
 
             #elif defined(ENABLE_OPENGL)
             //assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
@@ -283,7 +283,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             case RenderDevice::POINTLIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS); break;
             default: assert(false); break; // Unsupported primitive type
             }
-            bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore(), BGFX_DISCARD_ALL & ~BGFX_DISCARD_STATE);
+            bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
 
             #elif defined(ENABLE_OPENGL)
             const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndex * m_mb->m_ib->m_sizePerIndex;

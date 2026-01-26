@@ -276,7 +276,6 @@ public:
    {
       ResetActiveView();
       bgfx::frame(); // BGFX always flips backbuffer when its render queue is submitted
-      m_uniformState->Clear(); // State caching is not maintained between frames
    }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
@@ -286,8 +285,6 @@ public:
    bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
-
-   ShaderState& GetUniformState() { return *m_uniformState; }
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
