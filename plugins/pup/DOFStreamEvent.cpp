@@ -2,6 +2,7 @@
 
 #include "DOFStreamEvent.h"
 
+#include <math.h>
 #include <cstring>
 #include <string>
 using std::string;
@@ -17,19 +18,22 @@ DOFEventStream::DOFEventStream(const MsgPluginAPI* msgApi, uint32_t endpointId, 
    , m_msgApi(msgApi)
    , m_eventHandler(eventHandler)
 {
-   // Subscribe to message bus events
    m_getDmdSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    m_onDmdSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-   m_onSerumTriggerId = m_msgApi->GetMsgID("Serum", "OnDmdTrigger");
-   m_onDmdTriggerId = m_msgApi->GetMsgID("PinUp", "OnDmdTrigger");
-
+   
+   m_getSegSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   m_onSegSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
+   
    m_getDevSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
    m_onDevSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
 
    m_getInputSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
    m_onInputSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
 
+   m_onSerumTriggerId = m_msgApi->GetMsgID("Serum", "OnDmdTrigger");
+
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDevSrcChangedId, OnDevSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onInputSrcChangedId, OnInputSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSerumTriggerId, OnSerumTrigger, this);
@@ -50,6 +54,7 @@ DOFEventStream::~DOFEventStream()
       m_b2sDevSrc.SetChangeCallback(i, 0, OnB2SStateChg, this);
 
    m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged);
+   m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged);
    m_msgApi->UnsubscribeMsg(m_onDevSrcChangedId, OnDevSrcChanged);
    m_msgApi->UnsubscribeMsg(m_onInputSrcChangedId, OnInputSrcChanged);
    m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger);
@@ -58,16 +63,19 @@ DOFEventStream::~DOFEventStream()
    delete[] m_pmInputSrc.inputDefs;
    delete[] m_pmDevSrc.deviceDefs;
 
+   m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
+
    m_msgApi->ReleaseMsgID(m_getDevSrcId);
    m_msgApi->ReleaseMsgID(m_onDevSrcChangedId);
 
    m_msgApi->ReleaseMsgID(m_getInputSrcId);
    m_msgApi->ReleaseMsgID(m_onInputSrcChangedId);
 
+   m_msgApi->ReleaseMsgID(m_getSegSrcId);
+   m_msgApi->ReleaseMsgID(m_onSegSrcChangedId);
+
    m_msgApi->ReleaseMsgID(m_getDmdSrcId);
    m_msgApi->ReleaseMsgID(m_onDmdSrcChangedId);
-   m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
-   m_msgApi->ReleaseMsgID(m_onDmdTriggerId);
 }
 
 void DOFEventStream::SetDMDHandler(const std::function<DisplaySrcId(const GetDisplaySrcMsg&)>& select, const std::function<int(const DisplaySrcId&, const uint8_t*)>& process)
@@ -83,6 +91,7 @@ void DOFEventStream::OnSerumTrigger(const unsigned int eventId, void* userData, 
    auto me = static_cast<DOFEventStream*>(userData);
    auto trigger = static_cast<unsigned int*>(eventData);
    me->QueueEvent('D', static_cast<int>(*trigger), 1);
+   me->QueueEvent('D', static_cast<int>(*trigger), 0);
 }
 
 void DOFEventStream::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -97,6 +106,26 @@ void DOFEventStream::OnDMDSrcChanged(const unsigned int eventId, void* userData,
    me->m_dmdId = me->m_selectDmd(getSrcMsg);
    me->m_lastDmdFrameId = 0;
    delete[] getSrcMsg.entries;
+}
+
+void DOFEventStream::OnSegSrcChanged(const unsigned int eventId, void* userData, void* eventData)
+{
+   auto me = static_cast<DOFEventStream*>(userData);
+   std::lock_guard lock(me->m_pollSrcMutex);
+   
+   // PinMAME controller
+   me->m_pmSegSrc.clear();
+   me->m_pmLastSegFrame.clear();
+   me->m_pmLastSegFrameId.clear();
+   if (unsigned int pinmameEndPoint = me->m_msgApi->GetPluginEndpoint("PinMAME"); pinmameEndPoint)
+   {
+      me->m_pmSegSrc.resize(1024);
+      GetSegSrcMsg getSrcMsg = { static_cast<unsigned int>(me->m_pmSegSrc.size()), 0, me->m_pmSegSrc.data() };
+      me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcId, pinmameEndPoint, &getSrcMsg);
+      me->m_pmSegSrc.resize(getSrcMsg.count);
+      me->m_pmLastSegFrame.resize(getSrcMsg.count);
+      me->m_pmLastSegFrameId.resize(getSrcMsg.count);
+   }
 }
 
 void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -141,14 +170,22 @@ void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData,
    }
 
    lock.unlock();
+   
    for (unsigned int i = 0; i < me->m_b2sDevSrc.nDevices; i++)
-      me->QueueEvent('E', static_cast<int>(me->m_b2sDevSrc.deviceDefs[i].deviceId), me->m_b2sDevSrc.GetFloatState(i) > 0.5f ? 1 : 0);
+      OnB2SStateChg(i, me);
 }
 
 void MSGPIAPI DOFEventStream::OnB2SStateChg(unsigned int index, void* context)
 {
+   // E: B2S Controller generic input state (B2SSetData / B2SPulseData)
    auto me = static_cast<DOFEventStream*>(context);
    me->QueueEvent('E', static_cast<int>(me->m_b2sDevSrc.deviceDefs[index].deviceId), me->m_b2sDevSrc.GetFloatState(index) > 0.5f ? 1 : 0);
+
+   // B: B2S Controller score digit
+   // TODO implement
+
+   // C: B2S Controller score
+   // TODO implement
 }
 
 void DOFEventStream::OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -189,7 +226,7 @@ void DOFEventStream::OnInputSrcChanged(const unsigned int eventId, void* userDat
    }
 }
 
-// Update thread that poll state based sources (DMD, lamps,...) at 60Hz
+// Update thread that poll analog sources (lamps, solenoids, ...) at 60Hz
 void DOFEventStream::StatePollingThread()
 {
    //SetThreadName("DOFEventStream.StatePollThread"s);
@@ -199,6 +236,9 @@ void DOFEventStream::StatePollingThread()
       if (!m_isRunning)
          break;
 
+      std::lock_guard lock(m_pollSrcMutex);
+
+      // D: DMD frame identification
       if (m_dmdId.id.id != 0)
       {
          DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.id);
@@ -206,9 +246,41 @@ void DOFEventStream::StatePollingThread()
          {
             m_lastDmdFrameId = dmdFrame.frameId;
             const int dmdTrigger = m_processDmd(m_dmdId, static_cast<const uint8_t*>(dmdFrame.frame));
-            if (dmdTrigger >= 0)
+            if (dmdTrigger > 0)
+            {
                QueueEvent('D', dmdTrigger, 1);
+               QueueEvent('D', dmdTrigger, 0);
+            }
          }
+      }
+      
+      // D: PinMAME Segment display state
+      int segIndex = 0;
+      int segDisplayIndex = 0;
+      for (const auto& segSrc : m_pmSegSrc)
+      {
+         if (const SegDisplayFrame segFrame = segSrc.GetState(segSrc.id); segFrame.frameId != m_pmLastSegFrameId[segIndex])
+         {
+            m_pmLastSegFrameId[segIndex] = segFrame.frameId;
+            for (unsigned int i = 0; i < segSrc.nElements; i++)
+            {
+               uint16_t elementState = 0;
+               for (int j = 0; j < 16; j++)
+                  if (segFrame.frame[j] > 0.5f)
+                     elementState |= 1 << j;
+               if (elementState != m_pmLastSegFrame[segDisplayIndex])
+               {
+                  m_pmLastSegFrame[segDisplayIndex] = elementState;
+                  QueueEvent('D', segDisplayIndex, elementState);
+               }
+               segDisplayIndex++;
+            }
+         }
+         else
+         {
+            segDisplayIndex += segSrc.nElements;
+         }
+         segIndex++;
       }
 
       // W: PinMAME switch events
@@ -226,13 +298,13 @@ void DOFEventStream::StatePollingThread()
          }
       }
 
-      // L: PinMAME lamp state
-      // N: PinMAME mech state
       // S: PinMAME solenoid state
       // G: PinMAME GI state
+      // L: PinMAME lamp state
+      // N: PinMAME mech state
       for (unsigned int i = 0; i < m_pmDevSrc.nDevices; i++)
       {
-         const int state = m_pmDevSrc.GetFloatState(i) > 0.5f ? 1 : 0;
+         const int state = static_cast<int>(roundf(m_pmDevSrc.GetFloatState(i)));
          if (m_pmDeviceState[i] != state)
          {
             m_pmDeviceState[i] = state;
@@ -245,18 +317,6 @@ void DOFEventStream::StatePollingThread()
             }
          }
       }
-
-      // D: PinMAME Segment display state, DMD frame identification Id implemented above, and internal PUP D0 startup event implemented in PUP)
-      // TODO implement PinMAME segment display state event
-
-      // E: B2S Controller generic input state (B2SSetData / B2SPulseData)
-      // Nothing to do: directly handled through state change callback
-
-      // B: B2S Controller score digit
-      // TODO implement
-
-      // C: B2S Controller score
-      // TODO implement
    }
 }
 

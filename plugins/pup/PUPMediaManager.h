@@ -53,9 +53,6 @@ private:
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
 
-   bool m_isBackgroundPlaying = false;
-   bool m_isFrontPlaying = false;
-
    std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
 

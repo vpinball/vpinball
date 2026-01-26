@@ -19,7 +19,7 @@
 #include <filesystem>
 #include <format>
 
-#define LOG_PUPLABEL 1
+#define LOG_PUPLABEL 0
 
 namespace PUP {
 
@@ -525,9 +525,11 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
 
    const float fontHeight = (size / 100.0f) * static_cast<float>(outHeight);
    TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
-   style |= m_bold ? TTF_STYLE_BOLD : 0;
+   // FIXME TTF_STYLE_BOLD gives bad results (test with Blood Machines, during Bonnus sequence)
+   // style |= m_bold ? TTF_STYLE_BOLD : 0;
    TTF_SetFontSize(pFont, fontHeight);
-   // FIXME not yet implemented: TTF_SetFontOutline(pFont, m_outline);
+   // FIXME TTF_SetFontOutline does not gives clean outlines
+   // TTF_SetFontOutline(pFont, m_outline);
    TTF_SetFontOutline(pFont, 0);
    TTF_SetFontStyle(pFont, style);
    TTF_SetFontHinting(pFont, TTF_HINTING_NORMAL);
@@ -543,8 +545,8 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       return rs;
    }
 
-   const auto xoffset = 0 * static_cast<int>(fontHeight * (offset.x / 100.0f));
-   const auto yoffset = 0 * static_cast<int>(fontHeight * (offset.y / 100.0f));
+   const auto xoffset = static_cast<int>(fontHeight * (offset.x / 100.0f));
+   const auto yoffset = static_cast<int>(fontHeight * (offset.y / 100.0f));
    SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + abs(xoffset), pTextSurface->h + abs(yoffset), SDL_PIXELFORMAT_RGBA32);
    if (!pMergedSurface)
    {
