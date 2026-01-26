@@ -17,6 +17,7 @@
 #pragma warning(pop)
 
 #include <filesystem>
+#include <format>
 
 #define LOG_PUPLABEL 1
 
