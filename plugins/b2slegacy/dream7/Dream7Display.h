@@ -20,6 +20,7 @@ public:
 
    void OnPaint(VPXRenderContext2D* const ctx) override;
    void OnHandleCreated() override;
+   void OnPaintBackground(VPXGraphics* pGraphics) override;
 
    bool IsHidden() const { return m_hidden; }
    void SetHidden(const bool hidden) { m_hidden = hidden; }
@@ -105,7 +106,6 @@ private:
    float m_angle;
    Matrix* m_pMatrix;
    SDL_FRect m_bounds;
-   std::unique_ptr<VPXGraphics> m_pGraphics;
 };
 
 }

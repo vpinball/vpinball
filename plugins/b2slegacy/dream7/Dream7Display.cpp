@@ -44,35 +44,30 @@ Dream7Display::~Dream7Display()
 void Dream7Display::OnPaint(VPXRenderContext2D* const ctx)
 {
    if (IsVisible()) {
-      if (!m_pGraphics) {
-         if (GetWidth() > 0 && GetHeight() > 0) {
-            m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
-         } else {
-            Control::OnPaint(ctx);
-            return;
-         }
+      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0)
+         m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
+
+      Control::OnPaint(ctx);
+
+      if (m_pGraphics) {
+         for (auto& pSegmentNumber : m_segmentNumbers)
+            pSegmentNumber->Draw(m_pGraphics.get());
+         m_pGraphics->ResetTransform();
+         m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
       }
-
-      m_pGraphics->Clear();
-      m_pGraphics->SetColor(RGB(0, 0, 0));
-      SDL_Rect rect = { 0, 0, GetWidth(), GetHeight() };
-      m_pGraphics->FillRectangle(rect);
-
-      m_pGraphics->TranslateTransform(GetLeft(), GetTop());
-
-      for (auto& pSegmentNumber : m_segmentNumbers)
-         pSegmentNumber->Draw(m_pGraphics.get());
-
-      m_pGraphics->TranslateTransform(-GetLeft(), -GetTop());
-      m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
    }
-
-   Control::OnPaint(ctx);
 }
 
 void Dream7Display::OnHandleCreated()
 {
    SegmentDisplayHandleCreated();
+}
+
+void Dream7Display::OnPaintBackground(VPXGraphics* pGraphics)
+{
+   pGraphics->SetColor(RGB(0, 0, 0));
+   SDL_Rect rect = { 0, 0, GetWidth(), GetHeight() };
+   pGraphics->FillRectangle(rect);
 }
 
 void Dream7Display::SetText(const string& szText)
