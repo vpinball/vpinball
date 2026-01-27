@@ -244,7 +244,7 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
          if (scaleX > 0.0f && scaleY > 0.0f)
             m_pMatrix->Scale(scaleX, scaleY);
       }
-      m_pMatrix->Translate(-bounds.x, bounds.y);
+      m_pMatrix->Translate(-bounds.x, -bounds.y);
    }
    m_pMatrix->Multiply(styleMatrix);
 }
