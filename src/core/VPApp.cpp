@@ -251,12 +251,7 @@ static const string options[] = { // keep in sync with option_names & option_des
    "c7"s,
    "c8"s,
    "c9"s,
-#ifdef __STANDALONE__
-   "listres"s,
-   "listsnd"s,
    "PrefPath"s,
-   "displayid"s,
-#endif
    ""s
 };
 static const string option_descs[] =
@@ -296,12 +291,7 @@ static const string option_descs[] =
    "Custom value 7"s,
    "Custom value 8"s,
    "Custom value 9"s,
-   #ifdef __STANDALONE__
-      "List available fullscreen resolutions"s,
-      "List available sound devices"s,
-      "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
-      "Visually display your screen ID(s)"s
-   #endif
+   "[path]  Use a custom preferences path instead of default"s,
    ""s
 };
 enum option_names
@@ -341,96 +331,9 @@ enum option_names
    OPTION_CUSTOM7,
    OPTION_CUSTOM8,
    OPTION_CUSTOM9,
-   #ifdef __STANDALONE__
-      OPTION_LISTRES,
-      OPTION_LISTSND,
-      OPTION_PREFPATH,
-      OPTION_DISPLAYID,
-   #endif
+   OPTION_PREFPATH,
    OPTION_INVALID,
 };
-
-#ifdef __STANDALONE__
-void showDisplayIDs()
-{
-   TTF_Init();
-   string path = g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "LiberationSans-Regular.ttf");
-   TTF_Font* pFont = TTF_OpenFont(path.c_str(), 200);
-   if (!pFont) {
-      PLOGI << "Failed to load font: " << SDL_GetError();
-      TTF_Quit();
-      return;
-   }
-
-   if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
-   {
-      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS) failed: " << SDL_GetError();
-      exit(1);
-   }
-   SDL_HideCursor();
-
-   int displayCount;
-   SDL_DisplayID* pDisplays = SDL_GetDisplays(&displayCount);
-   SDL_Window* pWindows[displayCount];
-   SDL_Renderer* pRenderers[displayCount];
-
-   for (int i = 0; i < displayCount; i++) {
-      // get bounds and create windows on each display
-      SDL_Rect displayBounds;
-      SDL_GetDisplayBounds(pDisplays[i], &displayBounds);
-      PLOGI << "DisplayID: " <<  pDisplays[i] << " bounds: " << displayBounds.x << 'x' << displayBounds.y << " Res: " << displayBounds.w << 'x' << displayBounds.h;
-      pWindows[i] = SDL_CreateWindow("Display", displayBounds.w, displayBounds.h, 0);
-      if (!pWindows[i])
-         continue;
-      SDL_SetWindowPosition(pWindows[i],  displayBounds.x,  displayBounds.y);
-      while(!SDL_SyncWindow(pWindows[i])) {}
-
-      pRenderers[i] = SDL_CreateRenderer(pWindows[i], NULL);
-      if (!pRenderers[i])
-         continue;
-      SDL_RenderClear(pRenderers[i]);
-
-      // put display number on renderer
-      SDL_Color white = {255, 255, 255};
-      SDL_Surface* pSurface = TTF_RenderText_Solid_Wrapped(pFont, (std::to_string(pDisplays[i]) + "\n(" + std::to_string(displayBounds.x) + 'x' + std::to_string(displayBounds.y) + ')').c_str(), 0, white, 900);
-      if (!pSurface)
-         continue;
-      float textWidth = pSurface->w;
-      float textHeight = pSurface->h;
-      SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderers[i], pSurface);
-      if (pTexture) {
-         SDL_FRect rect = {(displayBounds.w - textWidth) / 2.0f, (displayBounds.h - textHeight) / 2.0f, textWidth, textHeight};
-
-         if (displayBounds.h > displayBounds.w) {  // detect if display is rotated and rotate 90 degrees
-            SDL_FPoint center = {pSurface->w / 2.0f, pSurface->h / 2.0f};
-            SDL_RenderTextureRotated(pRenderers[i], pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
-         }
-         else
-            SDL_RenderTexture(pRenderers[i], pTexture, NULL, &rect);
-
-         SDL_DestroyTexture(pTexture);
-      }
-      SDL_DestroySurface(pSurface);
-
-      SDL_RenderPresent(pRenderers[i]);
-   }
-
-   SDL_Event e;
-   while (e.type != SDL_EVENT_KEY_DOWN)
-      SDL_PollEvent(&e);
-
-   for (int i=0; i < displayCount; i++) {
-      if (pWindows[i]) {
-         if (pRenderers[i])
-            SDL_DestroyRenderer(pRenderers[i]);
-         SDL_DestroyWindow(pWindows[i]);
-      }
-   }
-
-   TTF_Quit();
-   SDL_Quit();
-}
-#endif
 
 static bool compare_option(const string& arg, const option_names option)
 {
@@ -629,12 +532,7 @@ string VPApp::GetCommandLineHelp()
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
-   #ifdef __STANDALONE__
-      "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
-      "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
-      "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
-   #endif
       "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
 }
 
@@ -668,9 +566,6 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
    m_extractPov = false;
    m_extractScript = false;
    m_audit = false;
-#ifdef __STANDALONE__
-   m_displayId = false;
-#endif
    m_tableFileName.clear();
    m_tableIniFileName.clear();
    m_iniFileName.clear();
@@ -929,43 +824,6 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
       }
       #endif
 
-      #ifdef __STANDALONE__
-      // FIXME remove as this is now handled in the InGame UI
-      case OPTION_LISTSND:
-         // Set flag instead of processing immediately - device enumeration requires SDL initialization
-         PLOGI << "Available sound devices:";
-         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-         {
-            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-         }
-         exit(0);
-         break;
-
-      // FIXME remove as this is now handled in the InGame UI
-      case OPTION_LISTRES:
-         {
-            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
-            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
-            for (const auto& display : displays)
-            {
-               PLOGI << "Display " << display.displayName;
-               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
-               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
-               for (const auto& mode : VPX::Window::GetDisplayModes(display))
-               {
-                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-               }
-            }
-         }
-         exit(0);
-         break;
-
-      // FIXME remove as this is now handled in the InGame UI
-      case OPTION_DISPLAYID:
-         m_displayId = true;
-         m_run = false;
-         break;
-
       case OPTION_PREFPATH:
          if (i + 1 >= nArgs)
          {
@@ -990,7 +848,6 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          }
          i++;
          break;
-      #endif
 
       default:
          assert(false);
@@ -1058,13 +915,6 @@ BOOL VPApp::InitInstance()
       exit(1);
    }
    
-   #ifdef __STANDALONE__
-      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
-      TTF_Init();
-      if (m_displayId)
-         showDisplayIDs();
-   #endif
-
    return TRUE;
 }
 
