@@ -26,6 +26,8 @@
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
@@ -318,6 +320,7 @@ void VPinballLib::RegisterStaticPlugins()
       { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
+      { "AltSound",      &AltSoundPluginLoad,      &AltSoundPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
       { "B2SLegacy",     &B2SLegacyPluginLoad,     &B2SLegacyPluginUnload     },
       { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
