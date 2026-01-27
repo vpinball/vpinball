@@ -2,9 +2,11 @@
 
 #include "../common.h"
 #include <vector>
-
+#include <memory>
 
 namespace B2SLegacy {
+
+class VPXGraphics;
 
 class Control {
 public:
@@ -46,7 +48,9 @@ public:
    void SetBackgroundImage(VPXTexture pBackgroundImage);
 
 protected:
+   virtual void OnPaintBackground(VPXGraphics* pGraphics);
    VPXPluginAPI* m_vpxApi = nullptr;
+   std::unique_ptr<VPXGraphics> m_pGraphics;
 
 private:
    Control* m_pParent;
