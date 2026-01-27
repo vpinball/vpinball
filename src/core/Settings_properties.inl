@@ -1343,11 +1343,12 @@ PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
 PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
 // Default core plugins enable state
+PropBoolDyn(PluginAltSound, Enable, "Enable"s, "Enable legacy AltSound plugin"s, g_isStandalone);
 PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
 PropBoolDyn(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
 PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
 PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
-PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isStandalone);
 PropBoolDyn(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
 PropBoolDyn(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, g_isStandalone);
 PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
