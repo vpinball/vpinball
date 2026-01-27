@@ -113,18 +113,16 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
 
    if (renderCtx->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (!m_pB2SSettings->IsHideB2SBackglass()) {
-         SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetBackglassSize();
-         renderCtx->srcWidth = static_cast<float>(size.w);
-         renderCtx->srcHeight = static_cast<float>(size.h);
+         renderCtx->srcWidth = static_cast<float>(m_pFormBackglass->GetWidth());
+         renderCtx->srcHeight = static_cast<float>(m_pFormBackglass->GetHeight());
          m_pFormBackglass->OnPaint(renderCtx);
          return 1;
       }
    }
    else if (renderCtx->window == VPXWindowId::VPXWINDOW_ScoreView) {
       if (m_pFormBackglass->GetFormDMD()) {
-         SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetDMDSize();
-         renderCtx->srcWidth = static_cast<float>(size.w);
-         renderCtx->srcHeight = static_cast<float>(size.h);
+         renderCtx->srcWidth = static_cast<float>(m_pFormBackglass->GetFormDMD()->GetWidth());
+         renderCtx->srcHeight = static_cast<float>(m_pFormBackglass->GetFormDMD()->GetHeight());
          m_pFormBackglass->GetFormDMD()->OnPaint(renderCtx);
          return 1;
       }
