@@ -165,7 +165,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
          Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x - selectedDisplay.left));
-         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
+         Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
          const int xn = settings.GetWindow_WndX(m_windowId);
          const int yn = settings.GetWindow_WndY(m_windowId);
          if (0 <= xn && xn + m_width <= selectedDisplay.width)
