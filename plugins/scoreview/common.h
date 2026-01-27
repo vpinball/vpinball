@@ -3,8 +3,9 @@
 #pragma once
 
 #include <cassert>
-#include <cstdarg>
 #include <cstdio>
+#include <cstdarg>
+#include <filesystem>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -59,7 +60,6 @@ string TrimLeading(const string& str, const string& whitespace);
 string TrimTrailing(const string& str, const string& whitespace);
 bool try_parse_float(const string& str, float& value);
 bool try_parse_int(const string& str, int& value);
-string PathFromFilename(const string& filename);
-string GetPluginPath();
+std::filesystem::path GetPluginPath();
 
 }

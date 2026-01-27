@@ -57,13 +57,13 @@ public:
 
    bool HasLayouts() const { return !m_layouts.empty(); }
    bool IsMatched() const { return m_bestLayout != nullptr && m_bestLayout->unmatchedVisuals == 0; }
-   void Load(const string& path);
+   void Load(const std::filesystem::path& path);
    void Reset() { m_layouts.clear(); }
 
    bool Render(VPXRenderContext2D* ctx);
 
 private:
-   void Parse(const std::filesystem::path& path, std::istream& content);
+   void Parse(const std::filesystem::path& path);
    void Select(const float scoreW, const float scoreH);
 
    enum Fit

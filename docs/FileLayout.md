@@ -68,6 +68,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── Table file v1.1.vpx                      <= This is the main VPX file
 ├── Table file v1.1.ini                      <= This file holds the table setting overrides
 ├── Table file v1.1.vbs                      <= For some reason, we decided to override the table script by a custom script
+├── Table file v1.1.scv                      <= ScoreView plugin will use this layout file if present (otherwise defaulting to its global scoreview folder)
 ├── Table file v1.0.vpx                      <= For example, we decided to keep an older version for reference
 ├── Table Name (Manufacturer Year).directb2s <= We chose to name the backglass after the folder name, as it is shared between all table versions
 ├── Table Name (Manufacturer Year).info      <= This is an information file to store frontend datas, we decided to name after the folder name (not directly linked to VPX, see below)

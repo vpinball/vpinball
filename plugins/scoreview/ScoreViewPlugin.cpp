@@ -38,21 +38,32 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
    {
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
+      std::filesystem::path tablePath = tableInfo.path;
 
       scoreView = std::make_unique<ScoreView>(msgApi, endpointId, vpxApi);
-      scoreView->Load(PathFromFilename(tableInfo.path));
+
+      // First try  a file matching the table file with scv extension
+      scoreView->Load(tablePath.replace_extension(".scv"));
+
+      // Then try  a file matching the table's parent folder name with scv extension
+      if (!scoreView->HasLayouts())
+         scoreView->Load(tablePath.parent_path() / tablePath.parent_path().filename().replace_extension(".scv"));
+
+      // Allow the user to provide a custom folder (out of application path) with his default layouts ?
+
+      // Finally defaults to base layouts provided with the plugin
       if (!scoreView->HasLayouts())
       {
          // Load default layouts provided with plugin
-         string path;
+         std::filesystem::path path;
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
          vpxApi->GetVpxInfo(&vpxInfo);
-         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins" + PATH_SEPARATOR_CHAR + "scoreview" + PATH_SEPARATOR_CHAR;
+         path = std::filesystem::path(vpxInfo.path) / "plugins" / "scoreview";
          #else
          path = GetPluginPath();
          #endif
-         path += "layouts"s + PATH_SEPARATOR_CHAR;
+         path = path / "layouts"s;
          scoreView->Load(path);
       }
    }
