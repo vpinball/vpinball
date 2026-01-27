@@ -212,10 +212,18 @@ public:
 
    static void ResetBallIDCounter() { m_nextBallID = 0; }
 
+   float GetRadius() const { return m_hitBall.m_d.m_radius; }
+   const vec3 &GetPosition() const { return m_hitBall.m_d.m_pos; }
+   const vec3 &GetVelocity() const { return m_hitBall.m_d.m_vel; }
+   void SetPosition(const vec3& pos) { m_hitBall.m_d.m_pos = pos; }
+   void SetVelocity(const vec3& vel) { m_hitBall.m_d.m_vel = vel; }
+
    BallData m_d;
    HitBall m_hitBall;
 
    static const AntiStretchHelper m_ash;
+
+   Vertex3Ds m_lastRenderedPos; // position where last render occured
 
 private:
    static unsigned int m_nextBallID; // increased for each ball created to have an unique ID for scripts for each ball

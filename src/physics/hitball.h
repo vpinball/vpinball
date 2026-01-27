@@ -70,8 +70,6 @@ public:
 
    Vertex3Ds m_oldVel;       // hack for kicker hole handling only
 
-   Vertex3Ds m_lastRenderedPos; // position where last render occured
-
    Vertex3Ds m_lastEventPos; // last hit event position (to filter hit 'equal' hit events)
    float m_lastEventSqrDist = 0.f; // distance travelled since last event
 

@@ -585,7 +585,7 @@ void EditorUI::RenderUI()
                      m_selection = Selection(*it);
                }
             }
-            // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pHitBall;
+            // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pBall;
          }
       }
    }

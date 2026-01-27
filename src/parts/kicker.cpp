@@ -660,15 +660,14 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/ float radius, /*[in]*/ flo
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
-         m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius, mass);
+      Ball *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x, m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius, mass);
+      
+      pball->AddRef();
+      *pResult = pball;
 
-      *pResult = pball->m_pBall;
-      pball->m_pBall->AddRef();
-
-      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
+      pball->m_hitBall.m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       static constexpr Vertex3Ds hitnormal { FLT_MAX, FLT_MAX, FLT_MAX }; // unused due to newBall being true
-      m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
+      m_phitkickercircle->DoCollide(&(pball->m_hitBall), hitnormal, false, true);
    }
 
    return S_OK;
@@ -676,41 +675,12 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/ float radius, /*[in]*/ flo
 
 STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/ float radius, /*out, retval]*/ IBall **pResult)
 {
-   if (m_phitkickercircle)
-   {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
-         m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius);
-
-      *pResult = pball->m_pBall;
-      pball->m_pBall->AddRef();
-
-      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
-      static constexpr Vertex3Ds hitnormal { FLT_MAX, FLT_MAX, FLT_MAX }; // unused due to newBall being true
-      m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
-   }
-
-   return S_OK;
+   return CreateSizedBallWithMass(radius, 1.f, pResult);
 }
 
 STDMETHODIMP Kicker::CreateBall(IBall **pResult)
 {
-   if (m_phitkickercircle)
-   {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x, m_phitkickercircle->center.y, height, 0.1f, 0, 0);
-
-      *pResult = pball->m_pBall;
-      pball->m_pBall->AddRef();
-
-      pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
-      static constexpr Vertex3Ds hitnormal { FLT_MAX, FLT_MAX, FLT_MAX }; // unused due to newBall being true
-      m_phitkickercircle->DoCollide(pball, hitnormal, false, true);
-   }
-
-   return S_OK;
+   return CreateSizedBallWithMass(25.f, 1.f, pResult);
 }
 
 
@@ -724,7 +694,7 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
       ++cnt;
       HitBall *const b = m_phitkickercircle->m_pHitBall;
       m_phitkickercircle->m_pHitBall = nullptr;
-      g_pplayer->DestroyBall(b);
+      g_pplayer->DestroyBall(b->m_pBall);
    }
 
    if (pVal) *pVal = cnt;
@@ -737,13 +707,13 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
-      HitBall* const draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
+      Ball* const draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
 	   if (draggedBall == nullptr)
 	   {
 		   // Ball control most recently kicked if none currently.
-         g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(m_phitkickercircle->m_pHitBall);
+         g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(m_phitkickercircle->m_pHitBall->m_pBall);
 	   }
-	   else if (draggedBall == m_phitkickercircle->m_pHitBall)
+	   else if (draggedBall == m_phitkickercircle->m_pHitBall->m_pBall)
 	   {
 		   // Clear any existing ball control target to allow kickout to work correctly.
 		   g_pplayer->m_liveUI->m_ballControl.EndBallDrag();
@@ -1012,7 +982,7 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
    {
       for (auto pball : g_pplayer->m_vball)
       {
-         if (pball->m_d.m_vpVolObjs && FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (pball->m_hitBall.m_d.m_vpVolObjs && FindIndexOf(*(pball->m_hitBall.m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
             ++cnt;
             g_pplayer->m_pactiveball = pball; // set active ball for scriptor
@@ -1040,7 +1010,7 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     bool ballFound = false;
     for (auto ball : g_pplayer->m_vball)
     {
-        if (ball == m_phitkickercircle->m_lastCapturedBall)
+        if (ball == m_phitkickercircle->m_lastCapturedBall->m_pBall)
         {
             ballFound = true;
             break;
@@ -1182,7 +1152,7 @@ void KickerHitCircle::DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal
                pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pHitBall = pball;
                m_lastCapturedBall = pball;
-               if (pball == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
+               if (pball->m_pBall == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
                   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(nullptr);
             }
 

@@ -470,7 +470,7 @@ void HitBall::UpdateVelocities()
 {
    if (!m_d.m_lockedInKicker) // Gravity
    {
-      if (this == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
+      if (m_pBall == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
       {
          m_d.m_vel.x *= 0.5f; // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;

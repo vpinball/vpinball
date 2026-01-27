@@ -31,9 +31,9 @@ public:
    void SetMode(bool ballControl, bool throwBall);
    void SetMode(Mode mode);
    Mode GetMode() const { return m_mode; }
-   HitBall* GetDraggedBall() const { return m_mode == Mode::DragBall && m_dragging ? m_draggedBall : nullptr; }
+   Ball* GetDraggedBall() const { return m_mode == Mode::DragBall && m_dragging ? m_draggedBall : nullptr; }
    const Vertex3Ds& GetDraggedBallTarget() const { return m_dragTarget; }
-   void SetDraggedBall(HitBall* ball) { if (!m_dragging) m_draggedBall = ball; }
+   void SetDraggedBall(Ball* ball) { if (!m_dragging) m_draggedBall = ball; }
    void EndBallDrag() { m_dragging = false; }
    
    void Update(const int width, const int height);
@@ -46,7 +46,7 @@ private:
    LiveUI& m_liveUI;
    Mode m_mode = Mode::Disabled;
    bool m_dragging = false;
-   HitBall *m_draggedBall = nullptr;
+   Ball *m_draggedBall = nullptr;
    Vertex3Ds m_dragTarget;
    InputManager::ActionState m_prevActionState { };
 };
