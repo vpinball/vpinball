@@ -75,12 +75,6 @@ bool try_parse_int(const string& str, int& value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
-string PathFromFilename(const string &filename)
-{
-   const size_t pos = filename.find_last_of(PATH_SEPARATOR_CHAR);
-   return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
-}
-
 #ifdef _WIN32
 template <class T>
 static T GetModulePath(HMODULE hModule)
@@ -108,7 +102,7 @@ static T GetModulePath(HMODULE hModule)
 }
 #endif
 
-string GetPluginPath()
+std::filesystem::path GetPluginPath()
 {
 #ifdef _WIN32
     HMODULE hm = nullptr;
@@ -116,7 +110,7 @@ string GetPluginPath()
             GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
             GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
             _T("ScoreViewPluginLoad"), &hm) == 0)
-        return string();
+       return std::filesystem::path();
 
 #ifdef _UNICODE
     const std::wstring buf = GetModulePath<std::wstring>(hm);
@@ -140,14 +134,8 @@ string GetPluginPath()
     const string pathBuf(realBuf);
 #endif
 
-    if (pathBuf.empty())
-        return string();
-
-    const size_t lastSep = pathBuf.find_last_of(PATH_SEPARATOR_CHAR);
-    if (lastSep == string::npos)
-        return string();
-
-    return pathBuf.substr(0, lastSep + 1);
+    std::filesystem::path path(pathBuf);
+    return path.empty() ? path : path.parent_path();
 }
 
 }

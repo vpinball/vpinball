@@ -44,32 +44,31 @@ void ScoreView::OnResChanged(const unsigned int msgId, void* userData, void* msg
    static_cast<ScoreView*>(userData)->m_invalidBestLayout = true;
 }
 
-void ScoreView::Load(const string& path)
+void ScoreView::Load(const std::filesystem::path& path)
 {
-   const std::filesystem::path p(path);
-   if (!std::filesystem::exists(p))
+   if (!std::filesystem::exists(path))
       return;
    std::error_code ec;
-   if (std::filesystem::is_directory(p, ec))
+   if (std::filesystem::is_directory(path, ec))
    {
-      for (const auto& entry : std::filesystem::directory_iterator(p))
+      for (const auto& entry : std::filesystem::directory_iterator(path))
       {
          if (!entry.is_directory() && entry.path().extension().string() == ".scv")
          {
             std::ifstream ifs(entry.path());
-            Parse(entry.path(), ifs);
+            Parse(entry.path());
          }
       }
    }
    else
    {
-      std::ifstream ifs(path);
-      Parse(p, ifs);
+      Parse(path);
    }
 }
 
-void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
+void ScoreView::Parse(const std::filesystem::path& path)
 {
+   std::ifstream content(path);
    #define CHECK_FIELD(check) if (!(check)) { LOGE("Invalid field '%s: %s' at line %d in ScoreView file %s", key.c_str(), value.c_str(), lineIndex, path.c_str()); return; }
    static const string whitespace = " \t"s;
    Layout layout { string() };
