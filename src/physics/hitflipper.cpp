@@ -323,7 +323,7 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
             m_startTime = 0;
             PLOGD << "Stroke duration: " << dur << " ms";
             PLOGD << "Ang. velocity: " << m_angleSpeed;
-            PLOGD << "Ball velocity: " << g_pplayer->m_vball[0]->vel.Length();
+            PLOGD << "Ball velocity: " << g_pplayer->m_vball[0]->GetVelocity().Length();
          }
 #endif
          handle_event = true;
@@ -887,7 +887,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       else return;
 #endif
    }
-   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball); // Ball control most recently collided with flipper
+   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with flipper
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing

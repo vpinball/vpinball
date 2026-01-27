@@ -898,7 +898,7 @@ STDMETHODIMP Ball::DestroyBall(int *pVal)
    if (g_pplayer)
    {
       ++cnt;
-      HitBall *const b = g_pplayer->m_pactiveball;
+      Ball *const b = g_pplayer->m_pactiveball;
       g_pplayer->m_pactiveball = nullptr;
       g_pplayer->DestroyBall(b);
    }

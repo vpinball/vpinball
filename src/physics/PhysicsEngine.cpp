@@ -666,8 +666,8 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       PhysicsSimulateCycle(physics_diff_time); // main simulator call
 
       // Store new position of balls for ball trails
-      for (const auto hitBall : g_pplayer->m_vball)
-         hitBall->OnPhysicStepProcessed(g_pplayer->m_time_msec);
+      for (const auto ball : g_pplayer->m_vball)
+         ball->m_hitBall.OnPhysicStepProcessed(g_pplayer->m_time_msec);
 
       //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (uint32_t)(m_curPhysicsFrameTime/1000) << ' ' << (uint32_t)(initial_time_usec/1000) << ' ' << cur_time_msec;
 
@@ -736,7 +736,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         HitBall *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = &(g_pplayer->m_vball[i]->m_hitBall);
 
          if (!pball->m_d.m_lockedInKicker
          #ifdef C_DYNAMIC
@@ -811,7 +811,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
       {
-         HitBall *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = &(g_pplayer->m_vball[i]->m_hitBall);
 
          if (
          #ifdef C_DYNAMIC
@@ -821,7 +821,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
          {
             // now collision, contact and script reactions on active ball (object)+++++++++
             HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
-            g_pplayer->m_pactiveball = pball; // For script that wants the ball doing the collision
+            g_pplayer->m_pactiveball = pball->m_pBall; // For script that wants the ball doing the collision
             #ifdef DEBUGPHYSICS
                c_collisioncnt++;
             #endif
@@ -830,7 +830,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
-            if (i >= g_pplayer->m_vball.size() || g_pplayer->m_vball[i] != pball) // Ball still exists? may have been deleted from list
+            if (i >= g_pplayer->m_vball.size() || g_pplayer->m_vball[i] != pball->m_pBall) // Ball still exists? may have been deleted from list
             {
                // collision script deleted the ball, back up one count
                --i;
@@ -885,42 +885,44 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       #ifdef C_BALL_SPIN_HACK
          // hacky killing of ball spin on resting balls (very low and very high spinning)
-         for (HitBall *const pball : g_pplayer->m_vball)
+         for (Ball *const pBall : g_pplayer->m_vball)
          {
-            if (pball->m_coll.m_hitdistance >= (float)PHYS_TOUCH)
+            HitBall* hitBall = &(pBall->m_hitBall);
+            
+            if (hitBall->m_coll.m_hitdistance >= (float)PHYS_TOUCH)
                continue;
 
-            const Vertex3Ds oldPos0 = pball->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
+            const Vertex3Ds oldPos0 = hitBall->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
             if (oldPos0.x == FLT_MAX)
                continue;
 
-            const Vertex3Ds oldPos1 = pball->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
+            const Vertex3Ds oldPos1 = hitBall->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
             if (oldPos1.x == FLT_MAX)
                continue;
 
             /*
-            const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-            if (pball->m_drsq < 8.0e-5f
+            const float mag = hitBall->m_vel.x*hitBall->m_vel.x + hitBall->m_vel.y*hitBall->m_vel.y; // values below are copy pasted from above
+            if (hitBall->m_drsq < 8.0e-5f
                   && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST
-                  && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
-                  && pball->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST)
+                  && fabsf(hitBall->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
+                  && hitBall->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST)
                   //&& rand_mt_01() < 0.95f)
             {
-               pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+               hitBall->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
             }
             */
 
-            const Vertex3Ds diff_pos = oldPos0 - pball->m_d.m_pos;
+            const Vertex3Ds diff_pos = oldPos0 - hitBall->m_d.m_pos;
             const float mag = diff_pos.x * diff_pos.x + diff_pos.y * diff_pos.y; // squared distance in the playfield plane, since 90ms
-            const Vertex3Ds diff_pos2 = oldPos1 - pball->m_d.m_pos;
+            const Vertex3Ds diff_pos2 = oldPos1 - hitBall->m_d.m_pos;
             const float mag2 = diff_pos2.x * diff_pos2.x + diff_pos2.y * diff_pos2.y; // squared distance in the playfield plane, since 80ms
 
-            const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
+            const float threshold = (hitBall->m_angularmomentum.x*hitBall->m_angularmomentum.x + hitBall->m_angularmomentum.y*hitBall->m_angularmomentum.y) / max(mag, mag2);
 
             if (!infNaN(threshold) && threshold > 666.f)
             {
                const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-               pball->m_angularmomentum *= damp;
+               hitBall->m_angularmomentum *= damp;
             }
          }
       #endif

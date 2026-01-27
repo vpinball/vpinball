@@ -963,7 +963,7 @@ void HitPlunger::Collide(const CollisionEvent& coll)
          return;
 #endif
    }
-   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball); // Ball control most recently collided with plunger
+   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with plunger
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing     

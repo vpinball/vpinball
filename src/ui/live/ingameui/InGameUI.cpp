@@ -146,7 +146,7 @@ void InGameUI::Update()
             bool ballMoving = false;
             for (const auto &ball : m_player->m_vball)
             {
-               if (ball->m_d.m_vel.LengthSquared() > 0.25f)
+               if (ball->GetVelocity().LengthSquared() > 0.25f)
                {
                   ballMoving = true;
                   break;

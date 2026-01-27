@@ -1211,10 +1211,10 @@ STDMETHODIMP Plunger::CreateBall(IBall **pResult)
 
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 
-      HitBall *const pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
+      Ball *const pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0, 25.f, 1.f);
 
-      *pResult = pball->m_pBall;
-      pball->m_pBall->AddRef();
+      *pResult = pball;
+      pball->AddRef();
    }
 
    return S_OK;

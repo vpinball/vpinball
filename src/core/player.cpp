@@ -579,7 +579,7 @@ Player::Player(PinTable *const table, const int playMode)
       hitable->GetIHitable()->TimerSetup(m_vht);
       hitable->GetIHitable()->RenderSetup(m_renderer->m_renderDevice);
       if (hitable->GetItemType() == ItemTypeEnum::eItemBall)
-         m_vball.push_back(&static_cast<Ball *>(hitable)->m_hitBall);
+         m_vball.push_back(static_cast<Ball *>(hitable));
    }
 
    #if defined(EXT_CAPTURE)
@@ -1115,11 +1115,10 @@ void Player::UpdateCursorState() const
    }
 }
 
-HitBall *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
+Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
    CComObject<Ball>* m_pBall;
    CComObject<Ball>::CreateInstance(&m_pBall);
-   m_pBall->AddRef();
    m_pBall->Init(m_ptable, x, y, false, true);
    m_pBall->m_hitBall.m_d.m_pos.z = z + radius;
    m_pBall->m_hitBall.m_d.m_mass = mass;
@@ -1128,31 +1127,32 @@ HitBall *Player::CreateBall(const float x, const float y, const float z, const f
    m_pBall->m_hitBall.m_d.m_vel.y = vy;
    m_pBall->m_hitBall.m_d.m_vel.z = vz;
    m_pBall->m_d.m_useTableRenderSettings = true;
+   m_pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
    m_ptable->m_vedit.push_back(m_pBall);
    m_vhitables.push_back(m_pBall);
    m_pBall->TimerSetup(m_vht);
    m_pBall->RenderSetup(m_renderer->m_renderDevice);
    m_pBall->PhysicSetup(m_physics, false);
+   m_vball.push_back(m_pBall);
    if (!m_pactiveballDebug)
-      m_pactiveballDebug = &m_pBall->m_hitBall;
-   m_vball.push_back(&m_pBall->m_hitBall);
-   return &m_pBall->m_hitBall;
+      m_pactiveballDebug = m_pBall;
+   return m_pBall;
 }
 
-void Player::DestroyBall(HitBall *pHitBall)
+void Player::DestroyBall(Ball *pBall)
 {
-   assert(pHitBall);
-   if (!pHitBall) return;
+   assert(pBall);
+   if (!pBall) return;
 
-   RemoveFromVectorSingle(m_vball, pHitBall);
-   m_vballDelete.push_back(pHitBall->m_pBall);
-   pHitBall->m_pBall->PhysicRelease(m_physics, false);
+   RemoveFromVectorSingle(m_vball, pBall);
+   m_vballDelete.push_back(pBall);
+   pBall->PhysicRelease(m_physics, false);
 
-   if (m_pactiveball == pHitBall)
+   if (m_pactiveball == pBall)
       m_pactiveball = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_pactiveballDebug == pHitBall)
+   if (m_pactiveballDebug == pBall)
       m_pactiveballDebug = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_liveUI->m_ballControl.GetDraggedBall() == pHitBall)
+   if (m_liveUI->m_ballControl.GetDraggedBall() == pBall)
       m_liveUI->m_ballControl.SetDraggedBall(nullptr);
 }
 
@@ -1190,7 +1190,7 @@ void Player::FireSyncTimer(int timerValue)
 
 void Player::FireTimers(const unsigned int simulationTime)
 {
-   HitBall *const old_pactiveball = g_pplayer->m_pactiveball;
+   Ball *const old_pactiveball = g_pplayer->m_pactiveball;
    g_pplayer->m_pactiveball = nullptr; // No ball is the active ball for timers/key events
    for (HitTimer *const pht : m_vht)
    {
@@ -1282,8 +1282,8 @@ string Player::GetPerfInfo()
 
    // Physics additional information
    info << m_physics->GetPerfInfo(resetMax);
-   info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << ' '
-        << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << '\n';
+   info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->GetVelocity() + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << ' '
+        << (m_pactiveball ? (m_pactiveball->m_hitBall.m_angularmomentum / m_pactiveball->m_hitBall.Inertia()).Length() : -1.f) << '\n';
 
    info << "Flipper keypress to rotate: "
       << ((int64_t)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
@@ -2080,11 +2080,11 @@ void Player::FinishFrame()
    // Memory clean up for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
+      RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
+      RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
       pBall->RenderRelease();
       pBall->TimerRelease();
       pBall->Release();
-      RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
-      RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
    }
    m_vballDelete.clear();
 
