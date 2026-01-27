@@ -398,7 +398,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
                }
                ctx->DrawSegDisplay(ctx, style, hint,
                   // First layer: glass
-                  nullptr, 1.f, 1.f, 1.f, 1.f, // Glass texture, tint and roughness
+                  nullptr, 1.f, 1.f, 1.f, 0.15f, // Glass texture, tint and roughness
                   0.f, 0.f, 0.f, 0.f, // Glass texture coordinates (inside overall glass texture, cut for each element)
                   0.f, 0.f, 0.f, // Glass lighting from room
                   // Second layer: emitter
