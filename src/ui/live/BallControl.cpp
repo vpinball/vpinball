@@ -193,6 +193,5 @@ void BallControl::HandleThrowBalls(const int width, const int height)
       const float z = isPlayfieldThrow ? 0.f : live_table->m_glassTopHeight;
       HitBall *const pball = player->CreateBall(throwCenter.x, throwCenter.y, z, vx, vy, 0,
          live_table->m_settings.GetEditor_ThrowBallSize() * 0.5f, live_table->m_settings.GetEditor_ThrowBallMass());
-      pball->m_pBall->AddRef();
    }
 }
