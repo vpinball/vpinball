@@ -25,7 +25,7 @@ Ball::Ball() : m_id(GetNextBallID())
 
 Ball::~Ball()
 {
-   if (m_rd);
+   if (m_rd)
       RenderRelease();
    TimerRelease();
 }
