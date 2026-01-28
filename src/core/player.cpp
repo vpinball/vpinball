@@ -2077,13 +2077,11 @@ void Player::FinishFrame()
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
       SetPlayState(false);
 
-   // Memory clean up for balls that may have been destroyed from scripts
+   // Remove ball from table (but they may outlive as they may be in use for rendering) for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
-      pBall->RenderRelease();
-      pBall->TimerRelease();
       pBall->Release();
    }
    m_vballDelete.clear();

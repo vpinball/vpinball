@@ -25,7 +25,9 @@ Ball::Ball() : m_id(GetNextBallID())
 
 Ball::~Ball()
 {
-   assert(m_rd == nullptr);
+   if (m_rd);
+      RenderRelease();
+   TimerRelease();
 }
 
 
