@@ -82,7 +82,7 @@ NudgeSettingsPage::NudgeSettingsPage()
       [this](float, float v)
       {
          m_player->m_ptable->m_settings.SetPlayer_NudgeStrength(v, false);
-         m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
+         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
 

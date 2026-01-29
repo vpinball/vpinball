@@ -22,6 +22,8 @@ private:
    InputManager& GetInput() const { return m_player->m_pininput; }
    void AppendPlot();
 
+   unsigned int m_notificationId = 0;
+
    PlotData m_nudgeXPlot;
    PlotData m_nudgeYPlot;
    PlotData m_nudgeXRawPlot[2];
