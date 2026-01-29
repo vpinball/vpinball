@@ -33,6 +33,7 @@ class MainApplication : Application() {
         System.loadLibrary("dmdutil")
         System.loadLibrary("dof")
         System.loadLibrary("pupdmd")
+        System.loadLibrary("vni")
         System.loadLibrary("avcodec")
         System.loadLibrary("avdevice")
         System.loadLibrary("avfilter")

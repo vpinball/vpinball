@@ -429,6 +429,8 @@ cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party
 cp libdmdutil/libdmdutil/third-party/build-libs/ios-simulator/arm64/libpupdmd.a ../../../third-party/build-libs/ios-simulator-arm64
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/build-libs/ios-simulator/arm64/libsockpp.a ../../../third-party/build-libs/ios-simulator-arm64
+cp libdmdutil/libdmdutil/third-party/build-libs/ios-simulator/arm64/libvni.a ../../../third-party/build-libs/ios-simulator-arm64
+cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
 
 cp libaltsound/libaltsound/build/libaltsound.a ../../../third-party/build-libs/ios-simulator-arm64
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include

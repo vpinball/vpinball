@@ -480,6 +480,8 @@ cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party
 cp libdmdutil/libdmdutil/third-party/runtime-libs/android/arm64-v8a/libpupdmd.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/runtime-libs/android/arm64-v8a/libsockpp.so ../../../third-party/runtime-libs/android-arm64-v8a
+cp libdmdutil/libdmdutil/third-party/runtime-libs/android/arm64-v8a/libvni.so ../../../third-party/runtime-libs/android-arm64-v8a
+cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
 
 cp libaltsound/libaltsound/build/libaltsound.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include

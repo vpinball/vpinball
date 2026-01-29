@@ -48,6 +48,7 @@ MSGPI_BOOL_VAL_SETTING(zeDMDWifiProp, "ZeDMDWiFi", "ZeDMDWiFi", "", true, false)
 MSGPI_STRING_VAL_SETTING(zeDMDWiFiAddrFolderProp, "ZeDMDWiFiAddr", "ZeDMDWiFiAddr", "", true, "zedmd-wifi.local", 1024);
 MSGPI_BOOL_VAL_SETTING(pixelcadeProp, "Pixelcade", "Pixelcade", "", true, true);
 MSGPI_STRING_VAL_SETTING(pixelcadeDeviceProp, "PixelcadeDevice", "PixelcadeDevice", "", true, "", 1024);
+MSGPI_BOOL_VAL_SETTING(pin2dmdProp, "PIN2DMD", "PIN2DMD", "", true, true);
 MSGPI_BOOL_VAL_SETTING(dmdServerFolderProp, "DMDServer", "DMDServer", "", true, false);
 MSGPI_STRING_VAL_SETTING(dmdServerAddrFolderProp, "DMDServerAddr", "DMDServerAddr", "", true, "localhost", 1024);
 MSGPI_INT_VAL_SETTING(dmdServerPortFolderProp, "DMDServerPort", "DMDServerPort", "", true, 0, 1000, 6789);
@@ -230,6 +231,7 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
    msgApi->RegisterSetting(endpointId, &zeDMDWiFiAddrFolderProp);
    msgApi->RegisterSetting(endpointId, &pixelcadeProp);
    msgApi->RegisterSetting(endpointId, &pixelcadeDeviceProp);
+   msgApi->RegisterSetting(endpointId, &pin2dmdProp);
    msgApi->RegisterSetting(endpointId, &dmdServerFolderProp);
    msgApi->RegisterSetting(endpointId, &dmdServerAddrFolderProp);
    msgApi->RegisterSetting(endpointId, &dmdServerPortFolderProp);
@@ -253,6 +255,7 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
    pConfig->SetZeDMDWiFiAddr(zeDMDWiFiAddrFolderProp_Get());
    pConfig->SetPixelcade(pixelcadeProp_Val);
    pConfig->SetPixelcadeDevice(pixelcadeDeviceProp_Get());
+   pConfig->SetPIN2DMD(pin2dmdProp_Val);
    pConfig->SetDMDServer(dmdServerFolderProp_Val);
    pConfig->SetDMDServerAddr(dmdServerAddrFolderProp_Get());
    pConfig->SetDMDServerPort(dmdServerPortFolderProp_Val);
