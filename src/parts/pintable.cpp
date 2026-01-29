@@ -750,7 +750,7 @@ PinTable* PinTable::CopyForPlay()
    CComObject<PinTable>::CreateInstance(&live_table);
    live_table->AddRef();
    live_table->m_liveBaseTable = this;
-   AddRef(); // as the live table holds a re ference on this
+   AddRef(); // as the live table holds a reference on this
 
    CComObject<PinTable> *dst = live_table;
    #ifndef __STANDALONE__

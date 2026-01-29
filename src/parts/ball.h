@@ -97,7 +97,7 @@ public:
 };
 
 class Ball :
-   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComObjectRootEx<CComMultiThreadModel>, // Needs CComMultiThreadModel instead of CComSingleThreadModel as we AddRef/Release between main and render thread
    public IDispatchImpl<IBall, &IID_IBall, &LIBID_VPinballLib>,
    //public CComObjectRoot,
    public CComCoClass<Ball, &CLSID_Ball>,
