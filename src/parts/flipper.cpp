@@ -903,14 +903,7 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
    case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN):
-   {
-      pbr->GetInt(m_d.m_tdr.m_TimerInterval);
-      //m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
-      if (m_d.m_tdr.m_TimerInterval < 1)
-         m_d.m_tdr.m_TimerInterval = 100;
-      break;
-   }
+   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;

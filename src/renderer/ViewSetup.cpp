@@ -309,8 +309,8 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
       const float windowBotZ = GetWindowBottomZOffset(), windowTopZ = GetWindowTopZOffset();
       const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
-      const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
-      return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cosf(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
+      const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom - table->m_top);
+      return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom - table->m_top) / cosf(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
    }
    else
       return 1.f;

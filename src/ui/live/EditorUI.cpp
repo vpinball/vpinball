@@ -834,13 +834,18 @@ void EditorUI::DeleteSelection()
       RemoveFromVectorSingle(m_editables, m_selection.uiPart);
       m_selection = Selection();
       if (edit->GetIHitable())
-      {
          m_player->m_physics->Remove(edit);
-         edit->GetIHitable()->RenderRelease();
-      }
       RemoveFromVectorSingle(g_pplayer->m_vhitables, edit);
       RemoveFromVectorSingle(m_table->m_vedit, edit);
-      edit->Release();
+      m_renderer->m_renderDevice->AddEndOfFrameCmd([edit]()
+         {
+            if (edit->GetIHitable())
+            {
+               edit->GetIHitable()->RenderRelease();
+               edit->GetIHitable()->TimerRelease();
+            }
+            edit->Release();
+         });
    }
 }
 

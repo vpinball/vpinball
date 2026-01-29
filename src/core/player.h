@@ -80,13 +80,6 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct TimerOnOff
-{
-   HitTimer* m_timer;
-   bool m_enabled;
-};
-
-
 class Player final
 {
 public:
@@ -115,8 +108,6 @@ public:
 
    Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
-
-   void FireSyncTimer(int timerValue);
 
 private:
    bool m_playing = true;
@@ -184,12 +175,17 @@ private:
 
 #pragma region Timers
 public:
-   void FireTimers(const unsigned int simulationTime);
-   void DeferTimerStateChange(HitTimer * const hittimer, bool enabled);
-   void ApplyDeferredTimerChanges();
+   void FireTimers(const unsigned int mode); // 0 = timer, -1 = frame sync, -2 = game sync
+   void TimerStateChange(HitTimer * const hittimer, bool enabled);
 
 private:
+   bool m_deferTimerChanges = false;
    vector<HitTimer *> m_vht;
+   struct TimerOnOff
+   {
+      HitTimer* m_timer;
+      bool m_enabled;
+   };
    vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 #pragma endregion
 
