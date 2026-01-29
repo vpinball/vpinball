@@ -476,12 +476,12 @@ void Ball::Render(const unsigned int renderMask)
    ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
    m_rd->AddBeginOfFrameCmd(
-      [this, rot, scale, ss, rd = m_rd]()
+      [this, rotScale = rot * scale, ss, rd = m_rd]()
       {
          vec3 posl = m_hitBall.m_d.m_pos + rd->GetPredictedDisplayDelayInS() * m_hitBall.m_d.m_vel;
          if (m_hitBall.m_d.m_lockedInKicker)
             posl.z -= m_hitBall.m_d.m_radius;
-         Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl);
+         Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
          Release();
       });
