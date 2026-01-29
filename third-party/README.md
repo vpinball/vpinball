@@ -19,20 +19,35 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Upstream: https://freeimage.sourceforge.io
 - License: FreeImage Public License or GPL
 
-### LibAltSound
+### libaltsound
 
-- Upstream: 
-- License: 
+- Upstream: https://github.com/vpinball/libaltsound
+- License: 3-Clause BSD
 
-### LibDMDUtil
+### libdmdutil
 
-- Upstream: 
-- License: 
+- Upstream: https://github.com/vpinball/libdmdutil
+- License: GPLv3+
 
-### LibDOF
+### libdof
 
-- Upstream: 
-- License: 
+- Upstream: https://github.com/jsm174/libdof
+- License: GPLv3+
+
+### libserum
+
+- Upstream: https://github.com/PPUC/libserum
+- License: GPLv2
+
+### libvni
+
+- Upstream: https://github.com/PPUC/libvni
+- License: GPLv2
+
+### libzedmd
+
+- Upstream: https://github.com/PPUC/libzedmd
+- License: GPLv3
 
 ### OpenXR
 
@@ -41,12 +56,12 @@ The version used for these libraries is defined by the SHA of the head commit in
 
 ### PinMame
 
-- Upstream: 
-- License: 
+- Upstream: https://github.com/vpinball/pinmame
+- License: 3-Clause BSD
 
-### SDL / SDL Image / SDL Mixer / SDL TTF
+### SDL / SDL Image / SDL TTF
 
-- Upstream: 
+- Upstream: https://github.com/libsdl-org/SDL, https://github.com/libsdl-org/SDL_image, https://github.com/libsdl-org/SDL_ttf
 - License: 
 
 
@@ -161,7 +176,7 @@ Liberation Sans
 ### monaco-editor
 
 - Upstream: https://github.com/microsoft/monaco-editor
-- Version: 0.52.2
+- Version: 0.55.1
 - License: MIT
 
 ### NVAPI

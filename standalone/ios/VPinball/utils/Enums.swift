@@ -13,6 +13,7 @@ enum Link {
     case libzedmd
     case libserum
     case libdof
+    case libvni
     case thirdparty
 
     var url: URL {
@@ -36,11 +37,13 @@ enum Link {
         case .libdmdutil:
             return URL(string: "https://github.com/vpinball/libdmdutil")!
         case .libzedmd:
-            return URL(string: "https://github.com/ppuc/libzedmd")!
+            return URL(string: "https://github.com/PPUC/libzedmd")!
         case .libserum:
-            return URL(string: "https://github.com/ppuc/libserum_concentrate")!
+            return URL(string: "https://github.com/PPUC/libserum")!
         case .libdof:
             return URL(string: "https://github.com/jsm174/libdof")!
+        case .libvni:
+            return URL(string: "https://github.com/PPUC/libvni")!
         case .thirdparty:
             return URL(string: "https://github.com/vpinball/vpinball/blob/master/third-party/README.md")!
         }
@@ -61,6 +64,7 @@ enum Credit {
     case libzedmd
     case libserum
     case libdof
+    case libvni
     case other
     case artwork
 
@@ -71,6 +75,7 @@ enum Credit {
                                 .libzedmd,
                                 .libserum,
                                 .libdof,
+                                .libvni,
                                 .other,
                                 .artwork]
 
@@ -90,6 +95,8 @@ enum Credit {
             return "libserum"
         case .libdof:
             return "libdof"
+        case .libvni:
+            return "libvni"
         case .other:
             return "Other third party libraries"
         case .artwork:
@@ -108,11 +115,13 @@ enum Credit {
         case .libdmdutil:
             return "mkalkbrenner, jsm174, toxieainc, francisdb, bartdesign, freezy"
         case .libzedmd:
-            return "mkalkbrenner, jsm174, zesinger, bartdesign"
+            return "mkalkbrenner, jsm174, zesinger, Cpasjuste, bartdesign"
         case .libserum:
             return "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc"
         case .libdof:
             return "jsm174, dekay"
+        case .libvni:
+            return "mkalkbrenner, freezy"
         case .artwork:
             return "smillard316 (Table placeholder), adam.co (App icon enhancements), twostraws (Shimmer metal shader)"
         default:
@@ -136,6 +145,8 @@ enum Credit {
             return .libserum
         case .libdof:
             return .libdof
+        case .libvni:
+            return .libvni
         case .other:
             return .thirdparty
         default:
