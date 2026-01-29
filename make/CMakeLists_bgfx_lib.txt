@@ -154,6 +154,7 @@ target_link_libraries(vpinball PUBLIC
    serum
    dmdutil
    pupdmd
+   vni
    sockpp
    dof
    avcodec

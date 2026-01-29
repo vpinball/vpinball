@@ -413,6 +413,8 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/x64/libpupdmd.{dylib,
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/x64/libsockpp.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/macos/x64/libcargs.dylib ../../../third-party/runtime-libs/macos-x64
+cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/x64/libvni.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 
 cp -a libaltsound/libaltsound/build/libaltsound.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
