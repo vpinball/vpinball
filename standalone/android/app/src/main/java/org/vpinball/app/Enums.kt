@@ -15,9 +15,10 @@ enum class Link(val url: String) {
     PINMAME("https://github.com/vpinball/pinmame"),
     LIBALTSOUND("https://github.com/vpinball/libaltsound"),
     LIBDMDUTIL("https://github.com/vpinball/libdmdutil"),
-    LIBZEDMD("https://github.com/ppuc/libzedmd"),
-    LIBSERUM("https://github.com/ppuc/libserum_concentrate"),
+    LIBZEDMD("https://github.com/PPUC/libzedmd"),
+    LIBSERUM("https://github.com/PPUC/libserum"),
     LIBDOF("https://github.com/jsm174/libdof"),
+    LIBVNI("https://github.com/PPUC/libvni"),
     THIRDPARTY("https://github.com/vpinball/vpinball/blob/master/third-party/README.md");
 
     fun open(context: Context) {
@@ -39,9 +40,10 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
     ),
     LIBALTSOUND("libaltsound", "droscoe, jsm174, toxieainc, francisdb", Link.LIBALTSOUND),
     LIBDMDUTIL("libdmdutil", "mkalkbrenner, jsm174, toxieainc, francisdb, bartdesign, freezy", Link.LIBDMDUTIL),
-    LIBZEDMD("libzedmd", "mkalkbrenner, jsm174, zesinger, bartdesign", Link.LIBZEDMD),
+    LIBZEDMD("libzedmd", "mkalkbrenner, jsm174, zesinger, Cpasjuste, bartdesign", Link.LIBZEDMD),
     LIBSERUM("libserum", "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc", Link.LIBSERUM),
     LIBDOF("libdof", "jsm174, dekay", Link.LIBDOF),
+    LIBVNI("libvni", "mkalkbrenner, freezy", Link.LIBVNI),
     ARTWORK("Artwork", "smillard316 (Table placeholder), adam.co (App icon enhancements)"),
     OTHER("Other third party libraries", link = Link.THIRDPARTY),
 }

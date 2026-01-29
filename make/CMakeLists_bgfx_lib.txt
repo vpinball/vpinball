@@ -177,6 +177,7 @@ target_link_libraries(vpinball PUBLIC
    RemoteControlPlugin
    ScoreViewPlugin
    SerumPlugin
+   VNIPlugin
    WMPPlugin
    UpscaleDMDPlugin
 )
