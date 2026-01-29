@@ -1176,18 +1176,20 @@ void Player::SetCabinetAutoFitPos(float pos)
    }
 }
 
-void Player::FireTimers(const unsigned int mode)
+void Player::FireTimers(const int mode)
 {
-   Ball *const old_pactiveball = g_pplayer->m_pactiveball;
-   m_pactiveball = nullptr; // No ball is the active ball for timers/key events
-   
    m_deferTimerChanges = true;
    switch (mode)
    {
-   case 0:    
-      for (const auto& pht : m_vht)
+   case 0:
+   {
+      Ball *const old_pactiveball = g_pplayer->m_pactiveball;
+      m_pactiveball = nullptr; // No ball is the active ball for timers/key events
+      for (const auto &pht : m_vht)
          pht->Update(m_time_msec);
+      m_pactiveball = old_pactiveball;
       break;
+   }
       
    case -1:
       for (const auto &pht : m_vht)
@@ -1216,8 +1218,6 @@ void Player::FireTimers(const unsigned int mode)
       }
    }
    m_changed_vht.clear();
-   
-   m_pactiveball = old_pactiveball;
 }
 
 void Player::TimerStateChange(HitTimer * const hittimer, bool enabled)
