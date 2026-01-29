@@ -87,10 +87,10 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // ITimer
-   STDMETHOD(get_Interval)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(put_Interval)(/*[in]*/ LONG newVal);
-   STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Interval)(/*[out, retval]*/ LONG *pVal) { return get_TimerInterval(pVal); }
+   STDMETHOD(put_Interval)(/*[in]*/ LONG newVal) { return put_TimerInterval(newVal); }
+   STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) { return get_TimerEnabled(pVal); }
+   STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal) { return put_TimerEnabled(newVal); }
 
    TimerData m_d;
 

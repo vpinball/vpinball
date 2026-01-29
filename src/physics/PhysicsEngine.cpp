@@ -610,7 +610,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
          const uint64_t targettime = ((uint64_t)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)g_pplayer->m_fps + 1))
-            g_pplayer->FireSyncTimer(-2);
+            g_pplayer->FireTimers(-2);
          if (basetime < targettime)
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
@@ -649,12 +649,11 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       }
 
       #ifdef ACCURATETIMERS
-      g_pplayer->ApplyDeferredTimerChanges();
-      #if !defined(ENABLE_BGFX)
-      if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING
-         || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
-      #endif
-         g_pplayer->FireTimers(g_pplayer->m_time_msec);
+         #if !defined(ENABLE_BGFX)
+         if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING
+            || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+         #endif
+         g_pplayer->FireTimers(0);
       #endif
 
       UpdateNudge(physics_diff_time);
