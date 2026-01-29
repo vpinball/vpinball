@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -429,16 +431,19 @@ set_target_properties(vpinball PROPERTIES
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/user"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
-
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/freeimage.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/D3DX9_4332.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
+
+if(POST_BUILD_COPY_EXT_LIBS)
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/freeimage.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/D3DX9_4332.dll" "$<TARGET_FILE_DIR:vpinball>"
+   )
+endif()
 
 set(PluginPlatform "windows")
 set(PluginArch "x86")

@@ -88,10 +88,26 @@ if(BUILD_SHARED)
          if (PluginArch STREQUAL "x64")
             add_custom_command(TARGET DMDUtilPlugin POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dmdutil64.dll" "${PLUGINS_DIR}/dmdutil/dmdutil64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb64-1.0.dll" "${PLUGINS_DIR}/dmdutil/libusb64-1.0.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport64.dll" "${PLUGINS_DIR}/dmdutil/libserialport64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/sockpp64.dll" "${PLUGINS_DIR}/dmdutil/sockpp64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/cargs64.dll" "${PLUGINS_DIR}/dmdutil/cargs64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zedmd64.dll" "${PLUGINS_DIR}/dmdutil/zedmd64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum64.dll" "${PLUGINS_DIR}/dmdutil/serum64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pupdmd64.dll" "${PLUGINS_DIR}/dmdutil/pupdmd64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/vni64.dll" "${PLUGINS_DIR}/dmdutil/vni64.dll"
             )
          elseif (PluginArch STREQUAL "x86")
             add_custom_command(TARGET DMDUtilPlugin POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dmdutil.dll" "${PLUGINS_DIR}/dmdutil/dmdutil.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libusb-1.0.dll" "${PLUGINS_DIR}/dmdutil/libusb-1.0.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libserialport.dll" "${PLUGINS_DIR}/dmdutil/libserialport.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/sockpp.dll" "${PLUGINS_DIR}/dmdutil/sockpp.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/cargs.dll" "${PLUGINS_DIR}/dmdutil/cargs.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zedmd.dll" "${PLUGINS_DIR}/dmdutil/zedmd.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/serum.dll" "${PLUGINS_DIR}/dmdutil/serum.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pupdmd.dll" "${PLUGINS_DIR}/dmdutil/pupdmd.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/vni.dll" "${PLUGINS_DIR}/dmdutil/vni.dll"
             )
          endif()
       elseif(PluginPlatform STREQUAL "linux")
@@ -99,6 +115,8 @@ if(BUILD_SHARED)
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdmdutil.so" "${PLUGINS_DIR}/dmdutil/"
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdmdutil.so.*" "${PLUGINS_DIR}/dmdutil/"
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libcargs.so" "${PLUGINS_DIR}/dmdutil/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so" "${PLUGINS_DIR}/dmdutil/"
+            COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libusb-1.0.so.*" "${PLUGINS_DIR}/dmdutil/"
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so" "${PLUGINS_DIR}/dmdutil/"
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so.*" "${PLUGINS_DIR}/dmdutil/"
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libsockpp.so" "${PLUGINS_DIR}/dmdutil/"
