@@ -175,7 +175,7 @@ private:
 
 #pragma region Timers
 public:
-   void FireTimers(const unsigned int mode); // 0 = timer, -1 = frame sync, -2 = game sync
+   void FireTimers(const int mode); // 0 = timer, -1 = frame sync, -2 = game sync
    void TimerStateChange(HitTimer * const hittimer, bool enabled);
 
 private:
