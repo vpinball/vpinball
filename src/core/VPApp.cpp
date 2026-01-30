@@ -1031,6 +1031,24 @@ BOOL VPApp::OnIdle(LONG count)
    return TRUE;
 }
 
+BOOL VPApp::PreTranslateMessage(MSG& msg)
+{
+#ifndef __STANDALONE__
+   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
+   {
+      HWND hwndFocus = GetFocus();
+      TCHAR className[256];
+      if (hwndFocus && GetClassName(hwndFocus, className, 256))
+      {
+         // If it's an Edit control, skip accelerators
+         if (_tcscmp(className, _T("Edit")) == 0)
+            return FALSE;
+      }
+   }
+   return __super::PreTranslateMessage(msg);
+#endif
+}
+
 bool VPApp::StepMsgLoop()
 {
 #ifndef __STANDALONE__

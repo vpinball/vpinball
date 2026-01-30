@@ -19,6 +19,7 @@ public:
 
 protected:
    BOOL OnIdle(LONG count) OVERRIDE;
+   virtual BOOL PreTranslateMessage(MSG& msg);
 
 private:
    string GetPathFromArg(const string& arg, bool setCurrentPath);
