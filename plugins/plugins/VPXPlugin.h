@@ -79,6 +79,9 @@ typedef enum
    VPXDMDStyle_YellowLED,
    VPXDMDStyle_GenPlasma,
    VPXDMDStyle_GenLED,
+   VPXDMDStyle_Pixelated,
+   VPXDMDStyle_Smoothed,
+   VPXDMDStyle_CRT,
 } VPXDisplayRenderStyle;
 
 typedef enum
