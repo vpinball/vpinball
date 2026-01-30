@@ -455,6 +455,7 @@ void LiveUI::RenderUI()
    m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
+   float depthSort = -10000.f;
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
       const ImDrawList * const cmd_list = draw_data->CmdLists[n];
@@ -500,12 +501,12 @@ void LiveUI::RenderUI()
             // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: uploads are supposed to happen in the 'preCmd' list (before any render command)
             // so this should not have any effect, still it does. This definitely needs more investigation...
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
             #endif
 
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
          }
       }
    }
