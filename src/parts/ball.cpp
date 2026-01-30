@@ -8,6 +8,9 @@
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
+#include "plugins/MsgPluginManager.h"
+#include "core/VPXPluginAPIImpl.h"
+
 
 const AntiStretchHelper Ball::m_ash;
 unsigned int Ball::m_nextBallID = 0;
@@ -483,7 +486,8 @@ void Ball::Render(const unsigned int renderMask)
             posl.z -= m_hitBall.m_d.m_radius;
          Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
-         Release();
+         // Release on main thread as Ball methods are not multithreaded
+         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
