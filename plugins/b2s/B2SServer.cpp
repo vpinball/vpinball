@@ -262,13 +262,13 @@ int B2SServer::GetPlayerScore(int player) const
 
 void B2SServer::B2SSetScoreDigit(int digit, int value)
 {
-   m_scoreDigits[digit] = static_cast<float>(value);
+   m_scoreDigits[digit] = value;
 }
 
-float B2SServer::GetScoreDigit(int b2sId) const
+int B2SServer::GetScoreDigit(int b2sId) const
 {
    const auto it = m_scoreDigits.find(b2sId);
-   return it == m_scoreDigits.end() ? 0.f : it->second;
+   return it == m_scoreDigits.end() ? 0 : it->second;
 }
 
 }

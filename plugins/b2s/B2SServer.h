@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <climits>
 #include <future>
-#include <stdint.h>
+#include <cstdint>
 
 #include <unordered_dense.h>
 
@@ -105,7 +105,7 @@ public:
 
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
-   float GetScoreDigit(int digit) const;
+   int GetScoreDigit(int digit) const;
    int GetPlayerScore(int player) const;
 
 private:
@@ -131,7 +131,7 @@ private:
    // Controller state
    ankerl::unordered_dense::map<int, float> m_states;
    ankerl::unordered_dense::map<int, int> m_playerScores;
-   ankerl::unordered_dense::map<int, float> m_scoreDigits;
+   ankerl::unordered_dense::map<int, int> m_scoreDigits;
    const unsigned int m_onGetDevSrcId;
    const unsigned int m_onDevSrcChgId;
    DevSrcId m_devSrc {};
