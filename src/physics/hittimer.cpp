@@ -9,7 +9,7 @@ HitTimer::HitTimer(const string& name, int interval, IFireEvents* handler)
    : m_name(name)
    , m_pfe(handler)
 {
-   SetInterval(m_interval);
+   SetInterval(interval);
 }
 
 void HitTimer::SetInterval(int intervalMs)

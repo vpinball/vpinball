@@ -1230,13 +1230,17 @@ void Player::TimerStateChange(HitTimer * const hittimer, bool enabled)
    else if (enabled)
    { // Add to active timer list
       hittimer->SetInterval(hittimer->GetInterval());
-      if (const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer); it == m_vht.end())
-         m_vht.push_back(hittimer);
+      #ifdef _DEBUG
+      const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer);
+      assert(it == m_vht.end()); // As this must be a state change, so the timer may not be present as it was disabled
+      #endif
+      m_vht.push_back(hittimer);
    }
    else 
    { // Remove from active timer list
-      if (const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer); it != m_vht.end())
-         m_vht.erase(it);
+      const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer);
+      assert(it != m_vht.end()); // As this must be a state change, so the timer may not be missing as it was enabled
+      m_vht.erase(it);
    }
 }
 
