@@ -552,6 +552,12 @@ bool BaseTexture::Save(const string& filepath) const
       {
          uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
          memcpy(bits, m_data, pitch() * m_height);
+         if (m_format == SRGB)
+            for (uint32_t i = 0; i < m_width * m_height; i++)
+               std::swap(bits[i * 3], bits[i * 3 + 2]);
+         else
+            for (uint32_t i = 0; i < m_width * m_height; i++)
+               std::swap(bits[i * 4], bits[i * 4 + 2]);
          FreeImage_FlipVertical(bitmap);
          if (ext == "png")
             success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);

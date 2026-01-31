@@ -10,12 +10,12 @@ $input v_texcoord0
 
 uniform vec4 w_h_height; // w_h_height.xy contains inverse size of source texture (1/w, 1/h)
 
-#ifdef STEREO
-  SAMPLER2DSTEREO(tex_fb_unfiltered, 0); // Framebuffer
-  #define tex_fb tex_fb_unfiltered
-#else
+#ifdef FILTER
   SAMPLER2DSTEREO(tex_fb_filtered,   0); // Framebuffer
   #define tex_fb tex_fb_filtered
+#else
+  SAMPLER2DSTEREO(tex_fb_unfiltered, 0); // Framebuffer
+  #define tex_fb tex_fb_unfiltered
 #endif
 SAMPLER2DSTEREO(tex_ao,              3); // Ambient Occlusion
 
