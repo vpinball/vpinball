@@ -1183,11 +1183,8 @@ void Player::FireTimers(const int mode)
    {
    case 0:
    {
-      Ball *const old_pactiveball = g_pplayer->m_pactiveball;
-      m_pactiveball = nullptr; // No ball is the active ball for timers/key events
       for (const auto &pht : m_vht)
          pht->Update(m_time_msec);
-      m_pactiveball = old_pactiveball;
       break;
    }
       
