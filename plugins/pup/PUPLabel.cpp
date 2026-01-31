@@ -174,42 +174,42 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
       }
       break;
-   
+
    case 2:
    {
       std::lock_guard lock(m_mutex);
       for (auto& [key, value] : json.as_object())
       {
-         if (key == "mt"s)
+         if (key == "mt")
          {
 
          }
-         else if (key == "zback"s)
+         else if (key == "zback")
          {
             if (value.as<int>() == 1)
                m_pScreen->SendLabelToBack(this);
          }
-         else if (key == "ztop"s)
+         else if (key == "ztop")
          {
             if (value.as<int>() == 1)
                m_pScreen->SendLabelToFront(this);
          }
-         else if (key == "size"s)
+         else if (key == "size")
          {
             m_size = static_cast<float>(json["size"s].as<double>());
             m_dirty = true;
          }
-         else if (key == "xpos"s)
+         else if (key == "xpos")
          {
             m_xPos = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "ypos"s)
+         else if (key == "ypos")
          {
             m_yPos = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "fname"s)
+         else if (key == "fname")
          {
             string szFont = value.as_str();
             m_pFont = m_pManager->GetFont(szFont);
@@ -217,136 +217,136 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                LOGE("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
             m_dirty = true;
          }
-         else if (key == "fonth"s)
+         else if (key == "fonth")
          {
             m_size = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "color"s)
+         else if (key == "color")
          {
             m_color = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "xalign"s)
+         else if (key == "xalign")
          {
             m_xAlign = (PUP_LABEL_XALIGN)value.as<int>();
             m_dirty = true;
          }
-         else if (key == "yalign"s)
+         else if (key == "yalign")
          {
             m_yAlign = (PUP_LABEL_YALIGN)value.as<int>();
             m_dirty = true;
          }
-         else if (key == "pagenum"s)
+         else if (key == "pagenum")
          {
             m_pagenum = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "stopani"s)
+         else if (key == "stopani")
          {
             // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
             m_animation = nullptr;
             m_dirty = true;
          }
-         else if (key == "rotate"s)
+         else if (key == "rotate")
          {
             // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
             m_angle = static_cast<float>(value.as<double>() / 10.0);
             m_dirty = true;
          }
-         else if (key == "zoom"s)
+         else if (key == "zoom")
          {
             // 120 for 120% of current height, 80% etc...
             NOT_IMPLEMENTED("zoom not implemented");
             m_dirty = true;
          }
-         else if (key == "alpha"s)
+         else if (key == "alpha")
          {
             // '0-255  255=full, 0=blank
             NOT_IMPLEMENTED("alpha not implemented");
             m_dirty = true;
          }
-         else if (key == "gradstate"s)
+         else if (key == "gradstate")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
             NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
             m_dirty = true;
          }
-         else if (key == "gradcolor"s)
+         else if (key == "gradcolor")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
             NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
             m_dirty = true;
          }
-         else if (key == "grayscale"s)
+         else if (key == "grayscale")
          {
             // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
             NOT_IMPLEMENTED("filter not implemented");
             m_dirty = true;
          }
-         else if (key == "filter"s)
+         else if (key == "filter")
          {
             // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
             NOT_IMPLEMENTED("filter not implemented");
             m_dirty = true;
          }
-         else if (key == "shadowstate"s)
+         else if (key == "shadowstate")
          {
             m_shadowState = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "shadowcolor"s)
+         else if (key == "shadowcolor")
          {
             m_shadowColor = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "shadowtype"s)
+         else if (key == "shadowtype")
          {
             // ST = 1 (Shadow), ST = 2 (Border)
             NOT_IMPLEMENTED("shadowtype not implemented");
             m_dirty = true;
          }
-         else if (key == "xoffset"s)
+         else if (key == "xoffset")
          {
             m_xoffset = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "yoffset"s)
+         else if (key == "yoffset")
          {
             m_yoffset = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "anigif"s)
+         else if (key == "anigif")
          {
             m_anigif = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "width"s)
+         else if (key == "width")
          {
             m_imageWidth = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "height"s)
+         else if (key == "height")
          {
             m_imageHeight = static_cast<float>(value.as<double>());
             m_dirty = true;
          }
-         else if (key == "autow"s)
+         else if (key == "autow")
          {
             NOT_IMPLEMENTED("autow not implemented");
             m_dirty = true;
          }
-         else if (key == "autoh"s)
+         else if (key == "autoh")
          {
             NOT_IMPLEMENTED("autoh not implemented");
             m_dirty = true;
          }
-         else if (key == "outline"s)
+         else if (key == "outline")
          {
             m_outline = value.as<int>();
             m_dirty = true;
          }
-         else if (key == "bold"s)
+         else if (key == "bold")
          {
             m_bold = (value.as<int>() == 1);
             m_dirty = true;
@@ -545,8 +545,8 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       return rs;
    }
 
-   const auto xoffset = static_cast<int>(fontHeight * (offset.x / 100.0f));
-   const auto yoffset = static_cast<int>(fontHeight * (offset.y / 100.0f));
+   const int xoffset = static_cast<int>(fontHeight * (offset.x / 100.0f));
+   const int yoffset = static_cast<int>(fontHeight * (offset.y / 100.0f));
    SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + abs(xoffset), pTextSurface->h + abs(yoffset), SDL_PIXELFORMAT_RGBA32);
    if (!pMergedSurface)
    {

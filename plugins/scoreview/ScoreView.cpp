@@ -71,7 +71,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
    std::ifstream content(path);
    #define CHECK_FIELD(check) if (!(check)) { LOGE("Invalid field '%s: %s' at line %d in ScoreView file %s", key.c_str(), value.c_str(), lineIndex, path.c_str()); return; }
    static const string whitespace = " \t"s;
-   Layout layout { string() };
+   Layout layout = { };
    layout.path = path;
    layout.width = 1920.f;
    layout.height = 1080.f;

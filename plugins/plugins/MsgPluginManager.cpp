@@ -275,7 +275,7 @@ void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double d
    }
    else
    {
-      auto timer = TimerEntry { endpointId, callback, userData, std::chrono::steady_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
+      auto timer = TimerEntry { endpointId, callback, userData, std::chrono::steady_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000.)) };
       pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry& a, const TimerEntry& b) { return a.time < b.time; }), timer);
 #ifdef _MSC_VER
       // Wake up message loop

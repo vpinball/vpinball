@@ -2,7 +2,7 @@
 
 #include "DOFStreamEvent.h"
 
-#include <math.h>
+#include <cmath>
 #include <cstring>
 #include <string>
 using std::string;
@@ -267,7 +267,7 @@ void DOFEventStream::StatePollingThread()
                uint16_t elementState = 0;
                for (int j = 0; j < 16; j++)
                   if (segFrame.frame[j] > 0.5f)
-                     elementState |= 1 << j;
+                     elementState |= 1u << j;
                if (elementState != m_pmLastSegFrame[segDisplayIndex])
                {
                   m_pmLastSegFrame[segDisplayIndex] = elementState;
