@@ -28,5 +28,5 @@ void main()
 
     v_texcoord0 = a_texcoord0;
 
-    v_color0 = sdrScale * vec4(a_normal.rgb, a_position.z);
+    v_color0 = vec4(sdrScale * a_normal.rgb, a_position.z);
 }

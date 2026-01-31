@@ -491,19 +491,19 @@ void LiveUI::RenderUI()
          m_meshBuffers[n]->m_ib->Lock(ib);
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
+
+         #ifdef ENABLE_BGFX
+         // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: uploads are supposed to happen in the 'preCmd' list (before any render command)
+         // so this should not have any effect, still it does. This definitely needs more investigation...
+         m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
+         m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
+         #endif
       }
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
       {
          if (cmd->ElemCount != 0)
          {
-            #ifdef ENABLE_BGFX
-            // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: uploads are supposed to happen in the 'preCmd' list (before any render command)
-            // so this should not have any effect, still it does. This definitely needs more investigation...
-            m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
-            #endif
-
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
