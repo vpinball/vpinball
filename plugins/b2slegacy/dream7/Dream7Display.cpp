@@ -6,31 +6,30 @@
 namespace B2SLegacy {
 
 Dream7Display::Dream7Display(VPXPluginAPI* vpxApi)
-   : Control(vpxApi)
+   : Control(vpxApi),
+     m_hidden{false},
+     m_mirrored{false},
+     //m_szText{},
+     m_scaleMode{ScaleMode_Stretch},
+     m_spacing{20.0f},
+     m_transparentBackground{false},
+     m_type{SegmentNumberType_SevenSegment},
+     m_offColor{RGB(20, 20, 20)},
+     m_lightColor{RGB(254, 90, 50)},
+     m_glassColor{RGB(254, 50, 25)},
+     m_glassColorCenter{RGB(254, 50, 25)},
+     m_glassAlpha{140},
+     m_glassAlphaCenter{255},
+     m_glow{10.0f},
+     m_bulbSize{0.0f, 0.0f, 0.0f, 0.0f},
+     m_wireFrame{false},
+     m_shear{0.1f},
+     m_thickness{16.0f},
+     m_scaleFactor{0.5f},
+     m_offsetWidth{0},
+     m_angle{0.0f},
+     m_pMatrix{nullptr}
 {
-
-   m_hidden = false;
-   m_mirrored = false;
-   m_szText.clear();
-   m_scaleMode = ScaleMode_Stretch;
-   m_spacing = 20.0f;
-   m_transparentBackground = false;
-   m_type = SegmentNumberType_SevenSegment;
-   m_offColor = RGB(20, 20, 20);
-   m_lightColor = RGB(254, 90, 50);
-   m_glassColor = RGB(254, 50, 25);
-   m_glassColorCenter = RGB(254, 50, 25);
-   m_glassAlpha = 140;
-   m_glassAlphaCenter = 255;
-   m_glow = 10.0f;
-   m_bulbSize = { 0.0f, 0.0f, 0.0f, 0.0f };
-   m_wireFrame = false;
-   m_shear = 0.1f;
-   m_thickness = 16.0f;
-   m_scaleFactor = 0.5f;
-   m_offsetWidth = 0;
-   m_angle = 0.0f;
-   m_pMatrix = nullptr;
 }
 
 Dream7Display::~Dream7Display()
@@ -110,7 +109,7 @@ void Dream7Display::SetTransparentBackground(const bool transparentBackground)
 void Dream7Display::SetOffColor(const uint32_t offColor)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetOffColor(offColor);
+      pSegmentNumber->GetStyle().SetOffColor(offColor);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -118,7 +117,7 @@ void Dream7Display::SetOffColor(const uint32_t offColor)
 void Dream7Display::SetLightColor(const uint32_t lightColor)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetLightColor(lightColor);
+      pSegmentNumber->GetStyle().SetLightColor(lightColor);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -126,7 +125,7 @@ void Dream7Display::SetLightColor(const uint32_t lightColor)
 void Dream7Display::SetGlassColor(const uint32_t glassColor)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetGlassColor(glassColor);
+      pSegmentNumber->GetStyle().SetGlassColor(glassColor);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -134,7 +133,7 @@ void Dream7Display::SetGlassColor(const uint32_t glassColor)
 void Dream7Display::SetGlassColorCenter(const uint32_t glassColorCenter)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetGlassColorCenter(glassColorCenter);
+      pSegmentNumber->GetStyle().SetGlassColorCenter(glassColorCenter);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -142,7 +141,7 @@ void Dream7Display::SetGlassColorCenter(const uint32_t glassColorCenter)
 void Dream7Display::SetGlassAlpha(const int glassAlpha)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetGlassAlpha(glassAlpha);
+      pSegmentNumber->GetStyle().SetGlassAlpha(glassAlpha);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -150,7 +149,7 @@ void Dream7Display::SetGlassAlpha(const int glassAlpha)
 void Dream7Display::SetGlassAlphaCenter(const uint8_t glassAlphaCenter)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetGlassAlphaCenter(glassAlphaCenter);
+      pSegmentNumber->GetStyle().SetGlassAlphaCenter(glassAlphaCenter);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -158,7 +157,7 @@ void Dream7Display::SetGlassAlphaCenter(const uint8_t glassAlphaCenter)
 void Dream7Display::SetGlow(const float glow)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetGlow(glow);
+      pSegmentNumber->GetStyle().SetGlow(glow);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -166,7 +165,7 @@ void Dream7Display::SetGlow(const float glow)
 void Dream7Display::SetBulbSize(const SDL_FRect& bulbSize)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetBulbSize(bulbSize);
+      pSegmentNumber->GetStyle().SetBulbSize(bulbSize);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -174,7 +173,7 @@ void Dream7Display::SetBulbSize(const SDL_FRect& bulbSize)
 void Dream7Display::SetWireFrame(const bool wireFrame)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetWireFrame(wireFrame);
+      pSegmentNumber->GetStyle().SetWireFrame(wireFrame);
       pSegmentNumber->AssignStyle();
    }
 }

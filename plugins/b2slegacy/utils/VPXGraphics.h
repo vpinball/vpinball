@@ -25,8 +25,8 @@ public:
    void FillRectangle(const SDL_Rect& rect);
    void TranslateTransform(int x, int y);
    void ResetTransform();
-   Matrix* GetTransform() const { return m_pModelMatrix; }
-   void SetTransform(Matrix* pModelMatrix);
+   const Matrix& GetTransform() const { return m_pModelMatrix; }
+   void SetTransform(const Matrix& pModelMatrix);
    VPXTexture GetTexture();
    void SyncTexture();
    void DrawToContext(VPXRenderContext2D* ctx, int left, int top);
@@ -55,7 +55,7 @@ private:
    int m_bufferSize;
    int m_translateX;
    int m_translateY;
-   Matrix* m_pModelMatrix;
+   Matrix m_pModelMatrix;
    uint32_t m_color;
    uint8_t m_alpha;
    bool m_needsTextureUpdate;

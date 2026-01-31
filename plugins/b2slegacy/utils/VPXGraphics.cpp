@@ -39,13 +39,11 @@ VPXGraphics::VPXGraphics(VPXPluginAPI* vpxApi, int width, int height)
      m_translateY(0),
      m_color(RGB(0, 0, 0)),
      m_alpha(255),
-     m_needsTextureUpdate(true)
+     m_needsTextureUpdate(true),
+     m_bufferSize(width * height * 4)
 {
-   m_bufferSize = width * height * 4;
    m_pixelBuffer = new uint8_t[m_bufferSize];
    memset(m_pixelBuffer, 0, m_bufferSize);
-
-   m_pModelMatrix = new Matrix();
 }
 
 VPXGraphics::~VPXGraphics()
@@ -53,7 +51,6 @@ VPXGraphics::~VPXGraphics()
    if (m_texture)
       m_vpxApi->DeleteTexture(m_texture);
    delete[] m_pixelBuffer;
-   delete m_pModelMatrix;
 }
 
 void VPXGraphics::Clear()
@@ -90,25 +87,23 @@ void VPXGraphics::DrawPath(GraphicsPath* pPath)
 
 void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
 {
-   int n = (int)points.size();
-   if (n < 3) return;
+   const int ps = static_cast<int>(points.size());
+   if (ps < 3) return;
 
-   double* const __restrict vx = new double[n];
-   double* const __restrict vy = new double[n];
+   double* const __restrict vx = new double[ps];
+   double* const __restrict vy = new double[ps];
 
    // Transform points and store in arrays
    int i = 0;
    for (const auto &point : points) {
       float x = point.x;
       float y = point.y;
-      if (m_pModelMatrix)
-         m_pModelMatrix->TransformPoint(x, y);
+      m_pModelMatrix.TransformPoint(x, y);
       vx[i] = static_cast<double>(x) + m_translateX;
-      vy[i++] = static_cast<double>(y) + m_translateY;
+      vy[i] = static_cast<double>(y) + m_translateY;
+      i++;
    }
 
-   int xi, yi;
-   double y0, y1;
    double minx = 99999.0;
    double maxx = -99999.0;
    double prec = 0.00001;
@@ -117,7 +112,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
    uint8_t b = GetBValue(m_color);
    uint8_t a = m_alpha;
 
-   for (i = 0; i < n; i++) {
+   for (i = 0; i < ps; i++) {
       double x = vx[i];
       double y = std::abs(vy[i]);
       if (x < minx) minx = x;
@@ -126,21 +121,22 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
    }
    minx = std::floor(minx);
    maxx = std::floor(maxx);
-   prec = std::floor(std::pow(2,19) / prec);
+   static const/*expr*/ double p219 = std::pow(2,19);
+   prec = std::floor(p219 / prec);
 
    float* const __restrict list = new float[MAX_GRAPHICS_POLYSIZE];
 
-   yi = 0;
-   y0 = std::floor(vy[n - 1] * prec) / prec;
-   y1 = std::floor(vy[0] * prec) / prec;
-   for (i = 1; i <= n; i++) {
+   int yi = 0;
+   double y0 = std::floor(vy[ps - 1] * prec) / prec;
+   double y1 = std::floor(vy[0] * prec) / prec;
+   for (i = 1; i <= ps; i++) {
       if (yi > MAX_GRAPHICS_POLYSIZE - 4) {
          delete[] list;
          delete[] vx;
          delete[] vy;
          return;
       }
-      double y2 = std::floor(vy[i % n] * prec) / prec;
+      double y2 = std::floor(vy[i == ps ? 0 : i] * prec) / prec;
       if (((y1 < y2) - (y1 > y2)) == ((y0 < y1) - (y0 > y1))) {
          list[yi++] = -100002.0f;
          list[yi++] = (float)y1;
@@ -160,18 +156,17 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
       y0 = y1;
       y1 = y2;
    }
-   xi = yi;
+   const int xi = yi;
 
    qsort (list, yi / 2, sizeof(float) * 2, GraphicsCompareFloat);
 
-   for (i = 1; i <= n; i++) {
-      double x, y;
-      double d = 0.5 / prec;
+   for (i = 1; i <= ps; i++) {
+      const double d = 0.5 / prec;
 
       double x1 = vx[i - 1];
       y1 = floor(vy[i - 1] * prec) / prec;
-      double x2 = vx[i % n];
-      double y2 = std::floor(vy[i % n] * prec) / prec;
+      double x2 = vx[i == ps ? 0 : i];
+      double y2 = std::floor(vy[i == ps ? 0 : i] * prec) / prec;
 
       if (y2 < y1) {
          double tmp1 = x1; x1 = x2; x2 = tmp1;
@@ -181,7 +176,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
          y0 = (x2 - x1) / (y2 - y1);
 
       for (int j = 1; j < xi; j += 4) {
-         y = list[j];
+         double y = list[j];
          if (((y + d) <= y1) || (y == list[j + 4]))
             continue;
          if ((y -= d) >= y2)
@@ -203,9 +198,9 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
          }
       }
 
-      y = std::floor(y1) + 1.0;
+      double y = std::floor(y1) + 1.0;
       while (y <= y2) {
-         x = x1 + y0 * (y - y1);
+         const double x = x1 + y0 * (y - y1);
          if (yi > MAX_GRAPHICS_POLYSIZE - 2) {
             delete[] list;
             delete[] vx;
@@ -218,11 +213,14 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
       }
    }
 
+   delete[] vx;
+   delete[] vy;
+
    qsort (list, yi / 2, sizeof(float) * 2, GraphicsCompareFloat);
 
    float* const __restrict strip = new float[(size_t)(maxx - minx) + 2];
    memset(strip, 0, ((size_t)(maxx - minx) + 2) * sizeof(float));
-   n = yi;
+   const int n = yi;
    yi = (int)list[1];
    int j = 0;
    for (i = 0; i < n - 7; i += 4) {
@@ -241,7 +239,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
          if (x1 > x2) { float tmp = x1; x1 = x2; x2 = tmp; }
          if (x3 > x4) { float tmp = x3; x3 = x4; x4 = tmp; }
 
-         for ( xi = (int)(x1 - minx); xi <= (int)(x4 - minx); xi++ ) {
+         for (int xi = (int)(x1 - minx); xi <= (int)(x4 - minx); xi++) {
             float u, v;
             float x = (float)(minx + xi);
             if (x < x2)  u = (x - x1 + 1.f) / (x2 - x1 + 1.f); else u = 1.0f;
@@ -252,7 +250,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
       }
 
       if ((yi == (int)(list[i + 5] - 1.0f)) || (i == n - 8)) {
-         for (xi = 0; xi <= maxx - minx; xi++) {
+         for (int xi = 0; xi <= maxx - minx; xi++) {
             if (strip[xi] != 0.0f) {
                if (strip[xi] >= 0.996f) {
                   // Fill solid pixels
@@ -276,13 +274,12 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
    }
    delete[] list;
    delete[] strip;
-   delete[] vx;
-   delete[] vy;
 }
 
 void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
 {
-   if (points.size() < 2)
+   const int ps = static_cast<int>(points.size());
+   if (ps < 2)
       return;
 
    uint8_t r = GetRValue(m_color);
@@ -290,18 +287,16 @@ void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
    uint8_t b = GetBValue(m_color);
    uint8_t a = m_alpha;
 
-   for (size_t i = 0; i < points.size(); i++) {
-      size_t nextIndex = (i + 1) % points.size();
+   for (int i = 0; i < ps; i++) {
+      const int nextIndex = (i + 1) == ps ? 0 : (i+1);
 
       float x1 = points[i].x;
       float y1 = points[i].y;
       float x2 = points[nextIndex].x;
       float y2 = points[nextIndex].y;
 
-      if (m_pModelMatrix) {
-         m_pModelMatrix->TransformPoint(x1, y1);
-         m_pModelMatrix->TransformPoint(x2, y2);
-      }
+      m_pModelMatrix.TransformPoint(x1, y1);
+      m_pModelMatrix.TransformPoint(x2, y2);
 
       x1 += (float)m_translateX;
       y1 += (float)m_translateY;
@@ -403,15 +398,14 @@ void VPXGraphics::TranslateTransform(int x, int y)
 
 void VPXGraphics::ResetTransform()
 {
-   m_pModelMatrix->Reset();
+   m_pModelMatrix.Reset();
    m_translateX = 0;
    m_translateY = 0;
 }
 
-void VPXGraphics::SetTransform(Matrix* pModelMatrix)
+void VPXGraphics::SetTransform(const Matrix& pModelMatrix)
 {
-   delete m_pModelMatrix;
-   m_pModelMatrix = pModelMatrix->Clone();
+   m_pModelMatrix = pModelMatrix;
 }
 
 void VPXGraphics::FillRectangle(const SDL_Rect& rect)
