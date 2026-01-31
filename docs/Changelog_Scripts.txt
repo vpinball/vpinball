@@ -1,7 +1,8 @@
-New in 3.62 (Update by mfuegemann, JP)
+New in 3.62 (Update by mfuegemann, JP, Mike Welsh)
 - Added wpc_ph.vbs (based on wpc.vbs)
 - Corrected 2 switches in nuova.vbs
 - Added playbar.vbs
+- Added coin door key to Sega/Stern WhiteStar (sega(2).vbs)
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
