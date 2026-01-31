@@ -1767,8 +1767,14 @@ void Player::MultithreadedGameLoop()
       }
 #else
       // Android and iOS use SDL main callbacks and use SDL_AppIterate
-      break;
+      return;
 #endif
+   }
+
+   // Flush any pending frame
+   {
+      std::lock_guard lock(m_renderer->m_renderDevice->m_frameMutex);
+      FinishFrame();
    }
 #endif
 }
