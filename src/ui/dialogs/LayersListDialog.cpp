@@ -318,21 +318,21 @@ void LayerTreeView::Update()
 
    // Build new content list (in the end, a tree is a hierarchically displayed list)
    vector<TreeEntry> newContent;
-   const string filter = m_isCaseSensitiveFilter ? lowerCase(m_filter) : m_filter;
+   const string filter = m_isCaseSensitiveFilter ? m_filter : lowerCase(m_filter);
    for (const auto& editable : m_activeTable->m_vedit)
    {
       const string name = editable->GetName();
       if (!filter.empty() && editable->GetItemType() != eItemPartGroup)
       {
-         if (!m_isCaseSensitiveFilter)
+         if (m_isCaseSensitiveFilter)
          {
-            const string objName { lowerCase(name) };
-            if (objName.find(filter) == string::npos)
+            if (name.find(filter) == string::npos)
                continue;
          }
          else
          {
-            if (name.find(filter) == string::npos)
+            const string objName { lowerCase(name) };
+            if (objName.find(filter) == string::npos)
                continue;
          }
       }
