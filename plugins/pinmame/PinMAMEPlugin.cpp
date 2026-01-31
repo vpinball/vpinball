@@ -426,7 +426,9 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         pinmamePath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame");
+         pinmamePath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame" / "roms");
+         if (!pinmamePath.empty())
+            pinmamePath = pinmamePath.parent_path();
       }
 
       // Defaults to the global setting
