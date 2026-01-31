@@ -121,15 +121,15 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    g_pvp->LoadFileName(GetAssetPath() + tablePath, false);
    struct CaptureState
    {
-      string tmpScreenshotPath;
+      std::filesystem::path tmpScreenshotPath;
       bool done;
    } state = { GetAssetPath() + screenshotPath, false };
    msgpi_msg_callback onPrepareFrame = [](const unsigned int msgId, void* context, void* msgData)
    {
       CaptureState* state = reinterpret_cast<CaptureState*>(context);
       if (g_pplayer->m_overall_frames == 25)
-         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(g_pplayer->m_playfieldWnd, state->tmpScreenshotPath,
-            [state](VPX::Window*, bool success)
+         g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot({ g_pplayer->m_playfieldWnd }, { state->tmpScreenshotPath },
+            [state](bool success)
             {
                #ifdef ENABLE_BGFX
                lastBgfxRenderer = bgfx::getRendererType();
@@ -180,7 +180,7 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
 {
    // Initialize the doctest framework
    doctest::Context context;
-   context.setOption("no-breaks", true); // Disable breaks in the test output
+   context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
    context.setOption("out", (GetAssetPath() + "test_results.txt").c_str());
    context.applyCommandLine(0, nullptr); // TODO Apply command line arguments if any
 
