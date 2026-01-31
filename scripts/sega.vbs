@@ -22,20 +22,21 @@ End Sub
 ' Flipper Solenoid
 Const GameOnSolenoid = 15
 ' Cabinet switches
-Const swBlack        =  0 'DED 8
-Const swGreen        = -1 'DED 7
-Const swRed          = -2 'DED 6
-Const swStartButton  = 54
-Const swTilt         = 56
-Const swSlamTilt     = 55
-Const swCoin3        =  4
-Const swCoin1        =  5
-Const swCoin2        =  6
+Const swBlack         =  0 'DED 8
+Const swGreen         = -1 'DED 7
+Const swRed           = -2 'DED 6
+Const swMemoryProtect = -3 'Coin door memory protect switch
+Const swStartButton   = 54
+Const swTilt          = 56
+Const swSlamTilt      = 55
+Const swCoin3         =  4
+Const swCoin1         =  5
+Const swCoin2         =  6
 
-Const swLRFlip       = 82
-Const swLLFlip       = 84
-Const swURFlip       = 81
-Const swULFlip       = 83
+Const swLRFlip        = 82
+Const swLLFlip        = 84
+Const swURFlip        = 81
+Const swULFlip        = 83
 
 ' Help Window
 vpmSystemHelp = "Sega/Stern Whitestar keys:" & vbNewLine &_
@@ -45,7 +46,8 @@ vpmSystemHelp = "Sega/Stern Whitestar keys:" & vbNewLine &_
   vpmKeyName(keyBlack)        & vbTab & "Black"          & vbNewLine &_
   vpmKeyName(keyGreen)        & vbTab & "Green"          & vbNewLine &_
   vpmKeyName(keyRed)          & vbTab & "Red"            & vbNewLine &_
-  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
+  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"      & vbNewLine &_
+  vpmKeyName(keyCoinDoor)     & vbTab & "Open/Close Coin Door"
 
 ' Dip Switch / Options Menu
 Private Sub segaShowDips
@@ -94,6 +96,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = True
 			Case keyRed          .Switch(swRed)          = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
+			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swMemoryProtect) = Not .Switch(swMemoryProtect) Else .Switch(swMemoryProtect) = Not inverseKeyCoinDoor
 			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
@@ -128,6 +131,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = False
 			Case keyRed          .Switch(swRed)          = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = False
+			Case keyCoinDoor	 If toggleKeyCoinDoor = False Then .Switch(swMemoryProtect) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
