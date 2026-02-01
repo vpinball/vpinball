@@ -62,7 +62,7 @@ void Group::Draw(Flex::SurfaceGraphics* pGraphics)
    }
 }
 
-Actor* Group::Get(const string& name)
+Actor* Group::Get(const string& name, bool logMissing)
 {
    if (GetName() == name)
       return this;
@@ -78,19 +78,14 @@ Actor* Group::Get(const string& name)
          }
          if (child->GetType() == Actor::AT_Group)
          {
-            Group* group = static_cast<Group*>(child);
-            Actor* found = group->Get(name);
-            if (found)
-            {
-               found->AddRef();
+            if (Actor* found = static_cast<Group*>(child)->Get(name, logMissing); found)
                return found;
-            }
          }
       }
    }
    else
    {
-      size_t pos = name.find('/');
+      const size_t pos = name.find('/');
       if (pos == string::npos)
       {
          // direct child node search 'xx'
@@ -109,8 +104,7 @@ Actor* Group::Get(const string& name)
          Group* root = this;
          while (root->GetParent() != nullptr)
             root = root->GetParent();
-         Actor* found = root->Get(name.substr(1));
-         return found;
+         return root->Get(name.substr(1), logMissing);
       }
       else
       {
@@ -119,19 +113,22 @@ Actor* Group::Get(const string& name)
          for (Actor* child : m_children)
          {
             if ((child->GetType() == Actor::AT_Group) && (child->GetName() == groupName))
-               return static_cast<Group*>(child)->Get(name.substr(pos + 1));
+               return static_cast<Group*>(child)->Get(name.substr(pos + 1), logMissing);
          }
       }
    }
 
-   LOGW("Actor %s not found in children of %s", name.c_str(), GetName().c_str());
+   if (logMissing)
+   {
+      LOGW("Actor %s not found in children of %s", name.c_str(), GetName().c_str());
+   }
 
-   return NULL;
+   return nullptr;
 }
 
 bool Group::HasChild(const string &name)
 {
-   Actor* child = Get(name);
+   const Actor* child = Get(name, false);
    if (child == nullptr)
       return false;
    child->Release();
