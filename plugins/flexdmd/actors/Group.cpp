@@ -208,7 +208,7 @@ void Group::RemoveActor(Actor* actor)
 
 void Group::RemoveAll()
 {
-   LOGD("Remove all children: %s", GetName().c_str());
+   //LOGD("Remove all children: %s", GetName().c_str());
    for (Actor* child : m_children)
    {
       child->SetParent(nullptr);

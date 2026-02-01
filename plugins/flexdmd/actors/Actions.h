@@ -112,7 +112,7 @@ public:
 
    bool Update(float secondsElapsed) override
    {
-      m_time += m_secondsToWait;
+      m_time += secondsElapsed;
       if (m_time >= m_secondsToWait && m_pAction->Update(secondsElapsed))
       {
          // Prepare for restart
