@@ -44,11 +44,7 @@ string Controller::GetVersion() const
    int nVersionNo2 = 00;
    int nVersionNo3 = 00;
    char szVersion[8 + 1];
-   #ifdef _MSC_VER
    snprintf(szVersion, sizeof(szVersion), "%02i%02i%02i%02i", nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
-   #else
-   snprintf(szVersion, sizeof(szVersion), "%02i%02i%02i%02i", nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
-   #endif
    return string(szVersion);
 }
 

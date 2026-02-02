@@ -12,11 +12,16 @@
 
    Added GetAllStreams, reworked datatypes
    Copyright 2013 Felix Gorny from Bitplane
-   
+
    More datatype changes to allow for 32 and 64 bit code, some fixes involving incremental updates, flushing
    Copyright 2013 <srbaum@gmail.com>
-   
-   Version: 0.5.3
+
+   Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
+   Note that things can still fail on 32bit systems for large files, but it should at least assert now
+   Also some minor optimizations
+   2026 VPX team
+
+   Version: 0.5.3 VPX
 
    Redistribution and use in source and binary forms, with or without 
    modification, are permitted provided that the following conditions 
@@ -90,7 +95,7 @@ class StorageIO;
 class Stream;
 class StreamIO;
 
-class Storage
+class Storage final
 {
   friend class Stream;
   friend class StreamOut;
@@ -123,7 +128,7 @@ public:
   /**
    * Returns the error code of last operation.
    **/
-  int result();
+  int result() const;
 
   /**
    * Finds all stream and directories in given path.
@@ -143,7 +148,7 @@ public:
   /**
    * Returns true if storage can be modified.
    */
-  bool isWriteable();
+  bool isWriteable() const;
 
   /**
    * Deletes a specified stream or directory. If directory, it will
@@ -159,20 +164,20 @@ public:
 
   void GetStats(uint64 *pEntries, uint64 *pUnusedEntries,
       uint64 *pBigBlocks, uint64 *pUnusedBigBlocks,
-      uint64 *pSmallBlocks, uint64 *pUnusedSmallBlocks);
+      uint64 *pSmallBlocks, uint64 *pUnusedSmallBlocks) const;
 
   std::list<std::string> GetAllStreams( const std::string& storageName );
 
 private:
   StorageIO* io;
-  
+
   // no copy or assign
   Storage( const Storage& );
   Storage& operator=( const Storage& );
 
 };
 
-class Stream
+class Stream final
 {
   friend class Storage;
   friend class StorageIO;
@@ -193,7 +198,7 @@ public:
   /**
    * Returns the full stream name.
    */
-  std::string fullName(); 
+  std::string fullName() const; 
   
   /**
    * Returns the stream size.
@@ -210,7 +215,7 @@ public:
   /**
    * Returns the current read/write position.
    **/
-  uint64 tell();
+  uint64 tell() const;
 
   /**
    * Sets the read/write position.
@@ -240,19 +245,19 @@ public:
   /**
    * Returns true if the read/write position is past the file.
    **/
-  bool eof();
+  bool eof() const;
   
   /**
    * Returns true whenever error occurs.
    **/
-  bool fail();
+  bool fail() const;
 
 private:
   StreamIO* io;
 
   // no copy or assign
   Stream( const Stream& );
-  Stream& operator=( const Stream& );    
+  Stream& operator=( const Stream& );
 };
 
 }

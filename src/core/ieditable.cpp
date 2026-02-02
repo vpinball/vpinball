@@ -9,6 +9,7 @@ IEditable::IEditable()
 
 IEditable::~IEditable()
 {
+   assert(m_phittimer == nullptr); // If TimerRelease was not called, then player will hold an invalid reference
    SetPartGroup(nullptr);
 }
 
@@ -91,7 +92,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
    const BOOL val = VBTOF(newVal);
 
    if (val != *pte && m_phittimer)
-      g_pplayer->DeferTimerStateChange(m_phittimer, !!val);
+      g_pplayer->TimerStateChange(m_phittimer.get(), !!val);
 
    *pte = val;
 
@@ -100,17 +101,14 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
    return S_OK;
 }
 
-HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
+HRESULT IEditable::put_TimerInterval(long newVal, int *pTimerInterval)
 {
    STARTUNDO
 
-   *pti = newVal;
+   *pTimerInterval = newVal;
 
    if (m_phittimer)
-   {
-      m_phittimer->m_interval = newVal >= 0 ? max(newVal, (long)MAX_TIMER_MSEC_INTERVAL) : max(-2l, newVal);
-      m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-   }
+      m_phittimer->SetInterval(newVal);
 
    STOPUNDO
 

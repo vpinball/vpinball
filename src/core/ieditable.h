@@ -166,9 +166,9 @@ public:
          if (pcol->m_stopSingleEvents) \
             m_singleEvents = false; \
       } \
-      IFireEvents * fe = GetIFireEvents(); if (fe) { m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, fe); if (m_d.m_tdr.m_TimerEnabled) pvht.push_back(m_phittimer); } \
+      IFireEvents * fe = GetIFireEvents(); if (fe) { m_phittimer = std::make_unique<HitTimer>(GetName(), m_d.m_tdr.m_TimerInterval, fe); if (m_d.m_tdr.m_TimerEnabled) pvht.push_back(m_phittimer.get()); } \
 	} \
-	virtual void TimerRelease() { delete m_phittimer; m_phittimer = nullptr; } \
+	virtual void TimerRelease() { m_phittimer = nullptr; } \
 	virtual void PhysicSetup(PhysicsEngine* physics, const bool isUI); \
 	virtual void PhysicRelease(PhysicsEngine* physics, const bool isUI); \
 	/* IRenderable implementation */ \
@@ -305,7 +305,7 @@ private:
 
 #pragma region Script events
 public:
-   HitTimer *m_phittimer = nullptr; // timer event defined when playing (between TimerSetup and TimerRelease)
+   std::unique_ptr<HitTimer> m_phittimer; // timer event defined when playing (between TimerSetup and TimerRelease)
 
    // In game filtered copy of m_vCollection/m_viCollection for slightly faster event dispatching
    vector<Collection *> m_vEventCollection;

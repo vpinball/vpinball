@@ -315,6 +315,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hittimer.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -2797,6 +2800,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa_edge.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_faaa.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
@@ -2900,6 +2906,9 @@
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FAAA.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.glfx">

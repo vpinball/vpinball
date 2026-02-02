@@ -4,7 +4,7 @@
 
 #include "simple-uri-parser/uri_parser.h"
 
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <charconv>
 using std::string;

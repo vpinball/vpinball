@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "B2SBaseBox.h"
-#include "../utils/VPXGraphics.h"
 
 namespace B2SLegacy {
 
@@ -31,8 +29,6 @@ private:
    eLEDType m_ledType;
    int m_value;
    string m_text;
-
-   std::unique_ptr<VPXGraphics> m_pGraphics;
 };
 
 }

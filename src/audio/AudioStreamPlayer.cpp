@@ -116,7 +116,7 @@ void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *str
    else if (nowTS > playedTS)
    {
       uint64_t deltaTS = nowTS - playedTS;
-      if (nQueueSize > 1000 * nBytePerSec && deltaTS > 1000)
+      if (nQueueSize > nBytePerSec && deltaTS > 1000)
       {
          // We are really late, just resync on next stream update (don't change throttling to avoid adding some glitches to the already glitched stream)
          throttle = me->m_throttling;

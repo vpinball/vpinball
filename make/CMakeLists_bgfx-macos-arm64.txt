@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
+option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
 
 message(STATUS "ENABLE_SANITIZERS: ${ENABLE_SANITIZERS}")
 

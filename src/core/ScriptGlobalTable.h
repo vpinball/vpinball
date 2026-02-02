@@ -73,6 +73,10 @@ public:
    STDMETHOD(get_DisableStaticPrerendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableStaticPrerendering)(/*[in]*/ VARIANT_BOOL newVal);
 
+private:
+   bool m_scriptDisableStaticPrerendering = false;
+
+public:
    STDMETHOD(get_WindowWidth)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_WindowHeight)(/*[out, retval]*/ int *pVal);
 

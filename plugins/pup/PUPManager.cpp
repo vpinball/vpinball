@@ -302,7 +302,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
          case 4: parent = std::move(PUPScreen::CreateFromCSV(this, R"(4,"Music","",,0,MusicOnly,0,)"s, m_playlists)); break;
          case 5: parent = std::move(PUPScreen::CreateFromCSV(this, R"(5,"FullDMD 16x9","",,0,ForceBack,0,)"s, m_playlists)); break;
          case 6: parent = std::move(PUPScreen::CreateFromCSV(this, R"(6,"Backglass 4x3-5x4","",,0,ForceBack,0,)"s, m_playlists)); break;
-         default: parent = std::move(PUPScreen::CreateFromCSV(this, "("s + std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
+         default: parent = std::move(PUPScreen::CreateFromCSV(this, '(' + std::to_string(pCustomPos->GetSourceScreen()) + R"(,"","",,0,ForceBack,0,)"s, m_playlists)); break;
          }
          if (parent)
          {
@@ -368,12 +368,12 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
    m_fonts.push_back(pFont);
 
-   const string szFamilyName = string(TTF_GetFontFamilyName(pFont));
+   const string szFamilyName = TTF_GetFontFamilyName(pFont);
 
    const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, ' '));
    m_fontMap[szNormalizedFamilyName] = pFont;
 
-   string szStyleName = string(TTF_GetFontStyleName(pFont));
+   const string szStyleName = TTF_GetFontStyleName(pFont);
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
@@ -458,9 +458,9 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
             constexpr int radius = 1;
             for (int dx = 1 - radius; dx <= radius; dx++)
             {
+               const int px = x * 2 + dx;
                for (int dy = 1 - radius; dy <= radius; dy++)
                {
-                  const int px = x * 2 + dx;
                   const int py = y * 2 + dy;
                   const float weight = radius * radius - fabsf((float)dx - 0.5f) * fabsf((float)dy - 0.5f);
                   if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < src.width //
@@ -599,7 +599,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       if (pass == 0 && screen->HasUnderlay())
          renderLog << screen->GetScreenNum() << "u ";
       else if (pass == 1 && (!screen->IsPop() || screen->IsMainPlaying()))
-         renderLog << screen->GetScreenNum() << " ";
+         renderLog << screen->GetScreenNum() << ' ';
       else if (pass == 2 && screen->HasOverlay())
          renderLog << screen->GetScreenNum() << "o ";
    };
@@ -632,7 +632,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
             }
          });
    #if LOG_RENDER
-   renderLog << "]";
+   renderLog << ']';
    LOGD("Render: %s", renderLog.str().c_str());
    #endif
    std::ranges::for_each(screens,

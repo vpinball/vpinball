@@ -1314,8 +1314,7 @@ HRESULT Surface::InitPostLoad()
 
 void Surface::UpdateStatusBarInfo()
 {
-   char tbuf[128];
-   sprintf_s(tbuf, sizeof(tbuf), "TopHeight: %.03f | BottomHeight: %0.3f", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
+   const string tbuf = std::format("TopHeight: {:.03f} | BottomHeight: {:.03f}", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 

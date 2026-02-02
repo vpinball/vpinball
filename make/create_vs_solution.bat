@@ -252,6 +252,18 @@ if "%vsv%" == "2026" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-vni.vcxproj" "../.build/vsproject/plugin-vni.vcxproj"
+copy /V /Y "plugin-vni.vcxproj.filters" "../.build/vsproject/plugin-vni.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-vni.vcxproj" /out:"../.build/vsproject/plugin-vni.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-vni.vcxproj" /out:"../.build/vsproject/plugin-vni.vcxproj"
+)
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-wmp.vcxproj" "../.build/vsproject/plugin-wmp.vcxproj"
 copy /V /Y "plugin-wmp.vcxproj.filters" "../.build/vsproject/plugin-wmp.vcxproj.filters"
 

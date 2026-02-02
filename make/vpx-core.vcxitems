@@ -868,6 +868,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitflipper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hittimer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp" />

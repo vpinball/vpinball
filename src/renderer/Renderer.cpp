@@ -3028,11 +3028,22 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha,
-      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
-      nullptr, // No parallax
-      vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
-      vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+   if (style == VPXDMDStyle_Pixelated || style == VPXDMDStyle_Smoothed || style == VPXDMDStyle_CRT)
+   {
+      g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+         isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
+         nullptr, // No parallax
+         vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
+         vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+   }
+   else
+   {
+      g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+         isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
+         nullptr, // No parallax
+         vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
+         vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+   }
    const float vx1 = srcX / ctx->srcWidth;
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;

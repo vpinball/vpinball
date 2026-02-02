@@ -763,7 +763,7 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             int v = item->GetIntValue();
             const auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-            if (((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) || (Settings::m_propPlayer_PlayfieldHeight.index == id.value().index)) && !m_player->m_liveUI->m_inGameUI.IsFlipperNav())
+            if (id.has_value() && (((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) || (Settings::m_propPlayer_PlayfieldHeight.index == id.value().index)) && !m_player->m_liveUI->m_inGameUI.IsFlipperNav()))
             {
                // Special handling for editing main window size as mouse interaction would break (since the control is moved/resized while interacted)
                const float butWidth = ImGui::CalcTextSize(ICON_FK_ARROWS_H, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;

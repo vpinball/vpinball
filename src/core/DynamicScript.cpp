@@ -267,7 +267,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
          return false;
          break;
       case TypeID::TYPEID_BOOL:   CHANGE_TYPE(VT_BOOL); sv.vBool = (V_BOOL(&v) == VARIANT_TRUE) ? 1 : 0; break;
-      case TypeID::TYPEID_INT:    CHANGE_TYPE(VT_INT);  sv.vInt64 = V_INT(&v); break;
+      case TypeID::TYPEID_INT:    CHANGE_TYPE(VT_INT);  sv.vInt = V_INT(&v); break;
       case TypeID::TYPEID_UINT:   CHANGE_TYPE(VT_UINT); sv.vUInt = V_UINT(&v); break;
       case TypeID::TYPEID_FLOAT:  CHANGE_TYPE(VT_R4);   sv.vFloat = V_R4(&v); break;
       case TypeID::TYPEID_DOUBLE: CHANGE_TYPE(VT_R8);   sv.vDouble = V_R8(&v); break;
@@ -426,12 +426,14 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          V_BOOL(cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
          break;
       case TypeID::TYPEID_INT:
-         V_VT(cv) = VT_INT;
-         V_I4(cv) = sv.vInt;
+         // VBS does not support unsized integers
+         V_VT(cv) = VT_I4;
+         V_I4(cv) = sv.vInt32;
          break;
       case TypeID::TYPEID_UINT:
-         V_VT(cv) = VT_UINT;
-         V_UI4(cv) = sv.vUInt;
+         // VBS does not support unsized integers
+         V_VT(cv) = VT_UI4;
+         V_UI4(cv) = sv.vUInt32;
          break;
       case TypeID::TYPEID_INT8:
          V_VT(cv) = VT_I1;

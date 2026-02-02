@@ -994,7 +994,13 @@ STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVa
    if (g_pplayer == nullptr)
       return E_FAIL;
 
-   g_pplayer->m_renderer->DisableStaticPrePass(VBTOb(newVal));
+   // Renderer disable is refCounted while script is binary
+   if (m_scriptDisableStaticPrerendering != VBTOb(newVal))
+   {
+      m_scriptDisableStaticPrerendering = VBTOb(newVal);
+      g_pplayer->m_renderer->DisableStaticPrePass(VBTOb(newVal));
+   }
+
    return S_OK;
 }
 

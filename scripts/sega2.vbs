@@ -23,6 +23,7 @@ End Sub
 Const swBlack          =  0 'DED 8
 Const swGreen          = -1 'DED 7
 Const swRed            = -2 'DED 6
+Const swMemoryProtect  = -3 'Coin door memory protect switch
 Const swStartButton    = 3
 Const swTilt           = 1
 Const swSlamTilt       = 8
@@ -45,7 +46,8 @@ vpmSystemHelp = "Sega keys:" & vbNewLine &_
   vpmKeyName(keyBlack)        & vbTab & "Black"          & vbNewLine &_
   vpmKeyName(keyGreen)        & vbTab & "Green"          & vbNewLine &_
   vpmKeyName(keyRed)          & vbTab & "Red"            & vbNewLine &_
-  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
+  vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"      & vbNewLine &_
+  vpmKeyName(keyCoinDoor)     & vbTab & "Open/Close Coin Door"
 
 ' Dip Switch / Options Menu
 Private Sub sega2ShowDips
@@ -76,11 +78,12 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
-			Case StartGameKey    .Switch(swStartButton)  = True
-			Case keyBlack        .Switch(swBlack)        = True
-			Case keyGreen        .Switch(swGreen)        = True
-			Case keyRed          .Switch(swRed)          = True
-			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
+			Case StartGameKey    .Switch(swStartButton) = True
+			Case keyBlack        .Switch(swBlack)       = True
+			Case keyGreen        .Switch(swGreen)       = True
+			Case keyRed          .Switch(swRed)         = True
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
+			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swMemoryProtect) = Not .Switch(swMemoryProtect) Else .Switch(swMemoryProtect) = Not inverseKeyCoinDoor
 			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
@@ -97,11 +100,12 @@ Function vpmKeyUp(ByVal keycode)
 		Select Case keycode
 			Case RightFlipperKey .Switch(swLRFlip) = False : vpmKeyUp = False : vpmFlips.FlipR False
 			Case LeftFlipperKey  .Switch(swLLFlip) = False : vpmKeyUp = False : vpmFlips.FlipL False
-			Case StartGameKey    .Switch(swStartButton)  = False
-			Case keyBlack        .Switch(swBlack)        = False
-			Case keyGreen        .Switch(swGreen)        = False
-			Case keyRed          .Switch(swRed)          = False
-			Case keySlamDoorHit  .Switch(swSlamTilt)     = False
+			Case StartGameKey    .Switch(swStartButton) = False
+			Case keyBlack        .Switch(swBlack)       = False
+			Case keyGreen        .Switch(swGreen)       = False
+			Case keyRed          .Switch(swRed)         = False
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
+			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swMemoryProtect) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : vpmShowOptions : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False

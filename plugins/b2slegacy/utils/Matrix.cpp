@@ -20,7 +20,7 @@ namespace B2SLegacy {
 
 AffineTransform AffineTransformMakeIdentity()
 {
-   AffineTransform tRet = {1,0,0,1,0,0};
+   static constexpr AffineTransform tRet = {1,0,0,1,0,0};
    return tRet;
 }
 

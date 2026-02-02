@@ -1176,76 +1176,72 @@ void Player::SetCabinetAutoFitPos(float pos)
    }
 }
 
-void Player::FireSyncTimer(int timerValue)
+void Player::FireTimers(const int mode)
 {
-   // Legacy implementation: timers with magic interval value have special behaviors: -2 for controller sync event
-   for (HitTimer *const pht : m_vht)
-      if (pht->m_interval == timerValue)
-      {
-         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
-         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         m_logicProfiler.ExitScriptSection(pht->m_name);
-      }
-}
-
-void Player::FireTimers(const unsigned int simulationTime)
-{
-   Ball *const old_pactiveball = g_pplayer->m_pactiveball;
-   g_pplayer->m_pactiveball = nullptr; // No ball is the active ball for timers/key events
-   for (HitTimer *const pht : m_vht)
+   m_deferTimerChanges = true;
+   switch (mode)
    {
-      if (pht->m_interval >= 0 && pht->m_nextfire <= simulationTime)
-      {
-         const unsigned int curnextfire = pht->m_nextfire;
-         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
-         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         m_logicProfiler.ExitScriptSection(pht->m_name);
-         // Only add interval if the next fire time hasn't changed since the event was run. 
-         // Handles corner case:
-         //Timer1.Enabled = False
-         //Timer1.Interval = 1000
-         //Timer1.Enabled = True
-         if (curnextfire == pht->m_nextfire && pht->m_interval > 0)
-            while (pht->m_nextfire <= simulationTime)
-               pht->m_nextfire += pht->m_interval;
+   case 0:
+   {
+      for (const auto &pht : m_vht)
+         pht->Update(m_time_msec);
+      break;
+   }
+      
+   case -1:
+      for (const auto &pht : m_vht)
+         pht->OnNewFrame();
+      break;
+      
+   case -2:
+      for (const auto& pht : m_vht)
+         pht->OnGameSync();
+      break;
+   }
+   m_deferTimerChanges = false;
+   
+   for (const TimerOnOff& changedHT : m_changed_vht)
+   {
+      const auto it = std::find(m_vht.begin(), m_vht.end(), changedHT.m_timer);
+      if (changedHT.m_enabled)
+      { // Add to active timer list
+         if (it == m_vht.end())
+            m_vht.push_back(changedHT.m_timer);
+      }
+      else 
+      { // Remove from active timer list
+         if (it != m_vht.end())
+            m_vht.erase(it);
       }
    }
-   g_pplayer->m_pactiveball = old_pactiveball;
-}
-
-void Player::DeferTimerStateChange(HitTimer * const hittimer, bool enabled)
-{
-   // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
-   hittimer->m_nextfire = enabled ? m_time_msec + hittimer->m_interval : 0xFFFFFFFF;
-   // to avoid problems with timers dis/enabling themselves, store all the changes in a list
-   for (auto& changed_ht : m_changed_vht)
-      if (changed_ht.m_timer == hittimer)
-      {
-         changed_ht.m_enabled = enabled;
-         return;
-      }
-   TimerOnOff too;
-   too.m_enabled = enabled;
-   too.m_timer = hittimer;
-   m_changed_vht.push_back(too);
-}
-
-void Player::ApplyDeferredTimerChanges()
-{
-   // do the en/disable changes for the timers that piled up
-   for (size_t i = 0; i < m_changed_vht.size(); ++i)
-      if (m_changed_vht[i].m_enabled) // add the timer?
-      {
-         if (FindIndexOf(m_vht, m_changed_vht[i].m_timer) < 0)
-            m_vht.push_back(m_changed_vht[i].m_timer);
-      }
-      else // delete the timer?
-      {
-         const int idx = FindIndexOf(m_vht, m_changed_vht[i].m_timer);
-         if (idx >= 0)
-            m_vht.erase(m_vht.begin() + idx);
-      }
    m_changed_vht.clear();
+}
+
+void Player::TimerStateChange(HitTimer * const hittimer, bool enabled)
+{
+   if (m_deferTimerChanges)
+   { // To avoid problems with timers dis/enabling themselves when fired, we defer their state changes
+      if (enabled)
+         hittimer->SetInterval(hittimer->GetInterval());
+      else
+         hittimer->Defer();
+      m_changed_vht.emplace_back(hittimer, enabled);
+   }
+   else if (enabled)
+   { // Add to active timer list
+      hittimer->SetInterval(hittimer->GetInterval());
+      #ifdef _DEBUG
+      const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer);
+      assert(it == m_vht.end()); // As this must be a state change, so the timer may not be present as it was disabled
+      #endif
+      m_vht.push_back(hittimer);
+   }
+   else 
+   { // Remove from active timer list
+      const auto it = std::find(m_vht.begin(), m_vht.end(), hittimer);
+      assert(it != m_vht.end()); // As this must be a state change, so the timer may not be missing as it was enabled
+      m_vht.erase(it);
+   }
 }
 
 
@@ -1485,21 +1481,20 @@ public:
       std::lock_guard lock(m_captureMutex);
 
       m_player->m_physics->UpdatePhysics(max(m_captureTime, m_player->m_physics->GetCurrentTime()));
-      m_player->FireSyncTimer(-2);
+      m_player->FireTimers(-2);
       
       // Fast forward to capture start time (startup +30s)
       while (m_player->m_physics->GetCurrentTime() < m_player->m_physics->GetStartTime() + 30 * 1000000)
       {
          m_captureTime = min(m_captureTime + 1000000 / 120, m_player->m_physics->GetStartTime() + 30 * 1000000 + PHYSICS_STEPTIME);
-         m_player->ApplyDeferredTimerChanges();
          m_player->m_overall_frames++;
          const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
          m_player->m_last_frame_time_msec = m_player->m_time_msec;
          for (size_t i = 0; i < m_player->m_ptable->m_vedit.size(); ++i)
             if (Hitable *const ph = m_player->m_ptable->m_vedit[i]->GetIHitable(); ph)
                ph->UpdateAnimation(diff_time_msec);
-         m_player->FireSyncTimer(-1);
-         m_player->FireSyncTimer(-2);
+         m_player->FireTimers(-1);
+         m_player->FireTimers(-2);
          m_player->m_physics->UpdatePhysics(m_captureTime);
          MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
          m_captureStartupEndTime = usec();
@@ -1697,7 +1692,7 @@ void Player::UpdateGameLogic()
       m_pininput.ProcessInput(); // Trigger key events to sync with controller
       m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
       // TODO These updates should also be done directly in the physics engine after collision events
-      FireSyncTimer(-2); // Trigger script sync event (to sync solenoids back)
+      FireTimers(-2); // Trigger script sync event (to sync solenoids back)
    }
 
    MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
@@ -1772,8 +1767,14 @@ void Player::MultithreadedGameLoop()
       }
 #else
       // Android and iOS use SDL main callbacks and use SDL_AppIterate
-      break;
+      return;
 #endif
+   }
+
+   // Flush any pending frame
+   {
+      std::lock_guard lock(m_renderer->m_renderDevice->m_frameMutex);
+      FinishFrame();
    }
 #endif
 }
@@ -1978,19 +1979,14 @@ void Player::PrepareFrame()
          }
    }
 
-   // New Frame event: Legacy implementation with timers with magic interval value have special behaviors, here -1 for onNewFrame event
-   for (HitTimer *const pht : m_vht)
-      if (pht->m_interval == -1) {
-         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
-         pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         m_logicProfiler.ExitScriptSection(pht->m_name);
-      }
+   // New Frame event
+   FireTimers(-1);
 
    // Check if we should turn animate the plunger light.
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    // Shake screen when nudging
-   if (m_NudgeShake > 0.0f)
+   if (m_NudgeShake > 0.0f && g_pvp->m_captureAttract == 0)
    {
       Vertex2D offset = m_physics->GetScreenNudge();
       m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
@@ -2056,8 +2052,7 @@ void Player::FinishFrame()
    m_fps = (float) (1e6 / m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
    #ifndef ACCURATETIMERS
-      ApplyDeferredTimerChanges();
-      FireTimers(m_time_msec);
+      FireTimers(0);
    #elif !defined(ENABLE_BGFX)
       // Not applied for BGFX as physics & input sync is managed more cleanly in the main (multithreaded) loop
       if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
@@ -2077,13 +2072,11 @@ void Player::FinishFrame()
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
       SetPlayState(false);
 
-   // Memory clean up for balls that may have been destroyed from scripts
+   // Remove ball from table (but they may outlive as they may be in use for rendering) for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
-      pBall->RenderRelease();
-      pBall->TimerRelease();
       pBall->Release();
    }
    m_vballDelete.clear();

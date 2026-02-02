@@ -26,6 +26,8 @@
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
@@ -46,10 +48,12 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
 MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
-MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI VNIPluginUnload();
 
 
 namespace VPinballLib {
@@ -318,6 +322,7 @@ void VPinballLib::RegisterStaticPlugins()
       { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
+      { "AltSound",      &AltSoundPluginLoad,      &AltSoundPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
       { "B2SLegacy",     &B2SLegacyPluginLoad,     &B2SLegacyPluginUnload     },
       { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
@@ -327,7 +332,8 @@ void VPinballLib::RegisterStaticPlugins()
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
       { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
       { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
-      { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    }
+      { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    },
+      { "VNI",           &VNIPluginLoad,           &VNIPluginUnload           }
    };
 
    for (size_t i = 0; i < std::size(plugins); ++i) {

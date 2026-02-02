@@ -355,7 +355,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
          else
          {
             index = reel.m_b2sStartDigit > 0 ? (reel.m_b2sStartDigit + i) : digitIndex;
-            digit = static_cast<int>(server->GetScoreDigit(index));
+            digit = server->GetScoreDigit(index);
          }
          digitIndex++;
 
@@ -439,7 +439,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Update animations
    auto now = std::chrono::steady_clock::now();
-   float elapsed = static_cast<float>((now - m_lastBackglassRenderTick).count()) / 1000000000.0f;
+   float elapsed = static_cast<float>(static_cast<double>((now - m_lastBackglassRenderTick).count()) / 1000000000.0);
    m_lastBackglassRenderTick = now;
    for (auto& animation : m_b2s->m_backglassAnimations)
       animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
@@ -495,7 +495,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
 
    // Update animations
    auto now = std::chrono::steady_clock::now();
-   float elapsed = static_cast<float>((now - m_lastDmdRenderTick).count()) / 1000000000.0f;
+   float elapsed = static_cast<float>(static_cast<double>((now - m_lastDmdRenderTick).count()) / 1000000000.0);
    m_lastDmdRenderTick = now;
    for (auto& animation : m_b2s->m_dmdAnimations)
       animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)

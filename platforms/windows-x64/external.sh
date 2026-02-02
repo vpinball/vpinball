@@ -476,6 +476,9 @@ cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../../../th
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../../../third-party/runtime-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../../../third-party/runtime-libs/windows-x64
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/vni64.lib ../../../third-party/build-libs/windows-x64
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/vni64.dll ../../../third-party/runtime-libs/windows-x64
+cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
 
 cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.lib ../../../third-party/build-libs/windows-x64
 cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.dll ../../../third-party/runtime-libs/windows-x64

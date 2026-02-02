@@ -21,7 +21,7 @@ public:
    void AssignStyle();
    void Draw(VPXGraphics* pRenderer);
    GraphicsPath* GetBounds();
-   SegmentStyle* GetStyle() const { return m_pStyle; }
+   SegmentStyle& GetStyle() { return m_pStyle; }
    const string& GetCharacter() const { return m_szCharacter; }
    void SetCharacter(const string& szCharacter);
    void InitSegments(const SegmentNumberType type, const float thickness);
@@ -34,7 +34,7 @@ public:
 private:
    Dream7Display* m_pDisplay;
    SegmentList m_segments;
-   SegmentStyle* m_pStyle;
+   SegmentStyle m_pStyle;
    SegmentNumberType m_type;
    float m_thickness;
    Matrix* m_pNumberMatrix;

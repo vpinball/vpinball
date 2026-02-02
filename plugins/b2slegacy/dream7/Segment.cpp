@@ -6,57 +6,54 @@
 namespace B2SLegacy {
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle)
+   : m_on(false)
+   , m_glow(-1.0f)
+   , m_radius(0.0f)
+   , m_pStyle(nullptr)
+   , m_pGlassPath(nullptr)
+   , m_pLightPath(nullptr)
+   , m_pExternMatrix(nullptr)
+   , m_pOwnMatrix(nullptr)
 {
-   m_on = false;
-   m_glow = -1.0f;
-   m_radius = 0.0f;
-   m_pStyle = nullptr;
-   m_pGlassPath = nullptr;
-   m_pLightPath = nullptr;
-   m_pExternMatrix = nullptr;
-   m_pOwnMatrix = nullptr;
-
    InitSegment(szName, x, y, width, height, angle, SegmentCap_Standard, SegmentCap_Standard, 45);
 }
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap)
+   : m_on(false)
+   , m_glow(-1.0f)
+   , m_radius(0.0f)
+   , m_pStyle(nullptr)
+   , m_pGlassPath(nullptr)
+   , m_pLightPath(nullptr)
+   , m_pExternMatrix(nullptr)
+   , m_pOwnMatrix(nullptr)
 {
-   m_on = false;
-   m_glow = -1.0f;
-   m_radius = 0.0f;
-   m_pStyle = nullptr;
-   m_pGlassPath = nullptr;
-   m_pLightPath = nullptr;
-   m_pExternMatrix = nullptr;
-   m_pOwnMatrix = nullptr;
-
    InitSegment(szName, x, y, width, height, angle, topcap, bottomcap, 45);
 }
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap, float capangle)
+   : m_on(false)
+   , m_glow(-1.0f)
+   , m_radius(0.0f)
+   , m_pStyle(nullptr)
+   , m_pGlassPath(nullptr)
+   , m_pLightPath(nullptr)
+   , m_pExternMatrix(nullptr)
+   , m_pOwnMatrix(nullptr)
 {
-   m_on = false;
-   m_glow = -1.0f;
-   m_radius = 0.0f;
-   m_pStyle = nullptr;
-   m_pGlassPath = nullptr;
-   m_pLightPath = nullptr;
-   m_pExternMatrix = nullptr;
-   m_pOwnMatrix = nullptr;
-
    InitSegment(szName, x, y, width, height, angle, topcap, bottomcap, capangle);
 }
 
 Segment::Segment(float x, float y, float radius)
+   : m_on(false)
+   , m_glow(-1.0f)
+   , m_radius(0.0f)
+   , m_pStyle(nullptr)
+   , m_pGlassPath(nullptr)
+   , m_pLightPath(nullptr)
+   , m_pExternMatrix(nullptr)
+   , m_pOwnMatrix(nullptr)
 {
-   m_on = false;
-   m_glow = -1.0f;
-   m_pStyle = nullptr;
-   m_pGlassPath = nullptr;
-   m_pLightPath = nullptr;
-   m_pExternMatrix = nullptr;
-   m_pOwnMatrix = nullptr;
-
    InitSegmentDot(x, y, radius);
 }
 
@@ -266,14 +263,11 @@ void Segment::ResetCacheData()
 
 void Segment::SetTransform(VPXGraphics* pRenderer)
 {
-   Matrix* pMatrix;
-   if (!m_pExternMatrix)
-      pMatrix = new Matrix();
-   else
-      pMatrix = m_pExternMatrix->Clone();
-   pMatrix->Multiply(*m_pOwnMatrix);
+   Matrix pMatrix;
+   if (m_pExternMatrix)
+      pMatrix = *m_pExternMatrix;
+   pMatrix.Multiply(*m_pOwnMatrix);
    pRenderer->SetTransform(pMatrix);
-   delete pMatrix;
 }
 
 void Segment::Transform(Matrix* pMatrix)

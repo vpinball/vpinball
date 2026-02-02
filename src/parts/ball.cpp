@@ -8,6 +8,9 @@
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
+#include "plugins/MsgPluginManager.h"
+#include "core/VPXPluginAPIImpl.h"
+
 
 const AntiStretchHelper Ball::m_ash;
 unsigned int Ball::m_nextBallID = 0;
@@ -25,7 +28,9 @@ Ball::Ball() : m_id(GetNextBallID())
 
 Ball::~Ball()
 {
-   assert(m_rd == nullptr);
+   if (m_rd)
+      RenderRelease();
+   TimerRelease();
 }
 
 
@@ -474,14 +479,15 @@ void Ball::Render(const unsigned int renderMask)
    ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
    m_rd->AddBeginOfFrameCmd(
-      [this, rot, scale, ss, rd = m_rd]()
+      [this, rotScale = rot * scale, ss, rd = m_rd]()
       {
          vec3 posl = m_hitBall.m_d.m_pos + rd->GetPredictedDisplayDelayInS() * m_hitBall.m_d.m_vel;
          if (m_hitBall.m_d.m_lockedInKicker)
             posl.z -= m_hitBall.m_d.m_radius;
-         Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl);
+         Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
-         Release();
+         // Release on main thread as Ball methods are not multithreaded
+         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)

@@ -143,7 +143,15 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    vec4 glassTint(1.f, 1.f, 1.f, 1.f);
    vec4 glassPad(0.f, 0.f, 0.f, 0.f);
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
-   ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
+   VPXDisplayRenderStyle style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma;
+   switch (dmd.source->hardware & 0xFFFF0000)
+   {
+   case CTLPI_DISPLAY_HARDWARE_NEON_PLASMA: style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma; break;
+   case CTLPI_DISPLAY_HARDWARE_RED_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_RedLED; break;
+   case CTLPI_DISPLAY_HARDWARE_RGB_LED: style = VPXDisplayRenderStyle::VPXDMDStyle_GenLED; break;
+   case CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY: style = VPXDisplayRenderStyle::VPXDMDStyle_CRT; break;
+   }
+   ctx->DrawDisplay(ctx, style,
       // First layer: glass
       nullptr, glassTint.x, glassTint.y, glassTint.z, 0.f, // Glass texture, tint and roughness
       glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)

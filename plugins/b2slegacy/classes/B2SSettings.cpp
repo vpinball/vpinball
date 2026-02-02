@@ -1,8 +1,6 @@
 #include "../common.h"
 #include "B2SSettings.h"
 #include "B2SData.h"
-#include <charconv>
-#include <cstring>
 
 namespace B2SLegacy {
 
@@ -15,9 +13,8 @@ MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDua
 B2SSettings::B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId)
    : m_msgApi(msgApi)
    , m_endpointId(endpointId)
+   , m_gameNameFound(false)
 {
-   m_gameNameFound = false;
-
    ClearAll();
 }
 

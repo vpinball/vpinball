@@ -187,6 +187,7 @@ typedef struct GetDevSrcMsg
 #define CTLPI_DISPLAY_HARDWARE_STERN_520_5052_05  0x00020001
 #define CTLPI_DISPLAY_HARDWARE_STERN_520_5052_15  0x00020002
 #define CTLPI_DISPLAY_HARDWARE_RGB_LED            0x00030000
+#define CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY        0x00040000
 
 
 typedef struct DisplayFrame
@@ -204,8 +205,8 @@ typedef struct DisplaySrcId
    unsigned int height;                                                     // 
    union {
       struct {
-         uint16_t hardwareFamily;
          uint16_t hardwareModel;
+         uint16_t hardwareFamily;
       };
       uint32_t hardware;                                                    // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
    };

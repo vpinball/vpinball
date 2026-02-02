@@ -6,8 +6,8 @@
 namespace B2SLegacy {
 
 B2SCollectData::B2SCollectData(int skipFrames)
+   : m_skipFrames(skipFrames)
 {
-   m_skipFrames = skipFrames;
 }
 
 B2SCollectData::~B2SCollectData()

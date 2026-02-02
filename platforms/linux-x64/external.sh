@@ -397,6 +397,8 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libpupdmd.{so,so.
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libsockpp.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libcargs.so ../../../third-party/runtime-libs/linux-x64
+cp libdmdutil/libdmdutil/third-party/include/vni.h ../../../third-party/include
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libvni.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 
 cp -a libaltsound/libaltsound/build/libaltsound.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include

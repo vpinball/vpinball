@@ -154,6 +154,7 @@ target_link_libraries(vpinball PUBLIC
    serum
    dmdutil
    pupdmd
+   vni
    sockpp
    dof
    avcodec
@@ -176,6 +177,7 @@ target_link_libraries(vpinball PUBLIC
    RemoteControlPlugin
    ScoreViewPlugin
    SerumPlugin
+   VNIPlugin
    WMPPlugin
    UpscaleDMDPlugin
 )

@@ -2,6 +2,7 @@
 
 #include "B2SLEDBox.h"
 #include "../utils/GraphicsPath.h"
+#include "../utils/VPXGraphics.h"
 
 namespace B2SLegacy {
 
@@ -14,6 +15,7 @@ B2SLEDBox::B2SLEDBox(VPXPluginAPI* vpxApi, B2SData* pB2SData)
 
 void B2SLEDBox::OnResize()
 {
+   m_pGraphics.reset();
    if (GetWidth() > 0 && GetHeight() > 0)
       m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
 
@@ -48,38 +50,27 @@ void B2SLEDBox::OnResize()
 void B2SLEDBox::OnPaint(VPXRenderContext2D* const ctx)
 {
    if (IsVisible()) {
-      if (!m_pGraphics) {
-         if (GetWidth() > 0 && GetHeight() > 0) {
-            m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
-         } else {
-            Control::OnPaint(ctx);
-            return;
+      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0)
+         m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
+
+      Control::OnPaint(ctx);
+
+      if (m_pGraphics) {
+         for (int i = 0; i < (int)m_currentSeg.size(); i++) {
+            GraphicsPath* pPath = new GraphicsPath();
+            pPath->AddPolygon(&m_currentSeg[i]);
+            if ((m_value & (1 << i)) != 0)
+               m_pGraphics->SetColor(m_litLEDSegmentColor);
+            else
+               m_pGraphics->SetColor(m_darkLEDSegmentColor);
+
+            m_pGraphics->FillPath(pPath);
+            delete pPath;
          }
+
+         m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
       }
-
-      m_pGraphics->Clear();
-      m_pGraphics->TranslateTransform(GetLeft(), GetTop());
-
-      //float width = (float)GetWidth() / (float)m_pB2SData->GetLEDCoordMax();
-      //float height = (float)GetHeight() / (float)m_pB2SData->GetLEDCoordMax();
-
-      for (int i = 0; i < (int)m_currentSeg.size(); i++) {
-         GraphicsPath* pPath = new GraphicsPath();
-         pPath->AddPolygon(&m_currentSeg[i]);
-         if ((m_value & (1 << i)) != 0)
-            m_pGraphics->SetColor(m_litLEDSegmentColor);
-         else
-            m_pGraphics->SetColor(m_darkLEDSegmentColor);
-
-         m_pGraphics->FillPath(pPath);
-         delete pPath;
-      }
-
-      m_pGraphics->TranslateTransform(-GetLeft(), -GetTop());
-      m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
    }
-
-   Control::OnPaint(ctx);
 }
 
 void B2SLEDBox::SetLEDType(eLEDType ledType)

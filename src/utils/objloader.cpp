@@ -335,9 +335,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
             vertsTmp[t].ny = vi.ny;
             vertsTmp[t].nz = vi.nz;
          }
-         char number[16] = {};
-         sprintf_s(number, sizeof(number), "%05u", i);
-         const string fname = name + '_' + number + ".obj";
+         const string fname = name + '_' + std::format("{:05}", i) + ".obj";
          ExportStart(fname);
          fprintf_s(m_fHandle, "# Visual Pinball OBJ file\n");
          fprintf_s(m_fHandle, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices());

@@ -916,7 +916,7 @@ void FormBackglass::LoadB2SData()
                for (auto setnode = topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")->FirstChildElement("Set"); setnode != nullptr; setnode = setnode->NextSiblingElement("Set")) {
                   int setid = setnode->IntAttribute("ID");
                   for (auto innerNode = setnode->FirstChildElement("IlluminatedImage"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("IlluminatedImage")) {
-                     string name = string(innerNode->Attribute("Name")) + '_' + std::to_string(setid);
+                     string name = innerNode->Attribute("Name") + ('_' + std::to_string(setid));
                      VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
                      if (!m_pB2SData->GetReelIlluImages()->contains(name))
                         (*m_pB2SData->GetReelIlluImages())[name] = pImage;

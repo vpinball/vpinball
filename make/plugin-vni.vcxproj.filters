@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="third-party">
+      <UniqueIdentifier>{ba1c1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../plugins/vni/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClCompile Include="../../plugins/vni/common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/vni/vni.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClInclude Include="../../plugins/vni/third-party/include/miniz/miniz.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClCompile Include="../../plugins/vni/third-party/include/miniz/miniz.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClInclude Include="../../plugins/vni/third-party/include/libvni/vni.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/vni/third-party/include/libvni/vni-decode.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/vni/third-party/include/libvni/vni-version.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClCompile Include="../../plugins/vni/third-party/include/libvni/vni-decode.cpp">
+      <Filter>third-party</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="../../plugins/vni/plugin.cfg">
+      <Filter>source</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

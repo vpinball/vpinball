@@ -6,8 +6,8 @@
 namespace B2SLegacy {
 
 ReelDisplayReelBoxCollection::ReelDisplayReelBoxCollection()
+   : m_led(false)
 {
-   m_led = false;
 }
 
 void ReelDisplayReelBoxCollection::Add(int key, B2SReelBox* pReelbox)

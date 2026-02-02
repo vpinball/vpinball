@@ -178,6 +178,7 @@ set(VPX_SOURCES
    src/physics/hitflipper.h
    src/physics/hitplunger.cpp
    src/physics/hitplunger.h
+   src/physics/hittimer.cpp
    src/physics/hittimer.h
    src/physics/kdtree.cpp
    src/physics/kdtree.h

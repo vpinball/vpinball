@@ -8,15 +8,13 @@ namespace B2SLegacy {
 
 SegmentNumber::SegmentNumber(Dream7Display* pDisplay)
    : m_pDisplay(pDisplay)
+   , m_thickness(16.0f)
+   , m_pNumberMatrix(nullptr)
 {
-   m_thickness = 16.0f;
-   m_pStyle = new SegmentStyle();
-   m_pNumberMatrix = nullptr;
 }
 
 SegmentNumber::~SegmentNumber()
 {
-   delete m_pStyle;
    delete m_pNumberMatrix;
 }
 
@@ -55,7 +53,7 @@ void SegmentNumber::Draw(VPXGraphics* pRenderer)
    }
 
    // Handle glow effect for ON segments
-   if (m_pStyle->GetGlow() > 0.0f) {
+   if (m_pStyle.GetGlow() > 0.0f) {
       for (auto& pSegment : m_segments) {
          if (pSegment->IsOn())
             pSegment->DrawLight(pRenderer);
@@ -71,7 +69,7 @@ void SegmentNumber::Draw(VPXGraphics* pRenderer)
 
 GraphicsPath* SegmentNumber::GetBounds()
 {
-   SDL_FRect bounds = {-14.0f, -14.0f, 173.0f, 272.f};
+   constexpr SDL_FRect bounds = {-14.0f, -14.0f, 173.0f, 272.f};
    GraphicsPath* pRegion = new GraphicsPath();
    pRegion->AddRectangle(bounds);
    pRegion->Transform(m_pNumberMatrix);
@@ -149,7 +147,7 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
       default: break;
    }
    for (auto& pSegment : m_segments)
-      pSegment->SetStyle(m_pStyle);
+      pSegment->SetStyle(&m_pStyle);
 }
 
 void SegmentNumber::InitMatrix(const SDL_FPoint& location, Matrix* pMatrix)
