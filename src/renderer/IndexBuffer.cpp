@@ -65,6 +65,10 @@ void SharedIndexBuffer::Upload()
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
       uint8_t* data = mem->data;
+      #ifdef _DEBUG
+      for (const PendingUpload& upload : m_pendingUploads)
+         assert(upload.mem == nullptr);
+      #endif
 
       #elif defined(ENABLE_OPENGL)
       uint8_t* data = (uint8_t*)malloc(size);

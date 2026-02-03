@@ -21,7 +21,7 @@ MeshBuffer::MeshBuffer(const string& name, std::shared_ptr<VertexBuffer> vb, std
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)
 {
-   assert(m_ib == nullptr || applyVertexBufferOffsetToIndexBuffer);
+   assert(m_ib == nullptr || vb->GetOffset() == 0 || applyVertexBufferOffsetToIndexBuffer);
    if (m_ib != nullptr && applyVertexBufferOffsetToIndexBuffer)
       m_ib->ApplyOffset(m_vb);
 }

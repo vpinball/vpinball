@@ -10,7 +10,7 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(const string& name, std::shared_ptr<VertexBuffer> vb, std::shared_ptr<IndexBuffer> = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
+   MeshBuffer(const string& name, std::shared_ptr<VertexBuffer> vb, std::shared_ptr<IndexBuffer> ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    MeshBuffer(std::shared_ptr<VertexBuffer> vb, std::shared_ptr<IndexBuffer> ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    ~MeshBuffer();
    void bind();
