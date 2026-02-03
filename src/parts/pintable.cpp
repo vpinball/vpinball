@@ -3353,9 +3353,9 @@ void PinTable::AssignSelectionToPartGroup(PartGroup* group)
 #endif
 }
 
+#ifndef __STANDALONE__
 void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 {
-#ifndef __STANDALONE__
    POINT pt;
    pt.x = x;
    pt.y = y;
@@ -3456,8 +3456,8 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 
    if (menuid != -1)
        mainMenu.Destroy();
-#endif
 }
+#endif
 
 string PinTable::GetElementName(IEditable *pedit)
 {
@@ -3486,9 +3486,9 @@ bool PinTable::FMutilSelLocked()
    return false;
 }
 
+#ifndef __STANDALONE__
 void PinTable::DoCommand(int icmd, int x, int y)
 {
-#ifndef __STANDALONE__
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
    {
       UpdateCollection(icmd & 0x000000FF);
@@ -3546,8 +3546,8 @@ void PinTable::DoCommand(int icmd, int x, int y)
        case ID_WALLMENU_SCALE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_SCALE), m_vpinball->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
        case ID_WALLMENU_TRANSLATE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_TRANSLATE), m_vpinball->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
    }
-#endif
 }
+#endif
 
 void PinTable::UpdateCollection(const int index)
 {

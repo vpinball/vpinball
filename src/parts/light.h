@@ -117,8 +117,10 @@ public:
 
    void ClearForOverwrite() final;
 
+#ifndef __STANDALONE__
    void EditMenu(CMenu &menu) final;
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
@@ -208,7 +210,6 @@ private:
    std::shared_ptr<MeshBuffer> m_lightmapMeshEdgeBuffer;
    std::shared_ptr<MeshBuffer> m_bulbSocketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_bulbLightMeshBuffer;
-   PropertyPane *m_propVisual = nullptr;
 
    vector<RenderVertex> m_vvertex;
 

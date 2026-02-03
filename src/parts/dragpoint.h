@@ -130,22 +130,14 @@ public:
 
    void FlipPointY(const Vertex2D& pvCenter);
    void FlipPointX(const Vertex2D& pvCenter);
-   void RotateDialog();
    void RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter);
-   void ScaleDialog();
    void ScalePoints(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter);
-   void TranslateDialog();
    void TranslatePoints(const Vertex2D &pvOffset);
    void ReverseOrder();
 
    void GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords) const;
 
    friend class DragPoint;
-
-   PropertyPane *m_propVisuals = nullptr;
-   PropertyPane *m_propPosition = nullptr;
-
-// Ported at: VisualPinball.Engine/Math/DragPoint.cs
 
    template <typename T>
    void GetRgVertex(vector<T> &vv, const bool loop = true, const float accuracy = 4.f) const // 4 = maximum precision that we allow for

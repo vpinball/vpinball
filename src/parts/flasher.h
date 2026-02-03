@@ -120,7 +120,10 @@ public:
 
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
+
+#ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    void AddPoint(int x, int y, const bool smooth) final;
 

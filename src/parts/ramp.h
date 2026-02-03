@@ -56,7 +56,6 @@ public:
    Ramp()
    {
       m_menuid = IDR_SURFACEMENU;
-      m_propPosition = nullptr;
       m_d.m_collidable = true;
       m_d.m_visible = true;
       m_d.m_depthBias = 0.0f;
@@ -98,7 +97,9 @@ public:
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
 
+#ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    int GetMinimumPoints() const final { return 2; }
 

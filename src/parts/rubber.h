@@ -48,7 +48,6 @@ public:
    Rubber()
    {
       m_menuid = IDR_SURFACEMENU;
-      m_propPosition = nullptr;
       m_d.m_collidable = true;
       m_d.m_visible = true;
       m_d.m_tdr.m_TimerEnabled = false;
@@ -87,7 +86,9 @@ public:
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
 
+#ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    int GetMinimumPoints() const final { return 2; }
 
@@ -140,8 +141,6 @@ private:
    vector<WORD> m_ringIndices;
 
    Vertex3Ds m_middlePoint;
-
-   PropertyPane *m_propVisual = nullptr;
 
    void GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy = -1.f) const;
 
