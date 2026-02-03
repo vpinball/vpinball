@@ -843,9 +843,8 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_isFSSViewModeEnabled = src->m_isFSSViewModeEnabled;
    dst->m_viewModeOverride = src->m_viewModeOverride;
-   dst->m_viewMode = src->m_viewMode;
    dst->UpdateCurrentBGSet();
-   dst->m_currentBackglassMode = src->m_currentBackglassMode;
+   dst->m_currentBackglassMode = dst->m_currentBackglassMode;
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
@@ -1094,6 +1093,7 @@ void PinTable::AutoSave()
    pasp->pstg = pstgroot;
    pasp->tableindex = FindIndexOf(m_vpinball->m_vtable, (CComObject<PinTable> *)this);
    pasp->hwndtable = GetHwnd();
+   pasp->table = this;
 
    if (hr == S_OK)
    {

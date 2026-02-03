@@ -15,6 +15,7 @@ class AutoSavePackage final
 public:
    FastIStorage *pstg;
    int tableindex;
+   class PinTable *table;
    HWND hwndtable;
 };
 
