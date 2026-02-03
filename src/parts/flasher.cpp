@@ -140,7 +140,9 @@ void Flasher::UIRenderPass1(Sur * const psur)
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    if (!m_ptable->RenderSolid() || !m_d.m_displayTexture)
+   {
       psur->Polygon(vvertex);
+   }
    else if (const Texture *const ppi = m_ptable->GetImage(m_d.m_szImageA); ppi && ppi->GetGDIBitmap())
    {
       if (m_d.m_imagealignment == ImageModeWrap)
@@ -149,12 +151,12 @@ void Flasher::UIRenderPass1(Sur * const psur)
          float _miny = FLT_MAX;
          float _maxx = -FLT_MAX;
          float _maxy = -FLT_MAX;
-         for (size_t i = 0; i < vvertex.size(); i++)
+         for (const auto& v : vvertex)
          {
-            if (vvertex[i].x < _minx) _minx = vvertex[i].x;
-            if (vvertex[i].x > _maxx) _maxx = vvertex[i].x;
-            if (vvertex[i].y < _miny) _miny = vvertex[i].y;
-            if (vvertex[i].y > _maxy) _maxy = vvertex[i].y;
+            if (v.x < _minx) _minx = v.x;
+            if (v.x > _maxx) _maxx = v.x;
+            if (v.y < _miny) _miny = v.y;
+            if (v.y > _maxy) _maxy = v.y;
          }
 
          psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
@@ -165,7 +167,9 @@ void Flasher::UIRenderPass1(Sur * const psur)
       }
    }
    else
+   {
       psur->Polygon(vvertex);
+   }
 }
 
 void Flasher::UIRenderPass2(Sur * const psur)
@@ -175,21 +179,34 @@ void Flasher::UIRenderPass2(Sur * const psur)
    psur->SetObject(this); // For selected formatting
    psur->SetObject(nullptr);
 
+   vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
+   GetRgVertex(vvertex);
+   psur->Polygon(vvertex);
+
+   // Except for flasher mode, shape is simplified before rendering into its bounding rectangle
+   if (m_d.m_renderMode != FlasherData::RenderMode::FLASHER)
    {
-      vector<RenderVertex> vvertex; //!! check/reuse from UIRenderPass1
-      GetRgVertex(vvertex);
-      psur->Polygon(vvertex);
+      float _minx = FLT_MAX;
+      float _miny = FLT_MAX;
+      float _maxx = -FLT_MAX;
+      float _maxy = -FLT_MAX;
+      for (const auto& v : vvertex)
+      {
+         if (v.x < _minx) _minx = v.x;
+         if (v.x > _maxx) _maxx = v.x;
+         if (v.y < _miny) _miny = v.y;
+         if (v.y > _maxy) _maxy = v.y;
+      }
+      psur->Rectangle(_minx, _miny, _maxx, _maxy);
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
-
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
+      for (const auto& pdp : m_vdpoint)
       {
-         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
          if (pdp->m_selectstate != eNotSelected)
          {
             drawDragpoints = true;
@@ -199,14 +216,14 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    if (drawDragpoints)
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
       psur->SetFillColor(-1);
-      psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
-      psur->SetObject(pdp);
-
-      psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+      for (const auto &pdp : m_vdpoint)
+      {
+         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+         psur->SetObject(pdp);
+         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+      }
    }
 }
 
@@ -226,15 +243,17 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       const int cvertex = (int)vvertex.size();
       Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
+      
+      assert(m_rd != nullptr); // as m_min, m_max are only defined between RenderSetup/RenderRelease
 
       const float height = m_d.m_height;
-      const float movx = m_minx + (m_maxx - m_minx)*0.5f;
-      const float movy = m_miny + (m_maxy - m_miny)*0.5f;
-      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx /* -m_d.m_vCenter.x */, -movy /* -m_d.m_vCenter.y */, 0.f)
+      const float centerX = m_minx + (m_maxx - m_minx)*0.5f;
+      const float centerY = m_miny + (m_maxy - m_miny)*0.5f;
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-centerX, -centerY, 0.f)
                              * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
                                 * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
                                 * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                                * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
+                                * Matrix3D::MatrixTranslate(centerX, centerY, height));
 
       for (int i = 0; i < cvertex; i++)
       {
@@ -294,6 +313,7 @@ void Flasher::MoveOffset(const float dx, const float dy)
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
+   m_dynamicVertexBufferRegenerate = true;
 }
 
 void Flasher::DoCommand(int icmd, int x, int y)
@@ -1008,36 +1028,8 @@ void Flasher::RenderSetup(RenderDevice *device)
        return;
    }
 
-   vector<WORD> vtri;
-   
-   {
-      vector<unsigned int> vpoly(m_numVertices);
-      for (unsigned int i = 0; i < m_numVertices; i++)
-         vpoly[i] = i;
-
-      PolygonToTriangles(vvertex, vpoly, vtri, false);
-   }
-
-   m_numPolys = (int)(vtri.size()/3);
-   if (m_numPolys == 0)
-   {
-      // no polys to render leave vertex buffer undefined 
-      return;
-   }
-
-   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numPolys * 3, false, IndexBuffer::FMT_INDEX16);
-
-   WORD* bufi;
-   dynamicIndexBuffer->Lock(bufi);
-   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
-   dynamicIndexBuffer->Unlock();
-
-   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
-
-   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
-
-   m_vertices = new Vertex3D_NoTex2[m_numVertices];
-   m_transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+   m_vertices.resize(m_numVertices);
+   m_transformedVertices.resize(m_numVertices);
 
    m_minx = FLT_MAX;
    m_miny = FLT_MAX;
@@ -1050,7 +1042,11 @@ void Flasher::RenderSetup(RenderDevice *device)
 
       m_vertices[i].x = pv0->x;
       m_vertices[i].y = pv0->y;
-      m_vertices[i].z = 0;
+      m_vertices[i].z = 0.f;
+
+      m_vertices[i].nx = 0.f;
+      m_vertices[i].ny = 0.f;
+      m_vertices[i].nz = 1.f;
 
       if (pv0->x > m_maxx) m_maxx = pv0->x;
       if (pv0->x < m_minx) m_minx = pv0->x;
@@ -1062,24 +1058,50 @@ void Flasher::RenderSetup(RenderDevice *device)
    const float inv_height = 1.0f / (m_maxy - m_miny);
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-   m_d.m_vCenter.x = m_minx + ((m_maxx - m_minx)*0.5f);
-   m_d.m_vCenter.y = m_miny + ((m_maxy - m_miny)*0.5f);
-
-   for (unsigned int i = 0; i < m_numVertices; i++)
+   for (auto& v : m_vertices)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
-         m_vertices[i].tu = (m_vertices[i].x - m_minx)*inv_width;
-         m_vertices[i].tv = (m_vertices[i].y - m_miny)*inv_height;
+         v.tu = (v.x - m_minx) * inv_width;
+         v.tv = (v.y - m_miny) * inv_height;
       }
       else
       {
-         m_vertices[i].tu = m_vertices[i].x*inv_tablewidth;
-         m_vertices[i].tv = m_vertices[i].y*inv_tableheight;
+         v.tu = v.x * inv_tablewidth;
+         v.tv = v.y * inv_tableheight;
       }
    }
 
+   if (m_d.m_renderMode != FlasherData::RenderMode::FLASHER)
+   {
+      m_numVertices = 4;
+      m_vertices.resize(m_numVertices);
+      m_transformedVertices.resize(m_numVertices);
+      m_vertices[0] = { m_minx, m_miny, 0.f, 0.f, 0.f, 1.0f, 0.f, 0.f };
+      m_vertices[1] = { m_minx, m_maxy, 0.f, 0.f, 0.f, 1.0f, 0.f, 1.f };
+      m_vertices[2] = { m_maxx, m_maxy, 0.f, 0.f, 0.f, 1.0f, 1.f, 1.f };
+      m_vertices[3] = { m_maxx, m_miny, 0.f, 0.f, 0.f, 1.0f, 1.f, 0.f };
+   }
+
+   vector<WORD> vtri;
+   {
+      vector<unsigned int> vpoly(m_numVertices);
+      for (unsigned int i = 0; i < m_numVertices; i++)
+         vpoly[i] = i;
+      PolygonToTriangles(vvertex, vpoly, vtri, false);
+   }
+   m_numPolys = static_cast<int>(vtri.size() / 3);
+   if (m_numPolys == 0)
+   {
+      // no polys to render leave vertex buffer undefined 
+      return;
+   }
+
    m_dynamicVertexBufferRegenerate = true;
+
+   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, vtri, true);
+   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 }
 
 void Flasher::RenderRelease()
@@ -1088,11 +1110,9 @@ void Flasher::RenderRelease()
    ResetVideoCap();
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
-   delete[] m_vertices;
-   delete[] m_transformedVertices;
+   m_vertices.clear();
+   m_transformedVertices.clear();
    m_meshBuffer = nullptr;
-   m_vertices = nullptr;
-   m_transformedVertices = nullptr;
    m_renderFrame = nullptr;
    m_dmdFrame = nullptr;
    m_dmdSize = int2(0, 0);
@@ -1148,13 +1168,13 @@ void Flasher::Render(const unsigned int renderMask)
    {
       m_dynamicVertexBufferRegenerate = false;
       const float height = m_d.m_height;
-      const float movx = m_minx + (m_maxx - m_minx)*0.5f;
-      const float movy = m_miny + (m_maxy - m_miny)*0.5f;
-      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx /* -m_d.m_vCenter.x */, -movy /* -m_d.m_vCenter.y */, 0.f)
+      const float centerX = m_minx + (m_maxx - m_minx) * 0.5f; // Should match m_vCenter.x at all time
+      const float centerY = m_miny + (m_maxy - m_miny) * 0.5f; // Should match m_vCenter.y at all time
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-centerX, -centerY, 0.f)
                              * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
                                 * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
                                 * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                                * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
+                                * Matrix3D::MatrixTranslate(centerX, centerY, height));
 
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->Lock(buf);
@@ -1298,7 +1318,7 @@ void Flasher::Render(const unsigned int renderMask)
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
             g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
-               m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
+               m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
             // There we shift the depthbias to reproduce this behavior for backward compatibility.
@@ -1326,7 +1346,7 @@ void Flasher::Render(const unsigned int renderMask)
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
             g_pplayer->m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
-               m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
+               m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
             m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
@@ -1349,7 +1369,7 @@ void Flasher::Render(const unsigned int renderMask)
             const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
             const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
             g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
-               m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
+               m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
                vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
