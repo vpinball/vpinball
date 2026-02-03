@@ -370,8 +370,10 @@ public:
    void RemoveCollection(CComObject<Collection> *pcol);
    void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
+#ifndef __STANDALONE__
    void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
    void DoCommand(int icmd, int x, int y) final;
+#endif
    bool FMutilSelLocked();
 
    void SelectItem(IScriptable *piscript) final;

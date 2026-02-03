@@ -77,8 +77,10 @@ public:
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
 
+#ifndef __STANDALONE__
    void EditMenu(CMenu &hmenu) final;
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    // Multi-object manipulation
    void FlipY(const Vertex2D& pvCenter) final;
@@ -122,8 +124,6 @@ private:
    Vertex3D_NoTex2 *m_triggerVertices = nullptr;
    int m_numVertices = 0;
    int m_numIndices = 0;
-
-   PropertyPane *m_propVisual = nullptr;
 
    float m_animHeightOffset = 0.f;
    float m_vertexBuffer_animHeightOffset = -FLT_MAX;

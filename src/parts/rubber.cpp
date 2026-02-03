@@ -4,6 +4,8 @@
 //#include "forsyth.h"
 #include "utils/objloader.h"
 #include "renderer/Shader.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 Rubber::~Rubber()
 {
@@ -859,6 +861,7 @@ HRESULT Rubber::InitPostLoad()
    return S_OK;
 }
 
+#ifndef __STANDALONE__
 void Rubber::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -874,15 +877,15 @@ void Rubber::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
@@ -892,6 +895,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
    break;
    }
 }
+#endif
 
 void Rubber::FlipY(const Vertex2D& pvCenter)
 {

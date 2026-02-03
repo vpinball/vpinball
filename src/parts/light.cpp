@@ -7,6 +7,8 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 #include "utils/bulb.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
@@ -1027,16 +1029,16 @@ void Light::PutPointCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
+#ifndef __STANDALONE__
 void Light::EditMenu(CMenu &menu)
 {
-#ifndef __STANDALONE__
     menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-#endif
 }
+#endif
 
 void Light::AddPoint(int x, int y, const bool smooth)
 {
@@ -1071,6 +1073,7 @@ void Light::AddPoint(int x, int y, const bool smooth)
    STOPUNDO
 }
 
+#ifndef __STANDALONE__
 void Light::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -1086,15 +1089,15 @@ void Light::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
@@ -1102,6 +1105,7 @@ void Light::DoCommand(int icmd, int x, int y)
       break;
    }
 }
+#endif
 
 STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
 {

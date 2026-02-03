@@ -8,6 +8,8 @@
 #include "renderer/captureExt.h"
 #endif
 #include "core/VPXPluginAPIImpl.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 Flasher::~Flasher()
 {
@@ -316,6 +318,7 @@ void Flasher::MoveOffset(const float dx, const float dy)
    m_dynamicVertexBufferRegenerate = true;
 }
 
+#ifndef __STANDALONE__
 void Flasher::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -331,15 +334,15 @@ void Flasher::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
@@ -347,6 +350,7 @@ void Flasher::DoCommand(int icmd, int x, int y)
       break;
    }
 }
+#endif
 
 void Flasher::AddPoint(int x, int y, const bool smooth)
 {

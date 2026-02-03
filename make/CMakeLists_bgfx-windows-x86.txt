@@ -54,16 +54,18 @@ add_executable(vpinball WIN32
    src/core/stdafx.h
    src/renderer/captureExt.cpp
    src/renderer/captureExt.h
-   src/ui/worker.cpp
-   src/ui/worker.h
-   src/ui/resource.h
 
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
 
+   src/ui/win/DragPointDialogs.h
+   src/ui/win/DragPointDialogs.cpp
+
+   src/ui/worker.cpp
+   src/ui/worker.h
+   src/ui/resource.h
    src/ui/paintsur.cpp
    src/ui/paintsur.h
-
    src/ui/Debugger.cpp
    src/ui/Debugger.h
    src/ui/dialogs/AboutDialog.cpp
