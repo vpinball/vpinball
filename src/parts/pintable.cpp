@@ -1586,7 +1586,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       string optId = trim_string(m_tableName);
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
       const auto propId
-         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, false, m_version));
+         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
       g_pvp->m_settings.Set(propId, m_version, false);
    }
 
