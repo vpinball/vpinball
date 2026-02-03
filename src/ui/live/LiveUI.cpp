@@ -402,24 +402,28 @@ void LiveUI::RenderUI()
 
    // Update textures
    if (draw_data->Textures != nullptr)
+   {
       for (ImTextureData *tex : *draw_data->Textures)
       {
          if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates)
          {
-            // Somewhat overkill as we treat update as destroy/create but fine enough (just slightly impact performance)
             assert(tex->GetPitch() == tex->Width * 4);
             assert(tex->Format == ImTextureFormat_RGBA32);
-            std::shared_ptr<BaseTexture> texture;
-            BaseTexture::Update(texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
-            tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadTexture(texture.get(), false));
+            if (tex->Status == ImTextureStatus_WantCreate)
+               tex->BackendUserData = new std::shared_ptr<BaseTexture>();
+            auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
+            BaseTexture::Update(*texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
+            tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadTexture((*texture).get(), false));
             tex->SetStatus(ImTextureStatus_OK);
          }
-         if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
+         else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
          {
+            delete static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
             tex->SetTexID(ImTextureID_Invalid);
             tex->SetStatus(ImTextureStatus_Destroyed);
          }
       }
+   }
 
    // Update meshes and renders
    const ImGuiIO &io = ImGui::GetIO();
@@ -468,7 +472,7 @@ void LiveUI::RenderUI()
          {
             auto ib = std::make_shared<IndexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
             auto vb = std::make_shared<VertexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
-            m_meshBuffers[n] = std::make_shared<MeshBuffer>(vb, ib, true);
+            m_meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
          }
 
          Vertex3D_NoTex2 *vb;
@@ -491,13 +495,6 @@ void LiveUI::RenderUI()
          m_meshBuffers[n]->m_ib->Lock(ib);
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
-
-         #ifdef ENABLE_BGFX
-         // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: uploads are supposed to happen in the 'preCmd' list (before any render command)
-         // so this should not have any effect, still it does. This definitely needs more investigation...
-         m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
-         m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
-         #endif
       }
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
@@ -506,7 +503,8 @@ void LiveUI::RenderUI()
          {
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort--, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            depthSort--;
          }
       }
    }

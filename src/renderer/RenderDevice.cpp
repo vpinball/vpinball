@@ -1938,7 +1938,7 @@ void RenderDevice::ApplyRenderStates()
    m_renderstate.Apply(this);
 }
 
-void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
+void RenderDevice::CopyRenderAndShaderStates(const bool copyTo, RenderDeviceState& state)
 {
    assert(state.m_rd == this);
    CopyRenderStates(copyTo, state.m_renderState);

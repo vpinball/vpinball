@@ -689,6 +689,21 @@ void Shader::Begin()
    current_shader = this;
 
    #if defined(ENABLE_BGFX)
+   // MipMap generation will drop previously bound uniforms, so we need to ensure it is done before binding the uniforms
+   for (const auto& uniformName : m_uniforms[m_state->m_technique])
+      if (ShaderUniform::coreUniforms[uniformName].type == ShaderUniformType::SUT_Sampler)
+      {
+         const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[uniformName];
+         const int v = *(int*)src;
+         const int pos = v & 0x0FF;
+         std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
+         const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
+         const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
+         const SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE : (SamplerFilter)((v >> 20) & 0x0F);
+         const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE && filter != SF_BILINEAR);
+      }
+      else
+         break; // We sorted the samplers before other uniforms
 
    #else
    if (m_boundTechnique != m_state->m_technique)
@@ -1398,6 +1413,19 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       PLOGD << ss.str();
       */
    }
+
+   // Put sampler uniforms at the beginning to speed up binding (see ApplyUniform)
+   std::stable_sort(m_uniforms[technique].begin(), m_uniforms[technique].end(),
+      [](ShaderUniforms a, ShaderUniforms b)
+      {
+         const bool aIsSampler = ShaderUniform::coreUniforms[a].type == ShaderUniformType::SUT_Sampler;
+         const bool bIsSampler = ShaderUniform::coreUniforms[b].type == ShaderUniformType::SUT_Sampler;
+         if (aIsSampler && !bIsSampler)
+            return true;
+         if (!aIsSampler && bIsSampler)
+            return false;
+         return false;
+      });
 }
 
 // Embedded shaders

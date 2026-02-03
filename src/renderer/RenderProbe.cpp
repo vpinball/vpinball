@@ -414,7 +414,7 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool render_balls, const bool render_dynamic)
 {
    m_rd->ResetRenderState();
-   m_rd->CopyRenderStates(true, *m_rdState);
+   m_rd->CopyRenderAndShaderStates(true, *m_rdState);
 
    const unsigned int prevRenderMask = g_pplayer->m_renderer->m_render_mask;
    g_pplayer->m_renderer->m_render_mask |= Renderer::REFLECTION_PASS;
@@ -453,7 +453,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
 
    // Restore initial render states and camera
    g_pplayer->m_renderer->m_render_mask = prevRenderMask;
-   m_rd->CopyRenderStates(false, *m_rdState);
+   m_rd->CopyRenderAndShaderStates(false, *m_rdState);
    m_rd->SetDefaultRenderState();
    g_pplayer->m_renderer->GetMVP().SetView(initialViewMat);
 }
