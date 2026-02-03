@@ -113,7 +113,7 @@ static void AudioCallback(const float* samples, size_t frameCount, uint32_t samp
     }, cbData);
 }
 
-static void StartAltSound(const string& gameId, const string& vpmPath, uint64_t hardwareGen)
+static void StartAltSound(const string& gameId, const string& basePath, uint64_t hardwareGen)
 {
     if (isRunning) {
         isRunning = false;
@@ -124,9 +124,9 @@ static void StartAltSound(const string& gameId, const string& vpmPath, uint64_t 
     vpxApi->GetVpxInfo(&vpxInfo);
     AltSoundSetLogger(vpxInfo.prefPath, ALTSOUND_LOG_LEVEL_INFO, false);
 
-    LOGI("Initializing AltSound for game: %s, vpmPath: %s", gameId.c_str(), vpmPath.c_str());
+    LOGI("Initializing AltSound for game: %s, basePath: %s", gameId.c_str(), basePath.c_str());
 
-    if (AltSoundInit(vpmPath, gameId, 44100, 2, 128)) {
+    if (AltSoundInit(basePath, gameId, 44100, 2, 128)) {
         AltSoundSetAudioCallback(AudioCallback, nullptr);
         AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(hardwareGen));
 
@@ -179,21 +179,31 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
     const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
     assert(msg != nullptr && msg->gameId != nullptr);
 
-    std::filesystem::path altsoundFolder = altsoundFolderProp_Get();
+    VPXTableInfo tableInfo;
+    vpxApi->GetTableInfo(&tableInfo);
+    std::filesystem::path tablePath = tableInfo.path;
 
-    if (altsoundFolder.empty()) {
-        VPXTableInfo tableInfo;
-        vpxApi->GetTableInfo(&tableInfo);
-        std::filesystem::path tablePath = tableInfo.path;
-        altsoundFolder = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altsound");
+    std::filesystem::path basePath;
+
+    // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
+    if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound" / msg->gameId); !path1.empty())
+        basePath = tablePath.parent_path();
+    // Priority 2: pinmame/altsound/<rom>
+    else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altsound" / msg->gameId); !path2.empty())
+        basePath = tablePath.parent_path() / "pinmame";
+    // Priority 3: global setting
+    else
+    {
+        std::filesystem::path altsoundFolder = altsoundFolderProp_Get();
+        if (!altsoundFolder.empty())
+            basePath = altsoundFolder.parent_path();
     }
 
-    if (!altsoundFolder.empty()) {
-        std::filesystem::path vpmPath = altsoundFolder.parent_path();
-        std::filesystem::path altsoundGamePath = altsoundFolder / msg->gameId;
+    if (!basePath.empty()) {
+        std::filesystem::path altsoundGamePath = basePath / "altsound" / msg->gameId;
         if (std::filesystem::exists(altsoundGamePath)) {
             LOGI("Found altsound directory for game: %s at %s", msg->gameId, altsoundGamePath.c_str());
-            StartAltSound(msg->gameId, vpmPath.string(), msg->hardwareGen);
+            StartAltSound(msg->gameId, basePath.string(), msg->hardwareGen);
         } else {
             LOGI("No altsound directory found for game: %s (checked: %s)", msg->gameId, altsoundGamePath.c_str());
         }
