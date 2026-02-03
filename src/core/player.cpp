@@ -1159,7 +1159,7 @@ void Player::DestroyBall(Ball *pBall)
 void Player::SetCabinetAutoFitMode(int mode)
 {
    m_cabinetAutoFitMode = mode;
-   if (m_cabinetAutoFitMode != 0)
+   if (m_cabinetAutoFitMode != 0 && m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
    {
       Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
       m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_cabinetAutoFitPos, m_cabinetAutoFitMode == 2, [](string) { });
@@ -1169,7 +1169,7 @@ void Player::SetCabinetAutoFitMode(int mode)
 void Player::SetCabinetAutoFitPos(float pos)
 {
    m_cabinetAutoFitPos = pos;
-   if (m_cabinetAutoFitMode == 1)
+   if (m_cabinetAutoFitMode == 1 && m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
    {
       Vertex3Ds playerPos(m_ptable->m_settings.GetPlayer_ScreenPlayerX(), m_ptable->m_settings.GetPlayer_ScreenPlayerY(), m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
       m_ptable->GetViewSetup().SetWindowAutofit(m_ptable, playerPos, m_renderer->GetDisplayAspectRatio(), m_cabinetAutoFitPos, m_cabinetAutoFitMode == 2, [](string) { });
