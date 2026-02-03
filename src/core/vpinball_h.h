@@ -251,7 +251,6 @@ public:
       // Read/write user documents
       Tables,
       Preferences,
-      AutoSave,
    };
    std::filesystem::path GetAppPath(AppSubFolder sub, const std::filesystem::path& file = std::filesystem::path()) const;
 
@@ -262,6 +261,7 @@ public:
       Music, // 'music' folder along table file, used by PlayMusic() script function
       Cache, // 'cache/table_name/' folder along table file, used to cache player data (used textures to be loaded in GPU mem, compressed textures,...)
       User, // 'user' folder along table file, used to save user data (highscores, settings,...)
+      AutoSave,
    };
    std::filesystem::path GetTablePath(const PinTable* table, TableSubFolder sub, bool searchForWriting) const;
 

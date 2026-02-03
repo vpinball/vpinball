@@ -419,6 +419,7 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
       case TableSubFolder::Music: return basePath / "music"; break;
       case TableSubFolder::Cache: return basePath / "cache"; break;
       case TableSubFolder::User: return basePath / "user"; break;
+      case TableSubFolder::AutoSave: return basePath / "autosave"; break;
       default: return basePath; break;
       }
    };
@@ -477,6 +478,11 @@ std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFold
             std::filesystem::create_directories(path);
             PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
          }
+         break;
+
+      case TableSubFolder::AutoSave:
+         // AutoSave along main application
+         path = m_appPath;
          break;
 
       default:
