@@ -101,6 +101,8 @@ LiveUI::~LiveUI()
       io.BackendFlags &= ~ImGuiBackendFlags_RendererHasTextures;
       for (auto tex : ImGui::GetPlatformIO().Textures)
       {
+         delete static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
+         tex->BackendUserData = nullptr;
          tex->SetTexID(ImTextureID_Invalid);
          tex->SetStatus(ImTextureStatus_Destroyed);
       }
@@ -419,6 +421,7 @@ void LiveUI::RenderUI()
          else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
          {
             delete static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
+            tex->BackendUserData = nullptr;
             tex->SetTexID(ImTextureID_Invalid);
             tex->SetStatus(ImTextureStatus_Destroyed);
          }
