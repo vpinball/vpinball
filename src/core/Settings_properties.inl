@@ -1374,8 +1374,8 @@ PropIntUnbounded(Editor, CodeViewPosX, "CodeViewPosX"s, "Script window X positio
 PropIntUnbounded(Editor, CodeViewPosY, "CodeViewPosY"s, "Script window Y position"s, 0);
 PropIntUnbounded(Editor, CodeViewPosWidth, "CodeViewPosWidth"s, "Script window width"s, 640);
 PropIntUnbounded(Editor, CodeViewPosHeight, "CodeViewPosHeight"s, "Script window height"s, 490);
-PropIntUnbounded(Editor, DebuggerPosX, "DebuggerPosX"s, "Debugger window X position"s, 0);
-PropIntUnbounded(Editor, DebuggerPosY, "DebuggerPosY"s, "Debugger window Y position"s, 0);
+PropIntDyn(Editor, DebuggerPosX, "DebuggerPosX"s, "Debugger window X position"s, INT_MIN, INT_MAX, 0);
+PropIntDyn(Editor, DebuggerPosY, "DebuggerPosY"s, "Debugger window Y position"s, INT_MIN, INT_MAX, 0);
 PropIntUnbounded(Editor, DebuggerWidth, "DebuggerWidth"s, "Debugger window width"s, 1000);
 PropIntUnbounded(Editor, DebuggerHeight, "DebuggerHeight"s, "Debugger window height"s, 800);
 PropIntUnbounded(Editor, MaterialMngPosX, "MaterialMngPosX"s, "Material Manager window X position"s, 0);
