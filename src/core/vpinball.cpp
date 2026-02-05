@@ -1262,6 +1262,7 @@ void VPinball::DoPlay(const int playMode)
    if (g_pplayer)
       return; // Can't play twice
 
+   PinTableWnd *const tableEditor = GetActiveTableEditor();
    CComObject<PinTable> *const table = GetActiveTable();
    if (table == nullptr)
       return;
@@ -1279,7 +1280,8 @@ void VPinball::DoPlay(const int playMode)
       PinTable *live_table = table->CopyForPlay();
       if (live_table != nullptr)
       {
-         table->EndAutoSaveCounter();
+         if (tableEditor)
+            tableEditor->EndAutoSaveCounter();
          new Player(live_table, playMode);
       }
    }
@@ -2017,7 +2019,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          switch (wParam)
          {
          case TIMER_ID_AUTOSAVE:
-            ptCur->m_table->AutoSave();
+            ptCur->AutoSave();
             break;
 
          case TIMER_ID_CLOSE_TABLE:

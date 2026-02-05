@@ -33,7 +33,7 @@ PinTableMDI::~PinTableMDI()
       m_tableWnd->m_table->m_searchSelectDlg.Destroy();
 #endif
 
-   m_tableWnd->m_table->FVerifySaveToClose();
+   m_tableWnd->FVerifySaveToClose();
 
    RemoveFromVectorSingle(m_vpxEditor->m_vtable, m_tableWnd.get());
 }

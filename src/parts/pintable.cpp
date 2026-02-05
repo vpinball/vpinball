@@ -138,23 +138,6 @@ PinTable::~PinTable()
       m_liveBaseTable->Release();
 }
 
-void PinTable::FVerifySaveToClose()
-{
-#ifndef __STANDALONE__
-   if (!m_vAsyncHandles.empty())
-   {
-      /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
-      //m_vpinball->MessageBox("Async work items not done", nullptr, 0);
-
-      // Close the remaining handles here, since the window messages will never be processed
-      for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
-         CloseHandle(m_vAsyncHandles[i]);
-
-      m_vpinball->SetActionCur(string());
-   }
-#endif
-}
-
 void PinTable::UpdatePropertyImageList()
 { 
 #ifndef __STANDALONE__
@@ -777,63 +760,6 @@ HRESULT PinTable::TableSave()
 HRESULT PinTable::SaveAs()
 {
    return Save(true);
-}
-
-void PinTable::BeginAutoSaveCounter()
-{
-#ifndef __STANDALONE__
-   if (m_vpinball->m_autosaveTime > 0)
-       m_vpinball->SetTimer(VPinball::TIMER_ID_AUTOSAVE, m_vpinball->m_autosaveTime, nullptr);
-#endif
-}
-
-void PinTable::EndAutoSaveCounter()
-{
-#ifndef __STANDALONE__
-   m_vpinball->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-#endif
-}
-
-void PinTable::AutoSave()
-{
-#ifndef __STANDALONE__
-   if (m_sdsCurrentDirtyState <= eSaveAutosaved)
-      return;
-
-   m_vpinball->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-
-   m_vpinball->SetActionCur(LocalString(IDS_AUTOSAVING).m_szbuffer);
-   m_vpinball->SetCursorCur(nullptr, IDC_WAIT);
-
-   FastIStorage * const pstgroot = new FastIStorage();
-   pstgroot->AddRef();
-
-   const HRESULT hr = SaveToStorage(pstgroot);
-
-   m_undo.SetCleanPoint((SaveDirtyState)min((int)m_sdsDirtyProp, (int)eSaveAutosaved));
-   m_pcv->SetClean((SaveDirtyState)min((int)m_sdsDirtyScript, (int)eSaveAutosaved));
-   SetNonUndoableDirty((SaveDirtyState)min((int)m_sdsNonUndoableDirty, (int)eSaveAutosaved));
-
-   AutoSavePackage * const pasp = new AutoSavePackage();
-   pasp->pstg = pstgroot;
-   pasp->tableindex = FindIndexOf(m_vpinball->m_vtable, m_tableEditor);
-   pasp->hwndtable = m_tableEditor->GetHwnd();
-   pasp->table = this;
-
-   if (hr == S_OK)
-   {
-      const HANDLE hEvent = m_vpinball->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
-      m_vAsyncHandles.push_back(hEvent);
-
-      m_vpinball->SetActionCur("Completing AutoSave"s);
-   }
-   else
-   {
-      m_vpinball->SetActionCur(string());
-   }
-
-   m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
-#endif
 }
 
 HRESULT PinTable::Save(const bool saveAs)
