@@ -753,9 +753,8 @@ private:
 
 
 
-VRDevice::VRDevice()
+VRDevice::VRDevice(const Settings& settings)
 {
-   const Settings& settings = g_pvp->GetActiveTable()->m_settings;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
       // Scene offset (vertical rotation and horizontal shift)
       m_orientation = settings.GetPlayerVR_Orientation();

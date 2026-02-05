@@ -1200,13 +1200,12 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
          g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
    }
 
-	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
 #ifndef __STANDALONE__
-	if (pt)
+   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
 	{
-		pt->m_pcv->SetVisible(true);
-		pt->m_pcv->ShowWindow(SW_RESTORE);
-		pt->m_pcv->ColorError(nLine, nChar);
+      pt->m_table->m_pcv->SetVisible(true);
+      pt->m_table->m_pcv->ShowWindow(SW_RESTORE);
+      pt->m_table->m_pcv->ColorError(nLine, nChar);
 	}
 #endif
 
@@ -1260,10 +1259,10 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
-	if (pt)
+   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
 	{
-		pt->m_pcv->AppendLastErrorTextW(errorStr);
-		pt->m_pcv->SetLastErrorVisibility(true);
+		pt->m_table->m_pcv->AppendLastErrorTextW(errorStr);
+      pt->m_table->m_pcv->SetLastErrorVisibility(true);
 	}
 
 	// Also pop up a dialog if this is a runtime error
@@ -1276,16 +1275,16 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
 		g_pvp->EnableWindow(TRUE);
 
-		if (pt != nullptr)
-			::SetFocus(pt->m_pcv->m_hwndScintilla);
+		if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+			::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
 #endif
 	}
 
 #ifndef __STANDALONE__
 	g_pvp->EnableWindow(TRUE);
 
-	if (pt != nullptr)
-		::SetFocus(pt->m_pcv->m_hwndScintilla);
+	if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+		::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
 #endif
 
 	return S_OK;
@@ -1393,12 +1392,11 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 			g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
 	}
 
-	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
-	if (pt)
+   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
 	{
-		pt->m_pcv->SetVisible(true);
-		pt->m_pcv->ShowWindow(SW_RESTORE);
-		pt->m_pcv->ColorError(nLine, nChar);
+		pt->m_table->m_pcv->SetVisible(true);
+		pt->m_table->m_pcv->ShowWindow(SW_RESTORE);
+		pt->m_table->m_pcv->ColorError(nLine, nChar);
 	}
 
 	// Error log content
@@ -1493,10 +1491,10 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log of the active table
-	if (pt != nullptr)
+   if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
 	{
-		pt->m_pcv->AppendLastErrorTextW(errorStr);
-		pt->m_pcv->SetLastErrorVisibility(true);
+		pt->m_table->m_pcv->AppendLastErrorTextW(errorStr);
+		pt->m_table->m_pcv->SetLastErrorVisibility(true);
 	}
 
 	// Also pop up a dialog.  Suppress the dialog if the user has so
@@ -1516,8 +1514,8 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
 		g_pvp->EnableWindow(TRUE);
 
-		if (pt != nullptr)
-			::SetFocus(pt->m_pcv->m_hwndScintilla);
+		if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+			::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
 	}
 #endif
 

@@ -562,8 +562,13 @@ void PropertyDialog::UpdateComboBox(const vector<string>& contentList, const CCo
 
 void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 {
+   // Invalid selection: discard update
+   ISelect *const psel = pvsel.ElementAt(0);
+   if (psel == nullptr)
+      return;
+
    // Table is locked: just disable property pane
-   if (g_pvp->m_ptableActive && g_pvp->m_ptableActive->IsLocked())
+   if (psel->GetPTable()->IsLocked())
    {
       m_multipleElementsStatic.ShowWindow(SW_HIDE);
       m_nameEdit.ShowWindow(SW_HIDE);
@@ -575,11 +580,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
       m_previousType = eItemTypeCount;
       return;
    }
-
-   // Invalid selection: discard update
-   ISelect *const psel = pvsel.ElementAt(0);
-   if (psel == nullptr)
-      return;
 
    ShowWindow(SW_HIDE);
    m_multipleElementsStatic.ShowWindow();

@@ -89,7 +89,7 @@ void PinUndo::Undo(bool discard)
 
    if (g_pplayer == nullptr && m_undoRecords.size() == m_cleanpoint)
    {
-      const int result = m_table->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
+      const int result = m_table->m_tableEditor->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
       if (result != IDYES)
          return;
    }

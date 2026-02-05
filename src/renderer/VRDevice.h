@@ -11,7 +11,7 @@
 class VRDevice final
 {
 public:
-   VRDevice();
+   VRDevice(const Settings& settings);
    ~VRDevice();
 
    unsigned int GetEyeWidth() const { return m_eyeWidth; }

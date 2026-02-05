@@ -48,8 +48,7 @@ struct WhereUsedInfo
 class VPXFileFeedback;
 namespace VPX::InGameUI { class InGameUIItem; }
 
-class PinTable : public CWnd,
-                 public CComObjectRootEx<CComSingleThreadModel>,
+class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
                  public IConnectionPointContainerImpl<PinTable>,
                  public EventProxy<PinTable, &DIID_ITableEvents>,
@@ -307,17 +306,16 @@ public:
 
    HRESULT GetTypeName(BSTR *pVal) const final;
 
-   void SetCaption(const string &szCaption);
    void SetMouseCapture();
-   int ShowMessageBox(const char *text) const;
-   POINT GetScreenPoint() const;
 
-   void UIRenderPass2(Sur *const psur) final;
-   void Paint(HDC hdc);
-   ISelect *HitTest(const int x, const int y);
+   // IEditable
+   void UIRenderPass2(Sur *const psur) final { }
+
+   // ISelect
+   void OnLButtonDown(int x, int y) final;
+   void OnLButtonUp(int x, int y) final { }
+   void OnMouseMove(int x, int y) final { }
    void SetDirtyDraw() final;
-
-   void Render3DProjection(Sur *const psur);
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
    bool GetEMReelsEnabled() const { return m_renderEMReels; } // Enable dispreel on backdrop
@@ -325,7 +323,6 @@ public:
    void Copy(int x, int y);
    void Paste(const bool atLocation, const int x, const int y);
 
-   void ExportBlueprint();
    void ExportTableMesh();
    void ImportBackdropPOV(const string &filename);
    void ExportBackdropPOV() const;
@@ -343,6 +340,7 @@ public:
    bool ExportImage(const Texture *const ppi, const string &filename);
    Texture* ImportImage(const string &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
+
    Texture *GetImage(const string &szName) const;
    bool GetImageLink(const Texture *const ppi) const;
    PinBinary *GetImageLinkBinary(const int id);
@@ -371,7 +369,6 @@ public:
    void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
 #ifndef __STANDALONE__
-   void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
    void DoCommand(int icmd, int x, int y) final;
 #endif
    bool FMutilSelLocked();
@@ -410,17 +407,9 @@ public:
    IEditable *GetElementByName(const char *const name) const;
    void OnDelete();
 
-   void DoLeftButtonDown(int x, int y, bool zoomIn);
-   void OnLeftButtonUp(int x, int y);
-   void OnRightButtonDown(int x, int y);
-   void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
-   void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
-   void AssignSelectionToPartGroup(PartGroup *group);
-   void OnRightButtonUp(int x, int y);
-   void DoMouseMove(int x, int y);
-   void OnLeftDoubleClick(int x, int y);
    void UseTool(int x, int y, int tool);
-   void OnKeyDown(int key);
+
+   void AssignSelectionToPartGroup(PartGroup *group);
 
    // Transform editor window coordinates to table coordinates
    Vertex2D TransformPoint(int x, int y) const;
@@ -460,9 +449,6 @@ public:
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
 
-   void SetZoom(float zoom);
-   void SetMyScrollInfo();
-
    void BeginUndo() final;
    void EndUndo() final;
    void Undo();
@@ -477,14 +463,6 @@ public:
 
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
-
-   void OnLButtonDown(int x, int y) final;
-   void OnLButtonUp(int x, int y) final;
-   void OnMouseMove(int x, int y) final;
-   void OnMouseMove(const short x, const short y);
-
-   void SetDefaultView();
-   void GetViewRect(FRect *pfrect) const;
 
    bool IsNameUnique(const wstring& wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
@@ -598,6 +576,9 @@ public:
    template <class T> T *GetLiveFromStartup(T *obj) { return static_cast<T *>(m_startupToLive[obj]); }
    template <class T> T *GetStartupFromLive(T *obj) { return static_cast<T *>(m_liveToStartup[obj]); }
 
+   // FIXME circular dependency with PinTableWnd, needed while splitting Win32 editor from core parts, but must be removed afterward
+   class PinTableWnd *m_tableEditor = nullptr;
+
 private:
    string m_iniFileName;
 
@@ -605,11 +586,6 @@ private:
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
 public:
-
-   // editor viewport
-   Vertex2D m_offset;
-   float m_zoom;
-
    VectorProtected<ISelect> m_vmultisel;
 
    float m_left = 0.f; // always zero for now
@@ -679,8 +655,6 @@ public:
 
    float m_difficulty = 0.2f; // table difficulty Level
    float m_globalDifficulty;  // global difficulty, i.e. table difficulty optionally overriden by settings
-
-   short2 m_oldMousePos;
 
    string m_image;
    string m_playfieldMaterial;
@@ -790,20 +764,8 @@ public:
    volatile std::atomic<bool> m_savingActive = false;
 
    bool m_renderSolid = true;
-
-   bool m_grid = true; // Display grid or not
-   bool m_backdrop = true;
    bool m_renderDecals = true;
    bool m_renderEMReels = true;
-
-   void OnInitialUpdate() final;
-   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
-   BOOL OnEraseBkgnd(CDC &dc) final;
-
-   void SetMouseCursor();
-   void OnLeftButtonDown(const short x, const short y);
-   void OnMouseWheel(const short x, const short y, const short zDelta);
-   void OnSize();
    int GetGlobalEmissionScale() const;
    void SetGlobalEmissionScale(const int value);
    float GetGlobalDifficulty() const;
@@ -825,9 +787,6 @@ public:
    float GetPlayfieldSlope() const;
    float GetPlayfieldOverridenSlope() const;
 
-   void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
-   PinTableMDI *GetMDITable() const { return m_mdiTable; }
-
    const WCHAR *GetCollectionNameByElement(const ISelect *const element) const;
    void RefreshProperties();
 
@@ -846,21 +805,16 @@ public:
 private:
    unsigned int m_tablelocked = 0;
 
-   PinTableMDI *m_mdiTable = nullptr;
    string m_notesText;
    ankerl::unordered_dense::map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
    ankerl::unordered_dense::map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
    ankerl::unordered_dense::map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
    ankerl::unordered_dense::map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
-   bool m_moving = false;
 
    PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it
    int m_loadTemp[5] = { 0, 0, 0, 0, 0 }; // Used to temporarily store the number of elements loaded for each type (subobjects, sounds, textures, fonts, collections) during loading phase
 
    ankerl::unordered_dense::set<std::string> m_loggedSoundErrors;
-
-   bool m_dirtyDraw = true; // Whether our background bitmap is up to date
-   HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
 
    ToneMapper m_toneMapper = ToneMapper::TM_AGX;
    float m_exposure = 1.f;

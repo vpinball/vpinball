@@ -862,7 +862,7 @@ void InputManager::CreateInputActions()
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
             return;
-         if (g_pvp->m_ptableActive->TournamentModePossible())
+         if (g_pplayer->m_ptable->TournamentModePossible())
             g_pvp->GenerateTournamentFile();
       }));
 

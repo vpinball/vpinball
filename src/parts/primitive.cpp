@@ -1950,10 +1950,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   Material * const mat = new Material();
                   if (ObjLoader::LoadMaterial(szMatName, mat))
                   {
-                     CComObject<PinTable> * const pActiveTable = g_pvp->GetActiveTable();
-                     if (pActiveTable)
-                         pActiveTable->AddMaterial(mat);
-
+                     prim->GetPTable()->AddMaterial(mat);
                      prim->m_d.m_szMaterial = mat->m_name;
                   }
                }

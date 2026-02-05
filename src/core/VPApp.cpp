@@ -1008,8 +1008,7 @@ BOOL VPApp::OnIdle(LONG count)
    {
       // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
       // first close the current table
-      CComObject<PinTable>* const pt = m_vpinball.GetActiveTable();
-      if (pt)
+      if (const auto pt = m_vpinball.GetActiveTableEditor(); pt)
          m_vpinball.CloseTable(pt);
       // then select the new one, and if one was selected, play it
       m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
@@ -1046,6 +1045,8 @@ BOOL VPApp::PreTranslateMessage(MSG& msg)
       }
    }
    return __super::PreTranslateMessage(msg);
+#else
+   return FALSE;
 #endif
 }
 
@@ -1080,10 +1081,9 @@ int VPApp::MainMsgLoop()
    {
    }
 #else
-   CComObject<PinTable>* const pt = m_vpinball.GetActiveTable();
-   if (pt)
+   if (auto pt = m_vpinball.GetActiveTableEditor(); pt)
    {
-      if (pt->m_pcv->m_scriptError)
+      if (pt->m_table->m_pcv->m_scriptError)
          retval = 1;
       m_vpinball.CloseTable(pt);
    }

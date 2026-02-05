@@ -47,7 +47,7 @@ void ISelect::OnMouseMove(int x, int y)
    if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
    {
       PinTable * const ptable = GetPTable();
-      const float inv_zoom = 1.0f / ptable->m_zoom;
+      const float inv_zoom = 1.0f / ptable->m_tableEditor->GetZoom();
 
       if (!m_markedForUndo)
       {

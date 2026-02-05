@@ -86,7 +86,8 @@ public:
    bool ParseCommand(const size_t code, const bool notify);
    void LoadEditorSetupFromSettings();
 
-   CComObject<PinTable> *GetActiveTable();
+   class PinTableWnd* GetActiveTableEditor();
+   CComObject<PinTable>* GetActiveTable();
    bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);
    void LoadFileName(const string& szFileName, const bool updateEditor, VPXFileFeedback* feedback = nullptr);
    void SetClipboard(vector<IStream*> * const pvstm);
@@ -114,7 +115,7 @@ public:
    STDMETHOD(FireKnocker)(int Count);
    STDMETHOD(QuitPlayer)(int CloseType);
 
-   void CloseTable(const PinTable * const ppt);
+   void CloseTable(PinTableWnd * ppt);
 
    void ToggleToolbar();
    void SetEnableMenuItems();
@@ -197,8 +198,8 @@ public:
    // handler for PinSim::FrontEndControls messages
    LRESULT OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam);
 
-   vector< CComObject<PinTable>* > m_vtable;
-   CComObject<PinTable> *m_ptableActive;
+   vector<PinTableWnd*> m_vtable;
+   CComObject<PinTable> *m_ptableActive = nullptr;
 
 //    HWND m_hwndToolbarMain;
    HWND m_hwndStatusBar;

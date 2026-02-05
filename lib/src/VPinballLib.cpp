@@ -105,13 +105,13 @@ void VPinballLib::AppIterate()
          || g_pplayer->GetCloseState() == Player::CS_USER_INPUT))
          return;
 
-      CComObject<PinTable>* pActiveTable = g_pvp->GetActiveTable();
+      auto pActiveTableEditor = g_pvp->GetActiveTableEditor();
 
       if (g_pplayer->GetCloseState() == Player::CS_CLOSE_CAPTURE_SCREENSHOT) {
          if (m_captureInProgress)
             return;
 
-         std::filesystem::path tablePath(pActiveTable->m_filename);
+         std::filesystem::path tablePath(pActiveTableEditor->m_table->m_filename);
          string imageFilename = tablePath.stem().string() + ".jpg";
          std::filesystem::path imagePath = tablePath.parent_path() / imageFilename;
 
@@ -144,13 +144,13 @@ void VPinballLib::AppIterate()
       m_gameLoop = nullptr;
 
       // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
-      pActiveTable->m_settings.Load(g_pplayer->m_ptable->m_settings);
-      pActiveTable->m_settings.SetModified(g_pplayer->m_ptable->m_settings.IsModified());
+      pActiveTableEditor->m_table->m_settings.Load(g_pplayer->m_ptable->m_settings);
+      pActiveTableEditor->m_table->m_settings.SetModified(g_pplayer->m_ptable->m_settings.IsModified());
 
       delete g_pplayer;
       g_pplayer = nullptr;
 
-      g_pvp->CloseTable(pActiveTable);
+      g_pvp->CloseTable(pActiveTableEditor);
    }
 }
 
@@ -511,14 +511,14 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
 
 VPINBALL_STATUS VPinballLib::ExtractTableScript()
 {
-   CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
-   if (!pActiveTable)
+   auto pActiveTableEditor = g_pvp->GetActiveTableEditor();
+   if (!pActiveTableEditor)
       return VPINBALL_STATUS_FAILURE;
 
    std::filesystem::path tempPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "temp_script.vbs");
-   pActiveTable->m_pcv->SaveToFile(tempPath.string());
+   pActiveTableEditor->m_table->m_pcv->SaveToFile(tempPath.string());
 
-   std::filesystem::path tablePath(pActiveTable->m_filename);
+   std::filesystem::path tablePath(pActiveTableEditor->m_table->m_filename);
    std::filesystem::path destPath = tablePath.parent_path() / (tablePath.stem().string() + ".vbs");
 
    try {
@@ -529,11 +529,11 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    catch (const std::exception& e) {
       PLOGE.printf("Failed to save script file: %s", e.what());
       std::filesystem::remove(tempPath);
-      g_pvp->CloseTable(pActiveTable);
+      g_pvp->CloseTable(pActiveTableEditor);
       return VPINBALL_STATUS_FAILURE;
    }
 
-   g_pvp->CloseTable(pActiveTable);
+   g_pvp->CloseTable(pActiveTableEditor);
 
    return VPINBALL_STATUS_SUCCESS;
 }

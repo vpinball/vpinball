@@ -4,10 +4,10 @@
 #include "VPXSaveFileProgressBar.h"
 
 
-VPXSaveFileProgressBar::VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CMDIChild* mdiTable)
-   : m_app{app},
-     m_statusBar{statusBar},
-     m_mdiTable{mdiTable}
+VPXSaveFileProgressBar::VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CWnd* parent)
+   : m_app(app)
+   , m_statusBar(statusBar)
+   , m_parent(parent)
 {
 }
 
@@ -99,7 +99,7 @@ void VPXSaveFileProgressBar::CollectionHasBeenProcessed(int collectionCount, int
 
 void VPXSaveFileProgressBar::ErrorOccured(const char* error)
 {
-   m_mdiTable->MessageBox(error, "Visual Pinball", MB_ICONERROR);
+   m_parent->MessageBox(error, "Visual Pinball", MB_ICONERROR);
 }
 
 void VPXSaveFileProgressBar::Done()

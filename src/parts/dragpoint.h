@@ -36,8 +36,11 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
 
+#ifndef __STANDALONE__
    void EditMenu(CMenu &menu) final;
    void DoCommand(int icmd, int x, int y) final;
+#endif
+
    void SetSelectFormat(Sur *psur) final;
    void SetMultiSelectFormat(Sur *psur) final;
    IEditable *GetIEditable() final;

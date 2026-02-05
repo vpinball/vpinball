@@ -108,8 +108,6 @@ VPinball::VPinball()
 
    m_NextTableID = 1;
 
-   m_ptableActive = nullptr;
-
    m_workerthread = nullptr;//Workerthread - only for hanging scripts and autosave - will be created later
 
    m_ToolCur = IDC_SELECT;
@@ -883,8 +881,7 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 #ifndef __STANDALONE__
    if (m_propertyDialog && m_propertyDialog->IsWindow())
       m_propertyDialog->UpdateTabs(pvsel);
-   CComObject<PinTable>* const pt = GetActiveTable();
-   if (pt && !g_pplayer)
+   if (const auto pt = GetActiveTableEditor(); pt && !g_pplayer)
       pt->SetFocus();
 #endif
 }
@@ -1101,165 +1098,129 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    case RECENT_FIRST_MENU_IDM + 5:
    case RECENT_FIRST_MENU_IDM + 6:
    case RECENT_FIRST_MENU_IDM + 7:
-   {
       OpenRecentFile(code);
       return true;
-   }
 
    case IDM_OPEN:
-   {
       LoadFile(true);
       return true;
-   }
+
    case IDM_CLOSE:
    case SC_CLOSE:
-   {
-      CComObject<PinTable> *const ptCur = GetActiveTable();
-      if (ptCur)
+      if (const auto ptCur = GetActiveTableEditor(); ptCur)
          CloseTable(ptCur);
       return true;
-   }
+
    case IDC_COPY:
-   {
       CopyPasteElement(COPY);
       return true;
-   }
+
    case IDC_PASTE:
-   {
       CopyPasteElement(PASTE);
       return true;
-   }
+
    case IDC_PASTEAT:
-   {
       CopyPasteElement(PASTE_AT);
       return true;
-   }
+
    case ID_EDIT_UNDO:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->Undo();
       return true;
-   }
+
    case ID_FILE_EXPORT_BLUEPRINT:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
-         ptCur->ExportBlueprint();
+      if (const auto pt = GetActiveTableEditor(); pt)
+         pt->ExportBlueprint();
       return true;
-   }
+
    case ID_EXPORT_TABLEMESH:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->ExportTableMesh();
       return true;
-   }
+
    case ID_IMPORT_BACKDROPPOV:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->ImportBackdropPOV(string());
       return true;
-   }
+
    case ID_EXPORT_BACKDROPPOV:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->ExportBackdropPOV();
       return true;
-   }
+
    case ID_FILE_EXIT:
-   {
       PostMessage(WM_CLOSE, 0, 0);
       return true;
-   }
+
    case ID_EDIT_PHYSICSOPTIONS:
-   {
       m_physicsOptDialog.DoModal(GetHwnd());
       return true;
-   }
+
    case ID_EDIT_EDITOROPTIONS:
-   {
       m_editorOptDialog.DoModal(GetHwnd());
       // refresh editor options that we may have changed
       LoadEditorSetupFromSettings();
       // force a screen refresh (it an active table is loaded)
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->SetDirtyDraw();
       return true;
-   }
+
    case ID_EDIT_PLAYEROPTIONS:
    {
       PlayerOptionsDialog playerOptsgDlg;
       playerOptsgDlg.DoModal();
       return true;
    }
+
    case ID_TABLE_TABLEINFO:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          m_tableInfoDialog.DoModal(GetHwnd());
       return true;
-   }
+
    case IDM_IMAGE_EDITOR:
    case ID_TABLE_IMAGEMANAGER:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ShowSubDialog(m_imageMngDlg, true);
       return true;
-   }
+
    case IDM_SOUND_EDITOR:
    case ID_TABLE_SOUNDMANAGER:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ShowSubDialog(m_soundMngDlg, true);
       return true;
-   }
+
    case IDM_MATERIAL_EDITOR:
    case ID_TABLE_MATERIALMANAGER:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ShowSubDialog(m_materialDialog, true);
       return true;
-   }
+
    case ID_TABLE_NOTES:
-   {
       if (GetNotesDocker() == nullptr || !GetNotesDocker()->IsWindow())
          GetDefaultNotesDocker();
       else
          GetNotesDocker()->ShowWindow();
       return true;
-   }
+
    case ID_TABLE_FONTMANAGER:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          /*const DWORD foo =*/ DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
       return true;
-   }
+
    case ID_TABLE_DIMENSIONMANAGER:
-   {
       ShowSubDialog(m_dimensionDialog, true);
       return true;
-   }
+
    case IDM_COLLECTION_EDITOR:
    case ID_TABLE_COLLECTIONMANAGER:
-   {
-      CComObject<PinTable> * const ptCur = GetActiveTable();
-      if (ptCur)
+      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ShowSubDialog(m_collectionMngDlg, true);
       return true;
-   }
+
    case ID_TABLE_RENDERPROBEMANAGER:
-   {
       ShowSubDialog(m_renderProbeDialog, true);
       return true;
-   }
+
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
       DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
@@ -1267,26 +1228,22 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       LoadEditorSetupFromSettings();
       return true;
    }
+
    case ID_HELP_ABOUT:
-   {
       ShowSubDialog(m_aboutDialog, true);
       return true;
-   }
+
    case ID_WINDOW_CASCADE:
-   {
       MDICascade();
       return true;
-   }
+
    case ID_WINDOW_TILE:
-   {
       MDITile();
       return true;
-   }
+
    case ID_WINDOW_ARRANGEICONS:
-   {
       MDIIconArrange();
       return true;
-   }
    }
 #endif
    return false;
@@ -1391,8 +1348,8 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
    CloseAllDialogs();
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
-   CComObject<PinTable> * const ppt = mdiTable->GetTable();
-   const HRESULT hr = feedback != nullptr ? ppt->LoadGameFromFilename(filename, *feedback) : ppt->LoadGameFromFilename(filename);
+   PinTableWnd *const ppt = mdiTable->GetTableWnd();
+   const HRESULT hr = feedback != nullptr ? ppt->m_table->LoadGameFromFilename(filename, *feedback) : ppt->m_table->LoadGameFromFilename(filename);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
    if (hashing_error)
@@ -1408,43 +1365,43 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
    {
       m_vtable.push_back(ppt);
 
-      ppt->m_title = TitleFromFilename(filename);
+      ppt->m_table->m_title = TitleFromFilename(filename);
 #ifndef __STANDALONE__
       const DWORD attr = GetFileAttributes(filename.c_str());
       if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
-         ppt->m_title += " [READ ONLY]";
+         ppt->m_table->m_title += " [READ ONLY]";
 #else
-      m_ptableActive = ppt;
+      m_ptableActive = ppt->m_table;
 #endif
 
-      ppt->InitTablePostLoad();
+      ppt->m_table->InitTablePostLoad();
 
       AddMDITable(mdiTable);
 
       // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
       // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
-      if (const string filenameAuto = tablePath + ppt->m_title + ".pov"; !FileExists(ppt->GetSettingsFileName()) && FileExists(filenameAuto))
-         ppt->ImportBackdropPOV(filenameAuto);
+      if (const string filenameAuto = tablePath + ppt->m_table->m_title + ".pov"; !FileExists(ppt->m_table->GetSettingsFileName()) && FileExists(filenameAuto))
+         ppt->m_table->ImportBackdropPOV(filenameAuto);
       else if (const string filenameAuto2 = tablePath + "autopov.pov"; FileExists(filenameAuto2))
-         ppt->ImportBackdropPOV(filenameAuto2);
+         ppt->m_table->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      if (std::filesystem::path filenameAuto = SearchScript(ppt, std::filesystem::path(ppt->m_title + ".vbs")); !filenameAuto.empty())
-         ppt->m_pcv->LoadFromFile(filenameAuto.string());
+      if (std::filesystem::path filenameAuto = SearchScript(ppt->m_table, std::filesystem::path(ppt->m_table->m_title + ".vbs")); !filenameAuto.empty())
+         ppt->m_table->m_pcv->LoadFromFile(filenameAuto.string());
       else
       {
-         const auto folder = std::filesystem::path(ppt->m_filename).parent_path();
+         const auto folder = std::filesystem::path(ppt->m_table->m_filename).parent_path();
          std::filesystem::path folderVbs = folder / (folder.filename().string() + ".vbs");
          folderVbs = find_case_insensitive_file_path(folderVbs);
          if (!folderVbs.empty())
-            ppt->m_pcv->LoadFromFile(folderVbs.string());
+            ppt->m_table->m_pcv->LoadFromFile(folderVbs.string());
       }
 
       // auto-import VPP settings, if it exists...
-      if (const string filenameAuto = tablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
-         ppt->ImportVPP(filenameAuto);
+      if (const string filenameAuto = tablePath + ppt->m_table->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
+         ppt->m_table->ImportVPP(filenameAuto);
       else if (const string filenameAuto2 = tablePath + "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
-         ppt->ImportVPP(filenameAuto2);
+         ppt->m_table->ImportVPP(filenameAuto2);
 
       // get the load path from the filename
       m_settings.SetRecentDir_LoadDir(tablePath, false);
@@ -1455,8 +1412,8 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 
       PLOGI << "UI Post Load Start";
 
-      ppt->AddMultiSel(ppt, false, true, false);
-      ppt->SetDirty(eSaveClean);
+      ppt->m_table->AddMultiSel(ppt->m_table, false, true, false);
+      ppt->m_table->SetDirty(eSaveClean);
       if (updateEditor)
       {
 #ifndef __STANDALONE__
@@ -1467,7 +1424,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 
          SetFocus();
 
-         const string& audit = ppt->AuditTable(true);
+         const string &audit = ppt->m_table->AuditTable(true);
          if (audit.find(". Error:"s) != std::string::npos)
          {
             InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
@@ -1480,11 +1437,17 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
    }
 }
 
-CComObject<PinTable> *VPinball::GetActiveTable()
+PinTableWnd* VPinball::GetActiveTableEditor()
 {
-   PinTableMDI * const mdiTable = (PinTableMDI *)GetActiveMDIChild();
-   if (mdiTable && !m_unloadingTable)
-      return mdiTable->GetTable();
+   if (const auto mdiTable = (PinTableMDI *)GetActiveMDIChild(); mdiTable && !m_unloadingTable)
+      return mdiTable->GetTableWnd();
+   return nullptr;
+}
+
+CComObject<PinTable>* VPinball::GetActiveTable()
+{
+   if (const auto mdiTable = (PinTableMDI *)GetActiveMDIChild(); mdiTable && !m_unloadingTable && mdiTable->GetTableWnd())
+      return mdiTable->GetTableWnd()->m_table;
    return nullptr;
 }
 
@@ -1501,7 +1464,7 @@ bool VPinball::CanClose()
    return true;
 }
 
-void VPinball::CloseTable(const PinTable * const ppt)
+void VPinball::CloseTable(PinTableWnd * ppt)
 {
 #ifndef __STANDALONE__
    m_unloadingTable = true;
@@ -1521,15 +1484,14 @@ void VPinball::CloseTable(const PinTable * const ppt)
     if (mdiTable)
         RemoveMDIChild(mdiTable);
 
-    RemoveFromVectorSingle(m_vtable, (CComObject<PinTable>*)ppt);
-    ((CComObject<PinTable>*)ppt)->Release();
+    RemoveFromVectorSingle(m_vtable, ppt);
 #endif
 }
 
 void VPinball::SetEnableMenuItems()
 {
 #ifndef __STANDALONE__
-   CComObject<PinTable> * const ptCur = GetActiveTable();
+   const auto editor = GetActiveTableEditor();
 
    // Set menu item to the correct state
    const CMenu mainMenu = GetMenu();
@@ -1538,8 +1500,9 @@ void VPinball::SetEnableMenuItems()
 
    // is there a valid table??
    constexpr UINT grayed = MF_BYCOMMAND | MF_GRAYED, enabled = MF_BYCOMMAND | MF_ENABLED;
-   if (ptCur)
+   if (editor)
    {
+      CComObject<PinTable> *const ptCur = editor->m_table;
       mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv != nullptr && ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
       mainMenu.EnableMenuItem(IDM_CLOSE, enabled);
@@ -1608,8 +1571,8 @@ void VPinball::SetEnableMenuItems()
       mainMenu.CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       mainMenu.CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
-      mainMenu.CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
-      mainMenu.CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (editor->GetDisplayGrid() ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (editor->GetDisplayBackdrop() ? MF_CHECKED : MF_UNCHECKED));
    }
    else
    {
@@ -2042,34 +2005,29 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          if (m_ToolCur != IDC_SELECT)
             m_ToolCur = IDC_SELECT;
-         CComObject<PinTable>* const ptCur = GetActiveTable();
-         if (ptCur)
+         if (const auto ptCur = GetActiveTableEditor(); ptCur)
             ptCur->SetMouseCursor();
       }
       return FinalWindowProc(uMsg, wParam, lParam);
    }
    case WM_TIMER:
    {
-      CComObject<PinTable>* const ptCur = GetActiveTable();
-      if (!ptCur)
-         break;
+      if (const auto ptCur = GetActiveTableEditor(); ptCur)
+      {
+         switch (wParam)
+         {
+         case TIMER_ID_AUTOSAVE:
+            ptCur->m_table->AutoSave();
+            break;
 
-      switch (wParam)
-      {
-      case TIMER_ID_AUTOSAVE:
-      {
-         ptCur->AutoSave();
-         break;
+         case TIMER_ID_CLOSE_TABLE:
+            KillTimer(TIMER_ID_CLOSE_TABLE);
+            CloseTable(ptCur);
+            return 0;
+         }
+         return FinalWindowProc(uMsg, wParam, lParam);
       }
-
-      case TIMER_ID_CLOSE_TABLE:
-      {
-         KillTimer(TIMER_ID_CLOSE_TABLE);
-         CloseTable(ptCur);
-         return 0;
-      }
-      }
-      return FinalWindowProc(uMsg, wParam, lParam);
+      break;
    }
    case WM_SIZE:
    {
@@ -2556,11 +2514,10 @@ void VPinball::ToggleBackglassView()
    const bool show = !m_backglassView;
    m_backglassView = show;
 
-   for (size_t i = 0; i < m_vtable.size(); i++)
+   for (const auto ptT : m_vtable)
    {
-      PinTable * const ptT = m_vtable[i];
       ptT->SetDefaultView();
-      ptT->SetDirtyDraw();
+      ptT->m_table->SetDirtyDraw();
    }
 
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2645,11 +2602,11 @@ void VPinball::SetViewSolidOutline(size_t viewId)
 void VPinball::ShowGridView()
 {
 #ifndef __STANDALONE__
-   CComObject<PinTable> * const ptCur = GetActiveTable();
+   auto ptCur = GetActiveTableEditor();
    if (ptCur)
    {
-      ptCur->put_DisplayGrid(FTOVB(!ptCur->m_grid));
-      GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
+      ptCur->SetDisplayGrid(!ptCur->GetDisplayGrid());
+      GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->GetDisplayGrid() ? MF_CHECKED : MF_UNCHECKED));
    }
 #endif
 }
@@ -2657,24 +2614,23 @@ void VPinball::ShowGridView()
 void VPinball::ShowBackdropView()
 {
 #ifndef __STANDALONE__
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
+   if (const auto ptCur = GetActiveTableEditor(); ptCur)
    {
-      ptCur->put_DisplayBackdrop(FTOVB(!ptCur->m_backdrop));
-      GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
+      ptCur->SetDisplayBackdrop(!ptCur->GetDisplayBackdrop());
+      GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->GetDisplayBackdrop() ? MF_CHECKED : MF_UNCHECKED));
    }
 #endif
 }
 
 void VPinball::AddControlPoint()
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
+   const auto ptCur = GetActiveTableEditor();
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_vmultisel.empty())
+   if (!ptCur->m_table->m_vmultisel.empty())
    {
-      ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
+      ISelect * const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
@@ -2713,13 +2669,13 @@ void VPinball::AddControlPoint()
 
 void VPinball::AddSmoothControlPoint()
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
+   const auto ptCur = GetActiveTableEditor();
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_vmultisel.empty())
+   if (!ptCur->m_table->m_vmultisel.empty())
    {
-      ISelect * const psel = ptCur->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
@@ -2782,11 +2738,11 @@ void VPinball::OpenNewTable(size_t tableId)
 
 #ifndef __STANDALONE__
    PinTableMDI * const mdiTable = new PinTableMDI(this);
-   CComObject<PinTable>* const ppt = mdiTable->GetTable();
-   m_vtable.push_back(ppt);
+   CComObject<PinTable> *const ppt = mdiTable->GetTable();
    ppt->InitBuiltinTable(tableId);
    ppt->InitTablePostLoad();
 
+   m_vtable.push_back(mdiTable->GetTableWnd());
    AddMDITable(mdiTable);
    mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
    GetLayersListDialog()->ResetView();
@@ -2815,25 +2771,25 @@ void VPinball::OpenRecentFile(const size_t menuId)
 
 void VPinball::CopyPasteElement(const CopyPasteModes mode)
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur && !ptCur->IsLocked())
+   const auto ptCur = GetActiveTableEditor();
+   if (ptCur && !ptCur->m_table->IsLocked())
    {
       const POINT ptCursor = ptCur->GetScreenPoint();
       switch (mode)
       {
       case COPY:
       {
-         ptCur->Copy(ptCursor.x, ptCursor.y);
+         ptCur->m_table->Copy(ptCursor.x, ptCursor.y);
          break;
       }
       case PASTE:
       {
-         ptCur->Paste(false, ptCursor.x, ptCursor.y);
+         ptCur->m_table->Paste(false, ptCursor.x, ptCursor.y);
          break;
       }
       case PASTE_AT:
       {
-         ptCur->Paste(true, ptCursor.x, ptCursor.y);
+         ptCur->m_table->Paste(true, ptCursor.x, ptCursor.y);
          break;
       }
       default:
