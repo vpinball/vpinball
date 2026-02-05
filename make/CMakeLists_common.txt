@@ -346,6 +346,8 @@ set(VPX_SOURCES
 
    src/ui/win/PinTableMDI.cpp
    src/ui/win/PinTableMDI.h
+   src/ui/win/PinTableWnd.cpp
+   src/ui/win/PinTableWnd.h
 
    src/utils/bulb.cpp
    src/utils/bulb.h

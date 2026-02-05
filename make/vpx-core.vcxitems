@@ -942,6 +942,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
@@ -1734,6 +1735,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />

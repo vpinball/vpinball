@@ -37,7 +37,7 @@ void ExitSplashPage::BuildPage()
             m_player->m_liveUI->OpenEditorUI();
          }));
 
-   if (g_pvp->m_ptableActive->TournamentModePossible())
+   if (m_player->m_ptable->TournamentModePossible())
       AddItem(std::make_unique<InGameUIItem>("Generate Tournament File"s, ""s,
          [this]()
          {

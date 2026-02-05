@@ -6,7 +6,7 @@ class CollectionDialogStruct final
 {
 public:
     Collection *pcol;
-    PinTable *ppt;
+    class PinTableWnd *ppt;
 };
 
 class CollectionManagerDialog final : public CDialog

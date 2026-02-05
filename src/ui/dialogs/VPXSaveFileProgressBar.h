@@ -10,7 +10,7 @@
 class VPXSaveFileProgressBar final : public VPXFileFeedback
 {
    public:
-      VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CMDIChild* mdiTable);
+      VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CWnd* mdiTable);
       ~VPXSaveFileProgressBar() override;
 
       void OperationStarted() override;
@@ -28,7 +28,7 @@ class VPXSaveFileProgressBar final : public VPXFileFeedback
 
       HINSTANCE m_app;
       HWND m_statusBar;
-      CMDIChild* m_mdiTable;
+      CWnd* m_parent;
 
       HWND m_progressBar = nullptr;
       int m_loadedElementCount = 0;

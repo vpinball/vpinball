@@ -25,7 +25,7 @@ CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG)
 
 BOOL CollectionManagerDialog::OnInitDialog()
 {
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+    const auto pt = g_pvp->GetActiveTableEditor();
 
     hListHwnd = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
@@ -48,7 +48,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
     lvcol.cx = 100;
     ListView_InsertColumn(hListHwnd, 1, &lvcol);
 
-    pt->ListCollections(hListHwnd);
+    pt->m_table->ListCollections(hListHwnd);
     ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     GotoDlgCtrl(hListHwnd);
     return FALSE;
@@ -57,7 +57,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
 
 void CollectionManagerDialog::EditCollection()
 {
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+    const auto pt = g_pvp->GetActiveTableEditor();
 
     const int sel = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
     if (sel != -1)
@@ -74,7 +74,7 @@ void CollectionManagerDialog::EditCollection()
 
         CollectionDialog *colDlg = new CollectionDialog(cds);
         if (colDlg->DoModal() >= 0)
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->SetNonUndoableDirty(eSaveDirty);
 
         char * const szT = MakeChar(pcol->m_wzName);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
@@ -86,7 +86,7 @@ void CollectionManagerDialog::EditCollection()
 
 INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+    const auto pt = g_pvp->GetActiveTableEditor();
 
     switch(uMsg)
     {
@@ -135,8 +135,8 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 lvitem.iSubItem = 0;
                 ListView_GetItem(hListHwnd, &lvitem);
                 Collection * const pcol = (Collection *)lvitem.lParam;
-                pt->SetCollectionName(pcol, pinfo->item.pszText, hListHwnd, pinfo->item.iItem);
-                pt->SetNonUndoableDirty(eSaveDirty);
+                pt->m_table->SetCollectionName(pcol, pinfo->item.pszText, hListHwnd, pinfo->item.iItem);
+                pt->m_table->SetNonUndoableDirty(eSaveDirty);
                 return TRUE;
             }
             else if (pnmhdr->code == NM_DBLCLK)
@@ -153,7 +153,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
 
 BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+    const auto pt = g_pvp->GetActiveTableEditor();
     UNREFERENCED_PARAMETER(lParam);
 
     switch(LOWORD(wParam))
@@ -165,14 +165,14 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_NEW:
         {
-            pt->NewCollection(hListHwnd, false);
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->NewCollection(hListHwnd, false);
+            pt->m_table->SetNonUndoableDirty(eSaveDirty);
             break;
         }
         case IDC_CREATEFROMSELECTION:
         {
-            pt->NewCollection(hListHwnd, true);
-            pt->SetNonUndoableDirty(eSaveDirty);
+            pt->m_table->NewCollection(hListHwnd, true);
+            pt->m_table->SetNonUndoableDirty(eSaveDirty);
             break;
         }
         case IDC_EDIT:
@@ -202,7 +202,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.iSubItem = 0;
                 ListView_GetItem(hListHwnd, &lvitem1);
                 CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem1.lParam;
-                pt->MoveCollectionUp(pcol);
+                pt->m_table->MoveCollectionUp(pcol);
                 ListView_DeleteItem(hListHwnd, idx);
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx - 1;
@@ -222,7 +222,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_COL_DOWN_BUTTON:
         {
             const int idx = ListView_GetNextItem(hListHwnd, -1, LVNI_SELECTED);
-            if (idx != -1 && (idx < pt->m_vcollection.size() - 1))
+            if (idx != -1 && (idx < pt->m_table->m_vcollection.size() - 1))
             {
                 ::SetFocus(hListHwnd);
                 LVITEM lvitem1 = {};
@@ -231,7 +231,7 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.iSubItem = 0;
                 ListView_GetItem(hListHwnd, &lvitem1);
                 CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem1.lParam;
-                pt->MoveCollectionDown(pcol);
+                pt->m_table->MoveCollectionDown(pcol);
                 ListView_DeleteItem(hListHwnd, idx);
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx + 1;
@@ -263,9 +263,9 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                     lvitem.iSubItem = 0;
                     ListView_GetItem(hListHwnd, &lvitem);
                     CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
-                    pt->RemoveCollection(pcol);
+                    pt->m_table->RemoveCollection(pcol);
                     ListView_DeleteItem(hListHwnd, sel);
-                    pt->SetNonUndoableDirty(eSaveDirty);
+                    pt->m_table->SetNonUndoableDirty(eSaveDirty);
                 }
             }
             break;
@@ -343,12 +343,12 @@ BOOL CollectionDialog::OnInitDialog()
     }
     ::SendMessage(hwndIn, WM_SETREDRAW, TRUE, 0);
 
-    const PinTable * const ppt = pCurCollection.ppt;
+    const auto ppt = pCurCollection.ppt;
 
     ::SendMessage(hwndOut, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-    for (size_t i = 0; i < ppt->m_vedit.size(); i++)
+    for (size_t i = 0; i < ppt->m_table->m_vedit.size(); i++)
     {
-        IEditable * const piedit = ppt->m_vedit[i];
+        IEditable * const piedit = ppt->m_table->m_vedit[i];
         IScriptable * const piscript = piedit->GetScriptable();
         ISelect * const pisel = piedit->GetISelect();
 
@@ -492,7 +492,7 @@ void CollectionDialog::OnOK()
     const size_t groupElements = GetDlgItem(IDC_GROUP_CHECK).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
-    pCurCollection.ppt->SetCollectionName(pcol, GetDlgItem(IDC_NAME).GetWindowText().GetString(), nullptr, 0);
+    pCurCollection.ppt->m_table->SetCollectionName(pcol, GetDlgItem(IDC_NAME).GetWindowText().GetString(), nullptr, 0);
 
     CDialog::OnOK();
 }

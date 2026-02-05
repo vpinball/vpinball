@@ -141,7 +141,7 @@ Player::Player(PinTable *const table, const int playMode)
       #if defined(ENABLE_XR)
          if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
          {
-            m_vrDevice = new VRDevice();
+            m_vrDevice = new VRDevice(m_ptable->m_settings);
             if (m_vrDevice->IsOpenXRReady())
             {
                m_vrDevice->SetupHMD();
@@ -166,7 +166,7 @@ Player::Player(PinTable *const table, const int playMode)
          useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
          if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
             useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
-         m_vrDevice = useVR ? new VRDevice() : nullptr;
+         m_vrDevice = useVR ? new VRDevice(m_ptable->m_settings) : nullptr;
       #endif
    #endif
 
@@ -679,8 +679,8 @@ Player::Player(PinTable *const table, const int playMode)
    g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
    if(g_pvp->GetNotesDocker()!=nullptr)
       g_pvp->GetNotesDocker()->EnableWindow(FALSE);
-   if (m_ptable->m_liveBaseTable)
-      m_ptable->m_liveBaseTable->EnableWindow(FALSE);
+   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
+      pt->EnableWindow(FALSE);
    m_progressDialog.Destroy();
    LockForegroundWindow(true);
    if (m_detectScriptHang)
@@ -927,12 +927,15 @@ Player::~Player()
       g_pvp->SetForegroundWindow();
       if (m_ptable->m_liveBaseTable)
       {
-         m_ptable->m_liveBaseTable->EnableWindow();
-         m_ptable->m_liveBaseTable->SetFocus();
-         m_ptable->m_liveBaseTable->SetActiveWindow();
          m_ptable->m_liveBaseTable->SetDirtyDraw();
          m_ptable->m_liveBaseTable->RefreshProperties();
          m_ptable->m_liveBaseTable->BeginAutoSaveCounter();
+      }
+      if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
+      {
+         pt->EnableWindow();
+         pt->SetFocus();
+         pt->SetActiveWindow();
       }
    }
 
