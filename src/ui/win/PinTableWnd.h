@@ -40,7 +40,12 @@ public:
    float GetZoom() const { return m_zoom; }
    void SetZoom(float zoom);
 
-   CComObject<PinTable>* const m_table;
+   void FVerifySaveToClose();
+   void BeginAutoSaveCounter();
+   void EndAutoSaveCounter();
+   void AutoSave();
+
+   CComObject<PinTable> *const m_table;
    
 protected:
 #ifndef __STANDALONE__
@@ -79,6 +84,8 @@ private:
 
    bool m_moving = false;
    short2 m_oldMousePos;
+
+   vector<HANDLE> m_vAsyncHandles;
 
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window

@@ -929,7 +929,8 @@ Player::~Player()
       {
          m_ptable->m_liveBaseTable->SetDirtyDraw();
          m_ptable->m_liveBaseTable->RefreshProperties();
-         m_ptable->m_liveBaseTable->BeginAutoSaveCounter();
+         if (m_ptable->m_liveBaseTable->m_tableEditor)
+            m_ptable->m_liveBaseTable->m_tableEditor->BeginAutoSaveCounter();
       }
       if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
       {

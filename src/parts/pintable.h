@@ -419,10 +419,6 @@ public:
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
 
-   void BeginAutoSaveCounter();
-   void EndAutoSaveCounter();
-   void AutoSave();
-
    HRESULT TableSave();
    HRESULT SaveAs();
    HRESULT Save(const bool saveAs);
@@ -477,8 +473,6 @@ public:
    void SetNonUndoableDirty(SaveDirtyState sds);
    void CheckDirty();
    bool FDirty() const;
-
-   void FVerifySaveToClose();
 
    VPX::Sound *GetSound(const string &name) const;
 
@@ -732,8 +726,6 @@ public:
 
    vector<string> m_vCustomInfoTag;
    vector<string> m_vCustomInfoContent;
-
-   vector<HANDLE> m_vAsyncHandles;
 
    LightSource m_Light[MAX_LIGHT_SOURCES];
    COLORREF m_lightAmbient;

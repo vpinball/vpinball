@@ -467,7 +467,7 @@ POINT PinTableWnd::GetScreenPoint() const
 
 void PinTableWnd::OnInitialUpdate()
 {
-   m_table->BeginAutoSaveCounter();
+   BeginAutoSaveCounter();
    SetWindowText(m_table->m_filename.c_str());
    SetCaption(m_table->m_title);
    m_vpxEditor->SetEnableMenuItems();
@@ -615,9 +615,9 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          m_vpxEditor->SetActionCur("Autosave Failed"s);
       }
-      m_table->BeginAutoSaveCounter();
+      BeginAutoSaveCounter();
       const HANDLE hEvent = (HANDLE)wParam;
-      RemoveFromVectorSingle(m_table->m_vAsyncHandles, hEvent);
+      RemoveFromVectorSingle(m_vAsyncHandles, hEvent);
       CloseHandle(hEvent);
       return FinalWindowProc(uMsg, wParam, lParam);
    }
@@ -1195,3 +1195,78 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       mainMenu.Destroy();
 }
 #endif
+
+
+void PinTableWnd::BeginAutoSaveCounter()
+{
+#ifndef __STANDALONE__
+   if (m_vpxEditor->m_autosaveTime > 0)
+      m_vpxEditor->SetTimer(VPinball::TIMER_ID_AUTOSAVE, m_vpxEditor->m_autosaveTime, nullptr);
+#endif
+}
+
+void PinTableWnd::EndAutoSaveCounter()
+{
+#ifndef __STANDALONE__
+   m_vpxEditor->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+#endif
+}
+
+void PinTableWnd::AutoSave()
+{
+#ifndef __STANDALONE__
+   if (m_table->m_sdsCurrentDirtyState <= eSaveAutosaved)
+      return;
+
+   m_vpxEditor->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+
+   m_vpxEditor->SetActionCur(LocalString(IDS_AUTOSAVING).m_szbuffer);
+   m_vpxEditor->SetCursorCur(nullptr, IDC_WAIT);
+
+   FastIStorage *const pstgroot = new FastIStorage();
+   pstgroot->AddRef();
+
+   const HRESULT hr = m_table->SaveToStorage(pstgroot);
+
+   m_table->m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
+   m_table->m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
+   m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
+
+   AutoSavePackage *const pasp = new AutoSavePackage();
+   pasp->pstg = pstgroot;
+   pasp->tableindex = FindIndexOf(m_vpxEditor->m_vtable, this);
+   pasp->hwndtable = GetHwnd();
+   pasp->table = m_table;
+
+   if (hr == S_OK)
+   {
+      const HANDLE hEvent = m_vpxEditor->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
+      m_vAsyncHandles.push_back(hEvent);
+
+      m_vpxEditor->SetActionCur("Completing AutoSave"s);
+   }
+   else
+   {
+      m_vpxEditor->SetActionCur(string());
+   }
+
+   m_vpxEditor->SetCursorCur(nullptr, IDC_ARROW);
+#endif
+}
+
+void PinTableWnd::FVerifySaveToClose()
+{
+#ifndef __STANDALONE__
+   if (!m_vAsyncHandles.empty())
+   {
+      /*const DWORD wait =*/WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
+      //m_vpinball->MessageBox("Async work items not done", nullptr, 0);
+
+      // Close the remaining handles here, since the window messages will never be processed
+      for (size_t i = 0; i < m_vAsyncHandles.size(); i++)
+         CloseHandle(m_vAsyncHandles[i]);
+
+      m_vpxEditor->SetActionCur(string());
+   }
+#endif
+}

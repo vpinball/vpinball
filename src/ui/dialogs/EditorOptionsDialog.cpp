@@ -345,7 +345,7 @@ void EditorOptionsDialog::OnOK()
         g_pvp->m_autosaveTime = -1;
 
     for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
-        g_pvp->m_vtable[i]->m_table->BeginAutoSaveCounter();
+        g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
     g_pvp->m_settings.SetEditor_DefaultMaterialColor((int)g_pvp->m_dummyMaterial.m_cBase, false);
     g_pvp->m_settings.SetEditor_ElementSelectColor((int)g_pvp->m_elemSelectColor, false);
