@@ -194,9 +194,6 @@ private:
    unsigned int     m_numIndices = 0;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
 
-   PropertyPane *m_propVisual = nullptr;
-   PropertyPane *m_propPosition = nullptr;
-
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    // Vertices for editor display & hit shape

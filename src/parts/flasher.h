@@ -120,7 +120,10 @@ public:
 
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
+
+#ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
+#endif
 
    void AddPoint(int x, int y, const bool smooth) final;
 
@@ -176,10 +179,8 @@ private:
    float m_maxx = -FLT_MAX;
    float m_miny = FLT_MAX;
    float m_maxy = -FLT_MAX;
-   Vertex3D_NoTex2* m_vertices = nullptr;
-   Vertex3D_NoTex2* m_transformedVertices = nullptr;
-
-   PropertyPane *m_propVisual = nullptr;
+   vector<Vertex3D_NoTex2> m_vertices;
+   vector<Vertex3D_NoTex2> m_transformedVertices;
 
    bool m_dynamicVertexBufferRegenerate = true;
    std::shared_ptr<MeshBuffer> m_meshBuffer;

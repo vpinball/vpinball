@@ -4,6 +4,8 @@
 //#include "forsyth.h"
 #include "utils/objloader.h"
 #include "renderer/Shader.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 Ramp::~Ramp()
 {
@@ -1461,6 +1463,7 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
    STOPUNDO
 }
 
+#ifndef __STANDALONE__
 void Ramp::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -1476,15 +1479,15 @@ void Ramp::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
@@ -1494,6 +1497,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
    break;
    }
 }
+#endif
 
 void Ramp::FlipY(const Vertex2D& pvCenter)
 {

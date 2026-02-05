@@ -8,6 +8,8 @@
 #include "meshes/triggerWireDMesh.h"
 #include "meshes/triggerInderMesh.h"
 #include "renderer/Shader.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 Trigger::~Trigger()
 {
@@ -776,15 +778,14 @@ void Trigger::PutPointCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
+#ifndef __STANDALONE__
 void Trigger::EditMenu(CMenu &menu)
 {
-#ifndef __STANDALONE__
    menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | MF_ENABLED);
    menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | MF_ENABLED);
-#endif
 }
 
 void Trigger::DoCommand(int icmd, int x, int y)
@@ -802,15 +803,15 @@ void Trigger::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
@@ -849,6 +850,7 @@ void Trigger::DoCommand(int icmd, int x, int y)
    break;
    }
 }
+#endif
 
 void Trigger::FlipY(const Vertex2D& pvCenter)
 {

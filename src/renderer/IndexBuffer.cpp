@@ -65,6 +65,10 @@ void SharedIndexBuffer::Upload()
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
       uint8_t* data = mem->data;
+      #ifdef _DEBUG
+      for (const PendingUpload& upload : m_pendingUploads)
+         assert(upload.mem == nullptr);
+      #endif
 
       #elif defined(ENABLE_OPENGL)
       uint8_t* data = (uint8_t*)malloc(size);
@@ -182,8 +186,8 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    m_offset = m_indexOffset * m_sizePerIndex;
 }
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices)
-   : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX32)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices, const bool isDynamic)
+   : IndexBuffer(rd, numIndices, isDynamic, IndexBuffer::FMT_INDEX32)
 {
    void* buf;
    Lock(buf);
@@ -191,8 +195,8 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    Unlock();
 }
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices)
-   : IndexBuffer(rd, numIndices, false, IndexBuffer::FMT_INDEX16)
+IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices, const bool isDynamic)
+   : IndexBuffer(rd, numIndices, isDynamic, IndexBuffer::FMT_INDEX16)
 {
    void* buf;
    Lock(buf);
@@ -200,13 +204,13 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    Unlock();
 }
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<WORD>& indices)
-   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data())
+IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<WORD>& indices, const bool isDynamic)
+   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data(), isDynamic)
 {
 }
 
-IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
-   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data())
+IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices, const bool isDynamic)
+   : IndexBuffer(rd, (unsigned int)indices.size(), indices.data(), isDynamic)
 {
 }
 

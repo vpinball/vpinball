@@ -11,6 +11,7 @@
 #endif
 #include "bx/readerwriter.h"
 #define BGFX_PLATFORM_SUPPORTS_WGSL 0
+#define BGFX_PLATFORM_SUPPORTS_DXIL 0
 #include "bgfx/embedded_shader.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
@@ -852,6 +853,16 @@ public:
       {
          memcpy(m_state.data() + m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
       }
+   }
+
+   const Matrix3D& GetMatrix(const ShaderUniforms uniformName) const
+   {
+      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+      assert(m_stateOffsets[uniformName] != -1);
+      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float3x4 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x3
+         || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x4);
+      Matrix3D* m = (Matrix3D*)(m_state.data() + m_stateOffsets[uniformName]);
+      return *m;
    }
 
    void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix)

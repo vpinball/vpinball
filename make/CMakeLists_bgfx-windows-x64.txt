@@ -53,16 +53,18 @@ add_executable(vpinball WIN32
    src/core/stdafx.h
    src/renderer/captureExt.cpp
    src/renderer/captureExt.h
-   src/ui/worker.cpp
-   src/ui/worker.h
-   src/ui/resource.h
 
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
 
+   src/ui/win/DragPointDialogs.h
+   src/ui/win/DragPointDialogs.cpp
+
    src/ui/paintsur.cpp
    src/ui/paintsur.h
-
+   src/ui/worker.cpp
+   src/ui/worker.h
+   src/ui/resource.h
    src/ui/Debugger.cpp
    src/ui/Debugger.h
    src/ui/dialogs/AboutDialog.cpp
@@ -308,7 +310,6 @@ add_executable(vpinball WIN32
 )
 
 target_include_directories(vpinball PUBLIC
-   $ENV{DXSDK_DIR}/Include
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
    third-party/include
@@ -324,7 +325,6 @@ target_precompile_headers(vpinball PUBLIC
 
 target_compile_definitions(vpinball PRIVATE
    ENABLE_BGFX
-   ENABLE_XR
    $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
    $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
 )
@@ -339,7 +339,6 @@ target_compile_options(vpinball PUBLIC
 )
 
 target_link_directories(vpinball PUBLIC 
-   $ENV{DXSDK_DIR}/Lib/x64
    third-party/build-libs/windows-x64
 )
 

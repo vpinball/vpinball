@@ -74,8 +74,8 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── Table Name (Manufacturer Year).info      <= This is an information file to store frontend datas, we decided to name after the folder name (not directly linked to VPX, see below)
 ├── Installation.txt                         <= Additional file the table authors decided to include
 ├── Rulesheet.pdf                            <= Additional file the table authors decided to include
-├── altsound/                                <= AltSound plugin will look here for altsound datas
-│   └── xxx
+├── altsound/                                <= AltSound plugin will look here for altsound files
+│   └── xxx/
 │       └── ...
 ├── cache/                                   <= VPX cache some informations for smoother play, they will be stored here
 │   └── ...
@@ -88,24 +88,28 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 │   ├── Multiball Theme.ogg
 │   └── ...
 ├── pinmame/                                 <= PinMAME plugin will look here for rom & nvram files
-│   ├── rom/
+│   ├── roms/
 │   │   ├── xxx.zip
 │   │   └── yyy.zip
 │   └── nvram/
 │       ├── xxx.nv
 │       └── yyy.nv
 ├── pupvideos/                               <= PinUp player plugin will look here for pinup videos
-│   └── xxx
+│   └── xxx/
 │       └── ...
 ├── scripts/                                 <= When a table loads additional script, they are searched here as well as in core script folder
 │   └── ...
 ├── serum/                                   <= Serum plugin will look here for colorization files
-│   └── xxx
+│   └── xxx/
 │       └── xxx.crz
 ├── Table Name.UltraDMD/                     <= Folder with FlexDMD or UltraDMD content (name is directly defined in the table script)
 │   └── ...
-└── user/                                    <= VPX stores values saved from script in this folder
-    └── VPReg.stg
+├── user/                                    <= VPX stores values saved from script in this folder
+│   └── VPReg.stg
+└── vni/                                     <= VNI plugin will look here for colorization files
+    └── xxx/
+        ├── xxx.pal
+        └── xxx.vni
 ```
 
 

@@ -74,30 +74,6 @@ void IHaveDragPoints::FlipPointX(const Vertex2D& pvCenter)
    STOPUNDOSELECT
 }
 
-void IHaveDragPoints::RotateDialog()
-{
-#ifndef __STANDALONE__
-   DialogBoxParam(g_pvp->theInstance, MAKEINTRESOURCE(IDD_ROTATE),
-       g_pvp->GetHwnd(), RotateProc, (size_t)GetIEditable()->GetISelect());//(long)this);
-#endif
-}
-
-void IHaveDragPoints::ScaleDialog()
-{
-#ifndef __STANDALONE__
-   DialogBoxParam(g_pvp->theInstance, MAKEINTRESOURCE(IDD_SCALE),
-       g_pvp->GetHwnd(), ScaleProc, (size_t)GetIEditable()->GetISelect());
-#endif
-}
-
-void IHaveDragPoints::TranslateDialog()
-{
-#ifndef __STANDALONE__
-   DialogBoxParam(g_pvp->theInstance, MAKEINTRESOURCE(IDD_TRANSLATE),
-       g_pvp->GetHwnd(), TranslateProc, (size_t)GetIEditable()->GetISelect());
-#endif
-}
-
 void IHaveDragPoints::RotatePoints(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
    Vertex2D newcenter = GetPointCenter();

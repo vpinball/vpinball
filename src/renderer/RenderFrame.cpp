@@ -147,7 +147,7 @@ bool RenderFrame::Execute(const bool log)
    if (!m_passes.empty())
    {
       // Save render/shader states
-      m_rd->CopyRenderStates(true, *m_rdState);
+      m_rd->CopyRenderAndShaderStates(true, *m_rdState);
 
       // Clear last render pass to avoid cross frame references
       for (RenderPass* pass : m_passes)
@@ -260,7 +260,7 @@ bool RenderFrame::Execute(const bool log)
       m_passes.clear();
 
       // Restore render/shader states
-      m_rd->CopyRenderStates(false, *m_rdState);
+      m_rd->CopyRenderAndShaderStates(false, *m_rdState);
    }
 
    if (!m_endOfFrameCmds.empty())

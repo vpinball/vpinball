@@ -6,6 +6,8 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
+#include "ui/win/DragPointDialogs.h"
+
 
 Surface::~Surface()
 {
@@ -1057,6 +1059,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
    STOPUNDO
 }
 
+#ifndef __STANDALONE__
 void Surface::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -1072,24 +1075,23 @@ void Surface::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ROTATE:
-      RotateDialog();
+      VPX::WinUI::RotatePointsDialog(this);
       break;
 
    case ID_WALLMENU_SCALE:
-      ScaleDialog();
+      VPX::WinUI::ScalePointsDialog(this);
       break;
 
    case ID_WALLMENU_TRANSLATE:
-      TranslateDialog();
+      VPX::WinUI::TranslatePointsDialog(this);
       break;
 
    case ID_WALLMENU_ADDPOINT:
-   {
       AddPoint(x, y, false);
-   }
-   break;
+      break;
    }
 }
+#endif
 
 void Surface::FlipY(const Vertex2D& pvCenter)
 {

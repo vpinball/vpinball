@@ -843,9 +843,8 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_isFSSViewModeEnabled = src->m_isFSSViewModeEnabled;
    dst->m_viewModeOverride = src->m_viewModeOverride;
-   dst->m_viewMode = src->m_viewMode;
    dst->UpdateCurrentBGSet();
-   dst->m_currentBackglassMode = src->m_currentBackglassMode;
+   dst->m_currentBackglassMode = dst->m_currentBackglassMode;
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
@@ -1094,6 +1093,7 @@ void PinTable::AutoSave()
    pasp->pstg = pstgroot;
    pasp->tableindex = FindIndexOf(m_vpinball->m_vtable, (CComObject<PinTable> *)this);
    pasp->hwndtable = GetHwnd();
+   pasp->table = this;
 
    if (hr == S_OK)
    {
@@ -1586,7 +1586,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       string optId = trim_string(m_tableName);
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
       const auto propId
-         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, false, m_version));
+         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
       g_pvp->m_settings.Set(propId, m_version, false);
    }
 
@@ -3353,9 +3353,9 @@ void PinTable::AssignSelectionToPartGroup(PartGroup* group)
 #endif
 }
 
+#ifndef __STANDALONE__
 void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 {
-#ifndef __STANDALONE__
    POINT pt;
    pt.x = x;
    pt.y = y;
@@ -3456,8 +3456,8 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 
    if (menuid != -1)
        mainMenu.Destroy();
-#endif
 }
+#endif
 
 string PinTable::GetElementName(IEditable *pedit)
 {
@@ -3486,9 +3486,9 @@ bool PinTable::FMutilSelLocked()
    return false;
 }
 
+#ifndef __STANDALONE__
 void PinTable::DoCommand(int icmd, int x, int y)
 {
-#ifndef __STANDALONE__
    if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
    {
       UpdateCollection(icmd & 0x000000FF);
@@ -3546,8 +3546,8 @@ void PinTable::DoCommand(int icmd, int x, int y)
        case ID_WALLMENU_SCALE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_SCALE), m_vpinball->GetHwnd(), ScaleProc, (size_t)(ISelect *)this); break;
        case ID_WALLMENU_TRANSLATE: DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_TRANSLATE), m_vpinball->GetHwnd(), TranslateProc, (size_t)(ISelect *)this); break;
    }
-#endif
 }
+#endif
 
 void PinTable::UpdateCollection(const int index)
 {

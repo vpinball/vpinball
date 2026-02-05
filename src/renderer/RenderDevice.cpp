@@ -1532,7 +1532,12 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
       nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }
 #elif BX_PLATFORM_OSX
-   nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(sdlWnd, "Metal"));
+   {
+      SDL_Renderer* renderer = SDL_GetRenderer(sdlWnd);
+      if (renderer == nullptr)
+         renderer = SDL_CreateRenderer(sdlWnd, "Metal");
+      nwh = SDL_GetRenderMetalLayer(renderer);
+   }
 #elif BX_PLATFORM_IOS
    nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
 #elif BX_PLATFORM_ANDROID
@@ -1933,7 +1938,7 @@ void RenderDevice::ApplyRenderStates()
    m_renderstate.Apply(this);
 }
 
-void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
+void RenderDevice::CopyRenderAndShaderStates(const bool copyTo, RenderDeviceState& state)
 {
    assert(state.m_rd == this);
    CopyRenderStates(copyTo, state.m_renderState);

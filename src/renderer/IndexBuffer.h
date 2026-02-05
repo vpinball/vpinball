@@ -105,10 +105,10 @@ public:
    };
 
    IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const bool isDynamic = false, const IndexBuffer::Format format = IndexBuffer::Format::FMT_INDEX16);
-   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices);
-   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices);
-   IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices);
-   IndexBuffer(RenderDevice* rd, const vector<WORD>& indices);
+   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const unsigned int* indices, const bool isDynamic = false);
+   IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const WORD* indices, const bool isDynamic = false);
+   IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices, const bool isDynamic = false);
+   IndexBuffer(RenderDevice* rd, const vector<WORD>& indices, const bool isDynamic = false);
    ~IndexBuffer();
 
    // Position of buffer in a bigger shared data block
