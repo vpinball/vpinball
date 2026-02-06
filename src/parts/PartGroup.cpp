@@ -37,7 +37,7 @@ STDMETHODIMP PartGroup::InterfaceSupportsErrorInfo(REFIID riid)
 
 void PartGroup::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPartGroup_##prop() : Settings::GetDefaultPropsPartGroup_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsPartGroup_##prop() : Settings::GetDefaultPropsPartGroup_##prop##_Default()
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
@@ -45,7 +45,7 @@ void PartGroup::SetDefaults(const bool fromMouseClick)
 
 void PartGroup::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPartGroup_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsPartGroup_##prop(field, false)
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp

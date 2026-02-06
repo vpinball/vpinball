@@ -86,21 +86,12 @@ typedef struct _tagSORTDATA
 SORTDATA SortData;
 
 VPinball::VPinball()
-   : m_appPath(EvaluateAppPath())
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
    m_closing = false;
    m_unloadingTable = false;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
-
-   m_open_minimized = false;
-   m_disable_pause_menu = false;
-   m_povEdit = false;
-   m_disEnableTrueFullscreen = -1;
-   m_table_played_via_command_line = false;
-   m_table_played_via_SelectTableOnStart = false;
-   m_logicalNumberOfProcessors = -1;
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
@@ -113,9 +104,6 @@ VPinball::VPinball()
    m_ToolCur = IDC_SELECT;
 
    m_hbmInPlayMode = nullptr;
-
-   SetupPrefPath();
-   UpdateFileLayoutMode();
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -143,8 +131,6 @@ VPinball::VPinball()
    m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
 
-   LoadEditorSetupFromSettings();
-
    wintimer_init();
 }
 
@@ -158,394 +144,6 @@ VPinball::~VPinball()
    FreeLibrary(m_scintillaDll);
 #endif
 }
-
-// Evaluate path of exe (without the exe's filename)
-std::filesystem::path VPinball::EvaluateAppPath()
-{
-   string appPath;
-#ifdef __ANDROID__
-   // Android may not open files in the APK ressources through fopen so we copy them outside of the apk in the internal storage
-   appPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
-#elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
-   // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
-   // FIXME still app path is for readonly files, so shouldn't it just be SDL_GetBasePath() ?
-   path = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
-#else
-   appPath = SDL_GetBasePath();
-#endif
-   return std::filesystem::path(appPath);
-}
-
-void VPinball::SetupPrefPath()
-{
-   string basePrefPath;
-#if defined(__ANDROID__)
-   char *szPrefPath = SDL_GetPrefPath(NULL, "");
-   basePrefPath = szPrefPath;
-   SDL_free(szPrefPath);
-#elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
-   // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
-   basePrefPath = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
-#else
-   char *szPrefPath = SDL_GetPrefPath(nullptr, "VPinballX");
-   basePrefPath = szPrefPath;
-   SDL_free(szPrefPath);
-#endif
-
-   // Preference are stored per minor version (grouping all minor revision together, as minor revisions are not allowed to need user setup changes)
-   const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
-   m_prefPath = std::filesystem::path(basePrefPath) / versionPath;
-   if (DirExists(m_prefPath))
-      return;
-
-   // We need to migrate, fix or setup the install for proper operation
-   if (std::error_code ec; !std::filesystem::create_directories(m_prefPath, ec))
-   {
-      PLOGE << "Unable to create pref path: " << m_prefPath;
-      return;
-   }
-   PLOGI << "New preference folder created: " << m_prefPath;
-
-   // The user may have enabled the legacy file layout mode (ini along exe) and deleted the preference folder after upgrading to this version
-   // In this situation, we do not want to do anything else than recreating the pref folder (which we just did)
-   if (FileExists(GetAppPath(AppSubFolder::Root) / "VPinballX.ini"))
-   {
-      mINI::INIStructure m_ini;
-      if (mINI::INIFile(GetAppPath(AppSubFolder::Root) / "VPinballX.ini").read(m_ini) && m_ini.has("Version"s) && m_ini["Version"s].has("VPinball"s))
-      {
-         const string existingVersionString = m_ini["Version"s]["VPinball"s];
-         std::istringstream iss(existingVersionString);
-         std::string token;
-         int minor;
-         int major;
-         if ((iss >> token) && try_parse_int(token, major) && (major == VP_VERSION_MAJOR) && (iss >> token) && try_parse_int(token, minor) && (minor == VP_VERSION_MINOR))
-            return;
-      }
-   }
-
-   // Try to migrate settings from a previous install folder, we test:
-   // - Folders corresponding to previous location, so %AppData%/VPinballX/major.minor
-   // - Base %AppData%/VPinballX which was used before migrating to the 'major.minor' subfolder layout
-   std::filesystem::path prevPref;
-   for (int major = VP_VERSION_MAJOR; prevPref.empty() && major >= 10; major--)
-   {
-      for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
-      {
-         const string testVersion = std::format("{}.{}", major, minor);
-         if (auto testPath = std::filesystem::path(basePrefPath) / testVersion; testPath != m_prefPath && DirExists(testPath))
-            prevPref = testPath;
-      }
-   }
-   if (prevPref.empty() && DirExists(std::filesystem::path(basePrefPath)))
-      prevPref = std::filesystem::path(basePrefPath);
-   if (!prevPref.empty())
-   {
-      PLOGI << "Initializing new preference folder from previous install in: " << prevPref;
-      for (const auto &entry : std::filesystem::recursive_directory_iterator(prevPref))
-      {
-         // Handle upgrading from settings stored in %AppData%/VPinballX and not in %AppData%/VPinballX/version, so the new folder is a child of the old one
-         if (entry.path() == m_prefPath)
-            continue;
-         try
-         {
-            std::filesystem::path destPath = m_prefPath / std::filesystem::relative(entry.path(), prevPref);
-            if (std::filesystem::is_directory(entry.status()))
-               std::filesystem::create_directories(destPath);
-            else
-               std::filesystem::copy_file(entry.path(), destPath, std::filesystem::copy_options::overwrite_existing);
-         }
-         catch (const std::filesystem::filesystem_error &e)
-         {
-            PLOGE << "Error processing " << entry.path() << ": " << e.what();
-         }
-      }
-   }
-
-   // If we did not find a setting file to migrate but we have an old setting file along the exe, use it for the migration
-   if (!FileExists(m_prefPath / "VPinballX.ini") && FileExists(GetAppPath(AppSubFolder::Root) / "VPinballX.ini"))
-   {
-      PLOGI << "Initializing preferences from old settings file: " << (GetAppPath(AppSubFolder::Root) / "VPinballX.ini");
-      std::filesystem::copy_file(GetAppPath(AppSubFolder::Root) / "VPinballX.ini", m_prefPath / "VPinballX.ini");
-   }
-
-   // If we did not find any settings file, migrate settings from Windows registry (used before 10.8)
-#ifdef _WIN32
-   if (!FileExists(m_prefPath / "VPinballX.ini"))
-   {
-      PLOGI << "Initializing preferences from Window registry";
-      mINI::INIStructure ini;
-      static const vector<string> regKeys
-         = { "Controller"s, "Editor"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s,
-              "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s, "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s,
-              "DefaultProps\\LightSequence"s, "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
-              "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s, "Defaults\\Camera"s };
-      for (const string& regKey : regKeys)
-      {
-         string regpath = (regKey == "Controller"s ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s) + regKey;
-         HKEY hk;
-         LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
-         if (res != ERROR_SUCCESS)
-            continue;
-         for (DWORD Index = 0;; ++Index)
-         {
-            DWORD dwSize = MAX_PATH;
-            TCHAR szName[MAX_PATH];
-            res = RegEnumValue(hk, Index, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
-            if (res == ERROR_NO_MORE_ITEMS)
-               break;
-            if (res != ERROR_SUCCESS || dwSize == 0 || szName[0] == '\0')
-               continue;
-            dwSize = MAXSTRING;
-            BYTE pvalue[MAXSTRING];
-            DWORD type = REG_NONE;
-            res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
-            if (res != ERROR_SUCCESS)
-               continue;
-            if (type == REG_SZ)
-            {
-               string value((char *)pvalue);
-               // old Win32xx and Win32xx 9+ docker keys
-               if (value == "Dock Windows"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
-                  continue;
-               if (value == "Dock Settings"s) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
-                  continue;
-               ini[regKey][szName] = value;
-            }
-            else if (type == REG_DWORD)
-               ini[regKey][szName] = std::to_string(*(DWORD *)pvalue);
-         }
-         RegCloseKey(hk);
-      }
-      mINI::INIFile file(m_prefPath / "VPinballX.ini");
-      if (!file.write(ini, true))
-      {
-         PLOGE << "Failed to save imported settings.";
-      }
-   }
-#endif
-}
-
-void VPinball::SetPrefPath(const std::filesystem::path &path)
-{
-   m_prefPath = path;
-   if (!DirExists(m_prefPath))
-   {
-      PLOGE << "Custom pref path is missing, aborting: " << m_prefPath;
-      exit(1);
-   }
-   UpdateFileLayoutMode();
-}
-
-void VPinball::UpdateFileLayoutMode()
-{
-   std::filesystem::path defaultPath = m_prefPath / "VPinballX.ini";
-   std::filesystem::path appPath = m_appPath / "VPinballX.ini";
-   if (FileExists(defaultPath))
-      m_fileLayoutMode = FileLayoutMode::AppPrefData;
-   else if (FileExists(appPath))
-      m_fileLayoutMode = FileLayoutMode::AppOnly;
-   else
-      m_fileLayoutMode = FileLayoutMode::AppPrefData;
-   PLOGI << "File layout mode set to " << (m_fileLayoutMode == FileLayoutMode::AppOnly ? "AppOnly" : "AppPrefData");
-}
-
-std::filesystem::path VPinball::GetAppPath(AppSubFolder sub, const std::filesystem::path& file) const
-{
-   std::filesystem::path path;
-   switch (sub)
-   {
-   // Readonly deployment files, always located along executable file
-   case AppSubFolder::Root: path = m_appPath; break;
-   case AppSubFolder::Assets: path = m_appPath / "assets"; break;
-   case AppSubFolder::Plugins: path = m_appPath / "plugins"; break;
-   case AppSubFolder::GLShaders:
-      path = m_appPath / ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV));
-      break;
-   case AppSubFolder::Docs:
-      // A bit hacky as doc files have moved over time, so we check the various locations they may be in
-      if (file.empty())
-         path = m_appPath / "docs"; 
-      else if (FileExists(m_appPath / file))
-         path = m_appPath;
-      else if (FileExists(m_appPath / "Doc" / file))
-         path = m_appPath / "Doc";
-      else if (FileExists(m_appPath / "docs" / file))
-         path = m_appPath / "docs";
-      break;
-
-   // Scripts are special as the file is searched through a few different paths
-   // Maybe we should change this to be a table relative path instead (searching through the usual path but also inside table folder)
-   case AppSubFolder::Scripts:
-      if (file.empty())
-         // No file: just return the default read only core scripts folder
-         return m_appPath / "scripts";
-      else
-         // Search for the script file, without a table specified
-         return SearchScript(nullptr, file);
-      break;
-
-   // Application settings (read/write, not usually exposed to user)
-   case AppSubFolder::Preferences:
-      path = m_prefPath;
-      break;
-
-   // Read/write user documents
-   case AppSubFolder::Tables:
-      // This used to be a subfolder of the main application installation folder, but as this is not ok for most system, we simply go
-      // to the system's defined user documents folder on first run. Later on, UI will use the last location visited.
-      // Note: SDL_GetUserFolder returns NULL on Android (see SDL_sysfilesystem.c), so use app path instead (usually /data/data/org.vpinball.vpinball/files)
-      if (g_isAndroid)
-         path = m_appPath;
-      else
-         path = std::filesystem::path(SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS));
-      break;
-
-   default: assert(false); break;
-   }
-
-   return file.empty() ? path : (path / file);
-}
-
-std::filesystem::path VPinball::GetTablePath(const PinTable *table, TableSubFolder sub, bool searchForWriting) const
-{
-   std::filesystem::path path;
-   auto withSubFolder = [&sub](const std::filesystem::path& basePath)
-   {
-      std::filesystem::path folder;
-      switch (sub)
-      {
-      case TableSubFolder::Music: return basePath / "music"; break;
-      case TableSubFolder::Cache: return basePath / "cache"; break;
-      case TableSubFolder::User: return basePath / "user"; break;
-      case TableSubFolder::AutoSave: return basePath / "autosave"; break;
-      default: return basePath; break;
-      }
-   };
-
-   switch (m_fileLayoutMode)
-   {
-   // App/Pref/Data mode: table files are stored along table (to avoid mixing everything together and store files in a place with write access)
-   case FileLayoutMode::AppPrefData:
-      if (table != nullptr && !table->m_filename.empty() && FileExists(table->m_filename))
-      {
-         path = withSubFolder(PathFromFilename(table->m_filename));
-         if (sub == TableSubFolder::Cache)
-            path = path / table->m_title; // table's title is its file name without extension
-         if (!DirExists(path))
-         {
-            if (searchForWriting)
-            {
-               std::filesystem::create_directories(path);
-               string type;
-               switch (sub)
-               {
-               case TableSubFolder::Music: type = "Music"s; break;
-               case TableSubFolder::Cache: type = "Cache"s; break;
-               case TableSubFolder::User: type = "User"s; break;
-               }
-               PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
-            }
-            else
-            {
-               // Not found and path searched for read only, retry in app mode only which was the only file layout used before 10.8.1
-               // This ease the transition, especially for music (if the user did not migrate it) and user folders (which will read for previous plays, but saved in new location)
-               const_cast<VPinball*>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
-               path = GetTablePath(table, sub, searchForWriting);
-               const_cast<VPinball *>(this)->m_fileLayoutMode = FileLayoutMode::AppPrefData;
-            }
-         }
-      }
-      break;
-
-   // App mode: store everything inside the application path, needing write access to the application folder, defaulting to table then preference if folder has been removed after install
-   case FileLayoutMode::AppOnly:
-      switch (sub)
-      {
-      case TableSubFolder::Cache:
-         // Cache is stored inside preference directory with a sub folder per table title
-         path = GetAppPath(AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
-         if (searchForWriting && !DirExists(path))
-            std::filesystem::create_directories(path);
-         break;
-
-      case TableSubFolder::User:
-         // Shared user folder along the application path. This requires write access to the application path
-         path = GetAppPath(AppSubFolder::Root) / "user"s;
-         if (searchForWriting && !DirExists(path))
-         {
-            std::filesystem::create_directories(path);
-            PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
-         }
-         break;
-
-      case TableSubFolder::AutoSave:
-         // AutoSave along main application
-         path = m_appPath;
-         break;
-
-      default:
-         path = withSubFolder(m_appPath);
-         if (!DirExists(path))
-         {
-            if (table == nullptr || table->m_filename.empty() || !FileExists(table->m_filename))
-            {
-               // No table: defaults to preference folder (even if it does not exist)
-               path = withSubFolder(m_prefPath);
-            }
-            else
-            {
-               path = withSubFolder(PathFromFilename(table->m_filename));
-               if (!DirExists(path))
-               {
-                  path = withSubFolder(m_prefPath);
-                  if (!DirExists(path))
-                  {
-                     // Not found: defaults to folder along table, not creating the dirs (backward compatiblity behavior)
-                     path = withSubFolder(PathFromFilename(table->m_filename));
-                  }
-               }
-            }
-         }
-         break;
-      }
-      break;
-   }
-   return path;
-}
-
-std::filesystem::path VPinball::SearchScript(const PinTable *table, const std::filesystem::path &script) const
-{
-   // Search along the table path first
-   if (table)
-   {
-      const auto tablePath = std::filesystem::path(PathFromFilename(table->m_filename));
-      if (auto path = find_case_insensitive_file_path(tablePath / script); !path.empty())
-         return path;
-      if (auto path = find_case_insensitive_file_path(tablePath / "user"s / script); !path.empty())
-         return path;
-      if (auto path = find_case_insensitive_file_path(tablePath / "scripts"s / script); !path.empty())
-         return path;
-   }
-
-   // Search in the application paths
-   if (auto path = find_case_insensitive_file_path(m_appPath / script); !path.empty())
-      return path;
-   if (auto path = find_case_insensitive_file_path(m_appPath / "user"s / script); !path.empty())
-      return path;
-   if (auto path = find_case_insensitive_file_path(m_appPath / "scripts"s / script); !path.empty())
-      return path;
-
-   // Search in the preference paths
-   if (auto path = find_case_insensitive_file_path(m_prefPath / script); !path.empty())
-      return path;
-   if (auto path = find_case_insensitive_file_path(m_prefPath / "user"s / script); !path.empty())
-      return path;
-   if (auto path = find_case_insensitive_file_path(m_prefPath / "scripts"s / script); !path.empty())
-      return path;
-
-   return std::filesystem::path();
-}
-
 
 
 //Post Work to the worker Thread
@@ -594,26 +192,26 @@ void VPinball::InitTools()
 // Load editor behavior options from the settings
 void VPinball::LoadEditorSetupFromSettings()
 {
-   m_alwaysDrawDragPoints = m_settings.GetEditor_ShowDragPoints();
-   m_alwaysDrawLightCenters = m_settings.GetEditor_DrawLightCenters();
-   m_gridSize = m_settings.GetEditor_GridSize();
+   m_alwaysDrawDragPoints = g_app->m_settings.GetEditor_ShowDragPoints();
+   m_alwaysDrawLightCenters = g_app->m_settings.GetEditor_DrawLightCenters();
+   m_gridSize = g_app->m_settings.GetEditor_GridSize();
 
-   const bool autoSave = m_settings.GetEditor_AutoSaveOn();
+   const bool autoSave = g_app->m_settings.GetEditor_AutoSaveOn();
    if (autoSave)
    {
-      m_autosaveTime = m_settings.GetEditor_AutoSaveTime();
+      m_autosaveTime = g_app->m_settings.GetEditor_AutoSaveTime();
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_securitylevel = m_settings.GetPlayer_SecurityLevel();
+   m_securitylevel = g_app->m_settings.GetPlayer_SecurityLevel();
 
-   m_dummyMaterial.m_cBase = m_settings.GetEditor_DefaultMaterialColor();
-   m_elemSelectColor = m_settings.GetEditor_ElementSelectColor();
-   m_elemSelectLockedColor = m_settings.GetEditor_ElementSelectLockedColor();
-   m_backgroundColor = m_settings.GetEditor_BackGroundColor();
-   m_fillColor = m_settings.GetEditor_FillColor();
+   m_dummyMaterial.m_cBase = g_app->m_settings.GetEditor_DefaultMaterialColor();
+   m_elemSelectColor = g_app->m_settings.GetEditor_ElementSelectColor();
+   m_elemSelectLockedColor = g_app->m_settings.GetEditor_ElementSelectLockedColor();
+   m_backgroundColor = g_app->m_settings.GetEditor_BackGroundColor();
+   m_fillColor = g_app->m_settings.GetEditor_FillColor();
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -622,12 +220,12 @@ void VPinball::LoadEditorSetupFromSettings()
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      string szTableName = m_settings.GetRecentDir_TableFileName(i);
+      string szTableName = g_app->m_settings.GetRecentDir_TableFileName(i);
       if (!szTableName.empty())
          m_recentTableList.emplace_back(szTableName);
    }
 
-   m_convertToUnit = m_settings.GetEditor_Units();
+   m_convertToUnit = g_app->m_settings.GetEditor_Units();
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
@@ -753,7 +351,7 @@ void VPinball::ResetAllDockers()
 #ifndef __STANDALONE__
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
-   // FIXME these are Windows only registry key. Move to m_settings. ?
+   // FIXME these are Windows only registry key. Move to g_app->m_settings. ?
    // DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
    // DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
    CreateDocker();
@@ -1309,13 +907,13 @@ void VPinball::DoPlay(const int playMode)
 
    if (initError)
    {
-      m_table_played_via_SelectTableOnStart = false;
+      g_app->m_table_played_via_SelectTableOnStart = false;
    }
 }
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
-   const string& szInitialDir = m_settings.GetRecentDir_LoadDir();
+   const string& szInitialDir = g_app->m_settings.GetRecentDir_LoadDir();
 
    vector<string> filename;
    if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -1324,7 +922,7 @@ bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      m_settings.SetRecentDir_LoadDir(filename[0].substr(0, index), false);
+      g_app->m_settings.SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
    LoadFileName(filename[0], updateEditor, feedback);
 
@@ -1388,7 +986,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          ppt->m_table->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      if (std::filesystem::path filenameAuto = SearchScript(ppt->m_table, std::filesystem::path(ppt->m_table->m_title + ".vbs")); !filenameAuto.empty())
+      if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(ppt->m_table, std::filesystem::path(ppt->m_table->m_title + ".vbs")); !filenameAuto.empty())
          ppt->m_table->m_pcv->LoadFromFile(filenameAuto.string());
       else
       {
@@ -1406,7 +1004,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          ppt->m_table->ImportVPP(filenameAuto2);
 
       // get the load path from the filename
-      m_settings.SetRecentDir_LoadDir(tablePath, false);
+      g_app->m_settings.SetRecentDir_LoadDir(tablePath, false);
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(tablePath.c_str());
@@ -1663,7 +1261,7 @@ void VPinball::UpdateRecentFileList(const string& filename)
       {
          m_recentTableList.push_back(tableName);
          // write entry to the registry
-         m_settings.SetRecentDir_TableFileName(i, tableName, false);
+         g_app->m_settings.SetRecentDir_TableFileName(i, tableName, false);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -1815,13 +1413,13 @@ void VPinball::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         m_settings.SetEditor_WindowLeft((int)winpl.rcNormalPosition.left, false);
-         m_settings.SetEditor_WindowTop((int)winpl.rcNormalPosition.top, false);
-         m_settings.SetEditor_WindowRight((int)winpl.rcNormalPosition.right, false);
-         m_settings.SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
-         m_settings.SetEditor_WindowMaximized(!!IsZoomed(), false);
+         g_app->m_settings.SetEditor_WindowLeft((int)winpl.rcNormalPosition.left, false);
+         g_app->m_settings.SetEditor_WindowTop((int)winpl.rcNormalPosition.top, false);
+         g_app->m_settings.SetEditor_WindowRight((int)winpl.rcNormalPosition.right, false);
+         g_app->m_settings.SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
+         g_app->m_settings.SetEditor_WindowMaximized(!!IsZoomed(), false);
       }
-      if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
+      if (!g_app->m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
 
       CWnd::OnClose();
@@ -1849,20 +1447,6 @@ void VPinball::ShowSubDialog(CDialog &dlg, const bool show)
 #endif
 }
 
-void VPinball::SetLogicalNumberOfProcessors(int procNumber)
-{
-   m_logicalNumberOfProcessors = procNumber;
-}
-
-int VPinball::GetLogicalNumberOfProcessors() const
-{
-   if (m_logicalNumberOfProcessors < 1) {
-      PLOGE << "Invalid number of processor " << m_logicalNumberOfProcessors << ". Fallback to single processor.";
-      return 1;
-   }
-
-   return m_logicalNumberOfProcessors;
-}
 
 int VPinball::OnCreate(CREATESTRUCT& cs)
 {
@@ -1912,6 +1496,8 @@ void VPinball::OnInitialUpdate()
 {
    PLOGI << "OnInitialUpdate";
 
+   LoadEditorSetupFromSettings();
+
 #ifndef __STANDALONE__
    SetAccelerators(IDR_VPACCEL);
 
@@ -1922,11 +1508,11 @@ void VPinball::OnInitialUpdate()
 
    SendMessage(WM_SIZE, 0, 0);         // Make our window relay itself out
 
-   const int left = m_settings.GetEditor_WindowLeft();
-   const int top = m_settings.GetEditor_WindowTop();
-   const int right = m_settings.GetEditor_WindowRight();
-   const int bottom = m_settings.GetEditor_WindowBottom();
-   const bool maximized = m_settings.GetEditor_WindowMaximized();
+   const int left = g_app->m_settings.GetEditor_WindowLeft();
+   const int top = g_app->m_settings.GetEditor_WindowTop();
+   const int right = g_app->m_settings.GetEditor_WindowRight();
+   const int bottom = g_app->m_settings.GetEditor_WindowBottom();
+   const bool maximized = g_app->m_settings.GetEditor_WindowMaximized();
    if (right > left && bottom > top)
    {
       WINDOWPLACEMENT winpl = {};
@@ -1939,7 +1525,7 @@ void VPinball::OnInitialUpdate()
       winpl.rcNormalPosition.right = right;
       winpl.rcNormalPosition.bottom = bottom;
 
-      if (m_open_minimized)
+      if (g_app->m_open_minimized)
          winpl.showCmd |= SW_MINIMIZE;
       else if (maximized)
          winpl.showCmd |= SW_MAXIMIZE;
@@ -2315,7 +1901,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security = g_pvp->m_settings.GetPlayer_SecurityLevel();
+      int security = g_app->m_settings.GetPlayer_SecurityLevel();
       if (security < 0 || security > 4)
          security = 0;
 
@@ -2323,7 +1909,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      const bool hangdetect = g_pvp->m_settings.GetPlayer_DetectHang();
+      const bool hangdetect = g_app->m_settings.GetPlayer_DetectHang();
       SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
@@ -2343,11 +1929,11 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             {
                const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
-                  g_pvp->m_settings.SetPlayer_SecurityLevel(i, false);
+                  g_app->m_settings.SetPlayer_SecurityLevel(i, false);
             }
 
             const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
-            g_pvp->m_settings.SetPlayer_DetectHang(hangdetect, false);
+            g_app->m_settings.SetPlayer_DetectHang(hangdetect, false);
 
             EndDialog(hwndDlg, TRUE);
          }
@@ -2421,13 +2007,13 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            const string& szInitialDir = g_pvp->m_settings.GetRecentDir_FontDir();
+            const string& szInitialDir = g_app->m_settings.GetRecentDir_FontDir();
             vector<string> filename;
             if (g_pvp->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  g_pvp->m_settings.SetRecentDir_FontDir(filename[0].substr(0, index), false);
+                  g_app->m_settings.SetRecentDir_FontDir(filename[0].substr(0, index), false);
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), filename[0]);
             }
@@ -2536,7 +2122,7 @@ void VPinball::ToggleScriptEditor()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      const bool alwaysViewScript = m_settings.GetEditor_AlwaysViewScript();
+      const bool alwaysViewScript = g_app->m_settings.GetEditor_AlwaysViewScript();
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 
@@ -2596,7 +2182,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      m_settings.SetEditor_RenderSolid(ptCur->m_renderSolid, false);
+      g_app->m_settings.SetEditor_RenderSolid(ptCur->m_renderSolid, false);
    }
 #endif
 }
@@ -2883,7 +2469,7 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
    vbsFiles.push_back("core.vbs"s);
 
    for(const auto& i3 : vbsFiles)
-      if (fopen_s(&f, g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts, i3).string().c_str(), "rb") == 0 && f)
+      if (fopen_s(&f, g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, i3).string().c_str(), "rb") == 0 && f)
       {
          uint8_t tmp[4096];
          size_t r;

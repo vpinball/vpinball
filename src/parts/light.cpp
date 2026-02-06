@@ -65,7 +65,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
 
 void Light::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLight_##prop() : Settings::GetDefaultPropsLight_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsLight_##prop() : Settings::GetDefaultPropsLight_##prop##_Default()
    LinkProp(m_d.m_falloff, Falloff);
    LinkProp(m_d.m_falloff_power, FalloffPower);
    LinkProp(m_d.m_state, LightState);
@@ -99,7 +99,7 @@ void Light::SetDefaults(const bool fromMouseClick)
 
 void Light::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsLight_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsLight_##prop(field, false)
    LinkProp(m_d.m_falloff, Falloff);
    LinkProp(m_d.m_falloff_power, FalloffPower);
    LinkProp(m_d.m_state, LightState);

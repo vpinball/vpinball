@@ -46,55 +46,55 @@ BOOL EditorOptionsDialog::OnInitDialog()
     m_colorButton6.SetColor(g_pvp->m_backgroundColor);
 
     // drag points
-    const bool fdrawpoints = g_pvp->m_settings.GetEditor_ShowDragPoints();
+    const bool fdrawpoints = g_app->m_settings.GetEditor_ShowDragPoints();
     SendDlgItemMessage(IDC_DRAW_DRAGPOINTS, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
     // light centers
-    const bool fdrawcenters = g_pvp->m_settings.GetEditor_DrawLightCenters();
+    const bool fdrawcenters = g_app->m_settings.GetEditor_DrawLightCenters();
     SendDlgItemMessage(IDC_DRAW_LIGHTCENTERS, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool fautosave = g_pvp->m_settings.GetEditor_AutoSaveOn();
+    const bool fautosave = g_app->m_settings.GetEditor_AutoSaveOn();
     SendDlgItemMessage(IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int fautosavetime = g_pvp->m_settings.GetEditor_AutoSaveTime();
+    const int fautosavetime = g_app->m_settings.GetEditor_AutoSaveTime();
     SetDlgItemInt(IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
-    const int gridsize = g_pvp->m_settings.GetEditor_GridSize();
+    const int gridsize = g_app->m_settings.GetEditor_GridSize();
     SetDlgItemInt(IDC_GRID_SIZE, gridsize, FALSE);
 
-    const bool throwBallsAlwaysOn = g_pvp->m_settings.GetEditor_ThrowBallsAlwaysOn();
+    const bool throwBallsAlwaysOn = g_app->m_settings.GetEditor_ThrowBallsAlwaysOn();
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool ballControlAlwaysOn = g_pvp->m_settings.GetEditor_BallControlAlwaysOn();
+    const bool ballControlAlwaysOn = g_app->m_settings.GetEditor_BallControlAlwaysOn();
     SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool groupElementsCollection = g_pvp->m_settings.GetEditor_GroupElementsInCollection();
+    const bool groupElementsCollection = g_app->m_settings.GetEditor_GroupElementsInCollection();
     SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, groupElementsCollection ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool alwaysViewScript = g_pvp->m_settings.GetEditor_AlwaysViewScript();
+    const bool alwaysViewScript = g_app->m_settings.GetEditor_AlwaysViewScript();
     SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int throwBallSize = g_pvp->m_settings.GetEditor_ThrowBallSize();
+    const int throwBallSize = g_app->m_settings.GetEditor_ThrowBallSize();
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
-    const bool startVPfileDialog = g_pvp->m_settings.GetEditor_SelectTableOnStart();
+    const bool startVPfileDialog = g_app->m_settings.GetEditor_SelectTableOnStart();
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool startVPfileDialogPlayerClose = g_pvp->m_settings.GetEditor_SelectTableOnPlayerClose();
+    const bool startVPfileDialogPlayerClose = g_app->m_settings.GetEditor_SelectTableOnPlayerClose();
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, startVPfileDialogPlayerClose ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const float throwBallMass = g_pvp->m_settings.GetEditor_ThrowBallMass();
+    const float throwBallMass = g_app->m_settings.GetEditor_ThrowBallMass();
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
-    const bool enableLog = g_pvp->m_settings.GetEditor_EnableLog();
+    const bool enableLog = g_app->m_settings.GetEditor_EnableLog();
     SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool logScript = g_pvp->m_settings.GetEditor_LogScriptOutput();
+    const bool logScript = g_app->m_settings.GetEditor_LogScriptOutput();
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root);
-    const std::filesystem::path prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences);
-    const std::filesystem::path iniPath = PathFromFilename(g_pvp->m_settings.GetIniPath());
+    const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
+    const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
+    const std::filesystem::path iniPath = PathFromFilename(g_app->m_settings.GetIniPath());
     if (iniPath == appPath)
        SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_CHECKED, 0);
     else if (iniPath == prefPath)
@@ -102,7 +102,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     else // Running using a custom ini defined on the commandline => disable
        SendDlgItemMessage(IDC_STORE_INI_LOCATION, WM_ENABLE, (WPARAM)FALSE, 0);
 
-    const int units = g_pvp->m_settings.GetEditor_Units();
+    const int units = g_app->m_settings.GetEditor_Units();
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Inches");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Millimeters");
@@ -222,12 +222,12 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_UNCHECKED, 0);
           constexpr int x = 0;
           constexpr int y = 0;
-          g_pvp->m_settings.SetEditor_CodeViewPosX(x, false);
-          g_pvp->m_settings.SetEditor_CodeViewPosY(y, false);
+          g_app->m_settings.SetEditor_CodeViewPosX(x, false);
+          g_app->m_settings.SetEditor_CodeViewPosY(y, false);
           constexpr int width = 640;
           constexpr int height = 490;
-          g_pvp->m_settings.SetEditor_CodeViewPosWidth(width, false);
-          g_pvp->m_settings.SetEditor_CodeViewPosHeight(height, false);
+          g_app->m_settings.SetEditor_CodeViewPosWidth(width, false);
+          g_app->m_settings.SetEditor_CodeViewPosHeight(height, false);
 
           return TRUE;
        }
@@ -283,51 +283,51 @@ void EditorOptionsDialog::OnOK()
 
     // drag points
     checked = (IsDlgButtonChecked(IDC_DRAW_DRAGPOINTS) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_ShowDragPoints(checked, false);
+    g_app->m_settings.SetEditor_ShowDragPoints(checked, false);
 
     // light centers
     checked = (IsDlgButtonChecked(IDC_DRAW_LIGHTCENTERS) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_DrawLightCenters(checked, false);
+    g_app->m_settings.SetEditor_DrawLightCenters(checked, false);
 
     // auto save
     const bool autosave = (IsDlgButtonChecked(IDC_AUTOSAVE) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_AutoSaveOn(autosave, false);
+    g_app->m_settings.SetEditor_AutoSaveOn(autosave, false);
 
     const int autosavetime = GetDlgItemInt(IDC_AUTOSAVE_MINUTES, nothing, FALSE);
-    g_pvp->m_settings.SetEditor_AutoSaveTime(autosavetime, false);
+    g_app->m_settings.SetEditor_AutoSaveTime(autosavetime, false);
 
     const int gridsize = GetDlgItemInt(IDC_GRID_SIZE, nothing, FALSE);
-    g_pvp->m_settings.SetEditor_GridSize(gridsize, false);
+    g_app->m_settings.SetEditor_GridSize(gridsize, false);
 
     checked = (IsDlgButtonChecked(IDC_THROW_BALLS_ALWAYS_ON_CHECK) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_ThrowBallsAlwaysOn(checked, false);
+    g_app->m_settings.SetEditor_ThrowBallsAlwaysOn(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_BALL_CONTROL_ALWAYS_ON_CHECK) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_BallControlAlwaysOn(checked, false);
+    g_app->m_settings.SetEditor_BallControlAlwaysOn(checked, false);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
-    g_pvp->m_settings.SetEditor_ThrowBallSize(ballSize, false);
+    g_app->m_settings.SetEditor_ThrowBallSize(ballSize, false);
 
     const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).GetString());
-    g_pvp->m_settings.SetEditor_ThrowBallMass(fv, false);
+    g_app->m_settings.SetEditor_ThrowBallMass(fv, false);
 
     checked = (IsDlgButtonChecked(IDC_DEFAULT_GROUP_COLLECTION_CHECK) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_GroupElementsInCollection(checked, false);
+    g_app->m_settings.SetEditor_GroupElementsInCollection(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_ALWAYSVIEWSCRIPT) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_AlwaysViewScript(checked, false);
+    g_app->m_settings.SetEditor_AlwaysViewScript(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_LOGGING) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_EnableLog(checked, false);
+    g_app->m_settings.SetEditor_EnableLog(checked, false);
     Logger::GetInstance()->SetupLogger(checked);
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_SCRIPT_LOGGING) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_LogScriptOutput(checked, false);
+    g_app->m_settings.SetEditor_LogScriptOutput(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
-    const std::filesystem::path prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences) / "VPinballX.ini";
-    const std::filesystem::path appPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Root) / "VPinballX.ini";
-    const std::filesystem::path iniPath = g_pvp->m_settings.GetIniPath();
+    const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
+    const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
+    const std::filesystem::path iniPath = g_app->m_settings.GetIniPath();
     if (iniPath == prefPath || iniPath == appPath) // Not available when running from a custom ini speccified on the commandline
     {
        // if needed, copy ini from one default location to the other, as this is the location of the ini file that defines the app behavior
@@ -335,7 +335,7 @@ void EditorOptionsDialog::OnOK()
           std::filesystem::rename(prefPath, appPath);
        else if (!checked && FileExists(appPath)) // moving to preferences folder
           std::filesystem::rename(appPath, prefPath);
-       g_pvp->m_settings.SetIniPath((checked ? appPath : prefPath).string());
+       g_app->m_settings.SetIniPath((checked ? appPath : prefPath).string());
     }
 
     // Go through and reset the autosave time on all the tables
@@ -347,22 +347,22 @@ void EditorOptionsDialog::OnOK()
     for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
         g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
-    g_pvp->m_settings.SetEditor_DefaultMaterialColor((int)g_pvp->m_dummyMaterial.m_cBase, false);
-    g_pvp->m_settings.SetEditor_ElementSelectColor((int)g_pvp->m_elemSelectColor, false);
-    g_pvp->m_settings.SetEditor_ElementSelectLockedColor((int)g_pvp->m_elemSelectLockedColor, false);
-    g_pvp->m_settings.SetEditor_BackGroundColor((int)g_pvp->m_backgroundColor, false);
-    g_pvp->m_settings.SetEditor_FillColor((int)g_pvp->m_fillColor, false);
+    g_app->m_settings.SetEditor_DefaultMaterialColor((int)g_pvp->m_dummyMaterial.m_cBase, false);
+    g_app->m_settings.SetEditor_ElementSelectColor((int)g_pvp->m_elemSelectColor, false);
+    g_app->m_settings.SetEditor_ElementSelectLockedColor((int)g_pvp->m_elemSelectLockedColor, false);
+    g_app->m_settings.SetEditor_BackGroundColor((int)g_pvp->m_backgroundColor, false);
+    g_app->m_settings.SetEditor_FillColor((int)g_pvp->m_fillColor, false);
 
     checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_SelectTableOnStart(checked, false);
+    g_app->m_settings.SetEditor_SelectTableOnStart(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG2) == BST_CHECKED);
-    g_pvp->m_settings.SetEditor_SelectTableOnPlayerClose(checked, false);
+    g_app->m_settings.SetEditor_SelectTableOnPlayerClose(checked, false);
 
     LRESULT units = SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
         units = 0;
-    g_pvp->m_settings.SetEditor_Units((int)units, false);
+    g_app->m_settings.SetEditor_Units((int)units, false);
 
     CDialog::OnOK();
 }

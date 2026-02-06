@@ -373,7 +373,7 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
             if (shouldDispatch)
             {
                if (quadTree->m_threadPool == nullptr)
-                  quadTree->m_threadPool = new ThreadPool(g_pvp->GetLogicalNumberOfProcessors());
+                  quadTree->m_threadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
                quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty] { child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty); });
                continue;
             }

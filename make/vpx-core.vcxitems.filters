@@ -180,6 +180,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/extern.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/FileLocator.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -900,6 +903,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/extern.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/FileLocator.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h">

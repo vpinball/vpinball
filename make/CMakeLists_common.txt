@@ -29,6 +29,8 @@ set(VPX_SOURCES
    src/core/editablereg.h
    src/core/extern.cpp
    src/core/extern.h
+   src/core/FileLocator.cpp
+   src/core/FileLocator.h
    src/core/ieditable.cpp
    src/core/ieditable.h
    src/core/iselect.cpp

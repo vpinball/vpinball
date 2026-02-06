@@ -170,7 +170,7 @@ void Logger::SetupLogger(const bool enable)
       if (!initialized)
       {
          initialized = true;
-         const string szLogPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "vpinball.log").string();
+         const string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
          static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
@@ -212,7 +212,7 @@ void Logger::Init()
 
 void Logger::Truncate()
 {
-   std::string szLogPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences, "vpinball.log").string();
+   std::string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
    std::ofstream ofs(szLogPath, std::ofstream::out | std::ofstream::trunc);
    ofs.close();
 }

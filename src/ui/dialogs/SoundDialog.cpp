@@ -59,7 +59,7 @@ static int DPIValue(int value)
 BOOL SoundDialog::OnInitDialog()
 {
    m_audioPlayer = std::make_unique<VPX::AudioPlayer>(
-      g_pvp->m_settings.GetPlayer_SoundDeviceBG(), g_pvp->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(g_pvp->m_settings.GetPlayer_Sound3D()));
+      g_app->m_settings.GetPlayer_SoundDeviceBG(), g_app->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(g_app->m_settings.GetPlayer_Sound3D()));
 
     const HWND toolTipHwnd = CreateWindowEx(
       0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
@@ -354,14 +354,14 @@ void SoundDialog::Import()
    if (pt == nullptr)
       return;
 
-   const string& szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
+   const string& szInitialDir = g_app->m_settings.GetRecentDir_SoundDir();
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
    {
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         g_pvp->m_settings.SetRecentDir_SoundDir(szFileName[0].substr(0, index), false);
+         g_app->m_settings.SetRecentDir_SoundDir(szFileName[0].substr(0, index), false);
 
       for (const string &file : szFileName)
       {
@@ -425,7 +425,7 @@ void SoundDialog::ReImportFrom()
         const int ans = MessageBox(LocalString( IDS_REPLACESOUND ).m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
         if (ans == IDYES)
         {
-            const string& szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
+            const string& szInitialDir = g_app->m_settings.GetRecentDir_SoundDir();
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))
@@ -442,7 +442,7 @@ void SoundDialog::ReImportFrom()
 
                 const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                 if (index != string::npos)
-                   g_pvp->m_settings.SetRecentDir_SoundDir(szFileName[0].substr(0, index), false);
+                   g_app->m_settings.SetRecentDir_SoundDir(szFileName[0].substr(0, index), false);
 
                 pt->SetNonUndoableDirty( eSaveDirty );
             }
@@ -495,7 +495,7 @@ void SoundDialog::Export()
             ofn.nMaxFile = sizeof(filename);
             ofn.lpstrDefExt = "ogg";
 
-            string initDir = g_pvp->m_settings.GetRecentDir_SoundDir();
+            string initDir = g_app->m_settings.GetRecentDir_SoundDir();
 
             ofn.lpstrInitialDir = initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";
@@ -544,7 +544,7 @@ void SoundDialog::Export()
                   pps = (VPX::Sound *)lvitem.lParam;
                }
 
-               g_pvp->m_settings.SetRecentDir_SoundDir(pathName, false);
+               g_app->m_settings.SetRecentDir_SoundDir(pathName, false);
             }
         }
     }
@@ -659,10 +659,10 @@ void SoundDialog::DeleteSound()
 
 void SoundDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.GetEditor_SoundMngPosX();
-   const int y = g_pvp->m_settings.GetEditor_SoundMngPosY();
-   const int w = g_pvp->m_settings.GetEditor_SoundMngWidth();
-   const int h = g_pvp->m_settings.GetEditor_SoundMngHeight();
+   const int x = g_app->m_settings.GetEditor_SoundMngPosX();
+   const int y = g_app->m_settings.GetEditor_SoundMngPosY();
+   const int w = g_app->m_settings.GetEditor_SoundMngWidth();
+   const int h = g_app->m_settings.GetEditor_SoundMngHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != nullptr) // Do not apply if point is offscreen
       SetWindowPos( nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE );
@@ -671,10 +671,10 @@ void SoundDialog::LoadPosition()
 void SoundDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    g_pvp->m_settings.SetEditor_SoundMngPosX((int)rect.left, false);
-    g_pvp->m_settings.SetEditor_SoundMngPosY((int)rect.top, false);
-    g_pvp->m_settings.SetEditor_SoundMngWidth(rect.right - rect.left, false);
-    g_pvp->m_settings.SetEditor_SoundMngHeight(rect.bottom - rect.top, false);
+    g_app->m_settings.SetEditor_SoundMngPosX((int)rect.left, false);
+    g_app->m_settings.SetEditor_SoundMngPosY((int)rect.top, false);
+    g_app->m_settings.SetEditor_SoundMngWidth(rect.right - rect.left, false);
+    g_app->m_settings.SetEditor_SoundMngHeight(rect.bottom - rect.top, false);
 }
 
 void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)

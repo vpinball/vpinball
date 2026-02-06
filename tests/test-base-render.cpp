@@ -41,7 +41,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_VULKAN) SUBCASE("BGFX-Vulkan")
    {
-      g_pvp->m_settings.SetPlayer_GfxBackend("Vulkan"s, false);
+      g_app->m_settings.SetPlayer_GfxBackend("Vulkan"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-Vulkan-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Vulkan);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-Vulkan-Test.webp", imageName + "-Ref.webp"));
@@ -49,7 +49,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_GL) SUBCASE("BGFX-OpenGL")
    {
-      g_pvp->m_settings.SetPlayer_GfxBackend("OpenGL"s, false);
+      g_app->m_settings.SetPlayer_GfxBackend("OpenGL"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-GL-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::OpenGL);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-GL-Test.webp", imageName + "-Ref.webp"));
@@ -58,7 +58,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
    /* Not available on Windows desktop
    if ((int)backends & (int)VPXBackends::BGFX_GLES) SUBCASE("BGFX-OpenGLES")
    {
-      g_pvp->m_settings.SetPlayer_GfxBackend("OpenGLES"s, false);
+      g_app->m_settings.SetPlayer_GfxBackend("OpenGLES"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-GLES-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::OpenGLES);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-GLES-Test.webp", imageName + "-Ref.webp"));
@@ -66,7 +66,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_DX11) SUBCASE("BGFX-Direct3D11")
    {
-      g_pvp->m_settings.SetPlayer_GfxBackend("Direct3D11"s, false);
+      g_app->m_settings.SetPlayer_GfxBackend("Direct3D11"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-DX11-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Direct3D11);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX11-Test.webp", imageName + "-Ref.webp"));
@@ -75,7 +75,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
    /* Not stable yet
    if ((int)backends & (int)VPXBackends::BGFX_DX12) SUBCASE("BGFX-Direct3D12")
    {
-      g_pvp->m_settings.SetPlayer_GfxBackend("Direct3D12"s, false);
+      g_app->m_settings.SetPlayer_GfxBackend("Direct3D12"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-DX12-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Direct3D12);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX12-Test.webp", imageName + "-Ref.webp"));
@@ -94,7 +94,7 @@ TEST_CASE("Base render")
 TEST_CASE("Stereo top/bottom render")
 {
    ResetVPX();
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    settings.SetPlayer_Stereo3D(STEREO_TB, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-tb"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
@@ -103,7 +103,7 @@ TEST_CASE("Stereo top/bottom render")
 TEST_CASE("Stereo interleaved render")
 {
    ResetVPX();
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    settings.SetPlayer_Stereo3D(STEREO_INT, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-int"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
@@ -112,7 +112,7 @@ TEST_CASE("Stereo interleaved render")
 TEST_CASE("Stereo side by side render")
 {
    ResetVPX();
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    settings.SetPlayer_Stereo3D(STEREO_SBS, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-sbs"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
@@ -121,7 +121,7 @@ TEST_CASE("Stereo side by side render")
 TEST_CASE("Stereo anaglyph render")
 {
    ResetVPX();
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    settings.SetPlayer_Stereo3D(STEREO_ANAGLYPH_1, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-anaglyph"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();

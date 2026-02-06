@@ -341,17 +341,20 @@ static bool compare_option(const string& arg, const option_names option)
            StrCompareNoCase(arg, '/' + options[option]));
 }
 
-VPApp::VPApp(HINSTANCE hInstance)
+VPApp::VPApp()
+#ifndef __STANDALONE__
+   : m_msgLoop(std::make_unique<WinMsgLoop>())
+#else
+   : m_msgLoop(std::make_unique<StandaloneMsgLoop>())
+#endif
 {
    g_app = this;
-   m_vpinball.AddRef();
+   g_pvp = &m_vpxEditor;
+   m_vpxEditor.AddRef();
+
    SetThreadName("Main"s);
 
-   #ifndef __STANDALONE__
-      m_vpinball.theInstance = GetInstanceHandle();
-      SetResourceHandle(m_vpinball.theInstance);
-   #endif
-   g_pvp = &m_vpinball;
+   m_msgLoop->Initialize();
 
    #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
@@ -372,7 +375,7 @@ VPApp::VPApp(HINSTANCE hInstance)
       //!! max(2u, std::thread::hardware_concurrency()) ??
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
-      m_vpinball.SetLogicalNumberOfProcessors(sysinfo.dwNumberOfProcessors); //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
+      m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 
       #ifdef _ATL_FREE_THREADED
          const HRESULT hRes = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -380,12 +383,12 @@ VPApp::VPApp(HINSTANCE hInstance)
          const HRESULT hRes = CoInitialize(nullptr);
       #endif
       _ASSERTE(SUCCEEDED(hRes));
-      _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
+      _Module.Init(ObjectMap, m_vpxEditor.theInstance, &LIBID_VPinballLib);
 
       // load and register VP type library for COM integration
       {
          ITypeLib *ptl = nullptr;
-         const wstring wFileName = GetModulePath<wstring>(m_vpinball.theInstance);
+         const wstring wFileName = GetModulePath<wstring>(m_vpxEditor.theInstance);
          if (SUCCEEDED(LoadTypeLib(wFileName.c_str(), &ptl)))
          {
             // first try to register system-wide (if running as admin)
@@ -395,12 +398,12 @@ VPApp::VPApp(HINSTANCE hInstance)
                // if failed, register only for current user
                hr = RegisterTypeLibForUser(ptl, (OLECHAR*)wFileName.c_str(), nullptr);
                if (!SUCCEEDED(hr))
-                  m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
+                  m_vpxEditor.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
             }
             ptl->Release();
          }
          else
-            m_vpinball.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
+            m_vpxEditor.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
       }
 
       #ifdef _ATL_FREE_THREADED
@@ -417,7 +420,7 @@ VPApp::VPApp(HINSTANCE hInstance)
       iccex.dwICC = ICC_COOL_CLASSES;
       InitCommonControlsEx(&iccex);
    #else
-      m_vpinball.SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
+      m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
 
    #endif
 
@@ -448,7 +451,8 @@ VPApp::VPApp(HINSTANCE hInstance)
 
 VPApp::~VPApp()
 {
-   m_vpinball.Release();
+   m_msgLoop = nullptr;
+   m_vpxEditor.Release();
 
    #ifndef __STANDALONE__
       _Module.RevokeClassObjects();
@@ -461,6 +465,17 @@ VPApp::~VPApp()
    #ifdef _CRTDBG_MAP_ALLOC
       _CrtDumpMemoryLeaks();
    #endif
+}
+
+int VPApp::GetLogicalNumberOfProcessors() const
+{
+   if (m_logicalNumberOfProcessors < 1)
+   {
+      PLOGE << "Invalid number of processor " << m_logicalNumberOfProcessors << ". Fallback to single processor.";
+      return 1;
+   }
+
+   return m_logicalNumberOfProcessors;
 }
 
 string VPApp::GetPathFromArg(const string& arg, bool setCurrentPath)
@@ -592,7 +607,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             if (extension_from_path(filename) == "vpx" && FileExists(filename))
             {
                m_play = true;
-               m_vpinball.m_open_minimized = true;
+               m_open_minimized = true;
                m_tableFileName = filename;
                i++;
             }
@@ -631,19 +646,19 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
 
       case OPTION_LESSCPUTHREADS:
       {
-         int procCount = m_vpinball.GetLogicalNumberOfProcessors();
-         m_vpinball.SetLogicalNumberOfProcessors(max(min(procCount, 2), procCount/4)); // only use 1/4th the threads, but at least 2 (if there are 2)
+         int procCount = GetLogicalNumberOfProcessors();
+         m_logicalNumberOfProcessors= max(min(procCount, 2), procCount/4); // only use 1/4th the threads, but at least 2 (if there are 2)
          break;
       }
 
       // FIXME remove as this is now handled by the ini system
       case OPTION_DISABLETRUEFULLSCREEN:
-         m_vpinball.m_disEnableTrueFullscreen = 0;
+         m_disEnableTrueFullscreen = 0;
          break;
 
       // FIXME remove as this is now handled by the ini system
       case OPTION_ENABLETRUEFULLSCREEN:
-         m_vpinball.m_disEnableTrueFullscreen = 1;
+         m_disEnableTrueFullscreen = 1;
          break;
 
       // FIXME remove as this is now handled by the ini system
@@ -655,8 +670,8 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
                lpszStr = szArglist[i + 1] + 1;
             else
                lpszStr = szArglist[i + 1];
-            m_vpinball.m_fgles = clamp(sz2f(lpszStr), 0.115f, 0.925f);
-            m_vpinball.m_bgles = true;
+            m_fgles = clamp(sz2f(lpszStr), 0.115f, 0.925f);
+            m_bgles = true;
          }
          else
          {
@@ -676,7 +691,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
       {
          if ((i + 1 < nArgs) && (opt - OPTION_CUSTOM1) <= 9)
          {
-            m_vpinball.m_customParameters[opt - OPTION_CUSTOM1] = MakeWString(szArglist[i + 1]);
+            m_customParameters[opt - OPTION_CUSTOM1] = MakeWString(szArglist[i + 1]);
             ++i; // two params processed
          }
          else
@@ -687,12 +702,12 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
       }
 
       case OPTION_MINIMIZED:
-         m_vpinball.m_open_minimized = true;
-         m_vpinball.m_disable_pause_menu = true;
+         m_open_minimized = true;
+         m_disable_pause_menu = true;
          break;
 
       case OPTION_EXTMINIMIZED:
-         m_vpinball.m_open_minimized = true;
+         m_open_minimized = true;
          break;
 
       #ifdef _DEBUG
@@ -720,12 +735,12 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
             exit(1);
          }
-         m_vpinball.m_povEdit = opt == OPTION_POVEDIT;
+         m_povEdit = opt == OPTION_POVEDIT;
          m_play = (opt == OPTION_PLAY) || (opt == OPTION_POVEDIT);
          m_audit = opt == OPTION_AUDIT;
          m_extractPov = opt == OPTION_POV;
          m_extractScript = opt == OPTION_EXTRACTVBS;
-         m_vpinball.m_open_minimized = opt != OPTION_EDIT;
+         m_open_minimized = opt != OPTION_EDIT;
          m_run = !(opt == OPTION_AUDIT || opt == OPTION_POV || opt == OPTION_EXTRACTVBS); // Don't run the UI
          m_tableFileName = GetPathFromArg(szArglist[i + 1], false);
          i++;
@@ -738,14 +753,14 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             exit(1);
          }
          m_play = true;
-         m_vpinball.m_open_minimized = true;
+         m_open_minimized = true;
          m_run = true;
-         if (!try_parse_int(szArglist[i + 1], m_vpinball.m_captureAttract) || m_vpinball.m_captureAttract <= 0)
+         if (!try_parse_int(szArglist[i + 1], m_captureAttract) || m_captureAttract <= 0)
          {
             OnCommandLineError("Command Line Error"s, "Invalid number of frames"s);
             exit(1);
          }
-         if (!try_parse_int(szArglist[i + 2], m_vpinball.m_captureAttractFPS) || m_vpinball.m_captureAttractFPS <= 0)
+         if (!try_parse_int(szArglist[i + 2], m_captureAttractFPS) || m_captureAttractFPS <= 0)
          {
             OnCommandLineError("Command Line Error"s, "Invalid framerate"s);
             exit(1);
@@ -753,12 +768,12 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
          m_tableFileName = GetPathFromArg(szArglist[i + 3], false);
          if (i + 4 < nArgs && StrCompareNoCase("noloop"s, szArglist[i + 4]))
          {
-            m_vpinball.m_captureAttractLoop = false;
+            m_captureAttractLoop = false;
             i += 4;
          }
          else
          {
-            m_vpinball.m_captureAttractLoop = true;
+            m_captureAttractLoop = true;
             i += 3;
          }
          break;
@@ -790,7 +805,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
             exit(1);
          }
          m_run = false;
-         m_vpinball.m_open_minimized = true;
+         m_open_minimized = true;
          m_tableIniFileName = GetPathFromArg(szArglist[i + 1], false);
          i++;
          m_tournamentFileName = GetPathFromArg(szArglist[i + 2], false);
@@ -844,7 +859,7 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
                   PLOGE << "Unable to create pref path: " << path;
                }
             }
-            m_vpinball.SetPrefPath(path);
+            m_fileLocator.SetPrefPath(path);
          }
          i++;
          break;
@@ -862,15 +877,15 @@ void VPApp::ProcessCommandLine(int nArgs, const char* szArglist[])
    }
 }
 
-BOOL VPApp::InitInstance()
+void VPApp::InitInstance()
 {
-   m_vpinball.Create(nullptr);
+   m_vpxEditor.Create(nullptr);
 
    // Define settings location and load them
    if (m_iniFileName.empty())
    {
-      std::filesystem::path defaultPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences) / "VPinballX.ini";
-      std::filesystem::path appPath = m_vpinball.GetAppPath(VPinball::AppSubFolder::Root) / "VPinballX.ini";
+      std::filesystem::path defaultPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
+      std::filesystem::path appPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
       if (FileExists(defaultPath))
          m_iniFileName = defaultPath.string();
       else if (FileExists(appPath))
@@ -878,8 +893,8 @@ BOOL VPApp::InitInstance()
       else
          m_iniFileName = defaultPath.string();
    }
-   m_vpinball.m_settings.SetIniPath(m_iniFileName);
-   m_vpinball.m_settings.Load(true);
+   m_settings.SetIniPath(m_iniFileName);
+   m_settings.Load(true);
 
    // The file layout must be defined before loading the settings file, so we apply the following rules:
    // - if we have a settings location commandline override, we loads it and use the setting in it (to locate other files than the ini)
@@ -887,174 +902,127 @@ BOOL VPApp::InitInstance()
    // - if not but we have a settings file along the app executable, we use it and update the setting accordingly ('App' layout mode)
    // - if we don't have anything, then we use the default ('Table' layout mode)
 
-   Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());
+   Logger::SetupLogger(m_settings.GetEditor_EnableLog());
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;
-   PLOGI << "Number of logical CPU cores: " << m_vpinball.GetLogicalNumberOfProcessors();
-   PLOGI << "Application path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Root);
-   PLOGI << "Preference path: " << m_vpinball.GetAppPath(VPinball::AppSubFolder::Preferences);
+   PLOGI << "Number of logical CPU cores: " << GetLogicalNumberOfProcessors();
+   PLOGI << "Application path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
+   PLOGI << "Preference path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
    
-   Settings::SetRecentDir_ImportDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_LoadDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_FontDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_PhysicsDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_ImageDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_MaterialDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_SoundDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_POVDir_Default(g_pvp->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_ImportDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_LoadDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_FontDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_PhysicsDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_ImageDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_MaterialDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_SoundDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_POVDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
 
-   m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
+   m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
+   m_settings.Save();
 
-   m_vpinball.LoadEditorSetupFromSettings();
-
-   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-   if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
-   {
-      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
-      // FIXME this is not correct as we may be running something else than the player (extract vbs, ...)
-      exit(1);
-   }
-   
-   return TRUE;
+   m_vpxEditor.LoadEditorSetupFromSettings();
 }
 
 int VPApp::Run()
 {
    //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 
-   if (m_vpinball.m_captureAttract)
+   if (m_captureAttract)
    {
-      PLOGI << "Video capture mode requested for " << m_vpinball.m_captureAttract << " frames at " << m_vpinball.m_captureAttractFPS << "FPS from table '" << m_tableFileName << "' "
-            << (m_vpinball.m_captureAttractLoop ? "with " : "without ") << "loop truncation";
+      PLOGI << "Video capture mode requested for " << m_captureAttract << " frames at " << m_captureAttractFPS << "FPS from table '" << m_tableFileName << "' "
+            << (m_captureAttractLoop ? "with " : "without ") << "loop truncation";
    }
 
    if (!m_tableFileName.empty())
    {
       PLOGI << "Loading table from command line option: " << m_tableFileName;
-      m_vpinball.LoadFileName(m_tableFileName, !m_liveedit && !m_play && m_run);
-      m_vpinball.m_table_played_via_command_line = m_play;
-      if (m_vpinball.m_ptableActive && !m_tableIniFileName.empty())
-         m_vpinball.m_ptableActive->SetSettingsFileName(m_tableIniFileName);
-      if (!m_vpinball.m_ptableActive && m_vpinball.m_open_minimized)
-         m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+      m_vpxEditor.LoadFileName(m_tableFileName, !m_liveedit && !m_play && m_run);
+      m_table_played_via_command_line = m_play;
+      if (m_vpxEditor.m_ptableActive && !m_tableIniFileName.empty())
+         m_vpxEditor.m_ptableActive->SetSettingsFileName(m_tableIniFileName);
+      if (!m_vpxEditor.m_ptableActive && m_open_minimized)
+         m_vpxEditor.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
    }
    #ifdef _DEBUG
-   else if (!m_liveedit && m_vpinball.m_settings.GetEditor_SelectTableOnStart())
+   else if (!m_liveedit && m_settings.GetEditor_SelectTableOnStart())
    #else
-   else if (m_vpinball.m_settings.GetEditor_SelectTableOnStart())
+   else if (m_settings.GetEditor_SelectTableOnStart())
    #endif
    {
-      m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
+      m_table_played_via_SelectTableOnStart = m_vpxEditor.LoadFile(false);
    }
 
-   if (m_extractScript && m_vpinball.m_ptableActive)
+   if (m_extractScript && m_vpxEditor.m_ptableActive)
    {
-      string scriptFilename = m_vpinball.m_ptableActive->m_filename;
+      string scriptFilename = m_vpxEditor.m_ptableActive->m_filename;
       if(ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
-         m_vpinball.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
+         m_vpxEditor.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
    }
 
-   if (m_audit && m_vpinball.m_ptableActive)
+   if (m_audit && m_vpxEditor.m_ptableActive)
    {
-      m_vpinball.m_ptableActive->AuditTable(true);
+      m_vpxEditor.m_ptableActive->AuditTable(true);
    }
 
-   if (m_extractPov && m_vpinball.m_ptableActive)
+   if (m_extractPov && m_vpxEditor.m_ptableActive)
    {
       for (int i = 0; i < 3; i++)
-         m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
-      m_vpinball.m_ptableActive->m_settings.Save();
+         m_vpxEditor.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpxEditor.m_ptableActive->m_settings, (ViewSetupID) i);
+      m_vpxEditor.m_ptableActive->m_settings.Save();
    }
 
-   if (!m_tournamentFileName.empty() && m_vpinball.m_ptableActive)
+   if (!m_tournamentFileName.empty() && m_vpxEditor.m_ptableActive)
    {
-      m_vpinball.GenerateImageFromTournamentFile(m_vpinball.m_ptableActive->m_filename, m_tournamentFileName);
+      m_vpxEditor.GenerateImageFromTournamentFile(m_vpxEditor.m_ptableActive->m_filename, m_tournamentFileName);
    }
 
    #ifdef _DEBUG
    if (m_liveedit)
    {
-      if (m_vpinball.m_ptableActive == nullptr)
-         m_vpinball.ParseCommand(ID_NEW_BLANKTABLE, false);
-      if (m_vpinball.m_ptableActive != nullptr)
-         m_vpinball.DoPlay(3);
+      if (m_vpxEditor.m_ptableActive == nullptr)
+         m_vpxEditor.ParseCommand(ID_NEW_BLANKTABLE, false);
+      if (m_vpxEditor.m_ptableActive != nullptr)
+         m_vpxEditor.DoPlay(3);
       else
          m_run = false;
    }
    else
    #endif
-   if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && m_vpinball.m_ptableActive)
+   if ((m_play || m_table_played_via_SelectTableOnStart) && m_vpxEditor.m_ptableActive)
    {
-      m_vpinball.DoPlay(m_vpinball.m_povEdit ? 1 : 0);
+      m_vpxEditor.DoPlay(m_povEdit ? 1 : 0);
    }
 
    if (!m_run)
    {
-      m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+      m_vpxEditor.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
    }
 
-   const int retval = MainMsgLoop();
+   const int retval = m_msgLoop->MainMsgLoop();
 
-   m_vpinball.m_settings.Save();
+   m_settings.Save();
 
    return retval;
 }
 
-BOOL VPApp::OnIdle(LONG count)
-{
+
 #ifndef __STANDALONE__
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-   if (!g_pplayer && m_vpinball.m_table_played_via_SelectTableOnStart)
-   {
-      // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-      // first close the current table
-      if (const auto pt = m_vpinball.GetActiveTableEditor(); pt)
-         m_vpinball.CloseTable(pt);
-      // then select the new one, and if one was selected, play it
-      m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
-      if (m_vpinball.m_table_played_via_SelectTableOnStart)
-         m_vpinball.DoPlay(0);
-   }
-   else if (!g_pplayer && m_vpinball.m_open_minimized)
-   {
-      // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
-      // we do not have a player, just close back to system.
-      m_vpinball.PostMessage(WM_CLOSE, 0, 0);
-   }
-   else
-   {
-      // Otherwise wait for next event
-      return FALSE;
-   }
-#endif
-   return TRUE;
+
+WinMsgLoop::WinMsgLoop()
+{
 }
 
-BOOL VPApp::PreTranslateMessage(MSG& msg)
+void WinMsgLoop::Initialize()
 {
-#ifndef __STANDALONE__
-   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
-   {
-      HWND hwndFocus = GetFocus();
-      TCHAR className[256];
-      if (hwndFocus && GetClassName(hwndFocus, className, 256))
-      {
-         // If it's an Edit control, skip accelerators
-         if (_tcscmp(className, _T("Edit")) == 0)
-            return FALSE;
-      }
-   }
-   return __super::PreTranslateMessage(msg);
-#else
-   return FALSE;
-#endif
+   m_vpxEditor = g_pvp;
+   m_vpxEditor->theInstance = GetInstanceHandle();
+   SetResourceHandle(m_vpxEditor->theInstance);
 }
 
-bool VPApp::StepMsgLoop()
+bool WinMsgLoop::StepMsgLoop()
 {
-#ifndef __STANDALONE__
-   MSG msg;
-   if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+   if (MSG msg; PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
    {
       m_idleIndex = 0;
       if (msg.message == WM_QUIT)
@@ -1069,24 +1037,85 @@ bool VPApp::StepMsgLoop()
    {
       WaitMessage();
    }
-#endif
    return false;
 }
 
-int VPApp::MainMsgLoop()
+int WinMsgLoop::MainMsgLoop()
 {
-   int retval = 0;
-#ifndef __STANDALONE__
    while (!StepMsgLoop())
    {
+      // Nothing to do here, everything is handled in the message loop and idle processing
    }
+   return 0;
+}
+
+BOOL WinMsgLoop::OnIdle(LONG count)
+{
+   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   if (!g_pplayer && g_app->m_table_played_via_SelectTableOnStart)
+   {
+      // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
+      // first close the current table
+      if (const auto pt = m_vpxEditor->GetActiveTableEditor(); pt)
+         m_vpxEditor->CloseTable(pt);
+      // then select the new one, and if one was selected, play it
+      g_app->m_table_played_via_SelectTableOnStart = m_vpxEditor->LoadFile(false);
+      if (g_app->m_table_played_via_SelectTableOnStart)
+         m_vpxEditor->DoPlay(0);
+      return TRUE;
+   }
+   else if (!g_pplayer && g_app->m_open_minimized)
+   {
+      // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
+      // we do not have a player, just close back to system.
+      m_vpxEditor->PostMessage(WM_CLOSE, 0, 0);
+      return TRUE;
+   }
+   else
+   {
+      // Otherwise wait for next event
+      return FALSE;
+   }
+}
+
+BOOL WinMsgLoop::PreTranslateMessage(MSG& msg)
+{
+   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
+   {
+      HWND hwndFocus = GetFocus();
+      TCHAR className[256];
+      if (hwndFocus && GetClassName(hwndFocus, className, 256))
+      {
+         // If it's an Edit control, skip accelerators
+         if (_tcscmp(className, _T("Edit")) == 0)
+            return FALSE;
+      }
+   }
+   return __super::PreTranslateMessage(msg);
+}
+
 #else
-   if (auto pt = m_vpinball.GetActiveTableEditor(); pt)
+
+void StandaloneMsgLoop::Initialize()
+{
+   m_vpxEditor = g_pvp;
+}
+
+bool StandaloneMsgLoop::StepMsgLoop()
+{
+   return false;
+}
+
+int StandaloneMsgLoop::MainMsgLoop()
+{
+   int retval = 0;
+   if (auto pt = m_vpxEditor->GetActiveTableEditor(); pt)
    {
       if (pt->m_table->m_pcv->m_scriptError)
          retval = 1;
-      m_vpinball.CloseTable(pt);
+      m_vpxEditor->CloseTable(pt);
    }
-#endif
    return retval;
 }
+
+#endif

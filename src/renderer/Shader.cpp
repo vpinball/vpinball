@@ -2191,7 +2191,7 @@ void Shader::Load()
 void Shader::Load(const std::string& name)
 {
    m_shaderCodeName = name;
-   m_shaderPath = g_pvp->GetAppPath(VPinball::AppSubFolder::GLShaders);
+   m_shaderPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::GLShaders);
    PLOGI << "Parsing file " << name;
    ankerl::unordered_dense::map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);

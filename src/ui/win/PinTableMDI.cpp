@@ -40,7 +40,7 @@ PinTableMDI::~PinTableMDI()
 
 bool PinTableMDI::CanClose() const
 {
-    if (m_tableWnd->m_table != nullptr && m_tableWnd->m_table->FDirty() && !g_pvp->m_povEdit)
+    if (m_tableWnd->m_table != nullptr && m_tableWnd->m_table->FDirty() && !g_app->m_povEdit)
     {
         const string szText = LocalString(IDS_SAVE_CHANGES1).m_szbuffer /*"Do you want to save the changes you made to '"*/ + m_tableWnd->m_table->m_title + LocalString(IDS_SAVE_CHANGES2).m_szbuffer;
 #ifndef __STANDALONE__

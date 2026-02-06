@@ -12,9 +12,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
    {
       // statics as they need to survive as C string after this function returns
       static string path;
-      path = g_pvp->GetAppPath(VPinball::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
+      path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
       static string prefPath;
-      prefPath = g_pvp->GetAppPath(VPinball::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+      prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
       info->path = path.c_str();
       info->prefPath = prefPath.c_str();
    }
@@ -377,7 +377,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
       m_pluginSettings, [&pluginId, &settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
 
    // Register property and get or set value
-   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_app->m_settings;
    const bool asTableOverride = g_pplayer != nullptr;
    const std::string sectionName = "Plugin."s + pluginId;
    switch (settingDef->type)

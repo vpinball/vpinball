@@ -141,11 +141,11 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    AddOnPrepareFrameHandler(onPrepareFrame, &state);
    g_pvp->DoPlay(0);
    while (!state.done)
-      g_app->StepMsgLoop();
+      g_app->m_msgLoop->StepMsgLoop();
    RemoveOnPrepareFrameHandler(onPrepareFrame);
    PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0); // Close the table
    while (!g_pvp->m_vtable.empty())
-      g_app->StepMsgLoop();
+      g_app->m_msgLoop->StepMsgLoop();
 }
 
 void ResetVPX()
@@ -160,13 +160,13 @@ void ResetVPX()
    {
       PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0);
       while (g_pvp->m_vtable.size() == nOpenedTables)
-         g_app->StepMsgLoop();
+         g_app->m_msgLoop->StepMsgLoop();
       nOpenedTables = g_pvp->m_vtable.size();
    }
 
    // Reset settings
-   g_pvp->m_settings.Reset();
-   Settings& settings = g_pvp->m_settings;
+   g_app->m_settings.Reset();
+   Settings& settings = g_app->m_settings;
    settings.SetPlayerVR_AskToTurnOn(2, false);
    settings.SetPlayer_PlayfieldFullScreen(0, false);
    settings.SetPlayer_PlayfieldWidth(1920, false);
@@ -199,7 +199,7 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    // Clean up
    msgApi.ReleaseMsgID(onPrepareFrameMsgId);
    PostMessage(g_pvp->GetHwnd(), WM_CLOSE, 0, 0);
-   g_app->MainMsgLoop();
+   g_app->m_msgLoop->MainMsgLoop();
 
    if (context.shouldExit())
       return res;
