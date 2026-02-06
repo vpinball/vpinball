@@ -80,7 +80,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          string uri(hm->uri.buf, hm->uri.len);
          if (!uri.empty() && uri.front() == '/') uri.erase(0, 1);
 
-         std::filesystem::path webBase = std::filesystem::path(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets)) / "web";
+         std::filesystem::path webBase = std::filesystem::path(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets)) / "web";
          std::filesystem::path asset = uri.empty() ? webBase / "vpx.html" : webBase / uri;
 
          if (!uri.empty() && std::filesystem::exists(asset))
@@ -173,8 +173,8 @@ void WebServer::Start()
 
    const auto addrPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Standalone"s, "WebServerAddr"s, ""s, ""s, false, "0.0.0.0"s));
    const auto portPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>("Standalone"s, "WebServerPort"s, ""s, ""s, false, INT_MIN, INT_MAX, 2112));
-   const string addr = g_pvp->m_settings.GetString(addrPropId);
-   const int port = g_pvp->m_settings.GetInt(portPropId);
+   const string addr = g_app->m_settings.GetString(addrPropId);
+   const int port = g_app->m_settings.GetInt(portPropId);
 
    string bindUrl = "http://" + addr + ':' + std::to_string(port);
 
@@ -237,7 +237,7 @@ void WebServer::Stop()
 void WebServer::Update()
 {
    const auto serverPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Standalone"s, "WebServer"s, ""s, ""s, false, false));
-   bool enabled = g_pvp->m_settings.GetBool(serverPropId);
+   bool enabled = g_app->m_settings.GetBool(serverPropId);
 
    if (enabled && !m_run)
       Start();
@@ -281,7 +281,7 @@ void WebServer::Assets(struct mg_connection *c, struct mg_http_message* hm)
          return;
       }
 
-      std::filesystem::path fullPath = std::filesystem::path(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets)) / assetPath;
+      std::filesystem::path fullPath = std::filesystem::path(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets)) / assetPath;
 
       if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
          struct mg_http_serve_opts opts = {};
@@ -395,9 +395,9 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
 
    if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500) == length) {
       if (*q == '\0' && file == "VPinballX.ini") {
-         g_pvp->m_settings.SetIniPath(path);
-         g_pvp->m_settings.Load(true);
-         g_pvp->m_settings.Save();
+         g_app->m_settings.SetIniPath(path);
+         g_app->m_settings.Load(true);
+         g_app->m_settings.Save();
       }
       SetLastUpdate();
    }
@@ -690,6 +690,6 @@ bool WebServer::ValidatePathParameter(struct mg_connection *c, struct mg_http_me
 
 std::filesystem::path WebServer::BuildTablePath(const char* relativePath)
 {
-   return g_pvp->GetAppPath(VPinball::AppSubFolder::Tables) / relativePath;
+   return g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / relativePath;
 }
 

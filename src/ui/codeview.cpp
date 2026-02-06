@@ -762,10 +762,10 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      g_pvp->m_settings.SetEditor_CodeViewPosX((int)rc.left, false);
-      g_pvp->m_settings.SetEditor_CodeViewPosY((int)rc.top, false);
-      g_pvp->m_settings.SetEditor_CodeViewPosWidth(rc.right - rc.left, false);
-      g_pvp->m_settings.SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
+      g_app->m_settings.SetEditor_CodeViewPosX((int)rc.left, false);
+      g_app->m_settings.SetEditor_CodeViewPosY((int)rc.top, false);
+      g_app->m_settings.SetEditor_CodeViewPosWidth(rc.right - rc.left, false);
+      g_app->m_settings.SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
    }
 
    if (m_hwndFind && !visible)
@@ -789,10 +789,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
       if (!m_visible)
       {
-         const int x = g_pvp->m_settings.GetEditor_CodeViewPosX();
-         const int y = g_pvp->m_settings.GetEditor_CodeViewPosY();
-         const int w = g_pvp->m_settings.GetEditor_CodeViewPosWidth();
-         const int h = g_pvp->m_settings.GetEditor_CodeViewPosHeight();
+         const int x = g_app->m_settings.GetEditor_CodeViewPosX();
+         const int y = g_app->m_settings.GetEditor_CodeViewPosY();
+         const int w = g_app->m_settings.GetEditor_CodeViewPosWidth();
+         const int h = g_app->m_settings.GetEditor_CodeViewPosHeight();
          const POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
@@ -827,26 +827,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-   m_bgColor = g_pvp->m_settings.GetCVEdit_BackGroundColor();
-   m_bgSelColor = g_pvp->m_settings.GetCVEdit_BackGroundSelectionColor();
-   m_displayAutoComplete = g_pvp->m_settings.GetCVEdit_DisplayAutoComplete();
-   m_displayAutoCompleteLength = g_pvp->m_settings.GetCVEdit_DisplayAutoCompleteAfter();
-   m_dwellDisplay = g_pvp->m_settings.GetCVEdit_DwellDisplay();
-   m_dwellHelp = g_pvp->m_settings.GetCVEdit_DwellHelp();
-   m_dwellDisplayTime = g_pvp->m_settings.GetCVEdit_DwellDisplayTime();
+   m_bgColor = g_app->m_settings.GetCVEdit_BackGroundColor();
+   m_bgSelColor = g_app->m_settings.GetCVEdit_BackGroundSelectionColor();
+   m_displayAutoComplete = g_app->m_settings.GetCVEdit_DisplayAutoComplete();
+   m_displayAutoCompleteLength = g_app->m_settings.GetCVEdit_DisplayAutoCompleteAfter();
+   m_dwellDisplay = g_app->m_settings.GetCVEdit_DwellDisplay();
+   m_dwellHelp = g_app->m_settings.GetCVEdit_DwellHelp();
+   m_dwellDisplayTime = g_app->m_settings.GetCVEdit_DwellDisplayTime();
    for (size_t i = 0; i < m_lPrefsList->size(); ++i)
       m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-   g_pvp->m_settings.SetCVEdit_BackGroundColor((int)m_bgColor, false);
-   g_pvp->m_settings.SetCVEdit_BackGroundSelectionColor((int)m_bgSelColor, false);
-   g_pvp->m_settings.SetCVEdit_DisplayAutoComplete(m_displayAutoComplete, false);
-   g_pvp->m_settings.SetCVEdit_DisplayAutoCompleteAfter(m_displayAutoCompleteLength, false);
-   g_pvp->m_settings.SetCVEdit_DwellDisplay(m_dwellDisplay, false);
-   g_pvp->m_settings.SetCVEdit_DwellHelp(m_dwellHelp, false);
-   g_pvp->m_settings.SetCVEdit_DwellDisplayTime(m_dwellDisplayTime, false);
+   g_app->m_settings.SetCVEdit_BackGroundColor((int)m_bgColor, false);
+   g_app->m_settings.SetCVEdit_BackGroundSelectionColor((int)m_bgSelColor, false);
+   g_app->m_settings.SetCVEdit_DisplayAutoComplete(m_displayAutoComplete, false);
+   g_app->m_settings.SetCVEdit_DisplayAutoCompleteAfter(m_displayAutoCompleteLength, false);
+   g_app->m_settings.SetCVEdit_DwellDisplay(m_dwellDisplay, false);
+   g_app->m_settings.SetCVEdit_DwellHelp(m_dwellHelp, false);
+   g_app->m_settings.SetCVEdit_DwellDisplayTime(m_dwellDisplayTime, false);
    for (size_t i = 0; i < m_lPrefsList->size(); i++)
       m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -1196,7 +1196,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    {
       g_pplayer->LockForegroundWindow(false);
       // Cancel capture and close app if in capture attract mode
-      if (g_pvp->m_captureAttract)
+      if (g_app->m_captureAttract)
          g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
    }
 
@@ -1388,7 +1388,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	{
 		g_pplayer->LockForegroundWindow(false);
 		// Cancel capture and close app if in capture attract mode
-		if (g_pvp->m_captureAttract)
+		if (g_app->m_captureAttract)
 			g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
 	}
 
@@ -2717,10 +2717,10 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-   const int x = g_pvp->m_settings.GetEditor_CodeViewPosX();
-   const int y = g_pvp->m_settings.GetEditor_CodeViewPosY();
-   const int w = g_pvp->m_settings.GetEditor_CodeViewPosWidth();
-   const int h = g_pvp->m_settings.GetEditor_CodeViewPosHeight();
+   const int x = g_app->m_settings.GetEditor_CodeViewPosX();
+   const int y = g_app->m_settings.GetEditor_CodeViewPosY();
+   const int w = g_app->m_settings.GetEditor_CodeViewPosWidth();
+   const int h = g_app->m_settings.GetEditor_CodeViewPosHeight();
 
    cs.x = x;
    cs.y = y;
@@ -3160,7 +3160,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 void CodeViewer::ParseVPCore()
 {
 	std::ifstream fCore;
-   fCore.open(g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts, "core.vbs"));
+   fCore.open(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, "core.vbs"));
 	if (!fCore.is_open())
 	{
 		MessageBox("Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
@@ -3533,8 +3533,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = g_pvp->m_settings.GetCVEdit_BackGroundColor();
-			pcv->m_bgSelColor = g_pvp->m_settings.GetCVEdit_BackGroundSelectionColor();
+			pcv->m_bgColor = g_app->m_settings.GetCVEdit_BackGroundColor();
+			pcv->m_bgSelColor = g_app->m_settings.GetCVEdit_BackGroundSelectionColor();
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3586,19 +3586,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					g_pvp->m_settings.SetCVEdit_DwellDisplay(pcv->m_dwellDisplay, false);
+					g_app->m_settings.SetCVEdit_DwellDisplay(pcv->m_dwellDisplay, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					g_pvp->m_settings.SetCVEdit_DwellHelp(pcv->m_dwellHelp, false);
+					g_app->m_settings.SetCVEdit_DwellHelp(pcv->m_dwellHelp, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					g_pvp->m_settings.SetCVEdit_DisplayAutoComplete(pcv->m_displayAutoComplete, false);
+					g_app->m_settings.SetCVEdit_DisplayAutoComplete(pcv->m_displayAutoComplete, false);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
@@ -3835,7 +3835,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = g_pvp->m_settings.GetEditor_GroupElementsInCollection();
+   m_groupElements = g_app->m_settings.GetEditor_GroupElementsInCollection();
 }
 
 HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -4030,8 +4030,8 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    if (g_pplayer->m_ptable->IsLocked())
       return S_OK;
 
-   const bool enableLog = g_pvp->m_settings.GetEditor_EnableLog();
-   const bool logScript = enableLog && g_pvp->m_settings.GetEditor_LogScriptOutput();
+   const bool enableLog = g_app->m_settings.GetEditor_EnableLog();
+   const bool logScript = enableLog && g_app->m_settings.GetEditor_LogScriptOutput();
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
    {

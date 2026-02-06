@@ -9,8 +9,6 @@
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
-#include "core/VPApp.h"
-
 #include "ui/resource.h"
 #include <initguid.h>
 
@@ -189,15 +187,23 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
       #endif
-      // Start Win32++
-      VPApp theApp(hInstance);
+
+      VPApp theApp;
       theApp.ProcessCommandLine();
       theApp.InitInstance();
+
+      SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+      if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+      {
+         PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+         // FIXME this is not correct as we may be running something else than the player (extract vbs, ...)
+         exit(1);
+      }
 
       class SDLModuleLoader final : public MsgPI::MsgModuleLoader
       {
       public:
-         ~SDLModuleLoader() override { }
+         ~SDLModuleLoader() override = default;
          void* Link(const std::string& directory, const std::string& file) override {
             #if defined(_MSC_VER)
                SetDllDirectory(directory.c_str());
@@ -217,7 +223,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(module), functionName.c_str()));
          }
       };
-      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_pvp->GetAppPath(VPinball::AppSubFolder::Plugins),
+      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),
          [](MsgPI::MsgPlugin& plugin)
          {
             VPX::Properties::PropertyRegistry::PropId enableId;
@@ -226,7 +232,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             else
                enableId = Settings::GetRegistry().Register(
                   std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
-            if (g_pvp->m_settings.GetBool(enableId))
+            if (g_app->m_settings.GetBool(enableId))
             {
                plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
             }

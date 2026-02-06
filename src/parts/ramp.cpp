@@ -34,7 +34,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   const float length = 0.5f * g_pvp->m_settings.GetDefaultPropsRamp_Length();
+   const float length = 0.5f * g_app->m_settings.GetDefaultPropsRamp_Length();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -58,7 +58,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
 void Ramp::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_heightbottom, HeightBottom);
@@ -94,7 +94,7 @@ void Ramp::SetDefaultPhysics(const bool fromMouseClick)
 
 void Ramp::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsRamp_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsRamp_##prop(field, false)
    LinkProp(m_d.m_heightbottom, HeightBottom);
    LinkProp(m_d.m_heighttop, HeightTop);
    LinkProp(m_d.m_widthbottom, WidthBottom);

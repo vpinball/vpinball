@@ -92,7 +92,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
    if (isHdr2020)
    {
-      m_exposure *= g_pvp->m_settings.GetPlayer_HDRGlobalExposure();
+      m_exposure *= g_app->m_settings.GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
@@ -198,17 +198,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "BallEnv.exr").string()));
+   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BallEnv.exr").string()));
    m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false);
    ballTex = nullptr;
 
-   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "AODither.webp").string()));
+   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "AODither.webp").string()));
    m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true);
    aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
    std::shared_ptr<const BaseTexture> envTex
-      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "EnvMap.webp").string()));
+      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp").string()));
    m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling
@@ -387,9 +387,9 @@ Renderer::SceneLighting::SceneLighting(PinTable* const table)
 
 void Renderer::SceneLighting::Update()
 {
-   if (g_pvp->m_bgles) // Overriden from command line
+   if (g_app->m_bgles) // Overriden from command line
    {
-      m_emissionScale = g_pvp->m_fgles;
+      m_emissionScale = g_app->m_fgles;
       return;
    }
    switch (m_mode)
@@ -640,7 +640,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
    //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
    // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
    {
-      ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+      ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
 
       for (unsigned int y = 0; y < rad_env_yres; ++y) {
          pool.enqueue([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
@@ -1259,24 +1259,24 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    switch (type)
    {
    case CTLPI_SEG_LAYOUT_7: segSDF = GetSegSDF(m_segDisplaySDF[family][0], 
-        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-gts.png")
-      : (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-bally.png")
-      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-atari.png")
-                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-williams.png")); break;
+        (family == SegmentFamily::Gottlieb) ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-gts.png")
+      : (family == SegmentFamily::Bally)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-bally.png")
+      : (family == SegmentFamily::Atari)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-atari.png")
+                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-williams.png")); break;
    case CTLPI_SEG_LAYOUT_7C: segSDF = GetSegSDF(m_segDisplaySDF[family][1],
-        (family == SegmentFamily::Bally)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-bally.png")
-      : (family == SegmentFamily::Atari)    ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-atari.png")
-                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-williams.png")); break;
+        (family == SegmentFamily::Bally)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-bally.png")
+      : (family == SegmentFamily::Atari)    ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-atari.png")
+                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-williams.png")); break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
-   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "7seg-c-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "9seg-gts.png")); break;
-   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "9seg-c-gts.png")); break;
-   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-d-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "7seg-c-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "9seg-gts.png")); break;
+   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "9seg-c-gts.png")); break;
+   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-d-williams.png")); break;
    case CTLPI_SEG_LAYOUT_14DC: segSDF = GetSegSDF(m_segDisplaySDF[family][7],
-        (family == SegmentFamily::Gottlieb) ? g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-dc-gts.png")
-                                            : g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "14seg-dc-williams.png")); break;
-   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "16seg.png")); break;
+        (family == SegmentFamily::Gottlieb) ? g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-dc-gts.png")
+                                            : g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "14seg-dc-williams.png")); break;
+   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "16seg.png")); break;
    }
    if (segSDF == nullptr)
       return;

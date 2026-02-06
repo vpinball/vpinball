@@ -441,7 +441,7 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
+   const string& szInitialDir = g_app->m_settings.GetRecentDir_ImageDir();
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
@@ -465,7 +465,7 @@ void ImageDialog::Import()
 
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         g_pvp->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
+         g_app->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
       pt->SetNonUndoableDirty(eSaveDirty);
       pt->UpdatePropertyImageList();
@@ -557,7 +557,7 @@ void ImageDialog::Export()
             else if (defExt == "hdr")
                ofn.nFilterIndex = 12;
 
-            string g_initDir = g_pvp->m_settings.GetRecentDir_ImageDir();
+            string g_initDir = g_app->m_settings.GetRecentDir_ImageDir();
             ofn.lpstrInitialDir = g_initDir.c_str();
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
@@ -605,7 +605,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               g_pvp->m_settings.SetRecentDir_ImageDir(pathName, false);
+               g_app->m_settings.SetRecentDir_ImageDir(pathName, false);
             } // finished all selected items
          }
       }
@@ -784,7 +784,7 @@ void ImageDialog::ReimportFrom()
       const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
+         const string& szInitialDir = g_app->m_settings.GetRecentDir_ImageDir();
          vector<string> szFileName;
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
@@ -798,7 +798,7 @@ void ImageDialog::ReimportFrom()
             {
                const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  g_pvp->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
+                  g_app->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                m_overallFilesize -= ppi->GetFileSize();
@@ -826,10 +826,10 @@ void ImageDialog::ReimportFrom()
 
 void ImageDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.GetEditor_ImageMngPosX();
-   const int y = g_pvp->m_settings.GetEditor_ImageMngPosY();
-   const int w = g_pvp->m_settings.GetEditor_ImageMngWidth();
-   const int h = g_pvp->m_settings.GetEditor_ImageMngHeight();
+   const int x = g_app->m_settings.GetEditor_ImageMngPosX();
+   const int y = g_app->m_settings.GetEditor_ImageMngPosY();
+   const int w = g_app->m_settings.GetEditor_ImageMngWidth();
+   const int h = g_app->m_settings.GetEditor_ImageMngHeight();
    POINT p {x, y};
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -838,10 +838,10 @@ void ImageDialog::LoadPosition()
 void ImageDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_pvp->m_settings.SetEditor_ImageMngPosX((int)rect.left, false);
-   g_pvp->m_settings.SetEditor_ImageMngPosY((int)rect.top, false);
-   g_pvp->m_settings.SetEditor_ImageMngWidth(rect.right - rect.left, false);
-   g_pvp->m_settings.SetEditor_ImageMngHeight(rect.bottom - rect.top, false);
+   g_app->m_settings.SetEditor_ImageMngPosX((int)rect.left, false);
+   g_app->m_settings.SetEditor_ImageMngPosY((int)rect.top, false);
+   g_app->m_settings.SetEditor_ImageMngWidth(rect.right - rect.left, false);
+   g_app->m_settings.SetEditor_ImageMngHeight(rect.bottom - rect.top, false);
 }
 
 void ImageDialog::UpdateSizeText()

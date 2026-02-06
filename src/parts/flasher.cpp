@@ -79,7 +79,7 @@ HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Flasher::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);
@@ -107,7 +107,7 @@ void Flasher::SetDefaults(const bool fromMouseClick)
 
 void Flasher::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsFlasher_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsFlasher_##prop(field, false)
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotX, RotX);
    LinkProp(m_d.m_rotY, RotY);

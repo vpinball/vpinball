@@ -296,8 +296,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.GetEditor_CollectionMngPosX();
-   const int y = g_pvp->m_settings.GetEditor_CollectionMngPosY();
+   const int x = g_app->m_settings.GetEditor_CollectionMngPosX();
+   const int y = g_app->m_settings.GetEditor_CollectionMngPosY();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -306,8 +306,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    g_pvp->m_settings.SetEditor_CollectionMngPosX((int)rect.left, false);
-    g_pvp->m_settings.SetEditor_CollectionMngPosY((int)rect.top, false);
+    g_app->m_settings.SetEditor_CollectionMngPosX((int)rect.left, false);
+    g_app->m_settings.SetEditor_CollectionMngPosY((int)rect.top, false);
 }
 
 //######################################## Collection Dialog ########################################

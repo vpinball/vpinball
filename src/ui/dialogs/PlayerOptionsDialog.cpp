@@ -14,7 +14,7 @@ void PlayerOptionsDialog::AddToolTip(const CWnd& wnd, const char* const tip) con
 
 void PlayerOptionsDialog::AddStringDOF(const string& name, const int idc) const
 {
-   const int selected = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("Controller"s, name).value());
+   const int selected = g_app->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("Controller"s, name).value());
    const HWND hwnd = GetDlgItem(idc).GetHwnd();
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Sound FX");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "DOF");
@@ -27,7 +27,7 @@ void PlayerOptionsDialog::SetDOFValue(int nID, const string& name) const
    LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
    if (selected == LB_ERR)
       selected = 2; // assume both as standard
-   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("Controller"s, name).value(), (int)selected, false);
+   g_app->m_settings.Set(Settings::GetRegistry().GetPropertyId("Controller"s, name).value(), (int)selected, false);
 }
 
 BOOL PlayerOptionsDialog::OnInitDialog()
@@ -35,15 +35,15 @@ BOOL PlayerOptionsDialog::OnInitDialog()
    m_tooltip.Create(GetHwnd());
    m_tooltip.SetMaxTipWidth(320);
 
-   const Settings& settings = g_pvp->m_settings;
+   const Settings& settings = g_app->m_settings;
 
    // Misc section
    {
-      bool on = g_pvp->m_settings.GetPlayer_EnableCameraModeFlyAround();
+      bool on = g_app->m_settings.GetPlayer_EnableCameraModeFlyAround();
       SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-      on = g_pvp->m_settings.GetController_ForceDisableB2S();
+      on = g_app->m_settings.GetController_ForceDisableB2S();
       SendDlgItemMessage(IDC_DOF_FORCEDISABLE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-      const int rumbleMode = g_pvp->m_settings.GetPlayer_RumbleMode();
+      const int rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
       const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
       ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Off");
       ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Table only (N/A yet)"); //!! not supported yet
@@ -154,7 +154,7 @@ BOOL PlayerOptionsDialog::OnInitDialog()
 
 void PlayerOptionsDialog::OnOK()
 {
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
 
    // Misc section
    {

@@ -247,6 +247,7 @@ class SCNotification final { };
 #include "extern.h"
 
 #include "core/vpinball_h.h"
+#include "core/VPApp.h"
 #include "parts/pintable.h"
 
 #include "math/mesh.h"

@@ -57,7 +57,7 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 #endif
 
 PinTable::PinTable()
-   : m_settings(&(g_pvp->m_settings))
+   : m_settings(&(g_app->m_settings))
    , m_undo(this)
 {
    m_renderSolid = m_settings.GetEditor_RenderSolid();
@@ -181,7 +181,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    m_glassTopHeight = m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       m_rgcolorcustom[i] = RGB(0, 0, 0);
-   LoadGameFromFilename(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, path).string());
+   LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path).string());
    m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
    m_settings.SetIniPath(string());
@@ -798,7 +798,7 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         Settings::SetRecentDir_LoadDir_Default(m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+         Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
          szInitialDir = m_settings.GetRecentDir_LoadDir();
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();
@@ -811,7 +811,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
       // assign user selected file name as new internal filename, and save as new default
       m_filename = fileName;
-      g_pvp->m_settings.SetRecentDir_LoadDir(m_filename.substr(0, ofn.nFileOffset), false); // truncate after folder(s)
+      g_app->m_settings.SetRecentDir_LoadDir(m_filename.substr(0, ofn.nFileOffset), false); // truncate after folder(s)
 
       {
          STGOPTIONS stg;
@@ -1238,7 +1238,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
       const auto propId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
-      g_pvp->m_settings.Set(propId, m_version, false);
+      g_app->m_settings.Set(propId, m_version, false);
    }
 
    HRESULT hr;
@@ -1526,7 +1526,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    #ifndef __STANDALONE__
    // Hashing (to ensure file integrity), can be disabled for slightly faster loading (and then also matches standalone which cannot feature this)
-   const bool hashValidation = !g_pvp->m_settings.GetEditor_DisableHash();
+   const bool hashValidation = !g_app->m_settings.GetEditor_DisableHash();
    int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
    foo = GetLastError();
    if (hashValidation)
@@ -1687,7 +1687,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
-               ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+               ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
                int count = 0;
                for (int i = 0; i < ctextures; i++)
                {
@@ -3292,7 +3292,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       file = fileNames[0];
       const size_t index = file.find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         g_pvp->m_settings.SetRecentDir_POVDir(file.substr(0, index), false);
+         g_app->m_settings.SetRecentDir_POVDir(file.substr(0, index), false);
 #endif
    }
 
@@ -6259,7 +6259,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_pvp->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
+      g_app->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
    ImportVPP(filename[0]);
 
@@ -6436,7 +6436,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (index != string::npos)
    {
        const string newInitDir(filename.substr(0, index));
-       g_pvp->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
+       g_app->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
    }
 
    tinyxml2::XMLDocument xmlDoc;

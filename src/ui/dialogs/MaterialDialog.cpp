@@ -384,7 +384,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_IMPORT:
       {
-         const string& szInitialDir = g_pvp->m_settings.GetRecentDir_MaterialDir();
+         const string& szInitialDir = g_app->m_settings.GetRecentDir_MaterialDir();
 
          vector<string> szFilename;
          if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))
@@ -425,7 +425,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             const size_t index = szFilename[0].find_last_of(PATH_SEPARATOR_CHAR);
             if (index != string::npos)
-               g_pvp->m_settings.SetRecentDir_MaterialDir(szFilename[0].substr(0, index), false);
+               g_app->m_settings.SetRecentDir_MaterialDir(szFilename[0].substr(0, index), false);
 
             pt->SetNonUndoableDirty(eSaveDirty);
             pt->UpdatePropertyMaterialList();
@@ -463,7 +463,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.nMaxFile = sizeof(szFileName);
             ofn.lpstrDefExt = "mat";
 
-            string szInitialDir = g_pvp->m_settings.GetRecentDir_MaterialDir();
+            string szInitialDir = g_app->m_settings.GetRecentDir_MaterialDir();
 
             ofn.lpstrInitialDir = szInitialDir.c_str();
             ofn.lpstrTitle = "Export materials";
@@ -514,7 +514,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                if (index != string::npos)
                {
                    const string newInitDir(szFilename.substr(0, index));
-                   g_pvp->m_settings.SetRecentDir_MaterialDir(newInitDir, false);
+                   g_app->m_settings.SetRecentDir_MaterialDir(newInitDir, false);
                }
             }
          }
@@ -959,10 +959,10 @@ void MaterialDialog::OnClose()
 
 void MaterialDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.GetEditor_MaterialMngPosX();
-   const int y = g_pvp->m_settings.GetEditor_MaterialMngPosY();
-   const int w = g_pvp->m_settings.GetEditor_MaterialMngWidth();
-   const int h = g_pvp->m_settings.GetEditor_MaterialMngHeight();
+   const int x = g_app->m_settings.GetEditor_MaterialMngPosX();
+   const int y = g_app->m_settings.GetEditor_MaterialMngPosY();
+   const int w = g_app->m_settings.GetEditor_MaterialMngWidth();
+   const int h = g_app->m_settings.GetEditor_MaterialMngHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -971,10 +971,10 @@ void MaterialDialog::LoadPosition()
 void MaterialDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_pvp->m_settings.SetEditor_MaterialMngPosX((int)rect.left, false);
-   g_pvp->m_settings.SetEditor_MaterialMngPosY((int)rect.top, false);
-   g_pvp->m_settings.SetEditor_MaterialMngWidth(rect.right - rect.left, false);
-   g_pvp->m_settings.SetEditor_MaterialMngHeight(rect.bottom - rect.top, false);
+   g_app->m_settings.SetEditor_MaterialMngPosX((int)rect.left, false);
+   g_app->m_settings.SetEditor_MaterialMngPosY((int)rect.top, false);
+   g_app->m_settings.SetEditor_MaterialMngWidth(rect.right - rect.left, false);
+   g_app->m_settings.SetEditor_MaterialMngHeight(rect.bottom - rect.top, false);
 }
 
 void MaterialDialog::ShowWhereUsed()

@@ -30,7 +30,7 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
 // or there is a backwards compatibility issue (e.g. old version of object doesn't contain all the needed fields)
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Default()
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSound, Sound);
    LinkProp(m_d.m_useImageGrid, TimerEnabled);
@@ -52,7 +52,7 @@ void DispReel::SetDefaults(const bool fromMouseClick)
 
 void DispReel::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsDispReel_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsDispReel_##prop(field, false)
    LinkProp(m_d.m_szImage, Image);
    LinkProp(m_d.m_szSound, Sound);
    LinkProp(m_d.m_useImageGrid, TimerEnabled);

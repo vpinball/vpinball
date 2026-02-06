@@ -812,6 +812,7 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/DynamicScript.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/extern.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/FileLocator.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp" />
@@ -1557,6 +1558,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/editablereg.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/extern.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/FileLocator.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/main.h" />

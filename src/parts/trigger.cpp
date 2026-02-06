@@ -155,7 +155,7 @@ HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Trigger::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTrigger_##prop() : Settings::GetDefaultPropsTrigger_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsTrigger_##prop() : Settings::GetDefaultPropsTrigger_##prop##_Default()
    LinkProp(m_d.m_radius, Radius);
    LinkProp(m_d.m_rotation, Rotation);
    LinkProp(m_d.m_wireThickness, WireThickness);
@@ -175,7 +175,7 @@ void Trigger::SetDefaults(const bool fromMouseClick)
 
 void Trigger::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTrigger_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsTrigger_##prop(field, false)
    LinkProp(m_d.m_radius, Radius);
    LinkProp(m_d.m_rotation, Rotation);
    LinkProp(m_d.m_wireThickness, WireThickness);

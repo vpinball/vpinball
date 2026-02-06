@@ -124,7 +124,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
       const std::filesystem::path musicPath = normalize_path_separators(musicNameStr);
 
-      std::filesystem::path musicDir = g_pvp->GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), VPinball::TableSubFolder::Music, false);
+      std::filesystem::path musicDir = g_app->m_fileLocator.GetTablePath(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), FileLocator::TableSubFolder::Music, false);
       const std::filesystem::path path = find_case_insensitive_file_path(musicDir / musicPath);
       if (!path.empty() && g_pplayer->m_audioPlayer->PlayMusic(path.string()))
       {
@@ -319,7 +319,7 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
       return E_FAIL;
 
-   *param = SysAllocString(m_vpinball->m_customParameters[index-1].c_str());
+   *param = SysAllocString(g_app->m_customParameters[index - 1].c_str());
    return S_OK;
 }
 
@@ -327,7 +327,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
 {
    const string sectionSz = MakeString(Section);
    const string settingSz = MakeString(SettingName);
-   Settings &settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+   Settings &settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_app->m_settings;
    const auto propId = Settings::GetRegistry().GetPropertyId(sectionSz, settingSz);
    if (propId.has_value())
    {
@@ -351,7 +351,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
    const string szFileName = MakeString(FileName);
    const std::filesystem::path filepath = normalize_path_separators(szFileName);
-   if (std::filesystem::path file = g_pvp->SearchScript(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), filepath); !file.empty())
+   if (std::filesystem::path file = g_app->m_fileLocator.SearchScript(g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable(), filepath); !file.empty())
    {
       std::ifstream scriptFile;
       scriptFile.open(file, std::ifstream::in);
@@ -375,7 +375,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    auto table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
    if (table == nullptr)
       return E_FAIL;
-   const string path = g_pvp->GetTablePath(table, VPinball::TableSubFolder::User, true).string() + PATH_SEPARATOR_CHAR;
+   const string path = g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::User, true).string() + PATH_SEPARATOR_CHAR;
    if (!DirExists(path))
       return E_FAIL;
    *pVal = MakeWideBSTR(path);
@@ -384,7 +384,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR;
+   string szPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
       return E_FAIL;
    *pVal = MakeWideBSTR(szPath);
@@ -401,7 +401,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    PinTable* table = g_pplayer ? g_pplayer->m_ptable : g_pvp->GetActiveTable();
    if (table == nullptr)
       return E_FAIL;
-   const string path = (g_pvp->GetTablePath(table, VPinball::TableSubFolder::Music, false) / childDir).string() + PATH_SEPARATOR_CHAR;
+   const string path = (g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::Music, false) / childDir).string() + PATH_SEPARATOR_CHAR;
    if (!DirExists(path))
       return E_FAIL;
    *pVal = MakeWideBSTR(path);
@@ -410,7 +410,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
 {
-   const string path = g_pvp->GetAppPath(VPinball::AppSubFolder::Scripts).string() + PATH_SEPARATOR_CHAR;
+   const string path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts).string() + PATH_SEPARATOR_CHAR;
    if (!DirExists(path))
       return E_FAIL;
    *pVal = MakeWideBSTR(path);
@@ -516,7 +516,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User, true) / "VPReg.stg").string());
+   const wstring wzPath = MakeWString((g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, true) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -573,7 +573,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+      szIniPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
@@ -604,7 +604,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((m_vpinball->GetTablePath(g_pplayer->m_ptable, VPinball::TableSubFolder::User, false) / "VPReg.stg").string());
+   const wstring wzPath = MakeWString((g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, false) / "VPReg.stg").string());
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -661,7 +661,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->GetAppPath(VPinball::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+      szIniPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");

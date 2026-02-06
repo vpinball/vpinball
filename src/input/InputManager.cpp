@@ -22,7 +22,7 @@ InputManager::InputManager()
    , m_keyboardDeviceId(RegisterDevice("Key"s, InputManager::DeviceType::Keyboard, "Keyboards"s)) // Base device: merge inputs from all connected keyboards
    , m_mouseDeviceId(RegisterDevice("Mouse"s, InputManager::DeviceType::Mouse, "Mouse"s)) // Base device: merge inputs from all connected mice
 {
-   const Settings& settings = g_pvp->m_settings;
+   const Settings& settings = g_app->m_settings;
 
    m_inputDevices[m_keyboardDeviceId].m_connected = true;
    m_inputDevices[m_mouseDeviceId].m_connected = true;
@@ -72,7 +72,7 @@ InputManager::InputManager()
    m_exitPressTimestamp = 0;
    m_exitAppPressLengthMs = settings.GetPlayer_Exitconfirm() * 1000 / 60;
 
-   m_rumbleMode = g_pvp->m_settings.GetPlayer_RumbleMode();
+   m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
 
    // Load settings
    {
@@ -261,7 +261,7 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
    m_inputDevices[deviceId].m_defaultMapping(mapButton, mapPlunger, mapNudge);
 
    // Save mapping after applying them
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    for (const auto& action : m_inputActions)
       action->SaveMapping(settings);
 
@@ -277,7 +277,7 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
 
 void InputManager::LoadDevicesFromSettings()
 {
-   const Settings& settings = g_pvp->m_settings;
+   const Settings& settings = g_app->m_settings;
    std::istringstream deviceStream(settings.GetInput_Devices());
    std::string deviceSettingId;
    while (std::getline(deviceStream, deviceSettingId, ';'))
@@ -321,7 +321,7 @@ void InputManager::LoadDevicesFromSettings()
 
 void InputManager::SaveDevicesToSettings() const
 {
-   Settings& settings = g_pvp->m_settings;
+   Settings& settings = g_app->m_settings;
    std::stringstream deviceList;
    for (size_t i = 0; i < m_inputDevices.size(); ++i)
    {
@@ -475,7 +475,7 @@ void InputManager::ProcessInput()
          if (device.m_hasPendingLayoutApply)
          {
             const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, "Device." + device.m_settingsId + ".NoAutoLayout").value();
-            if (g_pvp->m_settings.GetBool(noAutoLayoutId))
+            if (g_app->m_settings.GetBool(noAutoLayoutId))
             {
                device.m_hasPendingLayoutApply = false;
                continue;
@@ -487,7 +487,7 @@ void InputManager::ProcessInput()
                       if (isOk)
                          ApplyDefaultDeviceMapping(deviceId);
                       if (isDontAskAnymore)
-                         g_pvp->m_settings.Set(noAutoLayoutId, true, false);
+                         g_app->m_settings.Set(noAutoLayoutId, true, false);
                    }))
             {
                device.m_hasPendingLayoutApply = false;
@@ -1141,7 +1141,7 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
 
    #ifdef __LIBVPINBALL__
-      if (!g_pvp->m_settings.GetStandalone_Haptics())
+      if (!g_app->m_settings.GetStandalone_Haptics())
          return;
 
       VPinballLib::RumbleData rumbleData = {

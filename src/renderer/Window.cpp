@@ -74,9 +74,9 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    if (!g_isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
    {
       // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
-      if (g_pvp->m_disEnableTrueFullscreen == 0)
+      if (g_app->m_disEnableTrueFullscreen == 0)
          m_fullscreen = false;
-      else if (g_pvp->m_disEnableTrueFullscreen == 1)
+      else if (g_app->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
 
@@ -247,7 +247,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
 
-   if (auto icon = BaseTexture::CreateFromFile(g_pvp->GetAppPath(VPinball::AppSubFolder::Assets, "vpinball.png").string()); icon)
+   if (auto icon = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "vpinball.png").string()); icon)
    {
       SDL_Surface* pSurface = icon->ToSDLSurface();
       if (pSurface)

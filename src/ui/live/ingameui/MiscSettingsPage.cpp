@@ -77,7 +77,7 @@ void MiscSettingsPage::BuildPage()
       }));
 
    // Global emission scale, if not overriden on commandline
-   if (!g_pvp->m_bgles)
+   if (!g_app->m_bgles)
    {
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(

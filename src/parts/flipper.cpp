@@ -104,7 +104,7 @@ HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, cons
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsFlipper_##prop() : Settings::GetDefaultPropsFlipper_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsFlipper_##prop() : Settings::GetDefaultPropsFlipper_##prop##_Default()
 void Flipper::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_StartAngle, StartAngle);
@@ -148,7 +148,7 @@ void Flipper::SetDefaultPhysics(const bool fromMouseClick)
 
 void Flipper::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsFlipper_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsFlipper_##prop(field, false)
    LinkProp(m_d.m_scatter, Scatter);
    LinkProp(m_d.m_strength, Strength);
    LinkProp(m_d.m_torqueDamping, EOSTorque);
@@ -189,43 +189,43 @@ void Flipper::UpdatePhysicsSettings()
    {
       const int idx = m_d.m_OverridePhysics ? (m_d.m_OverridePhysics-1) : (m_ptable->m_overridePhysics-1);
 
-      m_d.m_OverrideMass = g_pvp->m_settings.GetPlayer_FlipperPhysicsMass(idx);
+      m_d.m_OverrideMass = g_app->m_settings.GetPlayer_FlipperPhysicsMass(idx);
       if (m_d.m_OverrideMass < 0.0f)
          m_d.m_OverrideMass = m_d.m_mass;
 
-      m_d.m_OverrideStrength = g_pvp->m_settings.GetPlayer_FlipperPhysicsStrength(idx);
+      m_d.m_OverrideStrength = g_app->m_settings.GetPlayer_FlipperPhysicsStrength(idx);
       if (m_d.m_OverrideStrength < 0.0f)
          m_d.m_OverrideStrength = m_d.m_strength;
 
-      m_d.m_OverrideElasticity = g_pvp->m_settings.GetPlayer_FlipperPhysicsElasticity(idx);
+      m_d.m_OverrideElasticity = g_app->m_settings.GetPlayer_FlipperPhysicsElasticity(idx);
       if (m_d.m_OverrideElasticity < 0.0f)
          m_d.m_OverrideElasticity = m_d.m_elasticity;
 
-      m_d.m_OverrideScatterAngle = g_pvp->m_settings.GetPlayer_FlipperPhysicsScatter(idx);
+      m_d.m_OverrideScatterAngle = g_app->m_settings.GetPlayer_FlipperPhysicsScatter(idx);
       if (m_d.m_OverrideScatterAngle < 0.0f)
          m_d.m_OverrideScatterAngle = m_d.m_scatter;
 
-      m_d.m_OverrideReturnStrength = g_pvp->m_settings.GetPlayer_FlipperPhysicsReturnStrength(idx);
+      m_d.m_OverrideReturnStrength = g_app->m_settings.GetPlayer_FlipperPhysicsReturnStrength(idx);
       if (m_d.m_OverrideReturnStrength < 0.0f)
          m_d.m_OverrideReturnStrength = m_d.m_return;
 
-      m_d.m_OverrideElasticityFalloff = g_pvp->m_settings.GetPlayer_FlipperPhysicsElasticityFalloff(idx);
+      m_d.m_OverrideElasticityFalloff = g_app->m_settings.GetPlayer_FlipperPhysicsElasticityFalloff(idx);
       if (m_d.m_OverrideElasticityFalloff < 0.0f)
          m_d.m_OverrideElasticityFalloff = m_d.m_elasticityFalloff;
 
-      m_d.m_OverrideFriction = g_pvp->m_settings.GetPlayer_FlipperPhysicsFriction(idx);
+      m_d.m_OverrideFriction = g_app->m_settings.GetPlayer_FlipperPhysicsFriction(idx);
       if (m_d.m_OverrideFriction < 0.0f)
          m_d.m_OverrideFriction = m_d.m_friction;
 
-      m_d.m_OverrideCoilRampUp = g_pvp->m_settings.GetPlayer_FlipperPhysicsCoilRampUp(idx);
+      m_d.m_OverrideCoilRampUp = g_app->m_settings.GetPlayer_FlipperPhysicsCoilRampUp(idx);
       if (m_d.m_OverrideCoilRampUp < 0.0f)
          m_d.m_OverrideCoilRampUp = m_d.m_rampUp;
 
-      m_d.m_OverrideTorqueDamping = g_pvp->m_settings.GetPlayer_FlipperPhysicsEOSTorque(idx);
+      m_d.m_OverrideTorqueDamping = g_app->m_settings.GetPlayer_FlipperPhysicsEOSTorque(idx);
       if (m_d.m_OverrideTorqueDamping < 0.0f)
          m_d.m_OverrideTorqueDamping = m_d.m_torqueDamping;
 
-      m_d.m_OverrideTorqueDampingAngle = g_pvp->m_settings.GetPlayer_FlipperPhysicsEOSTorqueAngle(idx);
+      m_d.m_OverrideTorqueDampingAngle = g_app->m_settings.GetPlayer_FlipperPhysicsEOSTorqueAngle(idx);
       if (m_d.m_OverrideTorqueDampingAngle < 0.0f)
          m_d.m_OverrideTorqueDampingAngle = m_d.m_torqueDampingAngle;
    }

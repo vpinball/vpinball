@@ -79,7 +79,7 @@ HRESULT Gate::Init(PinTable *const ptable, const float x, const float y, const b
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsGate_##prop() : Settings::GetDefaultPropsGate_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsGate_##prop() : Settings::GetDefaultPropsGate_##prop##_Default()
 void Gate::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_length, Length);
@@ -111,7 +111,7 @@ void Gate::SetDefaultPhysics(const bool fromMouseClick)
 
 void Gate::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsGate_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsGate_##prop(field, false)
    LinkProp(m_d.m_length, Length);
    LinkProp(m_d.m_height, Height);
    LinkProp(m_d.m_rotation, Rotation);

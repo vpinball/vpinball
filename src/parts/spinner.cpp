@@ -92,7 +92,7 @@ HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Spinner::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsSpinner_##prop(field, false)
+#define LinkProp(field, prop) g_app->m_settings.SetDefaultPropsSpinner_##prop(field, false)
    LinkProp(m_d.m_length, Length);
    LinkProp(m_d.m_rotation, Rotation);
    LinkProp(m_d.m_showBracket, ShowBracket);
@@ -110,7 +110,7 @@ void Spinner::WriteRegDefaults()
 #undef LinkProp
 }
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Default()
+#define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Default()
 void Spinner::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_length, Length);
