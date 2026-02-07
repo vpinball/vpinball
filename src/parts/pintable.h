@@ -324,11 +324,11 @@ public:
    void Paste(const bool atLocation, const int x, const int y);
 
    void ExportTableMesh();
-   void ImportBackdropPOV(const string &filename);
+   void ImportBackdropPOV(const std::filesystem::path &filename);
    void ExportBackdropPOV() const;
 
    static std::array<string, 18> VPPelementNames; // names of the fields in a .vpp file
-   void ImportVPP(const string &filename);
+   void ImportVPP(const std::filesystem::path &filename);
 
    enum class OptionEventType { Initialized, Changed, Reseted, EndOfEdit };
    void FireOptionEvent(OptionEventType event);
