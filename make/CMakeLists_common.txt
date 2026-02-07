@@ -20,6 +20,8 @@ set(VPX_SOURCES
    src/audio/SoundPlayer.cpp
    src/audio/SoundPlayer.h
 
+   src/core/AppCommands.cpp
+   src/core/AppCommands.h
    src/core/def.h
    src/core/def.cpp
    src/core/dispid.h

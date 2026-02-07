@@ -1019,6 +1019,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/bulb.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/AppCommands.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
@@ -1553,6 +1554,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/AppCommands.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/def.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h" />

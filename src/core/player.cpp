@@ -101,7 +101,7 @@ Player::Player(PinTable *const table, const int playMode)
    g_frameProfiler = &m_logicProfiler;
 
    m_progressDialog.Create(g_pvp->GetHwnd());
-   m_progressDialog.ShowWindow(g_app->m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
+   m_progressDialog.ShowWindow(g_app->m_commandLineProcessor.m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
 
    m_progressDialog.SetProgress("Creating Player..."s, 1);
 
@@ -1464,7 +1464,7 @@ public:
       , m_captureTime(usec())
       , m_captureStartupEndTime(usec())
       , m_captureStartupEndPhysicsTime(usec())
-      , m_lightStates(g_app->m_captureAttract)
+      , m_lightStates(g_app->m_commandLineProcessor.m_captureAttract)
    {
       m_nLights = 0;
       for (const auto &edit : m_player->m_ptable->m_vedit)
@@ -1565,7 +1565,7 @@ private:
       }
       
       // Evaluate best loop against previous frames
-      int minLoopLength = max(5, g_app->m_captureAttract / 4);
+      int minLoopLength = max(5, g_app->m_commandLineProcessor.m_captureAttract / 4);
       if (m_captureFrameNumber > minLoopLength)
       {
          float lowestDistance = FLT_MAX;
@@ -1596,13 +1596,13 @@ private:
       // Step simulation & request next frame
       PLOGI << "Captured frame #" << std::setw(2) << m_captureFrameNumber << ", State of " << m_nLights << " lights : " << ss.str();
       m_captureFrameNumber++;
-      m_captureTime += 1000000 / g_app->m_captureAttractFPS;
-      if (m_captureFrameNumber <= g_app->m_captureAttract)
+      m_captureTime += 1000000 / g_app->m_commandLineProcessor.m_captureAttractFPS;
+      if (m_captureFrameNumber <= g_app->m_commandLineProcessor.m_captureAttract)
          return;
       
       // Capture is finished, process result and exit
       m_player->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-      if (!g_app->m_captureAttractLoop)
+      if (!g_app->m_commandLineProcessor.m_captureAttractLoop)
          return;
 
       // Evaluate the less lit frame to use it as the first of our loop since playback loop stutters are a bit less obvious on dark frames
@@ -1630,7 +1630,7 @@ private:
             std::filesystem::remove(GetFilename(wndId, i + 1, true));
          for (int i = m_bestLoopStart; i < m_bestLoopEnd; i++)
             std::filesystem::rename(GetFilename(wndId, i + 1, true), GetFilename(wndId, i - m_bestLoopStart + 1, true));
-         for (int i = m_bestLoopEnd; i <= g_app->m_captureAttract; i++)
+         for (int i = m_bestLoopEnd; i <= g_app->m_commandLineProcessor.m_captureAttract; i++)
             std::filesystem::remove(GetFilename(wndId, i + 1, true));
          for (int i = 0; i < m_bestLoopEnd - m_bestLoopStart; i++)
             if (i < minLightFrameIndex)
@@ -1684,7 +1684,7 @@ void Player::UpdateGameLogic()
 
    ProcessOSMessages();
 
-   if (g_app->m_captureAttract)
+   if (g_app->m_commandLineProcessor.m_captureAttract)
    {
       static std::unique_ptr<AttractCapture> capture;
       if (capture == nullptr)
@@ -1990,7 +1990,7 @@ void Player::PrepareFrame()
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    // Shake screen when nudging
-   if (m_NudgeShake > 0.0f && g_app->m_captureAttract == 0)
+   if (m_NudgeShake > 0.0f && g_app->m_commandLineProcessor.m_captureAttract == 0)
    {
       Vertex2D offset = m_physics->GetScreenNudge();
       m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
@@ -2102,7 +2102,7 @@ void Player::FinishFrame()
    if (m_closing == CS_USER_INPUT)
    {
       m_closing = CS_PLAYING;
-      if (g_app->m_disable_pause_menu)
+      if (g_app->m_commandLineProcessor.m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else {
          m_liveUI->OpenMainSplash();
@@ -2114,7 +2114,7 @@ void Player::FinishFrame()
       exit(-9999); 
 
    // Open debugger window
-   if (m_showDebugger && !g_app->m_disable_pause_menu && !m_ptable->IsLocked())
+   if (m_showDebugger && !g_app->m_commandLineProcessor.m_disable_pause_menu && !m_ptable->IsLocked())
    {
       m_debugMode = true;
       m_showDebugger = false;

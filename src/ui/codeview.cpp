@@ -1196,7 +1196,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    {
       g_pplayer->LockForegroundWindow(false);
       // Cancel capture and close app if in capture attract mode
-      if (g_app->m_captureAttract)
+      if (g_app->m_commandLineProcessor.m_captureAttract)
          g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
    }
 
@@ -1388,7 +1388,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	{
 		g_pplayer->LockForegroundWindow(false);
 		// Cancel capture and close app if in capture attract mode
-		if (g_app->m_captureAttract)
+		if (g_app->m_commandLineProcessor.m_captureAttract)
 			g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
 	}
 
