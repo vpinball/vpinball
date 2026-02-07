@@ -907,7 +907,7 @@ void VPinball::DoPlay(const int playMode)
 
    if (initError)
    {
-      g_app->m_table_played_via_SelectTableOnStart = false;
+      g_app->m_commandLineProcessor.m_table_played_via_SelectTableOnStart = false;
    }
 }
 
@@ -1384,7 +1384,7 @@ void VPinball::OnClose()
          g_app->m_settings.SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
          g_app->m_settings.SetEditor_WindowMaximized(!!IsZoomed(), false);
       }
-      if (!g_app->m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
+      if (!g_app->m_commandLineProcessor.m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
 
       CWnd::OnClose();
@@ -1490,7 +1490,7 @@ void VPinball::OnInitialUpdate()
       winpl.rcNormalPosition.right = right;
       winpl.rcNormalPosition.bottom = bottom;
 
-      if (g_app->m_open_minimized)
+      if (g_app->m_commandLineProcessor.m_open_minimized)
          winpl.showCmd |= SW_MINIMIZE;
       else if (maximized)
          winpl.showCmd |= SW_MAXIMIZE;
