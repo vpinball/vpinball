@@ -1993,6 +1993,44 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    pstgRoot->Release();
 
+   SetDirty(eSaveClean);
+
+   m_title = TitleFromFilename(filename);
+#ifndef __STANDALONE__
+   const DWORD attr = GetFileAttributes(filename.c_str());
+   if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
+      m_title += " [READ ONLY]";
+#endif
+
+   InitTablePostLoad();
+
+   std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
+   std::filesystem::path tableFile = std::filesystem::path(filename).filename();
+   
+   // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings
+   // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
+   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".pov"); !FileExists(GetSettingsFileName()) && FileExists(filenameAuto))
+      ImportBackdropPOV(filenameAuto);
+   else if (const std::filesystem::path filenameAuto2 = tablePath / "autopov.pov"; FileExists(filenameAuto2))
+      ImportBackdropPOV(filenameAuto2);
+
+   // auto-import VBS table script, if it exists...
+   if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
+      m_pcv->LoadFromFile(filenameAuto.string());
+   else
+   {
+      std::filesystem::path folderVbs = tablePath / (tablePath.filename().string() + ".vbs");
+      folderVbs = find_case_insensitive_file_path(folderVbs);
+      if (!folderVbs.empty())
+         m_pcv->LoadFromFile(folderVbs.string());
+   }
+
+   // auto-import VPP settings, if it exists...
+   if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".vpp"); FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
+      ImportVPP(filenameAuto);
+   else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
+      ImportVPP(filenameAuto2);
+
    return hr;
 }
 
@@ -3273,9 +3311,9 @@ void PinTable::ExportTableMesh()
 // Import Point of View file. This can be either:
 // - a UI interaction from table author, loading to table **properties** after file selection,
 // - without UI interaction, triggered to load user settings preference to table **settings**.
-void PinTable::ImportBackdropPOV(const string &filename)
+void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
 {
-   string file = filename;
+   string file = filename.string();
    const bool toUserSettings = !filename.empty();
    const bool wasModified = m_settings.IsModified();
    if (!toUserSettings)
@@ -6269,7 +6307,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 std::array<string,18> PinTable::VPPelementNames{"gravityConstant"s, "contactFriction"s, "elasticity"s, "elasticityFalloff"s, "playfieldScatter"s, "defaultElementScatter"s, "playfieldminslope"s, "playfieldmaxslope"s,
                                /*flippers:*/    "speed"s, "strength"s, "elasticity"s, "scatter"s, "eosTorque"s, "eosTorqueAngle"s, "returnStrength"s, "elasticityFalloff"s, "friction"s, "coilRampUp"s};
 
-void PinTable::ImportVPP(const string& filename)
+void PinTable::ImportVPP(const std::filesystem::path &filename)
 {
    tinyxml2::XMLDocument xmlDoc;
    try

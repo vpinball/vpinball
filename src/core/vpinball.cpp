@@ -943,8 +943,6 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       return;
    }
 
-   const string tablePath = PathFromFilename(filename);
-
    CloseAllDialogs();
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
@@ -965,55 +963,22 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
    {
       m_vtable.push_back(ppt);
 
-      ppt->m_table->m_title = TitleFromFilename(filename);
-#ifndef __STANDALONE__
-      const DWORD attr = GetFileAttributes(filename.c_str());
-      if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
-         ppt->m_table->m_title += " [READ ONLY]";
-#else
+#ifdef __STANDALONE__
       m_ptableActive = ppt->m_table;
 #endif
 
-      ppt->m_table->InitTablePostLoad();
-
       AddMDITable(mdiTable);
 
-      // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
-      // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
-      if (const string filenameAuto = tablePath + ppt->m_table->m_title + ".pov"; !FileExists(ppt->m_table->GetSettingsFileName()) && FileExists(filenameAuto))
-         ppt->m_table->ImportBackdropPOV(filenameAuto);
-      else if (const string filenameAuto2 = tablePath + "autopov.pov"; FileExists(filenameAuto2))
-         ppt->m_table->ImportBackdropPOV(filenameAuto2);
-
-      // auto-import VBS table script, if it exists...
-      if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(ppt->m_table, std::filesystem::path(ppt->m_table->m_title + ".vbs")); !filenameAuto.empty())
-         ppt->m_table->m_pcv->LoadFromFile(filenameAuto.string());
-      else
-      {
-         const auto folder = std::filesystem::path(ppt->m_table->m_filename).parent_path();
-         std::filesystem::path folderVbs = folder / (folder.filename().string() + ".vbs");
-         folderVbs = find_case_insensitive_file_path(folderVbs);
-         if (!folderVbs.empty())
-            ppt->m_table->m_pcv->LoadFromFile(folderVbs.string());
-      }
-
-      // auto-import VPP settings, if it exists...
-      if (const string filenameAuto = tablePath + ppt->m_table->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
-         ppt->m_table->ImportVPP(filenameAuto);
-      else if (const string filenameAuto2 = tablePath + "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
-         ppt->m_table->ImportVPP(filenameAuto2);
-
-      // get the load path from the filename
-      g_app->m_settings.SetRecentDir_LoadDir(tablePath, false);
-
       // make sure the load directory is the active directory
+      const string tablePath = PathFromFilename(filename);
       SetCurrentDirectory(tablePath.c_str());
-      UpdateRecentFileList(filename);
 
       PLOGI << "UI Post Load Start";
 
+      g_app->m_settings.SetRecentDir_LoadDir(tablePath, false);
+      UpdateRecentFileList(filename);
+
       ppt->m_table->AddMultiSel(ppt->m_table, false, true, false);
-      ppt->m_table->SetDirty(eSaveClean);
       if (updateEditor)
       {
 #ifndef __STANDALONE__
