@@ -245,6 +245,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 					Err.Clear
 				Else
 					B2SController.B2SName = B2ScGameName
+					B2SController.TableName = ActiveTable.FileName
 					B2SController.Run()
 					On Error Goto 0
 					B2SOn = True
@@ -263,6 +264,7 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 				End If
 			Else
 				Controller.B2SName = cGameName
+				Controller.TableName = ActiveTable.FileName
 				If TableType = "EM" Then
 					Controller.Run()
 				End If
