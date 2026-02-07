@@ -474,15 +474,15 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
    if (controller)
       controller->Stop();
    StopAudioStream();
-   PinmameSetMsgAPI(nullptr, 0);
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
    msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc);
    msgApi->ReleaseMsgID(getAudioSrcId);
    msgApi->ReleaseMsgID(onAudioSrcChangedId);
-   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    // TODO we should unregister the script API contribution
+   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    msgApi->FlushPendingCallbacks(endpointId);
+   PinmameSetMsgAPI(nullptr, 0);
    msgApi = nullptr;
 }

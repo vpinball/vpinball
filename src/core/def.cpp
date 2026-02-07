@@ -124,7 +124,7 @@ LocalString::LocalString(const int resid)
 #ifndef __STANDALONE__
    if (resid > 0)
    {
-      /*const int cchar =*/ LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
+      /*const int cchar =*/LoadString(g_app->GetInstanceHandle(), resid, m_szbuffer, sizeof(m_szbuffer));
       m_szbuffer[std::size(m_szbuffer)-1] = '\0'; // in case of truncation
    }
 #else
@@ -162,7 +162,7 @@ LocalStringW::LocalStringW(const int resid)
 #ifndef __STANDALONE__
    if (resid > 0)
    {
-      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, static_cast<int>(std::size(m_szbuffer)));
+      LoadStringW(g_app->GetInstanceHandle(), resid, m_szbuffer, static_cast<int>(std::size(m_szbuffer)));
       m_szbuffer[std::size(m_szbuffer)-1] = L'\0'; // in case of truncation
    }
 #else

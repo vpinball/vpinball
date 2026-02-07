@@ -83,7 +83,16 @@ private:
 class Player final
 {
 public:
-   Player(PinTable *const live_table, const int playMode);
+   enum class PlayMode
+   {
+      Play,
+      EditPOV,
+      LiveEdit,
+      FullEdit,
+      CaptureAttract
+   };
+
+   Player(PinTable *const table, const PlayMode playMode);
    ~Player();
 
    void LockForegroundWindow(const bool enable);
@@ -91,17 +100,15 @@ public:
    string GetPerfInfo();
 
    void SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
-   bool IsPlaying(const bool applyWndFocus = true) const
-   {
-      return (g_app->m_commandLineProcessor.m_captureAttract != 0) || (m_playing && (applyWndFocus ? m_playfieldWnd->IsFocused() : true) && !IsEditorMode());
-   }
+   bool IsPlaying(const bool applyWndFocus = true) const { return (m_playMode == PlayMode::CaptureAttract) || (m_playing && (applyWndFocus ? m_playfieldWnd->IsFocused() : true) && !IsEditorMode()); }
    void OnFocusChanged(); // On focus lost, pause player and show mouse cursor
 
    uint32_t m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
    PinTable *const m_ptable; // The played table (which can eventually be a shallow copy of a table to allow being modified by the script without changing the original table)
-   bool IsEditorMode() const { return m_ptable->m_liveBaseTable == nullptr; }
+   bool IsEditorMode() const { return m_playMode == PlayMode::FullEdit; }
+   const PlayMode m_playMode;
 
    ProgressDialog m_progressDialog;
 
@@ -210,7 +217,7 @@ public:
 #pragma region Rendering
 public:
    VPX::RenderOutput& GetOutput(VPXWindowId window);
-   VPX::Window* m_playfieldWnd;
+   VPX::Window* m_playfieldWnd = nullptr;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_topperOutput;
@@ -322,12 +329,14 @@ public:
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
    unsigned int m_dmdFrameId = 0;
 
-   ResURIResolver m_resURIResolver;
-
-
-public:
    bool m_capPUP = false;
    std::shared_ptr<BaseTexture> m_texPUP = nullptr;
+
+   int m_nFrameToCapture = 0;
+   int m_frameCaptureFPS = 0;
+   bool m_cutCaptureToLoop = true;
+
+   ResURIResolver m_resURIResolver;
 
    unsigned int m_overall_frames = 0; // amount of rendered frames since start
 

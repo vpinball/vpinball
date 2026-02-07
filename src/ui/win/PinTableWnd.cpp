@@ -61,13 +61,21 @@ void PinTableWnd::SetDefaultView()
 {
    FRect frect;
    GetViewRect(&frect);
-   m_offset = frect.Center();
-   m_zoom = 0.5f;
+   SetViewOffset(frect.Center());
+   SetZoom(0.5f);
 }
+
+bool PinTableWnd::GetDisplayGrid() const { return m_table->m_winEditorGrid; }
+void PinTableWnd::SetDisplayGrid(const bool display) { m_table->m_winEditorGrid = display; }
+bool PinTableWnd::GetDisplayBackdrop() const { return m_table->m_winEditorBackdrop; }
+void PinTableWnd::SetDisplayBackdrop(const bool backdrop) { m_table->m_winEditorBackdrop = backdrop; }
+const Vertex2D &PinTableWnd::GetViewOffset() const { return m_table->m_winEditorViewOffset; }
+void PinTableWnd::SetViewOffset(const Vertex2D &offset) { m_table->m_winEditorViewOffset = offset; }
+float PinTableWnd::GetZoom() const { return m_table->m_winEditorZoom; }
 
 void PinTableWnd::SetZoom(float zoom)
 {
-   m_zoom = zoom;
+   m_table->m_winEditorZoom = zoom;
    SetMyScrollInfo();
 }
 
@@ -99,7 +107,7 @@ void PinTableWnd::SetMyScrollInfo()
 
    const CRect rc = GetClientRect();
 
-   const HitSur phs(nullptr, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+   const HitSur phs(nullptr, GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    Vertex2D rgv[2];
    rgv[0] = phs.ScreenToSurface(rc.left, rc.top);
@@ -133,7 +141,7 @@ void PinTableWnd::ExportBlueprint()
    //need to get a file name
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = m_vpxEditor->theInstance;
+   ofn.hInstance = g_app->GetInstanceHandle();
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
    char szBlueprintFileName[MAXSTRING];
@@ -268,7 +276,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
 
    psur->Rectangle2(rc.left, rc.top, rc.right, rc.bottom);
 
-   if (m_backdrop)
+   if (GetDisplayBackdrop())
    {
       Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_backglassView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);
 
@@ -295,7 +303,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
          ptr->UIRenderPass1(psur);
    }
 
-   if (m_grid && m_vpxEditor->m_gridSize > 0)
+   if (GetDisplayGrid() && m_vpxEditor->m_gridSize > 0)
    {
       Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
       Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
@@ -437,7 +445,7 @@ void PinTableWnd::Paint(HDC hdc)
 
    if (m_dirtyDraw)
    {
-      Sur *const psur = new PaintSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, m_table->GetSelectedItem());
+      Sur *const psur = new PaintSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, m_table->GetSelectedItem());
       UIRenderPass2(psur);
 
       delete psur;
@@ -560,14 +568,14 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       GetScrollInfo(SB_HORZ, si);
       switch (LOWORD(wParam))
       {
-      case SB_LINELEFT: m_offset.x -= si.nPage / 10; break;
-      case SB_LINERIGHT: m_offset.x += si.nPage / 10; break;
-      case SB_PAGELEFT: m_offset.x -= si.nPage / 2; break;
-      case SB_PAGERIGHT: m_offset.x += si.nPage / 2; break;
+      case SB_LINELEFT: m_table->m_winEditorViewOffset.x -= si.nPage / 10; break;
+      case SB_LINERIGHT: m_table->m_winEditorViewOffset.x += si.nPage / 10; break;
+      case SB_PAGELEFT: m_table->m_winEditorViewOffset.x -= si.nPage / 2; break;
+      case SB_PAGERIGHT: m_table->m_winEditorViewOffset.x += si.nPage / 2; break;
       case SB_THUMBTRACK:
       {
-         const int delta = (int)(m_offset.x - (float)si.nPos);
-         m_offset.x = (float)((short)HIWORD(wParam) + delta);
+         const int delta = (int)(GetViewOffset().x - (float)si.nPos);
+         m_table->m_winEditorViewOffset.x = (float)((short)HIWORD(wParam) + delta);
          break;
       }
       }
@@ -583,14 +591,14 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       GetScrollInfo(SB_VERT, si);
       switch (LOWORD(wParam))
       {
-      case SB_LINEUP: m_offset.y -= si.nPage / 10; break;
-      case SB_LINEDOWN: m_offset.y += si.nPage / 10; break;
-      case SB_PAGEUP: m_offset.y -= si.nPage / 2; break;
-      case SB_PAGEDOWN: m_offset.y += si.nPage / 2; break;
+      case SB_LINEUP: m_table->m_winEditorViewOffset.y -= si.nPage / 10; break;
+      case SB_LINEDOWN: m_table->m_winEditorViewOffset.y += si.nPage / 10; break;
+      case SB_PAGEUP: m_table->m_winEditorViewOffset.y -= si.nPage / 2; break;
+      case SB_PAGEDOWN: m_table->m_winEditorViewOffset.y += si.nPage / 2; break;
       case SB_THUMBTRACK:
       {
-         const int delta = (int)(m_offset.y - (float)si.nPos);
-         m_offset.y = (float)((short)HIWORD(wParam) + delta);
+         const int delta = (int)(GetViewOffset().y - (float)si.nPos);
+         m_table->m_winEditorViewOffset.y = (float)((short)HIWORD(wParam) + delta);
          break;
       }
       }
@@ -628,7 +636,7 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void PinTableWnd::SetMouseCursor()
 {
-   HINSTANCE hinst = m_vpxEditor->theInstance;
+   HINSTANCE hinst = g_app->GetInstanceHandle();
    static int oldTool = -1;
 
    if (oldTool != m_vpxEditor->m_ToolCur)
@@ -672,8 +680,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    const CRect rc = GetClientRect();
 
-   HitSur phs(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
-   HitSur phs2(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs2(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
 
    m_table->m_allHitElements.clear();
 
@@ -732,22 +740,22 @@ void PinTableWnd::OnKeyDown(int key)
             {
             case VK_LEFT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(-distance / m_zoom, 0);
+               pisel->MoveOffset(-distance / GetZoom(), 0);
                break;
 
             case VK_RIGHT:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(distance / m_zoom, 0);
+               pisel->MoveOffset(distance / GetZoom(), 0);
                break;
 
             case VK_UP:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(0, -distance / m_zoom);
+               pisel->MoveOffset(0, -distance / GetZoom());
                break;
 
             case VK_DOWN:
                pisel->GetIEditable()->MarkForUndo();
-               pisel->MoveOffset(0, distance / m_zoom);
+               pisel->MoveOffset(0, distance / GetZoom());
                break;
             }
          }
@@ -776,11 +784,11 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
-      if (m_zoom < MAX_ZOOM)
+      if (GetZoom() < MAX_ZOOM)
       {
-         m_offset = m_table->TransformPoint(x, y);
+         SetViewOffset(m_table->TransformPoint(x, y));
 
-         SetZoom(m_zoom * (zoomIn ? 1.5f : 0.5f));
+         SetZoom(GetZoom() * (zoomIn ? 1.5f : 0.5f));
 
          m_table->SetDirtyDraw();
       }
@@ -856,7 +864,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
             const CRect rc = m_mdiTable->GetClientRect();
 
-            HitRectSur *const phrs = new HitRectSur(dc.GetHDC(), m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
+            HitRectSur *const phrs = new HitRectSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
 
             // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
             UIRenderPass2(phrs);
@@ -899,10 +907,10 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000))
    {
-      if (m_zoom > MIN_ZOOM)
+      if (GetZoom() > MIN_ZOOM)
       {
-         m_offset = m_table->TransformPoint(x, y);
-         SetZoom(m_zoom * 0.5f);
+         SetViewOffset(m_table->TransformPoint(x, y));
+         SetZoom(GetZoom() * 0.5f);
 
          m_table->SetDirtyDraw();
       }
@@ -962,13 +970,13 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       const int dx = abs(m_oldMousePos.x - x);
       const int dy = abs(m_oldMousePos.y - y);
       if (m_oldMousePos.x > x)
-         m_offset.x += (float)dx;
+         m_table->m_winEditorViewOffset.x += (float)dx;
       if (m_oldMousePos.x < x)
-         m_offset.x -= (float)dx;
+         m_table->m_winEditorViewOffset.x -= (float)dx;
       if (m_oldMousePos.y > y)
-         m_offset.y += (float)dy;
+         m_table->m_winEditorViewOffset.y += (float)dy;
       if (m_oldMousePos.y < y)
-         m_offset.y -= (float)dy;
+         m_table->m_winEditorViewOffset.y -= (float)dy;
 
       m_table->SetDirtyDraw();
       SetMyScrollInfo();
@@ -1020,7 +1028,7 @@ void PinTableWnd::OnMouseWheel(const short x, const short y, const short zDelta)
    }
    else
    {
-      m_offset.y -= (float)zDelta / m_zoom; // change to orientation to match windows default
+      m_table->m_winEditorViewOffset.y -= (float)zDelta / GetZoom(); // change to orientation to match windows default
       m_table->SetDirtyDraw();
       SetMyScrollInfo();
    }

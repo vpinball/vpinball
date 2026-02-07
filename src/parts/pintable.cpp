@@ -77,7 +77,7 @@ PinTable::PinTable()
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
-   m_psgt->Init(m_vpinball, this);
+   m_psgt->Init(this);
 
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
@@ -88,6 +88,9 @@ PinTable::PinTable()
 
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
+
+   m_dummyMaterial = std::make_unique<Material>();
+   m_dummyMaterial->m_cBase = g_app->m_settings.GetEditor_DefaultMaterialColor();
 }
 
 PinTable::~PinTable()
@@ -465,15 +468,7 @@ PinTable* PinTable::CopyForPlay()
    AddRef(); // as the live table holds a reference on this
 
    CComObject<PinTable> *dst = live_table;
-   #ifndef __STANDALONE__
-      const size_t cchar = ::SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      string script(cchar, '\0');
-      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)script.data());
-      script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
-      ::SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
-   #else
-      dst->m_pcv->m_script_text = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(src->m_pcv->m_script_text);
-   #endif
+   dst->m_pcv->SetScript(src->m_pcv->GetScript());
 
    dst->m_settings.SetIniPath(src->m_settings.GetIniPath());
    dst->m_settings.Load(src->m_settings);
@@ -649,42 +644,6 @@ PinTable* PinTable::CopyForPlay()
    live_table->m_pcv->AddItem(live_table->m_psgt, true);
    live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
 
-   #ifdef __STANDALONE__
-      Textbox* const implicitDMD = (Textbox*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, live_table, 0, 0);
-      live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
-      wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
-      implicitDMD->m_d.m_visible = false;
-      implicitDMD->m_d.m_isDMD = true;
-      implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
-      live_table->m_vedit.push_back(implicitDMD);
-      live_table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
-      PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
-
-      Flasher* const implicitDMD2 = (Flasher*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, live_table, 0, 0);
-      live_table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
-      wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
-      int dmdWidth = 128 * 4; // (658)
-      int dmdHeight = 38 * 4; // (189)
-      int x = ((live_table->m_right - live_table->m_left) - dmdWidth) / 2;
-      int y = ((live_table->m_bottom - live_table->m_top) - dmdHeight) / 2;
-      implicitDMD2->UpdatePoint(0, x, y);
-      implicitDMD2->UpdatePoint(1, x, y + dmdHeight);
-      implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
-      implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
-      implicitDMD2->m_d.m_isVisible = false;
-      implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
-      implicitDMD2->m_d.m_color = RGB(255, 255, 255);
-      implicitDMD2->m_d.m_filter = Filter_Overlay;
-      implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
-      implicitDMD2->m_d.m_alpha = 150;
-      implicitDMD2->m_d.m_intensity_scale = 1;
-      implicitDMD2->m_d.m_modulate_vs_add = 1;
-      implicitDMD2->m_d.m_addBlend = true;
-      live_table->m_vedit.push_back(implicitDMD2);
-      live_table->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
-      PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
-   #endif
-
    live_table->m_vrenderprobe.reserve(m_vrenderprobe.size() + live_table->m_vrenderprobe.size());
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
    {
@@ -702,54 +661,31 @@ PinTable* PinTable::CopyForPlay()
       dst->m_liveToStartup[rp] = m_vrenderprobe[i];
    }
 
-   // get the load path from the table filename
-   const string szLoadDir = PathFromFilename(m_filename);
-   // make sure the load directory is the active directory
-   SetCurrentDirectory(szLoadDir.c_str());
-
-   PLOGI << "Compiling script"; // For profiling
-
-   live_table->m_pcv->m_scriptError = false;
-   live_table->m_pcv->Compile(false);
-   if (live_table->m_pcv->m_scriptError)
-   {
-      live_table->Release();
-      return nullptr;
-   }
-
-   // set up the texture & material hashtables for faster access
-   live_table->m_textureMap.clear();
-   for (size_t i = 0; i < live_table->m_vimage.size(); i++)
-      live_table->m_textureMap[live_table->m_vimage[i]->m_name] = live_table->m_vimage[i];
-   live_table->m_materialMap.clear();
-   for (size_t i = 0; i < live_table->m_materials.size(); i++)
-      live_table->m_materialMap[live_table->m_materials[i]->m_name] = live_table->m_materials[i];
-   live_table->m_lightMap.clear();
-   for (size_t i = 0; i < live_table->m_vedit.size(); i++)
-   {
-      IEditable *const pe = live_table->m_vedit[i];
-      if (pe->GetItemType() == ItemTypeEnum::eItemLight)
-         live_table->m_lightMap[pe->GetName()] = (Light *)pe;
-   }
-   live_table->m_renderprobeMap.clear();
-   for (size_t i = 0; i < live_table->m_vrenderprobe.size(); i++)
-      live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
-
-   // parse the (optional) override-physics-sets that can be set globally
-   if (live_table->m_overridePhysics)
-   {
-      live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.GetPlayer_TablePhysicsGravityConstant(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideContactFriction = m_settings.GetPlayer_TablePhysicsContactFriction(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideElasticity = m_settings.GetPlayer_TablePhysicsElasticity(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideElasticityFalloff = m_settings.GetPlayer_TablePhysicsElasticityFalloff(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideScatterAngle = m_settings.GetPlayer_TablePhysicsScatterAngle(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideMinSlope = m_settings.GetPlayer_TablePhysicsMinSlope(live_table->m_overridePhysics - 1);
-      live_table->m_fOverrideMaxSlope = m_settings.GetPlayer_TablePhysicsMaxSlope(live_table->m_overridePhysics - 1);
-      const float fOverrideContactScatterAngle = m_settings.GetPlayer_TablePhysicsContactScatterAngle(live_table->m_overridePhysics - 1);
-      c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
-   }
-
    return live_table;
+}
+
+void PinTable::SetupLookUpTables(bool isPlaying)
+{
+   m_textureMap.clear();
+   m_materialMap.clear();
+   m_lightMap.clear();
+   m_renderprobeMap.clear();
+   if (isPlaying)
+   {
+      // set up the texture & material hashtables for faster access
+      for (size_t i = 0; i < m_vimage.size(); i++)
+         m_textureMap[m_vimage[i]->m_name] = m_vimage[i];
+      for (size_t i = 0; i < m_materials.size(); i++)
+         m_materialMap[m_materials[i]->m_name] = m_materials[i];
+      for (size_t i = 0; i < m_vedit.size(); i++)
+      {
+         IEditable *const pe = m_vedit[i];
+         if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+            m_lightMap[pe->GetName()] = (Light *)pe;
+      }
+      for (size_t i = 0; i < m_vrenderprobe.size(); i++)
+         m_renderprobeMap[m_vrenderprobe[i]->GetName()] = m_vrenderprobe[i];
+   }
 }
 
 HRESULT PinTable::TableSave()
@@ -773,7 +709,7 @@ HRESULT PinTable::Save(const bool saveAs)
       //need to get a file name
       OPENFILENAME ofn = {};
       ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = m_vpinball->theInstance;
+      ofn.hInstance = g_app->GetInstanceHandle();
       ofn.hwndOwner = m_vpinball->GetHwnd();
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
@@ -884,7 +820,7 @@ HRESULT PinTable::Save(const bool saveAs)
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 {
 #ifndef __STANDALONE__
-   VPXSaveFileProgressBar feedback(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_tableEditor);
+   VPXSaveFileProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar, m_tableEditor);
 #else
    VPXFileFeedback feedback;
 #endif
@@ -1328,10 +1264,10 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(REEL), m_renderEMReels);
    bw.WriteBool(FID(DECL), m_renderDecals);
 
-   bw.WriteFloat(FID(OFFX), m_tableEditor->GetViewOffset().x);
-   bw.WriteFloat(FID(OFFY), m_tableEditor->GetViewOffset().y);
+   bw.WriteFloat(FID(OFFX), m_winEditorViewOffset.x);
+   bw.WriteFloat(FID(OFFY), m_winEditorViewOffset.y);
 
-   bw.WriteFloat(FID(ZOOM), m_tableEditor->GetZoom());
+   bw.WriteFloat(FID(ZOOM), m_winEditorZoom);
 
    bw.WriteFloat(FID(SLPX), m_angletiltMax);
    bw.WriteFloat(FID(SLOP), m_angletiltMin);
@@ -1350,7 +1286,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
    bw.WriteString(FID(SSHT), m_screenShot);
 
-   bw.WriteBool(FID(FBCK), m_tableEditor->GetDisplayBackdrop());
+   bw.WriteBool(FID(FBCK), m_winEditorBackdrop);
 
    bw.WriteFloat(FID(GLAS), m_glassTopHeight);
    bw.WriteFloat(FID(GLAB), m_glassBottomHeight);
@@ -1378,7 +1314,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
-   bw.WriteBool(FID(GDAC), m_tableEditor->GetDisplayGrid());
+   bw.WriteBool(FID(GDAC), m_winEditorGrid);
 
    bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_enableSSR);
@@ -1482,11 +1418,14 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 HRESULT PinTable::LoadGameFromFilename(const string& filename)
 {
 #ifndef __STANDALONE__
-   VPXLoadFileProgressBar feedback(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar);
-#else
-   VPXFileFeedback feedback;
+   if (m_vpinball)
+   {
+      VPXLoadFileProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
+      return LoadGameFromFilename(filename, feedback);
+   }
 #endif
 
+   VPXFileFeedback feedback;
    return LoadGameFromFilename(filename, feedback);
 }
 
@@ -1503,8 +1442,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    m_filename = filename;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   m_settings.SetIniPath(GetSettingsFileName());
-   m_settings.Load(false);
+   if (FileExists(GetSettingsFileName()))
+   {
+      m_settings.SetIniPath(GetSettingsFileName());
+      m_settings.Load(false);
+   }
 
    HRESULT hr;
    IStorage* pstgRoot;
@@ -1895,19 +1837,17 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
                return v != m_vedit.end();
             });
-         std::for_each(removeLegacyLayers, m_vedit.end(), [](IEditable *e) { e->Release(); });
+         std::for_each(removeLegacyLayers, m_vedit.end(), [this](IEditable *e)
+            {
+               m_pcv->RemoveItem(e->GetScriptable());
+               e->Release();
+            });
          m_vedit.erase(removeLegacyLayers, m_vedit.end());
 
          if (loadfileversion < 1081)
          {
             // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
-            #ifndef __STANDALONE__
-               const size_t scriptLength = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-               string script(scriptLength, '\0');
-               ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, scriptLength + 1, (LPARAM)script.data());
-            #else
-               string script = m_pcv->m_script_text;
-            #endif
+            string script = m_pcv->GetScript();
             StrToLower(script);
             std::ranges::for_each(m_vedit,
                [&](IEditable *editable)
@@ -1929,7 +1869,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
                         return; // Conflict with a collection name
                   }
-                  MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, (int)std::size(editable->GetScriptable()->m_wzName));
+                  m_pcv->ReplaceName(editable->GetScriptable(), MakeWString(shortName));
                });
          }
          
@@ -2173,27 +2113,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(DECL): pbr->GetBool(m_renderDecals); break;
    case FID(REEL): pbr->GetBool(m_renderEMReels); break;
-   case FID(OFFX):
-   {
-      Vertex2D offset = m_tableEditor->GetViewOffset();
-      pbr->GetFloat(offset.x);
-      m_tableEditor->SetViewOffset(offset);
-      break;
-   }
-   case FID(OFFY):
-   {
-      Vertex2D offset = m_tableEditor->GetViewOffset();
-      pbr->GetFloat(offset.y);
-      m_tableEditor->SetViewOffset(offset);
-      break;
-   }
-   case FID(ZOOM):
-   {
-      float zoom;
-      pbr->GetFloat(zoom);
-      m_tableEditor->SetZoom(zoom);
-      break;
-   }
+   case FID(OFFX): pbr->GetFloat(m_winEditorViewOffset.x); break;
+   case FID(OFFY): pbr->GetFloat(m_winEditorViewOffset.y); break;
+   case FID(ZOOM): pbr->GetFloat(m_winEditorZoom); break;
    case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
    case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
    case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
@@ -2203,13 +2125,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
    case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
    case FID(SSHT): pbr->GetString(m_screenShot); break;
-   case FID(FBCK):
-   {
-      bool backdrop;
-      pbr->GetBool(backdrop);
-      m_tableEditor->SetDisplayBackdrop(backdrop);
-      break;
-   }
+   case FID(FBCK): pbr->GetBool(m_winEditorBackdrop); break;
    case FID(SEDT): pbr->GetInt(m_loadTemp[0]); break;
    case FID(SSND): pbr->GetInt(m_loadTemp[1]); break;
    case FID(SIMG): pbr->GetInt(m_loadTemp[2]); break;
@@ -2388,13 +2304,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
             m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
       }
       break;
-   case FID(GDAC):
-   {
-      bool grid;
-      pbr->GetBool(grid);
-      m_tableEditor->SetDisplayGrid(grid);
-      break;
-   }
+   case FID(GDAC): pbr->GetBool(m_winEditorGrid); break;
    // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
    // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
    case FID(ARAC):
@@ -2446,7 +2356,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
           {
               bool found = true;
               Material * pmat = GetMaterial(mats[i].szName);
-              if (pmat == &m_vpinball->m_dummyMaterial)
+              if (pmat == m_dummyMaterial.get())
               {
                   assert(!"SaveMaterial not found");
                   pmat = new Material();
@@ -3278,7 +3188,7 @@ void PinTable::ExportTableMesh()
       szObjFileName[idx] = '\0';
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = m_vpinball->theInstance;
+   ofn.hInstance = g_app->GetInstanceHandle();
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
@@ -3553,7 +3463,7 @@ void PinTable::ExportBackdropPOV() const
 #ifndef __STANDALONE__
 	OPENFILENAME ofn = {};
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hInstance = m_vpinball->theInstance;
+	ofn.hInstance = g_app->GetInstanceHandle();
 	ofn.hwndOwner = m_vpinball->GetHwnd();
 	// TEXT
 	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
@@ -4314,7 +4224,7 @@ bool PinTable::IsMaterialNameUnique(const string &name) const
 Material* PinTable::GetMaterial(const string &name) const
 {
    if (name.empty())
-      return &m_vpinball->m_dummyMaterial;
+      return m_dummyMaterial.get();
 
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
@@ -4324,14 +4234,14 @@ Material* PinTable::GetMaterial(const string &name) const
       if (it != m_materialMap.end())
          return it->second;
       else
-         return &m_vpinball->m_dummyMaterial;
+         return m_dummyMaterial.get();
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
       if(m_materials[i]->m_name == name)
          return m_materials[i];
 
-   return &m_vpinball->m_dummyMaterial;
+   return m_dummyMaterial.get();
 }
 
 void PinTable::AddMaterial(Material * const pmat)
@@ -4519,13 +4429,7 @@ string PinTable::AuditTable(bool log) const
    std::stringstream ss;
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
-   #ifndef __STANDALONE__
-      const size_t cchar = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      char * const szText = new char[cchar + 1];
-      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
-   #else
-      const char * const szText = (char*)m_pcv->m_script_text.c_str();
-   #endif
+   const char *const szText = m_pcv->GetScript().c_str();
    const char *wordStart = nullptr;
    const char *wordPos = szText;
    string inClass;
@@ -4606,10 +4510,6 @@ string PinTable::AuditTable(bool log) const
 
       wordPos++;
    }
-
-   #ifndef __STANDALONE__
-      delete[] szText;
-   #endif
 
    if (FindIndexOf(identifiers, "execute"s) != -1)
       ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely cause stutters during play.\r\n";
@@ -6452,7 +6352,7 @@ STDMETHODIMP PinTable::ExportPhysics()
 
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = m_vpinball->theInstance;
+   ofn.hInstance = g_app->GetInstanceHandle();
    ofn.hwndOwner = m_vpinball->GetHwnd();
    // TEXT
    ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";

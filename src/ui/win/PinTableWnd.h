@@ -31,13 +31,13 @@ public:
    void SetMyScrollInfo();
    POINT GetScreenPoint() const;
    void ExportBlueprint();
-   bool GetDisplayGrid() const { return m_grid; }
-   void SetDisplayGrid(const bool display) { m_grid = display; }
-   bool GetDisplayBackdrop() const { return m_backdrop; }
-   void SetDisplayBackdrop(const bool backdrop) { m_backdrop = backdrop; }
-   const Vertex2D& GetViewOffset() const { return m_offset; }
-   void SetViewOffset(const Vertex2D& offset) { m_offset = offset; }
-   float GetZoom() const { return m_zoom; }
+   bool GetDisplayGrid() const;
+   void SetDisplayGrid(const bool display);
+   bool GetDisplayBackdrop() const;
+   void SetDisplayBackdrop(const bool backdrop);
+   const Vertex2D &GetViewOffset() const;
+   void SetViewOffset(const Vertex2D &offset);
+   float GetZoom() const;
    void SetZoom(float zoom);
 
    void FVerifySaveToClose();
@@ -76,11 +76,6 @@ private:
 
    VPinball * const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
-
-   Vertex2D m_offset;
-   float m_zoom;
-   bool m_grid = true; // Display grid or not
-   bool m_backdrop = true;
 
    bool m_moving = false;
    short2 m_oldMousePos;

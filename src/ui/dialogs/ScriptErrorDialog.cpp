@@ -38,7 +38,7 @@ BOOL ScriptErrorDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 		case IDC_SCRIPT_STOP:
 		{
 			shouldSuppressErrors = true;
-			g_pvp->QuitPlayer(0);
+         g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
 			Close();
 			return TRUE;
 		}

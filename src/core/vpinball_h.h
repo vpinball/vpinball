@@ -52,7 +52,7 @@ public:
         PASTE_AT = 2
     };
 
-   VPinball();
+   VPinball(HINSTANCE appInstance);
    ~VPinball() OVERRIDE;
 
    void ShowSubDialog(CDialog& dlg, const bool show);
@@ -99,9 +99,6 @@ public:
 
    void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
-
-   void GenerateTournamentFile();
-   void GenerateImageFromTournamentFile(const string& tablefile, const string& txtfile);
 
    STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
    STDMETHOD_(ULONG, AddRef)();
@@ -186,8 +183,6 @@ public:
 
    ULONG m_cref;
 
-   HINSTANCE theInstance;
-
    // registered window message ID for PinSim::FrontEndControls
    // (http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm)
    UINT m_pinSimFrontEndControlsMsg;
@@ -197,6 +192,8 @@ public:
 
    vector<PinTableWnd*> m_vtable;
    CComObject<PinTable> *m_ptableActive = nullptr;
+
+   bool m_table_played_via_SelectTableOnStart = false;
 
 //    HWND m_hwndToolbarMain;
    HWND m_hwndStatusBar;
@@ -218,13 +215,10 @@ public:
    int m_gridSize;
    int m_convertToUnit; // 0=Inches, 1=Millimeters, 2=VPUnits
 
-   int m_securitylevel;
-
 public:
 
    int m_autosaveTime;
 
-   Material m_dummyMaterial;
    COLORREF m_elemSelectColor;
    COLORREF m_elemSelectLockedColor;
    COLORREF m_backgroundColor;
@@ -232,6 +226,9 @@ public:
    Vertex2D m_mouseCursorPosition;
 
    HBITMAP m_hbmInPlayMode;
+
+   bool m_open_minimized = false;
+   bool m_disable_pause_menu = false;
 
 protected:
    void PreCreate(CREATESTRUCT& cs) override;
@@ -251,6 +248,7 @@ protected:
 #endif
 
 private:
+   const HINSTANCE m_instance;
 
    CDockNotes *GetDefaultNotesDocker();
 

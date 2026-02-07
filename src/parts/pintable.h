@@ -514,6 +514,8 @@ public:
    Material *GetSurfaceMaterial(const string &name) const;
    Texture *GetSurfaceImage(const string &name) const;
 
+   std::unique_ptr<Material> m_dummyMaterial;
+
    bool GetCollectionIndex(const ISelect *const element, int &collectionIndex, int &elementIndex);
 
    Vertex2D EvaluateGlassHeight() const;
@@ -793,6 +795,14 @@ public:
    void SetToneMapper(const ToneMapper& tm) { m_toneMapper = tm; }
    float GetExposure() const { return m_exposure; }
    void SetExposure(const float exposure) { m_exposure = exposure; }
+
+   void SetupLookUpTables(bool isPlaying);
+
+   // Win32 editor state which is persisted in the table file
+   Vertex2D m_winEditorViewOffset;
+   float m_winEditorZoom = 1.f;
+   bool m_winEditorGrid = true;
+   bool m_winEditorBackdrop = true;
 
 private:
    unsigned int m_tablelocked = 0;

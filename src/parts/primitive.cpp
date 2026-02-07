@@ -1010,6 +1010,8 @@ void Primitive::CalculateBuiltinOriginal()
 
 void Primitive::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    CalculateBuiltinOriginal();
    if (m_d.m_use3DMesh)
    {
@@ -2055,7 +2057,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 bool Primitive::BrowseFor3DMeshFile()
 {
 #ifndef __STANDALONE__
-   DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
+   DialogBoxParam(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
 #endif
 #if 1
    return false;
@@ -2066,7 +2068,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hInstance = m_vpinball->theInstance;
+   ofn.hInstance = g_app->GetInstanceHandle();
    ofn.hwndOwner = m_vpinball->m_hwnd;
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";

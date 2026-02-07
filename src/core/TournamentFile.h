@@ -1,0 +1,14 @@
+// license:GPLv3+
+
+#pragma once
+
+namespace VPX::TournamentFile
+{
+   // Save a tournament file from the global Player instance
+   // The file is generated alogn the table file, with '.txt' extension
+   extern void GenerateTournamentFile();
+
+   // Generate an image from a tournament file
+   // The image is generated along the tournament txt file, adding a '.png' extension
+   extern void GenerateImageFromTournamentFile(const string& tablefile, const string& txtfile);
+};

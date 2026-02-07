@@ -19,6 +19,8 @@ protected:
 private:
    void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
+   int m_defaultMaterialColor;
+
    CToolTip *m_toolTip;
    CColorDialog m_colorDialog;
    ColorButton m_colorButton2;

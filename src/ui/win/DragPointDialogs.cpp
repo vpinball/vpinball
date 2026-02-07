@@ -10,7 +10,7 @@ namespace VPX::WinUI
 RotatePointsDialog::RotatePointsDialog(ISelect *psel)
 {
    DialogBoxParam(
-      g_pvp->theInstance,
+      g_app->GetInstanceHandle(),
       MAKEINTRESOURCE(IDD_ROTATE),
       g_pvp->GetHwnd(),
       RotateProc,
@@ -154,7 +154,7 @@ INT_PTR CALLBACK RotatePointsDialog::RotateProc(HWND hwndDlg, UINT uMsg, WPARAM 
 ScalePointsDialog::ScalePointsDialog(ISelect *psel)
 {
    DialogBoxParam(
-      g_pvp->theInstance,
+      g_app->GetInstanceHandle(),
       MAKEINTRESOURCE(IDD_SCALE),
       g_pvp->GetHwnd(),
       ScaleProc,
@@ -337,7 +337,7 @@ INT_PTR CALLBACK  ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM w
 TranslatePointsDialog::TranslatePointsDialog(ISelect *psel)
 {
    DialogBoxParam(
-      g_pvp->theInstance,
+      g_app->GetInstanceHandle(),
       MAKEINTRESOURCE(IDD_TRANSLATE),
       g_pvp->GetHwnd(),
       TranslateProc,

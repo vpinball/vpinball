@@ -8,20 +8,13 @@
 
 void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
-   if (g_pvp != nullptr)
-   {
-      // statics as they need to survive as C string after this function returns
-      static string path;
-      path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
-      static string prefPath;
-      prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
-      info->path = path.c_str();
-      info->prefPath = prefPath.c_str();
-   }
-   else
-   {
-      memset(info, 0, sizeof(VPXInfo));
-   }
+   // statics as they need to survive as C string after this function returns
+   static string path;
+   path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
+   static string prefPath;
+   prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+   info->path = path.c_str();
+   info->prefPath = prefPath.c_str();
 }
 
 void MSGPIAPI VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)

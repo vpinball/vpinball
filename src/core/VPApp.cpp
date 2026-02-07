@@ -147,10 +147,9 @@ VPApp::VPApp()
 #else
    : m_msgLoop(std::make_unique<StandaloneMsgLoop>())
 #endif
+   , m_logicalNumberOfProcessors(SDL_GetNumLogicalCPUCores())
 {
    g_app = this;
-   g_pvp = &m_vpxEditor;
-   m_vpxEditor.AddRef();
 
    SetThreadName("Main"s);
 
@@ -163,6 +162,8 @@ VPApp::VPApp()
    IsOnWine(); // init static variable in there
 
    #ifdef _MSC_VER
+      HINSTANCE instance = GetInstanceHandle();
+
       // disable auto-rotate on tablets
       #if (_WIN32_WINNT <= 0x0601)
          SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetDisplayAutoRotationPreferences");
@@ -178,12 +179,12 @@ VPApp::VPApp()
          const HRESULT hRes = CoInitialize(nullptr);
       #endif
       _ASSERTE(SUCCEEDED(hRes));
-      m_module.Init(ObjectMap, m_vpxEditor.theInstance, &LIBID_VPinballLib);
+      m_module.Init(ObjectMap, instance, &LIBID_VPinballLib);
 
       // load and register VP type library for COM integration
       {
          ITypeLib *ptl = nullptr;
-         const wstring wFileName = GetModulePath<wstring>(m_vpxEditor.theInstance);
+         const wstring wFileName = GetModulePath<wstring>(instance);
          if (SUCCEEDED(LoadTypeLib(wFileName.c_str(), &ptl)))
          {
             // first try to register system-wide (if running as admin)
@@ -193,12 +194,16 @@ VPApp::VPApp()
                // if failed, register only for current user
                hr = RegisterTypeLibForUser(ptl, (OLECHAR*)wFileName.c_str(), nullptr);
                if (!SUCCEEDED(hr))
-                  m_vpxEditor.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
+               {
+                  MessageBox(nullptr, "Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
+               }
             }
             ptl->Release();
          }
          else
-            m_vpxEditor.MessageBox("Could not load type library.", "Error", MB_ICONERROR);
+         {
+            MessageBox(nullptr, "Could not load type library.", "Error", MB_ICONERROR);
+         }
       }
 
       #ifdef _ATL_FREE_THREADED
@@ -216,8 +221,6 @@ VPApp::VPApp()
       InitCommonControlsEx(&iccex);
    #endif
    
-   m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
-
    EditableRegistry::RegisterEditable<Ball>();
    EditableRegistry::RegisterEditable<Bumper>();
    EditableRegistry::RegisterEditable<Decal>();
@@ -246,7 +249,6 @@ VPApp::VPApp()
 VPApp::~VPApp()
 {
    m_msgLoop = nullptr;
-   m_vpxEditor.Release();
 
    #ifndef __STANDALONE__
       m_module.RevokeClassObjects();
@@ -280,8 +282,6 @@ int VPApp::GetLogicalNumberOfProcessors() const
 
 void VPApp::InitInstance()
 {
-   m_vpxEditor.Create(nullptr);
-
    // Define settings location and load them
    if (m_iniFileName.empty())
    {
@@ -319,92 +319,12 @@ void VPApp::InitInstance()
    Settings::SetRecentDir_SoundDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
    Settings::SetRecentDir_POVDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
 
+   m_securitylevel = g_app->m_settings.GetPlayer_SecurityLevel();
+   if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
+      m_securitylevel = eSecurityNoControls;
+
    m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
    m_settings.Save();
-
-   m_vpxEditor.LoadEditorSetupFromSettings();
-}
-
-int VPApp::Run()
-{
-   //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
-
-   /* FIXME if (m_commandLineProcessor.m_captureAttract)
-   {
-      PLOGI << "Video capture mode requested for " << m_commandLineProcessor.m_captureAttract << " frames at " << m_commandLineProcessor.m_captureAttractFPS << "FPS from table '"
-            << m_commandLineProcessor.m_tableFileName << "' " << (m_commandLineProcessor.m_captureAttractLoop ? "with " : "without ") << "loop truncation";
-   }
-
-   if (!m_commandLineProcessor.m_tableFileName.empty())
-   {
-      PLOGI << "Loading table from command line option: " << m_commandLineProcessor.m_tableFileName;
-      m_vpxEditor.LoadFileName(m_commandLineProcessor.m_tableFileName, !m_commandLineProcessor.m_liveedit && !m_commandLineProcessor.m_play && m_commandLineProcessor.m_run);
-      m_commandLineProcessor.m_table_played_via_command_line = m_commandLineProcessor.m_play;
-      if (m_vpxEditor.m_ptableActive && !m_commandLineProcessor.m_tableIniFileName.empty())
-         m_vpxEditor.m_ptableActive->SetSettingsFileName(m_commandLineProcessor.m_tableIniFileName);
-      if (!m_vpxEditor.m_ptableActive && m_commandLineProcessor.m_open_minimized)
-         m_vpxEditor.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-   }
-   #ifdef _DEBUG
-   else if (!m_commandLineProcessor.m_liveedit && m_settings.GetEditor_SelectTableOnStart())
-   #else
-   else if (m_settings.GetEditor_SelectTableOnStart())
-   #endif
-   {
-      m_commandLineProcessor.m_table_played_via_SelectTableOnStart = m_vpxEditor.LoadFile(false);
-   }
-
-   if (m_commandLineProcessor.m_extractScript && m_vpxEditor.m_ptableActive)
-   {
-      string scriptFilename = m_vpxEditor.m_ptableActive->m_filename;
-      if(ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
-         m_vpxEditor.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
-   }
-
-   if (m_commandLineProcessor.m_audit && m_vpxEditor.m_ptableActive)
-   {
-      m_vpxEditor.m_ptableActive->AuditTable(true);
-   }
-
-   if (m_commandLineProcessor.m_extractPov && m_vpxEditor.m_ptableActive)
-   {
-      for (int i = 0; i < 3; i++)
-         m_vpxEditor.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpxEditor.m_ptableActive->m_settings, (ViewSetupID) i);
-      m_vpxEditor.m_ptableActive->m_settings.Save();
-   }
-
-   if (!m_commandLineProcessor.m_tournamentFileName.empty() && m_vpxEditor.m_ptableActive)
-   {
-      m_vpxEditor.GenerateImageFromTournamentFile(m_vpxEditor.m_ptableActive->m_filename, m_commandLineProcessor.m_tournamentFileName);
-   }
-
-   #ifdef _DEBUG
-   if (m_commandLineProcessor.m_liveedit)
-   {
-      if (m_vpxEditor.m_ptableActive == nullptr)
-         m_vpxEditor.ParseCommand(ID_NEW_BLANKTABLE, false);
-      if (m_vpxEditor.m_ptableActive != nullptr)
-         m_vpxEditor.DoPlay(3);
-      else
-         m_commandLineProcessor.m_run = false;
-   }
-   else
-   #endif
-      if ((m_commandLineProcessor.m_play || m_commandLineProcessor.m_table_played_via_SelectTableOnStart) && m_vpxEditor.m_ptableActive)
-   {
-      m_vpxEditor.DoPlay(m_commandLineProcessor.m_povEdit ? 1 : 0);
-   }
-
-   if (!m_commandLineProcessor.m_run)
-   {
-      m_vpxEditor.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-   }*/
-
-   const int retval = m_msgLoop->MainMsgLoop();
-
-   m_settings.Save();
-
-   return retval;
 }
 
 
@@ -416,9 +336,7 @@ WinMsgLoop::WinMsgLoop()
 
 void WinMsgLoop::Initialize()
 {
-   m_vpxEditor = g_pvp;
-   m_vpxEditor->theInstance = GetInstanceHandle();
-   SetResourceHandle(m_vpxEditor->theInstance);
+   SetResourceHandle(GetInstanceHandle());
 }
 
 bool WinMsgLoop::StepMsgLoop()
@@ -434,8 +352,9 @@ bool WinMsgLoop::StepMsgLoop()
          DispatchMessage(&msg);
       }
    }
-   else if (OnIdle(m_idleIndex++) == FALSE)
+   else
    {
+      MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
       WaitMessage();
    }
    return false;
@@ -448,36 +367,6 @@ int WinMsgLoop::MainMsgLoop()
       // Nothing to do here, everything is handled in the message loop and idle processing
    }
    return 0;
-}
-
-BOOL WinMsgLoop::OnIdle(LONG count)
-{
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-   /* FIXME if (!g_pplayer && g_app->m_commandLineProcessor.m_table_played_via_SelectTableOnStart)
-   {
-      // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-      // first close the current table
-      if (const auto pt = m_vpxEditor->GetActiveTableEditor(); pt)
-         m_vpxEditor->CloseTable(pt);
-      // then select the new one, and if one was selected, play it
-      g_app->m_commandLineProcessor.m_table_played_via_SelectTableOnStart = m_vpxEditor->LoadFile(false);
-      if (g_app->m_commandLineProcessor.m_table_played_via_SelectTableOnStart)
-         m_vpxEditor->DoPlay(0);
-      return TRUE;
-   }
-   else if (!g_pplayer && g_app->m_commandLineProcessor.m_open_minimized)
-   {
-      // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
-      // we do not have a player, just close back to system.
-      m_vpxEditor->PostMessage(WM_CLOSE, 0, 0);
-      return TRUE;
-   }
-   else
-   {
-      // Otherwise wait for next event
-      return FALSE;
-   } */
-   return FALSE;
 }
 
 BOOL WinMsgLoop::PreTranslateMessage(MSG& msg)

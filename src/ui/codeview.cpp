@@ -890,7 +890,7 @@ void CodeViewer::InitPreferences()
 int CodeViewer::OnCreate(CREATESTRUCT& cs)
 {
 #ifndef __STANDALONE__
-   m_haccel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_CODEVIEWACCEL)); // Accelerator keys
+   m_haccel = LoadAccelerators(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDR_CODEVIEWACCEL)); // Accelerator keys
 
    m_hwndMain = GetHwnd();
    SetWindowLongPtr(GWLP_USERDATA, (size_t)this);
@@ -898,35 +898,35 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
    /////////////////// Item / Event Lists //!! ALL THIS STUFF IS NOT RES/DPI INDEPENDENT! also see WM_SIZE handler
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndItemText, "Table component:");
    ::SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    ::SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 360 + 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndEventText, "Create Sub from component:");
    ::SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      360 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      360 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    ::SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      WS_CHILD | WS_VISIBLE | SS_LEFTNOWORDWRAP, 730 + 5, 0, 330, 30, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowText(m_hwndFunctionText, "Go to Sub/Function:");
    ::SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-      730 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      730 + 5, 30+2, 330, 400, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SetWindowLongPtr(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    ::SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
@@ -941,7 +941,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "",
       WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
-      0, 0, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      0, 0, 0, 0, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
    ::SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
 
@@ -949,7 +949,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
-      0, 30+2 +40, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
+      0, 30+2 +40, 0, 0, m_hwndMain, nullptr, g_app->GetInstanceHandle(), 0);
 
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
@@ -1103,6 +1103,32 @@ void CodeViewer::Destroy()
 #endif
 }
 
+string CodeViewer::GetScript() const
+{
+#ifndef __STANDALONE__
+   if (m_hwndScintilla)
+   {
+      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      if (cchar == 0)
+         return "";
+      string script;
+      script.resize(cchar + 1);
+      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
+      return script;
+   }
+#endif
+   return m_script_text;
+}
+
+void CodeViewer::SetScript(const string& script)
+{
+   m_script_text = script;
+#ifndef __STANDALONE__
+   if (m_hwndScintilla)
+      ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+#endif
+}
+
 BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 {
 #ifndef __STANDALONE__
@@ -1192,23 +1218,6 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 	m_scriptError = true;
 
-   if (g_pplayer)
-   {
-      g_pplayer->LockForegroundWindow(false);
-      // Cancel capture and close app if in capture attract mode
-      if (g_app->m_commandLineProcessor.m_captureAttract)
-         g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-   }
-
-#ifndef __STANDALONE__
-   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
-	{
-      pt->m_table->m_pcv->SetVisible(true);
-      pt->m_table->m_pcv->ShowWindow(SW_RESTORE);
-      pt->m_table->m_pcv->ColorError(nLine, nChar);
-	}
-#endif
-
 	// Check if this is a compile error or a runtime error
 	SCRIPTSTATE state;
 	m_pScript->GetScriptState(&state);
@@ -1252,40 +1261,48 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	SysFreeString(exception.bstrDescription);
 	SysFreeString(exception.bstrHelpFile);
 
-#ifndef __STANDALONE__
-	g_pvp->EnableWindow(FALSE);
-#endif
-
 	const wstring errorStr{errorStream.str()};
 
-	// Show the error in the last error log
-   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
-	{
-		pt->m_table->m_pcv->AppendLastErrorTextW(errorStr);
-      pt->m_table->m_pcv->SetLastErrorVisibility(true);
-	}
+   if (g_pplayer)
+      g_pplayer->m_liveUI->PushNotification("Script error: " + szT, 5000);
+      
+   // Cancel capture and close app if in capture attract mode
+   if (g_pplayer && g_pplayer->m_playMode == Player::PlayMode::CaptureAttract)
+      g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
 
-	// Also pop up a dialog if this is a runtime error
-	if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
-	{
-#ifndef __STANDALONE__
-		g_pvp->EnableWindow(FALSE);
-		ScriptErrorDialog scriptErrorDialog(errorStr);
-		scriptErrorDialog.DoModal();
-		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
-		g_pvp->EnableWindow(TRUE);
-
-		if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-			::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
-#endif
-	}
+   // Show the error in the last error log
+   AppendLastErrorTextW(errorStr);
+   SetLastErrorVisibility(true);
 
 #ifndef __STANDALONE__
-	g_pvp->EnableWindow(TRUE);
+   if (IsWindow())
+   {
+      if (g_pplayer)
+         g_pplayer->LockForegroundWindow(false);
 
-	if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-		::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
+      SetVisible(true);
+      ShowWindow(SW_RESTORE);
+      ColorError(nLine, nChar);
+
+      // Also pop up a dialog if this is a runtime error
+      if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
+      {
+         g_pvp->EnableWindow(FALSE);
+         ScriptErrorDialog scriptErrorDialog(errorStr);
+         scriptErrorDialog.DoModal();
+         m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
+         g_pvp->EnableWindow(TRUE);
+
+         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
+      }
+      g_pvp->EnableWindow(TRUE);
+      ::SetFocus(m_hwndScintilla);
+   }
 #endif
+
+   // Stop the script
+   m_pScript->Close();
 
 	return S_OK;
 }
@@ -1384,21 +1401,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 
 	m_scriptError = true;
 
-	if (g_pplayer)
-	{
-		g_pplayer->LockForegroundWindow(false);
-		// Cancel capture and close app if in capture attract mode
-		if (g_app->m_commandLineProcessor.m_captureAttract)
-			g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-	}
-
-   if (const auto pt = g_pvp->GetActiveTableEditor(); pt)
-	{
-		pt->m_table->m_pcv->SetVisible(true);
-		pt->m_table->m_pcv->ShowWindow(SW_RESTORE);
-		pt->m_table->m_pcv->ColorError(nLine, nChar);
-	}
-
 	// Error log content
 	std::wstringstream errorStream;
 	errorStream << L"Runtime error\r\n";
@@ -1490,34 +1492,45 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 
 	const wstring errorStr{errorStream.str()};
 
-	// Show the error in the last error log of the active table
-   if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-	{
-		pt->m_table->m_pcv->AppendLastErrorTextW(errorStr);
-		pt->m_table->m_pcv->SetLastErrorVisibility(true);
-	}
+   if (g_pplayer)
+      g_pplayer->m_liveUI->PushNotification("Script error: " + szT, 5000);
+      
+   // Cancel capture and close app if in capture attract mode
+   if (g_pplayer && g_pplayer->m_playMode == Player::PlayMode::CaptureAttract)
+      g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
 
-	// Also pop up a dialog.  Suppress the dialog if the user has so
-	// directed, or if the player Close State is CLOSE APP, since in
-	// that case the decision to exit the whole program has already
-	// been made, precluding further UI input.
-	if (!m_suppressErrorDialogs
-		&& !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
-	{
-		g_pvp->EnableWindow(FALSE);
-		ScriptErrorDialog scriptErrorDialog(errorStr);
+   // Show the error in the last error log
+   AppendLastErrorTextW(errorStr);
+   SetLastErrorVisibility(true);
 
-		// Since we got a "debug error", we don't need to prompt to install a debugger for more detailed errors
-		scriptErrorDialog.HideInstallDebuggerText();
+   if (IsWindow())
+   {
+      if (g_pplayer)
+         g_pplayer->LockForegroundWindow(false);
 
-		scriptErrorDialog.DoModal();
-		m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
-		g_pvp->EnableWindow(TRUE);
+      SetVisible(true);
+      ShowWindow(SW_RESTORE);
+      ColorError(nLine, nChar);
 
-		if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-			::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
-	}
+      // Also pop up a dialog if this is a runtime error
+      if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
+      {
+         g_pvp->EnableWindow(FALSE);
+         ScriptErrorDialog scriptErrorDialog(errorStr);
+         scriptErrorDialog.DoModal();
+         m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
+         g_pvp->EnableWindow(TRUE);
+
+         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
+      }
+      g_pvp->EnableWindow(TRUE);
+      ::SetFocus(m_hwndScintilla);
+   }
+
 #endif
+   // Stop the script
+   m_pScript->Close();
 
 	return S_OK;
 }
@@ -1526,13 +1539,8 @@ void CodeViewer::Compile(const bool message)
 {
    if (m_pScript)
    {
-#ifndef __STANDALONE__
-      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      char * const szText = new char[cchar + 1];
-      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-#else
-      char * const szText = (char*)m_script_text.c_str();
-#endif
+      string script = GetScript();
+      char *const szText = (char *)script.c_str();
 
       const int len = MultiByteToWideChar(CP_UTF8, 0, szText, -1, nullptr, 0);
       WCHAR * const wzText = new WCHAR[len];
@@ -1559,9 +1567,6 @@ void CodeViewer::Compile(const bool message)
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
       delete[] wzText;
-#ifndef __STANDALONE__
-      delete[] szText;
-#endif
    }
 }
 
@@ -1816,21 +1821,11 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 
 void CodeViewer::SaveToFile(const string& filename)
 {
-#ifdef __STANDALONE__
-   PLOGI << "filename=" << filename;
-#endif
    FILE * fScript;
    if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
    {
-#ifndef __STANDALONE__
-      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      char *const szText = new char[cchar + 1];
-      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-      fwrite(szText, 1, cchar, fScript);
-      delete[] szText;
-#else
-      fwrite(m_script_text.c_str(), 1, m_script_text.length(), fScript);
-#endif
+      string script = GetScript();
+      fwrite(script.c_str(), 1, script.length(), fScript);
       fclose(fScript);
    }
 }
@@ -1888,13 +1883,8 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
       szText = utf8Text;
    }
 
-#ifndef __STANDALONE__
-   ::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
-   ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
-   ::SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
-#else
-   m_script_text = szText;
-#endif
+   SetScript(szText);
+
    delete[] szText;
 
    m_ignoreDirty = false;
@@ -1906,9 +1896,6 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
 void CodeViewer::LoadFromFile(const string& filename)
 {
-#ifdef __STANDALONE__
-	PLOGI << "filename=" << filename;
-#endif
 	FILE * fScript;
 	if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
 	{
@@ -1933,14 +1920,9 @@ void CodeViewer::LoadFromFile(const string& filename)
 			szText = utf8Text;
 		}
 
-#ifndef __STANDALONE__
-		::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
-		::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
-		::SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
-#else
-		m_script_text = szText;
-#endif
-		delete[] szText;
+      SetScript(szText);
+
+      delete[] szText;
 
 		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
@@ -2284,7 +2266,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::ProcessUrlAction(
    DWORD dwFlags,
    DWORD dwReserved)
 {
-   *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_pvp->m_securitylevel < eSecurityNoControls)) ?
+   *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_app->m_securitylevel < eSecurityNoControls)) ?
    URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
 
    return S_OK;
@@ -2313,19 +2295,19 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
       bool safe = false;
       CONFIRMSAFETY *pcs = (CONFIRMSAFETY *)pContext;
 
-      if (g_pvp->m_securitylevel == eSecurityNone)
+      if (g_app->m_securitylevel == eSecurityNone)
          safe = true;
 
-      if (!safe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
+      if (!safe && ((g_app->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_app->m_securitylevel == eSecurityWarnOnType)))
          safe = FControlAlreadyOkayed(pcs);
 
-      if (!safe && (g_pvp->m_securitylevel <= eSecurityWarnOnUnsafeType))
+      if (!safe && (g_app->m_securitylevel <= eSecurityWarnOnUnsafeType))
          safe = FControlMarkedSafe(pcs);
 
       if (!safe)
       {
          safe = FUserManuallyOkaysControl(pcs);
-         if (safe && ((g_pvp->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_pvp->m_securitylevel == eSecurityWarnOnType)))
+         if (safe && ((g_app->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_app->m_securitylevel == eSecurityWarnOnType)))
             AddControlToOkayedList(pcs);
       }
 
@@ -2727,7 +2709,7 @@ void CodeViewer::PreCreate(CREATESTRUCT& cs)
    cs.cx = w;
    cs.cy = h;
    cs.style = WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-   cs.hInstance = g_pvp->theInstance;
+   cs.hInstance = g_app->GetInstanceHandle();
    cs.lpszClass = "CVFrame";
    cs.lpszName = "Script";
 }
@@ -2735,9 +2717,9 @@ void CodeViewer::PreCreate(CREATESTRUCT& cs)
 void CodeViewer::PreRegisterClass(WNDCLASS& wc)
 {
    wc.style = CS_DBLCLKS;
-   wc.hInstance = g_pvp->theInstance;
+   wc.hInstance = g_app->GetInstanceHandle();
 #ifndef __STANDALONE__
-   wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_SCRIPT));
+   wc.hIcon = LoadIcon(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDI_SCRIPT));
 #endif
    wc.lpszClassName = "CVFrame";
 #ifndef __STANDALONE__
@@ -3226,7 +3208,7 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
          SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
       case ID_SCRIPT_PREFERENCES:
-         DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc); return TRUE;
+         DialogBox(g_app->GetInstanceHandle(), MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc); return TRUE;
       case ID_FIND:
          pcv->ShowFindDialog(); return TRUE;
       case ID_REPLACE:
@@ -3788,7 +3770,10 @@ void CodeViewer::ResizeScintillaAndLastError()
 void CodeViewer::SetLastErrorVisibility(bool show)
 {
 #ifndef __STANDALONE__
-	if (show == m_lastErrorWidgetVisible) return;
+   if (!IsWindow())
+      return;
+   if (show == m_lastErrorWidgetVisible)
+      return;
 	m_lastErrorWidgetVisible = show;
 
 	ResizeScintillaAndLastError();
@@ -3800,7 +3785,10 @@ void CodeViewer::SetLastErrorVisibility(bool show)
 void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 {
 #ifndef __STANDALONE__
-	::SetWindowTextW(m_hwndLastErrorTextArea, text);
+   if (!IsWindow())
+      return;
+
+   ::SetWindowTextW(m_hwndLastErrorTextArea, text);
 
 	// Scroll to the bottom
 	::SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
@@ -3810,6 +3798,9 @@ void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 void CodeViewer::AppendLastErrorTextW(const wstring& text)
 {
 #ifndef __STANDALONE__
+   if (!IsWindow())
+      return;
+
 	const int requiredLength = ::GetWindowTextLength(m_hwndLastErrorTextArea) + (int)text.length() + 1;
 	wchar_t* buf = new wchar_t[requiredLength];
 

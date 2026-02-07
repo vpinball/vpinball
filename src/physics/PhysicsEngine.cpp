@@ -622,7 +622,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       // end DJRobX's crazy code
 
       // Anti hung mechanism
-      if (g_app->m_commandLineProcessor.m_captureAttract == 0)
+      if (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
       {
          const uint64_t cur_time_usec = usec()
             - delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames

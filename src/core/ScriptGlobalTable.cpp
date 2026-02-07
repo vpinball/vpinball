@@ -22,10 +22,9 @@ ScriptGlobalTable::~ScriptGlobalTable()
 {
 }
 
-void ScriptGlobalTable::Init(VPinball *vpinball, PinTable *pt)
+void ScriptGlobalTable::Init(PinTable *pt)
 {
    m_pt = pt;
-   m_vpinball = vpinball;
 }
 
 STDMETHODIMP ScriptGlobalTable::BeginModal()
@@ -764,7 +763,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterial(BSTR pVal, float wrapLighting, fl
    const string Name = MakeString(pVal);
 
    Material * const pMat = m_pt->GetMaterial(Name);
-   if (pMat != &m_vpinball->m_dummyMaterial)
+   if (pMat != g_pplayer->m_ptable->m_dummyMaterial.get())
    {
       pMat->m_fWrapLighting = wrapLighting;
       pMat->m_fRoughness = roughness;
@@ -799,7 +798,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterial(BSTR pVal, VARIANT *wrapLighting, VA
    const string Name = MakeString(pVal);
 
    const Material * const pMat = m_pt->GetMaterial(Name);
-   if (pMat != &m_vpinball->m_dummyMaterial)
+   if (pMat != g_pplayer->m_ptable->m_dummyMaterial.get())
    {
       CComVariant(pMat->m_fWrapLighting).Detach(wrapLighting);
       CComVariant(pMat->m_fRoughness).Detach(roughness);
@@ -832,7 +831,7 @@ STDMETHODIMP ScriptGlobalTable::UpdateMaterialPhysics(BSTR pVal, float elasticit
    const string Name = MakeString(pVal);
 
    Material * const pMat = m_pt->GetMaterial(Name);
-   if (pMat != &m_vpinball->m_dummyMaterial)
+   if (pMat != g_pplayer->m_ptable->m_dummyMaterial.get())
    {
       pMat->m_fElasticity = elasticity;
       pMat->m_fElasticityFalloff = elasticityFalloff;
@@ -853,7 +852,7 @@ STDMETHODIMP ScriptGlobalTable::GetMaterialPhysics(BSTR pVal, VARIANT *elasticit
    const string Name = MakeString(pVal);
 
    const Material * const pMat = m_pt->GetMaterial(Name);
-   if (pMat != &m_vpinball->m_dummyMaterial)
+   if (pMat != g_pplayer->m_ptable->m_dummyMaterial.get())
    {
       CComVariant(pMat->m_fElasticity).Detach(elasticity);
       CComVariant(pMat->m_fElasticityFalloff).Detach(elasticityFalloff);
@@ -873,7 +872,7 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
       return E_POINTER;
 
    Material * const pMat = m_pt->GetMaterial(MakeString(pVal));
-   if (pMat != &m_vpinball->m_dummyMaterial)
+   if (pMat != g_pplayer->m_ptable->m_dummyMaterial.get())
       pMat->m_cBase = newVal;
    else
       return E_FAIL;
