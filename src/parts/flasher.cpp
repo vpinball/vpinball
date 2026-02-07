@@ -308,13 +308,21 @@ void Flasher::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-   for (size_t i = 0; i < m_vdpoint.size(); i++)
+   for (auto& pdp : m_vdpoint)
    {
-      CComObject<DragPoint> * const pdp = m_vdpoint[i];
-
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
+
+   for (auto &vert : m_vertices)
+   {
+      vert.x += dx;
+      vert.y += dy;
+   }
+   m_minx += dx;
+   m_maxx += dx;
+   m_miny += dy;
+   m_maxy += dy;
    m_dynamicVertexBufferRegenerate = true;
 }
 
@@ -544,10 +552,7 @@ STDMETHODIMP Flasher::get_X(float *pVal)
 STDMETHODIMP Flasher::put_X(float newVal)
 {
    if (m_d.m_vCenter.x != newVal)
-   {
-      m_d.m_vCenter.x = newVal;
-      m_dynamicVertexBufferRegenerate = true;
-   }
+      MoveOffset(newVal - m_d.m_vCenter.x, 0.f);
 
    return S_OK;
 }
@@ -561,10 +566,7 @@ STDMETHODIMP Flasher::get_Y(float *pVal)
 STDMETHODIMP Flasher::put_Y(float newVal)
 {
    if (m_d.m_vCenter.y != newVal)
-   {
-      m_d.m_vCenter.y = newVal;
-      m_dynamicVertexBufferRegenerate = true;
-   }
+      MoveOffset(0.f, newVal - m_d.m_vCenter.y);
 
    return S_OK;
 }
