@@ -63,7 +63,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case WM_INITDIALOG:
       {
          const HWND toolTipHwnd = CreateWindowEx(
-            0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
+            0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          AddToolTip("Import a new image from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
          AddToolTip("ReImport selected image(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
@@ -494,7 +494,7 @@ void ImageDialog::Export()
          {
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_pvp->theInstance;
+            ofn.hInstance = g_app->GetInstanceHandle();
             ofn.hwndOwner = g_pvp->GetHwnd();
             char g_filename[MAXSTRING];
             g_filename[0] = '\0';

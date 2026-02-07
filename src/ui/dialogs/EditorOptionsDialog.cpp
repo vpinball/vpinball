@@ -26,7 +26,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
 {
     m_toolTip = new CToolTip();
 
-    const HWND toolTipHwnd = ::CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
+    const HWND toolTipHwnd = ::CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
     if (toolTipHwnd)
     {
         ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
@@ -39,7 +39,8 @@ BOOL EditorOptionsDialog::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON4, m_colorButton4);
     AttachItem(IDC_COLOR_BUTTON5, m_colorButton5);
     AttachItem(IDC_COLOR_BUTTON6, m_colorButton6);
-    m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+    m_defaultMaterialColor = g_app->m_settings.GetEditor_DefaultMaterialColor(); 
+    m_colorButton2.SetColor(m_defaultMaterialColor);
     m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
     m_colorButton4.SetColor(g_pvp->m_elemSelectLockedColor);
     m_colorButton5.SetColor(g_pvp->m_fillColor);
@@ -123,11 +124,11 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
            CHOOSECOLOR cc = m_colorDialog.GetParameters();
            cc.Flags = CC_FULLOPEN | CC_RGBINIT;
            m_colorDialog.SetParameters(cc);
-           m_colorDialog.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+           m_colorDialog.SetColor(m_defaultMaterialColor);
            if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
            {
-               g_pvp->m_dummyMaterial.m_cBase = m_colorDialog.GetColor();
-               m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+               m_defaultMaterialColor = m_colorDialog.GetColor();
+               m_colorButton2.SetColor(m_defaultMaterialColor);
            }
            break;
        }
@@ -185,8 +186,8 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
        }
        case IDC_DEFAULT_COLORS_BUTTON:
        {
-          g_pvp->m_dummyMaterial.m_cBase = 0xB469FF;
-          m_colorButton2.SetColor(g_pvp->m_dummyMaterial.m_cBase);
+          m_defaultMaterialColor = 0xB469FF;
+          m_colorButton2.SetColor(m_defaultMaterialColor);
 
           g_pvp->m_elemSelectColor = 0x00FF0000;
           m_colorButton3.SetColor(g_pvp->m_elemSelectColor);
@@ -347,7 +348,7 @@ void EditorOptionsDialog::OnOK()
     for (size_t i = 0; i < g_pvp->m_vtable.size(); i++)
         g_pvp->m_vtable[i]->BeginAutoSaveCounter();
 
-    g_app->m_settings.SetEditor_DefaultMaterialColor((int)g_pvp->m_dummyMaterial.m_cBase, false);
+    g_app->m_settings.SetEditor_DefaultMaterialColor(m_defaultMaterialColor, false);
     g_app->m_settings.SetEditor_ElementSelectColor((int)g_pvp->m_elemSelectColor, false);
     g_app->m_settings.SetEditor_ElementSelectLockedColor((int)g_pvp->m_elemSelectLockedColor, false);
     g_app->m_settings.SetEditor_BackGroundColor((int)g_pvp->m_backgroundColor, false);

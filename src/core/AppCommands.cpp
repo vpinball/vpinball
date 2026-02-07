@@ -4,6 +4,9 @@
 
 #include "core/stdafx.h"
 #include "AppCommands.h"
+#include "extern.h"
+#include "core/TournamentFile.h"
+
 #include <iostream>
 
 
@@ -27,33 +30,176 @@ void ShowInfoAndExitCommand::Execute()
 }
 
 
-CaptureAttractCommand::CaptureAttractCommand(const string& tableFileName, int captureAttract, int captureAttractFPS, bool captureAttractLoop)
-   : TableBasedCommand(tableFileName)
-   , m_captureAttract(captureAttract)
-   , m_captureAttractFPS(captureAttractFPS)
-   , m_captureAttractLoop(captureAttractLoop)
+TableBasedCommand::TableBasedCommand(const string& tableFilename)
+   : m_tableFilename(tableFilename)
+{
+}
+
+CComObject<PinTable>* TableBasedCommand::LoadTable()
+{
+   CComObject<PinTable>* table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   table->LoadGameFromFilename(m_tableFilename);
+   if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
+      table->SetSettingsFileName(m_tableIniFileName);
+   return table;
+}
+
+
+ExportVBSCommand::ExportVBSCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void ExportVBSCommand::Execute()
+{
+   CComObject<PinTable>* table = LoadTable();
+   string scriptFilename = table->m_filename;
+   if (ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
+      table->m_pcv->SaveToFile(scriptFilename);
+}
+
+
+ExportPOVCommand::ExportPOVCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void ExportPOVCommand::Execute()
+{
+   CComObject<PinTable>* table = LoadTable();
+   for (int i = 0; i < 3; i++)
+      table->mViewSetups[i].SaveToTableOverrideSettings(table->m_settings, (ViewSetupID)i);
+   table->m_settings.Save();
+}
+
+
+PlayTableCommand::PlayTableCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void PlayTableCommand::Execute()
+{
+   CComObject<PinTable>* table = LoadTable();
+   auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   player->GameLoop();
+   player = nullptr;
+   table->Release();
+}
+
+
+AuditTableCommand::AuditTableCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void AuditTableCommand::Execute()
+{
+   const CComObject<PinTable>* table = LoadTable();
+   table->AuditTable(true);
+}
+
+
+PovEditCommand::PovEditCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void PovEditCommand::Execute()
+{
+   CComObject<PinTable>* table = LoadTable();
+   auto player = std::make_unique<Player>(table, Player::PlayMode::EditPOV);
+   player->GameLoop();
+   player = nullptr;
+   table->Release();
+}
+
+
+Win32EditCommand::Win32EditCommand()
+   : Win32EditCommand(""s)
+{
+}
+
+Win32EditCommand::Win32EditCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void Win32EditCommand::Execute()
+{
+   VPinball vpxEditor(g_app->GetInstanceHandle());
+   g_pvp = &vpxEditor;
+   vpxEditor.m_open_minimized = m_minimized;
+   vpxEditor.m_disable_pause_menu = m_disablePauseMenu;
+   vpxEditor.Create(nullptr);
+   vpxEditor.LoadEditorSetupFromSettings();
+   if (!m_tableFilename.empty() && FileExists(m_tableFilename))
+   {
+      vpxEditor.LoadFileName(m_tableFilename, true);
+      if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName) && vpxEditor.GetActiveTable())
+         vpxEditor.GetActiveTable()->SetSettingsFileName(m_tableIniFileName);
+   }
+   else if (g_app->m_settings.GetEditor_SelectTableOnStart())
+   {
+      vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
+   }
+   g_app->m_msgLoop->MainMsgLoop();
+   g_pvp = nullptr;
+}
+
+
+LiveEditCommand::LiveEditCommand()
+   : LiveEditCommand(""s)
+{
+}
+
+LiveEditCommand::LiveEditCommand(const string& tableFilename)
+   : TableBasedCommand(tableFilename)
+{
+}
+
+void LiveEditCommand::Execute()
+{
+   CComObject<PinTable>* table = LoadTable();
+   auto player = std::make_unique<Player>(table, Player::PlayMode::FullEdit);
+   player->GameLoop();
+   player = nullptr;
+   table->Release();
+}
+
+
+CaptureAttractCommand::CaptureAttractCommand(const string& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop)
+   : TableBasedCommand(tableFilename)
+   , m_nFrames(nFrames)
+   , m_framesPerSecond(framesPerSecond)
+   , m_cutToLoop(cutToLoop)
 {
 }
 
 void CaptureAttractCommand::Execute()
 {
-
+   PLOGI << "Video capture mode requested for " << m_nFrames << " frames at " << m_framesPerSecond << "FPS from table '" << m_tableFilename << "' " << (m_cutToLoop ? "with " : "without ")
+         << "loop truncation";
+   CComObject<PinTable>* table = LoadTable();
+   auto player = std::make_unique<Player>(table, Player::PlayMode::CaptureAttract);
+   player->GameLoop();
+   player = nullptr;
+   table->Release();
 }
 
 
-ValidateTournamentCommand::ValidateTournamentCommand(const string& tableFileName, const string& tournamentFilename)
-   : TableBasedCommand(tableFileName)
+ValidateTournamentCommand::ValidateTournamentCommand(const string& tableFilename, const string& tournamentFilename)
+   : TableBasedCommand(tableFilename)
    , m_tournamentFilename(tournamentFilename)
 {
-   //
 }
 
 void ValidateTournamentCommand::Execute()
 {
-   //
-   //m_vpxEditor.GenerateImageFromTournamentFile(m_vpxEditor.m_ptableActive->m_filename, m_commandLineProcessor.m_tournamentFileName);
+   VPX::TournamentFile::GenerateImageFromTournamentFile(m_tableFilename, m_tournamentFilename);
 }
-
 
 
 
@@ -62,92 +208,15 @@ int g_argc;
 const char **g_argv;
 #endif
 
-static const string options[] = { // keep in sync with option_names & option_descs!
-   "h"s,
-   "Help"s,
-   "?"s,
-   "UnregServer"s,
-   "RegServer"s,
-   "DisableTrueFullscreen"s,
-   "EnableTrueFullscreen"s,
-   "Minimized"s,
-   "ExtMinimized"s,
-   "GLES"s,
-   "LessCPUthreads"s,
-   "Edit"s,
-   #ifdef _DEBUG
-   "LiveEdit"s,
-   #endif
-   "Play"s,
-   "PovEdit"s,
-   "Pov"s,
-   "ExtractVBS"s,
-   "Ini"s,
-   "TableIni"s,
-   "TournamentFile"s,
-   "v"s,
-   "exit"s, // (ab)used by frontend, not handled by us
-   "Audit"s,
-   "CaptureAttract"s,
-   "c1"s,
-   "c2"s,
-   "c3"s,
-   "c4"s,
-   "c5"s,
-   "c6"s,
-   "c7"s,
-   "c8"s,
-   "c9"s,
-   "PrefPath"s,
-   ""s
-};
-static const string option_descs[] =
-{
-   string(),
-   string(),
-   string(),
-   "Unregister VP functions"s,
-   "Register VP functions"s,
-   "Force-disable True Fullscreen setting"s,
-   "Force-enable True Fullscreen setting"s,
-   "Start VP in the 'invisible' minimized window mode"s,
-   "Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu"s,
-   "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)"s,
-   "Limit the amount of parallel execution"s,
-   "[filename]  Load file into VP"s,
-   #ifdef _DEBUG
-   "Start VP in live editor mode. if a filename is provided, loads it as the table to edit instead of the default table"s,
-   #endif
-   "[filename]  Load and play file"s,
-   "[filename]  Load and run file in live editing mode, then export new pov on exit"s,
-   "[filename]  Load, export pov and close"s,
-   "[filename]  Load, export table script and close"s,
-   "[filename]  Use a custom settings file instead of loading it from the default location"s,
-   "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s,
-   "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s,
-   "Displays the version"s,
-   string(),
-   "[table filename] Audit the table"s,
-   "Capture an attract mode video"s,
-   "Custom value 1"s,
-   "Custom value 2"s,
-   "Custom value 3"s,
-   "Custom value 4"s,
-   "Custom value 5"s,
-   "Custom value 6"s,
-   "Custom value 7"s,
-   "Custom value 8"s,
-   "Custom value 9"s,
-   "[path]  Use a custom preferences path instead of default"s,
-   ""s
-};
 enum option_names
 {
    OPTION_H,
    OPTION_HELP,
    OPTION_QMARK,
+#ifndef __STANDALONE__
    OPTION_UNREGSERVER,
    OPTION_REGSERVER,
+#endif
    OPTION_DISABLETRUEFULLSCREEN,
    OPTION_ENABLETRUEFULLSCREEN,
    OPTION_MINIMIZED,
@@ -155,9 +224,9 @@ enum option_names
    OPTION_GLES,
    OPTION_LESSCPUTHREADS,
    OPTION_EDIT,
-   #ifdef _DEBUG
+#ifdef _DEBUG
    OPTION_LIVE_EDIT,
-   #endif
+#endif
    OPTION_PLAY,
    OPTION_POVEDIT,
    OPTION_POV,
@@ -180,6 +249,53 @@ enum option_names
    OPTION_CUSTOM9,
    OPTION_PREFPATH,
    OPTION_INVALID,
+};
+struct CommandLineOption
+{
+   option_names name;
+   string arg;
+   string desc;
+};
+
+static const CommandLineOption options[] = {
+   { OPTION_H, "h"s, string() },
+   { OPTION_HELP, "help"s, string() },
+   { OPTION_QMARK, "?"s, string() },
+#ifndef __STANDALONE__
+   { OPTION_UNREGSERVER, "UnregServer"s, "Unregister VP functions"s },
+   { OPTION_REGSERVER, "RegServer"s,"Register VP functions"s },
+#endif
+   { OPTION_DISABLETRUEFULLSCREEN, "DisableTrueFullscreen"s, "Force-disable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
+   { OPTION_ENABLETRUEFULLSCREEN, "EnableTrueFullscreen"s, "Force-enable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
+   { OPTION_MINIMIZED, "Minimized"s, "Start the windows editor in the 'invisible' minimized window mode"s },
+   { OPTION_EXTMINIMIZED, "ExtMinimized"s, "Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu"s },
+   { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini serttings instead]"s },
+   { OPTION_LESSCPUTHREADS, "LessCPUthreads"s, "Limit the amount of parallel execution"s },
+   { OPTION_EDIT, "Edit"s, "[filename]  Load file into VP"s },
+#ifdef _DEBUG
+   { OPTION_LIVE_EDIT, "LiveEdit"s, "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit"s },
+#endif
+   { OPTION_PLAY, "Play"s, "[filename]  Load and play file"s },
+   { OPTION_POVEDIT, "PovEdit"s, "[filename]  Load and run file in live editing mode, then export new pov on exit"s },
+   { OPTION_POV, "Pov"s, "[filename]  Load, export pov and close"s },
+   { OPTION_EXTRACTVBS, "ExtractVBS"s, "[filename]  Load, export table script and close"s },
+   { OPTION_INI, "Ini"s, "[filename]  Use a custom settings file instead of loading it from the default location"s },
+   { OPTION_TABLE_INI, "TableIni"s, "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s },
+   { OPTION_TOURNAMENT, "TournamentFile"s, "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s },
+   { OPTION_VERSION, "v"s, "Displays the version"s },
+   { OPTION_FRONTEND_EXIT, "exit"s, ""s }, // (ab)used by frontend, not handled by us
+   { OPTION_AUDIT, "Audit"s, "[table filename] Audit the table"s },
+   { OPTION_CAPTURE_ATTRACT, "CaptureAttract"s, "Capture an attract mode video"s },
+   { OPTION_CUSTOM1, "c1"s, "Custom value 1"s },
+   { OPTION_CUSTOM2, "c2"s, "Custom value 2"s },
+   { OPTION_CUSTOM3, "c3"s, "Custom value 3"s },
+   { OPTION_CUSTOM4, "c4"s, "Custom value 4"s },
+   { OPTION_CUSTOM5, "c5"s, "Custom value 5"s },
+   { OPTION_CUSTOM6, "c6"s, "Custom value 6"s },
+   { OPTION_CUSTOM7, "c7"s, "Custom value 7"s },
+   { OPTION_CUSTOM8, "c8"s, "Custom value 8"s },
+   { OPTION_CUSTOM9, "c9"s, "Custom value 9"s },
+   { OPTION_PREFPATH, "PrefPath"s, "[path]  Use a custom preferences path instead of default"s },
 };
 
 string CommandLineProcessor::GetPathFromArg(const string& arg, bool setCurrentPath)
@@ -225,40 +341,21 @@ string CommandLineProcessor::GetPathFromArg(const string& arg, bool setCurrentPa
 
 string CommandLineProcessor::GetCommandLineHelp()
 {
-   return
-   #ifndef __STANDALONE__
-      "-"    +options[OPTION_UNREGSERVER]+          "  "+option_descs[OPTION_UNREGSERVER]+
-      "\n-"  +options[OPTION_REGSERVER]+            "  "+option_descs[OPTION_REGSERVER]+
-      "\n\n"+
-   #endif
-      "-"    +options[OPTION_DISABLETRUEFULLSCREEN]+"  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
-      "\n-"  +options[OPTION_ENABLETRUEFULLSCREEN]+ "  "+option_descs[OPTION_ENABLETRUEFULLSCREEN]+
-      "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
-      "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
-      "\n\n-"+options[OPTION_GLES]+                 "  "+option_descs[OPTION_GLES]+
-      "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
-      "\n\n-"+options[OPTION_EDIT]+                 "  "+option_descs[OPTION_EDIT]+
-      #ifdef _DEBUG
-      "\n-"  +options[OPTION_LIVE_EDIT]+            "  "+option_descs[OPTION_LIVE_EDIT]+
-      #endif
-      "\n-"  +options[OPTION_PLAY]+                 "  "+option_descs[OPTION_PLAY]+
-      "\n-"  +options[OPTION_POVEDIT]+              "  "+option_descs[OPTION_POVEDIT]+
-      "\n-"  +options[OPTION_POV]+                  "  "+option_descs[OPTION_POV]+
-      "\n-"  +options[OPTION_AUDIT]+                "  "+option_descs[OPTION_AUDIT]+
-      "\n-"  +options[OPTION_EXTRACTVBS]+           "  "+option_descs[OPTION_EXTRACTVBS]+
-      "\n-"  +options[OPTION_INI]+                  "  "+option_descs[OPTION_INI]+
-      "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
-      "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
-      "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
-      "\n\n-"+options[OPTION_CAPTURE_ATTRACT]+      "  "+option_descs[OPTION_CAPTURE_ATTRACT]+
-      "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
-      "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
+   std::stringstream ss;
+   for (const auto& opt : options)
+   {
+      if (opt.name >= OPTION_CUSTOM1 && opt.name <= OPTION_CUSTOM9)
+         continue;
+      ss << "-" << opt.arg << "  " << opt.desc << "\n";
+   }
+   ss << "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
+   return ss.str();
 }
 
 void CommandLineProcessor::OnCommandLineError(const string& title, const string& message)
 {
    #ifndef __STANDALONE__
-      ::MessageBox(NULL, message.c_str(), title.c_str(), MB_ICONERROR);
+      MessageBox(nullptr, message.c_str(), title.c_str(), MB_ICONERROR);
    #else
       std::cout << title << "\n\n" << message << "\n\n";
    #endif
@@ -271,10 +368,8 @@ void CommandLineProcessor::ProcessCommandLine()
    const char** szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
    ProcessCommandLine(nArgs, szArglist);
    free(szArglist);
-
 #else
    ProcessCommandLine(g_argc, g_argv);
-
 #endif
 }
 
@@ -282,19 +377,17 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
 {
    g_app->SetSettingsFileName(""s);
 
-   m_command = nullptr;
-   #ifndef __STANDALONE__
-   m_command = std::make_unique<Win32EditCommand>();
-   #endif
-
    string tableIniFileName;
-
+   bool win32EditorMinimized = false;
+   bool win32EditorExtMinimized = false;
+   bool defaultToWin32Editor = true;
+   std::vector<std::unique_ptr<AppCommand>> commands;
    for (int i = 1; i < nArgs; ++i) // skip szArglist[0], contains executable name
    {
       option_names opt = option_names::OPTION_INVALID;
       for (size_t i2 = 0; i2 < std::size(options); ++i2)
       {
-         if  (StrCompareNoCase(szArglist[i], '-' + options[i2]) || StrCompareNoCase(szArglist[i], '/' + options[i2]))
+         if (StrCompareNoCase(szArglist[i], '-' + options[i2].arg) || StrCompareNoCase(szArglist[i], '/' + options[i2].arg))
          {
             opt = static_cast<option_names>(i2);
             break;
@@ -309,7 +402,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             string filename = GetPathFromArg(szArglist[i], false);
             if (extension_from_path(filename) == "vpx" && FileExists(filename))
             {
-               m_command = std::make_unique<PlayTableCommand>(filename);
+               commands.push_back(std::make_unique<PlayTableCommand>(filename));
                i++;
             }
             break;
@@ -373,7 +466,6 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       case OPTION_CUSTOM7:
       case OPTION_CUSTOM8:
       case OPTION_CUSTOM9:
-      {
          if ((i + 1 < nArgs) && (opt - OPTION_CUSTOM1) <= 9)
          {
             g_app->m_customParameters[opt - OPTION_CUSTOM1] = MakeWString(szArglist[i + 1]);
@@ -384,28 +476,23 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Missing custom option value after /c..."s);
          }
          break;
-      }
 
       #ifndef __STANDALONE__
       case OPTION_UNREGSERVER:
-      {
-         g_app->m_module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
-         const HRESULT ret = g_app->m_module.UnregisterServer(TRUE);
-         if (ret != S_OK)
+         defaultToWin32Editor = false;
+         VPApp::m_module.UpdateRegistryFromResource(IDR_VPINBALL, FALSE);
+         if (VPApp::m_module.UnregisterServer(TRUE) != S_OK)
             ShowError("Unregister VP functions failed");
-         m_command = nullptr;
+         exit(0);
          break;
-      }
 
       case OPTION_REGSERVER:
-      {
-         g_app->m_module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
-         const HRESULT ret = g_app->m_module.RegisterServer(TRUE);
-         if (ret != S_OK)
+         defaultToWin32Editor = false;
+         VPApp::m_module.UpdateRegistryFromResource(IDR_VPINBALL, TRUE);
+         if (VPApp::m_module.RegisterServer(TRUE) != S_OK)
             ShowError("Register VP functions failed");
-         m_command = nullptr;
+         exit(0);
          break;
-      }
       #endif
 
       case OPTION_PREFPATH:
@@ -434,45 +521,41 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
 
       case OPTION_MINIMIZED:
-         //m_open_minimized = true;
-         //m_disable_pause_menu = true;
+         win32EditorMinimized = true;
          break;
 
       case OPTION_EXTMINIMIZED:
-         //m_open_minimized = true;
+         win32EditorExtMinimized = true;
          break;
 
       case OPTION_H:
       case OPTION_HELP:
       case OPTION_QMARK:
-      {
-         m_command = std::make_unique<ShowInfoAndExitCommand>("Visual Pinball Usage"s, GetCommandLineHelp(), 0);
+         commands.push_back(std::make_unique<ShowInfoAndExitCommand>("Visual Pinball Usage"s, GetCommandLineHelp(), 0));
          break;
-      }
 
       case OPTION_VERSION:
-      {
-         m_command = std::make_unique<ShowInfoAndExitCommand>("", "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL, 0);
+         commands.push_back(std::make_unique<ShowInfoAndExitCommand>("", "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL, 0));
          break;
-      }
 
       #ifdef _DEBUG
+      case OPTION_LIVE_EDIT:
          if (i + 1 < nArgs)
          {
             const string tableFileName = GetPathFromArg(szArglist[i + 1], false);
             if (FileExists(tableFileName))
             {
-               m_command = std::make_unique<LiveEditCommand>(tableFileName);
+               commands.push_back(std::make_unique<LiveEditCommand>(tableFileName));
                i++;
             }
             else
             {
-               m_command = std::make_unique<LiveEditCommand>();
+               commands.push_back(std::make_unique<LiveEditCommand>());
             }
          }
          else
          {
-            m_command = std::make_unique<LiveEditCommand>();
+            commands.push_back(std::make_unique<LiveEditCommand>());
          }
          break;
       #endif
@@ -501,12 +584,12 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          {
             switch (opt)
             {
-            case OPTION_POVEDIT: m_command = std ::make_unique<PovEditCommand>(tableFileName); break;
-            case OPTION_PLAY: m_command = std ::make_unique<PlayTableCommand>(tableFileName); break;
-            case OPTION_EDIT: m_command = std ::make_unique<Win32EditCommand>(tableFileName); break;
-            case OPTION_AUDIT: m_command = std ::make_unique<AuditTableCommand>(tableFileName); break;
-            case OPTION_POV: m_command = std ::make_unique<ExportPOVCommand>(tableFileName); break;
-            case OPTION_EXTRACTVBS: m_command = std ::make_unique<ExportVBSCommand>(tableFileName); break;
+            case OPTION_POVEDIT: commands.push_back(std ::make_unique<PovEditCommand>(tableFileName)); break;
+            case OPTION_PLAY: commands.push_back(std ::make_unique<PlayTableCommand>(tableFileName)); break;
+            case OPTION_EDIT: commands.push_back(std ::make_unique<Win32EditCommand>(tableFileName)); break;
+            case OPTION_AUDIT: commands.push_back(std ::make_unique<AuditTableCommand>(tableFileName)); break;
+            case OPTION_POV: commands.push_back(std ::make_unique<ExportPOVCommand>(tableFileName)); break;
+            case OPTION_EXTRACTVBS: commands.push_back(std ::make_unique<ExportVBSCommand>(tableFileName)); break;
             }
          }
          break;
@@ -548,7 +631,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             captureAttractLoop = true;
             i += 3;
          }
-         m_command = std::make_unique<CaptureAttractCommand>(tableFileName, captureAttract, captureAttractFPS, captureAttractLoop);
+         commands.push_back(std::make_unique<CaptureAttractCommand>(tableFileName, captureAttract, captureAttractFPS, captureAttractLoop));
          break;
       }
 
@@ -573,7 +656,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Tournament file '" + tournamentFileName + "' was not found");
             exit(1);
          }
-         m_command = std::make_unique<ValidateTournamentCommand>(tableFileName, tournamentFileName);
+         commands.push_back(std::make_unique<ValidateTournamentCommand>(tableFileName, tournamentFileName));
          break;
       }
 
@@ -593,12 +676,51 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
    }
 
+   if (defaultToWin32Editor && commands.empty())
+      commands.push_back(std::make_unique<Win32EditCommand>());
+   if (commands.size() > 1)
+   {
+      OnCommandLineError("Command Line Error"s, "Multiple command options specified. Please specify only one");
+      exit(1);
+   }
+   if (commands.empty())
+      return;
+   m_command = std::move(commands[0]);
+
+   if (win32EditorMinimized)
+   {
+      if (auto win32EditCmd = dynamic_cast<Win32EditCommand*>(m_command.get()); win32EditCmd)
+      {
+         win32EditCmd->m_minimized = true;
+         win32EditCmd->m_disablePauseMenu = true;
+      }
+      else
+      {
+         OnCommandLineError("Command Line Error"s, "Option '"s + options[OPTION_MINIMIZED].arg + "' must be used in conjunction with a command that uses the Win32 editor");
+         exit(1);
+      }
+   }
+
+   if (win32EditorExtMinimized)
+   {
+      if (auto win32EditCmd = dynamic_cast<Win32EditCommand*>(m_command.get()); win32EditCmd)
+      {
+         win32EditCmd->m_minimized = true;
+         win32EditCmd->m_disablePauseMenu = false;
+      }
+      else
+      {
+         OnCommandLineError("Command Line Error"s, "Option '"s + options[OPTION_EXTMINIMIZED].arg + "' must be used in conjunction with a command that uses the Win32 editor");
+         exit(1);
+      }
+   }
+
    if (!tableIniFileName.empty())
    {
-      TableBasedCommand* tableCmd = m_command == nullptr ? nullptr : dynamic_cast<TableBasedCommand*>(m_command.get());
+      auto tableCmd = dynamic_cast<TableBasedCommand*>(m_command.get());
       if (tableCmd == nullptr)
       {
-         OnCommandLineError("Command Line Error"s, "Option '"s + options[OPTION_TABLE_INI] + "' must be used in conjunction with a command that specifies a table filename");
+         OnCommandLineError("Command Line Error"s, "Option '"s + options[OPTION_TABLE_INI].arg + "' must be used in conjunction with a command that specifies a table filename");
          exit(1);
       }
       if (!FileExists(tableIniFileName))

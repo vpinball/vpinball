@@ -455,7 +455,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             strncpy_s(szFileName, sizeof(szFileName), "Materials.mat");
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_pvp->theInstance;
+            ofn.hInstance = g_app->GetInstanceHandle();
             ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFile = szFileName;
             //TEXT

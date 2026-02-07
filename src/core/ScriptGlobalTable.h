@@ -137,7 +137,7 @@ public:
 
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
-   void Init(VPinball *vpinball, PinTable *pt);
+   void Init(PinTable *pt);
    ~ScriptGlobalTable();
 
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
@@ -153,5 +153,4 @@ public:
 
 private:
    PinTable *m_pt = nullptr;
-   VPinball *m_vpinball = nullptr;
 };

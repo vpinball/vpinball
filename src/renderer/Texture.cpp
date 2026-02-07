@@ -1174,7 +1174,11 @@ HBITMAP Texture::GetGDIBitmap() const
    if (m_hbmGDIVersion)
       return m_hbmGDIVersion;
 
-   if (g_app->m_commandLineProcessor.m_table_played_via_command_line || g_app->m_commandLineProcessor.m_table_played_via_SelectTableOnStart) // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered or selected on VPX start with the file popup!)
+   // GDI is only available and used by Win32 editor
+   assert(g_pvp);
+
+   // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered or selected on VPX start with the file popup!)
+   if (g_pvp->m_table_played_via_SelectTableOnStart)
    {
       m_hbmGDIVersion = g_pvp->m_hbmInPlayMode;
       return m_hbmGDIVersion;

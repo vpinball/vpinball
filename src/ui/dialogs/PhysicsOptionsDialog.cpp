@@ -182,7 +182,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hInstance = g_pvp->theInstance;
+            ofn.hInstance = g_app->GetInstanceHandle();
             ofn.hwndOwner = g_pvp->GetHwnd();
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";

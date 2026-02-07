@@ -4,6 +4,7 @@
 
 #include "ExitSplashPage.h"
 #include "InGameUIItem.h"
+#include "core/TournamentFile.h"
 
 namespace VPX::InGameUI
 {
@@ -42,7 +43,7 @@ void ExitSplashPage::BuildPage()
          [this]()
          {
             m_player->m_liveUI->HideUI();
-            g_pvp->GenerateTournamentFile();
+            VPX::TournamentFile::GenerateTournamentFile();
          }));
 
    if (isTouch)
@@ -73,7 +74,7 @@ void ExitSplashPage::BuildPage()
          }));
 
    if (!g_isStandalone)
-      AddItem(std::make_unique<InGameUIItem>("Quit to Editor"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_STOP_PLAY); }));
+      AddItem(std::make_unique<InGameUIItem>("Quit Player"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_STOP_PLAY); }));
    else
       AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() {
 #ifndef __LIBVPINBALL__

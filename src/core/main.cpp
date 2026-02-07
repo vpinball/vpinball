@@ -9,6 +9,8 @@
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
+#include "core/AppCommands.h"
+
 #include "ui/resource.h"
 #include <initguid.h>
 
@@ -176,7 +178,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
    Logger::Init();
 
-   int retval;
+   int retval = 0;
    try
    {
       #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
@@ -189,7 +191,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       #endif
 
       VPApp theApp;
-      theApp.ProcessCommandLine();
+      CommandLineProcessor cmdLine;
+      cmdLine.ProcessCommandLine();
       theApp.InitInstance();
 
       SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
@@ -243,7 +246,11 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          });
 
       // Run the application
-      retval = theApp.Run();
+      //retval = theApp.Run();
+      if (cmdLine.m_command)
+      {
+         cmdLine.m_command->Execute();
+      }
    }
 
    // catch all CException types

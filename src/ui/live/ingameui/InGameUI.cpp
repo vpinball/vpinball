@@ -225,9 +225,10 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
 
    if (state.IsKeyPressed(m_player->m_pininput.GetAddCreditActionId(0), m_prevActionState))
    {
-      if (g_app->m_commandLineProcessor.m_povEdit)
+      // FIXME
+      /* if (g_app->m_commandLineProcessor.m_povEdit)
          g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-      else
+      else*/
          GetActivePage()->ResetToStoredValues();
    }
 

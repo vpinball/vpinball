@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "renderer/VRDevice.h"
+#include "core/TournamentFile.h"
 
 #include "ScanCodes.h"
 
@@ -863,7 +864,7 @@ void InputManager::CreateInputActions()
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
             return;
          if (g_pplayer->m_ptable->TournamentModePossible())
-            g_pvp->GenerateTournamentFile();
+            VPX::TournamentFile::GenerateTournamentFile();
       }));
 
    AddAction(std::make_unique<InputAction>(this, "DebugBalls"s, "Debug Balls"s, keyMapping(SDL_SCANCODE_O),

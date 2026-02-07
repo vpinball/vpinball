@@ -265,7 +265,7 @@ BOOL PlayerOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       szFileName[0] = '\0';
       OPENFILENAME ofn = {};
       ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = g_pvp->theInstance;
+      ofn.hInstance = g_app->GetInstanceHandle();
       ofn.hwndOwner = g_pvp->GetHwnd();
       ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0";
       ofn.lpstrFile = szFileName;

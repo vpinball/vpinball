@@ -46,8 +46,8 @@ void PointOfViewSettingsPage::Save()
    InGameUIPage::Save();
 
    // FIXME this should be part of the action, not of the ingameui
-   if (g_app->m_commandLineProcessor.m_povEdit)
-      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+   /* FIXME if (g_app->m_commandLineProcessor.m_povEdit)
+      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP); */
 }
 
 void PointOfViewSettingsPage::ResetToStoredValues()
@@ -58,8 +58,8 @@ void PointOfViewSettingsPage::ResetToStoredValues()
    BuildPage();
 
    // FIXME this should be part of the action, not of the ingameui
-   if (g_app->m_commandLineProcessor.m_povEdit)
-      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+   /* FIXME if (g_app->m_commandLineProcessor.m_povEdit)
+      g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);*/
 }
 
 void PointOfViewSettingsPage::ResetToDefaults()

@@ -62,7 +62,7 @@ BOOL SoundDialog::OnInitDialog()
       g_app->m_settings.GetPlayer_SoundDeviceBG(), g_app->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(g_app->m_settings.GetPlayer_Sound3D()));
 
     const HWND toolTipHwnd = CreateWindowEx(
-      0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
+      0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_app->GetInstanceHandle(), nullptr);
     hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
     AddToolTip("Import a new sound from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
     AddToolTip("ReImport selected sound(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
@@ -471,7 +471,7 @@ void SoundDialog::Export()
 
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof( OPENFILENAME );
-            ofn.hInstance = g_pvp->theInstance;
+            ofn.hInstance = g_app->GetInstanceHandle();
             ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 

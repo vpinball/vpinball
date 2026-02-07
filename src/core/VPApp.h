@@ -26,12 +26,10 @@ public:
    int MainMsgLoop() override;
 
 protected:
-   BOOL OnIdle(LONG count) override;
    BOOL PreTranslateMessage(MSG& msg) override;
 
 private:
    int m_idleIndex = 0;
-   class VPinball* m_vpxEditor;
 };
 
 #else
@@ -60,17 +58,12 @@ public:
    void SetSettingsFileName(const string& path) { m_iniFileName = path; } // Must be defined before InitInstance() is called, otherwise it will be ignored
    void InitInstance();
 
-   int Run();
-
    std::unique_ptr<AppMsgLoop> m_msgLoop;
 
    // overall app settings
    Settings m_settings;
 
    FileLocator m_fileLocator;
-
-   // The Win32 VPX Editor
-   VPinball m_vpxEditor;
 
    void LimitMultiThreading();
    int GetLogicalNumberOfProcessors() const;
@@ -83,12 +76,17 @@ public:
    bool m_bgles = false; // override global emission scale by m_fgles below
    float m_fgles = 0.f;
 
+   // Script security level
+   int m_securitylevel;
+
+#ifndef __STANDALONE__
+   static CComModule m_module;
+   HINSTANCE GetInstanceHandle() const { return static_cast<WinMsgLoop*>(m_msgLoop.get())->GetInstanceHandle(); }
+#else
+   HINSTANCE GetInstanceHandle() const { return nullptr; }
+#endif
+
 private:
    string m_iniFileName; // Override default ini filename, must be defined before InitInstance
    int m_logicalNumberOfProcessors = -1;
-
-#ifndef __STANDALONE__
-public:
-   static CComModule m_module;
-#endif
 };

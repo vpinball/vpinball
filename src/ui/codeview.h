@@ -287,6 +287,9 @@ public:
 
    BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
 
+   string GetScript() const;
+   void SetScript(const string& script);
+
    IScriptableHost *m_psh;
 
    IActiveScript* m_pScript;
@@ -327,13 +330,13 @@ public:
    CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
    //ULONG m_cref;
 
-   HWND m_hwndMain;
-   HWND m_hwndScintilla;
-   HWND m_hwndFind;
-   HWND m_hwndStatus;
-   HWND m_hwndFunctionList;
+   HWND m_hwndMain = nullptr;
+   HWND m_hwndScintilla = nullptr;
+   HWND m_hwndFind = nullptr;
+   HWND m_hwndStatus = nullptr;
+   HWND m_hwndFunctionList = nullptr;
 
-   HACCEL m_haccel; // Accelerator keys
+   HACCEL m_haccel = nullptr; // Accelerator keys
 
    int m_errorLineNumber;
 
@@ -342,9 +345,8 @@ public:
    string external_script_name;  // loaded from external .vbs?
    vector<char> original_table_script; // if yes, then this one stores the original table script
 
-#ifdef __STANDALONE__ // otherwise Scintilla owns the text
+   // otherwise Scintilla owns the text
    string m_script_text;
-#endif
 
 protected:
    void PreCreate(CREATESTRUCT& cs) final;
