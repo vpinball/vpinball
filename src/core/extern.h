@@ -9,4 +9,4 @@ extern class VPApp *g_app;
 extern class Player *g_pplayer;
 
 // Win32 editor, only defined when used on Windows Platforms
-extern class VPinball *g_pvp;
+extern class WinEditor *g_pvp;

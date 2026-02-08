@@ -43,7 +43,7 @@ public:
    int MainMsgLoop() override;
 
 private:
-   class VPinball* m_vpxEditor;
+   class WinEditor* m_vpxEditor;
 };
 
 #endif

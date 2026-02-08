@@ -23,7 +23,7 @@
 #else
 #include "standalone/FreeImage.h"
 #endif
-#include "vpversion.h"
+#include "core/vpversion.h"
 
 #include "ui/win/PinTableMDI.h"
 
@@ -85,7 +85,7 @@ typedef struct _tagSORTDATA
 
 SORTDATA SortData;
 
-VPinball::VPinball(HINSTANCE appInstance)
+WinEditor::WinEditor(HINSTANCE appInstance)
    : m_instance(appInstance)
 {
    // DLL_API void DLL_CALLCONV FreeImage_Initialise(BOOL load_local_plugins_only FI_DEFAULT(FALSE)); // would only be needed if linking statically
@@ -137,7 +137,7 @@ VPinball::VPinball(HINSTANCE appInstance)
 
 //deletes clipboard
 //Releases Resources for Script editor
-VPinball::~VPinball()
+WinEditor::~WinEditor()
 {
    // DLL_API void DLL_CALLCONV FreeImage_DeInitialise(); // would only be needed if linking statically
    SetClipboard(nullptr);
@@ -153,7 +153,7 @@ VPinball::~VPinball()
 //workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
 //Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
 //returns Handle to Event that get ack. If event is finished (unsure)
-HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
+HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
 {
 #ifndef __STANDALONE__
    // Check if Workerthread was created once, otherwise create
@@ -174,7 +174,7 @@ HANDLE VPinball::PostWorkToWorkerThread(int workid, LPARAM lParam)
 #endif
 }
 
-void VPinball::SetAutoSaveMinutes(const int minutes)
+void WinEditor::SetAutoSaveMinutes(const int minutes)
 {
    m_autosaveTime = (minutes <= 0) ? -1 : minutes * (60 * 1000); // convert to milliseconds
 }
@@ -185,13 +185,13 @@ void VPinball::SetAutoSaveMinutes(const int minutes)
 //workid int for the type of message (COMPLETE_AUTOSAVE | HANG_SNOOP_START | HANG_SNOOP_STOP)
 //Second Parameter for message (AutoSavePackage (see worker.h) if COMPLETE_AUTOSAVE, otherwise nullptr)
 //returns Handle to Event that get ack. If event is finished (unsure)
-void VPinball::InitTools()
+void WinEditor::InitTools()
 {
    m_ToolCur = IDC_SELECT;
 }
 
 // Load editor behavior options from the settings
-void VPinball::LoadEditorSetupFromSettings()
+void WinEditor::LoadEditorSetupFromSettings()
 {
    m_alwaysDrawDragPoints = g_app->m_settings.GetEditor_ShowDragPoints();
    m_alwaysDrawLightCenters = g_app->m_settings.GetEditor_DrawLightCenters();
@@ -223,12 +223,12 @@ void VPinball::LoadEditorSetupFromSettings()
    m_convertToUnit = g_app->m_settings.GetEditor_Units();
 }
 
-void VPinball::AddMDITable(PinTableMDI* mdiTable) 
+void WinEditor::AddMDITable(PinTableMDI* mdiTable) 
 {
    AddMDIChild(mdiTable); 
 }
 
-void VPinball::SetClipboard(vector<IStream*> * const pvstm)
+void WinEditor::SetClipboard(vector<IStream*> * const pvstm)
 {
    for (size_t i = 0; i < m_vstmclipboard.size(); i++)
       m_vstmclipboard[i]->Release();
@@ -239,7 +239,7 @@ void VPinball::SetClipboard(vector<IStream*> * const pvstm)
          m_vstmclipboard.push_back((*pvstm)[i]);
 }
 
-void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
+void WinEditor::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 {
 #ifndef __STANDALONE__
    const HCURSOR hcursor = LoadCursor(hInstance, lpCursorName);
@@ -247,21 +247,21 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 #endif
 }
 
-void VPinball::SetActionCur(const string& szaction)
+void WinEditor::SetActionCur(const string& szaction)
 {
 #ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction.c_str());
 #endif
 }
 
-void VPinball::SetStatusBarElementInfo(const string& info)
+void WinEditor::SetStatusBarElementInfo(const string& info)
 {
 #ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 #endif
 }
 
-bool VPinball::OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
+bool WinEditor::OpenFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
 #ifndef __STANDALONE__
    CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
@@ -286,7 +286,7 @@ bool VPinball::OpenFileDialog(const string& initDir, vector<string>& filename, c
 #endif
 }
 
-bool VPinball::SaveFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
+bool WinEditor::SaveFileDialog(const string& initDir, vector<string>& filename, const char* const fileFilter, const char* const defaultExt, const DWORD flags, const string& windowTitle) //!! use this all over the place and move to some standard header
 {
 #ifndef __STANDALONE__
    CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
@@ -311,7 +311,7 @@ bool VPinball::SaveFileDialog(const string& initDir, vector<string>& filename, c
 #endif
 }
 
-CDockProperty *VPinball::GetPropertiesDocker()
+CDockProperty *WinEditor::GetPropertiesDocker()
 {
    #ifndef __STANDALONE__
       if (m_propertyDialog == nullptr || !m_dockProperties->IsWindow())
@@ -326,7 +326,7 @@ CDockProperty *VPinball::GetPropertiesDocker()
    return m_dockProperties;
 }
 
-CDockToolbar *VPinball::GetToolbarDocker()
+CDockToolbar *WinEditor::GetToolbarDocker()
 {
    #ifndef __STANDALONE__
       if (m_dockToolbar == nullptr || !m_dockToolbar->IsWindow())
@@ -341,7 +341,7 @@ CDockToolbar *VPinball::GetToolbarDocker()
    return m_dockToolbar;
 }
 
-void VPinball::ResetAllDockers()
+void WinEditor::ResetAllDockers()
 {
 #ifndef __STANDALONE__
    const bool createNotes = m_dockNotes != nullptr;
@@ -355,7 +355,7 @@ void VPinball::ResetAllDockers()
 #endif
 }
 
-CDockNotes* VPinball::GetDefaultNotesDocker()
+CDockNotes* WinEditor::GetDefaultNotesDocker()
 {
 #ifndef __STANDALONE__
    constexpr int dockStyle = DS_CLIENTEDGE;
@@ -372,7 +372,7 @@ CDockNotes* VPinball::GetDefaultNotesDocker()
    return m_dockNotes;
 }
 
-CDockNotes* VPinball::GetNotesDocker()
+CDockNotes* WinEditor::GetNotesDocker()
 {
 #ifndef __STANDALONE__
    if (m_dockNotes != nullptr && !m_dockNotes->IsWindowEnabled())
@@ -384,7 +384,7 @@ CDockNotes* VPinball::GetNotesDocker()
    return m_dockNotes;
 }
 
-CDockLayers *VPinball::GetLayersDocker()
+CDockLayers *WinEditor::GetLayersDocker()
 {
 #ifndef __STANDALONE__
    if (m_dockLayers == nullptr || !m_dockLayers->IsWindow())
@@ -398,7 +398,7 @@ CDockLayers *VPinball::GetLayersDocker()
    return m_dockLayers;
 }
 
-void VPinball::CreateDocker()
+void WinEditor::CreateDocker()
 {
 #ifndef __STANDALONE__
    LoadDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -408,7 +408,7 @@ void VPinball::CreateDocker()
 #endif
 }
 
-void VPinball::SetPosCur(float x, float y)
+void WinEditor::SetPosCur(float x, float y)
 {
 #ifndef __STANDALONE__
    // display position 1st column in VP units
@@ -439,7 +439,7 @@ void VPinball::SetPosCur(float x, float y)
 #endif
 }
 
-void VPinball::SetObjectPosCur(float x, float y)
+void WinEditor::SetObjectPosCur(float x, float y)
 {
    char szT[256];
    sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
@@ -448,14 +448,14 @@ void VPinball::SetObjectPosCur(float x, float y)
 #endif
 }
 
-void VPinball::ClearObjectPosCur()
+void WinEditor::ClearObjectPosCur()
 {
 #ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 #endif
 }
 
-float VPinball::ConvertToUnit(const float value) const
+float WinEditor::ConvertToUnit(const float value) const
 {
    switch (m_convertToUnit)
    {
@@ -469,7 +469,7 @@ float VPinball::ConvertToUnit(const float value) const
    return 0;
 }
 
-void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
+void WinEditor::SetPropSel(VectorProtected<ISelect> &pvsel)
 {
 #ifndef __STANDALONE__
    if (m_propertyDialog && m_propertyDialog->IsWindow())
@@ -479,7 +479,7 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 #endif
 }
 
-void VPinball::RenameEditable(IEditable *editable, const string &name)
+void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
    const string oldName = MakeString(editable->GetScriptable()->m_wzName);
    editable->SetName(name);
@@ -517,7 +517,7 @@ void VPinball::RenameEditable(IEditable *editable, const string &name)
 #endif
 }
 
-CMenu VPinball::GetMainMenu(int id)
+CMenu WinEditor::GetMainMenu(int id)
 {
 #ifndef __STANDALONE__
    const CMenu& cm = GetMenu();
@@ -548,7 +548,7 @@ public:
 };
 #endif
 
-bool VPinball::ParseCommand(const size_t code, const bool notify)
+bool WinEditor::ParseCommand(const size_t code, const bool notify)
 {
 #ifndef __STANDALONE__
    // check if it's an Editable tool
@@ -880,7 +880,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    return false;
 }
 
-void VPinball::ToggleToolbar()
+void WinEditor::ToggleToolbar()
 {
 #ifndef __STANDALONE__
    if (m_toolbarDialog)
@@ -888,7 +888,7 @@ void VPinball::ToggleToolbar()
 #endif
 }
 
-void VPinball::DoPlay(const int playMode)
+void WinEditor::DoPlay(const int playMode)
 {
    if (g_pplayer)
       return; // Can't play twice
@@ -974,7 +974,7 @@ void VPinball::DoPlay(const int playMode)
    }
 }
 
-bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
+bool WinEditor::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
    const string& szInitialDir = g_app->m_settings.GetRecentDir_LoadDir();
 
@@ -992,7 +992,7 @@ bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
    return true;
 }
 
-void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPXFileFeedback* feedback)
+void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VPXFileFeedback* feedback)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1065,21 +1065,21 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
    }
 }
 
-PinTableWnd* VPinball::GetActiveTableEditor()
+PinTableWnd* WinEditor::GetActiveTableEditor()
 {
    if (const auto mdiTable = (PinTableMDI *)GetActiveMDIChild(); mdiTable && !m_unloadingTable)
       return mdiTable->GetTableWnd();
    return nullptr;
 }
 
-CComObject<PinTable>* VPinball::GetActiveTable()
+CComObject<PinTable>* WinEditor::GetActiveTable()
 {
    if (const auto mdiTable = (PinTableMDI *)GetActiveMDIChild(); mdiTable && !m_unloadingTable && mdiTable->GetTableWnd())
       return mdiTable->GetTableWnd()->m_table;
    return nullptr;
 }
 
-bool VPinball::CanClose()
+bool WinEditor::CanClose()
 {
    while (!m_vtable.empty())
    {
@@ -1092,7 +1092,7 @@ bool VPinball::CanClose()
    return true;
 }
 
-void VPinball::CloseTable(PinTableWnd * ppt)
+void WinEditor::CloseTable(PinTableWnd * ppt)
 {
 #ifndef __STANDALONE__
    m_unloadingTable = true;
@@ -1116,7 +1116,7 @@ void VPinball::CloseTable(PinTableWnd * ppt)
 #endif
 }
 
-void VPinball::SetEnableMenuItems()
+void WinEditor::SetEnableMenuItems()
 {
 #ifndef __STANDALONE__
    const auto editor = GetActiveTableEditor();
@@ -1266,7 +1266,7 @@ void VPinball::SetEnableMenuItems()
 #endif
 }
 
-void VPinball::UpdateRecentFileList(const string& filename)
+void WinEditor::UpdateRecentFileList(const string& filename)
 {
    const size_t old_count = m_recentTableList.size();
 
@@ -1349,7 +1349,7 @@ void VPinball::UpdateRecentFileList(const string& filename)
    }
 }
 
-STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
+STDMETHODIMP WinEditor::QueryInterface(REFIID iid, void **ppvObjOut)
 {
    if (!ppvObjOut)
       return E_INVALIDARG;
@@ -1366,13 +1366,13 @@ STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
 }
 
 
-STDMETHODIMP_(ULONG) VPinball::AddRef()
+STDMETHODIMP_(ULONG) WinEditor::AddRef()
 {
    //!! ?? ASSERT(m_cref, "bad m_cref");
    return ++m_cref;
 }
 
-STDMETHODIMP_(ULONG) VPinball::Release()
+STDMETHODIMP_(ULONG) WinEditor::Release()
 {
    assert(m_cref);
    m_cref--; // FIXME we are doing refcounting without memory management
@@ -1380,7 +1380,7 @@ STDMETHODIMP_(ULONG) VPinball::Release()
    return m_cref;
 }
 
-void VPinball::PreCreate(CREATESTRUCT& cs)
+void WinEditor::PreCreate(CREATESTRUCT& cs)
 {
    // do the base class stuff
    CWnd::PreCreate(cs);
@@ -1405,7 +1405,7 @@ void VPinball::PreCreate(CREATESTRUCT& cs)
       ;
 }
 
-void VPinball::PreRegisterClass(WNDCLASS& wc)
+void WinEditor::PreRegisterClass(WNDCLASS& wc)
 {
 #ifndef __STANDALONE__
    wc.hIcon = LoadIcon(m_instance, MAKEINTRESOURCE(IDI_VPINBALL));
@@ -1416,7 +1416,7 @@ void VPinball::PreRegisterClass(WNDCLASS& wc)
    wc.lpszMenuName = _T("IDR_APPMENU");
 }
 
-void VPinball::OnClose()
+void WinEditor::OnClose()
 {
    // Reject close if player was not closed before
    if (g_pplayer)
@@ -1455,14 +1455,14 @@ void VPinball::OnClose()
 #endif
 }
 
-void VPinball::OnDestroy()
+void WinEditor::OnDestroy()
 {
 #ifndef __STANDALONE__
     PostMessage(WM_QUIT, 0, 0);
 #endif
 }
 
-void VPinball::ShowSubDialog(CDialog &dlg, const bool show)
+void WinEditor::ShowSubDialog(CDialog &dlg, const bool show)
 {
 #ifndef __STANDALONE__
    if (!dlg.IsWindow())
@@ -1476,7 +1476,7 @@ void VPinball::ShowSubDialog(CDialog &dlg, const bool show)
 }
 
 
-int VPinball::OnCreate(CREATESTRUCT& cs)
+int WinEditor::OnCreate(CREATESTRUCT& cs)
 {
 #ifndef __STANDALONE__
    // OnCreate controls the way the frame is created.
@@ -1506,7 +1506,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 #endif
 }
 
-LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT WinEditor::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    PAINTSTRUCT ps;
@@ -1520,7 +1520,7 @@ LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // Called when window is initially updated to be able to perform initial setup of the window and its children
-void VPinball::OnInitialUpdate()
+void WinEditor::OnInitialUpdate()
 {
    PLOGI << "OnInitialUpdate";
 
@@ -1576,7 +1576,7 @@ void VPinball::OnInitialUpdate()
    SetEnableMenuItems();
 }
 
-BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
+BOOL WinEditor::OnCommand(WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    if (!ParseCommand(LOWORD(wparam), HIWORD(wparam) == 1))
@@ -1591,7 +1591,7 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
 }
 
 #ifndef __STANDALONE__
-BOOL VPinball::PreTranslateMessage(MSG& msg)
+BOOL WinEditor::PreTranslateMessage(MSG& msg)
 {
    if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
    {
@@ -1605,7 +1605,7 @@ BOOL VPinball::PreTranslateMessage(MSG& msg)
 }
 #endif
 
-LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
    switch (uMsg)
@@ -1671,7 +1671,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 // See http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm
-LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
+LRESULT WinEditor::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
    // the WPARAM contains a sub-command code telling us the specific action
@@ -1754,7 +1754,7 @@ LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
    return 0;
 }
 
-LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT WinEditor::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    if (m_dockNotes != nullptr)
@@ -1765,7 +1765,7 @@ LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 #endif
 }
 
-LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT WinEditor::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    if (GetAllMDIChildren().size() == 1)
@@ -1777,7 +1777,7 @@ LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 #ifndef __STANDALONE__
-Win32xx::DockPtr VPinball::NewDockerFromID(int id)
+Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
 {
    switch (id)
    {
@@ -1809,21 +1809,21 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
 }
 #endif
 
-STDMETHODIMP VPinball::PlaySound(BSTR bstr)
+STDMETHODIMP WinEditor::PlaySound(BSTR bstr)
 {
    if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
 
    return S_OK;
 }
 
-STDMETHODIMP VPinball::FireKnocker(int Count)
+STDMETHODIMP WinEditor::FireKnocker(int Count)
 {
    if (g_pplayer) g_pplayer->m_ptable->FireKnocker(Count);
 
    return S_OK;
 }
 
-STDMETHODIMP VPinball::QuitPlayer(int CloseType)
+STDMETHODIMP WinEditor::QuitPlayer(int CloseType)
 {
    if (g_pplayer)
    {
@@ -2091,7 +2091,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 }
 
 
-void VPinball::ShowDrawingOrderDialog(bool select)
+void WinEditor::ShowDrawingOrderDialog(bool select)
 {
 #ifndef __STANDALONE__
    DrawingOrderDialog orderDlg(select);
@@ -2099,7 +2099,7 @@ void VPinball::ShowDrawingOrderDialog(bool select)
 #endif
 }
 
-void VPinball::CloseAllDialogs()
+void WinEditor::CloseAllDialogs()
 {
 #ifndef __STANDALONE__
    if (m_imageMngDlg.IsWindow())
@@ -2125,7 +2125,7 @@ void VPinball::CloseAllDialogs()
 #endif
 }
 
-void VPinball::ToggleBackglassView()
+void WinEditor::ToggleBackglassView()
 {
    const bool show = !m_backglassView;
    m_backglassView = show;
@@ -2144,7 +2144,7 @@ void VPinball::ToggleBackglassView()
    ToggleToolbar();
 }
 
-void VPinball::ToggleScriptEditor()
+void WinEditor::ToggleScriptEditor()
 {
 #ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2159,7 +2159,7 @@ void VPinball::ToggleScriptEditor()
 #endif
 }
 
-void VPinball::ShowSearchSelect()
+void WinEditor::ShowSearchSelect()
 {
 #ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2183,7 +2183,7 @@ void VPinball::ShowSearchSelect()
 #endif
 }
 
-void VPinball::SetDefaultPhysics()
+void WinEditor::SetDefaultPhysics()
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
@@ -2199,7 +2199,7 @@ void VPinball::SetDefaultPhysics()
    }
 }
 
-void VPinball::SetViewSolidOutline(size_t viewId)
+void WinEditor::SetViewSolidOutline(size_t viewId)
 {
 #ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -2215,7 +2215,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
 #endif
 }
 
-void VPinball::ShowGridView()
+void WinEditor::ShowGridView()
 {
 #ifndef __STANDALONE__
    auto ptCur = GetActiveTableEditor();
@@ -2227,7 +2227,7 @@ void VPinball::ShowGridView()
 #endif
 }
 
-void VPinball::ShowBackdropView()
+void WinEditor::ShowBackdropView()
 {
 #ifndef __STANDALONE__
    if (const auto ptCur = GetActiveTableEditor(); ptCur)
@@ -2238,7 +2238,7 @@ void VPinball::ShowBackdropView()
 #endif
 }
 
-void VPinball::AddControlPoint()
+void WinEditor::AddControlPoint()
 {
    const auto ptCur = GetActiveTableEditor();
    if (ptCur == nullptr)
@@ -2283,7 +2283,7 @@ void VPinball::AddControlPoint()
    }
 }
 
-void VPinball::AddSmoothControlPoint()
+void WinEditor::AddSmoothControlPoint()
 {
    const auto ptCur = GetActiveTableEditor();
    if (ptCur == nullptr)
@@ -2328,7 +2328,7 @@ void VPinball::AddSmoothControlPoint()
    }
 }
 
-void VPinball::SaveTable(const bool saveAs)
+void WinEditor::SaveTable(const bool saveAs)
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
@@ -2344,7 +2344,7 @@ void VPinball::SaveTable(const bool saveAs)
    }
 }
 
-void VPinball::OpenNewTable(size_t tableId)
+void WinEditor::OpenNewTable(size_t tableId)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -2370,14 +2370,14 @@ void VPinball::OpenNewTable(size_t tableId)
 #endif
 }
 
-void VPinball::ProcessDeleteElement()
+void WinEditor::ProcessDeleteElement()
 {
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       ptCur->OnDelete();
 }
 
-void VPinball::OpenRecentFile(const size_t menuId)
+void WinEditor::OpenRecentFile(const size_t menuId)
 {
    // get the index into the recent list menu
    const size_t Index = menuId - RECENT_FIRST_MENU_IDM;
@@ -2385,7 +2385,7 @@ void VPinball::OpenRecentFile(const size_t menuId)
    LoadFileName(m_recentTableList[Index], true);
 }
 
-void VPinball::CopyPasteElement(const CopyPasteModes mode)
+void WinEditor::CopyPasteElement(const CopyPasteModes mode)
 {
    const auto ptCur = GetActiveTableEditor();
    if (ptCur && !ptCur->m_table->IsLocked())

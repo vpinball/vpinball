@@ -8,7 +8,7 @@
 class PinTableWnd : public CWnd
 {
 public:
-   explicit PinTableWnd(VPinball * vpxEditor, CComObject<PinTable> *table);
+   explicit PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table);
    ~PinTableWnd();
 
    void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
@@ -74,7 +74,7 @@ private:
    void UIRenderPass2(Sur *const psur);
 #endif
 
-   VPinball * const m_vpxEditor;
+   WinEditor *const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
 
    bool m_moving = false;

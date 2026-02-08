@@ -13,7 +13,7 @@
 #endif
 
 
-PinTableWnd::PinTableWnd(VPinball *vpxEditor, CComObject<PinTable> *table)
+PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table) 
    , m_vpxEditor(vpxEditor)
 {
@@ -1209,14 +1209,14 @@ void PinTableWnd::BeginAutoSaveCounter()
 {
 #ifndef __STANDALONE__
    if (m_vpxEditor->m_autosaveTime > 0)
-      m_vpxEditor->SetTimer(VPinball::TIMER_ID_AUTOSAVE, m_vpxEditor->m_autosaveTime, nullptr);
+      m_vpxEditor->SetTimer(WinEditor::TIMER_ID_AUTOSAVE, m_vpxEditor->m_autosaveTime, nullptr);
 #endif
 }
 
 void PinTableWnd::EndAutoSaveCounter()
 {
 #ifndef __STANDALONE__
-   m_vpxEditor->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+   m_vpxEditor->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
 #endif
 }
 
@@ -1226,7 +1226,7 @@ void PinTableWnd::AutoSave()
    if (m_table->m_sdsCurrentDirtyState <= eSaveAutosaved)
       return;
 
-   m_vpxEditor->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+   m_vpxEditor->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
 
    m_vpxEditor->SetActionCur(LocalString(IDS_AUTOSAVING).m_szbuffer);
    m_vpxEditor->SetCursorCur(nullptr, IDC_WAIT);

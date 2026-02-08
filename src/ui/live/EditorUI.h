@@ -33,7 +33,6 @@ public:
 private:
    // UI Context
    LiveUI &m_liveUI;
-   VPinball *m_app;
    Player *m_player;
    PinTable *m_table; // The table displayed by the player
    InputManager *m_pininput;
