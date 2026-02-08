@@ -221,7 +221,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
                   useVR = true;
                else if (vrDetectionMode == 0) // 0 is VR on
                {
-                  while (!m_vrDevice->IsOpenXRHMDReady() && (g_pvp->MessageBox("Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
+                  while (!m_vrDevice->IsOpenXRHMDReady() && (MessageBox(nullptr, "Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
                      m_vrDevice->SetupHMD();
                   useVR = m_vrDevice->IsOpenXRHMDReady();
                }
@@ -237,7 +237,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       #elif defined(ENABLE_VR)
          useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
          if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
-            useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
+            useVR = MessageBox(nullptr, "VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
          m_vrDevice = useVR ? new VRDevice(m_ptable->m_settings) : nullptr;
       #endif
    #endif
@@ -792,7 +792,7 @@ Player::~Player()
    if (!IsEditorMode())
    {
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-      if (m_detectScriptHang)
+      if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
       // Stop script engine before destroying objects
@@ -1720,7 +1720,7 @@ void Player::UpdateGameLogic()
 
    ProcessOSMessages();
 
-   if (m_playMode == PlayMode::CaptureAttract)
+   if (m_playMode == PlayMode::CaptureAttract && m_nFrameToCapture > 0)
    {
       static std::unique_ptr<AttractCapture> capture;
       if (capture == nullptr)

@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-extern string GetAssetPath();
+extern std::filesystem::path GetAssetPath();
 extern bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2);
 extern void CaptureRender(const string& tablePath, const string& screenshotPath);
 

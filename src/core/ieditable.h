@@ -113,7 +113,7 @@ public:
         CComObject<T> *obj = nullptr; \
         if (FAILED(CComObject<T>::CreateInstance(&obj))) \
         { \
-            MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_OK | MB_ICONEXCLAMATION); \
+            ShowError("Failed to create COM object."); \
         } \
         obj->AddRef(); \
         return obj; \

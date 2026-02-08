@@ -920,11 +920,11 @@ VRDevice::VRDevice(const Settings& settings)
       if (settings.GetPlayerVR_ScaleToFixedWidth())
       {
          float width;
-         g_pvp->GetActiveTable()->get_Width(&width);
+         g_pplayer->m_ptable->get_Width(&width);
          m_scale = settings.GetPlayerVR_ScaleAbsolute() * 0.01f / width;
       }
       else
-         m_scale = VPUTOCM(0.01f) * g_pvp->GetActiveTable()->m_settings.GetPlayerVR_ScaleRelative();
+         m_scale = VPUTOCM(0.01f) * g_pplayer->m_ptable->m_settings.GetPlayerVR_ScaleRelative();
       if (m_scale < VPUTOCM(0.01f))
          m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
 
@@ -953,8 +953,8 @@ VRDevice::VRDevice(const Settings& settings)
       coords._31 =  0.f; coords._32 = 1.f; coords._33 =  0.f;
 
       float zNear, zFar;
-      g_pvp->GetActiveTable()->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-      zNear = g_pvp->GetActiveTable()->m_settings.GetPlayerVR_NearPlane() / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+      g_pplayer->m_ptable->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
+      zNear = g_pplayer->m_ptable->m_settings.GetPlayerVR_NearPlane() / 100.0f; // Replace near value to allow player to move near parts up to user defined value
       zFar *= 1.2f;
 
       if (m_pHMD == nullptr)

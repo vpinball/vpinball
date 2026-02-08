@@ -246,7 +246,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          });
 
       // Run the application
-      //retval = theApp.Run();
       if (cmdLine.m_command)
       {
          cmdLine.m_command->Execute();

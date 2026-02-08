@@ -17,8 +17,7 @@ static constexpr uint8_t lookupRev[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0x
 
 constexpr inline uint8_t reverse(const uint8_t n) { return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4]; }
 
-static unsigned int GenerateTournamentFileInternal(
-   uint8_t *const dmd_data, const unsigned int dmd_size, const string &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
+static unsigned int GenerateTournamentFileInternal(PinTable* table, uint8_t *const dmd_data, const unsigned int dmd_size, const string &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
 {
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;
@@ -55,9 +54,9 @@ static unsigned int GenerateTournamentFileInternal(
 
    //
 
-   const size_t cchar = g_pvp->GetActiveTable()->m_pcv->GetScript().length();
+   const size_t cchar = table->m_pcv->GetScript().length();
    char *const szText = new char[cchar + 1];
-   strncpy_s(szText, cchar + 1, g_pvp->GetActiveTable()->m_pcv->GetScript().c_str());
+   strncpy_s(szText, cchar + 1, table->m_pcv->GetScript().c_str());
 
    for (size_t i = 0; i < cchar; ++i)
       szText[i] = cLower(szText[i]);
@@ -184,6 +183,7 @@ static void GenerateTournamentFileInternal2(uint8_t *const dmd_data, const unsig
 
 void GenerateTournamentFile()
 {
+   assert(g_pplayer);
    unsigned int dmd_size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    if (dmd_size == 0)
    {
@@ -203,7 +203,7 @@ void GenerateTournamentFile()
    generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
    dmd_size += 16;
    unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
-   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, g_pplayer->m_ptable->m_filename, tablefileChecksum, vpxChecksum, scriptsChecksum);
+   const unsigned int res = GenerateTournamentFileInternal(g_pplayer->m_ptable, dmd_data, dmd_size, g_pplayer->m_ptable->m_filename, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
       return;
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
@@ -236,7 +236,7 @@ void GenerateTournamentFile()
    delete[] dmd_data;
 }
 
-void GenerateImageFromTournamentFile(const string &tablefile, const string &txtfile)
+void GenerateImageFromTournamentFile(PinTable* table, const string &txtfile)
 {
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
@@ -297,7 +297,7 @@ void GenerateImageFromTournamentFile(const string &tablefile, const string &txtf
    }
 
    unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
-   const unsigned int res = GenerateTournamentFileInternal(dmd_data.data(), dmd_size, tablefile, tablefileChecksum, vpxChecksum, scriptsChecksum);
+   const unsigned int res = GenerateTournamentFileInternal(table, dmd_data.data(), dmd_size, table->m_filename, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
    {
       return;

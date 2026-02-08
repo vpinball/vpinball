@@ -709,7 +709,7 @@ void InputManager::CreateInputActions()
             && (g_pplayer->m_time_msec > 1000) // Game has been played at least 1 second
             && ((msec() - m_exitPressTimestamp) > m_exitAppPressLengthMs)) // Exit button has been pressed continuously long enough
          { // Close app if pressed long enough
-            g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+            g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
          }
          else if (g_pplayer->m_liveUI->IsOpened())
          {

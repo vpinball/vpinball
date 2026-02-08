@@ -10,5 +10,5 @@ namespace VPX::TournamentFile
 
    // Generate an image from a tournament file
    // The image is generated along the tournament txt file, adding a '.png' extension
-   extern void GenerateImageFromTournamentFile(const string& tablefile, const string& txtfile);
+   extern void GenerateImageFromTournamentFile(PinTable* table, const string& txtfile);
 };

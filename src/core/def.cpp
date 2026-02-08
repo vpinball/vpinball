@@ -407,6 +407,14 @@ bool IsWindowsVistaOr7()
 }
 #endif
 
+void ShowError(const char* const sz)
+{
+   if (g_pvp)
+      g_pvp->MessageBox(sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+   else
+      MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
+}
+
 vector<uint8_t> read_file(const string& filename, const bool binary)
 {
    vector<uint8_t> data;

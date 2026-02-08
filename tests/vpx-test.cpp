@@ -10,6 +10,7 @@
 #include <filesystem>
 
 #include "core/VPApp.h"
+#include "core/AppCommands.h"
 
 #include "plugins/MsgPluginManager.h"
 
@@ -38,21 +39,15 @@ bgfx::RendererType::Enum GetLastRenderer()
 }
 #endif
 
-string GetAssetPath()
+std::filesystem::path GetAssetPath()
 {
-   HMODULE hm = nullptr;
-   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("GetAssetPath"), &hm) == 0)
-      return ""s;
-   string path = GetModulePath<string>(hm);
-   if (path.empty())
-      return path;
-   return path.substr(0, path.find_last_of(_T("\\/"))) + "\\test-assets\\";
+   return g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root, "test-assets");
 }
 
 bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
 {
-   auto bmp1 = FileExists(GetAssetPath() + filePath1) ? BaseTexture::CreateFromFile(GetAssetPath() + filePath1) : nullptr;
-   auto bmp2 = FileExists(GetAssetPath() + filePath2) ? BaseTexture::CreateFromFile(GetAssetPath() + filePath2) : nullptr;
+   auto bmp1 = FileExists(GetAssetPath() / filePath1) ? BaseTexture::CreateFromFile(GetAssetPath() / filePath1) : nullptr;
+   auto bmp2 = FileExists(GetAssetPath() / filePath2) ? BaseTexture::CreateFromFile(GetAssetPath() / filePath2) : nullptr;
    bool failed = (!bmp1 || !bmp2 || bmp1->width() != bmp2->width() || bmp1->height() != bmp2->height() || bmp1->m_format != bmp2->m_format);
    if (!failed && ((bmp1->m_format != BaseTexture::SRGB) || (bmp2->m_format != BaseTexture::SRGB)))
    {
@@ -92,7 +87,7 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
          saveDiff = true;
       }
       const string ext = extension_from_path(filePath1);
-      const string diffPath = GetAssetPath() + filePath1.substr(0, filePath1.size() - ext.size() - 1) + "-diff." + ext;
+      const std::filesystem::path diffPath = GetAssetPath() / (filePath1.substr(0, filePath1.size() - ext.size() - 1) + "-diff." + ext);
       if (saveDiff)
       {
          std::shared_ptr<BaseTexture> diff = BaseTexture::Create(bmp1->width(), bmp1->height(), BaseTexture::SRGB);
@@ -102,7 +97,7 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
             uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];
             diffData[i] = dif > 64 ? 255 : dif * 4; // Scale to 0-255
          }
-         diff->Save(diffPath);
+         diff->Save(diffPath.string());
       }
       else if (FileExists(diffPath))
       {
@@ -118,12 +113,11 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
 
 void CaptureRender(const string& tablePath, const string& screenshotPath)
 {
-   g_pvp->LoadFileName(GetAssetPath() + tablePath, false);
    struct CaptureState
    {
       std::filesystem::path tmpScreenshotPath;
       bool done;
-   } state = { GetAssetPath() + screenshotPath, false };
+   } state = { GetAssetPath() / screenshotPath, false };
    msgpi_msg_callback onPrepareFrame = [](const unsigned int msgId, void* context, void* msgData)
    {
       CaptureState* state = reinterpret_cast<CaptureState*>(context);
@@ -139,31 +133,21 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
             });
    };
    AddOnPrepareFrameHandler(onPrepareFrame, &state);
-   g_pvp->DoPlay(0);
-   while (!state.done)
-      g_app->m_msgLoop->StepMsgLoop();
+
+   CComObject<PinTable>* table;
+   CComObject<PinTable>::CreateInstance(&table);
+   table->AddRef();
+   table->LoadGameFromFilename((GetAssetPath() / tablePath).string());
+   auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   player->GameLoop();
+   player = nullptr;
+   table->Release();
+
    RemoveOnPrepareFrameHandler(onPrepareFrame);
-   PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0); // Close the table
-   while (!g_pvp->m_vtable.empty())
-      g_app->m_msgLoop->StepMsgLoop();
 }
 
 void ResetVPX()
 {
-   // Stop player
-   if (g_pplayer)
-      g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
-
-   // Close all opened tables
-   size_t nOpenedTables = g_pvp->m_vtable.size();
-   while (nOpenedTables > 0)
-   {
-      PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0);
-      while (g_pvp->m_vtable.size() == nOpenedTables)
-         g_app->m_msgLoop->StepMsgLoop();
-      nOpenedTables = g_pvp->m_vtable.size();
-   }
-
    // Reset settings
    g_app->m_settings.Reset();
    Settings& settings = g_app->m_settings;
@@ -178,28 +162,29 @@ void ResetVPX()
 
 extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nShowCmd)
 {
-   // Initialize the doctest framework
-   doctest::Context context;
-   context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
-   context.setOption("out", (GetAssetPath() + "test_results.txt").c_str());
-   context.applyCommandLine(0, nullptr); // TODO Apply command line arguments if any
+   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   SDL_InitSubSystem(SDL_INIT_VIDEO);
 
    // Setup the vpx app with blank default settings
    Logger::GetInstance()->Init();
-   VPApp vpx(hInstance);
-   const char* args[] = { "vpx-test.exe", "-ini", (GetAssetPath() + "VPinball.ini").c_str() };
-   vpx.ProcessCommandLine(3, args);
+   VPApp vpx;
+   CommandLineProcessor cmdLine;
+   const char* args[] = { "vpx-test.exe", "-ini", (GetAssetPath() / "VPinball.ini").string().c_str() };
+   cmdLine.ProcessCommandLine(3, args);
    vpx.InitInstance();
    const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    onPrepareFrameMsgId = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
 
-   // Run the tests
+   // Initialize the doctest framework and run the tests
+   doctest::Context context;
+   context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
+   context.setOption("out", (GetAssetPath() / "test_results.txt").string().c_str());
+   context.applyCommandLine(0, nullptr); // TODO Apply command line arguments if any
    int res = context.run();
 
    // Clean up
    msgApi.ReleaseMsgID(onPrepareFrameMsgId);
-   PostMessage(g_pvp->GetHwnd(), WM_CLOSE, 0, 0);
-   g_app->m_msgLoop->MainMsgLoop();
+   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
    if (context.shouldExit())
       return res;
