@@ -1797,7 +1797,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
       while (std::getline(glfxFile, line))
       {
          linenumber++;
-         if (line.starts_with(0, 4, "////")) {
+         if (line.starts_with("////")) {
             string newMode = line.substr(4, line.length() - 4);
             if (newMode == "DEFINES") {
                currentElement += "#define GLSL\n\n";
