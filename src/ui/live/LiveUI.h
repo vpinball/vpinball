@@ -101,7 +101,6 @@ private:
    static ImGui::MarkdownImageData MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data);
 
    // UI Context
-   VPinball *m_app;
    Player   *m_player;
    InputManager *m_pininput;
    Renderer *m_renderer;

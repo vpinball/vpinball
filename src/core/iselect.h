@@ -41,7 +41,7 @@ class PinTable;
 class IEditable;
 class TimerDataRoot;
 struct PropertyPane;
-class VPinball;
+class WinEditor;
 
 
 enum SelectState
@@ -147,7 +147,7 @@ public:
    bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
 
 protected:
-   VPinball *m_vpinball = nullptr;
+   WinEditor *m_vpinball = nullptr;
 
 private:
    bool m_markedForUndo = false; // Flag set when dragged to enable undo

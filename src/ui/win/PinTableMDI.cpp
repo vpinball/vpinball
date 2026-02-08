@@ -12,7 +12,7 @@ static CComObject<PinTable>* CreatePinTable()
    return table; // Note that the ref count is zero so far
 }
 
-PinTableMDI::PinTableMDI(VPinball *vpinball)
+PinTableMDI::PinTableMDI(WinEditor* vpinball)
    : m_vpxEditor(vpinball)
    , m_tableWnd(std::make_unique<PinTableWnd>(vpinball, CreatePinTable()))
 {
@@ -90,7 +90,7 @@ void PinTableMDI::OnClose()
          m_vpxEditor->GetNotesDocker()->UpdateText();
          m_vpxEditor->GetNotesDocker()->CleanText();
       }
-      m_tableWnd->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+      m_tableWnd->KillTimer(WinEditor::TIMER_ID_AUTOSAVE);
       CMDIChild::OnClose();
    }
 #endif

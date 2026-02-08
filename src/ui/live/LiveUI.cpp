@@ -39,7 +39,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
    , m_rd(rd)
    , m_perfUI(g_pplayer)
 {
-   m_app = g_pvp;
    m_player = g_pplayer;
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;

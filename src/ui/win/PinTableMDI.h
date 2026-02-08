@@ -8,7 +8,7 @@
 class PinTableMDI final : public CMDIChild
 {
 public:
-   PinTableMDI(VPinball *vpinball);
+   PinTableMDI(WinEditor *vpinball);
    ~PinTableMDI()
    #ifndef __STANDALONE__
    override
@@ -27,5 +27,5 @@ protected:
 
 private:
    std::unique_ptr<PinTableWnd> m_tableWnd;
-   VPinball *m_vpxEditor;
+   WinEditor *m_vpxEditor;
 };

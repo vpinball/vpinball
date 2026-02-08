@@ -129,7 +129,7 @@ Win32EditCommand::Win32EditCommand(const string& tableFilename)
 
 void Win32EditCommand::Execute()
 {
-   VPinball vpxEditor(g_app->GetInstanceHandle());
+   WinEditor vpxEditor(g_app->GetInstanceHandle());
    g_pvp = &vpxEditor;
    vpxEditor.m_open_minimized = m_minimized;
    vpxEditor.m_disable_pause_menu = m_disablePauseMenu;

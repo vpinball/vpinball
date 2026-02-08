@@ -36,7 +36,7 @@ class PinTable;
 class PinTableMDI;
 class VPXFileFeedback;
 
-class VPinball final : public CMDIDockFrame
+class WinEditor final : public CMDIDockFrame
 {
 public:
     enum TIMER_IDS
@@ -52,8 +52,8 @@ public:
         PASTE_AT = 2
     };
 
-   VPinball(HINSTANCE appInstance);
-   ~VPinball() OVERRIDE;
+   WinEditor(HINSTANCE appInstance);
+   ~WinEditor() OVERRIDE;
 
    void ShowSubDialog(CDialog& dlg, const bool show);
 
