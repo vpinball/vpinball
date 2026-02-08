@@ -45,8 +45,7 @@ void PUPMediaPlayer::SetName(const string& name)
 {
    m_commandQueue.enqueue([this, name]()
    {
-      string threadName(name);
-      SetThreadName(threadName.append(".CmdQueue"));
+      SetThreadName(name + ".CmdQueue");
       std::lock_guard lock(m_mutex);
       m_name = name;
    }); 

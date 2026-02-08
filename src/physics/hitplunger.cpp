@@ -471,7 +471,7 @@ void PlungerMoverObject::UpdateVelocities()
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
       m_autoFireTimer--;
-      if (g_pplayer && (m_autoFireTimerInputStateSlot != -1) && (m_autoFireTimer == 0) && (g_pplayer != nullptr))
+      if (g_pplayer && (m_autoFireTimerInputStateSlot != -1) && (m_autoFireTimer == 0))
          g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, false);
    }
    else if (autoPlunger && m_mechSpeed < ReleaseThreshold)

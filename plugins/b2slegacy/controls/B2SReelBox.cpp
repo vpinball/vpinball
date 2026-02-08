@@ -130,23 +130,22 @@ void B2SReelBox::SetRollingInterval(int rollingInterval)
 
 void B2SReelBox::SetReelType(const string& szReelType)
 {
-   string value;
    if (szReelType.back() == '_') {
       m_length = 2;
       m_szReelIndex = "00"s;
-      value = szReelType.substr(0, szReelType.length() - 1);
+      m_szReelType = szReelType.substr(0, szReelType.length() - 1);
    }
    else {
       m_szReelIndex = "0"s;
-      value = szReelType;
+      m_szReelType = szReelType;
    }
    if (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)) {
       m_led = true;
       m_szReelIndex = "Empty"s;
       m_initValue = "Empty"s;
       SetText(-1);
+      m_szReelType.clear();
    }
-    m_szReelType = value;
 }
 
 void B2SReelBox::SetIlluminated(bool illuminated)

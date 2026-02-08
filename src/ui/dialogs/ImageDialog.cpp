@@ -1012,7 +1012,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
    }
    return index;
 #else
-   return 0L;
+   return 0;
 #endif
 }
 

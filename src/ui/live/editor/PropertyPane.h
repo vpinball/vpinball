@@ -488,7 +488,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
       if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
       {
-         value = string(buffer.data());
+         value = buffer.data();
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
@@ -516,7 +516,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
       if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
       {
-         value = string(buffer.data());
+         value = buffer.data();
          setter(obj, value);
          m_modified = m_modifyFieldId;
       }

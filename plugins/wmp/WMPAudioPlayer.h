@@ -29,7 +29,7 @@ public:
    bool IsPaused() const { return m_isPaused; }
    float GetVolume() const { return m_volume; }
    void SetVolume(float volume);
-   void UpdateVolume(long volume, bool mute);
+   void UpdateVolume(int volume, bool mute);
 
 private:
    void StartStreaming();

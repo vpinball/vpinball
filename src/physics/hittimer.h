@@ -24,5 +24,5 @@ private:
    unsigned int m_nextfire = 0;
 
    // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if set to > 1, as update cycle is 1000Hz)   
-   const long MAX_TIMER_MSEC_INTERVAL = 1;
+   static constexpr int MAX_TIMER_MSEC_INTERVAL = 1;
 };

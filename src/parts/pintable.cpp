@@ -2538,7 +2538,7 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
 
    return index;
 #else
-   return 0L;
+   return 0;
 #endif
 }
 
@@ -3199,7 +3199,7 @@ void PinTable::ExportTableMesh()
 
    const int ret = GetSaveFileName(&ofn);
 
-   // user canceled
+   // user cancelled
    if (ret == 0)
       return;// S_FALSE;
    const string filename = string(szObjFileName);
@@ -3477,7 +3477,7 @@ void PinTable::ExportBackdropPOV() const
 	ofn.lpstrDefExt = "ini";
 	ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 	const int ret = GetSaveFileName(&ofn);
-	// user canceled
+	// user cancelled
 	if (ret == 0)
 		return;// S_FALSE;
 	iniFileName = szFileName;
@@ -3492,7 +3492,7 @@ void PinTable::ExportBackdropPOV() const
       settings.SetIniPath(iniFileName);
       settings.Save();
       if (g_pplayer)
-         g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
+         g_pplayer->m_liveUI->PushNotification("POV exported to " + iniFileName, 5000);
    }
    else if (g_pplayer)
    {
@@ -4392,7 +4392,7 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
    }
    return index;
 #else
-   return 0L;
+   return 0;
 #endif
 }
 
@@ -4675,7 +4675,7 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
 
    return index;
 #else
-   return 0L;
+   return 0;
 #endif
 }
 

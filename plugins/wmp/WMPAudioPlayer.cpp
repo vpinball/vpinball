@@ -160,9 +160,9 @@ void WMPAudioPlayer::SetVolume(float volume)
    LOGI("Volume set to: %.2f", m_volume.load());
 }
 
-void WMPAudioPlayer::UpdateVolume(long volume, bool mute)
+void WMPAudioPlayer::UpdateVolume(int volume, bool mute)
 {
-   long clampedVolume = std::max(0L, std::min<long>(volume, 100L));
+   int clampedVolume = std::max(0, std::min(volume, 100));
 
    float audioVolume = static_cast<float>(clampedVolume) / 100.0f;
    if (mute)
@@ -203,7 +203,7 @@ void WMPAudioPlayer::StartStreaming()
          SendAudioChunk(audioBuffer, (size_t)framesRead);
 
          double bufferDurationMs = (double)framesRead / (double)m_sampleRate * 1000.0;
-         std::this_thread::sleep_for(std::chrono::microseconds((int)(bufferDurationMs * 800)));
+         std::this_thread::sleep_for(std::chrono::microseconds((int)(bufferDurationMs * 800.)));
       }
 
       if (!m_shouldStopStreaming) {

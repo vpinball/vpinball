@@ -168,10 +168,10 @@ typedef struct ScriptablePluginAPI
          int size = vsnprintf(nullptr, 0, format, args_copy); \
          va_end(args_copy); \
          if (size > 0) { \
-            char* buffer = static_cast<char*>(malloc(size + 1)); \
+            char* const buffer = new char[size + 1]; \
             vsnprintf(buffer, size + 1, format, args); \
             scriptablePluginApi->OnError(type, buffer); \
-            free(buffer); \
+            delete [] buffer; \
          } \
          va_end(args); \
       } \

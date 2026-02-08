@@ -44,9 +44,10 @@ void MaterialDialog::setItemText(int id, float value)
    SetDlgItemText(id, f2sz(value).c_str());
 }
 
-MaterialDialog::MaterialDialog() : CDialog(IDD_MATERIALDIALOG)
+MaterialDialog::MaterialDialog()
+   : CDialog(IDD_MATERIALDIALOG)
+   , m_hMaterialList(nullptr)
 {
-    m_hMaterialList = nullptr;
 }
 
 BOOL MaterialDialog::OnInitDialog()

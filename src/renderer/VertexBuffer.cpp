@@ -80,7 +80,7 @@ void SharedVertexBuffer::Upload()
       uint8_t* data = mem->data;
 
       #elif defined(ENABLE_OPENGL)
-      uint8_t* data = (uint8_t*)malloc(size);
+      uint8_t* const data = new uint8_t[size];
 
       #elif defined(ENABLE_DX9)
       // We always specify WRITEONLY since MSDN states,
@@ -129,7 +129,7 @@ void SharedVertexBuffer::Upload()
          Bind();
          glBufferData(GL_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
-      free(data);
+      delete [] data;
 
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_vb->Unlock());

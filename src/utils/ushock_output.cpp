@@ -109,7 +109,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    const HANDLE deviceHandle = CreateFile(deviceDetail->DevicePath,
       GENERIC_READ | GENERIC_WRITE,
       FILE_SHARE_READ | FILE_SHARE_WRITE,
-      nullptr,       // no SECURITY_ATTRIBUTES structure
+      nullptr,       // No SECURITY_ATTRIBUTES structure
       OPEN_EXISTING, // No special create flags
       FILE_FLAG_OVERLAPPED,
       nullptr);      // No template file
@@ -118,7 +118,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    free(deviceDetail);
    return deviceHandle;
 #else 
-   return 0L;
+   return nullptr;
 #endif
 }
 

@@ -76,7 +76,7 @@ void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format,
    int size = vsnprintf(nullptr, 0, format, args_copy);
    va_end(args_copy);
    if (size > 0) {
-      char* const buffer = static_cast<char*>(malloc(size + 1));
+      char* const buffer = new char[size + 1];
       vsnprintf(buffer, size + 1, format, args);
       switch(logLevel) {
          case DMDUtil_LogLevel_INFO:
@@ -91,7 +91,7 @@ void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format,
          default:
             break;
       }
-      free(buffer);
+      delete [] buffer;
    }
 }
 
@@ -114,17 +114,17 @@ static void UpdateThread()
          case CTLPI_DISPLAY_FORMAT_LUM32F:
          {
             const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
-            uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(selectedDmdId.width * selectedDmdId.height * 3);
+            uint8_t* const __restrict rgb24Data = new uint8_t[selectedDmdId.width * selectedDmdId.height * 3];
 
             for (unsigned int i = 0; i < selectedDmdId.width * selectedDmdId.height; ++i) {
                 const float lum = luminanceData[i];
-                rgb24Data[i * 3    ] = (uint8_t)(lum * tintR);
-                rgb24Data[i * 3 + 1] = (uint8_t)(lum * tintG);
-                rgb24Data[i * 3 + 2] = (uint8_t)(lum * tintB);
+                rgb24Data[i * 3    ] = (uint8_t)(lum * (float)tintR);
+                rgb24Data[i * 3 + 1] = (uint8_t)(lum * (float)tintG);
+                rgb24Data[i * 3 + 2] = (uint8_t)(lum * (float)tintB);
             }
 
             pDmd->UpdateRGB24Data(rgb24Data, selectedDmdId.width, selectedDmdId.height);
-            free(rgb24Data);
+            delete [] rgb24Data;
          }
          break;
 

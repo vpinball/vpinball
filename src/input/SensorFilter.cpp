@@ -148,7 +148,7 @@ float PlungerPositionFilter::Get(uint64_t timestampNs)
 // from a nudge dies out, which happens fairly quickly (in about
 // one second, say), the cabinet is back where it started.  This
 // means that the cabinet experienced a series of accelerations,
-// back and forth, that ultimately canceled out and left the
+// back and forth, that ultimately cancelled out and left the
 // box at rest at its original position.  This is the central
 // assumption of this filter: we should be able to add up
 // (integrate) the series of instantaneous velocities imparted

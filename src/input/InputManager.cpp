@@ -947,7 +947,7 @@ int InputManager::GetWindowVirtualKeyForAction(unsigned int actionId) const
 {
    #ifndef __STANDALONE__
       // Very basic and inefficient way of searching for a keyboard mapping, but this is only used once to detect table mirroring
-      assert(0 <= actionId && actionId < static_cast<int>(m_inputActions.size()));
+      assert(0 <= (int)actionId && actionId < static_cast<unsigned int>(m_inputActions.size()));
       vector<ButtonMapping> mapping;
       for (unsigned char vk = VK_ESCAPE; vk <= VK_OEM_3; vk++)
       {

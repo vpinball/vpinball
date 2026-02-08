@@ -4,10 +4,11 @@
 #include "ui/resource.h"
 #include "DrawingOrderDialog.h"
 
-DrawingOrderDialog::DrawingOrderDialog(bool select) : CDialog(IDD_DRAWING_ORDER)
+DrawingOrderDialog::DrawingOrderDialog(bool select)
+   : CDialog(IDD_DRAWING_ORDER)
+   , m_drawingOrderSelect(select)
+   , hOrderList(nullptr)
 {
-   m_drawingOrderSelect = select;
-   hOrderList = nullptr;
 }
 
 DrawingOrderDialog::~DrawingOrderDialog()

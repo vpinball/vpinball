@@ -18,9 +18,8 @@ extern int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, 
 static CollectionDialogStruct cds;
 int CollectionManagerDialog::m_columnSortOrder;
 
-CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG)
+CollectionManagerDialog::CollectionManagerDialog() : CDialog(IDD_COLLECTDIALOG), hListHwnd(nullptr)
 {
-    hListHwnd = nullptr;
 }
 
 BOOL CollectionManagerDialog::OnInitDialog()

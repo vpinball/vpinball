@@ -282,7 +282,7 @@ HFONT Textbox::GetFont()
     const HFONT hFont = CreateFontIndirect(&lf);
     return hFont;
 #else
-   return 0L;
+   return nullptr;
 #endif
 }
 

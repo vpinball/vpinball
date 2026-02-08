@@ -44,7 +44,7 @@ public:
 class StoreSensorFilter : public SensorFilter
 {
 public:
-   virtual ~StoreSensorFilter() = default;
+   ~StoreSensorFilter() override = default;
    virtual void Push(uint64_t timestampNs, float value) = 0;
 };
 
@@ -104,7 +104,7 @@ public:
       : m_source(std::make_shared < ZeroSensorFilter>())
    {
    }
-   virtual ~SourcedSensorFilter() = default;
+   ~SourcedSensorFilter() override = default;
    void SetSource(std::shared_ptr<SensorFilter> source) { m_source = source; }
 
 protected:

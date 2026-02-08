@@ -223,7 +223,7 @@ bool RenderPass::Execute(const bool log)
          ss << "Layer=" << m_singleLayerRendering << ", ";
       ss << m_commands.size() << " commands, Dependencies:";
       bool first = true;
-      for (RenderPass* dep : m_dependencies)
+      for (const RenderPass* dep : m_dependencies)
       {
          if (!first)
             ss << ", ";

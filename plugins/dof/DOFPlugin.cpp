@@ -80,7 +80,7 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
    int size = vsnprintf(nullptr, 0, format, args_copy);
    va_end(args_copy);
    if (size > 0) {
-      char* const buffer = static_cast<char*>(malloc(size + 1));
+      char* const buffer = new char[size + 1];
       vsnprintf(buffer, size + 1, format, args);
       switch(logLevel) {
          case DOF_LogLevel_INFO:
@@ -95,7 +95,7 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
          default:
             break;
       }
-      free(buffer);
+      delete [] buffer;
    }
 }
 

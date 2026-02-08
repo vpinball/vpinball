@@ -473,7 +473,7 @@ HFONT Decal::GetFont()
 
    return hFont;
 #else
-   return 0L;
+   return nullptr;
 #endif
 }
 

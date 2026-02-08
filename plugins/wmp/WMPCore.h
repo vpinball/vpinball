@@ -79,7 +79,7 @@ public:
 public:
    bool m_autoStart = false;
    bool m_mute = false;
-   long m_volume = 50;
+   int m_volume = 50;
 
 private:
    string m_url;

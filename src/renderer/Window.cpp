@@ -95,7 +95,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    // Search for the request fullscreen exclusive display mode, eventually fallback to windowed mode if we fail
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
 
-   const bool isExtCreatedWindow = g_isMobile && g_isIOS;
+   constexpr bool isExtCreatedWindow = g_isMobile && g_isIOS;
    if (m_fullscreen && !isExtCreatedWindow)
    {
       if (g_isAndroid) {
@@ -408,13 +408,12 @@ Window::DisplayConfig Window::GetDisplayConfig(const string& display)
    vector<DisplayConfig> displays = GetDisplays();
    for (const DisplayConfig& dispConf : displays)
    {
-      if (dispConf.displayName == display) // or the display selected in the settings
+      if (dispConf.displayName == display) // Defaults to the display selected in the settings
       {
          selectedDisplay = dispConf;
-         if (dispConf.displayName == display)
-            break;
+         break;
       }
-      if (dispConf.isPrimary) // Defaults to the primary display
+      if (dispConf.isPrimary) // Otherwise, try to default to the primary display
          selectedDisplay = dispConf;
    }
    assert(selectedDisplay.width > 0); // We should at least have selected the default display

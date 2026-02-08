@@ -432,5 +432,4 @@ INT_PTR CALLBACK TranslatePointsDialog::TranslateProc(HWND hwndDlg, UINT uMsg, W
    return FALSE;
 }
 
-
 }

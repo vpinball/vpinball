@@ -220,7 +220,7 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
    int size = vsnprintf(nullptr, 0, format, args_copy);
    va_end(args_copy);
    if (size > 0) {
-      char* const buffer = static_cast<char*>(malloc(size + 1));
+      char* const buffer = new char[size + 1];
       vsnprintf(buffer, size + 1, format, args);
       if (logLevel == PINMAME_LOG_LEVEL_INFO)
       {
@@ -230,7 +230,7 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
       {
          LOGE("%s", buffer);
       }
-      free(buffer);
+      delete [] buffer;
    }
 }
 

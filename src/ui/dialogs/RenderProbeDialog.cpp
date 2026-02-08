@@ -4,9 +4,8 @@
 #include "ui/resource.h"
 #include "RenderProbeDialog.h"
 
-RenderProbeDialog::RenderProbeDialog() : CDialog(IDD_RENDERPROBE)
+RenderProbeDialog::RenderProbeDialog() : CDialog(IDD_RENDERPROBE), hListHwnd(nullptr)
 {
-   hListHwnd = nullptr;
 }
 
 BOOL RenderProbeDialog::OnInitDialog()

@@ -17,8 +17,8 @@ int SoundDialog::m_columnSortOrder;
 
 SoundDialog::SoundDialog()
    : CDialog(IDD_SOUNDDIALOG)
+   , hSoundList(nullptr)
 {
-   hSoundList = nullptr;
    m_columnSortOrder = 1;
 }
 
@@ -38,16 +38,16 @@ void SoundDialog::OnClose()
    CDialog::OnClose();
 }
 
-static long GetSystemDPI()
+static int GetSystemDPI()
 {
 	const CClientDC clientDC(nullptr);
-	const SIZE ret = { clientDC.GetDeviceCaps(LOGPIXELSX), clientDC.GetDeviceCaps(LOGPIXELSY) };
-	return ret.cx;
+	const int ret = clientDC.GetDeviceCaps(LOGPIXELSX);// clientDC.GetDeviceCaps(LOGPIXELSY)
+	return ret;
 }
 
-static long GetDPI()
+static int GetDPI()
 {
-	static const long dpi = GetSystemDPI();
+	static const int dpi = GetSystemDPI();
 	return dpi;
 }
 
@@ -844,7 +844,7 @@ void SoundPositionDialog::TestSound()
 {
 	GetDialogValues();
 
-	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
+	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is cancelled.
 	const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
 	m_pSound->SetOutputTarget(m_cOutputTarget);
 	m_audioPlayer->PlaySound(m_pSound, dequantizeSignedPercent(m_volume), 0.0f, 0, dequantizeSignedPercent(m_balance), dequantizeSignedPercent(m_fade), 0, false, true);

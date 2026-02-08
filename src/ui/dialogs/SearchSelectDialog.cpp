@@ -18,14 +18,11 @@ bool SearchSelectDialog::m_switchSortOrder;
 bool SearchSelectDialog::m_columnSortOrder;
 int SearchSelectDialog::m_lastSortColumn;
 
-SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT)
+SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT), m_hElementList(nullptr), m_curTable(nullptr)
 {
-    m_hElementList = nullptr;
-
-    m_switchSortOrder = false;
-    m_columnSortOrder = true;
-    m_lastSortColumn = 0;
-    m_curTable = nullptr;
+   m_switchSortOrder = false;
+   m_columnSortOrder = true;
+   m_lastSortColumn = 0;
 }
 
 void SearchSelectDialog::Update()

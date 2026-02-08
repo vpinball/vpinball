@@ -783,7 +783,7 @@ STDMETHODIMP DispReel::AddValue(LONG Value)
    const bool bNegative = (Value < 0);
 
    // ensure a positive number
-   long val = labs(Value);
+   int val = labs(Value);
 
    // get the base of this reel
    const int valbase = m_d.m_digitrange + 1;
@@ -811,7 +811,7 @@ STDMETHODIMP DispReel::AddValue(LONG Value)
 STDMETHODIMP DispReel::SetValue(LONG Value)
 {
    // ensure a positive number
-   long val = labs(Value);
+   int val = labs(Value);
 
    // get the base of this reel
    const int valbase = m_d.m_digitrange + 1;

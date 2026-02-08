@@ -37,5 +37,5 @@ private:
    static int m_applyCount;
    static INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
- 
+
 }

@@ -14,7 +14,7 @@ HitTimer::HitTimer(const string& name, int interval, IFireEvents* handler)
 
 void HitTimer::SetInterval(int intervalMs)
 {
-   m_interval = intervalMs >= 0 ? max(intervalMs, (int)MAX_TIMER_MSEC_INTERVAL) : max(-2, intervalMs);
+   m_interval = intervalMs >= 0 ? max(intervalMs, MAX_TIMER_MSEC_INTERVAL) : max(-2, intervalMs);
    m_nextfire = g_pplayer ? (g_pplayer->m_time_msec + m_interval) : m_interval;
 }
 

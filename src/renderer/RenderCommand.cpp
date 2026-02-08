@@ -44,7 +44,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       }
       m_renderState.Apply(m_rd);
       constexpr float z = 1.0f;
-      constexpr DWORD stencil = 0L;
+      constexpr DWORD stencil = 0;
 
       #if defined(ENABLE_BGFX)
       const uint32_t r = (m_clearARGB & 0x000000ff);
@@ -351,7 +351,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          if (m_command == RC_DRAW_MESH)
          {
             ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
-            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name.c_str();
+            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name;
          }
          PLOGI << ss.str();
       }

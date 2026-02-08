@@ -71,7 +71,7 @@ void SharedIndexBuffer::Upload()
       #endif
 
       #elif defined(ENABLE_OPENGL)
-      uint8_t* data = (uint8_t*)malloc(size);
+      uint8_t* const data = new uint8_t[size];
 
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), m_format == IndexBuffer::FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
@@ -117,7 +117,7 @@ void SharedIndexBuffer::Upload()
          Bind();
          glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
-      free(data);
+      delete [] data;
 
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_ib->Unlock());

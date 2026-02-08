@@ -20,14 +20,14 @@ public:
    void SetAutoStart(bool autoStart);
    bool GetMute() const;
    void SetMute(bool mute);
-   long GetVolume() const;
-   void SetVolume(long volume);
+   int GetVolume() const;
+   void SetVolume(int volume);
    double GetRate() const { PSC_NOT_IMPLEMENTED("GetRate is not implemented"); return 1.0; }
    void SetRate(double rate) { PSC_NOT_IMPLEMENTED("SetRate is not implemented"); }
-   long GetBalance() const { PSC_NOT_IMPLEMENTED("GetBalance is not implemented"); return 0; }
-   void SetBalance(long balance) { PSC_NOT_IMPLEMENTED("SetBalance is not implemented"); }
-   long GetPlayCount() const { PSC_NOT_IMPLEMENTED("GetPlayCount is not implemented"); return 1; }
-   void SetPlayCount(long count) { PSC_NOT_IMPLEMENTED("SetPlayCount is not implemented"); }
+   int GetBalance() const { PSC_NOT_IMPLEMENTED("GetBalance is not implemented"); return 0; }
+   void SetBalance(int balance) { PSC_NOT_IMPLEMENTED("SetBalance is not implemented"); }
+   int GetPlayCount() const { PSC_NOT_IMPLEMENTED("GetPlayCount is not implemented"); return 1; }
+   void SetPlayCount(int count) { PSC_NOT_IMPLEMENTED("SetPlayCount is not implemented"); }
    bool GetIsAvailable(const string& item) const { PSC_NOT_IMPLEMENTED("GetIsAvailable is not implemented"); return false; }
    string GetBaseURL() const { PSC_NOT_IMPLEMENTED("GetBaseURL is not implemented"); return string(); }
    void SetBaseURL(const string& url) { PSC_NOT_IMPLEMENTED("SetBaseURL is not implemented"); }
