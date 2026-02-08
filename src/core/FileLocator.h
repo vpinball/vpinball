@@ -55,6 +55,7 @@ public:
 
    // Allow to change the preference r/w folder used for user settings
    void SetPrefPath(const std::filesystem::path& path);
+   void SetTablesPath(const std::filesystem::path& path);
 
 private:
    FileLayoutMode m_fileLayoutMode = FileLayoutMode::AppOnly;
@@ -64,5 +65,6 @@ private:
 
    void SetupPrefPath();
    std::filesystem::path m_prefPath; // The preferences path where user settings and all sort of dynamic datas are stored
+   std::filesystem::path m_tablesPath;  // Used to override the default table path
 };
 
