@@ -13,12 +13,6 @@ enum SecurityLevelEnum
    eSecurityNoControls = 4
 };
 
-#ifdef __STANDALONE__
-class IProcessDebugManager
-{
-};
-#endif
-
 class ScriptInterpreter : public CComObjectRoot,
                           public IActiveScriptSite,
                           public IActiveScriptSiteDebug,
@@ -115,7 +109,9 @@ private:
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
     * ... if I try to create CLSID_PrrocessDebugManager
     */
+#ifndef __STANDALONE__
    IProcessDebugManager *m_pProcessDebugManager = nullptr;
+#endif
 
    const DWORD m_compileContextCookie = 1000;
    const DWORD m_debugContextCookie = 1001;
