@@ -170,7 +170,7 @@ HANDLE WinEditor::PostWorkToWorkerThread(int workid, LPARAM lParam)
    PostThreadMessage(m_workerthreadid, workid, (WPARAM)hEvent, lParam);
    return hEvent;
 #else
-   return 0L;
+   return nullptr;
 #endif
 }
 
@@ -1666,7 +1666,7 @@ LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    }
    return WndProcDefault(uMsg, wParam, lParam);
 #else
-   return 0L;
+   return 0;
 #endif
 }
 
@@ -1761,7 +1761,7 @@ LRESULT WinEditor::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
       m_dockNotes->Refresh();
    return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
 #else 
-   return 0L;
+   return 0;
 #endif
 }
 
@@ -1772,7 +1772,7 @@ LRESULT WinEditor::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
       GetLayersListDialog()->SetActiveTable(nullptr);
    return CMDIFrameT::OnMDIDestroyed(msg, wparam, lparam);
 #else
-   return 0L;
+   return 0;
 #endif
 }
 

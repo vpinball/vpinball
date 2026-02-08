@@ -555,21 +555,18 @@ bool BaseTexture::Save(const string& filepath) const
       FIBITMAP* bitmap = FreeImage_Allocate(m_width, m_height, m_format == SRGB ? 24 : 32);
       if (bitmap)
       {
-         uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
-         memcpy(bits, m_data, pitch() * m_height);
+         uint8_t* const __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
          if (m_format == SRGB)
-            for (uint32_t i = 0; i < m_width * m_height; i++)
-               std::swap(bits[i * 3], bits[i * 3 + 2]);
+            copy_bgr_rgb(bits, m_data, m_width * m_height);
          else
-            for (uint32_t i = 0; i < m_width * m_height; i++)
-               std::swap(bits[i * 4], bits[i * 4 + 2]);
+            copy_bgra_rgba<false>((unsigned int*)bits, (const unsigned int*)m_data, m_width * m_height);
          FreeImage_FlipVertical(bitmap);
          if (ext == "png")
-            success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);
+            success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), PNG_Z_DEFAULT_COMPRESSION);
          else if (ext == "jpg" || ext == "jpeg")
-            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), 0);
+            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), JPEG_QUALITYGOOD);
          else if (ext == "webp")
-            //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would better for our regression tests)
+            //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
             success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
@@ -640,13 +637,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
          {
             const uint32_t* const __restrict src_data = reinterpret_cast<const uint32_t*>(datac());
             uint8_t* const __restrict dest_data = static_cast<uint8_t*>(tex->data());
-            for (size_t o = 0; o < (size_t)width() * height(); ++o)
-            {
-               const uint32_t rgba = src_data[o];
-               dest_data[o * 3 + 0] =  rgba        & 0xFF;
-               dest_data[o * 3 + 1] = (rgba >>  8) & 0xFF;
-               dest_data[o * 3 + 2] = (rgba >> 16) & 0xFF;
-            }
+            copy_rgba_rgb<false>(dest_data, src_data, (size_t)width() * height());
          }
          break;
       default: break;

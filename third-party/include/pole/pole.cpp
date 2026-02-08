@@ -1106,21 +1106,21 @@ void DirTree::findParentAndSib(uint64 inIdx, const std::string& inFullName, uint
 {
     sibIdx = 0;
     parentIdx = 0;
-    if (inIdx == 0 || inIdx >= entryCount() || inFullName == "/" || inFullName == "")
+    if (inIdx == 0 || inIdx >= entryCount() || inFullName.empty() || inFullName == "/")
         return;
     std::string localName = inFullName;
     if (localName[0] != '/')
         localName = '/' + localName;
     std::string parentName = localName;
     if (parentName[parentName.size()-1] == '/')
-        parentName = parentName.substr(0, parentName.size()-1);
+        parentName.pop_back();
     std::string::size_type lastSlash;
     lastSlash = parentName.find_last_of('/');
     if (lastSlash == std::string::npos)
         return;
     if (lastSlash == 0)
         lastSlash = 1; //leave root
-    parentName = parentName.substr(0, lastSlash);
+    parentName.resize(lastSlash);
     DirEntry *parent2 = entry(parentName);
     parentIdx = indexOf(parent2);
     if (parent2->child == inIdx)

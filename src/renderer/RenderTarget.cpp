@@ -57,7 +57,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    #elif defined(ENABLE_DX9)
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
-      ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
+      ReportError("Fatal Error: unable to create back buffer!"s, hr, __FILE__, __LINE__);
    m_use_alternate_depth = m_rd->m_useNvidiaApi || !m_rd->m_INTZ_support;
    m_color_tex = nullptr;
    m_depth_tex = nullptr;

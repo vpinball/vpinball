@@ -67,22 +67,16 @@ public:
          default:        assert(false); return format;
       }
    }
-   static string GetFormatString(const Format format)
+   static const string& GetFormatString(const Format format)
    {
-      switch (format)
+      static const std::array<string, 11> FormatNames{ "BW"s, "BW FP32"s, "RGB"s, "RGBA"s, "sRGB"s, "sRGBA"s, "sRGB 565"s, "RGB FP16"s, "RGBA FP16"s, "RGB FP32"s, "RGBA FP32"s };
+      if (format >= BW && format <= RGBA_FP32)
+         return FormatNames[format];
+      else
       {
-      case BW: return "BW"s;
-      case BW_FP32: return "BW FP32"s;
-      case RGB: return "RGB"s;
-      case RGBA: return "RGBA"s;
-      case SRGB: return "sRGB"s;
-      case SRGBA: return "sRGBA"s;
-      case SRGB565: return "sRGB 565"s;
-      case RGB_FP16: return "RGB FP16"s;
-      case RGBA_FP16: return "RGBA FP16"s;
-      case RGB_FP32: return "RGB FP32"s;
-      case RGBA_FP32: return "RGBA FP32"s;
-      default: assert(false); return "Invalid"s;
+         assert(false);
+         static const string invalid = "Invalid"s;
+         return invalid;
       }
    }
 
@@ -96,7 +90,7 @@ public:
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
-   unsigned int pitch() const; // pitch in bytes
+   unsigned int pitch() const; // pitch in bytes = m_width * bytes_per_pixel, no padding/alignment
    void* data()                { return m_data; }
    const void* datac() const   { return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
@@ -206,6 +200,9 @@ private:
 //
 // Helper functions
 //
+
+// Copy and convert from BGRA to RGBA (=swap R and B channels), optionally overwriting alpha (forced to 0xFF if opaque=true).
+// Source and destination buffers must be 4 bytes per pixel
 template<bool opaque>
 inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned int* const __restrict src, const size_t size)
 {
@@ -250,6 +247,140 @@ inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned in
     }
 }
 
+// Copy and convert from RGBA to RGB, optionally swapping R and B channels (bgr=true).
+// Source must be 4, and destination buffer 3 bytes per pixel
+template<bool bgr>
+inline void copy_rgba_rgb(unsigned char* const __restrict dst, const unsigned int* const __restrict src, const size_t size)
+{
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
+    static int ssse3_supported = -1;
+    if (ssse3_supported == -1)
+    {
+       int cpuInfo[4];
+       __cpuid(cpuInfo, 1);
+       ssse3_supported = (cpuInfo[2] & (1 << 9));
+    }
+#else
+    constexpr bool ssse3_supported = true;
+#endif
+#endif
+
+    size_t o = 0;
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+    if (ssse3_supported)
+    {
+       // align output writes
+       if (!bgr)
+       {
+          for (; ((reinterpret_cast<size_t>(dst + o*3) & 15) != 0) && o < size; ++o)
+          {
+             const unsigned int rgba = src[o];
+             dst[o*3    ] = rgba & 0xFF;
+             dst[o*3 + 1] = (rgba >> 8) & 0xFF;
+             dst[o*3 + 2] = (rgba >> 16) & 0xFF;
+          }
+       }
+       else
+          for (; ((reinterpret_cast<size_t>(dst + o*3) & 15) != 0) && o < size; ++o)
+          {
+             const unsigned int rgba = src[o];
+             dst[o*3    ] = (rgba >> 16) & 0xFF;
+             dst[o*3 + 1] = (rgba >> 8) & 0xFF;
+             dst[o*3 + 2] = rgba & 0xFF;
+          }
+
+       // Shuffle masks to extract RGB from RGBA (discard alpha channel)
+       const __m128i mask0a = bgr ? _mm_setr_epi8(2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12, -1, -1, -1, -1) : _mm_setr_epi8(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, -1, -1, -1, -1);
+       const __m128i mask0b = bgr ? _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, 1, 0, 6) : _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 4);
+       const __m128i mask1a = bgr ? _mm_setr_epi8(5, 4, 10, 9, 8, 14, 13, 12, -1, -1, -1, -1, -1, -1, -1, -1) : _mm_setr_epi8(5, 6, 8, 9, 10, 12, 13, 14, -1, -1, -1, -1, -1, -1, -1, -1);
+       const __m128i mask1b = bgr ? _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 2, 1, 0, 6, 5, 4, 10, 9) : _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9);
+       const __m128i mask2  = bgr ? _mm_setr_epi8(8, 14, 13, 12, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1) : _mm_setr_epi8(10, 12, 13, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+       const __m128i mask2b = bgr ? _mm_setr_epi8(-1, -1, -1, -1, 2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12) : _mm_setr_epi8(-1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14);
+
+       for (; o+15 < size; o+=16)
+       {
+          const __m128i c[4] = { 
+             _mm_loadu_si128((__m128i *)(src + o)), 
+             _mm_loadu_si128((__m128i *)(src + o + 4)), 
+             _mm_loadu_si128((__m128i *)(src + o + 8)), 
+             _mm_loadu_si128((__m128i *)(src + o + 12)) 
+          };
+          
+          _mm_store_si128((__m128i *)(dst + o*3     ), _mm_or_si128(_mm_shuffle_epi8(c[0], mask0a), _mm_shuffle_epi8(c[1], mask0b)));
+          _mm_store_si128((__m128i *)(dst + o*3 + 16), _mm_or_si128(_mm_shuffle_epi8(c[1], mask1a), _mm_shuffle_epi8(c[2], mask1b)));
+          _mm_store_si128((__m128i *)(dst + o*3 + 32), _mm_or_si128(_mm_shuffle_epi8(c[2], mask2),  _mm_shuffle_epi8(c[3], mask2b)));
+       }
+    }
+    else
+#endif
+    {
+       for (; o+3 < size; o+=4)
+       {
+          if (!bgr)
+          {
+             const unsigned int rgba0 = src[o];
+             dst[o*3     ] = rgba0 & 0xFF;
+             dst[o*3 +  1] = (rgba0 >> 8) & 0xFF;
+             dst[o*3 +  2] = (rgba0 >> 16) & 0xFF;
+             const unsigned int rgba1 = src[o + 1];
+             dst[o*3 +  3] = rgba1 & 0xFF;
+             dst[o*3 +  4] = (rgba1 >> 8) & 0xFF;
+             dst[o*3 +  5] = (rgba1 >> 16) & 0xFF;
+             const unsigned int rgba2 = src[o + 2];
+             dst[o*3 +  6] = rgba2 & 0xFF;
+             dst[o*3 +  7] = (rgba2 >> 8) & 0xFF;
+             dst[o*3 +  8] = (rgba2 >> 16) & 0xFF;
+             const unsigned int rgba3 = src[o + 3];
+             dst[o*3 +  9] = rgba3 & 0xFF;
+             dst[o*3 + 10] = (rgba3 >> 8) & 0xFF;
+             dst[o*3 + 11] = (rgba3 >> 16) & 0xFF;
+          }
+          else
+          {
+             const unsigned int rgba0 = src[o];
+             dst[o*3     ] = (rgba0 >> 16) & 0xFF;
+             dst[o*3 +  1] = (rgba0 >> 8) & 0xFF;
+             dst[o*3 +  2] = rgba0 & 0xFF;
+             const unsigned int rgba1 = src[o + 1];
+             dst[o*3 +  3] = (rgba1 >> 16) & 0xFF;
+             dst[o*3 +  4] = (rgba1 >> 8) & 0xFF;
+             dst[o*3 +  5] = rgba1 & 0xFF;
+             const unsigned int rgba2 = src[o + 2];
+             dst[o*3 +  6] = (rgba2 >> 16) & 0xFF;
+             dst[o*3 +  7] = (rgba2 >> 8) & 0xFF;
+             dst[o*3 +  8] = rgba2 & 0xFF;
+             const unsigned int rgba3 = src[o + 3];
+             dst[o*3 +  9] = (rgba3 >> 16) & 0xFF;
+             dst[o*3 + 10] = (rgba3 >> 8) & 0xFF;
+             dst[o*3 + 11] = rgba3 & 0xFF;
+          }
+       }
+    }
+
+    if (!bgr)
+    {
+       for (; o < size; ++o)
+       {
+          const unsigned int rgba = src[o];
+          dst[o*3    ] = rgba & 0xFF;
+          dst[o*3 + 1] = (rgba >> 8) & 0xFF;
+          dst[o*3 + 2] = (rgba >> 16) & 0xFF;
+       }
+    }
+    else
+       for (; o < size; ++o)
+       {
+          const unsigned int rgba = src[o];
+          dst[o*3    ] = (rgba >> 16) & 0xFF;
+          dst[o*3 + 1] = (rgba >> 8) & 0xFF;
+          dst[o*3 + 2] = rgba & 0xFF;
+       }
+}
+
+// Copy and convert from RGB to RGBA, optionally swapping R and B channels (bgr=true).
+// Source must be 3, and destination buffer 4 bytes per pixel
 template<bool bgr>
 inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
 {
@@ -334,7 +465,9 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
           dst[o] = (unsigned int)src[o*3 + 2] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3] << 16) | (255u << 24);
 }
 
-inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
+// Copy and convert from BGR to RGB (=swap R and B channels).
+// Source and destination buffers must be 3 bytes per pixel
+inline void copy_bgr_rgb(unsigned char *const __restrict dst, const unsigned char *const __restrict src, const size_t size)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
 #if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
@@ -388,6 +521,7 @@ inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned cha
     }
 }
 
+// Convert fp32 (4 bytes) to fp16 (2 bytes)
 inline void float2half(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
 {
     size_t o = 0;
@@ -441,7 +575,8 @@ inline void float2half(uint16_t* const __restrict dst, const float* const __rest
        dst[o] = float2half_noLUT(src[o]);
 }
 
-inline void float2half_noF16MaxInfNaN(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
+// Convert fp32 (4 bytes) to fp16 (2 bytes), with removed f16max/inf/nan handling (i.e. if this is sure to be NOT there in the input data)
+inline void float2half_noF16MaxInfNaN(uint16_t *const __restrict dst, const float *const __restrict src, const size_t size)
 {
     size_t o = 0;
 
@@ -481,7 +616,8 @@ inline void float2half_noF16MaxInfNaN(uint16_t* const __restrict dst, const floa
        dst[o] = float2half_noLUT(src[o]);
 }
 
-inline void float2half_pos_noF16MaxInfNaN(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
+// Convert fp32 (4 bytes) to fp16 (2 bytes), with removed signed/f16max/inf/nan handling (i.e. if this is sure to be NOT there in the input data)
+inline void float2half_pos_noF16MaxInfNaN(uint16_t *const __restrict dst, const float *const __restrict src, const size_t size)
 {
     size_t o = 0;
 
@@ -518,6 +654,7 @@ inline void float2half_pos_noF16MaxInfNaN(uint16_t* const __restrict dst, const 
        dst[o] = float2half_noLUT(src[o]);
 }
 
+// Find minimum and maximum in the fp32 input
 inline Vertex2D min_max(const float* const __restrict src, const size_t size)
 {
     Vertex2D minmax(FLT_MAX,-FLT_MAX);

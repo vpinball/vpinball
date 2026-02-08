@@ -1797,15 +1797,12 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
       while (std::getline(glfxFile, line))
       {
          linenumber++;
-         if (line.compare(0, 4, "////") == 0) {
+         if (line.starts_with(0, 4, "////")) {
             string newMode = line.substr(4, line.length() - 4);
             if (newMode == "DEFINES") {
-               currentElement.append("#define GLSL\n\n"s);
-               if (UseGeometryShader())
-                  currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
-               else
-                  currentElement.append("#define USE_GEOMETRY_SHADER 0\n"s);
-               currentElement.append(m_isStereo ? "#define N_EYES 2\n"s : "#define N_EYES 1\n"s);
+               currentElement += "#define GLSL\n\n";
+               currentElement += UseGeometryShader() ? "#define USE_GEOMETRY_SHADER 1\n" : "#define USE_GEOMETRY_SHADER 0\n";
+               currentElement += m_isStereo ? "#define N_EYES 2\n" : "#define N_EYES 1\n";
             } else if (newMode != currentMode) {
                values[currentMode] = currentElement;
                currentElemIt = values.find(newMode);
@@ -1813,7 +1810,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
                currentMode = newMode;
             }
          }
-         else if (line.compare(0, 9, "#include ") == 0) {
+         else if (line.starts_with("#include ")) {
             const size_t start = line.find('"', 8);
             const size_t end = line.find('"', start + 1);
             values[currentMode] = currentElement;
@@ -1857,17 +1854,20 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
    int result;
    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
-   if (result == FALSE)
+   if (result == GL_FALSE)
    {
-      GLint maxLength;
+      GLint maxLength = 0;
       glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
-      char* errorText = (char *)malloc(maxLength);
-
-      glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorText);
+      string errorText;
+      if (maxLength > 1)
+      {
+         errorText.resize(maxLength);
+         glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorText.data());
+         errorText.pop_back(); // remove null terminator
+      }
       PLOGE << shaderCodeName << ": Vertex Shader compilation failed with: " << errorText;
       string e = "Fatal Error: Vertex Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
-      free(errorText);
-      ReportError(e.c_str(), -1, __FILE__, __LINE__);
+      ReportError(e, -1, __FILE__, __LINE__);
       success = false;
 
       PLOGE << "vertex:";
@@ -1887,17 +1887,20 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       glCompileShader(geometryShader);
 
       glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &result);
-      if (result == FALSE)
+      if (result == GL_FALSE)
       {
-         GLint maxLength;
+         GLint maxLength = 0;
          glGetShaderiv(geometryShader, GL_INFO_LOG_LENGTH, &maxLength);
-         char* errorText = (char *)malloc(maxLength);
-
-         glGetShaderInfoLog(geometryShader, maxLength, &maxLength, errorText);
+         string errorText;
+         if (maxLength > 1)
+         {
+            errorText.resize(maxLength);
+            glGetShaderInfoLog(geometryShader, maxLength, &maxLength, errorText.data());
+            errorText.pop_back(); // remove null terminator
+         }
          PLOGE << shaderCodeName << ": Geometry Shader compilation failed with: " << errorText;
          string e = "Fatal Error: Geometry Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
-         ReportError(e.c_str(), -1, __FILE__, __LINE__);
-         free(errorText);
+         ReportError(e, -1, __FILE__, __LINE__);
          success = false;
 
          PLOGE << "geometry:";
@@ -1918,17 +1921,20 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       glCompileShader(fragmentShader);
 
       glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-      if (result == FALSE)
+      if (result == GL_FALSE)
       {
-         GLint maxLength;
+         GLint maxLength = 0;
          glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
-         char* errorText = (char *)malloc(maxLength);
-
-         glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorText);
+         string errorText;
+         if (maxLength > 1)
+         {
+            errorText.resize(maxLength);
+            glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorText.data());
+            errorText.pop_back(); // remove null terminator
+         }
          PLOGE << shaderCodeName << ": Fragment Shader compilation failed with: " << errorText;
          string e = "Fatal Error: Fragment Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
-         ReportError(e.c_str(), -1, __FILE__, __LINE__);
-         free(errorText);
+         ReportError(e, -1, __FILE__, __LINE__);
          success = false;
 
          PLOGE << "fragment:";
@@ -1956,17 +1962,18 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       glGetProgramiv(shaderprogram, GL_LINK_STATUS, (int *)&result);
       if (result == GL_FALSE)
       {
-         GLint maxLength;
+         GLint maxLength = 0;
          glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
-
-         /* The maxLength includes the NULL character */
-         char* errorText = (char *)malloc(maxLength);
-
-         /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
-         glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, errorText);
+         string errorText;
+         if (maxLength > 1)
+         {
+            errorText.resize(maxLength);
+            /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
+            glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, errorText.data());
+            errorText.pop_back(); // remove null terminator
+         }
          PLOGE << shaderCodeName << ": Linking Shader failed with: " << errorText;
          ReportError(errorText, -1, __FILE__, __LINE__);
-         free(errorText);
          success = false;
 
 #ifdef __STANDALONE__
@@ -2144,7 +2151,7 @@ string Shader::PreprocessGLShader(const string& shaderCode) {
 
    for (string line; std::getline(iss, line); )
    {
-      if (line.compare(0, 9, "#version ") == 0) {
+      if (line.starts_with("#version ")) {
          #if defined(__OPENGLES__)
             header += "#version 300 es\n";
             header += "#define SHADER_GLES30\n";
@@ -2158,7 +2165,7 @@ string Shader::PreprocessGLShader(const string& shaderCode) {
             header += "#define SHADER_STANDALONE\n";
          #endif
       }
-      else if (line.compare(0, 11, "#extension ") == 0)
+      else if (line.starts_with("#extension "))
          extensions += line + '\n';
       else
          code += line + '\n';
@@ -2199,23 +2206,20 @@ void Shader::Load(const std::string& name)
       m_hasError = true;
       PLOGE << "Parsing failed";
       string e = "Fatal Error: Shader parsing of " + m_shaderCodeName + " failed!";
-      ReportError(e.c_str(), -1, __FILE__, __LINE__);
+      ReportError(e, -1, __FILE__, __LINE__);
       return;
    }
    ankerl::unordered_dense::map<string, string>::iterator it = values.find("GLOBAL"s);
    string global = (it != values.end()) ? it->second : string();
 
    it = values.find("VERTEX"s);
-   string vertex = global;
-   vertex.append((it != values.end()) ? it->second : string());
+   string vertex = global + (it != values.end()) ? it->second : string();
 
    it = values.find("GEOMETRY"s);
-   string geometry = global;
-   geometry.append((it != values.end()) ? it->second : string());
+   string geometry = global + (it != values.end()) ? it->second : string();
 
    it = values.find("FRAGMENT"s);
-   string fragment = global;
-   fragment.append((it != values.end()) ? it->second : string());
+   string fragment = global + (it != values.end()) ? it->second : string();
 
    it = values.find("TECHNIQUES"s);
    std::stringstream techniques((it != values.end()) ? it->second : string());
@@ -2223,8 +2227,8 @@ void Shader::Load(const std::string& name)
    {
       string _technique;
       int tecCount = 0;
-      while (std::getline(techniques, _technique, '\n')) {//Parse Technique e.g. basic_with_texture:P0:vs_main():gs_optional_main():ps_main_texture()
-         if ((_technique.length() > 0) && (_technique.compare(0, 2, "//") != 0))//Skip empty lines and comments
+      while (std::getline(techniques, _technique, '\n')) { //Parse Technique e.g. basic_with_texture:P0:vs_main():gs_optional_main():ps_main_texture()
+         if (!_technique.empty() && !_technique.starts_with("//")) //Skip empty lines and comments
          {
             std::stringstream elements(_technique);
             int elem = 0;
@@ -2271,7 +2275,7 @@ void Shader::Load(const std::string& name)
                {
                   m_hasError = true;
                   string e = "Fatal Error: Compilation failed for technique " + shaderTechniqueNames[technique].name + " of " + m_shaderCodeName + '!';
-                  ReportError(e.c_str(), -1, __FILE__, __LINE__);
+                  ReportError(e, -1, __FILE__, __LINE__);
                   return;
                }
             }
@@ -2283,7 +2287,7 @@ void Shader::Load(const std::string& name)
       m_hasError = true;
       PLOGE << "No techniques found.";
       string e = "Fatal Error: No shader techniques found in " + m_shaderCodeName + '!';
-      ReportError(e.c_str(), -1, __FILE__, __LINE__);
+      ReportError(e, -1, __FILE__, __LINE__);
       return;
    }
 }
@@ -2409,7 +2413,7 @@ void Shader::Load()
          bool addToUniformList = true;
          if (type == ShaderUniformType::SUT_Sampler)
          {
-            const string name = "Texture"s.append(std::to_string(ShaderUniform::coreUniforms[uniformIndex].tex_unit));
+            const string name = "Texture" + std::to_string(ShaderUniform::coreUniforms[uniformIndex].tex_unit);
             m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, name.c_str());
             if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).starts_with("TEXUNIT"s))
             {

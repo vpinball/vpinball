@@ -76,11 +76,11 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(m_width, m_height, (texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(),
       (texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap) ? textureUsage::AUTOMIPMAP : 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::DEFAULT, &m_texture, nullptr);
    if (FAILED(hr))
-      ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
+      ReportError("Fatal Error: out of VRAM!"s, hr, __FILE__, __LINE__);
 
    hr = m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture);
    if (FAILED(hr))
-      ReportError("Fatal Error: uploading texture failed!", hr, __FILE__, __LINE__);
+      ReportError("Fatal Error: uploading texture failed!"s, hr, __FILE__, __LINE__);
 
    SAFE_RELEASE(sysTex);
 
@@ -652,7 +652,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
       texwidth, texheight, (texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap) ? 1 : 0, 0, (D3DFORMAT)texformat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
    if (FAILED(hr))
    {
-      ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+      ReportError("Fatal Error: unable to create texture!"s, hr, __FILE__, __LINE__);
    }
 
    D3DLOCKED_RECT locked;
