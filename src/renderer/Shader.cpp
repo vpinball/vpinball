@@ -2213,13 +2213,13 @@ void Shader::Load(const std::string& name)
    string global = (it != values.end()) ? it->second : string();
 
    it = values.find("VERTEX"s);
-   string vertex = global + (it != values.end()) ? it->second : string();
+   string vertex = global + ((it != values.end()) ? it->second : string());
 
    it = values.find("GEOMETRY"s);
-   string geometry = global + (it != values.end()) ? it->second : string();
+   string geometry = global + ((it != values.end()) ? it->second : string());
 
    it = values.find("FRAGMENT"s);
-   string fragment = global + (it != values.end()) ? it->second : string();
+   string fragment = global + ((it != values.end()) ? it->second : string());
 
    it = values.find("TECHNIQUES"s);
    std::stringstream techniques((it != values.end()) ? it->second : string());
