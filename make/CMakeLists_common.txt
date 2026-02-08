@@ -41,8 +41,8 @@ set(VPX_SOURCES
    src/core/pinundo.h
    src/core/main.cpp
    src/core/main.h
-   src/core/vpinball.cpp
-   src/core/vpinball_h.h
+   src/ui/win/WinEditor.cpp
+   src/ui/win/WinEditor.h
    src/core/player.cpp
    src/core/player.h
    src/core/PropertyDef.h
