@@ -97,6 +97,8 @@ public:
    float ConvertToUnit(const float value) const;
    void SetPropSel(VectorProtected<ISelect> &pvsel);
 
+   void RenameEditable(IEditable* editable, const string& newName);
+
    void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 

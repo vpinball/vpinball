@@ -479,6 +479,44 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 #endif
 }
 
+void VPinball::RenameEditable(IEditable *editable, const string &name)
+{
+   const string oldName = MakeString(editable->GetScriptable()->m_wzName);
+   editable->SetName(name);
+
+#ifndef __STANDALONE__
+   PinTable *const pt = editable->GetPTable();
+   g_pvp->SetPropSel(pt->m_vmultisel);
+   g_pvp->GetLayersListDialog()->Update();
+
+   if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
+   {
+      for (size_t i = 0; i < pt->m_vedit.size(); i++)
+      {
+         IEditable *const pedit = pt->m_vedit[i];
+         if (pedit->GetItemType() == ItemTypeEnum::eItemBumper && ((Bumper *)pedit)->m_d.m_szSurface == oldName)
+            ((Bumper *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemDecal && ((Decal *)pedit)->m_d.m_szSurface == oldName)
+            ((Decal *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemFlipper && ((Flipper *)pedit)->m_d.m_szSurface == oldName)
+            ((Flipper *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemGate && ((Gate *)pedit)->m_d.m_szSurface == oldName)
+            ((Gate *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemKicker && ((Kicker *)pedit)->m_d.m_szSurface == oldName)
+            ((Kicker *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemLight && ((Light *)pedit)->m_d.m_szSurface == oldName)
+            ((Light *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemPlunger && ((Plunger *)pedit)->m_d.m_szSurface == oldName)
+            ((Plunger *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemSpinner && ((Spinner *)pedit)->m_d.m_szSurface == oldName)
+            ((Spinner *)pedit)->m_d.m_szSurface = name;
+         else if (pedit->GetItemType() == ItemTypeEnum::eItemTrigger && ((Trigger *)pedit)->m_d.m_szSurface == oldName)
+            ((Trigger *)pedit)->m_d.m_szSurface = name;
+      }
+   }
+#endif
+}
+
 CMenu VPinball::GetMainMenu(int id)
 {
 #ifndef __STANDALONE__
