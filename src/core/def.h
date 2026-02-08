@@ -619,8 +619,6 @@ string convert_decimal_point_and_trim(string sz, const bool use_locale);
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
 
-HRESULT OpenURL(const string& szURL);
-
 string SizeToReadable(const size_t bytes);
 
 WCHAR* MakeWide(const char* const sz);

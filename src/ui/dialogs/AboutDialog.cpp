@@ -68,11 +68,11 @@ BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_TRANSSITE:
       {
          if (LOWORD(wParam) == IDC_WEBSITE)
-            /*const HRESULT hr =*/ OpenURL("https://www.vpforums.org"s);
+            SDL_OpenURL("https://www.vpforums.org");
          else
          {
             m_urlString = GetDlgItem(IDC_TRANSWEBSITE).GetWindowText().GetString();
-            /*const HRESULT hr =*/ OpenURL(m_urlString);
+            SDL_OpenURL(m_urlString.c_str());
          }
          return TRUE;
       }
