@@ -314,39 +314,6 @@ char *MakeChar(const WCHAR* const wz)
    return szT;
 }
 
-HRESULT OpenURL(const string& szURL)
-{
-#ifdef _WIN32
-   IUniformResourceLocator* pURL;
-
-   HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, nullptr, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
-   if (FAILED(hres))
-   {
-      return hres;
-   }
-
-   hres = pURL->SetURL(szURL.c_str(), IURL_SETURL_FL_GUESS_PROTOCOL);
-
-   if (FAILED(hres))
-   {
-      pURL->Release();
-      return hres;
-   }
-
-   //Open the URL by calling InvokeCommand
-   URLINVOKECOMMANDINFO ivci;
-   ivci.dwcbSize = sizeof(URLINVOKECOMMANDINFO);
-   ivci.dwFlags = IURL_INVOKECOMMAND_FL_ALLOW_UI;
-   ivci.hwndParent = g_pvp->GetHwnd();
-   ivci.pcszVerb = "open";
-   hres = pURL->InvokeCommand(&ivci);
-   pURL->Release();
-   return hres;
-#else
-   return 0L;
-#endif
-}
-
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {
