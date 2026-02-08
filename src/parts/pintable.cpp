@@ -759,7 +759,7 @@ HRESULT PinTable::Save(const bool saveAs)
          if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
             STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
          {
-            m_tableEditor->MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
+            ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
             return hr;
          }
       }
@@ -782,7 +782,7 @@ HRESULT PinTable::Save(const bool saveAs)
       if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
          STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
       {
-         m_tableEditor->MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
+         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
          return hr;
       }
    }
@@ -1454,7 +1454,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    {
       char msg[MAXSTRING+32];
       sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.c_str());
-      m_vpinball->MessageBox(msg, "Load Error", 0);
+      ShowError(msg);
       return hr;
    }
 
@@ -2450,10 +2450,10 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
       if (pps->SaveToFile(filename))
          return true;
 #ifndef __STANDALONE__
-      m_tableEditor->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
+      ShowError("Can not Open/Create Sound file!");
    }
    else
-      m_tableEditor->MessageBox("File extension does not match, will not convert sound to other format!", "Visual Pinball", MB_ICONERROR);
+      ShowError("File extension does not match, will not convert sound to other format!");
 #else
    }
 #endif
@@ -3712,7 +3712,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
       Translate(TransformPoint(x, y) - GetCenter());
 
    if (error)
-      m_tableEditor->MessageBox(LocalString(IDS_NOPASTEINVIEW).m_szbuffer, "Visual Pinball", 0);
+      ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
 #endif
 }
 

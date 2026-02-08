@@ -184,6 +184,9 @@ void CaptureAttractCommand::Execute()
          << "loop truncation";
    CComObject<PinTable>* table = LoadTable();
    auto player = std::make_unique<Player>(table, Player::PlayMode::CaptureAttract);
+   player->m_nFrameToCapture = m_nFrames;
+   player->m_frameCaptureFPS = m_framesPerSecond;
+   player->m_cutCaptureToLoop = m_cutToLoop;
    player->GameLoop();
    player = nullptr;
    table->Release();
@@ -198,7 +201,9 @@ ValidateTournamentCommand::ValidateTournamentCommand(const string& tableFilename
 
 void ValidateTournamentCommand::Execute()
 {
-   VPX::TournamentFile::GenerateImageFromTournamentFile(m_tableFilename, m_tournamentFilename);
+   CComObject<PinTable>* table = LoadTable();
+   VPX::TournamentFile::GenerateImageFromTournamentFile(table, m_tournamentFilename);
+   table->Release();
 }
 
 

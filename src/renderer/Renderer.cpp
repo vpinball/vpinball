@@ -900,7 +900,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
             sum[2] = gammaApprox(sum[2]);
             if (
                 ((uint32_t*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
-                g_pvp->MessageBox("Not OK", "Not OK", MB_OK);
+                ShowError("Not OK");
          }
       }
 

@@ -194,13 +194,16 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 
 #define CCO(x) CComObject<x>
 
+void ShowError(const char* const sz);
+inline void ShowError(const string& sz) { ShowError(sz.c_str()); }
+
 #define SAFE_VECTOR_DELETE(p)   { delete [] (p);  (p)=nullptr; }
 #define SAFE_DELETE(p)          { delete (p);     (p)=nullptr; }
 
 inline void ref_count_trigger(const ULONG r, const char *file, const int line) // helper for debugging
 {
 #ifdef DEBUG_REFCOUNT_TRIGGER
-   /*g_pvp->*/MessageBox(nullptr, ("Ref Count: "+std::to_string(r)+" at "+file+':'+std::to_string(line)).c_str(), "Error", MB_OK | MB_ICONEXCLAMATION);
+   ShowError(("Ref Count: "+std::to_string(r)+" at "+file+':'+std::to_string(line)).c_str());
 #endif
 }
 

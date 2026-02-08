@@ -97,6 +97,11 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const string& filename,
    return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
 }
 
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+{
+   return CreateFromFile(filename.string(), maxTexDimension, resizeOnLowMem);
+}
+
 std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    std::shared_ptr<BaseTexture> tex;

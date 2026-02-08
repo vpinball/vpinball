@@ -30,7 +30,7 @@
 #endif
 
 #if defined(ENABLE_DX9)
-#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); g_pvp->MessageBox(ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
+#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); ShowError(ss); } }
 #endif
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line);

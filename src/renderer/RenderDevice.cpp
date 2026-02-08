@@ -1458,7 +1458,7 @@ RenderDevice::~RenderDevice()
    HRESULT hr = m_pD3DDevice->Reset(&pp);
    if (FAILED(hr))
    {
-      g_pvp->MessageBox("WARNING! Direct3D resource leak detected!", "Visual Pinball", MB_ICONWARNING);
+      ShowError("WARNING! Direct3D resource leak detected!");
    }
    #endif
 

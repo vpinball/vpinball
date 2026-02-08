@@ -195,14 +195,14 @@ VPApp::VPApp()
                hr = RegisterTypeLibForUser(ptl, (OLECHAR*)wFileName.c_str(), nullptr);
                if (!SUCCEEDED(hr))
                {
-                  MessageBox(nullptr, "Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
+                  ShowError("Could not register type library. Try running Visual Pinball as administrator.");
                }
             }
             ptl->Release();
          }
          else
          {
-            MessageBox(nullptr, "Could not load type library.", "Error", MB_ICONERROR);
+            ShowError("Could not load type library.");
          }
       }
 

@@ -313,9 +313,12 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
       {
       case TableSubFolder::Cache:
          // Cache is stored inside preference directory with a sub folder per table title
-         path = GetAppPath(FileLocator::AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
-         if (searchForWriting && !DirExists(path))
-            std::filesystem::create_directories(path);
+         if (table != nullptr)
+         {
+            path = GetAppPath(FileLocator::AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
+            if (searchForWriting && !DirExists(path))
+               std::filesystem::create_directories(path);
+         }
          break;
 
       case TableSubFolder::User:
@@ -324,7 +327,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          if (searchForWriting && !DirExists(path))
          {
             std::filesystem::create_directories(path);
-            PLOGI << "User folder was created for table '" << table->m_filename << "': " << path;
+            PLOGI << "User folder was created for table '" << (table ? table->m_filename : "null table") << "': " << path;
          }
          break;
 

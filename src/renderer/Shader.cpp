@@ -718,7 +718,7 @@ void Shader::Begin()
       const HRESULT hrTmp = m_shader->SetTechnique((D3DXHANDLE)stn);
       if (FAILED(hrTmp))
       {
-         MessageBox(NULL, stn, stn, MB_OK);
+         ShowError(stn);
          ReportFatalError(hrTmp, __FILE__, __LINE__);
       }
       #endif
@@ -2324,10 +2324,10 @@ void Shader::Load()
       if (pBufferErrors)
       {
          const LPVOID pCompileErrors = pBufferErrors->GetBufferPointer();
-         g_pvp->MessageBox((const char*)pCompileErrors, "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+         ShowError((const char*)pCompileErrors);
       }
       else
-         g_pvp->MessageBox("Unknown Error", "Compile Error", MB_OK | MB_ICONEXCLAMATION);
+         ShowError("Unknown Compile Error");
       m_hasError = true;
       return;
    }

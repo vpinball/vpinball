@@ -87,9 +87,9 @@ void PinUndo::Undo(bool discard)
    while (m_cUndoLayer > 0)
       EndUndo();
 
-   if (g_pplayer == nullptr && m_undoRecords.size() == m_cleanpoint)
+   if (g_pplayer == nullptr && g_pvp && m_undoRecords.size() == m_cleanpoint)
    {
-      const int result = m_table->m_tableEditor->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
+      const int result = g_pvp->MessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer, "Visual Pinball", MB_YESNO);
       if (result != IDYES)
          return;
    }
