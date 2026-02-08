@@ -1524,9 +1524,9 @@ public:
       m_player->FireTimers(-2);
       
       // Fast forward to capture start time (startup +30s)
-      while (m_player->m_physics->GetCurrentTime() < m_player->m_physics->GetStartTime() + 30ull * 1000000)
+      while (m_player->m_physics->GetCurrentTime() < m_player->m_physics->GetStartTime() + 30u * 1000000)
       {
-         m_captureTime = min(m_captureTime + 1000000 / 120, m_player->m_physics->GetStartTime() + 30ull * 1000000 + PHYSICS_STEPTIME);
+         m_captureTime = min(m_captureTime + 1000000 / 120, m_player->m_physics->GetStartTime() + 30u * 1000000 + PHYSICS_STEPTIME);
          m_player->m_overall_frames++;
          const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
          m_player->m_last_frame_time_msec = m_player->m_time_msec;
