@@ -213,9 +213,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/TournamentFile.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -550,6 +547,9 @@
       <Filter>ui\win</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp">
       <Filter>ui\win</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp">
@@ -951,9 +951,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/player.h">
@@ -1431,6 +1428,9 @@
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h">
       <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h">

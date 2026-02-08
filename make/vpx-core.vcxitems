@@ -817,7 +817,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.cpp" />
@@ -946,6 +945,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/Debugger.cpp" />
@@ -1567,7 +1567,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/main.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/stdafx.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/vpversion.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/player.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/PropertyDef.h" />
@@ -1743,6 +1742,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/codeview.h" />
