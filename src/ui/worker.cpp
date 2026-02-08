@@ -15,8 +15,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
       eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
       //eiInterrupt.scode = E_NOTIMPL;
       eiInterrupt.wCode = 2345;
-      /*const HRESULT hr =*/ g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/,
-         &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+      g_pplayer->m_scriptInterpreter->Stop(true);
    }
    lasthangsnoopvalue = newvalue;
 }

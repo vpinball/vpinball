@@ -13,6 +13,7 @@
 #include "plugins/VPXPlugin.h"
 #include "plugins/ResURIResolver.h"
 #include "audio/AudioPlayer.h"
+#include "core/ScriptInterpreter.h"
 
 class VRDevice;
 
@@ -335,6 +336,9 @@ public:
    int m_nFrameToCapture = 0;
    int m_frameCaptureFPS = 0;
    bool m_cutCaptureToLoop = true;
+
+   CComObject<ScriptInterpreter>* m_scriptInterpreter = nullptr;
+   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    ResURIResolver m_resURIResolver;
 

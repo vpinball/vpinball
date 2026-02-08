@@ -198,7 +198,8 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
                     ::SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
                 }
 
-                g_pplayer->m_ptable->m_pcv->EvaluateScriptStatement(szText);
+                if (g_pplayer->m_scriptInterpreter)
+                  g_pplayer->m_scriptInterpreter->Evaluate(szText, true);
                 delete[] szText;
             }
             break;

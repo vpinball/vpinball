@@ -41,8 +41,7 @@ set(VPX_SOURCES
    src/core/pinundo.h
    src/core/main.cpp
    src/core/main.h
-   src/ui/win/WinEditor.cpp
-   src/ui/win/WinEditor.h
+   src/core/Scriptable.h
    src/core/player.cpp
    src/core/player.h
    src/core/PropertyDef.h
@@ -52,6 +51,8 @@ set(VPX_SOURCES
    src/core/LayeredINIPropertyStore.cpp
    src/core/ScriptGlobalTable.h
    src/core/ScriptGlobalTable.cpp
+   src/core/ScriptInterpreter.h
+   src/core/ScriptInterpreter.cpp
    src/core/Settings.cpp
    src/core/Settings.h
    src/core/TableDB.cpp
@@ -125,6 +126,8 @@ set(VPX_SOURCES
    src/parts/ball.h
    src/parts/bumper.cpp
    src/parts/bumper.h
+   src/parts/Collection.cpp
+   src/parts/Collection.h
    src/parts/decal.cpp
    src/parts/decal.h
    src/parts/dispreel.cpp
@@ -354,6 +357,8 @@ set(VPX_SOURCES
    src/ui/win/PinTableMDI.h
    src/ui/win/PinTableWnd.cpp
    src/ui/win/PinTableWnd.h
+   src/ui/win/WinEditor.cpp
+   src/ui/win/WinEditor.h
 
    src/utils/bulb.cpp
    src/utils/bulb.h

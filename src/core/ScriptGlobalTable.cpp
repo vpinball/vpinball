@@ -473,10 +473,10 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
 
 STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
 {
-   if (!g_pplayer)
+   if (!g_pplayer || g_pplayer->m_scriptInterpreter == nullptr)
       return E_FAIL;
 
-   m_pt->m_pcv->AddTemporaryItem(Name, pdisp);
+   g_pplayer->m_scriptInterpreter->AddItem(Name, pdisp, false);
 
    return S_OK;
 }

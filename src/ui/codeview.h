@@ -1,14 +1,15 @@
 #pragma once
 
 #include <commdlg.h>
-#include <activscp.h>
-#include <activdbg.h>
 #include <atlcom.h>
 #include "codeviewedit.h"
+
 #ifndef __STANDALONE__
 #include "ui/dialogs/ScriptErrorDialog.h"
 #include "scintilla.h"
 #endif
+
+#include "core/ScriptInterpreter.h"
 
 #ifndef OVERRIDE
 #ifndef __STANDALONE__
@@ -20,236 +21,34 @@
 
 #define MAX_FIND_LENGTH 81 // from MS docs: The buffer should be at least 80 characters long (for find/replace)
 
-enum SecurityLevelEnum
-{
-   eSecurityNone = 0,
-   eSecurityWarnOnUnsafeType = 1,
-   eSecurityWarnOnType = 2,
-   eSecurityWarnOnAll = 3,
-   eSecurityNoControls = 4
-};
-
-class IScriptable
+class CodeViewer : public CWnd
 {
 public:
-   IScriptable() { m_wzName[0] = '\0'; }
+   class IScriptableHost
+   {
+   public:
+      virtual void SelectItem(IScriptable *piscript) = 0;
+      virtual void SetDirtyScript(SaveDirtyState sds) = 0;
+      virtual void DoCodeViewCommand(int command) = 0;
+   };
 
-   STDMETHOD(get_Name)(BSTR *pVal) = 0;       // fails for Decals, returns m_wzName or something custom for everything else
-   virtual const WCHAR *get_Name() const = 0; // dto (and returns "Decal" for Decals, so always non-nullptr returned), but without going through BSTR conversion (necessary for COM)
-   virtual IDispatch *GetDispatch() = 0;
-   virtual const IDispatch *GetDispatch() const = 0;
-   virtual ISelect *GetISelect() = 0;
-   virtual const ISelect *GetISelect() const = 0;
-
-   WCHAR m_wzName[MAXNAMEBUFFER];
-};
-
-class CodeViewer;
-
-#ifdef __STANDALONE__
-class IProcessDebugManager { };
-#endif
-
-class DebuggerModule :
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>,
-   public IScriptable
-{
-#ifdef __STANDALONE__
-public:
-   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
-   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-#endif
-   BEGIN_COM_MAP(DebuggerModule)
-      COM_INTERFACE_ENTRY(IVPDebug)
-      COM_INTERFACE_ENTRY(IDispatch)
-   END_COM_MAP()
-
-   STDMETHOD(Print)(VARIANT *pvar) override;
-
-public:
-   void Init(CodeViewer * const pcv);
-
-   IDispatch *GetDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-
-   ISelect *GetISelect() final { return nullptr; }
-   const ISelect *GetISelect() const final { return nullptr; }
-
-   const WCHAR *get_Name() const final { return L"Debug"; }
-   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(L"Debug"); return S_OK; }
-
-   CodeViewer *m_pcv;
-};
-
-class IScriptableHost
-{
-public:
-   virtual void SelectItem(IScriptable *piscript) = 0;
-   virtual void SetDirtyScript(SaveDirtyState sds) = 0;
-   virtual void DoCodeViewCommand(int command) = 0;
-};
-
-class CodeViewDispatch final
-{
-public:
-   CodeViewDispatch() {}
-   ~CodeViewDispatch() {}
-
-   wstring m_wName;
-   IUnknown *m_punk = nullptr;
-   IDispatch *m_pdisp = nullptr;
-   bool m_global = false;
-};
-
-class CodeViewer :
-   public CWnd,
-   public CComObjectRoot,
-   //public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VPinballLib>,
-   //public CComCoClass<CodeViewer,&CLSID_DragPoint>,
-   //public CComObjectRootEx<CComSingleThreadModel>,
-   public IActiveScriptSite,
-   public IActiveScriptSiteDebug,
-   public IActiveScriptSiteWindow,
-   public IInternetHostSecurityManager,
-   public IServiceProvider
-{
-public:
-   CodeViewer() : m_haccel(nullptr), m_pProcessDebugManager(nullptr), m_parentLevel(0), m_lastErrorWidgetVisible(false), m_suppressErrorDialogs(false) {}
+   CodeViewer(IScriptableHost *psh);
    ~CodeViewer() OVERRIDE;
 
-   void Init(IScriptableHost *psh);
    void SetVisible(const bool visible);
 
    void SetEnabled(const bool enabled);
 
    void SetClean(const SaveDirtyState sds);
 
-   // Script Class
-   STDMETHOD(CleanUpScriptEngine)();
-   STDMETHOD(InitializeScriptEngine)();
-
    HRESULT AddItem(IScriptable * const piscript, const bool global);
    void RemoveItem(IScriptable * const piscript);
    HRESULT ReplaceName(IScriptable * const piscript, const wstring& wzNew);
    void SelectItem(IScriptable * const piscript);
 
-   void Compile(const bool message);
-   void Start();
+   void Compile(PinTable *table, const bool message);
 
-   void EndSession();
-
-   HRESULT AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp);
-
-   STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask, IUnknown **ppiunkItem, ITypeInfo **ppti) override;
-
-   STDMETHOD(OnScriptError)(IActiveScriptError *pscripterror) override;
-
-   STDMETHOD(GetLCID)(LCID *plcid) override
-   {
-      *plcid = 9; return S_OK;
-   }
-
-   STDMETHOD(GetDocVersionString)(BSTR *pbstrVersion) override
-   {
-      *pbstrVersion = SysAllocString(L""); return S_OK;
-   }
-
-   STDMETHOD(OnScriptTerminate)(const VARIANT *pvr, const EXCEPINFO *pei) override
-   {
-      return S_OK;
-   }
-
-   STDMETHOD(OnStateChange)(SCRIPTSTATE ssScriptState) override
-   {
-      return S_OK;
-   }
-
-   STDMETHOD(OnEnterScript)() override;
-
-   STDMETHODIMP OnLeaveScript() override;
-
-   STDMETHODIMP GetWindow(HWND *phwnd) override
-   {
-#ifndef __STANDALONE__
-      *phwnd = GetDesktopWindow(); return S_OK; //!! ?
-#else
-      return S_OK;
-#endif
-   }
-
-   STDMETHODIMP EnableModeless(BOOL) override
-   {
-      return S_OK;
-   }
-
-   // IActiveScriptSiteDebug interface
-
-   STDMETHOD(GetDocumentContextFromPosition)(
-       DWORD_PTR dwSourceContext,
-       ULONG uCharacterOffset,
-       ULONG uNumChars,
-       IDebugDocumentContext** ppsc
-       ) override;
-
-   STDMETHOD(GetApplication)(
-       IDebugApplication** ppda
-       ) override;
-
-   STDMETHOD(GetRootApplicationNode)(
-       IDebugApplicationNode** ppdanRoot
-       ) override;
-
-   STDMETHOD(OnScriptErrorDebug)(
-       IActiveScriptErrorDebug* pscripterror,
-       BOOL* pfEnterDebugger,
-       BOOL* pfCallOnScriptErrorWhenContinuing
-       ) override;
-
-   // Internet Security interface
-
-   HRESULT STDMETHODCALLTYPE GetSecurityId(
-      /* [size_is][out] */ BYTE *pbSecurityId,
-      /* [out][in] */ DWORD *pcbSecurityId,
-      /* [in] */ DWORD_PTR dwReserved) override;
-
-   HRESULT STDMETHODCALLTYPE ProcessUrlAction(
-      /* [in] */ DWORD dwAction,
-      /* [size_is][out] */ BYTE __RPC_FAR *pPolicy,
-      /* [in] */ DWORD cbPolicy,
-      /* [in] */ BYTE __RPC_FAR *pContext,
-      /* [in] */ DWORD cbContext,
-      /* [in] */ DWORD dwFlags,
-      /* [in] */ DWORD dwReserved) override;
-
-   HRESULT STDMETHODCALLTYPE QueryCustomPolicy(
-      /* [in] */ REFGUID guidKey,
-      /* [size_is][size_is][out] */ BYTE __RPC_FAR *__RPC_FAR *ppPolicy,
-      /* [out] */ DWORD __RPC_FAR *pcbPolicy,
-      /* [in] */ BYTE __RPC_FAR *pContext,
-      /* [in] */ DWORD cbContext,
-      /* [in] */ DWORD dwReserved) override;
-
-   bool FControlAlreadyOkayed(const CONFIRMSAFETY *pcs);
-   void AddControlToOkayedList(const CONFIRMSAFETY *pcs);
-   static bool FControlMarkedSafe(const CONFIRMSAFETY *pcs);
-   bool FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const;
-
-   HRESULT STDMETHODCALLTYPE QueryService(
-      REFGUID guidService,
-      REFIID riid,
-      void **ppv) override;
-
-   // Use CComObject to implement AddRef/Release/QI
-   BEGIN_COM_MAP(CodeViewer)
-      //COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(IActiveScriptSite)
-      COM_INTERFACE_ENTRY(IActiveScriptSiteDebug)
-      COM_INTERFACE_ENTRY(IActiveScriptSiteWindow)
-      COM_INTERFACE_ENTRY(IInternetHostSecurityManager)
-      COM_INTERFACE_ENTRY(IServiceProvider)
-   END_COM_MAP()
+   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    void UncolorError();
    void ParseForFunction();
@@ -282,7 +81,6 @@ public:
    void MarginClick(const Sci_Position position, const int modifiers);
 #endif
 
-   void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const string& szText);
 
    BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
@@ -292,9 +90,19 @@ public:
 
    IScriptableHost *m_psh;
 
-   IActiveScript* m_pScript;
+   class CodeViewDispatch final
+   {
+   public:
+      CodeViewDispatch() { }
+      ~CodeViewDispatch() { }
 
-   VectorSortString<CodeViewDispatch*> m_vcvd;
+      wstring m_wName;
+      IUnknown *m_punk = nullptr;
+      IDispatch *m_pdisp = nullptr;
+      bool m_global = false;
+   };
+
+   VectorSortString<CodeViewDispatch *> m_vcvd;
 
    COLORREF m_prefCols[16];
    COLORREF m_bgColor;
@@ -304,15 +112,13 @@ public:
 
    int m_displayAutoCompleteLength;
 
-   SaveDirtyState m_sdsDirty;
-   bool m_ignoreDirty;
+   SaveDirtyState m_sdsDirty = eSaveClean;
+   bool m_ignoreDirty = false;
 
    bool m_warn_on_dupes = false;
 
-   bool m_scriptError; // Whether a script error has occured - used for polling from the game
-
-   bool m_visible;
-   bool m_minimized;
+   bool m_visible = false;
+   bool m_minimized = false;
 
    bool m_displayAutoComplete;
    bool m_toolTipActive;
@@ -327,9 +133,6 @@ public:
    Sci_TextRange m_wordUnderCaret;
 #endif
 
-   CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
-   //ULONG m_cref;
-
    HWND m_hwndMain = nullptr;
    HWND m_hwndScintilla = nullptr;
    HWND m_hwndFind = nullptr;
@@ -338,7 +141,7 @@ public:
 
    HACCEL m_haccel = nullptr; // Accelerator keys
 
-   int m_errorLineNumber;
+   int m_errorLineNumber = -1;
 
    FINDREPLACE m_findreplaceold; // the last thing found/replaced
 
@@ -399,18 +202,6 @@ private:
    void SetLastErrorTextW(const LPCWSTR text);
    void AppendLastErrorTextW(const wstring& text);
 
-   IActiveScriptParse* m_pScriptParse;
-   IActiveScriptDebug* m_pScriptDebug;
-
-   /**
-    * Will be nullptr on systems that don't support debugging.
-    * 
-    * For example, wine 6.9 says ...
-    * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
-    * ... if I try to create CLSID_PrrocessDebugManager
-    */
-   IProcessDebugManager* m_pProcessDebugManager;
-
    FINDREPLACE m_findreplacestruct;
    char szFindString[MAX_FIND_LENGTH];
    char szReplaceString[MAX_FIND_LENGTH];
@@ -420,20 +211,18 @@ private:
    UINT m_findMsgString; // Windows message for the FindText dialog
 #endif
 
-   VectorSortString<CodeViewDispatch*> m_vcvdTemp; // Objects added through script
-
    string m_validChars;
 
    // CodeViewer Preferences
-   CVPreference *prefDefault;
-   CVPreference *prefVBS;
-   CVPreference *prefComps;
-   CVPreference *prefSubs;
-   CVPreference *prefComments;
-   CVPreference *prefLiterals;
-   CVPreference *prefVPcore;
+   CVPreference *prefDefault = nullptr;
+   CVPreference *prefVBS = nullptr;
+   CVPreference *prefComps = nullptr;
+   CVPreference *prefSubs = nullptr;
+   CVPreference *prefComments = nullptr;
+   CVPreference *prefLiterals = nullptr;
+   CVPreference *prefVPcore = nullptr;
 
-   int m_parentLevel;
+   int m_parentLevel = 0;
    string m_currentParentKey; // always lower case
    //bool m_parentTreeInvalid;
    //TODO: int TabStop;
@@ -455,14 +244,14 @@ private:
    /**
     * Whether the last error widget is visible
     */
-   bool m_lastErrorWidgetVisible;
+   bool m_lastErrorWidgetVisible = false;
 
    /**
     * If true, error dialogs will be suppressed for the play session
     * 
     * This gets reset to false whenever the script is started
     */
-   bool m_suppressErrorDialogs;
+   bool m_suppressErrorDialogs = false;
 
    /**
     * Handle for the last error widget
@@ -472,132 +261,3 @@ private:
     */
    HWND m_hwndLastErrorTextArea;
 };
-
-class Collection :
-   public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VPinballLib>,
-   public CComObjectRoot,
-   public CComCoClass<Collection, &CLSID_Collection>,
-   public EventProxy<Collection, &DIID_ICollectionEvents>,
-   public IConnectionPointContainerImpl<Collection>,
-   public IProvideClassInfo2Impl<&CLSID_Collection, &DIID_ICollectionEvents, &LIBID_VPinballLib>,
-   public IScriptable,
-   public ILoadable
-{
-public:
-#ifdef __STANDALONE__
-   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
-   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
-#endif
-   Collection();
-
-   // IScriptable
-   const WCHAR *get_Name() const final { return m_wzName; }
-   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(m_wzName); return S_OK; }
-   IDispatch *GetDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-
-   ISelect *GetISelect() final { return nullptr; }
-   const ISelect *GetISelect() const final { return nullptr; }
-
-   //ILoadable
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   bool LoadToken(const int id, BiffReader * const pbr) final;
-   HRESULT InitPostLoad(PinTable * const pt);
-
-   STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;
-   STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp) override;
-   STDMETHOD(get__NewEnum)(IUnknown** ppunk) override;
-
-   BEGIN_COM_MAP(Collection)
-      COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(ICollection)
-      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-      COM_INTERFACE_ENTRY(IProvideClassInfo)
-      COM_INTERFACE_ENTRY(IProvideClassInfo2)
-   END_COM_MAP()
-
-   BEGIN_CONNECTION_POINT_MAP(Collection)
-      CONNECTION_POINT_ENTRY(DIID_ICollectionEvents)
-   END_CONNECTION_POINT_MAP()
-
-   VectorProtected<ISelect> m_visel;
-
-   bool m_fireEvents;
-   bool m_stopSingleEvents;
-   bool m_groupElements;
-
-private:
-   vector<wstring> m_tmp_isel_name;
-};
-
-class OMCollectionEnum :
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public IEnumVARIANT
-{
-public:
-   BEGIN_COM_MAP(OMCollectionEnum)
-      COM_INTERFACE_ENTRY(IEnumVARIANT)
-   END_COM_MAP()
-
-   OMCollectionEnum() {}
-   ~OMCollectionEnum() {}
-
-   STDMETHOD(Init)(Collection *pcol);
-
-   STDMETHOD(Next)(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched) override;
-   STDMETHOD(Skip)(ULONG celt) override;
-   STDMETHOD(Reset)() override;
-   STDMETHOD(Clone)(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum) override;
-
-private:
-   Collection *m_pcol;
-   int m_index;
-};
-
-// general string helpers:
-
-constexpr __forceinline bool IsWhitespace(const char ch)
-{
-   return (ch == ' ' || ch == 9/*tab*/);
-}
-
-inline void RemovePadding(string &line)
-{
-   const size_t LL = line.length();
-   size_t Pos = line.find_first_not_of("\n\r\t ,");
-   if (Pos == string::npos)
-   {
-      line.clear();
-      return;
-   }
-
-   if (Pos > 0)
-   {
-      if ((SSIZE_T)(LL - Pos) < 1) return;
-      line = line.substr(Pos, (LL - Pos));
-   }
-
-   Pos = line.find_last_not_of("\n\r\t ,");
-   if (Pos != string::npos)
-   {
-      if (Pos < 1) return;
-      line = line.erase(Pos + 1);
-   }
-}
-
-inline string ParseRemoveVBSLineComments(string &line)
-{
-   const size_t commentIdx = line.find('\'');
-   if (commentIdx == string::npos)
-      return string();
-   string RetVal = line.substr(commentIdx + 1);
-   RemovePadding(RetVal);
-   if (commentIdx > 0)
-      line.resize(commentIdx);
-   else
-      line.clear();
-   return RetVal;
-}
