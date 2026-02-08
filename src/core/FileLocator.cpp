@@ -190,6 +190,17 @@ void FileLocator::SetPrefPath(const std::filesystem::path& path)
    UpdateFileLayoutMode();
 }
 
+void FileLocator::SetTablesPath(const std::filesystem::path& path)
+{
+   m_tablesPath = path;
+   PLOGI << "Tables path overridden: " << m_tablesPath;
+
+   if (!DirExists(m_tablesPath))
+   {
+      PLOGW << "Tables path " << m_tablesPath << " directory does not exist.";
+   }
+}
+
 void FileLocator::UpdateFileLayoutMode()
 {
    std::filesystem::path defaultPath = m_prefPath / "VPinballX.ini";
@@ -246,8 +257,18 @@ std::filesystem::path FileLocator::GetAppPath(AppSubFolder sub, const std::files
       // Note: SDL_GetUserFolder returns NULL on Android (see SDL_sysfilesystem.c), so use app path instead (usually /data/data/org.vpinball.vpinball/files)
       if (g_isAndroid)
          path = m_appPath;
+      else if (!m_tablesPath.empty())
+         path = m_tablesPath;
       else
-         path = std::filesystem::path(SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS));
+      {
+         auto userFolder = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
+         if (userFolder == nullptr)
+         {
+            PLOGE << "Could not select table path: no user Document directory defined. Configure a document file or pass the tables directory as application arguments.";
+            exit(1);
+         }
+         path = std::filesystem::path(userFolder);
+      }
       break;
 
    default: assert(false); break;

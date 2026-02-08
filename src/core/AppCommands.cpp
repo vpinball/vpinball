@@ -253,6 +253,7 @@ enum option_names
    OPTION_CUSTOM8,
    OPTION_CUSTOM9,
    OPTION_PREFPATH,
+   OPTION_TABLESPATH,
    OPTION_INVALID,
 };
 struct CommandLineOption
@@ -301,6 +302,7 @@ static const CommandLineOption options[] = {
    { OPTION_CUSTOM8, "c8"s, "Custom value 8"s },
    { OPTION_CUSTOM9, "c9"s, "Custom value 9"s },
    { OPTION_PREFPATH, "PrefPath"s, "[path]  Use a custom preferences path instead of default"s },
+   { OPTION_TABLESPATH, "TablesPath"s, "[path]  Use a custom tables path instead of default"s },
 };
 
 string CommandLineProcessor::GetPathFromArg(const string& arg, bool setCurrentPath)
@@ -521,6 +523,19 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             }
          }
          g_app->m_fileLocator.SetPrefPath(path);
+         i++;
+         break;
+      }
+
+      case OPTION_TABLESPATH:
+      {
+         if (i + 1 >= nArgs)
+         {
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
+            exit(1);
+         }
+         string path = GetPathFromArg(szArglist[i + 1], false);
+         g_app->m_fileLocator.SetTablesPath(path);
          i++;
          break;
       }
