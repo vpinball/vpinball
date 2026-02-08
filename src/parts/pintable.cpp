@@ -70,9 +70,7 @@ PinTable::PinTable()
    UpdateCurrentBGSet();
    m_currentBackglassMode = m_viewMode;
 
-   CComObject<CodeViewer>::CreateInstance(&m_pcv);
-   m_pcv->AddRef();
-   m_pcv->Init((IScriptableHost*)this);
+   m_pcv = new CodeViewer((CodeViewer::IScriptableHost *)this);
    m_pcv->Create(nullptr);
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
@@ -130,8 +128,7 @@ PinTable::~PinTable()
    for (int i = 0; i < m_vcollection.size(); i++)
       m_vcollection.ElementAt(i)->Release();
 
-   m_pcv->CleanUpScriptEngine();
-   m_pcv->Release();
+   delete m_pcv;
    m_pcv = nullptr;
 
    m_psgt->Release();
@@ -254,7 +251,7 @@ void PinTable::InitTablePostLoad()
 
    m_pcv->AddItem(this, false);
    m_pcv->AddItem(m_psgt, true);
-   m_pcv->AddItem(m_pcv->m_pdm, false);
+   //m_pcv->AddItem(m_pcv->m_pdm, false);
 
    RemoveInvalidReferences();
 }
@@ -642,7 +639,7 @@ PinTable* PinTable::CopyForPlay()
 
    live_table->m_pcv->AddItem(live_table, false);
    live_table->m_pcv->AddItem(live_table->m_psgt, true);
-   live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
+   //live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
 
    live_table->m_vrenderprobe.reserve(m_vrenderprobe.size() + live_table->m_vrenderprobe.size());
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
@@ -6740,10 +6737,10 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
 
 void PinTable::InvokeBallBallCollisionCallback(const HitBall *b1, const HitBall *b2, float hitVelocity)
 {
-   if (g_pplayer)
+   if (g_pplayer && g_pplayer->m_scriptInterpreter)
    {
       CComPtr<IDispatch> disp;
-      m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);
+      g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
 
       static wchar_t FnName[] = L"OnBallBallCollision";
       LPOLESTR fnNames = FnName;

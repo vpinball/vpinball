@@ -207,6 +207,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/ScriptInterpreter.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -232,6 +235,9 @@
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/decal.cpp">
@@ -929,6 +935,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/Scriptable.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/main.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -951,6 +960,9 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/ScriptInterpreter.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/player.h">
@@ -1086,6 +1098,9 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/bumper.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/Collection.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/decal.h">

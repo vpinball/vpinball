@@ -389,7 +389,6 @@ BOOL WinMsgLoop::PreTranslateMessage(MSG& msg)
 
 void StandaloneMsgLoop::Initialize()
 {
-   m_vpxEditor = g_pvp;
 }
 
 bool StandaloneMsgLoop::StepMsgLoop()
@@ -399,14 +398,7 @@ bool StandaloneMsgLoop::StepMsgLoop()
 
 int StandaloneMsgLoop::MainMsgLoop()
 {
-   int retval = 0;
-   if (auto pt = m_vpxEditor->GetActiveTableEditor(); pt)
-   {
-      if (pt->m_table->m_pcv->m_scriptError)
-         retval = 1;
-      m_vpxEditor->CloseTable(pt);
-   }
-   return retval;
+   return 0;
 }
 
 #endif

@@ -58,7 +58,7 @@ class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
                  public ISelect,
                  public IScriptable,
-                 public IScriptableHost,
+                 public CodeViewer::IScriptableHost,
                  public IEditable,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -703,7 +703,7 @@ public:
 
    PinUndo m_undo;
 
-   CComObject<CodeViewer> *m_pcv;
+   CodeViewer* m_pcv;
 
    CComObject<class ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
 

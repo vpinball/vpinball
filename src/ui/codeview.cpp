@@ -2,8 +2,6 @@
 
 #ifndef __STANDALONE__
 #include "scilexer.h"
-
-#include <initguid.h>
 #include <DbgProp.h>
 #endif
 
@@ -11,22 +9,10 @@
 #include "lib/src/VPinballLib.h"
 #endif
 
-// The GUID used to identify the coclass of the VB Script engine
-//  {B54F3741-5B07-11cf-A4B0-00AA004A55E8}
-#define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"
-DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0x0, 0x4a, 0x55, 0xe8);
-//DEFINE_GUID(IID_IActiveScriptParse32, 0xbb1a2ae2, 0xa4f9, 0x11cf, 0x8f, 0x20, 0x0, 0x80, 0x5f, 0x2c, 0xd0, 0x64);
-//DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
-//DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
-
 #ifdef __STANDALONE__
 #include <sstream>
 #include <climits>
 #endif
-
-//#define RECOLOR_LINE WM_USER+100
-#define CONTEXTCOOKIE_NORMAL 1000
-#define CONTEXTCOOKIE_DEBUG 1001
 
 static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 
@@ -43,17 +29,53 @@ static const string VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST
 
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-void CodeViewer::Init(IScriptableHost *psh)
+
+constexpr __forceinline bool IsWhitespace(const char ch) { return (ch == ' ' || ch == 9 /*tab*/); }
+
+inline void RemovePadding(string& line)
 {
-   CComObject<DebuggerModule>::CreateInstance(&m_pdm);
-   m_pdm->AddRef();
-   m_pdm->Init(this);
+   const size_t LL = line.length();
+   size_t Pos = line.find_first_not_of("\n\r\t ,");
+   if (Pos == string::npos)
+   {
+      line.clear();
+      return;
+   }
 
+   if (Pos > 0)
+   {
+      if ((SSIZE_T)(LL - Pos) < 1)
+         return;
+      line = line.substr(Pos, (LL - Pos));
+   }
+
+   Pos = line.find_last_not_of("\n\r\t ,");
+   if (Pos != string::npos)
+   {
+      if (Pos < 1)
+         return;
+      line = line.erase(Pos + 1);
+   }
+}
+
+inline string ParseRemoveVBSLineComments(string& line)
+{
+   const size_t commentIdx = line.find('\'');
+   if (commentIdx == string::npos)
+      return string();
+   string RetVal = line.substr(commentIdx + 1);
+   RemovePadding(RetVal);
+   if (commentIdx > 0)
+      line.resize(commentIdx);
+   else
+      line.clear();
+   return RetVal;
+}
+
+
+CodeViewer::CodeViewer(IScriptableHost* psh)
+{
    m_psh = psh;
-
-   m_hwndMain = nullptr;
-   m_hwndFind = nullptr;
-   m_hwndStatus = nullptr;
 
    szFindString[0] = '\0';
    szReplaceString[0] = '\0';
@@ -63,26 +85,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_findMsgString = RegisterWindowMessage(FINDMSGSTRING);
 #endif
 
-   m_pScript = nullptr;
-
-   m_visible = false;
-   m_minimized = false;
-
-   const HRESULT res = InitializeScriptEngine();
-   if (res != S_OK)
-   {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Cannot initialize Script Engine 0x%X", res);
-      ShowError(bla);
-   }
-
-   m_sdsDirty = eSaveClean;
-   m_ignoreDirty = false;
-
    m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
-
-   m_errorLineNumber = -1;
-   m_scriptError = false;
 }
 
 CodeViewer::~CodeViewer()
@@ -99,8 +102,6 @@ CodeViewer::~CodeViewer()
    if (m_haccel)
       DestroyAcceleratorTable(m_haccel);
 #endif
-
-   m_pdm->Release();
 }
 
 //
@@ -494,38 +495,61 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 #endif
 }
 
-void CodeViewer::EndSession()
+void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
 {
-   CleanUpScriptEngine();
-
-   InitializeScriptEngine();
-}
-
-HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
-{
-   CodeViewDispatch * const pcvd = new CodeViewDispatch();
-
-   pcvd->m_wName = bstr;
-   pcvd->m_pdisp = pdisp;
-   pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
-   pcvd->m_punk->Release();
-   pcvd->m_global = false;
-
-   if (m_vcvd.GetSortedIndex(pcvd->m_wName) != -1 || m_vcvdTemp.GetSortedIndex(pcvd->m_wName) != -1)
+   if (g_pplayer && g_pplayer->m_liveUI && !m_suppressErrorDialogs)
    {
-      delete pcvd;
-      return E_FAIL; //already exists
+      string desc = description;
+      uint32_t state = UTF8_ACCEPT;
+      if (validate_utf8(&state, description.data(), description.size()) == UTF8_REJECT)
+         desc = iso8859_1_to_utf8(description.data(), description.size()); // old ANSI characters? -> convert to UTF-8
+      g_pplayer->m_liveUI->PushNotification("Script error: " + desc, 5000);
    }
 
-   m_vcvdTemp.AddSortedString(pcvd);
+#ifndef __STANDALONE__
+   // Show the error in the last error log
+   AppendLastErrorTextW(MakeWString(description));
+   SetLastErrorVisibility(true);
 
-   constexpr int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
+   if (g_pvp && IsWindow() && !m_suppressErrorDialogs && type != ScriptInterpreter::ErrorType::DebugConsole)
+   {
+      if (g_pplayer)
+      {
+         g_pplayer->LockForegroundWindow(false);
+         g_pplayer->ShowMouseCursor(true);
+      }
 
-   /*const HRESULT hr =*/ m_pScript->AddNamedItem(bstr, flags);
+      SetVisible(true);
+      ShowWindow(SW_RESTORE);
+      ColorError(line, column);
+      g_pvp->EnableWindow(TRUE);
+      ::SetFocus(m_hwndScintilla);
 
-   m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+      if (g_pplayer == nullptr || g_pplayer->GetCloseState() != Player::CloseState::CS_CLOSE_APP)
+      {
+         std::wstringstream errorStream;
+         errorStream << (type == ScriptInterpreter::ErrorType::Compile ? L"Compile error\r\n" : L"Runtime error\r\n");
+         errorStream << L"-------------\r\n";
+         errorStream << L"Line: " << line << " Column: " << column << "\r\n";
+         errorStream << MakeWString(description) << "\r\n";
+         if (!stackDump.empty())
+         {
+            errorStream << L"\r\nStack trace (Most recent call first):\r\n";
+            for (const string& callSite : stackDump)
+               errorStream << L"    " << MakeWString(callSite) << "\r\n";
+         }
+         errorStream << L"\r\n";
+         g_pvp->EnableWindow(FALSE);
+         ScriptErrorDialog scriptErrorDialog(errorStream.str());
+         scriptErrorDialog.DoModal();
+         m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
+         g_pvp->EnableWindow(TRUE);
 
-   return S_OK;
+         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
+            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
+      }
+   }
+#endif
 }
 
 HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
@@ -647,111 +671,6 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    ListEventsFromItem(); // Just to get us into a good state
    delete [] szT;
 #endif
-
-   return S_OK;
-}
-
-STDMETHODIMP CodeViewer::InitializeScriptEngine()
-{
-	const HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER|CLSCTX_LOCAL_SERVER/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
-	if (vbScriptResult != S_OK) return vbScriptResult;
-
-#ifndef __STANDALONE__
-	// This can fail on some systems (I tested with wine 6.9 and this fails)
-	// In that case, m_pProcessDebugManager will remain as nullptr
-	CoCreateInstance(
-		CLSID_ProcessDebugManager,
-		0,
-		CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER|CLSCTX_LOCAL_SERVER,
-		IID_IProcessDebugManager,
-		(LPVOID*)&m_pProcessDebugManager
-	);
-
-	// Also check if we have a debugger installed
-	// If not, we should abandon the process debug manager and fall back to plain basic errors
-	IDebugApplication* debugApp;
-	if (SUCCEEDED(GetApplication(&debugApp)))
-	{
-		debugApp->Release();
-	}
-	else
-	{
-		if (m_pProcessDebugManager) 
-		{
-			m_pProcessDebugManager->Release();
-			m_pProcessDebugManager = nullptr;
-		}
-	}
-#endif
-
-	m_pScriptParse->QueryInterface(IID_IActiveScript,
-		(LPVOID*)&m_pScript);
-
-	m_pScriptParse->QueryInterface(IID_IActiveScriptDebug,
-		(LPVOID*)&m_pScriptDebug);
-
-	m_pScriptParse->InitNew();
-	m_pScript->SetScriptSite(this);
-
-#ifndef __STANDALONE__
-	IObjectSafety* pios;
-	m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID*)&pios);
-
-	if (pios)
-	{
-		DWORD supported, enabled;
-		pios->GetInterfaceSafetyOptions(IID_IActiveScript, &supported, &enabled);
-
-		/*const HRESULT hr =*/ pios->SetInterfaceSafetyOptions(IID_IActiveScript, supported, INTERFACE_USES_SECURITY_MANAGER);
-
-		pios->Release();
-	}
-#endif
-
-	return S_OK;
-}
-
-STDMETHODIMP CodeViewer::CleanUpScriptEngine()
-{
-   if (m_pScript)
-   {
-      // Cleanly wait for the script to end to allow Exit event, triggered just before closing, to be processed
-      SCRIPTSTATE state;
-      m_pScript->GetScriptState(&state);
-      if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
-      {
-         m_pScript->Close();
-         const uint32_t startWaitTick = msec();
-         while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
-         {
-            Sleep(16);
-            m_pScript->GetScriptState(&state);
-         }
-         if (state != SCRIPTSTATE_CLOSED)
-         {
-            PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
-            EXCEPINFO eiInterrupt = {};
-            eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
-            //eiInterrupt.scode = E_NOTIMPL;
-            eiInterrupt.wCode = 2345;
-            m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
-         }
-         else
-         {
-            PLOGI << "Script interpreter state is now closed. Releasing interpreter #" << m_pScript;
-         }
-      }
-      SAFE_RELEASE_NO_RCC(m_pScript);
-      SAFE_RELEASE_NO_RCC(m_pScriptParse);
-      SAFE_RELEASE(m_pScriptDebug);
-#ifndef __STANDALONE__
-      if (m_pProcessDebugManager != nullptr) m_pProcessDebugManager->Release();
-#endif
-   }
-
-   for (size_t i = 0; i < m_vcvdTemp.size(); ++i)
-      delete m_vcvdTemp[i];
-   m_vcvdTemp.clear();
 
    return S_OK;
 }
@@ -1145,450 +1064,19 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
    return FALSE;
 }
 
-STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
-   IUnknown **ppiunkItem, ITypeInfo **ppti)
+void CodeViewer::Compile(PinTable* table, const bool message)
 {
-   if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
-      *ppiunkItem = nullptr;
-   if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
-      *ppti = nullptr;
-
-   const int idx = m_vcvd.GetSortedIndex((const WCHAR *)pstrName);
-   CodeViewDispatch *pcvd;
-   if (idx == -1)
-   {
-      const int idxt = m_vcvdTemp.GetSortedIndex((const WCHAR *)pstrName);
-      if (idxt == -1)
-         return E_FAIL;
-      pcvd = m_vcvdTemp[idxt];
-   }
-   else
-      pcvd = m_vcvd[idx];
-
-   if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
-   {
-      if ((*ppiunkItem = pcvd->m_punk))
-         (*ppiunkItem)->AddRef();
-   }
-
-   if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
-   {
-      IProvideClassInfo* pClassInfo;
-      pcvd->m_punk->QueryInterface(IID_IProvideClassInfo,
-         (LPVOID*)&pClassInfo);
-      if (pClassInfo)
-      {
-         pClassInfo->GetClassInfo(ppti);
-         pClassInfo->Release();
-      }
-   }
-
-   return S_OK;
-}
-
-/*
- * Called on compilation errors. Also called on runtime errors in we couldn't create a "process debug manager" (such
- * as when running on wine), or if no debug application is available (where a "debug application" is something like
- * VS 2010 Isolated Shell).
- *
- * See CodeViewer::OnScriptErrorDebug for runtime errors, when a debug application is available
- */
-STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
-{
-	DWORD dwCookie;
-	ULONG nLine;
-	LONG nChar;
-	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-	BSTR bstr = nullptr;
-	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO exception = {};
-	pscripterror->GetExceptionInfo(&exception);
-	nLine++;
-
-	const string szT = exception.bstrDescription ? MakeString(exception.bstrDescription) : "Description unavailable"s;
-
-	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
-
-	if (dwCookie == CONTEXTCOOKIE_DEBUG)
-	{
-		AddToDebugOutput(szT);
-		SysFreeString(bstr);
-		return S_OK;
-	}
-
-	m_scriptError = true;
-
-	// Check if this is a compile error or a runtime error
-	SCRIPTSTATE state;
-	m_pScript->GetScriptState(&state);
-	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
-
-#ifdef __LIBVPINBALL__
-	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPINBALL_SCRIPT_ERROR_TYPE_RUNTIME : VPINBALL_SCRIPT_ERROR_TYPE_COMPILE, (int)nLine, (int)nChar, szT.c_str() };
-	VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_SCRIPT_ERROR, &scriptErrorStruct);
-#endif
-
-	// Error log content
-	std::wstringstream errorStream;
-	if (isRuntimeError)
-		errorStream << L"Runtime error";
-	else
-		errorStream << L"Compile error";
-
-#ifndef __STANDALONE__
-	errorStream << '\n';
-	errorStream << L"-------------" << '\n';
-#else
-	errorStream << L": ";
-#endif
-	errorStream << L"Line: " << nLine << L", Character: " << nChar;
-
-#ifndef __STANDALONE__
-	errorStream << '\n';
-#else
-	errorStream << L", ";
-#endif
-
-	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable");
-
-#ifndef __STANDALONE__
-	errorStream << '\n';
-	errorStream << '\n';
-#endif
-
-	SysFreeString(bstr);
-	SysFreeString(exception.bstrSource);
-	SysFreeString(exception.bstrDescription);
-	SysFreeString(exception.bstrHelpFile);
-
-	const wstring errorStr{errorStream.str()};
-
-   if (g_pplayer)
-      g_pplayer->m_liveUI->PushNotification("Script error: " + szT, 5000);
-      
-   // Cancel capture and close app if in capture attract mode
-   if (g_pplayer && g_pplayer->m_playMode == Player::PlayMode::CaptureAttract)
-      g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-
-   // Show the error in the last error log
-   AppendLastErrorTextW(errorStr);
-   SetLastErrorVisibility(true);
-
-#ifndef __STANDALONE__
-   if (IsWindow())
-   {
-      if (g_pplayer)
-         g_pplayer->LockForegroundWindow(false);
-
-      SetVisible(true);
-      ShowWindow(SW_RESTORE);
-      ColorError(nLine, nChar);
-
-      // Also pop up a dialog if this is a runtime error
-      if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
-      {
-         g_pvp->EnableWindow(FALSE);
-         ScriptErrorDialog scriptErrorDialog(errorStr);
-         scriptErrorDialog.DoModal();
-         m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
-         g_pvp->EnableWindow(TRUE);
-
-         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
-      }
-      g_pvp->EnableWindow(TRUE);
-      ::SetFocus(m_hwndScintilla);
-   }
-#endif
-
-   // Stop the script
-   m_pScript->Close();
-
-	return S_OK;
-}
-
-STDMETHODIMP CodeViewer::GetDocumentContextFromPosition(
-	DWORD_PTR dwSourceContext,
-	ULONG uCharacterOffset,
-	ULONG uNumChars,
-	IDebugDocumentContext** ppsc
-)
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP CodeViewer::GetApplication(IDebugApplication** ppda)
-{
-#ifndef __STANDALONE__
-	if (m_pProcessDebugManager != nullptr)
-	{
-		IDebugApplication* app;
-		const HRESULT result = m_pProcessDebugManager->GetDefaultApplication(&app);
-
-		// We want to make sure the debug application supports JIT debugging, otherwise we don't seem to get notified
-		// of runtime errors at all (neither in OnScriptError or in OnScriptErrorDebug)!
-		if (SUCCEEDED(result) && app->FCanJitDebug())
-		{
-			*ppda = app;
-			return S_OK;
-		}
-		else
-			return E_FAIL;
-	}
-	else
-		return E_NOTIMPL;
-#else
-	return S_OK;
-#endif
-}
-
-STDMETHODIMP CodeViewer::GetRootApplicationNode(
-	IDebugApplicationNode** ppdanRoot
-)
-{
-	IDebugApplication* app;
-	const HRESULT result = GetApplication(&app);
-	if (SUCCEEDED(result))
-		return app->GetRootNode(ppdanRoot);
-	else
-		return result;
-}
-
-/**
- * Called on runtime errors, if debugging is supported, and a debug application is available.
- *
- * See CodeViewer::OnScriptError for compilation errors, and also runtime errors when debugging isn't available.
- */
-STDMETHODIMP CodeViewer::OnScriptErrorDebug(
-	IActiveScriptErrorDebug* pscripterror,
-	BOOL* pfEnterDebugger,
-	BOOL* pfCallOnScriptErrorWhenContinuing
-)
-{
-#ifndef __STANDALONE__
-	// TODO: Which debuggers even work with VBScript? It might be an idea to offer a "Debug" button (set pfEnterDebugger to
-	//       true) if it can pop open some old version of visual studio to debug stuff.
-	//
-	//       VS 2010 Isolated Shell seems to work, but trying to enter debugging with it complains with an "invalid
-	//       license" error. I haven't found anything else to work yet, not even regular VS 2010 (though, it might be
-	//       that you need to manually set some registry keys to select the default debugger?)
-	//
-	//       HKEY_CLASSES_ROOT\CLSID\{834128A2-51F4-11D0-8F20-00805F2CD064}\LocalServer32 seems to be the registry key
-	//       to select the default debugger.
-	//       (https://stackoverflow.com/questions/2288043/how-do-i-debug-a-stand-alone-vbscript-script#comment36315883_2288064)
-	*pfEnterDebugger = FALSE;
-	*pfCallOnScriptErrorWhenContinuing = FALSE;
-
-	DWORD dwCookie;
-	ULONG nLine;
-	LONG nChar;
-	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-	BSTR bstr = nullptr;
-	pscripterror->GetSourceLineText(&bstr);
-	EXCEPINFO exception = {};
-	pscripterror->GetExceptionInfo(&exception);
-	nLine++;
-
-	const string szT = exception.bstrDescription ? MakeString(exception.bstrDescription) : "Description unavailable"s;
-	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
-
-	if (dwCookie == CONTEXTCOOKIE_DEBUG)
-	{
-		AddToDebugOutput(szT);
-		SysFreeString(bstr);
-		return S_OK;
-	}
-
-	m_scriptError = true;
-
-	// Error log content
-	std::wstringstream errorStream;
-	errorStream << L"Runtime error\r\n";
-	errorStream << L"-------------\r\n";
-	errorStream << L"Line: " << nLine << "\r\n";
-	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable") << "\r\n";
-
-	// Get stack trace
-	IDebugStackFrame* errStackFrame;
-	if (pscripterror->GetStackFrame(&errStackFrame) == S_OK)
-	{
-		errorStream << L"\r\nStack trace (Most recent call first):\r\n";
-
-		IDebugApplicationThread *thread;
-		errStackFrame->GetThread(&thread);
-
-      if (thread)
-      {
-         IEnumDebugStackFrames *stackFramesEnum;
-         thread->EnumStackFrames(&stackFramesEnum);
-
-         DebugStackFrameDescriptor stackFrames[128];
-         ULONG numStackFrames;
-         stackFramesEnum->Next(128, stackFrames, &numStackFrames);
-
-         for (ULONG i = 0; i < numStackFrames; i++)
-         {
-            // The frame description is the name of the function in this stack frame
-            BSTR frameDesc;
-            stackFrames[i].pdsf->GetDescriptionString(TRUE, &frameDesc);
-
-            // Fetch local variables and args
-            IDebugProperty *debugProp;
-            stackFrames[i].pdsf->GetDebugProperty(&debugProp);
-
-            IEnumDebugPropertyInfo *propInfoEnum;
-            debugProp->EnumMembers(PROP_INFO_FULLNAME | PROP_INFO_VALUE,
-               10, // Radix (for numerical info)
-               IID_IDebugPropertyEnumType_LocalsPlusArgs, &propInfoEnum);
-
-            DebugPropertyInfo infos[128];
-            ULONG numInfos;
-            propInfoEnum->Next(128, infos, &numInfos);
-
-            std::wstringstream stackVariablesStream;
-            for (ULONG i2 = 0; i2 < numInfos; i2++)
-            {
-               stackVariablesStream << infos[i2].m_bstrFullName << L'=' << infos[i2].m_bstrValue;
-               // Add a comma if this isn't the last item in the list
-               if (i2 != numInfos - 1)
-                  stackVariablesStream << L", ";
-            }
-
-            propInfoEnum->Release();
-            debugProp->Release();
-            // End fetch local variables and args
-
-            errorStream << L"    " << frameDesc;
-
-            // If there are any locals/args, add them to the end of the frame description
-            if (numInfos > 0)
-            {
-               errorStream << L" (";
-               errorStream << stackVariablesStream.str();
-               errorStream << L')';
-               PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc << " (" << stackVariablesStream.str() << ')';
-            }
-            else
-            {
-               PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Stacktrace: " << frameDesc;
-            }
-
-            errorStream << L"\r\n";
-
-            SysFreeString(frameDesc);
-         }
-
-         stackFramesEnum->Release();
-         thread->Release();
-      }
-	}
-
-	errorStream << L"\r\n";
-
-	SysFreeString(bstr);
-	SysFreeString(exception.bstrSource);
-	SysFreeString(exception.bstrDescription);
-	SysFreeString(exception.bstrHelpFile);
-
-	const wstring errorStr{errorStream.str()};
-
-   if (g_pplayer)
-      g_pplayer->m_liveUI->PushNotification("Script error: " + szT, 5000);
-      
-   // Cancel capture and close app if in capture attract mode
-   if (g_pplayer && g_pplayer->m_playMode == Player::PlayMode::CaptureAttract)
-      g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-
-   // Show the error in the last error log
-   AppendLastErrorTextW(errorStr);
-   SetLastErrorVisibility(true);
-
-   if (IsWindow())
-   {
-      if (g_pplayer)
-         g_pplayer->LockForegroundWindow(false);
-
-      SetVisible(true);
-      ShowWindow(SW_RESTORE);
-      ColorError(nLine, nChar);
-
-      // Also pop up a dialog if this is a runtime error
-      if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
-      {
-         g_pvp->EnableWindow(FALSE);
-         ScriptErrorDialog scriptErrorDialog(errorStr);
-         scriptErrorDialog.DoModal();
-         m_suppressErrorDialogs = scriptErrorDialog.WasSuppressErrorsRequested();
-         g_pvp->EnableWindow(TRUE);
-
-         if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
-      }
-      g_pvp->EnableWindow(TRUE);
-      ::SetFocus(m_hwndScintilla);
-   }
-
-#endif
-   // Stop the script
-   m_pScript->Close();
-
-	return S_OK;
-}
-
-void CodeViewer::Compile(const bool message)
-{
-   if (m_pScript)
-   {
-      string script = GetScript();
-      char *const szText = (char *)script.c_str();
-
-      const int len = MultiByteToWideChar(CP_UTF8, 0, szText, -1, nullptr, 0);
-      WCHAR * const wzText = new WCHAR[len];
-      MultiByteToWideChar(CP_UTF8, 0, szText, -1, wzText, len);
-
-      EXCEPINFO exception = {};
-      m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
-
-      /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
-
-      for (size_t i = 0; i < m_vcvd.size(); ++i)
-      {
-         int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
-         if (m_vcvd[i]->m_global)
-            flags |= SCRIPTITEM_GLOBALMEMBERS;
-         m_pScript->AddNamedItem(m_vcvd[i]->m_wName.c_str(), flags);
-      }
-
-      if (m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
-         SCRIPTTEXT_ISVISIBLE, 0, &exception) == S_OK)
-         if (message)
-            MessageBox("Compilation successful", "Compile", MB_OK);
-
-      m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
-
-      delete[] wzText;
-   }
-}
-
-void CodeViewer::Start()
-{
-	//ShowError("CodeViewer::Start"); //debug logging BDS
-	if (m_pScript)
-	{
-		SetLastErrorTextW(L"Starting script\r\n\r\n");
-		m_suppressErrorDialogs = false;
-		m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
-	}
-}
-
-void CodeViewer::EvaluateScriptStatement(const char * const szScript)
-{
-   WCHAR * const wzScript = MakeWide(szScript);
-
-   EXCEPINFO exception = {};
-   m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, nullptr, &exception);
-
-   delete[] wzScript;
+   CComObject<ScriptInterpreter>* interpreter;
+   CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
+   interpreter->AddRef();
+   interpreter->Init(table);
+   interpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
+      { OnScriptError(type, line, column, description, stackDump); });
+   interpreter->Evaluate(GetScript(), false);
+   if (message && !interpreter->HasError())
+      MessageBox("Compilation successful", "Compile", MB_OK);
+   interpreter->Stop();
+   interpreter->Release();
 }
 
 void CodeViewer::AddToDebugOutput(const string &szText)
@@ -1960,16 +1448,6 @@ void CodeViewer::ColorError(const int line, const int nchar)
 #endif
 }
 
-STDMETHODIMP CodeViewer::OnEnterScript()
-{
-   return S_OK;
-}
-
-STDMETHODIMP CodeViewer::OnLeaveScript()
-{
-   return S_OK;
-}
-
 void CodeViewer::TellHostToSelectItem()
 {
 #ifndef __STANDALONE__
@@ -2155,7 +1633,8 @@ void CodeViewer::FindCodeFromEvent()
       assert(cchar == lineLength);
       assert(cchar == szLine.length());
       assert(cchar == wzText.length()); // otherwise may need to pass wzText.length() to next function????
-      m_pScriptDebug->GetScriptTextAttributes(wzText.c_str(), (ULONG)cchar, nullptr, 0, wzFormat);
+      
+      // FIXME FIXME FIXME m_pScriptDebug->GetScriptTextAttributes(wzText.c_str(), (ULONG)cchar, nullptr, 0, wzFormat);
 
       const size_t inamechar = posFind - beginchar - 1;
 
@@ -2247,146 +1726,6 @@ void CodeViewer::FindCodeFromEvent()
 
    ::SetFocus(m_hwndScintilla);
 #endif
-}
-
-HRESULT STDMETHODCALLTYPE CodeViewer::GetSecurityId(
-   BYTE *pbSecurityId,
-   DWORD *pcbSecurityId,
-   DWORD_PTR dwReserved)
-{
-   return S_OK;
-}
-
-HRESULT STDMETHODCALLTYPE CodeViewer::ProcessUrlAction(
-   DWORD dwAction,
-   BYTE __RPC_FAR *pPolicy,
-   DWORD cbPolicy,
-   BYTE __RPC_FAR *pContext,
-   DWORD cbContext,
-   DWORD dwFlags,
-   DWORD dwReserved)
-{
-   *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_app->m_securitylevel < eSecurityNoControls)) ?
-   URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
-
-   return S_OK;
-}
-
-DEFINE_GUID(GUID_CUSTOM_CONFIRMOBJECTSAFETY, 0x10200490, 0xfa38, 0x11d0, 0xac, 0x0e, 0x00, 0xa0, 0xc9, 0x0f, 0xff, 0xc0);
-
-HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
-   REFGUID guidKey,
-   BYTE __RPC_FAR *__RPC_FAR *ppPolicy,
-   DWORD __RPC_FAR *pcbPolicy,
-   BYTE __RPC_FAR *pContext,
-   DWORD cbContext,
-   DWORD dwReserved)
-{
-#ifndef __STANDALONE__
-   uint32_t *const ppolicy = (uint32_t *)CoTaskMemAlloc(sizeof(uint32_t)); // needs to use CoTaskMemAlloc because of COM model
-   *ppolicy = URLPOLICY_DISALLOW;
-
-   *ppPolicy = (BYTE *)ppolicy;
-
-   *pcbPolicy = sizeof(DWORD);
-
-   if (InlineIsEqualGUID(guidKey, GUID_CUSTOM_CONFIRMOBJECTSAFETY))
-   {
-      bool safe = false;
-      CONFIRMSAFETY *pcs = (CONFIRMSAFETY *)pContext;
-
-      if (g_app->m_securitylevel == eSecurityNone)
-         safe = true;
-
-      if (!safe && ((g_app->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_app->m_securitylevel == eSecurityWarnOnType)))
-         safe = FControlAlreadyOkayed(pcs);
-
-      if (!safe && (g_app->m_securitylevel <= eSecurityWarnOnUnsafeType))
-         safe = FControlMarkedSafe(pcs);
-
-      if (!safe)
-      {
-         safe = FUserManuallyOkaysControl(pcs);
-         if (safe && ((g_app->m_securitylevel == eSecurityWarnOnUnsafeType) || (g_app->m_securitylevel == eSecurityWarnOnType)))
-            AddControlToOkayedList(pcs);
-      }
-
-      if (safe)
-         *ppolicy = URLPOLICY_ALLOW;
-   }
-#endif
-
-   return S_OK;
-}
-
-bool CodeViewer::FControlAlreadyOkayed(const CONFIRMSAFETY *pcs)
-{
-   if (g_pplayer)
-   {
-      for (size_t i = 0; i < g_pplayer->m_controlclsidsafe.size(); ++i)
-      {
-         const CLSID * const pclsid = g_pplayer->m_controlclsidsafe[i];
-         if (*pclsid == pcs->clsid)
-            return true;
-      }
-   }
-
-   return false;
-}
-
-void CodeViewer::AddControlToOkayedList(const CONFIRMSAFETY *pcs)
-{
-   if (g_pplayer)
-   {
-      CLSID * const pclsid = new CLSID();
-      *pclsid = pcs->clsid;
-      g_pplayer->m_controlclsidsafe.push_back(pclsid);
-   }
-}
-
-bool CodeViewer::FControlMarkedSafe(const CONFIRMSAFETY *pcs)
-{
-   bool safe = false;
-#ifndef __STANDALONE__
-   IObjectSafety *pios = nullptr;
-
-   DWORD supported, enabled;
-   if (SUCCEEDED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)) &&
-       SUCCEEDED(pios->GetInterfaceSafetyOptions(IID_IDispatch, &supported, &enabled)) &&
-       (supported & INTERFACESAFE_FOR_UNTRUSTED_CALLER) && (supported & INTERFACESAFE_FOR_UNTRUSTED_DATA))
-   {
-      // either it is already enabled, or we could enable it
-      if (((enabled & INTERFACESAFE_FOR_UNTRUSTED_CALLER) && (enabled & INTERFACESAFE_FOR_UNTRUSTED_DATA)) ||
-          SUCCEEDED(pios->SetInterfaceSafetyOptions(IID_IDispatch, supported, INTERFACESAFE_FOR_UNTRUSTED_CALLER | INTERFACESAFE_FOR_UNTRUSTED_DATA)))
-         safe = true;
-   }
-
-   if (pios)
-      pios->Release();
-#endif
-
-   return safe;
-}
-
-bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const
-{
-#ifndef __STANDALONE__
-   OLECHAR *wzT;
-   if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
-      return false;
-
-   const int ans = MessageBox((LocalString(IDS_UNSECURECONTROL1).m_szbuffer + MakeString(wzT) + LocalString(IDS_UNSECURECONTROL2).m_szbuffer).c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
-   return (ans == IDYES);
-#else
-   return false;
-#endif
-}
-
-HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(REFGUID guidService, REFIID riid, void **ppv)
-{
-   const HRESULT hr = (riid == IID_IInternetHostSecurityManager) ? QueryInterface(riid /*IID_IInternetHostSecurityManager*/, ppv) : E_NOINTERFACE;
-
-   return hr;
 }
 
 void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
@@ -3200,11 +2539,9 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
    switch (id)
    {
       case ID_COMPILE:
-      {
-         pcv->Compile(true);
-         pcv->EndSession();
+         if (g_pvp && g_pvp->GetActiveTable() && g_pvp->GetActiveTable()->m_pcv == pcv)
+            pcv->Compile(g_pvp->GetActiveTable(), true);
          return TRUE;
-      }
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
          SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
       case ID_SCRIPT_PREFERENCES:
@@ -3819,235 +3156,4 @@ void CodeViewer::AppendLastErrorTextW(const wstring& text)
 #else
 	PLOGE << MakeString(text);
 #endif
-}
-
-Collection::Collection()
-{
-   m_fireEvents = false;
-   m_stopSingleEvents = false;
-
-   m_groupElements = g_app->m_settings.GetEditor_GroupElementsInCollection();
-}
-
-HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
-{
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteWideString(FID(NAME), m_wzName);
-
-   for (int i = 0; i < m_visel.size(); ++i)
-   {
-      const IScriptable * const piscript = m_visel[i].GetIEditable()->GetScriptable();
-      bw.WriteWideString(FID(ITEM), piscript->m_wzName);
-   }
-
-   bw.WriteBool(FID(EVNT), m_fireEvents);
-   bw.WriteBool(FID(SSNG), m_stopSingleEvents);
-   bw.WriteBool(FID(GREL), m_groupElements);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
-}
-
-HRESULT Collection::LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-{
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   br.Load();
-   return S_OK;
-}
-
-bool Collection::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(NAME):
-   {
-      //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
-      WCHAR tmp[MAXNAMEBUFFER+1];
-      pbr->GetWideString(tmp, MAXNAMEBUFFER+1);
-      memcpy(m_wzName, tmp, (MAXNAMEBUFFER-1)*sizeof(WCHAR));
-      m_wzName[MAXNAMEBUFFER-1] = L'\0';
-      break;
-   }
-   case FID(EVNT): pbr->GetBool(m_fireEvents); break;
-   case FID(SSNG): pbr->GetBool(m_stopSingleEvents); break;
-   case FID(GREL): pbr->GetBool(m_groupElements); break;
-   case FID(ITEM):
-   {
-      //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
-      WCHAR wzT[MAXNAMEBUFFER*2];
-      pbr->GetWideString(wzT, MAXNAMEBUFFER*2); //!! rather truncate for these special cases for the comparison in InitPostLoad?
-
-      m_tmp_isel_name.push_back(wzT);
-      break;
-   }
-   }
-   return true;
-}
-
-HRESULT Collection::InitPostLoad(PinTable *const pt)
-{
-   for (size_t n = 0; n < m_tmp_isel_name.size(); ++n)
-   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
-   {
-      IScriptable *const piscript = pt->m_vedit[i]->GetScriptable();
-      if (piscript) // skip decals
-      {
-         if (piscript->m_wzName == m_tmp_isel_name[n])
-         {
-            auto iselect = piscript->GetISelect();
-            iselect->GetIEditable()->m_vCollection.push_back(this);
-            iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
-            m_visel.push_back(iselect);
-            break; // found, continue to search next name/element
-         }
-      }
-   }
-   m_tmp_isel_name.clear();
-
-   return S_OK;
-}
-
-STDMETHODIMP Collection::get_Count(LONG __RPC_FAR *plCount)
-{
-   *plCount = m_visel.size();
-   return S_OK;
-}
-
-STDMETHODIMP Collection::get_Item(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp)
-{
-   if (index < 0 || index >= m_visel.size())
-      return TYPE_E_OUTOFBOUNDS;
-
-   IDispatch * const pdisp = m_visel[index].GetDispatch();
-   return pdisp->QueryInterface(IID_IDispatch, (void **)ppidisp);
-}
-
-STDMETHODIMP Collection::get__NewEnum(IUnknown** ppunk)
-{
-   CComObject<OMCollectionEnum> *pomenum;
-   HRESULT hr = CComObject<OMCollectionEnum>::CreateInstance(&pomenum);
-
-   if (SUCCEEDED(hr))
-   {
-      pomenum->Init(this);
-      hr = pomenum->QueryInterface(IID_IEnumVARIANT, (void **)ppunk);
-   }
-
-   return hr;
-}
-
-STDMETHODIMP OMCollectionEnum::Init(Collection *pcol)
-{
-   m_pcol = pcol;
-   m_index = 0;
-   return S_OK;
-}
-
-STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched)
-{
-   int last;
-   HRESULT hr;
-   const int cwanted = celt;
-   int creturned;
-
-   if (m_index + cwanted > m_pcol->m_visel.size())
-   {
-      hr = S_FALSE;
-      last = m_pcol->m_visel.size();
-      creturned = m_pcol->m_visel.size() - m_index;
-   }
-   else
-   {
-      hr = S_OK;
-      last = m_index + cwanted;
-      creturned = cwanted;
-   }
-
-   for (int i = m_index; i < last; ++i)
-   {
-      IDispatch * const pdisp = m_pcol->m_visel[i].GetDispatch();
-      pdisp->QueryInterface(IID_IDispatch, (void **)&pdisp);
-
-      V_VT(&rgVar[i - m_index]) = VT_DISPATCH;
-      V_DISPATCH(&rgVar[i - m_index]) = pdisp;
-   }
-
-   m_index += creturned;
-
-   if (pCeltFetched)
-      *pCeltFetched = creturned;
-
-   return hr;
-}
-
-STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
-{
-   m_index += celt;
-   return (m_index >= m_pcol->m_visel.size()) ? S_FALSE : S_OK;
-}
-
-STDMETHODIMP OMCollectionEnum::Reset()
-{
-   m_index = 0;
-   return S_OK;
-}
-
-STDMETHODIMP OMCollectionEnum::Clone(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum)
-{
-   IUnknown *punk;
-   HRESULT hr = m_pcol->get__NewEnum(&punk);
-
-   if (SUCCEEDED(hr))
-   {
-      hr = punk->QueryInterface(IID_IEnumVARIANT, (void **)ppEnum);
-
-      punk->Release();
-   }
-
-   return hr;
-}
-
-void DebuggerModule::Init(CodeViewer * const pcv)
-{
-   m_pcv = pcv;
-}
-
-STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
-{
-   // Disable logging in locked tables (there is no debugger in locked mode anyway)
-   if (g_pplayer->m_ptable->IsLocked())
-      return S_OK;
-
-   const bool enableLog = g_app->m_settings.GetEditor_EnableLog();
-   const bool logScript = enableLog && g_app->m_settings.GetEditor_LogScriptOutput();
-
-   if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
-   {
-      if (g_pplayer->m_hwndDebugOutput)
-         m_pcv->AddToDebugOutput(""s);
-      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '";
-      return S_OK;
-   }
-
-   CComVariant varT;
-   const HRESULT hr = VariantChangeType(&varT, pvar, 0, VT_BSTR);
-
-   if (FAILED(hr))
-   {
-      const LocalString ls(IDS_DEBUGNOCONVERT);
-      if (g_pplayer->m_hwndDebugOutput)
-         m_pcv->AddToDebugOutput(ls.m_szbuffer);
-      PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << ls.m_szbuffer << '\'';
-      return S_OK;
-   }
-
-   const string szT = MakeString(V_BSTR(&varT));
-   if (g_pplayer->m_hwndDebugOutput)
-      m_pcv->AddToDebugOutput(szT);
-   PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';
-
-   return S_OK;
 }

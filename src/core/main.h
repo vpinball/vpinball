@@ -237,7 +237,9 @@ class SCNotification final { };
 #include "pinundo.h"
 #include "iselect.h"
 
-#include "ieditable.h"
+#include "core/Scriptable.h"
+#include "parts/Collection.h"
+#include "core/ieditable.h"
 #include "ui/codeview.h"
 
 #include "parts/pinbinary.h"

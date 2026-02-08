@@ -157,10 +157,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       c_hardScatter = ANGTORAD(table->m_overridePhysics ? fOverrideContactScatterAngle : table->m_defaultScatter);
    }
 
-   table->m_pcv->m_scriptError = false;
-   table->m_pcv->SetScript(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_pcv->GetScript()));
-   table->m_pcv->Compile(false);
-
    m_logicProfiler.NewFrame(0);
    m_renderProfiler = new FrameProfiler();
    m_renderProfiler->NewFrame(0);
@@ -668,7 +664,13 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       PLOGI << "Starting script"; // For profiling
       m_progressDialog.SetProgress("Starting Game Scripts..."s);
 
-      m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
+      // Setup script interpreter and run the main script
+      CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);
+      m_scriptInterpreter->AddRef();
+      m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
+         { OnScriptError(type, line, column, description, stackDump); });
+      m_scriptInterpreter->Init(m_ptable);
+      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_pcv->GetScript()), false);
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
@@ -794,9 +796,12 @@ Player::~Player()
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+   }
 
-      // Stop script engine before destroying objects
-      m_ptable->m_pcv->CleanUpScriptEngine();
+   if (m_scriptInterpreter)
+   {
+      m_scriptInterpreter->Stop();
+      m_scriptInterpreter->Release();
    }
 
    // Release plugin message Ids
@@ -1155,28 +1160,48 @@ void Player::UpdateCursorState() const
    }
 }
 
+void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
+{
+   // Cancel capture if in capture attract mode
+   if (m_playMode == Player::PlayMode::CaptureAttract)
+      SetCloseState(Player::CloseState::CS_STOP_PLAY);
+
+#ifdef __LIBVPINBALL__
+   if (type != ScriptInterpreter::ErrorType::DebugConsole)
+   {
+      VPinballLib::ScriptErrorData scriptErrorStruct
+         = { type == ScriptInterpreter::ErrorType::Runtime ? VPINBALL_SCRIPT_ERROR_TYPE_RUNTIME : VPINBALL_SCRIPT_ERROR_TYPE_COMPILE, line, column, description.c_str() };
+      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_SCRIPT_ERROR, &scriptErrorStruct);
+   }
+#endif
+
+   m_ptable->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+}
+
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
-   CComObject<Ball>* m_pBall;
-   CComObject<Ball>::CreateInstance(&m_pBall);
-   m_pBall->Init(m_ptable, x, y, false, true);
-   m_pBall->m_hitBall.m_d.m_pos.z = z + radius;
-   m_pBall->m_hitBall.m_d.m_mass = mass;
-   m_pBall->m_hitBall.m_d.m_radius = radius;
-   m_pBall->m_hitBall.m_d.m_vel.x = vx;
-   m_pBall->m_hitBall.m_d.m_vel.y = vy;
-   m_pBall->m_hitBall.m_d.m_vel.z = vz;
-   m_pBall->m_d.m_useTableRenderSettings = true;
-   m_pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
-   m_ptable->m_vedit.push_back(m_pBall);
-   m_vhitables.push_back(m_pBall);
-   m_pBall->TimerSetup(m_vht);
-   m_pBall->RenderSetup(m_renderer->m_renderDevice);
-   m_pBall->PhysicSetup(m_physics, false);
-   m_vball.push_back(m_pBall);
+   CComObject<Ball> *pBall;
+   CComObject<Ball>::CreateInstance(&pBall);
+   pBall->Init(m_ptable, x, y, false, true);
+   pBall->m_hitBall.m_d.m_pos.z = z + radius;
+   pBall->m_hitBall.m_d.m_mass = mass;
+   pBall->m_hitBall.m_d.m_radius = radius;
+   pBall->m_hitBall.m_d.m_vel.x = vx;
+   pBall->m_hitBall.m_d.m_vel.y = vy;
+   pBall->m_hitBall.m_d.m_vel.z = vz;
+   pBall->m_d.m_useTableRenderSettings = true;
+   pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
+   m_ptable->m_vedit.push_back(pBall);
+   m_vhitables.push_back(pBall);
+   pBall->TimerSetup(m_vht);
+   pBall->RenderSetup(m_renderer->m_renderDevice);
+   pBall->PhysicSetup(m_physics, false);
+   m_vball.push_back(pBall);
    if (!m_pactiveballDebug)
-      m_pactiveballDebug = m_pBall;
-   return m_pBall;
+      m_pactiveballDebug = pBall;
+   if (m_scriptInterpreter)
+      m_scriptInterpreter->AddItem(pBall, false);
+   return pBall;
 }
 
 void Player::DestroyBall(Ball *pBall)
@@ -2121,6 +2146,8 @@ void Player::FinishFrame()
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
+      if (m_scriptInterpreter)
+         m_scriptInterpreter->RemoveItem(pBall);
       pBall->Release();
    }
    m_vballDelete.clear();

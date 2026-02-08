@@ -41,9 +41,6 @@ public:
    void Initialize() override;
    bool StepMsgLoop() override;
    int MainMsgLoop() override;
-
-private:
-   class WinEditor* m_vpxEditor;
 };
 
 #endif
