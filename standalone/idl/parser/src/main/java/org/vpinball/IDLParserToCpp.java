@@ -500,7 +500,7 @@ public class IDLParserToCpp {
 
 		// Crash on exit temporary workaround
 		buffer.append("#ifdef __STANDALONE__\n");
-		buffer.append("if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;\n");
+		buffer.append("if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;\n");
 		buffer.append("#endif\n");
 
 		buffer.append("while(min <= max) {\n");
@@ -511,7 +511,7 @@ public class IDLParserToCpp {
 		buffer.append("LPOLESTR fnNames = (LPOLESTR)wzName;\n");
 		buffer.append("DISPID tDispid;\n");
 		buffer.append("CComPtr<IDispatch> disp;\n");
-		buffer.append("g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);\n");
+		buffer.append("g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);\n");
 		buffer.append("if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {\n");
 		buffer.append("return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);\n");
 		buffer.append("}\n");
@@ -997,7 +997,7 @@ public class IDLParserToCpp {
 				new IDLInterface("IDispReelEvents", "DispReel"),
 				new IDLInterface("ILightSeq", "LightSeq"),
 				new IDLInterface("ILightSeqEvents", "LightSeq"),
-				new IDLInterface("IVPDebug", "DebuggerModule", "VPDebug"),
+				new IDLInterface("IVPDebug", "ScriptInterpreter::DebuggerModule", "VPDebug"),
 				new IDLInterface("IDecal", "Decal"),
 				new IDLInterface("IBall", "Ball", "IBall"),
 				new IDLInterface("IBallEvents", "Ball")),
