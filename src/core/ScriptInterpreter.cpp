@@ -448,7 +448,7 @@ STDMETHODIMP ScriptInterpreter::OnScriptErrorDebug(IActiveScriptErrorDebug *pScr
    *pfEnterDebugger = FALSE;
    *pfCallOnScriptErrorWhenContinuing = FALSE;
 
-   HandleScriptError(pScriptError, pScriptError);
+   HandleScriptError(reinterpret_cast<IActiveScriptError*>(pScriptError), pScriptError);
 
    return S_OK;
 }
