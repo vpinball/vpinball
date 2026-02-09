@@ -21,8 +21,8 @@ public:
    Settings();
    Settings(Settings *parent);
 
-   void SetIniPath(const string &path);
-   const string &GetIniPath() const;
+   void SetIniPath(const std::filesystem::path &path);
+   const std::filesystem::path &GetIniPath() const;
    void Reset();
    bool Load(const bool createDefault);
    void Load(const Settings &settings);

@@ -169,7 +169,8 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    Logger::GetInstance()->Init();
    VPApp vpx;
    CommandLineProcessor cmdLine;
-   const char* args[] = { "vpx-test.exe", "-ini", (GetAssetPath() / "VPinball.ini").string().c_str() };
+   const string iniPath = (GetAssetPath() / "VPinball.ini").string();
+   const char* args[] = { "vpx-test.exe", "-ini", iniPath.c_str() };
    cmdLine.ProcessCommandLine(3, args);
    vpx.InitInstance();
    const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
@@ -178,7 +179,8 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    // Initialize the doctest framework and run the tests
    doctest::Context context;
    context.setOption("no-breaks", true); // Disable breaks when a test fail (including crash & exceptions)
-   context.setOption("out", (GetAssetPath() / "test_results.txt").string().c_str());
+   const string outPath = (GetAssetPath() / "test_results.txt").string();
+   context.setOption("out", outPath.c_str());
    context.applyCommandLine(0, nullptr); // TODO Apply command line arguments if any
    int res = context.run();
 

@@ -29,8 +29,8 @@ public:
    LayeredINIPropertyStore(LayeredINIPropertyStore& parent);
    ~LayeredINIPropertyStore() override = default;
 
-   void SetIniPath(const string& path) { m_path = path; m_modified = true; }
-   const string& GetIniPath() const { return m_path; }
+   void SetIniPath(const std::filesystem::path& path) { m_path = path; m_modified = true; }
+   const std::filesystem::path& GetIniPath() const { return m_path; }
    void Reset();
    bool Load();
    void Load(const mINI::INIStructure& ini);
@@ -38,7 +38,7 @@ public:
    void Save();
    bool IsModified() const { return m_modified; }
    void SetModified(bool modified) { m_modified = modified; }
-   void GenerateTemplate(const string& path) const;
+   void GenerateTemplate(const std::filesystem::path& path) const;
 
    void Reset(PropertyRegistry::PropId propId) override;
 
@@ -83,7 +83,7 @@ private:
    StringValue& GetStringValue(PropertyRegistry::PropId propId);
 
    // Serialized data
-   string m_path;
+   std::filesystem::path m_path;
    mINI::INIStructure m_ini;
    bool LoadFromINI(PropertyRegistry::PropId id);
 };

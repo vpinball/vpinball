@@ -1,7 +1,5 @@
 // license:GPLv3+
 
-// Implementation of WinMain (Windows with UI) or main (Standalone)
-
 #include "core/stdafx.h"
 
 #include "core/VPApp.h"
@@ -142,18 +140,11 @@ END_OBJECT_MAP()
 
 
 VPApp::VPApp()
-#ifndef __STANDALONE__
-   : m_msgLoop(std::make_unique<WinMsgLoop>())
-#else
-   : m_msgLoop(std::make_unique<StandaloneMsgLoop>())
-#endif
-   , m_logicalNumberOfProcessors(SDL_GetNumLogicalCPUCores())
+   : m_logicalNumberOfProcessors(SDL_GetNumLogicalCPUCores())
 {
    g_app = this;
 
    SetThreadName("Main"s);
-
-   m_msgLoop->Initialize();
 
    #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
@@ -179,9 +170,9 @@ VPApp::VPApp()
          const HRESULT hRes = CoInitialize(nullptr);
       #endif
       _ASSERTE(SUCCEEDED(hRes));
-      m_module.Init(ObjectMap, instance, &LIBID_VPinballLib);
-
+      
       // load and register VP type library for COM integration
+      m_module.Init(ObjectMap, instance, &LIBID_VPinballLib);
       {
          ITypeLib *ptl = nullptr;
          const wstring wFileName = GetModulePath<wstring>(instance);
@@ -248,8 +239,6 @@ VPApp::VPApp()
 
 VPApp::~VPApp()
 {
-   m_msgLoop = nullptr;
-
    #ifndef __STANDALONE__
       m_module.RevokeClassObjects();
       m_module.Term();
@@ -327,49 +316,13 @@ void VPApp::InitInstance()
    m_settings.Save();
 }
 
-
 #ifndef __STANDALONE__
-
-WinMsgLoop::WinMsgLoop()
+BOOL VPApp::WinApp::OnIdle(LONG)
 {
+   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   return FALSE;
 }
-
-void WinMsgLoop::Initialize()
-{
-   SetResourceHandle(GetInstanceHandle());
-}
-
-bool WinMsgLoop::StepMsgLoop()
-{
-   if (MSG msg; PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-   {
-      m_idleIndex = 0;
-      if (msg.message == WM_QUIT)
-         return true;
-      if (!PreTranslateMessage(msg))
-      {
-         TranslateMessage(&msg);
-         DispatchMessage(&msg);
-      }
-   }
-   else
-   {
-      MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-      WaitMessage();
-   }
-   return false;
-}
-
-int WinMsgLoop::MainMsgLoop()
-{
-   while (!StepMsgLoop())
-   {
-      // Nothing to do here, everything is handled in the message loop and idle processing
-   }
-   return 0;
-}
-
-BOOL WinMsgLoop::PreTranslateMessage(MSG& msg)
+BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
 {
    if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
    {
@@ -384,21 +337,4 @@ BOOL WinMsgLoop::PreTranslateMessage(MSG& msg)
    }
    return __super::PreTranslateMessage(msg);
 }
-
-#else
-
-void StandaloneMsgLoop::Initialize()
-{
-}
-
-bool StandaloneMsgLoop::StepMsgLoop()
-{
-   return false;
-}
-
-int StandaloneMsgLoop::MainMsgLoop()
-{
-   return 0;
-}
-
 #endif

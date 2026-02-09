@@ -278,7 +278,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
    case FileLayoutMode::AppPrefData:
       if (table != nullptr && !table->m_filename.empty() && FileExists(table->m_filename))
       {
-         path = withSubFolder(PathFromFilename(table->m_filename));
+         path = withSubFolder(table->m_filename.parent_path());
          if (sub == TableSubFolder::Cache)
             path = path / table->m_title; // table's title is its file name without extension
          if (!DirExists(path))
@@ -347,14 +347,14 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
             }
             else
             {
-               path = withSubFolder(PathFromFilename(table->m_filename));
+               path = withSubFolder(table->m_filename.parent_path());
                if (!DirExists(path))
                {
                   path = withSubFolder(m_prefPath);
                   if (!DirExists(path))
                   {
                      // Not found: defaults to folder along table, not creating the dirs (backward compatiblity behavior)
-                     path = withSubFolder(PathFromFilename(table->m_filename));
+                     path = withSubFolder(table->m_filename.parent_path());
                   }
                }
             }
@@ -371,7 +371,7 @@ std::filesystem::path FileLocator::SearchScript(const PinTable* table, const std
    // Search along the table path first
    if (table)
    {
-      const auto tablePath = std::filesystem::path(PathFromFilename(table->m_filename));
+      const auto tablePath = table->m_filename.parent_path();
       if (auto path = find_case_insensitive_file_path(tablePath / script); !path.empty())
          return path;
       if (auto path = find_case_insensitive_file_path(tablePath / "user"s / script); !path.empty())

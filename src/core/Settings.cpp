@@ -115,12 +115,12 @@ void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, const strin
    }
 }
 
-void Settings::SetIniPath(const string &path)
+void Settings::SetIniPath(const std::filesystem::path &path)
 {
    m_store.SetIniPath(path);
 }
 
-const string& Settings::GetIniPath() const
+const std::filesystem::path& Settings::GetIniPath() const
 {
    return m_store.GetIniPath();
 }

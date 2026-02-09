@@ -5,46 +5,6 @@
 #include "Settings.h"
 #include "FileLocator.h"
 
-class AppMsgLoop
-{
-public:
-   virtual ~AppMsgLoop() = default;
-   virtual void Initialize() = 0;
-   virtual bool StepMsgLoop() = 0;
-   virtual int MainMsgLoop() = 0;
-};
-
-#ifndef __STANDALONE__
-
-class WinMsgLoop final : public CWinApp, public AppMsgLoop
-{
-public:
-   WinMsgLoop();
-   ~WinMsgLoop() override = default;
-   void Initialize() override;
-   bool StepMsgLoop() override;
-   int MainMsgLoop() override;
-
-protected:
-   BOOL PreTranslateMessage(MSG& msg) override;
-
-private:
-   int m_idleIndex = 0;
-};
-
-#else
-
-class StandaloneMsgLoop final : public AppMsgLoop
-{
-public:
-   ~StandaloneMsgLoop() override = default;
-   void Initialize() override;
-   bool StepMsgLoop() override;
-   int MainMsgLoop() override;
-};
-
-#endif
-
 
 class VPApp final
 {
@@ -52,10 +12,8 @@ public:
    VPApp();
    ~VPApp();
 
-   void SetSettingsFileName(const string& path) { m_iniFileName = path; } // Must be defined before InitInstance() is called, otherwise it will be ignored
+   void SetSettingsFileName(const std::filesystem::path& path) { m_iniFileName = path; } // Must be defined before InitInstance() is called, otherwise it will be ignored
    void InitInstance();
-
-   std::unique_ptr<AppMsgLoop> m_msgLoop;
 
    // overall app settings
    Settings m_settings;
@@ -78,12 +36,20 @@ public:
 
 #ifndef __STANDALONE__
    static CComModule m_module;
-   HINSTANCE GetInstanceHandle() const { return static_cast<WinMsgLoop*>(m_msgLoop.get())->GetInstanceHandle(); }
+   class WinApp final : public CWinApp
+   {
+   public:
+      WinApp() = default;
+   protected:
+      BOOL OnIdle(LONG) override;
+      BOOL PreTranslateMessage(MSG& msg) override;
+   } m_winApp;
+   HINSTANCE GetInstanceHandle() const { return m_winApp.GetInstanceHandle(); }
 #else
    HINSTANCE GetInstanceHandle() const { return nullptr; }
 #endif
 
 private:
-   string m_iniFileName; // Override default ini filename, must be defined before InitInstance
+   std::filesystem::path m_iniFileName; // Override default ini filename, must be defined before InitInstance
    int m_logicalNumberOfProcessors = -1;
 };

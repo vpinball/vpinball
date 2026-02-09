@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 
+#include "ui/worker.h"
+
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -100,10 +102,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    PLOGI << "Compiling script"; // For profiling
 
-   // get the load path from the table filename
-   const string szLoadDir = PathFromFilename(table->m_filename);
    // make sure the load directory is the active directory
-   SetCurrentDirectory(szLoadDir.c_str());
+   SetCurrentDirectory(table->m_filename.parent_path().string().c_str());
 
 #ifdef __STANDALONE__
    Textbox *const implicitDMD = (Textbox *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, table, 0, 0);
@@ -1709,7 +1709,7 @@ private:
       // - qoi is both faster to save and small enough on disk (twice faster than bmp)
       // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
       std::stringstream ss;
-      ss << PathFromFilename(m_player->m_ptable->m_filename) << "Capture" << PATH_SEPARATOR_CHAR
+      ss << m_player->m_ptable->m_filename.parent_path().string() << "Capture" << PATH_SEPARATOR_CHAR
          << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
              id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
          << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.qoi" : ".qoi");

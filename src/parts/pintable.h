@@ -522,7 +522,7 @@ public:
 
    void LockElements();
 
-   string m_filename;
+   std::filesystem::path m_filename;
    string m_title;
 
    // Flag that disables all table edition. Lock toggles are counted to identify version changes in a table (for example to guarantee untouched table for tournament)
@@ -532,35 +532,36 @@ public:
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
 
    // Override automatic ini path (used for commandline override)
-   void SetSettingsFileName(const string &path)
+   void SetSettingsFileName(const std::filesystem::path &path)
    {
-      m_iniFileName = FileExists(path) ? path : string();
+      m_iniFileName = FileExists(path) ? path : std::filesystem::path();
       m_settings.SetIniPath(GetSettingsFileName());
       m_settings.Load(false);
    }
 
    // Get the ini file name to use for this table (either overridden or derived from table or folder name)
-   string GetSettingsFileName() const
+   std::filesystem::path GetSettingsFileName() const
    {
       // Overriden externally (on command line)
       if (!m_iniFileName.empty() && FileExists(m_iniFileName))
          return m_iniFileName;
 
-      // Not overriden and table file not yet saved => No table ini file available
-      string tableIni = m_filename;
-      if (!FileExists(m_filename) || !ReplaceExtensionFromFilename(tableIni, "ini"s))
-         return string();
+      // File not yet saved => No table ini file available
+      if (!FileExists(m_filename))
+         return std::filesystem::path();
 
       // Table ini file alongside table file, name matching table filename
+      std::filesystem::path tableIni = m_filename;
+      tableIni.replace_extension("ini");
       if (FileExists(tableIni))
          return tableIni;
 
       // Table ini file alongside table file, name matching folder name
-      const auto folder = std::filesystem::path(m_filename).parent_path();
+      const auto folder = m_filename.parent_path();
       std::filesystem::path folderIni = folder / (folder.filename().string() + ".ini");
       folderIni = find_case_insensitive_file_path(folderIni);
       if (!folderIni.empty())
-         return folderIni.string();
+         return folderIni;
 
       // No existing file: defaults to ini file alongside table file, name matching table filename
       return tableIni;
@@ -576,7 +577,7 @@ public:
    class PinTableWnd *m_tableEditor = nullptr;
 
 private:
-   string m_iniFileName;
+   std::filesystem::path m_iniFileName;
 
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;

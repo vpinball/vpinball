@@ -1,5 +1,7 @@
 #include "core/stdafx.h"
 
+#include "worker.h"
+
 HANDLE g_hWorkerStarted;
 
 static size_t hangsnooptimerid;

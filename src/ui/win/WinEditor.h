@@ -72,7 +72,7 @@ private:
    void CopyPasteElement(const CopyPasteModes mode);
    void InitTools();
    bool CanClose();
-   void UpdateRecentFileList(const string& filename);
+   void UpdateRecentFileList(const std::filesystem::path& filename);
 
 public:
    void AddMDITable(PinTableMDI* mdiTable);

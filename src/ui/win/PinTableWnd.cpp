@@ -6,6 +6,8 @@
 
 #include "ui/paintsur.h"
 
+#include "ui/worker.h"
+
 #ifndef __STANDALONE__
 #include "ui/dialogs/VPXLoadFileProgressBar.h"
 #include "ui/dialogs/VPXSaveFileProgressBar.h"
@@ -145,8 +147,8 @@ void PinTableWnd::ExportBlueprint()
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
    char szBlueprintFileName[MAXSTRING];
-   strncpy_s(szBlueprintFileName, sizeof(szBlueprintFileName), m_table->m_filename.c_str());
-   const size_t idx = m_table->m_filename.find_last_of('.');
+   strncpy_s(szBlueprintFileName, sizeof(szBlueprintFileName), m_table->m_filename.string().c_str());
+   const size_t idx = m_table->m_filename.string().find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szBlueprintFileName[idx] = '\0';
    ofn.lpstrFile = szBlueprintFileName;
@@ -476,7 +478,7 @@ POINT PinTableWnd::GetScreenPoint() const
 void PinTableWnd::OnInitialUpdate()
 {
    BeginAutoSaveCounter();
-   SetWindowText(m_table->m_filename.c_str());
+   SetWindowText(m_table->m_filename.string().c_str());
    SetCaption(m_table->m_title);
    m_vpxEditor->SetEnableMenuItems();
 }

@@ -95,7 +95,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
     const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
-    const std::filesystem::path iniPath = PathFromFilename(g_app->m_settings.GetIniPath());
+    const std::filesystem::path iniPath = g_app->m_settings.GetIniPath().parent_path();
     if (iniPath == appPath)
        SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_CHECKED, 0);
     else if (iniPath == prefPath)

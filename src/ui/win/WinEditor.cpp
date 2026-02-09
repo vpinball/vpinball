@@ -27,6 +27,8 @@
 
 #include "ui/win/PinTableMDI.h"
 
+#include "ui/worker.h"
+
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -1266,7 +1268,7 @@ void WinEditor::SetEnableMenuItems()
 #endif
 }
 
-void WinEditor::UpdateRecentFileList(const string& filename)
+void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
 {
    const size_t old_count = m_recentTableList.size();
 
@@ -1274,7 +1276,7 @@ void WinEditor::UpdateRecentFileList(const string& filename)
    if (!filename.empty())
    {
       vector<string> newList;
-      newList.push_back(filename);
+      newList.push_back(filename.string());
 
       for (const string &tableName : m_recentTableList)
       {
@@ -2169,7 +2171,7 @@ void WinEditor::ShowSearchSelect()
       {
          ptCur->m_searchSelectDlg.Create(GetHwnd());
 
-         const string windowName = "Search/Select Element - " + ptCur->m_filename;
+         const string windowName = "Search/Select Element - " + ptCur->m_filename.string();
          ptCur->m_searchSelectDlg.SetWindowText(windowName.c_str());
 
          ptCur->m_searchSelectDlg.ShowWindow();

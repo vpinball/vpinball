@@ -65,7 +65,7 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
     cs.style = WS_MAXIMIZE;
     cs.hwndParent = m_vpxEditor->GetHwnd();
     cs.lpszClass = _T("PinTable");
-    cs.lpszName = _T(m_tableWnd->m_table->m_filename.c_str());
+    cs.lpszName = _T("");
 }
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)

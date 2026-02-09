@@ -221,12 +221,12 @@ void LayeredINIPropertyStore::Save()
    else if (FileExists(m_path))
    {
       // Remove if empty
-      remove(m_path.c_str());
+      std::filesystem::remove(m_path);
    }
    m_modified = false;
 }
 
-void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
+void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path) const
 {
    std::ofstream file(path);
    if (!file.is_open())
