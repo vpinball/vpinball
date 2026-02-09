@@ -1,4 +1,42 @@
 #include "ScoreBoard.h"
+#include <locale>
+#include <sstream>
+
+namespace {
+const std::locale& ScoreLocale()
+{
+   static const std::locale loc = [] {
+      try { return std::locale(""); } // Use user/system locale when available
+      catch (...) { return std::locale::classic(); }
+   }();
+   return loc;
+}
+
+std::string FormatWithCommas(int value)
+{
+   const bool negative = value < 0;
+   uint64_t n = negative ? static_cast<uint64_t>(-(int64_t)value) : static_cast<uint64_t>(value);
+   std::string s = std::to_string(n);
+   for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
+      s.insert(static_cast<size_t>(i), 1, ',');
+   return negative ? "-" + s : s;
+}
+
+std::string FormatScore(int value)
+{
+   std::ostringstream oss;
+   oss.imbue(ScoreLocale());
+   oss << value;
+   std::string s = oss.str();
+   for (char& c : s)
+      if (static_cast<unsigned char>(c) == 0xA0) // NBSP grouping separator
+         c = ' ';
+   if ((value <= -1000 || value >= 1000) && s == std::to_string(value))
+      return FormatWithCommas(value);
+   return s;
+}
+}
+
 
 namespace Flex {
 
@@ -87,10 +125,10 @@ void ScoreBoard::SetHighlightedPlayer(int player)
 
 void ScoreBoard::SetScore(int score1, int score2, int score3, int score4)
 {
-   m_pScores[0]->SetText(std::to_string(score1));
-   m_pScores[1]->SetText(std::to_string(score2));
-   m_pScores[2]->SetText(std::to_string(score3));
-   m_pScores[3]->SetText(std::to_string(score4));
+   m_pScores[0]->SetText(FormatScore(score1));
+   m_pScores[1]->SetText(FormatScore(score2));
+   m_pScores[2]->SetText(FormatScore(score3));
+   m_pScores[3]->SetText(FormatScore(score4));
 }
 
 void ScoreBoard::Update(float delta)
