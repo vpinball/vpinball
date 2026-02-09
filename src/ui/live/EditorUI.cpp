@@ -163,7 +163,7 @@ void EditorUI::RenderUI()
          if (!IsInspectMode() && ImGui::BeginMenu("File"))
          {
             if (ImGui::MenuItem("Save"))
-               m_table->Save(false);
+               m_table->Save();
             ImGui::Separator();
             if (ImGui::MenuItem("Quit"))
                m_player->SetCloseState(Player::CS_CLOSE_APP);

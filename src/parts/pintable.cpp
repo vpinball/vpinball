@@ -70,7 +70,7 @@ PinTable::PinTable()
    UpdateCurrentBGSet();
    m_currentBackglassMode = m_viewMode;
 
-   m_pcv = new CodeViewer((CodeViewer::IScriptableHost *)this);
+   m_pcv = new CodeViewer(this);
    m_pcv->Create(nullptr);
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
@@ -229,32 +229,6 @@ if(!found) \
     pEditSurface.clear(); \
 }}
 
-
-void PinTable::InitTablePostLoad()
-{
-   PLOGI << "InitTablePostLoad"; // For profiling
-
-   for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
-      if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
-      {
-         mViewSetups[i] = mViewSetups[BG_DESKTOP];
-         if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
-            m_BG_image[i] = m_BG_image[BG_DESKTOP];
-      }
-
-   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
-   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
-
-   m_currentBackglassMode = m_viewMode;
-   if (m_isFSSViewModeEnabled)
-      m_currentBackglassMode = BG_FSS;
-
-   m_pcv->AddItem(this, false);
-   m_pcv->AddItem(m_psgt, true);
-   //m_pcv->AddItem(m_pcv->m_pdm, false);
-
-   RemoveInvalidReferences();
-}
 
 // cleanup old bugs, i.e. currently buggy/non-existing material, image & surface names
 // (also does the same for the <None> entries of droplists)
@@ -465,7 +439,10 @@ PinTable* PinTable::CopyForPlay()
    AddRef(); // as the live table holds a reference on this
 
    CComObject<PinTable> *dst = live_table;
-   dst->m_pcv->SetScript(src->m_pcv->GetScript());
+   
+   dst->m_original_table_script = src->m_original_table_script;
+   dst->m_external_script_name = src->m_external_script_name;
+   dst->m_script_text = src->m_script_text;
 
    dst->m_settings.SetIniPath(src->m_settings.GetIniPath());
    dst->m_settings.Load(src->m_settings);
@@ -634,12 +611,16 @@ PinTable* PinTable::CopyForPlay()
          }
       }
       live_table->m_vcollection.push_back(pcol);
-      live_table->m_pcv->AddItem(pcol, false);
+      if (live_table->m_tableEditor)
+         live_table->m_tableEditor->m_pcv->AddItem(pcol, false);
    }
 
-   live_table->m_pcv->AddItem(live_table, false);
-   live_table->m_pcv->AddItem(live_table->m_psgt, true);
-   //live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
+   if (live_table->m_tableEditor)
+   {
+      live_table->m_tableEditor->m_pcv->AddItem(live_table, false);
+      live_table->m_tableEditor->m_pcv->AddItem(live_table->m_psgt, true);
+      //live_table->m_tableEditor->m_pcv->AddItem(live_table->m_tableEditor->m_pcv->m_pdm, false);
+   }
 
    live_table->m_vrenderprobe.reserve(m_vrenderprobe.size() + live_table->m_vrenderprobe.size());
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
@@ -685,100 +666,25 @@ void PinTable::SetupLookUpTables(bool isPlaying)
    }
 }
 
-HRESULT PinTable::TableSave()
-{
-   return Save(m_filename.empty());
-}
-
-HRESULT PinTable::SaveAs()
-{
-   return Save(true);
-}
-
-HRESULT PinTable::Save(const bool saveAs)
+HRESULT PinTable::Save()
 {
 #ifndef __STANDALONE__
-   IStorage* pstgRoot;
-
    // Get file name if needed
-   if (saveAs)
+   std::filesystem::path vpxPath = m_filename;
+   vpxPath.replace_extension(".vpx");
+
+   STGOPTIONS stg;
+   stg.usVersion = 1;
+   stg.reserved = 0;
+   stg.ulSectorSize = 4096;
+
+   HRESULT hr;
+   IStorage* pstgRoot;
+   if (FAILED(hr = StgCreateStorageEx(vpxPath.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+      STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
    {
-      //need to get a file name
-      OPENFILENAME ofn = {};
-      ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = g_app->GetInstanceHandle();
-      ofn.hwndOwner = m_vpinball->GetHwnd();
-      // TEXT
-      ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
-
-      std::filesystem::path vpxPath = m_filename;
-      vpxPath.replace_extension(".vpx");
-      char fileName[MAXSTRING];
-      strncpy_s(fileName, sizeof(fileName), vpxPath.string().c_str());
-      ofn.lpstrFile = fileName;
-      ofn.nMaxFile = sizeof(fileName);
-      ofn.lpstrDefExt = "vpx";
-      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
-
-      {
-         string szInitialDir;
-         // First, use dir of current table
-         std::filesystem::path currentTablePath = m_filename.parent_path();
-         if (currentTablePath.empty())
-            szInitialDir = currentTablePath.string();
-         // Or try with the standard last-used dir
-         else
-         {
-            Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-            szInitialDir = m_settings.GetRecentDir_LoadDir();
-         }
-         ofn.lpstrInitialDir = szInitialDir.c_str();
-
-         const int ret = GetSaveFileName(&ofn);
-         // user cancelled
-         if (ret == 0)
-            return S_FALSE;
-      }
-
-      // assign user selected file name as new internal filename, and save as new default
-      m_filename = fileName;
-      g_app->m_settings.SetRecentDir_LoadDir(m_filename.parent_path().string(), false); // truncate after folder(s)
-
-      {
-         STGOPTIONS stg;
-         stg.usVersion = 1;
-         stg.reserved = 0;
-         stg.ulSectorSize = 4096;
-
-         HRESULT hr;
-         if (FAILED(hr = StgCreateStorageEx(m_filename.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-            STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
-         {
-            ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
-            return hr;
-         }
-      }
-
-      m_title = TitleFromFilename(m_filename.filename().string());
-      m_tableEditor->SetCaption(m_title);
-   }
-   else
-   {
-      std::filesystem::path vpxPath = m_filename;
-      vpxPath.replace_extension(".vpx");
-
-      STGOPTIONS stg;
-      stg.usVersion = 1;
-      stg.reserved = 0;
-      stg.ulSectorSize = 4096;
-
-      HRESULT hr;
-      if (FAILED(hr = StgCreateStorageEx(vpxPath.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-         STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
-      {
-         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
-         return hr;
-      }
+      ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
+      return hr;
    }
 
    m_vpinball->SetActionCur(LocalString(IDS_SAVING).m_szbuffer);
@@ -786,20 +692,20 @@ HRESULT PinTable::Save(const bool saveAs)
 
    RemoveInvalidReferences();
 
-   const HRESULT hr = SaveToStorage(pstgRoot);
-
+   hr = SaveToStorage(pstgRoot);
    if (SUCCEEDED(hr))
    {
       pstgRoot->Commit(STGC_DEFAULT);
       pstgRoot->Release();
 
-      m_vpinball->SetActionCur(string());
-      m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
-
       m_undo.SetCleanPoint(eSaveClean);
-      m_pcv->SetClean(eSaveClean);
+      if (m_tableEditor)
+         m_tableEditor->m_pcv->SetClean(eSaveClean);
       SetNonUndoableDirty(eSaveClean);
    }
+
+   m_vpinball->SetActionCur(string());
+   m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
 #endif
 
    // Save user custom settings file (if any) along the table file
@@ -1210,6 +1116,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
 HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
+#ifndef __STANDALONE__
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(LEFT), m_left);
@@ -1400,12 +1307,28 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
       // save the script source code, incl. the computed hash to be able to check for file integrity on loading
       bw.WriteTag(FID(CODE));
-      m_pcv->SaveToStream(pstm, hcrypthash);
+      size_t nBytes = m_script_text.size();
+      const char * scriptBytes = m_script_text.c_str();
+      if (!m_external_script_name.empty())
+      {
+         std::ofstream file(m_external_script_name);
+         if (file)
+         {
+            file.write(scriptBytes, nBytes);
+            file.close();
+         }
+         nBytes = m_original_table_script.size();
+         scriptBytes = m_original_table_script.data();
+      }
+      ULONG writ = 0;
+      pstm->Write(&nBytes, (ULONG)sizeof(int), &writ);
+      pstm->Write(scriptBytes, (ULONG)nBytes, &writ);
+      CryptHashData(hcrypthash, (BYTE *)scriptBytes, (DWORD)nBytes, 0);
    }
 
    bw.WriteInt(FID(TLCK), m_tablelocked);
    bw.WriteTag(FID(ENDB));
-
+#endif
    return S_OK;
 }
 
@@ -1436,9 +1359,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    m_filename = filename;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   if (FileExists(GetSettingsFileName()))
+   if (const std::filesystem::path iniPath = GetSettingsFileName(); FileExists(iniPath))
    {
-      m_settings.SetIniPath(GetSettingsFileName());
+      m_settings.SetIniPath(iniPath);
       m_settings.Load(false);
    }
 
@@ -1841,7 +1764,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
          if (loadfileversion < 1081)
          {
             // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
-            string script = m_pcv->GetScript();
+            string script = m_script_text;
             StrToLower(script);
             std::ranges::for_each(m_vedit,
                [&](IEditable *editable)
@@ -1936,7 +1859,29 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       m_title += " [READ ONLY]";
 #endif
 
-   InitTablePostLoad();
+   PLOGI << "InitTablePostLoad"; // For profiling
+
+   for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
+      if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
+      {
+         mViewSetups[i] = mViewSetups[BG_DESKTOP];
+         if (m_BG_image[i].empty() && i == BG_FSS) // copy image over for FSS mode
+            m_BG_image[i] = m_BG_image[BG_DESKTOP];
+      }
+
+   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
+   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
+
+   m_currentBackglassMode = m_viewMode;
+   if (m_isFSSViewModeEnabled)
+      m_currentBackglassMode = BG_FSS;
+
+   RemoveInvalidReferences();
+
+   m_pcv->SetScript(m_script_text);
+   m_pcv->AddItem(this, false);
+   m_pcv->AddItem(m_psgt, true);
+   //m_pcv->AddItem(m_pcv->m_pdm, false);
 
    std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
    std::filesystem::path tableFile = std::filesystem::path(filename).filename();
@@ -1950,14 +1895,15 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    // auto-import VBS table script, if it exists...
    if (std::filesystem::path filenameAuto = g_app->m_fileLocator.SearchScript(this, tableFile.replace_extension(".vbs")); !filenameAuto.empty())
-      m_pcv->LoadFromFile(filenameAuto.string());
+      LoadScriptOverride(filenameAuto);
    else
    {
       std::filesystem::path folderVbs = tablePath / (tablePath.filename().string() + ".vbs");
       folderVbs = find_case_insensitive_file_path(folderVbs);
       if (!folderVbs.empty())
-         m_pcv->LoadFromFile(folderVbs.string());
+         LoadScriptOverride(folderVbs);
    }
+   m_sdsDirtyScript = eSaveClean;
 
    // auto-import VPP settings, if it exists...
    if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".vpp"); FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
@@ -1966,6 +1912,26 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       ImportVPP(filenameAuto2);
 
    return hr;
+}
+
+void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
+{
+   std::ifstream file(scriptPath, std::ios::binary | std::ios::ate);
+   if (!file) {
+      PLOGE << "Failed to open script file";
+      return;
+   }
+   
+   std::streamsize size = file.tellg();
+   file.seekg(0, std::ios::beg);
+   std::vector<char> buffer(size);
+   if (!file.read(buffer.data(), size)) {
+      PLOGE << "Failed to read script file";
+      return;
+   }
+
+   m_pcv->SetScript(string_from_utf8_or_iso8859_1(buffer.data(), buffer.size()));
+   m_external_script_name = scriptPath;
 }
 
 void PinTable::SetLoadDefaults()
@@ -2229,7 +2195,48 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    }
    case FID(CODE): // if the script is protected then we pass in the proper cryptokey into the code loadstream
    {
-      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, m_script_protected ? pbr->m_hcryptkey : NULL);
+      ULONG read = 0;
+      int cchar;
+      pbr->m_pistream->Read(&cchar, sizeof(int), &read);
+
+      char * szText = new char[cchar + 1];
+
+      pbr->m_pistream->Read(szText, cchar*(int)sizeof(char), &read);
+
+      #ifndef __STANDALONE__
+         if (pbr->m_hcrypthash)
+            CryptHashData(pbr->m_hcrypthash, (BYTE *)szText, cchar, 0);
+
+         // if there is a valid key, then decrypt the script text (now in szText)
+         //(must be done after the hash is updated)
+         if (m_script_protected && (pbr->m_hcryptkey != 0))
+         {
+            // get the size of the data to decrypt
+            DWORD cryptlen = cchar*(int)sizeof(char);
+
+            // decrypt the script
+            CryptDecrypt(pbr->m_hcryptkey, // key to use
+               0,                          // not hashing data at the same time
+               TRUE,                       // last block (or only block)
+               0,                          // no flags
+               (BYTE *)szText,             // buffer to decrypt
+               &cryptlen);                 // size of data to decrypt
+
+            /*const int foo =*/ GetLastError();	// purge any errors
+
+            // update the size of the buffer
+            cchar = cryptlen/(DWORD)sizeof(char);
+         }
+      #endif
+
+      // ensure that the script is null terminated
+      szText[cchar] = '\0';
+
+      // save original script, in case an external vbs is loaded
+      m_original_table_script.resize(cchar);
+      memcpy(m_original_table_script.data(), szText, cchar);
+      m_script_text = string_from_utf8_or_iso8859_1(szText, cchar);
+      delete[] szText;
       break;
    }
    case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
@@ -4423,7 +4430,7 @@ string PinTable::AuditTable(bool log) const
    std::stringstream ss;
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
-   const char *const szText = m_pcv->GetScript().c_str();
+   const char *const szText = m_script_text.c_str();
    const char *wordStart = nullptr;
    const char *wordPos = szText;
    string inClass;

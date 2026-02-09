@@ -6,8 +6,8 @@
 
 #include "core/Settings.h"
 #include "renderer/RenderDevice.h"
-
 #include "parts/Sound.h"
+
 #ifndef __STANDALONE__
    #include <wxx_dockframe.h>
    #include "ui/dialogs/ImageDialog.h"
@@ -207,8 +207,6 @@ public:
    int m_ToolCur; // palette button currently pressed
 
    int m_NextTableID; // counter to create next unique table name
-
-   CodeViewer *m_pcv; // currently active code window
 
    bool m_backglassView = false; // whether viewing the playfield or screen layout
 

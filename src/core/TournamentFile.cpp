@@ -54,9 +54,9 @@ static unsigned int GenerateTournamentFileInternal(PinTable* table, uint8_t *con
 
    //
 
-   const size_t cchar = table->m_pcv->GetScript().length();
+   const size_t cchar = table->m_original_table_script.size();
    char *const szText = new char[cchar + 1];
-   strncpy_s(szText, cchar + 1, table->m_pcv->GetScript().c_str());
+   strncpy_s(szText, cchar + 1, table->m_original_table_script.data());
 
    for (size_t i = 0; i < cchar; ++i)
       szText[i] = cLower(szText[i]);

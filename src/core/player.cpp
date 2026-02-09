@@ -107,17 +107,17 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
 #ifdef __STANDALONE__
    Textbox *const implicitDMD = (Textbox *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, table, 0, 0);
-   table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
+   table->m_tableEditor->m_pcv->RemoveItem(implicitDMD->GetScriptable());
    wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
    implicitDMD->m_d.m_visible = false;
    implicitDMD->m_d.m_isDMD = true;
    implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
    table->m_vedit.push_back(implicitDMD);
-   table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
+   table->m_tableEditor->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
    PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
 
    Flasher *const implicitDMD2 = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, table, 0, 0);
-   table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
+   table->m_tableEditor->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
    wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
    int dmdWidth = 128 * 4; // (658)
    int dmdHeight = 38 * 4; // (189)
@@ -137,7 +137,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    implicitDMD2->m_d.m_modulate_vs_add = 1;
    implicitDMD2->m_d.m_addBlend = true;
    table->m_vedit.push_back(implicitDMD2);
-   table->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
+   table->m_tableEditor->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
    PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
 #endif
    
@@ -670,7 +670,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
          { OnScriptError(type, line, column, description, stackDump); });
       m_scriptInterpreter->Init(m_ptable);
-      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_pcv->GetScript()), false);
+      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_script_text), false);
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
@@ -954,7 +954,8 @@ Player::~Player()
    if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh) != -1)
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      if (m_ptable->m_tableEditor)
+         m_ptable->m_tableEditor->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
       m_implicitPlayfieldMesh->Release();
       m_implicitPlayfieldMesh = nullptr;
    }
@@ -1170,7 +1171,7 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
    PLOGE << (type == ScriptInterpreter::ErrorType::Runtime ? "Runtime" : "Compile") << " error on line " << line << ", col " << column << ": " << description;
 #endif
 
-   m_ptable->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+   m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)

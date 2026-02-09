@@ -482,11 +482,11 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
       return VPINBALL_STATUS_FAILURE;
 
    std::filesystem::path tempPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "temp_script.vbs");
-   std::ofstream outFile(tempPath);
+   std::ofstream outFile(tempPath, std::ios::binary);
    if (!outFile)
       return VPINBALL_STATUS_FAILURE;
 
-   outFile << m_pTable->m_pcv->GetScript();
+   outFile.write(m_pTable->m_original_table_script.data(), m_pTable->m_original_table_script.size());
    outFile.close();
 
    m_pTable->Release();

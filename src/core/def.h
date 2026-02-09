@@ -861,6 +861,7 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
+string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize);
 string create_hex_dump(const uint8_t* buffer, size_t size);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);

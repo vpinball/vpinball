@@ -14,6 +14,8 @@
 #include <climits>
 #endif
 
+#include <fstream>
+
 static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 
 //Scintilla Lexer parses only lower case unless otherwise told
@@ -73,9 +75,9 @@ inline string ParseRemoveVBSLineComments(string& line)
 }
 
 
-CodeViewer::CodeViewer(IScriptableHost* psh)
+CodeViewer::CodeViewer(PinTable* psh)
 {
-   m_psh = psh;
+   m_table = psh;
 
    szFindString[0] = '\0';
    szReplaceString[0] = '\0';
@@ -90,9 +92,6 @@ CodeViewer::CodeViewer(IScriptableHost* psh)
 
 CodeViewer::~CodeViewer()
 {
-   if (g_pvp && g_pvp->m_pcv == this)
-      g_pvp->m_pcv = nullptr;
-
    Destroy();
 
    for (size_t i = 0; i < m_vcvd.size(); ++i)
@@ -103,87 +102,6 @@ CodeViewer::~CodeViewer()
       DestroyAcceleratorTable(m_haccel);
 #endif
 }
-
-//
-// UTF-8 conversions/validations:
-//
-
-// old ANSI to UTF-8
-// allocates new mem block
-static char* iso8859_1_to_utf8(const char* str, const size_t length)
-{
-   char* const utf8 = new char[1 + 2*length]; // worst case
-
-   char* c = utf8;
-   for (size_t i = 0; i < length; ++i, ++str)
-   {
-      if (*str & 0x80)
-      {
-         *c++ = 0xc0 | (char)((unsigned char)*str >> 6);
-         *c++ = 0x80 | (*str & 0x3f);
-      }
-      //else // check for bogus ASCII control characters
-      //if (*str < 9 || (*str > 10 && *str < 13) || (*str > 13 && *str < 32))
-      //   *c++ = ' ';
-      else
-         *c++ = *str;
-   }
-   *c++ = '\0';
-
-   return utf8;
-}
-
-// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
-// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
-
-#define UTF8_ACCEPT 0
-#define UTF8_REJECT 1
-
-static constexpr uint8_t utf8d[] = {
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 00..1f
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 20..3f
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 40..5f
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 60..7f
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9, // 80..9f
-  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7, // a0..bf
-  8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, // c0..df
-  0xa,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x4,0x3,0x3, // e0..ef
-  0xb,0x6,0x6,0x6,0x5,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8, // f0..ff
-  0x0,0x1,0x2,0x3,0x5,0x8,0x7,0x1,0x1,0x1,0x4,0x6,0x1,0x1,0x1,0x1, // s0..s0
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1, // s1..s2
-  1,2,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1, // s3..s4
-  1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,3,1,1,1,1,1,1, // s5..s6
-  1,3,1,1,1,1,1,3,1,3,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // s7..s8
-};
-
-static uint32_t decode(uint32_t* const state, uint32_t* const codep, const uint32_t byte)
-{
-   const uint32_t type = utf8d[byte];
-
-   *codep = (*state != UTF8_ACCEPT) ?
-      (byte & 0x3fu) | (*codep << 6) :
-      (0xff >> type) & (byte);
-
-   *state = utf8d[256 + *state*16 + type];
-   return *state;
-}
-
-static uint32_t validate_utf8(uint32_t *const state, const char * const str, const size_t length)
-{
-   for (size_t i = 0; i < length; i++)
-   {
-      const uint32_t type = utf8d[(uint8_t)str[i]];
-      *state = utf8d[256 + (*state) * 16 + type];
-
-      if (*state == UTF8_REJECT)
-         return UTF8_REJECT;
-   }
-   return *state;
-}
-
-//
-//
-//
 
 // strSearchData has to be lower case
 template<bool uniqueKey> // otherwise keyName
@@ -293,17 +211,16 @@ static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 		else
 		{
 			// detect/warn about duplicate subs/functions (at least rudimentary)
-			if (g_pvp && g_pvp->m_pcv &&
-			    g_pvp->m_pcv->m_warn_on_dupes &&
+         if (g_pvp && g_pvp->GetActiveTableEditor() && g_pvp->GetActiveTableEditor()->m_pcv->m_warn_on_dupes &&
 			    (udIn.eTyping == eSub || udIn.eTyping == eFunction) && // only check subs and functions
 			    (iterFound->m_lineNum != udIn.m_lineNum)) // use this simple check as dupe test: are the keys on different lines?
 			{
 #ifndef __STANDALONE__
-				const Sci_Position dwellpos = SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-				SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
+            const Sci_Position dwellpos = SendMessage(g_pvp->GetActiveTableEditor()->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+            SendMessage(g_pvp->GetActiveTableEditor()->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
 				           (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum+1) + ")\n                            " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum+1) + ')').c_str());
 #endif
-				g_pvp->m_pcv->m_warn_on_dupes = false;
+            g_pvp->GetActiveTableEditor()->m_pcv->m_warn_on_dupes = false;
 			}
 
 			// assign again, as e.g. line of func/sub/var could have been changed by other updates
@@ -490,8 +407,7 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 #ifndef __STANDALONE__
    if (sds == eSaveClean)
       ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
-   m_sdsDirty = sds;
-   m_psh->SetDirtyScript(sds);
+   m_table->m_sdsDirtyScript = sds;
 #endif
 }
 
@@ -499,11 +415,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
 {
    if (g_pplayer && g_pplayer->m_liveUI && !m_suppressErrorDialogs)
    {
-      string desc = description;
-      uint32_t state = UTF8_ACCEPT;
-      if (validate_utf8(&state, description.data(), description.size()) == UTF8_REJECT)
-         desc = iso8859_1_to_utf8(description.data(), description.size()); // old ANSI characters? -> convert to UTF-8
-      g_pplayer->m_liveUI->PushNotification("Script Error: "s + ((type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime error" : "Compile error") + " on line " + std::to_string(line) + ", col " + std::to_string(column) + ": " + desc, 5000);
+      g_pplayer->m_liveUI->PushNotification("Script error: " + string_from_utf8_or_iso8859_1(description.data(), description.size()), 5000);
    }
 
 #ifndef __STANDALONE__
@@ -546,7 +458,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
          g_pvp->EnableWindow(TRUE);
 
          if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-            ::SetFocus(pt->m_table->m_pcv->m_hwndScintilla);
+            ::SetFocus(pt->m_table->m_tableEditor->m_pcv->m_hwndScintilla);
       }
    }
 #endif
@@ -736,8 +648,8 @@ void CodeViewer::SetCaption(const string& szCaption)
 {
 #ifndef __STANDALONE__
    string szT;
-   if (!external_script_name.empty())
-      szT = "MODIFYING EXTERNAL SCRIPT: " + external_script_name;
+   if (!m_table->m_external_script_name.empty())
+      szT = "MODIFYING EXTERNAL SCRIPT: " + m_table->m_external_script_name.string();
    else
       szT = szCaption + ' ' + LocalString(IDS_SCRIPT).m_szbuffer;
    SetWindowText(szT.c_str());
@@ -1022,29 +934,13 @@ void CodeViewer::Destroy()
 #endif
 }
 
-string CodeViewer::GetScript() const
-{
-#ifndef __STANDALONE__
-   if (m_hwndScintilla)
-   {
-      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      if (cchar == 0)
-         return "";
-      string script;
-      script.resize(cchar + 1);
-      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
-      return script;
-   }
-#endif
-   return m_script_text;
-}
-
 void CodeViewer::SetScript(const string& script)
 {
-   m_script_text = script;
 #ifndef __STANDALONE__
    if (m_hwndScintilla)
       ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+   // Allow updates to take, now that we know the script size
+   UpdateScinFromPrefs();
 #endif
 }
 
@@ -1064,15 +960,15 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
    return FALSE;
 }
 
-void CodeViewer::Compile(PinTable* table, const bool message)
+void CodeViewer::Compile(const bool message)
 {
    CComObject<ScriptInterpreter>* interpreter;
    CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
    interpreter->AddRef();
-   interpreter->Init(table);
+   interpreter->Init(m_table);
    interpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
       { OnScriptError(type, line, column, description, stackDump); });
-   interpreter->Evaluate(GetScript(), false);
+   interpreter->Evaluate(m_table->m_script_text, false);
    if (message && !interpreter->HasError())
       MessageBox("Compilation successful", "Compile", MB_OK);
    interpreter->Stop();
@@ -1277,10 +1173,10 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
    // if there was an external vbs loaded, save the script to that file
    // and ask if to save the original script also to the table
    bool save_external_script_to_table = true;
-   if (!external_script_name.empty())
+   if (!m_table->m_external_script_name.empty())
    {
       FILE* fScript;
-      if ((fopen_s(&fScript, external_script_name.c_str(), "wb") == 0) && fScript)
+      if ((fopen_s(&fScript, m_table->m_external_script_name.string().c_str(), "wb") == 0) && fScript)
       {
          fwrite(szText, 1, cchar, fScript);
          fclose(fScript);
@@ -1291,8 +1187,8 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
       if (!save_external_script_to_table)
       {
          delete[] szText;
-         szText = g_pvp->m_pcv->original_table_script.data();
-         cchar = g_pvp->m_pcv->original_table_script.size();
+         szText = m_table->m_original_table_script.data();
+         cchar = m_table->m_original_table_script.size();
       }
    }
 
@@ -1306,106 +1202,6 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
       delete[] szText;
 #endif
 }
-
-void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
-{
-   m_ignoreDirty = true;
-
-   ULONG read = 0;
-   int cchar;
-   pistream->Read(&cchar, sizeof(int), &read);
-
-   char * szText = new char[cchar + 1];
-
-   pistream->Read(szText, cchar*(int)sizeof(char), &read);
-
-#ifndef __STANDALONE__
-   if (hcrypthash)
-      CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
-
-   // if there is a valid key, then decrypt the script text (now in szText)
-   //(must be done after the hash is updated)
-   if (hcryptkey != 0)
-   {
-      // get the size of the data to decrypt
-      DWORD cryptlen = cchar*(int)sizeof(char);
-
-      // decrypt the script
-      CryptDecrypt(hcryptkey, // key to use
-         0,                   // not hashing data at the same time
-         TRUE,                // last block (or only block)
-         0,                   // no flags
-         (BYTE *)szText,      // buffer to decrypt
-         &cryptlen);          // size of data to decrypt
-
-      /*const int foo =*/ GetLastError();	// purge any errors
-
-      // update the size of the buffer
-      cchar = cryptlen/(DWORD)sizeof(char);
-   }
-#endif
-
-   // ensure that the script is null terminated
-   szText[cchar] = '\0';
-
-   // save original script, in case an external vbs is loaded
-   original_table_script.resize(cchar);
-   memcpy(original_table_script.data(), szText, cchar);
-
-   // check if script is either plain ASCII or UTF-8, or if it contains invalid stuff
-   uint32_t state = UTF8_ACCEPT;
-   if (validate_utf8(&state, szText, cchar) == UTF8_REJECT) {
-      char* const utf8Text = iso8859_1_to_utf8(szText, cchar); // old ANSI characters? -> convert to UTF-8
-      delete[] szText;
-      szText = utf8Text;
-   }
-
-   SetScript(szText);
-
-   delete[] szText;
-
-   m_ignoreDirty = false;
-   m_sdsDirty = eSaveClean;
-
-   // Allow updates to take, now that we know the script size
-   UpdateScinFromPrefs();
-}
-
-void CodeViewer::LoadFromFile(const string& filename)
-{
-	FILE * fScript;
-	if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
-	{
-		external_script_name = filename;
-
-		fseek(fScript, 0L, SEEK_END);
-		size_t cchar = ftell(fScript);
-		fseek(fScript, 0L, SEEK_SET);
-		m_ignoreDirty = true;
-
-		char * szText = new char[cchar + 1];
-
-		cchar = fread(szText, 1, cchar, fScript);
-		fclose(fScript);
-
-		szText[cchar] = L'\0';
-
-		uint32_t state = UTF8_ACCEPT;
-		if (validate_utf8(&state, szText, cchar) == UTF8_REJECT) {
-			char* const utf8Text = iso8859_1_to_utf8(szText, cchar); // old ANSI characters? -> convert to UTF-8
-			delete[] szText;
-			szText = utf8Text;
-		}
-
-      SetScript(szText);
-
-      delete[] szText;
-
-		m_ignoreDirty = false;
-		m_sdsDirty = eSaveClean;
-	}
-}
-
 
 void CodeViewer::ColorLine(const int line)
 {
@@ -1443,7 +1239,7 @@ void CodeViewer::TellHostToSelectItem()
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
 
-   m_psh->SelectItem(pscript);
+   m_table->SelectItem(pscript);
 #endif
 }
 
@@ -2528,8 +2324,7 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
    switch (id)
    {
       case ID_COMPILE:
-         if (g_pvp && g_pvp->GetActiveTable() && g_pvp->GetActiveTable()->m_pcv == pcv)
-            pcv->Compile(g_pvp->GetActiveTable(), true);
+         pcv->Compile(true);
          return TRUE;
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
          SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
@@ -2575,7 +2370,7 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
       case ID_TABLE_CAMERAMODE:
       case ID_TABLE_LIVEEDIT:
       case ID_TABLE_PLAY:
-         pcv->m_psh->DoCodeViewCommand(id); return TRUE;
+         pcv->m_table->DoCodeViewCommand(id); return TRUE;
       case ID_EDIT_FINDNEXT:
          pcv->Find(&pcv->m_findreplaceold); return TRUE;
       case ID_REPLACE:
@@ -2651,7 +2446,6 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          if (LOWORD(wParam) != WA_INACTIVE)
          {
-            g_pvp->m_pcv = pcv;
             pcv->m_stopErrorDisplay = true; ///stop Error reporting WIP
             pcv->m_warn_on_dupes = true;
             pcv->ParseForFunction();
@@ -2709,13 +2503,21 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
       case SCEN_CHANGE:
       {
          //also see SCN_MODIFIED handling which does more finegrained updating calls
-
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
-         if (!pcv->m_ignoreDirty && (pcv->m_sdsDirty < eSaveDirty))
+         pcv->m_table->m_sdsDirtyScript = eSaveDirty;
+         
+         const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+         if (cchar == 0)
          {
-            pcv->m_sdsDirty = eSaveDirty;
-            pcv->m_psh->SetDirtyScript(eSaveDirty);
+            pcv->m_table->m_script_text = "";
+         }
+         else
+         {
+            string script;
+            script.resize(cchar + 1);
+            ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
+            pcv->m_table->m_script_text = script;
          }
          return TRUE;
       }
@@ -2750,11 +2552,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
    {
       case SCN_SAVEPOINTREACHED:
       {
-         if (pcv->m_sdsDirty > eSaveClean)
-         {
-            pcv->m_sdsDirty = eSaveClean;
-            pcv->m_psh->SetDirtyScript(eSaveClean);
-         }
+         pcv->m_table->m_sdsDirtyScript = eSaveClean;
          break;
       }
       case SCN_DWELLSTART:
@@ -2820,6 +2618,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
+   CodeViewer* pcv = g_pvp->GetActiveTableEditor()->m_pcv;
    switch (uMsg)
    {
    case WM_INITDIALOG:
@@ -2833,7 +2632,6 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-      CodeViewer* const pcv = g_pvp->m_pcv;
 		if (pcv->m_lPrefsList)
 		{
 			for (size_t i = 0; i < pcv->m_lPrefsList->size(); i++)
@@ -2868,7 +2666,6 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       switch (HIWORD(wParam))
       {
       case BN_CLICKED:
-			CodeViewer * const pcv = g_pvp->m_pcv;
 			if (pcv)
 			{
 				const int wParamLowWord = LOWORD(wParam);

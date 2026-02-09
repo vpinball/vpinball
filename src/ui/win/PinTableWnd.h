@@ -4,7 +4,6 @@
 
 #include "parts/pintable.h"
 
-
 class PinTableWnd : public CWnd
 {
 public:
@@ -47,6 +46,8 @@ public:
 
    CComObject<PinTable> *const m_table;
    
+   CodeViewer *m_pcv;
+
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd

@@ -17,6 +17,7 @@
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table) 
+   , m_pcv(table->m_pcv)
    , m_vpxEditor(vpxEditor)
 {
    m_table->AddRef();
@@ -38,7 +39,7 @@ void PinTableWnd::SetCaption(const string &szCaption)
 #ifndef __STANDALONE__
    if (m_mdiTable != nullptr && m_mdiTable->IsWindow())
       m_mdiTable->SetWindowText(szCaption.c_str());
-   m_table->m_pcv->SetCaption(szCaption);
+   m_pcv->SetCaption(szCaption);
 #endif
 }
 
@@ -1239,7 +1240,7 @@ void PinTableWnd::AutoSave()
    const HRESULT hr = m_table->SaveToStorage(pstgroot);
 
    m_table->m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
-   m_table->m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
+   m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
    m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
 
    AutoSavePackage *const pasp = new AutoSavePackage();

@@ -98,7 +98,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
-   m_pcv = nullptr;			// no currently active code window
 
    m_NextTableID = 1;
 
@@ -1133,7 +1132,7 @@ void WinEditor::SetEnableMenuItems()
    if (editor)
    {
       CComObject<PinTable> *const ptCur = editor->m_table;
-      mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((ptCur->m_pcv != nullptr && ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
+      mainMenu.CheckMenuItem(ID_EDIT_SCRIPT, MF_BYCOMMAND | ((editor->m_pcv != nullptr && editor->m_pcv->m_visible && !editor->m_pcv->m_minimized) ? MF_CHECKED : MF_UNCHECKED));
 
       mainMenu.EnableMenuItem(IDM_CLOSE, enabled);
       mainMenu.EnableMenuItem(ID_EDIT_UNDO, ptCur->IsLocked() ? grayed : enabled);
@@ -2149,14 +2148,12 @@ void WinEditor::ToggleBackglassView()
 void WinEditor::ToggleScriptEditor()
 {
 #ifndef __STANDALONE__
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
+   const auto editor = GetActiveTableEditor();
+   if (editor)
    {
       const bool alwaysViewScript = g_app->m_settings.GetEditor_AlwaysViewScript();
-
-      ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
-
-      //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
+      editor->m_pcv->SetVisible(alwaysViewScript || !(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized));
+      //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(editor->m_pcv->m_visible && !editor->m_pcv->m_minimized, 0));
    }
 #endif
 }
@@ -2332,18 +2329,62 @@ void WinEditor::AddSmoothControlPoint()
 
 void WinEditor::SaveTable(const bool saveAs)
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
+#ifndef __STANDALONE__
+   CComObject<PinTable> *const ptCur = GetActiveTable();
+   if (ptCur == nullptr)
+      return;
+   
+   HRESULT hr;
+   if (saveAs || ptCur->m_filename.empty())
    {
-      HRESULT hr;
-      if (saveAs)
-         hr = ptCur->SaveAs();
-      else
-         hr = ptCur->TableSave();
+      //need to get a file name
+      OPENFILENAME ofn = {};
+      ofn.lStructSize = sizeof(OPENFILENAME);
+      ofn.hInstance = g_app->GetInstanceHandle();
+      ofn.hwndOwner = GetHwnd();
+      // TEXT
+      ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
-      if (hr == S_OK)
-         UpdateRecentFileList(ptCur->m_filename);
+      std::filesystem::path vpxPath = ptCur->m_filename;
+      vpxPath.replace_extension(".vpx");
+      char fileName[MAXSTRING];
+      strncpy_s(fileName, sizeof(fileName), vpxPath.string().c_str());
+      ofn.lpstrFile = fileName;
+      ofn.nMaxFile = sizeof(fileName);
+      ofn.lpstrDefExt = "vpx";
+      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+
+      {
+         string szInitialDir;
+         // First, use dir of current table
+         std::filesystem::path currentTablePath = ptCur->m_filename.parent_path();
+         if (!currentTablePath.empty())
+            szInitialDir = currentTablePath.string();
+         // Or try with the standard last-used dir
+         else
+         {
+            Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+            szInitialDir = ptCur->m_settings.GetRecentDir_LoadDir();
+         }
+         ofn.lpstrInitialDir = szInitialDir.c_str();
+
+         const int ret = GetSaveFileName(&ofn);
+         // user cancelled
+         if (ret == 0)
+            return;
+      }
+
+      // assign user selected file name as new internal filename, and save as new default
+      ptCur->m_filename = fileName;
+      ptCur->m_title = TitleFromFilename(ptCur->m_filename.filename().string());
+      g_app->m_settings.SetRecentDir_LoadDir(ptCur->m_filename.parent_path().string(), false); // truncate after folder(s)
+      SetCaption(ptCur->m_title.c_str());
    }
+
+   hr = ptCur->Save();
+   if (hr == S_OK)
+      UpdateRecentFileList(ptCur->m_filename);
+#endif
 }
 
 void WinEditor::OpenNewTable(size_t tableId)
@@ -2358,7 +2399,6 @@ void WinEditor::OpenNewTable(size_t tableId)
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    CComObject<PinTable> *const ppt = mdiTable->GetTable();
    ppt->InitBuiltinTable(tableId);
-   ppt->InitTablePostLoad();
 
    m_vtable.push_back(mdiTable->GetTableWnd());
    AddMDITable(mdiTable);

@@ -58,7 +58,6 @@ class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
                  public ISelect,
                  public IScriptable,
-                 public CodeViewer::IScriptableHost,
                  public IEditable,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -301,7 +300,6 @@ public:
 
    void ClearForOverwrite() final;
    void InitBuiltinTable(const size_t tableId);
-   void InitTablePostLoad();
    void RemoveInvalidReferences();
 
    HRESULT GetTypeName(BSTR *pVal) const final;
@@ -373,9 +371,11 @@ public:
 #endif
    bool FMutilSelLocked();
 
-   void SelectItem(IScriptable *piscript) final;
-   void DoCodeViewCommand(int command) final;
-   void SetDirtyScript(SaveDirtyState sds) final;
+   // Expected by CodeViewer
+   void SelectItem(IScriptable *piscript);
+   void DoCodeViewCommand(int command);
+   void SetDirtyScript(SaveDirtyState sds);
+
    void ExportMesh(ObjLoader &loader) final;
 
    // Multi-object manipulation
@@ -419,9 +419,7 @@ public:
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
 
-   HRESULT TableSave();
-   HRESULT SaveAs();
-   HRESULT Save(const bool saveAs);
+   HRESULT Save();
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
@@ -431,6 +429,7 @@ public:
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) final;
    HRESULT LoadGameFromFilename(const string &filename);
    HRESULT LoadGameFromFilename(const string &filename, VPXFileFeedback& feedback);
+   void LoadScriptOverride(const std::filesystem::path& scriptPath);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
@@ -529,7 +528,7 @@ public:
    bool IsLocked() const { return (m_tablelocked & 1) != 0; }
    void ToggleLock() { BeginUndo(); MarkForUndo(); m_tablelocked++; EndUndo(); SetDirtyDraw(); }
 
-   bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
+   bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_external_script_name.empty(); }
 
    // Override automatic ini path (used for commandline override)
    void SetSettingsFileName(const std::filesystem::path &path)
@@ -705,6 +704,9 @@ public:
    PinUndo m_undo;
 
    CodeViewer* m_pcv;
+   vector<char> m_original_table_script; // Script defined in the loaded file
+   std::filesystem::path m_external_script_name; // if defined, file that override internal script
+   string m_script_text; // Actual script (either a copy of the original or the one loaded from the override file)
 
    CComObject<class ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
 

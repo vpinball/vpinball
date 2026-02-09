@@ -28,20 +28,13 @@ public:
 
    void write(const plog::Record &record) PLOG_OVERRIDE
    {
-      if (g_pvp == nullptr || g_pplayer == nullptr)
-         return;
-      if (std::this_thread::get_id() != m_uiThreadId)
-         return;
-      auto table = g_pvp->GetActiveTable();
-      if (table == nullptr)
+      if ((std::this_thread::get_id() != m_uiThreadId) || (g_pvp == nullptr) || (g_pvp->GetActiveTableEditor() == nullptr))
          return;
       #ifdef _WIN32
       // Convert from wchar* to char* on Win32
-      auto msg = record.getMessage();
-      const string szT = MakeString(msg);
-      table->m_pcv->AddToDebugOutput(szT);
+      g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(MakeString(record.getMessage()));
       #else
-      table->m_pcv->AddToDebugOutput(record.getMessage());
+      g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
    }
 
