@@ -24,15 +24,7 @@
 class CodeViewer : public CWnd
 {
 public:
-   class IScriptableHost
-   {
-   public:
-      virtual void SelectItem(IScriptable *piscript) = 0;
-      virtual void SetDirtyScript(SaveDirtyState sds) = 0;
-      virtual void DoCodeViewCommand(int command) = 0;
-   };
-
-   CodeViewer(IScriptableHost *psh);
+   CodeViewer(PinTable *table);
    ~CodeViewer() OVERRIDE;
 
    void SetVisible(const bool visible);
@@ -46,7 +38,7 @@ public:
    HRESULT ReplaceName(IScriptable * const piscript, const wstring& wzNew);
    void SelectItem(IScriptable * const piscript);
 
-   void Compile(PinTable *table, const bool message);
+   void Compile(const bool message);
 
    void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
@@ -58,8 +50,6 @@ public:
    void Find(const FINDREPLACE * const pfr);
    void Replace(const FINDREPLACE * const pfr);
    void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
-   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
-   void LoadFromFile(const string& filename);
    void SetCaption(const string& szCaption);
 
    bool ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const bool tooltip);
@@ -84,10 +74,9 @@ public:
 
    BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
 
-   string GetScript() const;
    void SetScript(const string& script);
 
-   IScriptableHost *m_psh;
+   PinTable *m_table;
 
    class CodeViewDispatch final
    {
@@ -110,9 +99,6 @@ public:
    vector<CVPreference*> *m_lPrefsList;
 
    int m_displayAutoCompleteLength;
-
-   SaveDirtyState m_sdsDirty = eSaveClean;
-   bool m_ignoreDirty = false;
 
    bool m_warn_on_dupes = false;
 
@@ -143,12 +129,6 @@ public:
    int m_errorLineNumber = -1;
 
    FINDREPLACE m_findreplaceold; // the last thing found/replaced
-
-   string external_script_name;  // loaded from external .vbs?
-   vector<char> original_table_script; // if yes, then this one stores the original table script
-
-   // otherwise Scintilla owns the text
-   string m_script_text;
 
 protected:
    void PreCreate(CREATESTRUCT& cs) final;

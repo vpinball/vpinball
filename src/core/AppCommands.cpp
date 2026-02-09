@@ -54,9 +54,9 @@ void ExportVBSCommand::Execute()
    CComObject<PinTable>* table = LoadTable();
    std::filesystem::path scriptFilename = m_tableFilename;
    scriptFilename.replace_extension(".vbs");
-   std::ofstream outFile(scriptFilename);
-   if (outFile) {
-      outFile << table->m_pcv->GetScript();
+   if (std::ofstream outFile(scriptFilename, std::ios::binary); outFile)
+   {
+      outFile.write(table->m_original_table_script.data(), table->m_original_table_script.size());
       outFile.close();
    }
    table->Release();

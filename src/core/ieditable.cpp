@@ -23,7 +23,7 @@ void IEditable::Delete()
    RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    MarkForDelete();
 
-   if (GetScriptable())
+   if (GetScriptable() && GetPTable()->m_pcv)
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 
    for (size_t i = 0; i < m_vCollection.size(); i++)
@@ -36,7 +36,7 @@ void IEditable::Delete()
 void IEditable::Uncreate()
 {
    RemoveFromVectorSingle(GetPTable()->m_vedit, this);
-   if (GetScriptable())
+   if (GetScriptable() && GetPTable()->m_pcv)
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 }
 
@@ -204,7 +204,8 @@ void IEditable::SetName(const string& name)
    }
    STARTUNDO
    // first update name in the codeview before updating it in the element itself
-   pt->m_pcv->ReplaceName(GetScriptable(), newName);
+   if (pt->m_tableEditor)
+      pt->m_tableEditor->m_pcv->ReplaceName(GetScriptable(), newName);
    wcsncpy_s(GetScriptable()->m_wzName, std::size(GetScriptable()->m_wzName), newName.c_str());
    STOPUNDO
 }

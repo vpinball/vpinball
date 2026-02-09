@@ -51,7 +51,7 @@ public:
          if (GetScriptable()->m_wzName[0] == '\0') \
             /* Just in case something screws up - not good having a null script name */ \
             wcsncpy_s(GetScriptable()->m_wzName, std::size(m_wzName), std::to_wstring(reinterpret_cast<uintptr_t>(this)).c_str()); \
-         GetPTable()->m_pcv->AddItem(GetScriptable(), false); \
+         if (GetPTable()->m_tableEditor) GetPTable()->m_tableEditor->m_pcv->AddItem(GetScriptable(), false); \
       } \
       return S_OK; \
    }
@@ -91,7 +91,7 @@ public:
 		wstring newName = newVal; \
 		if (newName.empty() || newName.length() >= std::size(m_wzName)) \
 			return E_FAIL; \
-		if (GetPTable()->m_pcv->ReplaceName(this, newName) != S_OK) \
+		if (GetPTable()->m_tableEditor->m_pcv->ReplaceName(this, newName) != S_OK) \
 			return E_FAIL; \
 		wcsncpy_s(m_wzName, std::size(m_wzName), newName.c_str()); \
 		return S_OK; \
@@ -188,8 +188,8 @@ public:
    type *dst = type::COMCreate(); \
    dst->Init(table, 0.f, 0.f, false, true); \
    memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
-   if (dst->GetScriptable()) \
-      table->m_pcv->AddItem(dst->GetScriptable(), false); \
+   if (dst->GetScriptable() && table->m_tableEditor) \
+      table->m_tableEditor->m_pcv->AddItem(dst->GetScriptable(), false); \
    dst->m_isVisible = m_isVisible; \
    dst->m_backglass = m_backglass; \
    dst->m_locked = m_locked; \

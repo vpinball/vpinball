@@ -49,7 +49,7 @@ bool PinTableMDI::CanClose() const
         if (result == IDCANCEL)
             return false;
 
-        if ((result == IDYES) && (m_tableWnd->m_table->TableSave() != S_OK))
+        if ((result == IDYES) && (m_tableWnd->m_table->Save() != S_OK))
             MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
 #endif
     }
