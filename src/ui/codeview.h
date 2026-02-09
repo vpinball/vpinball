@@ -58,7 +58,6 @@ public:
    void Find(const FINDREPLACE * const pfr);
    void Replace(const FINDREPLACE * const pfr);
    void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
-   void SaveToFile(const string& filename);
    void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey); // incl. table protection
    void LoadFromFile(const string& filename);
    void SetCaption(const string& szCaption);

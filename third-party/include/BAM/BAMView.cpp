@@ -213,11 +213,7 @@ std::wstring GetFileNameForSettingsXML()
 
 std::string GetTableName()
 {
-   const PinTable* const t = g_pplayer->m_ptable;
-   auto backslash = strrchr(t->m_filename.c_str(), '\\');
-   auto slash = strrchr(t->m_filename.c_str(), '/');
-   auto dst = std::max(backslash, slash);
-   return dst ? dst + 1 : "Unknown"s;
+   return g_pplayer->m_ptable->m_filename.filename().string();
 }
 
 bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)

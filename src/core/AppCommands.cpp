@@ -1,14 +1,11 @@
 // license:GPLv3+
 
-// Implementation of WinMain (Windows with UI) or main (Standalone)
-
 #include "core/stdafx.h"
 #include "AppCommands.h"
 #include "extern.h"
 #include "core/TournamentFile.h"
 
 #include <iostream>
-
 
 ShowInfoAndExitCommand::ShowInfoAndExitCommand(const string& title, const string& message, int exitCode)
    : m_title(title)
@@ -30,7 +27,7 @@ void ShowInfoAndExitCommand::Execute()
 }
 
 
-TableBasedCommand::TableBasedCommand(const string& tableFilename)
+TableBasedCommand::TableBasedCommand(const std::filesystem::path& tableFilename)
    : m_tableFilename(tableFilename)
 {
 }
@@ -40,14 +37,14 @@ CComObject<PinTable>* TableBasedCommand::LoadTable()
    CComObject<PinTable>* table;
    CComObject<PinTable>::CreateInstance(&table);
    table->AddRef();
-   table->LoadGameFromFilename(m_tableFilename);
+   table->LoadGameFromFilename(m_tableFilename.string());
    if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName))
       table->SetSettingsFileName(m_tableIniFileName);
    return table;
 }
 
 
-ExportVBSCommand::ExportVBSCommand(const string& tableFilename)
+ExportVBSCommand::ExportVBSCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -55,13 +52,18 @@ ExportVBSCommand::ExportVBSCommand(const string& tableFilename)
 void ExportVBSCommand::Execute()
 {
    CComObject<PinTable>* table = LoadTable();
-   string scriptFilename = table->m_filename;
-   if (ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
-      table->m_pcv->SaveToFile(scriptFilename);
+   std::filesystem::path scriptFilename = m_tableFilename;
+   scriptFilename.replace_extension(".vbs");
+   std::ofstream outFile(scriptFilename);
+   if (outFile) {
+      outFile << table->m_pcv->GetScript();
+      outFile.close();
+   }
+   table->Release();
 }
 
 
-ExportPOVCommand::ExportPOVCommand(const string& tableFilename)
+ExportPOVCommand::ExportPOVCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -72,10 +74,11 @@ void ExportPOVCommand::Execute()
    for (int i = 0; i < 3; i++)
       table->mViewSetups[i].SaveToTableOverrideSettings(table->m_settings, (ViewSetupID)i);
    table->m_settings.Save();
+   table->Release();
 }
 
 
-PlayTableCommand::PlayTableCommand(const string& tableFilename)
+PlayTableCommand::PlayTableCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -90,19 +93,20 @@ void PlayTableCommand::Execute()
 }
 
 
-AuditTableCommand::AuditTableCommand(const string& tableFilename)
+AuditTableCommand::AuditTableCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
 
 void AuditTableCommand::Execute()
 {
-   const CComObject<PinTable>* table = LoadTable();
+   CComObject<PinTable>* table = LoadTable();
    table->AuditTable(true);
+   table->Release();
 }
 
 
-PovEditCommand::PovEditCommand(const string& tableFilename)
+PovEditCommand::PovEditCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -117,12 +121,13 @@ void PovEditCommand::Execute()
 }
 
 
+#ifndef __STANDALONE__
 Win32EditCommand::Win32EditCommand()
    : Win32EditCommand(""s)
 {
 }
 
-Win32EditCommand::Win32EditCommand(const string& tableFilename)
+Win32EditCommand::Win32EditCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -137,7 +142,7 @@ void Win32EditCommand::Execute()
    vpxEditor.LoadEditorSetupFromSettings();
    if (!m_tableFilename.empty() && FileExists(m_tableFilename))
    {
-      vpxEditor.LoadFileName(m_tableFilename, true);
+      vpxEditor.LoadFileName(m_tableFilename.string(), true);
       if (!m_tableIniFileName.empty() && FileExists(m_tableIniFileName) && vpxEditor.GetActiveTable())
          vpxEditor.GetActiveTable()->SetSettingsFileName(m_tableIniFileName);
    }
@@ -145,9 +150,10 @@ void Win32EditCommand::Execute()
    {
       vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
    }
-   g_app->m_msgLoop->MainMsgLoop();
+   g_app->m_winApp.Run();
    g_pvp = nullptr;
 }
+#endif
 
 
 LiveEditCommand::LiveEditCommand()
@@ -155,7 +161,7 @@ LiveEditCommand::LiveEditCommand()
 {
 }
 
-LiveEditCommand::LiveEditCommand(const string& tableFilename)
+LiveEditCommand::LiveEditCommand(const std::filesystem::path& tableFilename)
    : TableBasedCommand(tableFilename)
 {
 }
@@ -170,7 +176,7 @@ void LiveEditCommand::Execute()
 }
 
 
-CaptureAttractCommand::CaptureAttractCommand(const string& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop)
+CaptureAttractCommand::CaptureAttractCommand(const std::filesystem::path& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop)
    : TableBasedCommand(tableFilename)
    , m_nFrames(nFrames)
    , m_framesPerSecond(framesPerSecond)
@@ -193,7 +199,7 @@ void CaptureAttractCommand::Execute()
 }
 
 
-ValidateTournamentCommand::ValidateTournamentCommand(const string& tableFilename, const string& tournamentFilename)
+ValidateTournamentCommand::ValidateTournamentCommand(const std::filesystem::path& tableFilename, const std::filesystem::path& tournamentFilename)
    : TableBasedCommand(tableFilename)
    , m_tournamentFilename(tournamentFilename)
 {
@@ -221,14 +227,10 @@ enum option_names
 #ifndef __STANDALONE__
    OPTION_UNREGSERVER,
    OPTION_REGSERVER,
-#endif
-   OPTION_DISABLETRUEFULLSCREEN,
-   OPTION_ENABLETRUEFULLSCREEN,
    OPTION_MINIMIZED,
    OPTION_EXTMINIMIZED,
-   OPTION_GLES,
-   OPTION_LESSCPUTHREADS,
    OPTION_EDIT,
+#endif
 #ifdef _DEBUG
    OPTION_LIVE_EDIT,
 #endif
@@ -253,6 +255,10 @@ enum option_names
    OPTION_CUSTOM8,
    OPTION_CUSTOM9,
    OPTION_PREFPATH,
+   OPTION_DISABLETRUEFULLSCREEN,
+   OPTION_ENABLETRUEFULLSCREEN,
+   OPTION_GLES,
+   OPTION_LESSCPUTHREADS,
    OPTION_INVALID,
 };
 struct CommandLineOption
@@ -269,14 +275,10 @@ static const CommandLineOption options[] = {
 #ifndef __STANDALONE__
    { OPTION_UNREGSERVER, "UnregServer"s, "Unregister VP functions"s },
    { OPTION_REGSERVER, "RegServer"s,"Register VP functions"s },
-#endif
-   { OPTION_DISABLETRUEFULLSCREEN, "DisableTrueFullscreen"s, "Force-disable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
-   { OPTION_ENABLETRUEFULLSCREEN, "EnableTrueFullscreen"s, "Force-enable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
    { OPTION_MINIMIZED, "Minimized"s, "Start the windows editor in the 'invisible' minimized window mode"s },
    { OPTION_EXTMINIMIZED, "ExtMinimized"s, "Start the windows editor in the 'invisible' minimized window mode, but with enabled Pause Menu"s },
-   { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini serttings instead]"s },
-   { OPTION_LESSCPUTHREADS, "LessCPUthreads"s, "Limit the amount of parallel execution"s },
    { OPTION_EDIT, "Edit"s, "[filename]  Load file into VP"s },
+#endif
 #ifdef _DEBUG
    { OPTION_LIVE_EDIT, "LiveEdit"s, "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit"s },
 #endif
@@ -301,46 +303,26 @@ static const CommandLineOption options[] = {
    { OPTION_CUSTOM8, "c8"s, "Custom value 8"s },
    { OPTION_CUSTOM9, "c9"s, "Custom value 9"s },
    { OPTION_PREFPATH, "PrefPath"s, "[path]  Use a custom preferences path instead of default"s },
+   { OPTION_LESSCPUTHREADS, "LessCPUthreads"s, "Limit the amount of parallel execution"s },
+   { OPTION_DISABLETRUEFULLSCREEN, "DisableTrueFullscreen"s, "Force-disable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
+   { OPTION_ENABLETRUEFULLSCREEN, "EnableTrueFullscreen"s, "Force-enable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
+   { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini serttings instead]"s },
 };
 
-string CommandLineProcessor::GetPathFromArg(const string& arg, bool setCurrentPath)
+std::filesystem::path CommandLineProcessor::GetPathFromArg(const string& arg)
 {
-   #ifndef __STANDALONE__
-      string path = arg;
-      if ((arg[0] == '-') || (arg[0] == '/')) // Remove leading - or /
-         path = arg.substr(1, arg.size() - 1);
-   #else
-      string path = trim_string(arg);
-   #endif
+   string pathString = trim_string(arg);
 
-   if (path[0] == '"') // Remove " "
-      path = path.substr(1, path.size() - 1);
+   // On Windows only, we used to remove leading - or /. This is removed as this is not cross platform and is a bug on the front end side
+   //if (!pathString.empty() && ((pathString[0] == '-') || (pathString[0] == '/')))
+   //   pathString = pathString.substr(1, pathString.size() - 1);
 
-   #ifndef __STANDALONE__
-      if (path[1] != ':') // Add current path
-      {
-         char szLoadDir[MAXSTRING];
-         GetCurrentDirectory(MAXSTRING, szLoadDir);
-         path = string(szLoadDir) + PATH_SEPARATOR_CHAR + path;
-      }
-   #else
-      if (path[0] != '/') // Add current path
-      {
-         char szLoadDir[MAXSTRING];
-         GetCurrentDirectory(MAXSTRING, szLoadDir);
-         path = string(szLoadDir) + PATH_SEPARATOR_CHAR + path;
-      }
-   #endif
-   else if (setCurrentPath) // Or set the current path from the arg
-   {
-      const string dir = PathFromFilename(path);
-      SetCurrentDirectory(dir.c_str());
-   }
+   if (pathString.length() >= 2 && pathString[0] == '"') // Remove " "
+      pathString = pathString.substr(1, pathString.size() - 2);
 
-   #ifdef __STANDALONE__
-      path = std::filesystem::weakly_canonical(std::filesystem::path(path));
-   #endif
-
+   std::filesystem::path path(pathString);
+   path = std::filesystem::absolute(path);
+   path = std::filesystem::weakly_canonical(path);
    return path;
 }
 
@@ -382,7 +364,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
 {
    g_app->SetSettingsFileName(""s);
 
-   string tableIniFileName;
+   std::filesystem::path tableIniFileName;
    bool win32EditorMinimized = false;
    bool win32EditorExtMinimized = false;
    bool defaultToWin32Editor = true;
@@ -404,8 +386,8 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          // If the only parameter passed is a vpx table, consider it as /play command
          if ((nArgs == 2) && (i == 1))
          {
-            string filename = GetPathFromArg(szArglist[i], false);
-            if (extension_from_path(filename) == "vpx" && FileExists(filename))
+            std::filesystem::path filename = GetPathFromArg(szArglist[i]);
+            if (filename.extension().string() == "vpx" && FileExists(filename))
             {
                commands.push_back(std::make_unique<PlayTableCommand>(filename));
                i++;
@@ -426,7 +408,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
             exit(1);
          }
-         g_app->SetSettingsFileName(GetPathFromArg(szArglist[i + 1], false));
+         g_app->SetSettingsFileName(GetPathFromArg(szArglist[i + 1]));
          i++;
          break;
 
@@ -498,6 +480,14 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             ShowError("Register VP functions failed");
          exit(0);
          break;
+
+      case OPTION_MINIMIZED:
+         win32EditorMinimized = true;
+         break;
+
+      case OPTION_EXTMINIMIZED:
+         win32EditorExtMinimized = true;
+         break;
       #endif
 
       case OPTION_PREFPATH:
@@ -507,7 +497,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
             exit(1);
          }
-         string path = GetPathFromArg(szArglist[i + 1], false);
+         std::filesystem::path path = GetPathFromArg(szArglist[i + 1]);
          if (!DirExists(path))
          {
             std::error_code ec;
@@ -525,14 +515,6 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          break;
       }
 
-      case OPTION_MINIMIZED:
-         win32EditorMinimized = true;
-         break;
-
-      case OPTION_EXTMINIMIZED:
-         win32EditorExtMinimized = true;
-         break;
-
       case OPTION_H:
       case OPTION_HELP:
       case OPTION_QMARK:
@@ -547,7 +529,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       case OPTION_LIVE_EDIT:
          if (i + 1 < nArgs)
          {
-            const string tableFileName = GetPathFromArg(szArglist[i + 1], false);
+            const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 1]);
             if (FileExists(tableFileName))
             {
                commands.push_back(std::make_unique<LiveEditCommand>(tableFileName));
@@ -567,22 +549,24 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
 
       case OPTION_POVEDIT:
       case OPTION_PLAY:
-      case OPTION_EDIT:
       case OPTION_AUDIT:
       case OPTION_POV:
       case OPTION_EXTRACTVBS:
+      #ifndef __STANDALONE__
+         case OPTION_EDIT:
+      #endif
       {
          if (i + 1 >= nArgs)
          {
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
             exit(1);
          }
-         const string tableFileName = GetPathFromArg(szArglist[i + 1], false);
+         const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 1]);
          i++;
 
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
             exit(1);
          }
          else
@@ -591,10 +575,12 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             {
             case OPTION_POVEDIT: commands.push_back(std ::make_unique<PovEditCommand>(tableFileName)); break;
             case OPTION_PLAY: commands.push_back(std ::make_unique<PlayTableCommand>(tableFileName)); break;
-            case OPTION_EDIT: commands.push_back(std ::make_unique<Win32EditCommand>(tableFileName)); break;
             case OPTION_AUDIT: commands.push_back(std ::make_unique<AuditTableCommand>(tableFileName)); break;
             case OPTION_POV: commands.push_back(std ::make_unique<ExportPOVCommand>(tableFileName)); break;
             case OPTION_EXTRACTVBS: commands.push_back(std ::make_unique<ExportVBSCommand>(tableFileName)); break;
+            #ifndef __STANDALONE__
+            case OPTION_EDIT: commands.push_back(std ::make_unique<Win32EditCommand>(tableFileName)); break;
+            #endif
             }
          }
          break;
@@ -619,10 +605,10 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Invalid framerate"s);
             exit(1);
          }
-         const string tableFileName = GetPathFromArg(szArglist[i + 3], false);
+         const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 3]);
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
             exit(1);
          }
          bool captureAttractLoop = true;
@@ -647,18 +633,18 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path and a valid tournament file path");
             exit(1);
          }
-         const string tableFileName = GetPathFromArg(szArglist[i + 1], false);
+         const std::filesystem::path tableFileName = GetPathFromArg(szArglist[i + 1]);
          i++;
          if (!FileExists(tableFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Table file '" + tableFileName.string() + "' was not found");
             exit(1);
          }
-         const string tournamentFileName = GetPathFromArg(szArglist[i + 2], false);
+         const std::filesystem::path tournamentFileName = GetPathFromArg(szArglist[i + 2]);
          i++;
          if (!FileExists(tournamentFileName))
          {
-            OnCommandLineError("Command Line Error"s, "Tournament file '" + tournamentFileName + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Tournament file '" + tournamentFileName.string() + "' was not found");
             exit(1);
          }
          commands.push_back(std::make_unique<ValidateTournamentCommand>(tableFileName, tournamentFileName));
@@ -671,7 +657,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
             exit(1);
          }
-         tableIniFileName = GetPathFromArg(szArglist[i + 1], false);
+         tableIniFileName = GetPathFromArg(szArglist[i + 1]);
          i++;
          break;
 
@@ -681,8 +667,11 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
    }
 
+   #ifndef __STANDALONE__
    if (defaultToWin32Editor && commands.empty())
       commands.push_back(std::make_unique<Win32EditCommand>());
+   #endif
+   
    if (commands.size() > 1)
    {
       OnCommandLineError("Command Line Error"s, "Multiple command options specified. Please specify only one");
@@ -692,6 +681,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       return;
    m_command = std::move(commands[0]);
 
+   #ifndef __STANDALONE__
    if (win32EditorMinimized)
    {
       if (auto win32EditCmd = dynamic_cast<Win32EditCommand*>(m_command.get()); win32EditCmd)
@@ -719,6 +709,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          exit(1);
       }
    }
+   #endif
 
    if (!tableIniFileName.empty())
    {
@@ -730,7 +721,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
       }
       if (!FileExists(tableIniFileName))
       {
-         OnCommandLineError("Command Line Error"s, "Table ini file '" + tableIniFileName + "' was not found");
+         OnCommandLineError("Command Line Error"s, "Table ini file '" + tableIniFileName.string() + "' was not found");
          exit(1);
       }
       tableCmd->SetTableIniFileName(tableIniFileName);

@@ -1307,17 +1307,6 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 #endif
 }
 
-void CodeViewer::SaveToFile(const string& filename)
-{
-   FILE * fScript;
-   if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
-   {
-      string script = GetScript();
-      fwrite(script.c_str(), 1, script.length(), fScript);
-      fclose(fScript);
-   }
-}
-
 void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_ignoreDirty = true;

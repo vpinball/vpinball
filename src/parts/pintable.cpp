@@ -184,7 +184,7 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path).string());
    m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
-   m_settings.SetIniPath(string());
+   m_settings.SetIniPath(std::filesystem::path());
    m_filename.clear();
 #endif
 }
@@ -711,40 +711,38 @@ HRESULT PinTable::Save(const bool saveAs)
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
-      const size_t ptr = StrFindNoCase(m_filename, ".vpt"s);
-      string filename_new = m_filename;
-      if (ptr != string::npos)
-         filename_new.replace(ptr+1, 3, "vpx");
+      std::filesystem::path vpxPath = m_filename;
+      vpxPath.replace_extension(".vpx");
       char fileName[MAXSTRING];
-      strncpy_s(fileName, sizeof(fileName), filename_new.c_str());
+      strncpy_s(fileName, sizeof(fileName), vpxPath.string().c_str());
       ofn.lpstrFile = fileName;
       ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
       {
-      string szInitialDir;
-      // First, use dir of current table
-      const size_t index = m_filename.find_last_of(PATH_SEPARATOR_CHAR);
-      if (index != string::npos)
-         szInitialDir = m_filename.substr(0, index);
-      // Or try with the standard last-used dir
-      else
-      {
-         Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-         szInitialDir = m_settings.GetRecentDir_LoadDir();
-      }
-      ofn.lpstrInitialDir = szInitialDir.c_str();
+         string szInitialDir;
+         // First, use dir of current table
+         std::filesystem::path currentTablePath = m_filename.parent_path();
+         if (currentTablePath.empty())
+            szInitialDir = currentTablePath.string();
+         // Or try with the standard last-used dir
+         else
+         {
+            Settings::SetRecentDir_LoadDir_Default(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+            szInitialDir = m_settings.GetRecentDir_LoadDir();
+         }
+         ofn.lpstrInitialDir = szInitialDir.c_str();
 
-      const int ret = GetSaveFileName(&ofn);
-      // user cancelled
-      if (ret == 0)
-         return S_FALSE;
+         const int ret = GetSaveFileName(&ofn);
+         // user cancelled
+         if (ret == 0)
+            return S_FALSE;
       }
 
       // assign user selected file name as new internal filename, and save as new default
       m_filename = fileName;
-      g_app->m_settings.SetRecentDir_LoadDir(m_filename.substr(0, ofn.nFileOffset), false); // truncate after folder(s)
+      g_app->m_settings.SetRecentDir_LoadDir(m_filename.parent_path().string(), false); // truncate after folder(s)
 
       {
          STGOPTIONS stg;
@@ -753,7 +751,7 @@ HRESULT PinTable::Save(const bool saveAs)
          stg.ulSectorSize = 4096;
 
          HRESULT hr;
-         if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+         if (FAILED(hr = StgCreateStorageEx(m_filename.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
             STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
          {
             ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
@@ -761,14 +759,13 @@ HRESULT PinTable::Save(const bool saveAs)
          }
       }
 
-      m_title = TitleFromFilename(m_filename);
+      m_title = TitleFromFilename(m_filename.filename().string());
       m_tableEditor->SetCaption(m_title);
    }
    else
    {
-      const size_t ptr = StrFindNoCase(m_filename, ".vpt"s);
-      if (ptr != string::npos)
-         m_filename.replace(ptr+1, 3, "vpx");
+      std::filesystem::path vpxPath = m_filename;
+      vpxPath.replace_extension(".vpx");
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -776,7 +773,7 @@ HRESULT PinTable::Save(const bool saveAs)
       stg.ulSectorSize = 4096;
 
       HRESULT hr;
-      if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+      if (FAILED(hr = StgCreateStorageEx(vpxPath.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
          STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
       {
          ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
@@ -1447,10 +1444,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    HRESULT hr;
    IStorage* pstgRoot;
-   if (FAILED(hr = StgOpenStorage(MakeWString(m_filename).c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
+   if (FAILED(hr = StgOpenStorage(m_filename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
       char msg[MAXSTRING+32];
-      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.c_str());
+      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.string().c_str());
       ShowError(msg);
       return hr;
    }
@@ -2036,7 +2033,7 @@ HRESULT PinTable::LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HC
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
-   const string INIFilename = GetSettingsFileName();
+   const std::filesystem::path INIFilename = GetSettingsFileName();
    const bool hasIni = !INIFilename.empty() && FileExists(INIFilename);
    switch(id)
    {
@@ -3179,8 +3176,8 @@ void PinTable::ExportTableMesh()
 {
 #ifndef __STANDALONE__
    char szObjFileName[MAXSTRING];
-   strncpy_s(szObjFileName, sizeof(szObjFileName), m_filename.c_str());
-   const size_t idx = m_filename.find_last_of('.');
+   strncpy_s(szObjFileName, sizeof(szObjFileName), m_filename.string().c_str());
+   const size_t idx = m_filename.string().find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szObjFileName[idx] = '\0';
    OPENFILENAME ofn = {};
@@ -3465,8 +3462,8 @@ void PinTable::ExportBackdropPOV() const
 	// TEXT
 	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
 	char szFileName[MAXSTRING];
-	strncpy_s(szFileName, sizeof(szFileName), m_filename.c_str());
-	const size_t idx = m_filename.find_last_of('.');
+   strncpy_s(szFileName, sizeof(szFileName), m_filename.string().c_str());
+   const size_t idx = m_filename.string().find_last_of('.');
 	if(idx != string::npos && idx < MAXSTRING)
 		szFileName[idx] = '\0';
 	ofn.lpstrFile = szFileName;
@@ -6342,8 +6339,8 @@ STDMETHODIMP PinTable::ExportPhysics()
    Flipper * const flipper = (Flipper *)m_vedit[i];
 
    char szFileName[MAXSTRING];
-   strncpy_s(szFileName, sizeof(szFileName), m_filename.c_str());
-   const size_t idx = m_filename.find_last_of('.');
+   strncpy_s(szFileName, sizeof(szFileName), m_filename.string().c_str());
+   const size_t idx = m_filename.string().find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szFileName[idx] = '\0';
 

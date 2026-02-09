@@ -26,20 +26,20 @@ private:
 class TableBasedCommand : public AppCommand
 {
 public:
-   void SetTableIniFileName(const string& tableIniFileName) { m_tableIniFileName = tableIniFileName; }
+   void SetTableIniFileName(const std::filesystem::path& tableIniFileName) { m_tableIniFileName = tableIniFileName; }
 
 protected:
-   explicit TableBasedCommand(const string& tableFilename);
+   explicit TableBasedCommand(const std::filesystem::path& tableFilename);
    CComObject<PinTable>* LoadTable();
 
-   string m_tableIniFileName;
-   const string m_tableFilename;
+   std::filesystem::path m_tableIniFileName;
+   const std::filesystem::path m_tableFilename;
 };
 
 class ExportVBSCommand : public TableBasedCommand
 {
 public:
-   explicit ExportVBSCommand(const string& tableFilename);
+   explicit ExportVBSCommand(const std::filesystem::path& tableFilename);
    ~ExportVBSCommand() override = default;
    void Execute() override;
 };
@@ -47,7 +47,7 @@ public:
 class ExportPOVCommand : public TableBasedCommand
 {
 public:
-   explicit ExportPOVCommand(const string& tableFilename);
+   explicit ExportPOVCommand(const std::filesystem::path& tableFilename);
    ~ExportPOVCommand() override = default;
    void Execute() override;
 };
@@ -55,7 +55,7 @@ public:
 class PlayTableCommand : public TableBasedCommand
 {
 public:
-   explicit PlayTableCommand(const string& tableFilename);
+   explicit PlayTableCommand(const std::filesystem::path& tableFilename);
    ~PlayTableCommand() override = default;
    void Execute() override;
 };
@@ -63,7 +63,7 @@ public:
 class AuditTableCommand : public TableBasedCommand
 {
 public:
-   explicit AuditTableCommand(const string& tableFilename);
+   explicit AuditTableCommand(const std::filesystem::path& tableFilename);
    ~AuditTableCommand() override = default;
    void Execute() override;
 };
@@ -71,16 +71,17 @@ public:
 class PovEditCommand : public TableBasedCommand
 {
 public:
-   explicit PovEditCommand(const string& tableFilename);
+   explicit PovEditCommand(const std::filesystem::path& tableFilename);
    ~PovEditCommand() override = default;
    void Execute() override;
 };
 
+#ifndef __STANDALONE__
 class Win32EditCommand : public TableBasedCommand
 {
 public:
    Win32EditCommand();
-   explicit Win32EditCommand(const string& tableFilename);
+   explicit Win32EditCommand(const std::filesystem::path& tableFilename);
    ~Win32EditCommand() override = default;
    void Execute() override;
 
@@ -88,12 +89,13 @@ public:
    bool m_minimized = false; // Run the editor minimized, usually in conjunction with the global option to select table on start
    bool m_disablePauseMenu = false; // Disable the pause menu in the editor, leading to escape key to exit
 };
+#endif
 
 class LiveEditCommand : public TableBasedCommand
 {
 public:
    LiveEditCommand();
-   explicit LiveEditCommand(const string& tableFilename);
+   explicit LiveEditCommand(const std::filesystem::path& tableFilename);
    ~LiveEditCommand() override = default;
    void Execute() override;
 };
@@ -101,7 +103,7 @@ public:
 class CaptureAttractCommand : public TableBasedCommand
 {
 public:
-   CaptureAttractCommand(const string& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop);
+   CaptureAttractCommand(const std::filesystem::path& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop);
    ~CaptureAttractCommand() override = default;
    void Execute();
 
@@ -114,11 +116,11 @@ private:
 class ValidateTournamentCommand : public TableBasedCommand
 {
 public:
-   ValidateTournamentCommand(const string& tableFilename, const string& tournamentFilename);
+   ValidateTournamentCommand(const std::filesystem::path& tableFilename, const std::filesystem::path& tournamentFilename);
    ~ValidateTournamentCommand() override = default;
    void Execute() override;
 
-   const string m_tournamentFilename;
+   const std::filesystem::path m_tournamentFilename;
 };
 
 
@@ -135,7 +137,7 @@ public:
 
 private:
    static const char** CommandLineToArgvA(const char* const CmdLine, int* const _argc);
-   string GetPathFromArg(const string& arg, bool setCurrentPath);
+   std::filesystem::path GetPathFromArg(const string& arg);
    static string GetCommandLineHelp();
    static void OnCommandLineError(const string& title, const string& message);
 };

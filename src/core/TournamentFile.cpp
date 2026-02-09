@@ -17,13 +17,13 @@ static constexpr uint8_t lookupRev[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0x
 
 constexpr inline uint8_t reverse(const uint8_t n) { return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4]; }
 
-static unsigned int GenerateTournamentFileInternal(PinTable* table, uint8_t *const dmd_data, const unsigned int dmd_size, const string &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
+static unsigned int GenerateTournamentFileInternal(PinTable* table, uint8_t *const dmd_data, const unsigned int dmd_size, const std::filesystem::path &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
 {
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;
 
    FILE *f;
-   if (fopen_s(&f, tablefile.c_str(), "rb") == 0 && f)
+   if (fopen_s(&f, tablefile.string().c_str(), "rb") == 0 && f)
    {
       uint8_t tmp[4096];
       size_t r;
@@ -209,7 +209,7 @@ void GenerateTournamentFile()
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
 
    FILE *f;
-   if (fopen_s(&f, (g_pplayer->m_ptable->m_filename + ".txt").c_str(), "w") == 0 && f)
+   if (fopen_s(&f, (g_pplayer->m_ptable->m_filename.string() + ".txt").c_str(), "w") == 0 && f)
    {
       fprintf(f, "%03X", g_pplayer->m_dmdSize.x);
       fprintf(f, "%03X", g_pplayer->m_dmdSize.y);
@@ -228,7 +228,7 @@ void GenerateTournamentFile()
          fprintf(f, "%02X", dmd_data[i]);
       fclose(f);
 
-      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + g_pplayer->m_ptable->m_filename + ".txt", 4000);
+      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + g_pplayer->m_ptable->m_filename.string() + ".txt", 4000);
    }
    else
       g_pplayer->m_liveUI->PushNotification("Cannot save Tournament file"s, 4000);
@@ -236,13 +236,13 @@ void GenerateTournamentFile()
    delete[] dmd_data;
 }
 
-void GenerateImageFromTournamentFile(PinTable* table, const string &txtfile)
+void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::path &txtfile)
 {
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
    vector<uint8_t> dmd_data;
    FILE *f;
-   if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
+   if (fopen_s(&f, txtfile.string().c_str(), "r") == 0 && f)
    {
       bool error = false;
       error |= fscanf_s(f, "%03X", &x) != 1;
@@ -332,7 +332,7 @@ void GenerateImageFromTournamentFile(PinTable* table, const string &txtfile)
    for (unsigned int j = 0; j < y; j++)
       for (unsigned int i = 0; i < x; i++)
          pdst[i + (y - 1 - j) * x] = dmd_data[i + j * x]; // flip y-axis for image output
-   if (!FreeImage_Save(FIF_PNG, dib, (txtfile + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
+   if (!FreeImage_Save(FIF_PNG, dib, (txtfile.string() + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
       ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
 }
