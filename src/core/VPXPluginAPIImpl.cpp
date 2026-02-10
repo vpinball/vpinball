@@ -22,7 +22,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
    // Only valid in game
    if (g_pplayer != nullptr)
    {
-      static string filepath = g_pplayer->m_ptable->m_filename.string(); // We need to keep this string alive after the function returns as we return a pointer to its internal buffer
+      // static as it needs to survive as C string after this function returns
+      static string filepath;
+      filepath = g_pplayer->m_ptable->m_filename.string();
       info->path = filepath.c_str();
       info->tableWidth = g_pplayer->m_ptable->m_right;
       info->tableHeight = g_pplayer->m_ptable->m_bottom;
