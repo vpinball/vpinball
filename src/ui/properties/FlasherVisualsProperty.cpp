@@ -228,12 +228,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
 void FlasherVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName)
 {
    std::vector<Light *> lights;
-   for (size_t i = 0; i < table->m_vedit.size(); i++)
-   {
-      IEditable *const pe = table->m_vedit[i];
+   for (IEditable *const pe : table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemLight)
          lights.push_back((Light *)pe);
-   }
 
    bool need_reset = combo.GetCount() != lights.size() + 1; // Not the same number of items
    need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo

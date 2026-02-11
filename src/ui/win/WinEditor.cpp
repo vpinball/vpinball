@@ -492,9 +492,8 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 
    if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
    {
-      for (size_t i = 0; i < pt->m_vedit.size(); i++)
+      for (IEditable *const pedit : pt->GetParts())
       {
-         IEditable *const pedit = pt->m_vedit[i];
          if (pedit->GetItemType() == ItemTypeEnum::eItemBumper && ((Bumper *)pedit)->m_d.m_szSurface == oldName)
             ((Bumper *)pedit)->m_d.m_szSurface = name;
          else if (pedit->GetItemType() == ItemTypeEnum::eItemDecal && ((Decal *)pedit)->m_d.m_szSurface == oldName)

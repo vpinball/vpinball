@@ -497,15 +497,15 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, const 
     {
         combo.ResetContent();
         combo.AddString(_T("<None>"));
-        for (size_t i = 0; i < ptable->m_vedit.size(); i++)
+        for (IEditable* editable : ptable->GetParts())
         {
-            if (ptable->m_vedit[i]->GetItemType() == eItemSurface || (ptable->m_vedit[i]->GetItemType() == eItemRamp) ||
+            if (editable->GetItemType() == eItemSurface || (editable->GetItemType() == eItemRamp) ||
                 //!! **************** warning **********************
                 // added to render to surface of DMD style lights and emreels
                 // but no checks are being performed at moment:
-                (ptable->m_vedit[i]->GetItemType() == eItemFlasher))
+                (editable->GetItemType() == eItemFlasher))
             {
-                combo.AddString(PinTable::GetElementName(ptable->m_vedit[i]).c_str());
+                combo.AddString(PinTable::GetElementName(editable).c_str());
             }
         }
     }

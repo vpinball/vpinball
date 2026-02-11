@@ -903,10 +903,9 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
       }
       else
       {
-         for (size_t i = 0; i < pt->m_vedit.size(); i++)
+         for (IEditable *const pEdit : pt->GetParts())
          {
             bool inUse = false;
-            IEditable *const pEdit = pt->m_vedit[i];
             if (pEdit == nullptr)
                continue;
 

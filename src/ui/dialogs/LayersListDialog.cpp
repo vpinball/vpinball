@@ -137,10 +137,9 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_ADD_LAYER_BUTTON:
       if (m_activeTable)
       {
-         IEditable* const partGroup = EditableRegistry::CreateAndInit(eItemPartGroup, m_activeTable, 0, 0);
-         if (partGroup)
+         if (IEditable* const partGroup = EditableRegistry::CreateAndInit(eItemPartGroup, m_activeTable, 0, 0); partGroup)
          {
-            m_activeTable->m_vedit.push_back(partGroup);
+            m_activeTable->AddPart(partGroup);
             partGroup->SetPartGroup(GetSelectedPartGroup());
             m_activeTable->BeginUndo();
             m_activeTable->m_undo.MarkForCreate(partGroup);
@@ -157,14 +156,14 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          PartGroup* newParent = oldParent->GetPartGroup();
          if (newParent == nullptr)
          {
-            auto existing = std::ranges::find_if(m_activeTable->m_vedit, [oldParent](const IEditable* e)
+            auto existing = std::ranges::find_if(m_activeTable->GetParts(), [oldParent](const IEditable* e)
                { return (e->GetItemType() == eItemPartGroup) && (oldParent != e); });
-            if (existing == m_activeTable->m_vedit.end())
+            if (existing == m_activeTable->GetParts().end())
                return FALSE;
             newParent = static_cast<PartGroup*>(*existing);
          }
          m_activeTable->BeginUndo();
-         std::ranges::for_each(m_activeTable->m_vedit,
+         std::ranges::for_each(m_activeTable->GetParts(),
             [oldParent, newParent](IEditable* e)
             {
                if (e->GetPartGroup() == oldParent)
@@ -319,7 +318,7 @@ void LayerTreeView::Update()
    // Build new content list (in the end, a tree is a hierarchically displayed list)
    vector<TreeEntry> newContent;
    const string filter = m_isCaseSensitiveFilter ? m_filter : lowerCase(m_filter);
-   for (const auto& editable : m_activeTable->m_vedit)
+   for (const auto& editable : m_activeTable->GetParts())
    {
       const string name = editable->GetName();
       if (!filter.empty() && editable->GetItemType() != eItemPartGroup)
@@ -415,7 +414,7 @@ void LayerTreeView::Update()
       if (node.editable->GetItemType() == eItemPartGroup)
       {
          bool show = false, hide = false;
-         for (auto e : m_activeTable->m_vedit)
+         for (auto e : m_activeTable->GetParts())
             if (e->GetPartGroup() == node.editable && e->GetISelect())
             {
                show |= e->GetISelect()->m_isVisible;

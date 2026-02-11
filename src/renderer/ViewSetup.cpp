@@ -94,7 +94,7 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
       // Find flipper rest position
       constexpr float margin = INCHESTOVPU(4.f); // margin to exclude invisible flippers used for other purposes like animating diverters
       float bottomY = table->m_bottom - INCHESTOVPU(10.f);
-      for (IEditable* edit : table->m_vedit)
+      for (IEditable* edit : table->GetParts())
       {
          if (edit->GetItemType() != eItemFlipper)
             continue;
@@ -420,10 +420,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(rotation); // Viewport rotation
 
    vector<Vertex3Ds> bounds, legacy_bounds;
-   bounds.reserve(table->m_vedit.size() * 8); // upper bound estimate
+   bounds.reserve(table->GetParts().size() * 8); // upper bound estimate
    if (isLegacy)
-      legacy_bounds.reserve(table->m_vedit.size() * 8); // upper bound estimate
-   for (IEditable* editable : table->m_vedit)
+      legacy_bounds.reserve(table->GetParts().size() * 8); // upper bound estimate
+   for (IEditable* editable : table->GetParts())
       editable->GetBoundingVertices(bounds, isLegacy ? &legacy_bounds : nullptr); // Collect part bounds to fit the legacy mode camera?
 
    // Compute translation

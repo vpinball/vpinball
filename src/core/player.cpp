@@ -112,7 +112,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    implicitDMD->m_d.m_visible = false;
    implicitDMD->m_d.m_isDMD = true;
    implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
-   table->m_vedit.push_back(implicitDMD);
    table->AddPart(implicitDMD);
    PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
 
@@ -136,7 +135,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    implicitDMD2->m_d.m_intensity_scale = 1;
    implicitDMD2->m_d.m_modulate_vs_add = 1;
    implicitDMD2->m_d.m_addBlend = true;
-   table->m_vedit.push_back(implicitDMD2);
    table->AddPart(implicitDMD2);
    PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
 #endif
@@ -371,9 +369,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Add a playfield primitive if it is missing
    bool hasExplicitPlayfield = false;
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+   for (const IEditable *const pedit : m_ptable->GetParts())
    {
-      const IEditable *const pedit = m_ptable->m_vedit[i];
       if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((const Primitive *)pedit)->IsPlayfield())
       {
          hasExplicitPlayfield = true;
@@ -417,9 +414,9 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_implicitPlayfieldMesh->m_mesh.m_indices[4] = 1;
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
          m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
-         m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
          m_ptable->AddPart(m_implicitPlayfieldMesh);
          m_ptable->m_undo.Undo(true);
+         m_implicitPlayfieldMesh->Release();
       }
    }
 
@@ -639,7 +636,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
-   for (auto editable : m_ptable->m_vedit)
+   for (auto editable : m_ptable->GetParts())
       if (editable->GetIHitable())
          m_vhitables.push_back(editable);
    for (IEditable *hitable : m_vhitables)
@@ -952,11 +949,9 @@ Player::~Player()
    assert(m_vballDelete.empty());
    m_vball.clear();
 
-   if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh) != -1)
+   if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->GetParts(), (IEditable *)m_implicitPlayfieldMesh) != -1)
    {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
       m_ptable->RemovePart(m_implicitPlayfieldMesh);
-      m_implicitPlayfieldMesh->Release();
       m_implicitPlayfieldMesh = nullptr;
    }
 
@@ -1188,7 +1183,6 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_hitBall.m_d.m_vel.z = vz;
    pBall->m_d.m_useTableRenderSettings = true;
    pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
-   m_ptable->m_vedit.push_back(pBall);
    m_ptable->AddPart(pBall);
    m_vhitables.push_back(pBall);
    pBall->TimerSetup(m_vht);
@@ -1526,7 +1520,7 @@ public:
       , m_lightStates(player->m_nFrameToCapture)
    {
       m_nLights = 0;
-      for (const auto &edit : m_player->m_ptable->m_vedit)
+      for (const auto &edit : m_player->m_ptable->GetParts())
          if (edit->GetItemType() == eItemLight)
             m_nLights++;
 
@@ -1553,8 +1547,8 @@ public:
          m_player->m_overall_frames++;
          const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
          m_player->m_last_frame_time_msec = m_player->m_time_msec;
-         for (size_t i = 0; i < m_player->m_ptable->m_vedit.size(); ++i)
-            if (Hitable *const ph = m_player->m_ptable->m_vedit[i]->GetIHitable(); ph)
+         for (IEditable *editable : m_player->m_ptable->GetParts())
+            if (Hitable *const ph = editable->GetIHitable(); ph)
                ph->UpdateAnimation(diff_time_msec);
          m_player->FireTimers(-1);
          m_player->FireTimers(-2);
@@ -1608,7 +1602,7 @@ private:
 
       // Store and log light state
       std::stringstream ss;
-      for (const auto& edit : m_player->m_ptable->m_vedit)
+      for (const auto &edit : m_player->m_ptable->GetParts())
       {
          if (edit->GetItemType() == eItemLight)
          {
@@ -2038,12 +2032,9 @@ void Player::PrepareFrame()
       const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
       m_last_frame_time_msec = m_time_msec;
       if (diff_time_msec > 0.f)
-         for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
-         {
-            Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-            if (ph)
+         for (IEditable* editable : m_ptable->GetParts())
+            if (Hitable *const ph = editable->GetIHitable(); ph)
                ph->UpdateAnimation(diff_time_msec);
-         }
    }
 
    // New Frame event
@@ -2142,7 +2133,7 @@ void Player::FinishFrame()
    // Remove ball from table (but they may outlive as they may be in use for rendering) for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
-      RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
+      m_ptable->RemovePart(pBall);
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
       if (m_scriptInterpreter)
          m_scriptInterpreter->RemoveItem(pBall);

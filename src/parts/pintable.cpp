@@ -386,8 +386,9 @@ void PinTable::RemoveInvalidReferences()
 
 void PinTable::AddPart(IEditable *const part)
 {
-   //part->AddRef();
-   //m_vedit.push_back(part);
+   assert(std::ranges::find(m_vedit, part) == m_vedit.end());
+   part->AddRef();
+   m_vedit.push_back(part);
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
       //assert(!scriptable->m_wzName.empty());
@@ -401,8 +402,9 @@ void PinTable::AddPart(IEditable *const part)
 
 void PinTable::RemovePart(IEditable *const part)
 {
-   //auto it2 = std::ranges::find(m_vedit, part);
-   //m_vedit.erase(it2);
+   auto it2 = std::ranges::find(m_vedit, part);
+   assert(it2 != m_vedit.end());
+   m_vedit.erase(it2);
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
       //assert(!part->GetScriptable()->m_wzName.empty());
@@ -413,7 +415,7 @@ void PinTable::RemovePart(IEditable *const part)
       if (m_pcv)
          m_pcv->RemoveItem(scriptable);
    }
-   //part->Release();
+   part->Release();
 }
 
 void PinTable::RenamePart(IEditable *const part, const wstring& newName)
@@ -431,6 +433,53 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
       m_pcv->ReplaceName(scriptable, newName);
    wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
    m_scriptableNames[newName] = part;
+}
+
+void PinTable::MovePartToFront(IEditable* part)
+{
+   RemoveFromVectorSingle(m_vedit, part);
+   m_vedit.push_back(part);
+   SetDirtyDraw();
+}
+
+void PinTable::MovePartToBack(IEditable* part)
+{
+   RemoveFromVectorSingle(m_vedit, part);
+   m_vedit.insert(m_vedit.begin(), part);
+   SetDirtyDraw();
+}
+
+void PinTable::ReorderParts(bool isDrawingOrder)
+{
+   SetNonUndoableDirty(eSaveDirty);
+   if (isDrawingOrder)
+   {
+      for (int i = m_vmultisel.size() - 1; i >= 0; i--)
+      {
+         IEditable *const pedit = m_vmultisel[i].GetIEditable();
+         RemoveFromVectorSingle(m_vedit, pedit);
+      }
+
+      for (int i = m_vmultisel.size() - 1; i >= 0; i--)
+      {
+         IEditable *const pedit = m_vmultisel[i].GetIEditable();
+         m_vedit.push_back(pedit);
+      }
+   }
+   else
+   {
+      for (SSIZE_T i = m_allHitElements.size() - 1; i >= 0; i--)
+      {
+         IEditable *const pedit = m_allHitElements[i]->GetIEditable();
+         RemoveFromVectorSingle(m_vedit, pedit);
+      }
+
+      for (SSIZE_T i = m_allHitElements.size() - 1; i >= 0; i--)
+      {
+         IEditable *const pedit = m_allHitElements[i]->GetIEditable();
+         m_vedit.push_back(pedit);
+      }
+   }
 }
 
 void PinTable::AddCollection(Collection* collection)
@@ -658,7 +707,6 @@ PinTable* PinTable::CopyForPlay()
          assert(dstParent != nullptr);
          edit_dst->SetPartGroup(dstParent);
       }
-      live_table->m_vedit.push_back(edit_dst);
       live_table->AddPart(edit_dst);
       dst->m_startupToLive[editable] = edit_dst;
       dst->m_liveToStartup[edit_dst] = editable;
@@ -1578,7 +1626,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      pstmItem = nullptr;
                      if (FAILED(hr)) break;
 
-                     m_vedit.push_back(piedit);
                      AddPart(piedit);
 
                      //hr = piedit->InitPostLoad();
@@ -1828,12 +1875,12 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
                return v != m_vedit.end();
             });
-         std::for_each(removeLegacyLayers, m_vedit.end(), [this](IEditable *e)
-            {
-               RemovePart(e);
-               e->Release();
-            });
-         m_vedit.erase(removeLegacyLayers, m_vedit.end());
+         vector<IEditable *> toRemove(removeLegacyLayers, m_vedit.end());
+         for (IEditable* e : toRemove)
+         {
+            RemovePart(e);
+            e->Release();
+         }
 
          if (loadfileversion < 1081)
          {
@@ -3654,7 +3701,6 @@ void PinTable::Uncreate(IEditable *pie)
 
 void PinTable::Undelete(IEditable *pie)
 {
-   m_vedit.push_back(pie);
    AddPart(pie);
    pie->Undelete();
    SetDirtyDraw();
@@ -3758,7 +3804,6 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
 
-            m_vedit.push_back(peditNew);
             AddPart(peditNew);
 
             AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
@@ -4020,7 +4065,6 @@ void PinTable::UseTool(int x, int y, int tool)
       if (auto scriptable = pie->GetScriptable(); scriptable)
          GetUniqueName(type, scriptable->m_wzName, std::size(scriptable->m_wzName));
       pie->m_backglass = m_vpinball->m_backglassView;
-      m_vedit.push_back(pie);
       AddPart(pie);
       pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
       m_vpinball->GetLayersListDialog()->Update();

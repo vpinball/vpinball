@@ -232,7 +232,7 @@ void PinTableWnd::ExportBlueprint()
       if (m_vpxEditor->m_backglassView)
          Render3DProjection(&psur);
 
-      for (const auto &ptr : m_table->m_vedit)
+      for (const auto &ptr : m_table->GetParts())
       {
          if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpxEditor->m_backglassView)
             ptr->RenderBlueprint(&psur, solid);
@@ -300,7 +300,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       Render3DProjection(psur);
    }
 
-   for (const auto &ptr : m_table->m_vedit)
+   for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
          ptr->UIRenderPass1(psur);
@@ -338,7 +338,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       }
    }
 
-   for (const auto &ptr : m_table->m_vedit)
+   for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
          ptr->UIRenderPass2(psur);
@@ -379,7 +379,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
 // draws the backdrop content
 void PinTableWnd::Render3DProjection(Sur *const psur)
 {
-   if (m_table->m_vedit.empty())
+   if (m_table->GetParts().empty())
       return;
 
    // dummy coordinate system for backdrop view
@@ -690,9 +690,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    UIRenderPass2(&phs);
 
-   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   for (IEditable *const ptr : m_table->GetParts())
    {
-      IEditable *const ptr = m_table->m_vedit[i];
       if (ptr->m_backglass == m_vpxEditor->m_backglassView)
       {
          ptr->UIRenderPass1(&phs2);
@@ -1088,7 +1087,7 @@ void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISe
 #ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), LocalString(IDS_ASSIGN_TO_LAYER2).m_szbuffer);
    int i = 0;
-   for (IEditable *edit : m_table->m_vedit)
+   for (IEditable *edit : m_table->GetParts())
    {
       if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
       {

@@ -1318,7 +1318,7 @@ void VRDevice::CreateSession()
    bounds.reserve(16);
    Vertex3Ds sceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
    Vertex3Ds sceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-   for (IEditable* editable : g_pplayer->m_ptable->m_vedit)
+   for (IEditable* editable : g_pplayer->m_ptable->GetParts())
    {
       bool prevVisibility;
       Primitive* prim = editable->GetItemType() == ItemTypeEnum::eItemPrimitive ? static_cast<Primitive*>(editable) : nullptr;
