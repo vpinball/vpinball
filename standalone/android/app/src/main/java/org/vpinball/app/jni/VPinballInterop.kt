@@ -110,10 +110,9 @@ enum class VPinballEvent(val value: Int) {
     PRERENDERING(6),
     PLAYER_STARTED(7),
     RUMBLE(8),
-    SCRIPT_ERROR(9),
-    PLAYER_CLOSED(10),
-    WEB_SERVER(11),
-    COMMAND(12);
+    PLAYER_CLOSED(9),
+    WEB_SERVER(10),
+    COMMAND(11);
 
     val text: String?
         get() =
@@ -126,25 +125,6 @@ enum class VPinballEvent(val value: Int) {
                 PRERENDERING -> "Prerendering Static Parts"
                 else -> null
             }
-}
-
-enum class VPinballScriptErrorType(val value: Int) {
-    COMPILE(0),
-    RUNTIME(1);
-
-    val text: String
-        get() =
-            when (this) {
-                COMPILE -> "Compile error"
-                RUNTIME -> "Runtime error"
-            }
-
-    companion object {
-        @JvmStatic
-        fun fromInt(value: Int): VPinballScriptErrorType {
-            return entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Unknown value: $value")
-        }
-    }
 }
 
 // VPinball Callbacks
@@ -162,8 +142,6 @@ fun interface VPinballZipCallback {
 @Serializable data class VPinballProgressData(val progress: Int)
 
 @Serializable data class VPinballRumbleData(val lowFrequencyRumble: Int, val highFrequencyRumble: Int, val durationMs: Int)
-
-@Serializable data class VPinballScriptErrorData(val error: Int, val line: Int, val position: Int, val description: String)
 
 @Serializable data class VPinballWebServerData(val url: String)
 

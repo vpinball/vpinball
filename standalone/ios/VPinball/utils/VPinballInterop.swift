@@ -113,7 +113,6 @@ enum VPinballEvent: CInt {
     case prerendering
     case playerStarted
     case rumble
-    case scriptError
     case playerClosed
     case webServer
     case command
@@ -138,20 +137,6 @@ enum VPinballEvent: CInt {
     }
 }
 
-enum VPinballScriptErrorType: CInt {
-    case compile
-    case runtime
-
-    var name: String {
-        switch self {
-        case .compile:
-            return "Compile error"
-        case .runtime:
-            return "Runtime error"
-        }
-    }
-}
-
 // Event Data Structures
 
 struct ProgressEventData: Codable {
@@ -162,13 +147,6 @@ struct RumbleData: Codable {
     let lowFrequencyRumble: UInt16
     let highFrequencyRumble: UInt16
     let durationMs: UInt32
-}
-
-struct ScriptErrorData: Codable {
-    let error: Int
-    let line: Int
-    let position: Int
-    let description: String
 }
 
 struct WebServerData: Codable {

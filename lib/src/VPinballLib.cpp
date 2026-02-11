@@ -105,13 +105,11 @@ void VPinballLib::AppIterate()
          || g_pplayer->GetCloseState() == Player::CS_USER_INPUT))
          return;
 
-      auto pActiveTableEditor = g_pvp->GetActiveTableEditor();
-
       if (g_pplayer->GetCloseState() == Player::CS_CLOSE_CAPTURE_SCREENSHOT) {
          if (m_captureInProgress)
             return;
 
-         std::filesystem::path tablePath(pActiveTableEditor->m_table->m_filename);
+         std::filesystem::path tablePath(m_pTable->m_filename);
          string imageFilename = tablePath.stem().string() + ".jpg";
          std::filesystem::path imagePath = tablePath.parent_path() / imageFilename;
 
@@ -143,14 +141,11 @@ void VPinballLib::AppIterate()
 
       m_gameLoop = nullptr;
 
-      // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
-      pActiveTableEditor->m_table->m_settings.Load(g_pplayer->m_ptable->m_settings);
-      pActiveTableEditor->m_table->m_settings.SetModified(g_pplayer->m_ptable->m_settings.IsModified());
-
       delete g_pplayer;
       g_pplayer = nullptr;
 
-      g_pvp->CloseTable(pActiveTableEditor);
+      m_pTable->Release();
+      m_pTable = nullptr;
    }
 }
 
@@ -226,16 +221,6 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
                j["lowFrequencyRumble"] = rumbleData->lowFrequencyRumble;
                j["highFrequencyRumble"] = rumbleData->highFrequencyRumble;
                j["durationMs"] = rumbleData->durationMs;
-               jsonString = j.dump();
-               jsonData = jsonString.c_str();
-               break;
-            }
-            case VPINBALL_EVENT_SCRIPT_ERROR: {
-               ScriptErrorData* scriptErrorData = (ScriptErrorData*)data;
-               j["error"] = (int)scriptErrorData->error;
-               j["line"] = scriptErrorData->line;
-               j["position"] = scriptErrorData->position;
-               j["description"] = scriptErrorData->description;
                jsonString = j.dump();
                jsonData = jsonString.c_str();
                break;
@@ -465,17 +450,28 @@ std::filesystem::path VPinballLib::GetPath(VPINBALL_PATH pathType)
 
 VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
 {
-   VPXProgress progress;
-   g_pvp->LoadFileName(tablePath, true, &progress);
+   if (m_pTable) {
+      m_pTable->Release();
+      m_pTable = nullptr;
+   }
 
-   bool success = g_pvp->GetActiveTable() != nullptr;
-   return success ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
+   CComObject<PinTable>::CreateInstance(&m_pTable);
+   m_pTable->AddRef();
+
+   VPXProgress progress;
+   const HRESULT hr = m_pTable->LoadGameFromFilename(tablePath, progress);
+   if (!SUCCEEDED(hr)) {
+      m_pTable->Release();
+      m_pTable = nullptr;
+      return VPINBALL_STATUS_FAILURE;
+   }
+
+   return VPINBALL_STATUS_SUCCESS;
 }
 
 VPINBALL_STATUS VPinballLib::ExtractTableScript()
 {
-   auto pActiveTableEditor = g_pvp->GetActiveTableEditor();
-   if (!pActiveTableEditor)
+   if (!m_pTable)
       return VPINBALL_STATUS_FAILURE;
 
    std::filesystem::path tempPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "temp_script.vbs");
@@ -483,25 +479,11 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    if (!outFile)
       return VPINBALL_STATUS_FAILURE;
 
-   outFile << pActiveTableEditor->m_table->m_pcv->GetScript();
+   outFile << m_pTable->m_pcv->GetScript();
    outFile.close();
 
-   std::filesystem::path tablePath(pActiveTableEditor->m_table->m_filename);
-   std::filesystem::path destPath = tablePath.parent_path() / (tablePath.stem().string() + ".vbs");
-
-   try {
-      std::filesystem::copy_file(tempPath, destPath, std::filesystem::copy_options::overwrite_existing);
-      std::filesystem::remove(tempPath);
-   }
-   
-   catch (const std::exception& e) {
-      PLOGE.printf("Failed to save script file: %s", e.what());
-      std::filesystem::remove(tempPath);
-      g_pvp->CloseTable(pActiveTableEditor);
-      return VPINBALL_STATUS_FAILURE;
-   }
-
-   g_pvp->CloseTable(pActiveTableEditor);
+   m_pTable->Release();
+   m_pTable = nullptr;
 
    return VPINBALL_STATUS_SUCCESS;
 }
@@ -511,21 +493,23 @@ VPINBALL_STATUS VPinballLib::Play()
    if (m_gameLoop)
       return VPINBALL_STATUS_FAILURE;
 
-   CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
-   if (!pActiveTable)
+   if (!m_pTable)
       return VPINBALL_STATUS_FAILURE;
 
-   return SDL_RunOnMainThread([](void*) { g_pvp->DoPlay(0); }, nullptr, true)
-       ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
+   return SDL_RunOnMainThread([](void*) {
+      auto& lib = VPinballLib::Instance();
+      new Player(lib.m_pTable, Player::PlayMode::Play);
+      if (g_pplayer)
+         g_pplayer->GameLoop();
+   }, nullptr, true) ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
 }
 
 VPINBALL_STATUS VPinballLib::Stop()
 {
-   CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
-   if (!pActiveTable)
+   if (!m_pTable)
       return VPINBALL_STATUS_FAILURE;
 
-   pActiveTable->QuitPlayer(Player::CS_CLOSE_APP);
+   m_pTable->QuitPlayer(Player::CS_CLOSE_APP);
 
    return VPINBALL_STATUS_SUCCESS;
 }

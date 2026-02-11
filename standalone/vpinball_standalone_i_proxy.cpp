@@ -114,7 +114,7 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -125,7 +125,7 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -4204,7 +4204,7 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -4215,7 +4215,7 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -5005,7 +5005,7 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -5016,7 +5016,7 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -5891,7 +5891,7 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -5902,7 +5902,7 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -6061,7 +6061,7 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -6072,7 +6072,7 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -6777,7 +6777,7 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -6788,7 +6788,7 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -7168,7 +7168,7 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -7179,7 +7179,7 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -7766,7 +7766,7 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -7777,7 +7777,7 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -8187,7 +8187,7 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -8198,7 +8198,7 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -8890,7 +8890,7 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -8901,7 +8901,7 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -9426,7 +9426,7 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -9437,7 +9437,7 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -10920,7 +10920,7 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -10931,7 +10931,7 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -11605,7 +11605,7 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -11616,7 +11616,7 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -12150,7 +12150,7 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -12161,7 +12161,7 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -12588,7 +12588,7 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -12599,7 +12599,7 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -14760,7 +14760,7 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14771,7 +14771,7 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -14797,7 +14797,7 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14808,7 +14808,7 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -14835,7 +14835,7 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14846,7 +14846,7 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -14874,7 +14874,7 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14885,7 +14885,7 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -15365,7 +15365,7 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15376,7 +15376,7 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -15535,7 +15535,7 @@ HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15546,7 +15546,7 @@ HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;
@@ -15809,7 +15809,7 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
-	if (!g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
+	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
 	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15820,7 +15820,7 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 			DISPID tDispid;
 			CComPtr<IDispatch> disp;
 			g_pplayer->m_scriptInterpreter->GetScriptDispatch(&disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+			if (disp && SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
 				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
 			}
 			return DISP_E_MEMBERNOTFOUND;

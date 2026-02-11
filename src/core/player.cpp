@@ -1166,13 +1166,8 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
    if (m_playMode == Player::PlayMode::CaptureAttract)
       SetCloseState(Player::CloseState::CS_STOP_PLAY);
 
-#ifdef __LIBVPINBALL__
-   if (type != ScriptInterpreter::ErrorType::DebugConsole)
-   {
-      VPinballLib::ScriptErrorData scriptErrorStruct
-         = { type == ScriptInterpreter::ErrorType::Runtime ? VPINBALL_SCRIPT_ERROR_TYPE_RUNTIME : VPINBALL_SCRIPT_ERROR_TYPE_COMPILE, line, column, description.c_str() };
-      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_SCRIPT_ERROR, &scriptErrorStruct);
-   }
+#ifdef __STANDALONE__
+   PLOGE << (type == ScriptInterpreter::ErrorType::Runtime ? "Runtime" : "Compile") << " error on line " << line << ", col " << column << ": " << description;
 #endif
 
    m_ptable->m_pcv->OnScriptError(type, line ,column, description, stackDump);

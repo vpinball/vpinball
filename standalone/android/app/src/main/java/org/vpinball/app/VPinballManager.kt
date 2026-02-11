@@ -22,8 +22,6 @@ import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballProgressData
 import org.vpinball.app.jni.VPinballRumbleData
-import org.vpinball.app.jni.VPinballScriptErrorData
-import org.vpinball.app.jni.VPinballScriptErrorType
 import org.vpinball.app.jni.VPinballSettingsSection
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStatus
@@ -42,7 +40,6 @@ object VPinballManager : KoinComponent {
     private var playerActivity: VPinballPlayerActivity? = null
     private var mainActivity: VPinballActivity? = null
     private var activeTable: Table? = null
-    private var error: String? = null
 
     private var lastProgressEvent: VPinballEvent? = null
     private var lastProgress: Int? = null
@@ -160,35 +157,11 @@ object VPinballManager : KoinComponent {
                             }
                         rumbleData?.let { rumble(it) }
                     }
-                    VPinballEvent.SCRIPT_ERROR -> {
-                        if (error == null) {
-                            val scriptErrorData =
-                                jsonData?.let { jsonStr ->
-                                    try {
-                                        Json.decodeFromString<VPinballScriptErrorData>(jsonStr)
-                                    } catch (e: Exception) {
-                                        log(VPinballLogLevel.WARN, "Failed to parse script error data JSON: $jsonStr - ${e.message}")
-                                        null
-                                    }
-                                }
-                            error =
-                                scriptErrorData?.let {
-                                    val errorType = VPinballScriptErrorType.fromInt(it.error)
-                                    "${errorType.text} on line ${it.line}, position ${it.position}:\n\n${it.description}"
-                                } ?: "Script error."
-                        }
-                    }
                     VPinballEvent.PLAYER_CLOSED -> {
                         val tableToCleanup = activeTable
                         activeTable = null
                         CoroutineScope(Dispatchers.Main).launch {
                             viewModel.playing(false)
-
-                            error?.let { error ->
-                                delay(500)
-                                showError(error)
-                            }
-
                             viewModel.stopped()
                             delay(100)
 
@@ -357,7 +330,6 @@ object VPinballManager : KoinComponent {
     suspend fun load(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
         if (activeTable != null) return false
         activeTable = table
-        error = null
 
         return withContext(Dispatchers.IO) {
             if (loadValue(STANDALONE, "ResetLogOnPlay", true)) {

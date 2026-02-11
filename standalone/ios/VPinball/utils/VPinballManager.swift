@@ -70,19 +70,6 @@ class VPinballManager {
                         vpinballManager.rumble(rumbleData)
                     }
                 }
-            case .scriptError:
-                if vpinballViewModel.scriptError == nil,
-                   let data = data
-                {
-                    let json = String(cString: UnsafePointer<CChar>(data))
-                    if let jsonData = json.data(using: .utf8),
-                       let scriptErrorData = try? JSONDecoder().decode(ScriptErrorData.self,
-                                                                       from: jsonData)
-                    {
-                        let type = VPinballScriptErrorType(rawValue: CInt(scriptErrorData.error))!
-                        vpinballViewModel.scriptError = "\(type.name) on line \(scriptErrorData.line), position \(scriptErrorData.position):\n\n\(scriptErrorData.description)"
-                    }
-                }
             case .playerClosed:
                 vpinballViewModel.isPlaying = false
 
@@ -94,15 +81,7 @@ class VPinballManager {
                 }
 
                 vpinballManager.activeTable = nil
-
-                if vpinballViewModel.scriptError != nil {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        vpinballViewModel.setAction(action: .showError,
-                                                    table: nil)
-                    }
-                } else {
-                    vpinballViewModel.setAction(action: .stopped)
-                }
+                vpinballViewModel.setAction(action: .stopped)
             case .webServer:
                 if let data = data {
                     let json = String(cString: UnsafePointer<CChar>(data))
@@ -213,7 +192,6 @@ class VPinballManager {
         }
 
         activeTable = table
-        vpinballViewModel.scriptError = nil
 
         await MainActor.run {
             vpinballViewModel.showProgressHUD(title: table.name,
