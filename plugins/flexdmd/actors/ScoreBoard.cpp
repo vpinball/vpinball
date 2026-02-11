@@ -37,7 +37,6 @@ std::string FormatScore(int value)
 }
 }
 
-
 namespace Flex {
 
 ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont) : Group(pFlexDMD, string())

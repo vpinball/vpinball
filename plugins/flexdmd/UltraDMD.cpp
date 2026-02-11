@@ -83,6 +83,15 @@ void UltraDMD::Clear()
       m_pQueue->SetVisible(false);
 }
 
+bool UltraDMD::SetColorString(const string& color)
+{
+   ColorRGBA32 parsedColor;
+   if (!try_parse_color(color, parsedColor))
+      return false;
+   m_pFlexDMD->SetColor(parsedColor);
+   return true;
+}
+
 Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const
 {
    for (const auto& pFontDef : m_singleLineFonts) {
