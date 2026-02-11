@@ -112,6 +112,7 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
    auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA);
    if (tex)
    {
+#ifndef __ANDROID__
       if (_pitch == _width * 4)
          copy_bgra_rgba<false>(static_cast<uint32_t*>(tex->data()), static_cast<const uint32_t*>(_data), (size_t)_width * _height);
       else
@@ -126,6 +127,14 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
       for (uint32_t i = 0; i < _width * _height; i++)
          std::swap(pixels[i * 4], pixels[i * 4 + 2]);
       }
+#else
+      // FIX ME: BGFX on Android is already returning RGBA for GLES and Vulkan
+      if (_pitch == _width * 4)
+         memcpy(tex->data(), _data, _size);
+      else
+         for (unsigned int i = 0; i < _height; i++)
+            bx::memCopy(static_cast<uint8_t*>(tex->data()) + i * _width * 4, static_cast<const uint8_t*>(_data) + i * _pitch, _width * 4);
+#endif
       if (_yflip)
          tex->FlipY();
       success = tex->Save(_filePath);
