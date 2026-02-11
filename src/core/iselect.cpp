@@ -258,8 +258,7 @@ static void SetPartGroup(ISelect* const me, string layerName)
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
          if (newGroup)
          {
-            me->GetPTable()->m_tableEditor->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
-            wcsncpy_s(newGroup->GetScriptable()->m_wzName, std::size(newGroup->GetScriptable()->m_wzName), newName.c_str());
+            wcsncpy_s(newGroup->m_wzName, std::size(newGroup->m_wzName), newName.c_str());
             me->GetPTable()->AddPart(newGroup);
             me->GetIEditable()->SetPartGroup(newGroup);
          }

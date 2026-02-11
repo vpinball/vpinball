@@ -2564,7 +2564,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
-   CodeViewer* pcv = g_pvp->GetActiveTableEditor()->m_pcv;
+   std::unique_ptr<CodeViewer>& pcv = g_pvp->GetActiveTableEditor()->m_pcv;
    switch (uMsg)
    {
    case WM_INITDIALOG:

@@ -70,9 +70,6 @@ PinTable::PinTable()
    UpdateCurrentBGSet();
    m_currentBackglassMode = m_viewMode;
 
-   m_pcv = new CodeViewer(this);
-   m_pcv->Create(nullptr);
-
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
    m_psgt->Init(this);
@@ -130,9 +127,6 @@ PinTable::~PinTable()
 
    for (int i = 0; i < m_vcollection.size(); i++)
       m_vcollection.ElementAt(i)->Release();
-
-   delete m_pcv;
-   m_pcv = nullptr;
 
    m_psgt->Release();
    m_psgt = nullptr;
@@ -395,8 +389,8 @@ void PinTable::AddPart(IEditable *const part)
       assert(scriptable->m_wzName[0] != '\0');
       assert(m_scriptableNames.find(scriptable->m_wzName) == m_scriptableNames.end());
       m_scriptableNames[scriptable->m_wzName] = part;
-      if (m_pcv)
-         m_pcv->AddItem(scriptable, false);
+      if (m_tableEditor)
+         m_tableEditor->m_pcv->AddItem(scriptable, false);
    }
 }
 
@@ -412,8 +406,8 @@ void PinTable::RemovePart(IEditable *const part)
       auto it = m_scriptableNames.find(scriptable->m_wzName);
       assert(it != m_scriptableNames.end());
       m_scriptableNames.erase(it);
-      if (m_pcv)
-         m_pcv->RemoveItem(scriptable);
+      if (m_tableEditor)
+         m_tableEditor->m_pcv->RemoveItem(scriptable);
    }
    part->Release();
 }
@@ -429,10 +423,9 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
    m_scriptableNames.erase(it);
    assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
    m_scriptableNames[newName] = part;
-   if (m_pcv)
-      m_pcv->ReplaceName(scriptable, newName);
    wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
-   m_scriptableNames[newName] = part;
+   if (m_tableEditor)
+      m_tableEditor->m_pcv->ReplaceName(scriptable, newName);
 }
 
 void PinTable::MovePartToFront(IEditable* part)
@@ -488,8 +481,8 @@ void PinTable::AddCollection(Collection* collection)
    collection->AddRef();
    m_vcollection.push_back(collection);
    m_scriptableNames[collection->m_wzName] = nullptr;
-   if (m_pcv)
-      m_pcv->AddItem((IScriptable *)collection, false);
+   if (m_tableEditor)
+      m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
 }
 
 void PinTable::RemoveCollection(Collection *collection)
@@ -498,11 +491,25 @@ void PinTable::RemoveCollection(Collection *collection)
    auto it = m_scriptableNames.find(collection->m_wzName);
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
-   if (m_pcv)
-      m_pcv->RemoveItem((IScriptable *)collection);
+   if (m_tableEditor)
+      m_tableEditor->m_pcv->RemoveItem((IScriptable *)collection);
    m_vcollection.find_erase(collection);
    collection->Release();
 #endif
+}
+
+void PinTable::RenameCollection(Collection *collection, const wstring &newName)
+{
+   //assert(!collection->m_wzName.empty());
+   assert(collection->m_wzName[0] != '\0');
+   auto it = m_scriptableNames.find(collection->m_wzName);
+   assert(it != m_scriptableNames.end());
+   m_scriptableNames.erase(it);
+   assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
+   m_scriptableNames[newName] = nullptr;
+   wcsncpy_s(collection->m_wzName, std::size(collection->m_wzName), newName.c_str());
+   if (m_tableEditor)
+      m_tableEditor->m_pcv->ReplaceName(collection, newName);
 }
 
 bool PinTable::IsNameUnique(const wstring &name) const
@@ -1907,7 +1914,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
                         return; // Conflict with a collection name
                   }
-                  m_pcv->ReplaceName(editable->GetScriptable(), MakeWString(shortName));
+                  RenamePart(editable, MakeWString(shortName));
                });
          }
          
@@ -2000,10 +2007,13 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    RemoveInvalidReferences();
 
-   m_pcv->SetScript(m_script_text);
-   m_pcv->AddItem(this, false);
-   m_pcv->AddItem(m_psgt, true);
-   //m_pcv->AddItem(m_pcv->m_pdm, false);
+   if (m_tableEditor)
+   {
+      m_tableEditor->m_pcv->SetScript(m_script_text);
+      m_tableEditor->m_pcv->AddItem(this, false);
+      m_tableEditor->m_pcv->AddItem(m_psgt, true);
+      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+   }
 
    std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
    std::filesystem::path tableFile = std::filesystem::path(filename).filename();
@@ -2052,7 +2062,8 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
       return;
    }
 
-   m_pcv->SetScript(string_from_utf8_or_iso8859_1(buffer.data(), buffer.size()));
+   if (m_tableEditor)
+      m_tableEditor->m_pcv->SetScript(string_from_utf8_or_iso8859_1(buffer.data(), buffer.size()));
    m_external_script_name = scriptPath;
 }
 
@@ -2810,21 +2821,6 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
       m_vcollection.insert(pcol, 0);
    else
       m_vcollection.insert(pcol, idx + 1);
-}
-
-void PinTable::SetCollectionName(Collection *pcol, string name, HWND hwndList, int index)
-{
-#ifndef __STANDALONE__
-   if (name.length() >= std::size(pcol->m_wzName))
-      name.erase(std::size(pcol->m_wzName) - 1);
-   const wstring wzT = MakeWString(name);
-   if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
-   {
-      if (hwndList)
-         ListView_SetItemText(hwndList, index, 0, (char*)name.c_str());
-      wcsncpy_s(pcol->m_wzName, std::size(pcol->m_wzName), wzT.c_str());
-   }
-#endif
 }
 
 void PinTable::FireOptionEvent(OptionEventType eventType)
@@ -3983,7 +3979,8 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         }
 #ifndef __STANDALONE__
         m_vpinball->SetStatusBarElementInfo(info);
-        m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
+        if (m_tableEditor)
+            m_tableEditor->m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
 #endif
     }
 

@@ -46,7 +46,7 @@ public:
 
    CComObject<PinTable> *const m_table;
    
-   CodeViewer *m_pcv;
+   std::unique_ptr<CodeViewer> m_pcv;
 
 protected:
 #ifndef __STANDALONE__
