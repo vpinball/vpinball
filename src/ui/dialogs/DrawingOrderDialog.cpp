@@ -47,10 +47,10 @@ BOOL DrawingOrderDialog::OnInitDialog()
    vector<ISelect*> selection;
    if (m_drawingOrderSelect)
    {
-      for (SSIZE_T i = pt->m_vedit.size() - 1; i >= 0; i--)
+      for (SSIZE_T i = pt->GetParts().size() - 1; i >= 0; i--)
          for (int t = 0; t < pt->m_vmultisel.size(); t++)
          {
-            if (pt->m_vmultisel.ElementAt(t) == pt->m_vedit[i]->GetISelect())
+            if (pt->m_vmultisel.ElementAt(t) == pt->GetParts()[i]->GetISelect())
                selection.push_back(pt->m_vmultisel.ElementAt(t));
          }
    }
@@ -199,44 +199,19 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          ListView_SetItemState(hOrderList, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
          ListView_SetItemState(hOrderList, idx - 1, LVIS_FOCUSED, LVIS_FOCUSED);
          ::SetFocus(hOrderList);
-         pt->SetNonUndoableDirty(eSaveDirty);
          if (m_drawingOrderSelect)
          {
             ISelect * const psel = pt->m_vmultisel.ElementAt(idx);
             pt->m_vmultisel.erase(idx);
-
             pt->m_vmultisel.insert(psel, idx - 1);
-
-            for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
-               RemoveFromVectorSingle(pt->m_vedit, pedit);
-            }
-
-            for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
-               pt->m_vedit.push_back(pedit);
-            }
+            pt->ReorderParts(m_drawingOrderSelect);
          }
          else
          {
             ISelect * const psel = pt->m_allHitElements[idx];
             pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
-
             pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx - 1), psel);
-
-            for (SSIZE_T i = pt->m_allHitElements.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_allHitElements[i]->GetIEditable();
-               RemoveFromVectorSingle(pt->m_vedit, pedit);
-            }
-
-            for (SSIZE_T i = pt->m_allHitElements.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_allHitElements[i]->GetIEditable();
-               pt->m_vedit.push_back(pedit);
-            }
+            pt->ReorderParts(m_drawingOrderSelect);
          }
       }
    }
@@ -269,17 +244,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             else
                pt->m_vmultisel.insert(psel, idx + 1);
 
-            for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
-               RemoveFromVectorSingle(pt->m_vedit, pedit);
-            }
-
-            for (int i = pt->m_vmultisel.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_vmultisel[i].GetIEditable();
-               pt->m_vedit.push_back(pedit);
-            }
+            pt->ReorderParts(m_drawingOrderSelect);
          }
       }
       else
@@ -309,17 +274,7 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             else
                pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx+1), psel);
 
-            for (SSIZE_T i = pt->m_allHitElements.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_allHitElements[i]->GetIEditable();
-               RemoveFromVectorSingle(pt->m_vedit, pedit);
-            }
-
-            for (SSIZE_T i = pt->m_allHitElements.size() - 1; i >= 0; i--)
-            {
-               IEditable * const pedit = pt->m_allHitElements[i]->GetIEditable();
-               pt->m_vedit.push_back(pedit);
-            }
+            pt->ReorderParts(m_drawingOrderSelect);
          }
       }
    }

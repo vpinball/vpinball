@@ -20,7 +20,6 @@ void IEditable::SetDirtyDraw()
 
 void IEditable::Delete()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    MarkForDelete();
 
    GetPTable()->RemovePart(this);
@@ -34,7 +33,6 @@ void IEditable::Delete()
 
 void IEditable::Uncreate()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    GetPTable()->RemovePart(this);
 }
 
@@ -44,7 +42,7 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
    {
       if (partGroup)
       {
-         assert(std::ranges::find(GetPTable()->m_vedit, partGroup) != GetPTable()->m_vedit.end());
+         assert(GetPTable()->HasPart(partGroup));
          partGroup->AddRef();
       }
       if (m_partGroup)
@@ -178,7 +176,8 @@ string IEditable::GetName() const
 
 void IEditable::SetName(const string& name)
 {
-   if (name.empty() || GetItemType() == eItemDecal)
+   IScriptable* scriptable = GetScriptable();
+   if (name.empty() || scriptable == nullptr || GetItemType() == eItemDecal)
       return;
 
    PinTable* const pt = GetPTable();
@@ -186,20 +185,23 @@ void IEditable::SetName(const string& name)
       return;
 
    wstring newName = MakeWString(name);
-   if (newName.length() >= std::size(GetScriptable()->m_wzName))
-      newName.erase(std::size(GetScriptable()->m_wzName) - 1);
+   if (newName.length() >= std::size(scriptable->m_wzName))
+      newName.erase(std::size(scriptable->m_wzName) - 1);
 
-   if (newName == GetScriptable()->m_wzName)
+   if (newName == scriptable->m_wzName)
       return;
    
    if (!pt->IsNameUnique(newName))
    {
-      WCHAR uniqueName[std::size(GetScriptable()->m_wzName)];
-      pt->GetUniqueName(newName, uniqueName, std::size(GetScriptable()->m_wzName));
+      WCHAR uniqueName[std::size(scriptable->m_wzName)];
+      pt->GetUniqueName(newName, uniqueName, std::size(scriptable->m_wzName));
       newName = uniqueName;
    }
 
    STARTUNDO
-   pt->RenamePart(this, newName);
+   if (pt->HasPart(this))
+      pt->RenamePart(this, newName);
+   else
+      wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
    STOPUNDO
 }

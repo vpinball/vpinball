@@ -94,11 +94,9 @@ void SearchSelectDialog::Update()
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Collection");
       idx++;
    }
-   for (size_t i = 0; i < m_curTable->m_vedit.size(); i++)
+   for (IEditable *const piedit : m_curTable->GetParts())
    {
-      IEditable * const piedit = m_curTable->m_vedit[i];
-      IScriptable * const piscript = piedit->GetScriptable();
-      if (piscript)
+      if (IScriptable *const piscript = piedit->GetScriptable(); piscript)
       {
          LVITEM lv;
          lv.mask = LVIF_TEXT | LVIF_PARAM;

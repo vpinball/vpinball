@@ -2800,9 +2800,8 @@ void Renderer::RenderFrame()
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
    m_ballReflectedLights.clear();
-   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   for (IEditable* const item : m_table->GetParts())
    {
-      IEditable* const item = m_table->m_vedit[i];
       if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_backglass)
          m_ballReflectedLights.push_back(static_cast<Light*>(item));
    }

@@ -1030,11 +1030,11 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   CComSafeArray<VARIANT> objs((ULONG)m_pt->m_vedit.size());
+   CComSafeArray<VARIANT> objs((ULONG)m_pt->GetParts().size());
 
-   for (size_t i = 0; i < m_pt->m_vedit.size(); ++i)
+   for (size_t i = 0; i < m_pt->GetParts().size(); ++i)
    {
-      IEditable * const pie = m_pt->m_vedit[i];
+      IEditable *const pie = m_pt->GetParts()[i];
 
       CComVariant v = pie->GetISelect()->GetDispatch();
       v.Detach(&objs[(LONG)i]);
@@ -1049,9 +1049,8 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   for (size_t i = 0; i < m_pt->m_vedit.size(); ++i)
+   for (IEditable *const pie : m_pt->GetParts())
    {
-      IEditable * const pie = m_pt->m_vedit[i];
       if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
       {
          IDispatch * const id = pie->GetISelect()->GetDispatch();

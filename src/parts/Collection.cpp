@@ -70,19 +70,20 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Collection::InitPostLoad(PinTable *const pt)
 {
-   for (size_t n = 0; n < m_tmp_isel_name.size(); ++n)
-   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
+   for (wstring tmp_isel_name : m_tmp_isel_name)
    {
-      IScriptable *const piscript = pt->m_vedit[i]->GetScriptable();
-      if (piscript) // skip decals
+      for (IEditable* editable : pt->GetParts())
       {
-         if (piscript->m_wzName == m_tmp_isel_name[n])
+         if (IScriptable *const piscript = editable->GetScriptable(); piscript) // skip decals
          {
-            auto iselect = piscript->GetISelect();
-            iselect->GetIEditable()->m_vCollection.push_back(this);
-            iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
-            m_visel.push_back(iselect);
-            break; // found, continue to search next name/element
+            if (piscript->m_wzName == tmp_isel_name)
+            {
+               auto iselect = piscript->GetISelect();
+               iselect->GetIEditable()->m_vCollection.push_back(this);
+               iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
+               m_visel.push_back(iselect);
+               break; // found, continue to search next name/element
+            }
          }
       }
    }

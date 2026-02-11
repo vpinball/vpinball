@@ -799,7 +799,7 @@ void EditorUI::RenderUI()
    if (m_selection != previousSelection)
    {
       if ((previousSelection.type == Selection::S_EDITABLE) //
-         && FindIndexOf(m_table->m_vedit, previousSelection.uiPart->GetEditable()) != -1 // Not deleted
+         && FindIndexOf(m_table->GetParts(), previousSelection.uiPart->GetEditable()) != -1 // Not deleted
          && (previousSelection.uiPart->GetEditable()->GetIHitable() != nullptr)
          && (previousSelection.uiPart->GetEditable()->GetItemType() != eItemBall))
          m_player->m_physics->SetStatic(previousSelection.uiPart->GetEditable());
@@ -835,7 +835,7 @@ void EditorUI::DeleteSelection()
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
       RemoveFromVectorSingle(g_pplayer->m_vhitables, edit);
-      RemoveFromVectorSingle(m_table->m_vedit, edit);
+      m_table->RemovePart(edit);
       m_renderer->m_renderDevice->AddEndOfFrameCmd([edit]()
          {
             if (edit->GetIHitable())
@@ -854,12 +854,12 @@ void EditorUI::UpdateEditableList()
    std::erase_if(m_editables,
       [this](const auto &uiPart)
       {
-         const auto it = std::ranges::find_if(m_table->m_vedit, [uiPartEdit = uiPart->GetEditable()](const auto &edit) { return uiPartEdit == edit; });
-         return it == m_table->m_vedit.end();
+         const auto it = std::ranges::find_if(m_table->GetParts(), [uiPartEdit = uiPart->GetEditable()](const auto &edit) { return uiPartEdit == edit; });
+         return it == m_table->GetParts().end();
       });
    // Add UI parts for new editables
    bool needSort = false;
-   for (const auto &edit : m_table->m_vedit)
+   for (const auto &edit : m_table->GetParts())
    {
       const auto it = std::ranges::find_if(m_editables, [edit](const auto &uiPart) { return uiPart->GetEditable() == edit; });
       if (it == m_editables.end()) // New part
@@ -1549,7 +1549,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
       const ImVec2 lineEnd(headerMax.x, headerMin.y);
       drawList->AddLine(lineStart, lineEnd, ImGui::GetColorU32(ImGuiCol_Text), 1.0f);
 
-      for (const IEditable *editable : m_table->m_vedit)
+      for (const IEditable *editable : m_table->GetParts())
       {
          if (editable->GetItemType() != eItemPrimitive)
             continue;

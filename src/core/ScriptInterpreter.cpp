@@ -119,7 +119,7 @@ void ScriptInterpreter::Init(PinTable* table)
    AddItem(m_pdm, false);
    for (int i = 0; i < table->m_vcollection.size(); i++)
       AddItem(&table->m_vcollection[i], false);
-   for (auto editable : table->m_vedit)
+   for (auto editable : table->GetParts())
       if (editable->GetScriptable())
          AddItem(editable->GetScriptable(), false);
 }

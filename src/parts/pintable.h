@@ -457,9 +457,14 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
+   const vector<IEditable *>& GetParts() const { return m_vedit; }
+   bool HasPart(IEditable *part) const { return std::ranges::find(m_vedit, part) != m_vedit.end(); }
    void AddPart(IEditable *part);
    void RemovePart(IEditable *part);
    void RenamePart(IEditable *part, const wstring& newName);
+   void MovePartToFront(IEditable *part);
+   void MovePartToBack(IEditable *part);
+   void ReorderParts(bool isDrawingOrder);
    void AddCollection(Collection *collection);
    void RemoveCollection(Collection *collection);
    bool IsNameUnique(const wstring &wzName) const;
@@ -468,6 +473,7 @@ public:
    void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
 private:
    ankerl::unordered_dense::map<wstring, IEditable *> m_scriptableNames;
+   vector<IEditable *> m_vedit;
 
 public:
 
@@ -673,7 +679,6 @@ public:
 
    string m_envImage;
 
-   vector<IEditable *> m_vedit;
    vector<ISelect *> m_allHitElements;
 
    vector<Texture *> m_vimage;

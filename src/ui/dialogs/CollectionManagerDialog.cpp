@@ -345,9 +345,8 @@ BOOL CollectionDialog::OnInitDialog()
     const auto ppt = pCurCollection.ppt;
 
     ::SendMessage(hwndOut, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-    for (size_t i = 0; i < ppt->m_table->m_vedit.size(); i++)
+    for (IEditable *const piedit : ppt->m_table->GetParts())
     {
-        IEditable * const piedit = ppt->m_table->m_vedit[i];
         IScriptable * const piscript = piedit->GetScriptable();
         ISelect * const pisel = piedit->GetISelect();
 
