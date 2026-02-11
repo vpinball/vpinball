@@ -26,13 +26,6 @@ struct RumbleData {
    uint32_t durationMs;
 };
 
-struct ScriptErrorData {
-   VPINBALL_SCRIPT_ERROR_TYPE error;
-   int line;
-   int position;
-   string description;
-};
-
 struct WebServerData {
    string url;
 };
@@ -100,6 +93,7 @@ private:
    std::queue<SDL_Event> m_eventQueue;
    std::mutex m_eventMutex;
    bool m_captureInProgress = false;
+   CComObject<PinTable>* m_pTable = nullptr;
 };
 
 }

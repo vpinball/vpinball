@@ -503,7 +503,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
       uint32_t state = UTF8_ACCEPT;
       if (validate_utf8(&state, description.data(), description.size()) == UTF8_REJECT)
          desc = iso8859_1_to_utf8(description.data(), description.size()); // old ANSI characters? -> convert to UTF-8
-      g_pplayer->m_liveUI->PushNotification("Script error: " + desc, 5000);
+      g_pplayer->m_liveUI->PushNotification("Script Error: "s + ((type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime error" : "Compile error") + " on line " + std::to_string(line) + ", col " + std::to_string(column) + ": " + desc, 5000);
    }
 
 #ifndef __STANDALONE__

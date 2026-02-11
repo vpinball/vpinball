@@ -292,6 +292,7 @@ void VPApp::InitInstance()
    // - if not but we have a settings file along the app executable, we use it and update the setting accordingly ('App' layout mode)
    // - if we don't have anything, then we use the default ('Table' layout mode)
 
+   Logger::Init();
    Logger::SetupLogger(m_settings.GetEditor_EnableLog());
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;

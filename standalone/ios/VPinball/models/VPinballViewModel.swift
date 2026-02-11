@@ -12,7 +12,6 @@ class VPinballViewModel: ObservableObject {
         case share
         case reset
         case delete
-        case showError
     }
 
     @Published var didSetAction: UUID?
@@ -29,7 +28,6 @@ class VPinballViewModel: ObservableObject {
 
     var action: Action?
     var table: Table?
-    var scriptError: String?
 
     func setAction(action: Action, table: Table? = nil) {
         self.action = action

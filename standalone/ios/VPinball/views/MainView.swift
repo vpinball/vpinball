@@ -437,10 +437,6 @@ struct MainView: View {
             handleDeleteTable()
         case .stopped:
             handleTableStopped()
-        case .showError:
-            if let scriptError = vpinballViewModel.scriptError {
-                handleShowError(message: scriptError)
-            }
         default:
             break
         }
@@ -563,16 +559,13 @@ struct MainView: View {
         if let selectedTable = selectedTable {
             Task {
                 if await vpinballManager.play(table: selectedTable) != true {
-                    handleShowError(message: vpinballViewModel.scriptError ?? "Unable to load table")
+                    handleShowError(message: "Unable to load table")
                 }
             }
         }
     }
 
     func handleTableStopped() {
-        if let scriptError = vpinballViewModel.scriptError {
-            handleShowError(message: scriptError)
-        }
     }
 
     func handleShowError(message: String) {
