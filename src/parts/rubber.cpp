@@ -45,7 +45,7 @@ HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const
       }
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRubber_##prop() : Settings::GetDefaultPropsRubber_##prop##_Default()

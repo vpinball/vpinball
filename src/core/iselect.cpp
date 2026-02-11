@@ -256,18 +256,6 @@ static void SetPartGroup(ISelect* const me, string layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
-      // Not needed as part group are cleaned up after loading
-      /* if (me->GetIEditable()->GetPartGroup())
-      {
-         PartGroup* legacyPartGroup = me->GetIEditable()->GetPartGroup();
-         me->GetIEditable()->SetPartGroup(nullptr);
-         auto users = std::ranges::find_if(me->GetPTable()->m_vedit, [legacyPartGroup](IEditable *editable) { return editable->GetPartGroup() == legacyPartGroup; });
-         if (users == me->GetPTable()->m_vedit.end())
-         {
-            legacyPartGroup->GetISelect()->Uncreate();
-            legacyPartGroup->Release();
-         }
-      }*/
       if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
          layerName.erase(std::size(me->GetPTable()->m_wzName) - 1);
       const wstring newName = MakeWString(layerName);
@@ -282,6 +270,7 @@ static void SetPartGroup(ISelect* const me, string layerName)
             me->GetPTable()->m_tableEditor->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
             wcsncpy_s(newGroup->GetScriptable()->m_wzName, std::size(newGroup->GetScriptable()->m_wzName), newName.c_str());
             me->GetPTable()->m_vedit.push_back(newGroup);
+            me->GetPTable()->AddPart(newGroup);
             me->GetIEditable()->SetPartGroup(newGroup);
          }
       }

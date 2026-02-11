@@ -113,7 +113,7 @@ HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, co
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
    UpdateStatusBarInfo();
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsHitTarget_##prop() : Settings::GetDefaultPropsHitTarget_##prop##_Default()

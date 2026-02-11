@@ -86,7 +86,7 @@ HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, cons
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 

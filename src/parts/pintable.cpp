@@ -76,6 +76,9 @@ PinTable::PinTable()
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
    m_psgt->Init(this);
+   m_scriptableNames[L"Debug"] = nullptr; // Debug global object (for Debug.Print)
+   for (const wstring& methodName : m_psgt->GetMethodNames()) // Add all global methods as reserved keywords
+      m_scriptableNames[methodName] = nullptr;
 
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
@@ -381,9 +384,81 @@ void PinTable::RemoveInvalidReferences()
    m_materialMap.clear();
 }
 
-bool PinTable::IsNameUnique(const wstring& wzName) const
+void PinTable::AddPart(IEditable *const part)
 {
-   return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
+   //part->AddRef();
+   //m_vedit.push_back(part);
+   if (auto scriptable = part->GetScriptable(); scriptable)
+   {
+      //assert(!scriptable->m_wzName.empty());
+      assert(scriptable->m_wzName[0] != '\0');
+      assert(m_scriptableNames.find(scriptable->m_wzName) == m_scriptableNames.end());
+      m_scriptableNames[scriptable->m_wzName] = part;
+      if (m_pcv)
+         m_pcv->AddItem(scriptable, false);
+   }
+}
+
+void PinTable::RemovePart(IEditable *const part)
+{
+   //auto it2 = std::ranges::find(m_vedit, part);
+   //m_vedit.erase(it2);
+   if (auto scriptable = part->GetScriptable(); scriptable)
+   {
+      //assert(!part->GetScriptable()->m_wzName.empty());
+      assert(scriptable->m_wzName[0] != '\0');
+      auto it = m_scriptableNames.find(scriptable->m_wzName);
+      assert(it != m_scriptableNames.end());
+      m_scriptableNames.erase(it);
+      if (m_pcv)
+         m_pcv->RemoveItem(scriptable);
+   }
+   //part->Release();
+}
+
+void PinTable::RenamePart(IEditable *const part, const wstring& newName)
+{
+   auto scriptable = part->GetScriptable();
+   assert(scriptable);
+   //assert(!scriptable->m_wzName.empty());
+   assert(scriptable->m_wzName[0] != '\0');
+   auto it = m_scriptableNames.find(scriptable->m_wzName);
+   assert(it != m_scriptableNames.end());
+   m_scriptableNames.erase(it);
+   assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
+   m_scriptableNames[newName] = part;
+   if (m_pcv)
+      m_pcv->ReplaceName(scriptable, newName);
+   wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
+   m_scriptableNames[newName] = part;
+}
+
+void PinTable::AddCollection(Collection* collection)
+{
+   assert(m_scriptableNames.find(collection->m_wzName) == m_scriptableNames.end());
+   collection->AddRef();
+   m_vcollection.push_back(collection);
+   m_scriptableNames[collection->m_wzName] = nullptr;
+   if (m_pcv)
+      m_pcv->AddItem((IScriptable *)collection, false);
+}
+
+void PinTable::RemoveCollection(Collection *collection)
+{
+#ifndef __STANDALONE__
+   auto it = m_scriptableNames.find(collection->m_wzName);
+   assert(it != m_scriptableNames.end());
+   m_scriptableNames.erase(it);
+   if (m_pcv)
+      m_pcv->RemoveItem((IScriptable *)collection);
+   m_vcollection.find_erase(collection);
+   collection->Release();
+#endif
+}
+
+bool PinTable::IsNameUnique(const wstring &name) const
+{
+   return m_scriptableNames.find(name) == m_scriptableNames.end();
 }
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
@@ -584,6 +659,7 @@ PinTable* PinTable::CopyForPlay()
          edit_dst->SetPartGroup(dstParent);
       }
       live_table->m_vedit.push_back(edit_dst);
+      live_table->AddPart(edit_dst);
       dst->m_startupToLive[editable] = edit_dst;
       dst->m_liveToStartup[edit_dst] = editable;
    }
@@ -610,9 +686,7 @@ PinTable* PinTable::CopyForPlay()
             pcol->m_visel.push_back(edit_item->GetISelect());
          }
       }
-      live_table->m_vcollection.push_back(pcol);
-      if (live_table->m_tableEditor)
-         live_table->m_tableEditor->m_pcv->AddItem(pcol, false);
+      live_table->AddCollection(pcol);
    }
 
    if (live_table->m_tableEditor)
@@ -1500,12 +1574,12 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   if (piedit)
                   {
                      hr = piedit->InitLoad(pstmItem, this, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
-                     piedit->InitVBA(false, nullptr);
                      pstmItem->Release();
                      pstmItem = nullptr;
                      if (FAILED(hr)) break;
 
                      m_vedit.push_back(piedit);
+                     AddPart(piedit);
 
                      //hr = piedit->InitPostLoad();
                   }
@@ -1607,8 +1681,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
                   pcol->LoadData(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
-                  m_vcollection.push_back(pcol);
-                  m_pcv->AddItem((IScriptable *)pcol, false);
+                  AddCollection(pcol);
+                  pcol->Release();
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
@@ -1756,7 +1830,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             });
          std::for_each(removeLegacyLayers, m_vedit.end(), [this](IEditable *e)
             {
-               m_pcv->RemoveItem(e->GetScriptable());
+               RemovePart(e);
                e->Release();
             });
          m_vedit.erase(removeLegacyLayers, m_vedit.end());
@@ -1799,10 +1873,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                Textbox *const textbox = (Textbox *)m_vedit[i];
                if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
                {
-                  if (textbox->GetScriptable())
-                     m_pcv->RemoveItem(textbox->GetScriptable());
+                  RemovePart(textbox);
                   Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
-                  m_pcv->RemoveItem(dmd->GetScriptable());
+                  RemovePart(dmd);
                   wcsncpy_s(dmd->m_wzName, sizeof(dmd->m_wzName), textbox->m_wzName);
                   dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
                   dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
@@ -1825,7 +1898,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      pcollection->m_visel.push_back(dmd);
                   }
                   m_vedit[i] = dmd;
-                  m_pcv->AddItem(dmd->GetScriptable(), false);
+                  AddPart(dmd);
                   char *szT = MakeChar(dmd->m_wzName);
                   PLOGI << "Textbox used as DMD replaced by a flasher (name=" << szT << ')';
                   delete[] szT;
@@ -1860,6 +1933,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 #endif
 
    PLOGI << "InitTablePostLoad"; // For profiling
+
+   m_scriptableNames[m_wzName] = this;
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
@@ -2578,8 +2653,8 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
    ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
 #endif
 
-   m_vcollection.push_back(pcol);
-   m_pcv->AddItem((IScriptable *)pcol, false);
+   AddCollection(pcol);
+   pcol->Release();
 }
 
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
@@ -2615,15 +2690,6 @@ void PinTable::ListCollections(HWND hwndListView)
 
       AddListCollection(hwndListView, pcol);
    }
-}
-
-void PinTable::RemoveCollection(CComObject<Collection> *pcol)
-{
-#ifndef __STANDALONE__
-   m_pcv->RemoveItem((IScriptable *)pcol);
-   m_vcollection.find_erase(pcol);
-   pcol->Release();
-#endif
 }
 
 void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
@@ -3589,6 +3655,7 @@ void PinTable::Uncreate(IEditable *pie)
 void PinTable::Undelete(IEditable *pie)
 {
    m_vedit.push_back(pie);
+   AddPart(pie);
    pie->Undelete();
    SetDirtyDraw();
 }
@@ -3686,18 +3753,13 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          {
             peditNew->InitLoad(pstm, this, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
 
-            if (type != eItemDecal)
-            {
-               GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName, std::size(peditNew->GetScriptable()->m_wzName));
-               peditNew->InitVBA(true, peditNew->GetScriptable()->m_wzName);
-            }
-
             peditNew->InitPostLoad();
             peditNew->m_backglass = m_vpinball->m_backglassView;
 
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
 
             m_vedit.push_back(peditNew);
+            AddPart(peditNew);
 
             AddMultiSel(peditNew->GetISelect(), (i != m_vpinball->m_vstmclipboard.size() - 1), true, false);
             cpasted++;
@@ -3955,8 +4017,11 @@ void PinTable::UseTool(int x, int y, int tool)
 
    if (pie)
    {
+      if (auto scriptable = pie->GetScriptable(); scriptable)
+         GetUniqueName(type, scriptable->m_wzName, std::size(scriptable->m_wzName));
       pie->m_backglass = m_vpinball->m_backglassView;
       m_vedit.push_back(pie);
+      AddPart(pie);
       pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
       m_vpinball->GetLayersListDialog()->Update();
 
@@ -4031,15 +4096,7 @@ STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
-   const wstring newName = newVal;
-   if (newName.empty() || newName.length() >= std::size(m_wzName))
-      return E_FAIL;
-
-   STARTUNDO
-   if (m_pcv->ReplaceName((IScriptable *)this, newName) == S_OK)
-      wcsncpy_s(m_wzName, std::size(m_wzName), newVal);
-   STOPUNDO
-
+   SetName(MakeString(newVal));
    return S_OK;
 }
 

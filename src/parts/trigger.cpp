@@ -150,7 +150,7 @@ HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_vCenter.y = y;
    if (m_vdpoint.empty())
       InitShape(x, y);
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Trigger::SetDefaults(const bool fromMouseClick)

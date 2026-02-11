@@ -60,7 +60,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
    m_d.m_visible = true;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Light::SetDefaults(const bool fromMouseClick)

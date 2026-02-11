@@ -101,7 +101,7 @@ HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, cons
    SetDefaults(fromMouseClick);
    m_d.m_Center.x = x;
    m_d.m_Center.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsFlipper_##prop() : Settings::GetDefaultPropsFlipper_##prop##_Default()

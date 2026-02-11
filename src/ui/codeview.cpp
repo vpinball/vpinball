@@ -1316,67 +1316,13 @@ string CodeViewer::GetParamsFromEvent(const UINT iEvent)
 void CodeViewer::ListEventsFromItem()
 {
 #ifndef __STANDALONE__
-   // Clear old events
    ::SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
-
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
-   IDispatch * const pdisp = pscript->GetDispatch();
-
-   // Enum Events From Dispatch
-   IProvideClassInfo* pClassInfo;
-   pdisp->QueryInterface(IID_IProvideClassInfo, (void **)&pClassInfo);
-
-   if (pClassInfo)
+   for (auto event : pscript->GetEventNames())
    {
-      ITypeInfo *pti;
-      pClassInfo->GetClassInfo(&pti);
-      if (pti)
-      {
-         TYPEATTR *pta;
-         pti->GetTypeAttr(&pta);
-         for (int i = 0; i < pta->cImplTypes; i++)
-         {
-            HREFTYPE href;
-            ITypeInfo *ptiChild;
-            TYPEATTR *ptaChild;
-
-            int impltype;
-            pti->GetImplTypeFlags(i, &impltype);
-            if (impltype & IMPLTYPEFLAG_FSOURCE)
-            {
-               pti->GetRefTypeOfImplType(i, &href);
-               pti->GetRefTypeInfo(href, &ptiChild);
-               ptiChild->GetTypeAttr(&ptaChild);
-               for (int l = 0; l < ptaChild->cFuncs; l++)
-               {
-                  FUNCDESC *pfd;
-                  ptiChild->GetFuncDesc(l, &pfd);
-
-                  // Get Name
-                  {
-                     BSTR rgstr[6];
-                     unsigned int cnames;
-                     /*const HRESULT hr =*/ptiChild->GetNames(pfd->memid, rgstr, std::size(rgstr), &cnames);
-
-                     // Add enum string to combo control
-                     char * const szT = MakeChar(rgstr[0]);
-                     const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)szT);
-                     delete [] szT;
-                     ::SendMessage(m_hwndEventList, CB_SETITEMDATA, listindex, l);
-                     for (unsigned int i2 = 0; i2 < cnames; i2++)
-                        SysFreeString(rgstr[i2]);
-                  }
-                  ptiChild->ReleaseFuncDesc(pfd);
-               }
-               ptiChild->ReleaseTypeAttr(ptaChild);
-               ptiChild->Release();
-            }
-         }
-         pti->ReleaseTypeAttr(pta);
-         pti->Release();
-         pClassInfo->Release();
-      }
+      string method = MakeString(event);
+      const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)method.c_str());
    }
 #endif
 }

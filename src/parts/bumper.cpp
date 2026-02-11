@@ -27,7 +27,7 @@ HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, cons
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Default()

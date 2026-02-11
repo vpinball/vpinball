@@ -55,7 +55,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
       m_vdpoint.push_back(pdp);
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()

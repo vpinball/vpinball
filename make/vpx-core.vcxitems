@@ -820,6 +820,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/Scriptable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptInterpreter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp" />
