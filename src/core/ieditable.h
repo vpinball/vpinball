@@ -37,25 +37,6 @@ public:
 	GetIEditable()->SetDirtyDraw();
 
 
-#define INITVBA(ItemType) \
-   virtual HRESULT InitVBA(bool fNew, WCHAR * const wzName) \
-   { \
-      if (fNew && !wzName) /* setup a default unique name */ \
-      { \
-         WCHAR wzUniqueName[std::size(m_wzName)]; \
-         GetPTable()->GetUniqueName(ItemType, wzUniqueName, std::size(m_wzName)); \
-         wcsncpy_s(m_wzName, std::size(m_wzName), wzUniqueName); \
-      } \
-      if (GetScriptable() != nullptr) \
-      { \
-         if (GetScriptable()->m_wzName[0] == '\0') \
-            /* Just in case something screws up - not good having a null script name */ \
-            wcsncpy_s(GetScriptable()->m_wzName, std::size(m_wzName), std::to_wstring(reinterpret_cast<uintptr_t>(this)).c_str()); \
-         if (GetPTable()->m_tableEditor) GetPTable()->m_tableEditor->m_pcv->AddItem(GetScriptable(), false); \
-      } \
-      return S_OK; \
-   }
-
 // Explanation for AllowedViews:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).
 // If you want to allow an element to be pasted only into the table view, use 1,
@@ -86,16 +67,7 @@ public:
 		*pVal = SysAllocString(m_wzName); \
 		return S_OK; \
 	} \
-	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
-	{ \
-		wstring newName = newVal; \
-		if (newName.empty() || newName.length() >= std::size(m_wzName)) \
-			return E_FAIL; \
-		if (GetPTable()->m_tableEditor->m_pcv->ReplaceName(this, newName) != S_OK) \
-			return E_FAIL; \
-		wcsncpy_s(m_wzName, std::size(m_wzName), newName.c_str()); \
-		return S_OK; \
-	} \
+	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(MakeString(newVal)); return S_OK; } \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_d.m_tdr.m_TimerInterval);} \
 	STDMETHOD(get_TimerEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) {*pVal = FTOVB(m_d.m_tdr.m_TimerEnabled); return S_OK;} \
@@ -127,7 +99,6 @@ public:
     } \
 	T *CopyForPlay(PinTable *live_table) const; \
 	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
-	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
 	virtual PinTable *GetPTable() { return m_ptable; } \
@@ -258,7 +229,6 @@ public:
    virtual void ClearForOverwrite() { }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
    virtual HRESULT InitPostLoad() = 0;
-   virtual HRESULT InitVBA(bool fNew, WCHAR * const wzName) = 0;
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
    virtual void SetDefaults(const bool fromMouseClick) = 0;

@@ -39,7 +39,7 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
    m_d.m_v2.y = y + height;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Textbox::SetDefaults(const bool fromMouseClick)

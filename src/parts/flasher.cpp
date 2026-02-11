@@ -74,7 +74,7 @@ HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_rotY = 0.0f;
    m_d.m_rotZ = 0.0f;
    InitShape();
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Flasher::SetDefaults(const bool fromMouseClick)

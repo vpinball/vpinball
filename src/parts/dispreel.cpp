@@ -23,7 +23,7 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + getBoxWidth();
    m_d.m_v2.y = y + getBoxHeight();
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 // set the defaults for the objects persistent data (m_d.*) in case this is a new instance of this object

@@ -65,7 +65,7 @@ HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, cons
       m_vdpoint.push_back(pdp);
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #if 0
@@ -136,7 +136,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    LinkProp(m_d.m_topBottomVisible, Visible);
    LinkProp(m_d.m_sideVisible, SideVisible);
    LinkProp(m_d.m_collidable, Collidable);
-   return InitVBA(true, nullptr);
+   return S_OK;
 }
 #endif
 

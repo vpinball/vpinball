@@ -204,6 +204,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/Scriptable.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.cpp">
       <Filter>core</Filter>
     </ClCompile>

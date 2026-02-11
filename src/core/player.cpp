@@ -107,17 +107,17 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
 #ifdef __STANDALONE__
    Textbox *const implicitDMD = (Textbox *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, table, 0, 0);
-   table->m_tableEditor->m_pcv->RemoveItem(implicitDMD->GetScriptable());
+   table->RemovePart(implicitDMD);
    wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
    implicitDMD->m_d.m_visible = false;
    implicitDMD->m_d.m_isDMD = true;
    implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
    table->m_vedit.push_back(implicitDMD);
-   table->m_tableEditor->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
+   table->AddPart(implicitDMD);
    PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
 
    Flasher *const implicitDMD2 = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, table, 0, 0);
-   table->m_tableEditor->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
+   table->RemovePart(implicitDMD2);
    wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
    int dmdWidth = 128 * 4; // (658)
    int dmdHeight = 38 * 4; // (189)
@@ -137,7 +137,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    implicitDMD2->m_d.m_modulate_vs_add = 1;
    implicitDMD2->m_d.m_addBlend = true;
    table->m_vedit.push_back(implicitDMD2);
-   table->m_tableEditor->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
+   table->AddPart(implicitDMD2);
    PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
 #endif
    
@@ -418,6 +418,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
          m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
          m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
+         m_ptable->AddPart(m_implicitPlayfieldMesh);
          m_ptable->m_undo.Undo(true);
       }
    }
@@ -954,8 +955,7 @@ Player::~Player()
    if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh) != -1)
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      if (m_ptable->m_tableEditor)
-         m_ptable->m_tableEditor->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
+      m_ptable->RemovePart(m_implicitPlayfieldMesh);
       m_implicitPlayfieldMesh->Release();
       m_implicitPlayfieldMesh = nullptr;
    }
@@ -1171,7 +1171,8 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
    PLOGE << (type == ScriptInterpreter::ErrorType::Runtime ? "Runtime" : "Compile") << " error on line " << line << ", col " << column << ": " << description;
 #endif
 
-   m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+   if (m_ptable->m_tableEditor)
+      m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -1188,6 +1189,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_d.m_useTableRenderSettings = true;
    pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
    m_ptable->m_vedit.push_back(pBall);
+   m_ptable->AddPart(pBall);
    m_vhitables.push_back(pBall);
    pBall->TimerSetup(m_vht);
    pBall->RenderSetup(m_renderer->m_renderDevice);

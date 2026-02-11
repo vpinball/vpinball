@@ -41,7 +41,6 @@ set(VPX_SOURCES
    src/core/pinundo.h
    src/core/main.cpp
    src/core/main.h
-   src/core/Scriptable.h
    src/core/player.cpp
    src/core/player.h
    src/core/PropertyDef.h
@@ -49,6 +48,8 @@ set(VPX_SOURCES
    src/core/PropertyStore.h
    src/core/LayeredINIPropertyStore.h
    src/core/LayeredINIPropertyStore.cpp
+   src/core/Scriptable.h
+   src/core/Scriptable.cpp
    src/core/ScriptGlobalTable.h
    src/core/ScriptGlobalTable.cpp
    src/core/ScriptInterpreter.h

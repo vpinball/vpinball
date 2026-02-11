@@ -363,7 +363,6 @@ public:
    void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-   void RemoveCollection(CComObject<Collection> *pcol);
    void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
 #ifndef __STANDALONE__
@@ -392,7 +391,6 @@ public:
    ItemTypeEnum GetItemType() const final { return eItemTable; }
    HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
    HRESULT InitPostLoad() final { return S_OK; }
-   HRESULT InitVBA(bool fNew, WCHAR *const wzName) final { return S_OK; }
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
@@ -459,10 +457,19 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
-   bool IsNameUnique(const wstring& wzName) const;
+   void AddPart(IEditable *part);
+   void RemovePart(IEditable *part);
+   void RenamePart(IEditable *part, const wstring& newName);
+   void AddCollection(Collection *collection);
+   void RemoveCollection(Collection *collection);
+   bool IsNameUnique(const wstring &wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
+private:
+   ankerl::unordered_dense::map<wstring, IEditable *> m_scriptableNames;
+
+public:
 
    float GetSurfaceHeight(const string &name, float x, float y) const;
 
