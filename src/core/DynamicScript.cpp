@@ -687,21 +687,46 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       return DISP_E_MEMBERNOTFOUND;
    }
 
-   // Search for the right overload (needed for property which are a member with overloads for getters and setters)
    // FIXME match overload on type and arguments
+   //
+   // For now, search for the right overload matching on arg count, then disambiguating string (VT_BSTR) 
+   // vs non-string args. Falls back to first arg-count match if nothing type-matches.
+   //
+   // Needed for several B2S functions such as B2SSetData(int, int) vs (string, int)
+ 
    const std::vector<int>& members = cd->members[dispIdMember - 1];
    int memberIndex = -1;
    if (wFlags & DISPATCH_METHOD)
    {
+      int firstArgCountMatch = -1;
       for (int i : members)
       {
          const ScriptClassMemberDef& memberDef = cd->classDef->members[i];
          if (memberDef.nArgs == pDispParams->cArgs)
          {
-            memberIndex = i;
-            break;
+            if (firstArgCountMatch == -1)
+               firstArgCountMatch = i;
+            bool argsMatch = true;
+            for (unsigned int j = 0; j < pDispParams->cArgs; j++)
+            {
+               if ((V_VT(&pDispParams->rgvarg[pDispParams->cArgs - 1 - j]) & ~VT_BYREF) == VT_BSTR)
+               {
+                  if (memberDef.callArgType[j].id != TYPEID_STRING)
+                  {
+                     argsMatch = false;
+                     break;
+                  }
+               }
+            }
+            if (argsMatch)
+            {
+               memberIndex = i;
+               break;
+            }
          }
       }
+      if (memberIndex == -1)
+         memberIndex = firstArgCountMatch;
    }
    else if (wFlags & DISPATCH_PROPERTYGET)
    {
