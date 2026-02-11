@@ -47,4 +47,15 @@ data class Table(val uuid: String, val name: String, val path: String, val image
                 File(tablesPath, image).absolutePath
             }
         }
+
+    val iniPath: String
+        get() {
+            val tablesPath = VPinballManager.getPath(VPinballPath.TABLES)
+            val iniRelativePath = path.substringBeforeLast('.') + ".ini"
+            return if (SAFFileSystem.isUsingSAF()) {
+                "$tablesPath/$iniRelativePath"
+            } else {
+                File(tablesPath, iniRelativePath).absolutePath
+            }
+        }
 }

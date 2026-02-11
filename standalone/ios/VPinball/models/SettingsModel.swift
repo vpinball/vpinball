@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 class SettingsModel: ObservableObject {
     // General
 
@@ -116,16 +117,12 @@ class SettingsModel: ObservableObject {
 
     func handleWebServer() {
         vpinballManager.saveValue(.standalone, "WebServer", webServer)
-        Task {
-            vpinballManager.updateWebServer()
-        }
+        vpinballManager.updateWebServer()
     }
 
     func handleWebServerPort() {
         vpinballManager.saveValue(.standalone, "WebServerPort", Int(webServerPort))
-        Task {
-            vpinballManager.updateWebServer()
-        }
+        vpinballManager.updateWebServer()
     }
 
     func handleMaxTexDimension() {

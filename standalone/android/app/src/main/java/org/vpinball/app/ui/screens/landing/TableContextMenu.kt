@@ -29,7 +29,7 @@ import org.vpinball.app.util.hasIniFile
 import org.vpinball.app.util.hasScriptFile
 
 @Composable
-fun TableListItemDropdownMenu(
+fun TableContextMenu(
     table: Table,
     expanded: MutableState<Boolean>,
     onRename: () -> Unit,

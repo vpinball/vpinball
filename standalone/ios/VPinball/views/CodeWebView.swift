@@ -40,28 +40,21 @@ struct CodeWebView: UIViewRepresentable {
 
         let escapedCode = escapeForJSON(code)
 
-        let templatePath = Bundle.main.path(forResource: "code-editor", ofType: "html", inDirectory: "assets/web")
-        if templatePath == nil {
-            uiView.loadHTMLString("<html><body><div style='padding: 20px; text-align: center; color: red;'>Failed to load editor template</div></body></html>",
+        let errorHtml = "<html><body><div style='padding: 20px; text-align: center; color: red;'>Failed to load editor template</div></body></html>"
+
+        if let templatePath = Bundle.main.path(forResource: "code-editor", ofType: "html", inDirectory: "assets/web"),
+           let templateContent = try? String(contentsOfFile: templatePath, encoding: .utf8)
+        {
+            let fullHtml = templateContent
+                .replacingOccurrences(of: "{{THEME}}", with: theme)
+                .replacingOccurrences(of: "{{LANGUAGE}}", with: monacoLanguage)
+                .replacingOccurrences(of: "{{CONTENT}}", with: escapedCode)
+
+            uiView.loadHTMLString(fullHtml,
                                   baseURL: Bundle.main.resourceURL)
-            return
-        }
-
-        let templateContent: String
-        do {
-            templateContent = try String(contentsOfFile: templatePath!, encoding: .utf8)
-        } catch {
-            uiView.loadHTMLString("<html><body><div style='padding: 20px; text-align: center; color: red;'>Failed to load editor template</div></body></html>",
+        } else {
+            uiView.loadHTMLString(errorHtml,
                                   baseURL: Bundle.main.resourceURL)
-            return
         }
-
-        let fullHtml = templateContent
-            .replacingOccurrences(of: "{{THEME}}", with: theme)
-            .replacingOccurrences(of: "{{LANGUAGE}}", with: monacoLanguage)
-            .replacingOccurrences(of: "{{CONTENT}}", with: escapedCode)
-
-        uiView.loadHTMLString(fullHtml,
-                              baseURL: Bundle.main.resourceURL)
     }
 }

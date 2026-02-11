@@ -37,7 +37,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -71,32 +70,31 @@ import org.vpinball.app.Table
 import org.vpinball.app.TableManager
 import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
+import org.vpinball.app.VPinballViewModel
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.screens.settings.SettingsBottomSheet
 import org.vpinball.app.ui.theme.DarkBlack
 import org.vpinball.app.ui.theme.LightBlack
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxDarkYellow
+import org.vpinball.app.ui.util.koinActivityViewModel
 import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.hasScriptFile
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LandingScreen(
-    webServerURL: String,
-    progress: MutableState<Int>,
-    status: MutableState<String>,
-    onTableImported: (uuid: String, path: String) -> Unit,
-    onRenameTable: (table: Table, name: String) -> Unit,
-    onTableImage: (table: Table) -> Unit,
-    onDeleteTable: (table: Table) -> Unit,
     onViewFile: (file: File) -> Unit,
-    onPlayTable: (table: Table) -> Unit,
     modifier: Modifier = Modifier,
+    vpinballViewModel: VPinballViewModel = koinActivityViewModel(),
     viewModel: LandingScreenViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val vpinballState by vpinballViewModel.state.collectAsStateWithLifecycle()
+
+    val progress = remember { mutableIntStateOf(0) }
+    val status = remember { mutableStateOf("") }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
 
@@ -119,9 +117,9 @@ fun LandingScreen(
     val filteredTables by viewModel.filteredTables.collectAsStateWithLifecycle()
     val unfilteredTables by viewModel.unfilteredTables.collectAsStateWithLifecycle()
 
-    val isViewModelLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val viewModelLoadingProgress by viewModel.loadingProgress.collectAsStateWithLifecycle()
-    val viewModelLoadingStatus by viewModel.loadingStatus.collectAsStateWithLifecycle()
+    val isFetchingTables by viewModel.isFetchingTables.collectAsStateWithLifecycle()
+    val fetchProgress by viewModel.fetchProgress.collectAsStateWithLifecycle()
+    val fetchStatus by viewModel.fetchStatus.collectAsStateWithLifecycle()
 
     var scrollToTable by remember { mutableStateOf<Table?>(null) }
 
@@ -181,6 +179,20 @@ fun LandingScreen(
                 }
             }
         }
+
+    LaunchedEffect(vpinballState.importUri) {
+        val uri = vpinballState.importUri ?: return@LaunchedEffect
+        vpinballViewModel.clearImportUri()
+        FileUtils.filenameFromUri(context, uri)?.let { filename ->
+            if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".zip", ".vpxz"))) {
+                importFilename = filename
+                importUri = uri
+                showConfirmDialog = true
+            } else {
+                VPinballManager.showError("Unable to import table.")
+            }
+        }
+    }
 
     LaunchedEffect(searchTextFieldState.text) { viewModel.search(searchTextFieldState.text.toString()) }
 
@@ -341,9 +353,11 @@ fun LandingScreen(
                         gridSize = tableGridSize,
                         onPlay = { table ->
                             focusManager.clearFocus()
-                            onPlayTable(table)
+                            vpinballViewModel.loading(true, table)
                         },
-                        onRename = onRenameTable,
+                        onRename = { table, name ->
+                            vpinballViewModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) }
+                        },
                         onViewScript = { table ->
                             val viewScriptFile: () -> Unit = {
                                 val file =
@@ -433,7 +447,6 @@ fun LandingScreen(
                                         },
                                     )
                                 showProgress = false
-                                onDeleteTable(table)
                             }
                         },
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(all = 5.dp).imePadding(),
@@ -461,10 +474,7 @@ fun LandingScreen(
                                 status.value = inStatus
                                 showProgress = true
                             },
-                            onComplete = { uuid, path ->
-                                showProgress = false
-                                onTableImported(uuid, path)
-                            },
+                            onComplete = { _, _ -> showProgress = false },
                             onError = { showProgress = false },
                         )
                     }
@@ -474,18 +484,18 @@ fun LandingScreen(
         )
     }
 
-    if (showProgress || isViewModelLoading) {
+    if (showProgress || isFetchingTables) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.1f)).pointerInput(Unit) {})
 
-        val displayTitle = if (isViewModelLoading) "Loading Tables" else title
-        val displayProgress = if (isViewModelLoading) viewModelLoadingProgress else progress.value
-        val displayStatus = if (isViewModelLoading) viewModelLoadingStatus else status.value
+        val displayTitle = if (isFetchingTables) "Loading Tables" else title
+        val displayProgress = if (isFetchingTables) fetchProgress else progress.value
+        val displayStatus = if (isFetchingTables) fetchStatus else status.value
 
         ProgressOverlay(title = displayTitle, progress = displayProgress, status = displayStatus, hazeState = hazeState)
     }
 
     SettingsBottomSheet(
-        webServerURL = webServerURL,
+        webServerURL = vpinballViewModel.webServerURL,
         show = showSettingsDialog,
         onDismissRequest = { showSettingsDialog = false },
         onViewFile = onViewFile,
@@ -496,20 +506,5 @@ fun LandingScreen(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewLandingScreen() {
-    val progress = remember { mutableIntStateOf(0) }
-    val status = remember { mutableStateOf("") }
-    VPinballTheme {
-        LandingScreen(
-            webServerURL = "test.url",
-            progress = progress,
-            status = status,
-            onRenameTable = { _, _ -> },
-            onTableImage = {},
-            onDeleteTable = {},
-            onTableImported = { _, _ -> },
-            onViewFile = { _ -> },
-            onPlayTable = { _ -> },
-            modifier = Modifier,
-        )
-    }
+    VPinballTheme { LandingScreen(onViewFile = { _ -> }, modifier = Modifier) }
 }

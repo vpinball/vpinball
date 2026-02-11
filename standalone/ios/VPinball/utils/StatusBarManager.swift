@@ -136,7 +136,7 @@ extension StatusBarManager {
                         style: UIStatusBarStyle = .default,
                         animated: Bool = false)
     {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             StatusBarManager.shared.attach(to: root)
             StatusBarManager.shared.setHidden(hidden,
                                               style: style,

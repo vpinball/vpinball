@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-struct TablePlaceholderImage: View {
+struct TableImagePlaceholderView: View {
     var contentMode: ContentMode = .fit
 
     var body: some View {

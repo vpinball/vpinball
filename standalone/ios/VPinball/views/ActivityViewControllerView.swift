@@ -7,10 +7,8 @@ struct ActivityViewControllerView: UIViewControllerRepresentable {
     var excludedActivityTypes: [UIActivity.ActivityType]? = nil
 
     func makeUIViewController(context _: Context) -> UIViewController {
-        let activityViewController = UIActivityViewController(activityItems: activityItems,
-                                                              applicationActivities: nil)
-
-        return activityViewController
+        return UIActivityViewController(activityItems: activityItems,
+                                        applicationActivities: nil)
     }
 
     func updateUIViewController(_: UIViewController, context _: Context) {}

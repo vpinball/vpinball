@@ -7,10 +7,22 @@
 #include <SDL3/SDL.h>
 
 static void (*s_iosStartupHandler)(void*) = nullptr;
+static void (*s_iosOpenURLHandler)(const char*) = nullptr;
 
 extern "C" void VPinball_SetIOSStartupHandler(void (*handler)(void* window))
 {
    s_iosStartupHandler = handler;
+}
+
+extern "C" void VPinball_SetIOSOpenURLHandler(void (*handler)(const char* url))
+{
+   s_iosOpenURLHandler = handler;
+}
+
+extern "C" void VPinball_CallIOSOpenURLHandler(const char* url)
+{
+   if (s_iosOpenURLHandler && url)
+      s_iosOpenURLHandler(url);
 }
 
 namespace VPinballLib {

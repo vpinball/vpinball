@@ -11,7 +11,7 @@ enum TableGridSize: Int, Hashable {
     case large = 2
 }
 
-struct TableListView: View {
+struct TableGridView: View {
     @ObservedObject var vpinballViewModel = VPinballViewModel.shared
     @ObservedObject var tableManager = TableManager.shared
 
@@ -22,6 +22,10 @@ struct TableListView: View {
     @Binding var scrollToTable: Table?
 
     @State var selectedTable: Table?
+    private let imageWidth: CGFloat = 80
+    private let rowSpacing: CGFloat = 15
+    private let rowHorizontalPadding: CGFloat = 12
+    private let rowOuterPadding: CGFloat = 10
 
     init(viewMode: TableViewMode = .grid, gridSize: TableGridSize = .medium, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
         self.viewMode = viewMode
@@ -39,83 +43,54 @@ struct TableListView: View {
         ZStack {
             if viewMode == .list {
                 ScrollViewReader { proxy in
-                    List {
-                        ForEach(filteredTables) { table in
-                            Button {
-                                handlePlay(table)
-                            }
-                            label: {
-                                HStack(spacing: 15) {
-                                    TableListButton(table: table,
-                                                    showTitle: false)
-                                        .frame(height: 120)
-
-                                    Text(table.name)
-                                        .frame(maxWidth: .infinity,
-                                               alignment: .leading)
-                                        .multilineTextAlignment(.leading)
-                                        .foregroundStyle(Color.white)
-                                        .lineLimit(3)
-                                        .padding(.horizontal, 12)
-                                }
-                            }
-                            .id(table.uuid)
-                            .swipeActions(edge: .trailing,
-                                          allowsFullSwipe: false)
-                            {
-                                Button {
-                                    withAnimation(nil) {
-                                        handleDelete(table: table)
-                                    }
-                                } label: {
-                                    Image(uiImage: UIImage(systemName: "trash")!.withTintColor(.white,
-                                                                                               renderingMode: .alwaysOriginal))
-                                    Text("Delete")
-                                }
-                                .tint(Color.vpxRed)
-                            }
-                            .listRowInsets(.init(top: 10,
-                                                 leading: 10,
-                                                 bottom: 10,
-                                                 trailing: 10))
-                            .listRowSeparatorTint(Color.darkGray)
-                            .listRowBackground(selectedTable?.uuid == table.uuid ? Color.darkGray : Color.lightBlack)
-                            .alignmentGuide(.listRowSeparatorLeading) { _ in
-                                0
+                    let columns = [GridItem(.flexible(), spacing: 0, alignment: .top)]
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 0) {
+                            ForEach(filteredTables) { table in
+                                listRow(table: table)
                             }
                         }
                     }
-                    .listStyle(.plain)
-                    .onChange(of: scrollToTable) {
-                        if let table = scrollToTable {
-                            proxy.scrollTo(table.uuid, anchor: .top)
-                        }
+                    .background(Color.clear)
+                    .onChange(of: scrollToTable) { _, newValue in
+                        handleScrollToTable(newValue, proxy: proxy)
                     }
                 }
             } else {
                 GeometryReader { geo in
                     let size = geo.size
-                    let layout = computeColumns(containerWidth: size.width - 32,
-                                                availableHeight: size.height,
-                                                gridSize: gridSize)
-                    ScrollView {
-                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(layout.cardWidth), spacing: layout.gap, alignment: .top), count: layout.columns), spacing: layout.gap) {
-                            ForEach(filteredTables) { table in
-                                EmptyView().id(table.uuid)
-                                TableListButton(table: table)
-                                    .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
-                                    .onTapGesture { handlePlay(table) }
-                                    .frame(width: layout.cardWidth, height: layout.cardWidth * 1.5)
+                    if size.width > 0 && size.height > 0 {
+                        let stableWidth = floor(size.width)
+                        let stableHeight = floor(size.height)
+                        let layout = computeColumns(containerWidth: stableWidth - 32,
+                                                    availableHeight: stableHeight,
+                                                    gridSize: gridSize)
+                        ScrollViewReader { proxy in
+                            ScrollView {
+                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(layout.cardWidth),
+                                                                             spacing: layout.gap,
+                                                                             alignment: .top),
+                                                         count: layout.columns),
+                                          spacing: layout.gap)
+                                {
+                                    ForEach(filteredTables) { table in
+                                        TableItemView(table: table)
+                                            .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
+                                            .onTapGesture { handlePlay(table) }
+                                            .frame(width: layout.cardWidth,
+                                                   height: layout.cardWidth * 1.5)
+                                            .id(table.uuid)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 16)
+                            }
+
+                            .onChange(of: scrollToTable) { _, newValue in
+                                handleScrollToTable(newValue, proxy: proxy)
                             }
                         }
-                        .scrollTargetLayout()
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 16)
                     }
-                    .scrollPosition(id: Binding(
-                        get: { scrollToTable?.uuid },
-                        set: { _ in scrollToTable = nil }
-                    ), anchor: .top)
                 }
             }
 
@@ -125,7 +100,7 @@ struct TableListView: View {
                         Spacer()
 
                         VStack(spacing: 40) {
-                            TablePlaceholderImage()
+                            TableImagePlaceholderView()
 
                             VStack(spacing: 20) {
                                 Text("Shoot Again!")
@@ -151,13 +126,6 @@ struct TableListView: View {
         }
     }
 
-    func handleDelete(table: Table) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            vpinballViewModel.setAction(action: .delete,
-                                        table: table)
-        }
-    }
-
     func handlePlay(_ table: Table) {
         selectedTable = table
 
@@ -165,19 +133,85 @@ struct TableListView: View {
             selectedTable = nil
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                vpinballViewModel.setAction(action: .play,
+                vpinballViewModel.setAction(.play,
                                             table: table)
             }
         }
     }
+
+    private func listRow(table: Table) -> some View {
+        Button {
+            handlePlay(table)
+        }
+        label: {
+            HStack(spacing: rowSpacing) {
+                TableItemView(table: table,
+                              showTitle: false,
+                              enableContextMenu: false)
+                    .frame(width: imageWidth,
+                           height: 120)
+
+                Text(table.name)
+                    .frame(maxWidth: .infinity,
+                           alignment: .leading)
+                    .multilineTextAlignment(.leading)
+                    .foregroundStyle(Color.white)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false,
+                               vertical: true)
+                    .layoutPriority(1)
+            }
+            .padding(.horizontal, rowHorizontalPadding)
+            .frame(maxWidth: .infinity,
+                   alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .id(table.uuid)
+        .contextMenu {
+            TableContextMenu(table: table)
+        } preview: {
+            TableContextPreview(table: table)
+        }
+        .frame(height: 140)
+        .padding(.vertical, rowOuterPadding)
+        .padding(.horizontal, rowOuterPadding)
+        .background(selectedTable?.uuid == table.uuid ? Color.darkGray : Color.lightBlack)
+        .overlay(
+            Rectangle()
+                .frame(height: 1)
+                .foregroundStyle(Color.darkGray),
+            alignment: .bottom
+        )
+    }
+
+    private func handleScrollToTable(_ table: Table?, proxy: ScrollViewProxy) {
+        if let table = table {
+            proxy.scrollTo(table.uuid, anchor: .top)
+            scrollToTable = nil
+        }
+    }
 }
 
-extension TableListView {
-    private var baseGap: CGFloat { 12 }
-    private var ratio: CGFloat { 2 / 3 }
-    private var minReadableWidth: CGFloat { 120 }
-    private var minFloorRegular: CGFloat { 48 }
-    private var minFloorCompact: CGFloat { 40 }
+extension TableGridView {
+    private var baseGap: CGFloat {
+        12
+    }
+
+    private var ratio: CGFloat {
+        2 / 3
+    }
+
+    private var minReadableWidth: CGFloat {
+        120
+    }
+
+    private var minFloorRegular: CGFloat {
+        48
+    }
+
+    private var minFloorCompact: CGFloat {
+        40
+    }
 
     private func heightFactor(_ gridSize: TableGridSize) -> CGFloat {
         switch gridSize {

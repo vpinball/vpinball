@@ -7,6 +7,8 @@ extern "C" {
 #endif
 
 void VPinball_SetIOSStartupHandler(void (*handler)(void* window));
+void VPinball_SetIOSOpenURLHandler(void (*handler)(const char* url));
+void VPinball_CallIOSOpenURLHandler(const char* url);
 
 #ifdef __cplusplus
 }

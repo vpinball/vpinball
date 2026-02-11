@@ -1,5 +1,6 @@
 package org.vpinball.app
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -67,6 +68,14 @@ class VPinballViewModel : ViewModel() {
 
     fun stopped() {
         _state.update { it.copy(loading = false, playing = false, table = null, progress = 0, status = null) }
+    }
+
+    fun openUri(uri: Uri) {
+        _state.update { it.copy(importUri = uri) }
+    }
+
+    fun clearImportUri() {
+        _state.update { it.copy(importUri = null) }
     }
 
     fun launchInViewModelScope(block: suspend () -> Unit) {

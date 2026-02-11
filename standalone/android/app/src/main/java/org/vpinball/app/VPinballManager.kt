@@ -40,6 +40,7 @@ object VPinballManager : KoinComponent {
     private var playerActivity: VPinballPlayerActivity? = null
     private var mainActivity: VPinballActivity? = null
     private var activeTable: Table? = null
+    private var error: String? = null
 
     private var lastProgressEvent: VPinballEvent? = null
     private var lastProgress: Int? = null
@@ -162,6 +163,12 @@ object VPinballManager : KoinComponent {
                         activeTable = null
                         CoroutineScope(Dispatchers.Main).launch {
                             viewModel.playing(false)
+
+                            error?.let { error ->
+                                delay(500)
+                                showError(error)
+                            }
+
                             viewModel.stopped()
                             delay(100)
 
@@ -330,6 +337,7 @@ object VPinballManager : KoinComponent {
     suspend fun load(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
         if (activeTable != null) return false
         activeTable = table
+        error = null
 
         return withContext(Dispatchers.IO) {
             if (loadValue(STANDALONE, "ResetLogOnPlay", true)) {

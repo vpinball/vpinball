@@ -1,7 +1,5 @@
 package org.vpinball.app.ui.screens.landing
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,10 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -25,13 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeDefaults
@@ -39,16 +32,10 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.vpinball.app.R
 import org.vpinball.app.Table
-import org.vpinball.app.TableImageState
-import org.vpinball.app.util.drawWithGradient
-import org.vpinball.app.util.loadImage
 
 @Composable
-fun TableListGridItem(
+fun TableGridItem(
     table: Table,
     onPlay: (table: Table) -> Unit,
     onRename: (table: Table) -> Unit,
@@ -62,18 +49,6 @@ fun TableListGridItem(
 
     val contextMenuExpanded = remember { mutableStateOf(false) }
     var globalTouchOffset by remember { mutableStateOf(Offset.Zero) }
-    val bitmap by
-        produceState<ImageBitmap?>(null, table.uuid, table.image, table.modifiedAt) { value = withContext(Dispatchers.IO) { table.loadImage() } }
-
-    val imageState by remember {
-        derivedStateOf {
-            if (bitmap != null) {
-                TableImageState.IMAGE_LOADED
-            } else {
-                TableImageState.NO_IMAGE
-            }
-        }
-    }
 
     val hazeState = remember { HazeState() }
 
@@ -98,41 +73,7 @@ fun TableListGridItem(
                         globalTouchOffset = layoutCoordinates.localToRoot(globalTouchOffset)
                     }
         ) {
-            Column(modifier = Modifier.haze(state = hazeState)) {
-                Crossfade(imageState, label = "table_grid_item_cross_fade") { imageState ->
-                    when (imageState) {
-                        TableImageState.IMAGE_LOADED -> {
-                            bitmap?.let { bitmap ->
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Image(
-                                        bitmap = bitmap,
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Fit,
-                                        alignment = Alignment.Center,
-                                    )
-                                }
-                            }
-                        }
-
-                        TableImageState.LOADING_IMAGE -> {
-                            Box {}
-                        }
-
-                        else -> {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                Image(
-                                    painter = painterResource(R.drawable.img_table_placeholder),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize().drawWithGradient(),
-                                    contentScale = ContentScale.Fit,
-                                    alignment = Alignment.Center,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            Column(modifier = Modifier.haze(state = hazeState)) { TableImageView(table = table) }
 
             Box(
                 modifier =
@@ -153,7 +94,7 @@ fun TableListGridItem(
             }
         }
 
-        TableListItemDropdownMenu(
+        TableContextMenu(
             table = table,
             expanded = contextMenuExpanded,
             onRename = { onRename(table) },

@@ -1,9 +1,10 @@
 import SwiftUI
 
+@MainActor
 class VPinballViewModel: ObservableObject {
     static let shared = VPinballViewModel()
 
-    enum Action {
+    enum ActionType {
         case play
         case stopped
         case rename
@@ -14,7 +15,16 @@ class VPinballViewModel: ObservableObject {
         case delete
     }
 
-    @Published var didSetAction: UUID?
+    struct Action: Equatable {
+        let id = UUID()
+        let type: ActionType
+        let table: Table?
+        static func == (lhs: Action, rhs: Action) -> Bool {
+            lhs.id == rhs.id
+        }
+    }
+
+    @Published var action: Action?
     @Published var showHUD = false
     @Published var isPlaying = false
     @Published var tableImage: UIImage?
@@ -25,15 +35,35 @@ class VPinballViewModel: ObservableObject {
     @Published var hudStatus: String?
     @Published var showSplash = true
     @Published var showMainView = true
+    @Published var openURL: URL?
 
-    var action: Action?
-    var table: Table?
+    @Published var tableViewMode: TableViewMode = .grid {
+        didSet { VPinballManager.shared.saveValue(.standalone, "TableViewMode", tableViewMode.rawValue) }
+    }
 
-    func setAction(action: Action, table: Table? = nil) {
-        self.action = action
-        self.table = table
+    @Published var tableGridSize: TableGridSize = .medium {
+        didSet { VPinballManager.shared.saveValue(.standalone, "TableGridSize", tableGridSize.rawValue) }
+    }
 
-        didSetAction = UUID()
+    @Published var tableListSortOrder: SortOrder = .forward {
+        didSet { VPinballManager.shared.saveValue(.standalone, "TableListSort", tableListSortOrder == .forward ? 1 : 0) }
+    }
+
+    @Published var alertError: String?
+
+    func setAction(_ type: ActionType, table: Table? = nil) {
+        action = Action(type: type, table: table)
+    }
+
+    func loadSettings() {
+        let manager = VPinballManager.shared
+        tableViewMode = TableViewMode(rawValue: manager.loadValue(.standalone,
+                                                                  "TableViewMode",
+                                                                  TableViewMode.grid.rawValue)) ?? .grid
+        tableGridSize = TableGridSize(rawValue: manager.loadValue(.standalone,
+                                                                  "TableGridSize",
+                                                                  TableGridSize.medium.rawValue)) ?? .medium
+        tableListSortOrder = manager.loadValue(.standalone, "TableListSort", 1) == 1 ? .forward : .reverse
     }
 
     func showProgressHUD(title: String, status: String) {
@@ -57,7 +87,8 @@ class VPinballViewModel: ObservableObject {
     }
 
     func startSplashTimer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
             withAnimation {
                 self.showSplash = false
             }

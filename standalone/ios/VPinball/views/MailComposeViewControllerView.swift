@@ -24,8 +24,8 @@ struct MailComposeViewControllerView: UIViewControllerRepresentable {
             defer {
                 $presentation.wrappedValue.dismiss()
             }
-            guard error == nil else {
-                self.result = .failure(error!)
+            if let error = error {
+                self.result = .failure(error)
                 return
             }
             self.result = .success(result)

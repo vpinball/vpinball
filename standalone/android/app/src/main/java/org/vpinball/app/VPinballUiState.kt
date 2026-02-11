@@ -1,5 +1,7 @@
 package org.vpinball.app
 
+import android.net.Uri
+
 data class VPinballUiState(
     val splash: Boolean = true,
     val loading: Boolean = false,
@@ -9,4 +11,5 @@ data class VPinballUiState(
     val status: String? = null,
     val error: String? = null,
     val playing: Boolean = false,
+    val importUri: Uri? = null,
 )

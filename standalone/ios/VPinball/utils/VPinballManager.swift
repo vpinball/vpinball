@@ -13,8 +13,6 @@ class VPinballManager {
         .soft: UIImpactFeedbackGenerator(style: .soft),
     ]
 
-    let vpinballViewModel = VPinballViewModel.shared
-
     private init() {
         impactGenerators.forEach { $0.value.prepare() }
     }
@@ -22,7 +20,6 @@ class VPinballManager {
     func startup() {
         VPinballInit { value, data in
             let vpinballManager = VPinballManager.shared
-            let vpinballViewModel = VPinballViewModel.shared
             let event = VPinballEvent(rawValue: value)
             switch event {
             case .loadingItems,
@@ -37,29 +34,24 @@ class VPinballManager {
                        let progressData = try? JSONDecoder().decode(ProgressEventData.self,
                                                                     from: jsonData)
                     {
-                        let apply = {
-                            if let name = event?.name {
-                                vpinballViewModel.updateProgressHUD(progress: progressData.progress,
+                        let progress = progressData.progress
+                        let eventName = event?.name
+                        Task { @MainActor in
+                            let vpinballViewModel = VPinballViewModel.shared
+                            if let name = eventName {
+                                vpinballViewModel.updateProgressHUD(progress: progress,
                                                                     status: name)
                             } else {
-                                vpinballViewModel.updateProgressHUD(progress: progressData.progress)
+                                vpinballViewModel.updateProgressHUD(progress: progress)
                             }
-                        }
-
-                        if Thread.isMainThread {
-                            apply()
                             CATransaction.flush()
-                            RunLoop.main.run(mode: .default,
-                                             before: Date().addingTimeInterval(0))
-                        } else {
-                            DispatchQueue.main.async {
-                                apply()
-                            }
                         }
                     }
                 }
             case .playerStarted:
-                vpinballViewModel.isPlaying = true
+                Task { @MainActor in
+                    VPinballViewModel.shared.isPlaying = true
+                }
             case .rumble:
                 if let data = data {
                     let json = String(cString: UnsafePointer<CChar>(data))
@@ -71,17 +63,24 @@ class VPinballManager {
                     }
                 }
             case .playerClosed:
-                vpinballViewModel.isPlaying = false
+                let table = vpinballManager.activeTable
+                vpinballManager.activeTable = nil
 
-                if let table = vpinballManager.activeTable {
+                if let table {
                     Task {
                         await TableManager.shared.clearLoadedTable(table: table)
+                        await TableManager.shared.loadTables()
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
                         await TableManager.shared.loadTables()
                     }
                 }
 
-                vpinballManager.activeTable = nil
-                vpinballViewModel.setAction(action: .stopped)
+                Task { @MainActor in
+                    let vpinballViewModel = VPinballViewModel.shared
+                    vpinballViewModel.isPlaying = false
+
+                    vpinballViewModel.setAction(.stopped)
+                }
             case .webServer:
                 if let data = data {
                     let json = String(cString: UnsafePointer<CChar>(data))
@@ -89,13 +88,13 @@ class VPinballManager {
                        let webServerData = try? JSONDecoder().decode(WebServerData.self,
                                                                      from: jsonData)
                     {
-                        DispatchQueue.main.async {
-                            vpinballViewModel.webServerURL = webServerData.url
+                        Task { @MainActor in
+                            VPinballViewModel.shared.webServerURL = webServerData.url
                         }
                     }
                 } else {
-                    DispatchQueue.main.async {
-                        vpinballViewModel.webServerURL = nil
+                    Task { @MainActor in
+                        VPinballViewModel.shared.webServerURL = nil
                     }
                 }
             case .command:
@@ -178,7 +177,7 @@ class VPinballManager {
                 style = .soft
             }
 
-            impactGenerators[style]!.impactOccurred()
+            impactGenerators[style]?.impactOccurred()
         }
     }
 
@@ -192,8 +191,11 @@ class VPinballManager {
         }
 
         activeTable = table
-
         await MainActor.run {
+            let vpinballViewModel = VPinballViewModel.shared
+            vpinballViewModel.alertError = nil
+            tableImageCache.removeAllObjects()
+
             vpinballViewModel.showProgressHUD(title: table.name,
                                               status: "Launching")
         }
@@ -227,7 +229,7 @@ class VPinballManager {
             }
 
             await MainActor.run {
-                vpinballViewModel.hideHUD()
+                VPinballViewModel.shared.hideHUD()
             }
 
             return success
@@ -235,7 +237,7 @@ class VPinballManager {
             try? await Task.sleep(nanoseconds: 500_000_000)
             activeTable = nil
             await MainActor.run {
-                vpinballViewModel.hideHUD()
+                VPinballViewModel.shared.hideHUD()
             }
             VPinballManager.log(.error, "unable to stage table")
             return false
