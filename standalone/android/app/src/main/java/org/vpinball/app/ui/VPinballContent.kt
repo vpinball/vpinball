@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,10 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.io.File
 import org.vpinball.app.CodeLanguage
 import org.vpinball.app.Link
-import org.vpinball.app.TableManager
-import org.vpinball.app.VPinballManager
 import org.vpinball.app.VPinballViewModel
-import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.ui.screens.common.CodeWebViewDialog
 import org.vpinball.app.ui.screens.landing.LandingScreen
 import org.vpinball.app.ui.screens.loading.LoadingScreen
@@ -40,30 +36,12 @@ fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var codeFile by remember { mutableStateOf<File?>(null) }
 
-    val progress = remember { mutableStateOf(0) }
-    val status = remember { mutableStateOf("") }
-
-    LaunchedEffect(state.progress, state.status) {
-        progress.value = state.progress
-        status.value = state.status ?: ""
-    }
-
     VPinballTheme {
         if (state.splash) {
             SplashScreen()
         } else {
             Box(modifier = Modifier.fillMaxSize()) {
-                LandingScreen(
-                    webServerURL = viewModel.webServerURL,
-                    progress = progress,
-                    status = status,
-                    onTableImported = { uuid, path -> },
-                    onRenameTable = { table, name -> viewModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
-                    onTableImage = { table -> },
-                    onDeleteTable = { table -> VPinballManager.log(VPinballLogLevel.INFO, "Deleted table: ${table.uuid}") },
-                    onViewFile = { file -> codeFile = file },
-                    onPlayTable = { table -> viewModel.loading(true, table) },
-                )
+                LandingScreen(onViewFile = { file -> codeFile = file })
 
                 if (state.loading) {
                     state.table?.let { table -> LoadingScreen(table, state.progress, state.status) }

@@ -127,7 +127,7 @@ fun TablesList(
                             HorizontalDivider()
                         }
 
-                        TableListRowItem(
+                        TableRowItem(
                             table = table,
                             onPlay = onPlay,
                             onRename = {
@@ -169,7 +169,7 @@ fun TablesList(
                         val table = tables[it]
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
                             Box(modifier = Modifier.width(layout.cardWidth).height(layout.cardWidth * 1.5f)) {
-                                TableListGridItem(
+                                TableGridItem(
                                     table = table,
                                     onPlay = onPlay,
                                     onRename = {

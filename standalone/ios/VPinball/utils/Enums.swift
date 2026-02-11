@@ -121,7 +121,7 @@ enum Credit {
         case .libdof:
             return "jsm174, dekay"
         case .libvni:
-            return "mkalkbrenner, freezy"
+            return "mkalkbrenner, freezy, jsm174"
         case .artwork:
             return "smillard316 (Table placeholder), adam.co (App icon enhancements), twostraws (Shimmer metal shader)"
         default:

@@ -78,14 +78,14 @@ class LandingScreenViewModel : ViewModel() {
     private val _search = MutableStateFlow("")
     val search: StateFlow<String> = _search
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _isFetchingTables = MutableStateFlow(false)
+    val isFetchingTables: StateFlow<Boolean> = _isFetchingTables
 
-    private val _loadingProgress = MutableStateFlow(0)
-    val loadingProgress: StateFlow<Int> = _loadingProgress
+    private val _fetchProgress = MutableStateFlow(0)
+    val fetchProgress: StateFlow<Int> = _fetchProgress
 
-    private val _loadingStatus = MutableStateFlow("")
-    val loadingStatus: StateFlow<String> = _loadingStatus
+    private val _fetchStatus = MutableStateFlow("")
+    val fetchStatus: StateFlow<String> = _fetchStatus
 
     init {
         loadSettings()
@@ -174,14 +174,14 @@ class LandingScreenViewModel : ViewModel() {
         tableJob =
             viewModelScope.launch {
                 try {
-                    _isLoading.update { true }
-                    _loadingProgress.update { 0 }
-                    _loadingStatus.update { "" }
+                    _isFetchingTables.update { true }
+                    _fetchProgress.update { 0 }
+                    _fetchStatus.update { "" }
 
                     val tables =
                         TableManager.loadTables { progress, status ->
-                            _loadingProgress.update { progress }
-                            _loadingStatus.update { status }
+                            _fetchProgress.update { progress }
+                            _fetchStatus.update { status }
                         }
 
                     val sortedTables =
@@ -201,7 +201,7 @@ class LandingScreenViewModel : ViewModel() {
                         _filteredTables.update { emptyList() }
                     }
                 } finally {
-                    _isLoading.update { false }
+                    _isFetchingTables.update { false }
                 }
             }
     }

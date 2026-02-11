@@ -17,6 +17,17 @@ func VPinball_IOSStartup(window: UnsafeMutableRawPointer?) {
 
             rootViewController.view.isMultipleTouchEnabled = true
 
+            NotificationCenter.default.removeObserver(rootViewController,
+                                                      name: UITextField.textDidChangeNotification,
+                                                      object: nil)
+
+            if let sdlTextField = findTextField(in: rootViewController.view) {
+                NotificationCenter.default.addObserver(rootViewController,
+                                                       selector: NSSelectorFromString("textFieldTextDidChange:"),
+                                                       name: UITextField.textDidChangeNotification,
+                                                       object: sdlTextField)
+            }
+
             let hostingController = UIHostingController(rootView: VPinballAppView())
 
             hostingController.view.backgroundColor = UIColor.clear
@@ -35,4 +46,27 @@ func VPinball_IOSStartup(window: UnsafeMutableRawPointer?) {
             ])
         }
     }
+}
+
+@_silgen_name("VPinball_IOSOpenURL")
+func VPinball_IOSOpenURL(url: UnsafePointer<CChar>?) {
+    if let url = url {
+        let urlString = String(cString: url)
+        let path = urlString.removingPercentEncoding ?? urlString
+        DispatchQueue.main.async {
+            VPinballViewModel.shared.openURL = URL(fileURLWithPath: path)
+        }
+    }
+}
+
+private func findTextField(in view: UIView) -> UITextField? {
+    for subview in view.subviews {
+        if let textField = subview as? UITextField {
+            return textField
+        }
+        if let found = findTextField(in: subview) {
+            return found
+        }
+    }
+    return nil
 }

@@ -1,6 +1,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+let tableImageCache = NSCache<NSString, UIImage>()
+
 private var zipProgressHandler: ((Int, Int) -> Void)?
 
 private let zipCallback: VPinballZipCallback = { current, total, _ in
@@ -13,21 +15,21 @@ class TableManager: ObservableObject {
 
     @Published private(set) var tables: [Table] = []
 
-    private var tablesPath: String = ""
-    private var tablesJSONPath: String = ""
+    private var tablesURL: URL!
+    private var tablesJSONURL: URL!
     private var loadedTable: Table?
 
     private let vpinballViewModel = VPinballViewModel.shared
 
     init() {
         loadTablesPath()
-        loadTables()
+        Task {
+            await loadTables()
+        }
     }
 
     func refresh() async {
-        await Task {
-            loadTables()
-        }.value
+        await loadTables()
     }
 
     func getTable(uuid: String) -> Table? {
@@ -36,7 +38,7 @@ class TableManager: ObservableObject {
 
     func importTable(from url: URL) async -> Bool {
         let ext = url.pathExtension.lowercased()
-        let fileName = url.lastPathComponent.removingPercentEncoding!
+        let fileName = url.lastPathComponent.removingPercentEncoding ?? url.lastPathComponent
 
         vpinballViewModel.showProgressHUD(
             title: fileName,
@@ -45,23 +47,59 @@ class TableManager: ObservableObject {
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
-        let isSecurityScoped = url.startAccessingSecurityScopedResource()
+        let stagingDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("vpinball_staging_\(Int(Date().timeIntervalSince1970))")
+
         defer {
-            if isSecurityScoped {
-                url.stopAccessingSecurityScopedResource()
+            _ = TableFileOperations.deleteDirectory(stagingDir)
+        }
+
+        if !TableFileOperations.createDirectory(stagingDir) {
+            vpinballViewModel.hideHUD()
+            return false
+        }
+
+        let stagedURL = stagingDir.appendingPathComponent(url.lastPathComponent)
+
+        let isSecurityScoped = url.startAccessingSecurityScopedResource()
+
+        if FileManager.default.isUbiquitousItem(at: url) {
+            vpinballViewModel.updateProgressHUD(
+                progress: 0,
+                status: "Downloading"
+            )
+            await downloadUbiquitousItem(url: url) { [vpinballViewModel] percent in
+                vpinballViewModel.updateProgressHUD(
+                    progress: percent * 55 / 100,
+                    status: "Downloading"
+                )
             }
         }
 
-        await MainActor.run {
-            self.vpinballViewModel.updateProgressHUD(
-                progress: 60,
-                status: ext == "vpx" ? "Importing table" : "Importing archive"
-            )
+        vpinballViewModel.updateProgressHUD(
+            progress: 55,
+            status: "Copying file"
+        )
+
+        let copied = await coordinatedCopy(from: url, to: stagedURL)
+
+        if isSecurityScoped {
+            url.stopAccessingSecurityScopedResource()
         }
+
+        if !copied {
+            vpinballViewModel.hideHUD()
+            return false
+        }
+
+        vpinballViewModel.updateProgressHUD(
+            progress: 60,
+            status: ext == "vpx" ? "Importing table" : "Importing archive"
+        )
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
-        let importedTables = await performImport(path: url.path) { progress in
+        let importedTable = await performImport(url: stagedURL) { progress in
             await MainActor.run {
                 self.vpinballViewModel.updateProgressHUD(
                     progress: progress,
@@ -70,56 +108,197 @@ class TableManager: ObservableObject {
             }
         }
 
-        await MainActor.run {
-            self.vpinballViewModel.updateProgressHUD(
-                progress: 100,
-                status: "Import complete"
-            )
-        }
+        vpinballViewModel.updateProgressHUD(
+            progress: 100,
+            status: "Import complete"
+        )
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
         vpinballViewModel.hideHUD()
 
-        if let firstTable = importedTables.first {
-            vpinballViewModel.scrollToTable = firstTable
+        if let table = importedTable {
+            vpinballViewModel.scrollToTable = table
         }
 
-        return !importedTables.isEmpty
+        return importedTable != nil
     }
 
     func deleteTable(table: Table) async -> Bool {
-        return await Task {
-            performDelete(table: table)
+        let tablesURL = tablesURL!
+        let tableFileURL = tablesURL.appendingPathComponent(table.path)
+        let tableDirURL = tableFileURL.deletingLastPathComponent()
+        let result = await Task.detached(priority: .userInitiated) {
+            let tableDir = tableDirURL
+
+            if tableDir.path.isEmpty || tableDir.path == tablesURL.path || tableDir.path + "/" == tablesURL.path {
+                return false
+            }
+
+            if TableFileOperations.exists(tableDir) {
+                let vpxFiles = TableFileOperations.listFiles(tableDir,
+                                                             ext: ".vpx")
+
+                if vpxFiles.count <= 1 {
+                    if !TableFileOperations.deleteDirectory(tableDir) {
+                        return false
+                    }
+                } else {
+                    if !TableFileOperations.delete(tableFileURL) {
+                        return false
+                    }
+                }
+            }
+
+            return true
         }.value
+
+        if result {
+            tables.removeAll { $0.uuid == table.uuid }
+            saveTables()
+        }
+
+        return result
     }
 
     func renameTable(table: Table, newName: String) async -> Bool {
-        return await Task {
-            performRename(table: table, newName: newName)
-        }.value
+        return performRename(table: table,
+                             newName: newName)
     }
 
     func setTableImage(table: Table, imagePath: String) async -> Bool {
-        return await Task {
-            performSetImage(table: table, imagePath: imagePath)
+        let tablesURL = tablesURL!
+        let tableFileURL = tablesURL.appendingPathComponent(table.path)
+        let workingDir = tableFileURL.deletingLastPathComponent()
+        let tableImageURL = tablesURL.appendingPathComponent(table.image)
+
+        let result = await Task.detached(priority: .userInitiated) {
+            func relativePath(of url: URL, baseURL: URL) -> String {
+                let fullPath = url.resolvingSymlinksInPath().path
+                let basePath = baseURL.path
+
+                if fullPath.isEmpty || basePath.isEmpty {
+                    return fullPath
+                }
+
+                if !fullPath.hasPrefix(basePath) {
+                    return fullPath
+                }
+
+                var result = String(fullPath.dropFirst(basePath.count))
+                if result.hasPrefix("/") {
+                    result = String(result.dropFirst())
+                }
+
+                return result
+            }
+
+            if imagePath.isEmpty {
+                if !table.image.isEmpty && TableFileOperations.exists(tableImageURL) {
+                    _ = TableFileOperations.delete(tableImageURL)
+                }
+                return (true, "")
+            }
+
+            if imagePath.hasPrefix("/") {
+                let sourceURL = URL(fileURLWithPath: imagePath)
+                if let sourceImage = UIImage(contentsOfFile: imagePath),
+                   let jpegData = sourceImage.jpegData(compressionQuality: 0.8)
+                {
+                    let destURL = workingDir.appendingPathComponent(table.stem + ".jpg")
+                    do {
+                        try jpegData.write(to: destURL)
+                    } catch {
+                        return (false, "")
+                    }
+
+                    let existingPath = workingDir.appendingPathComponent(tableFileURL.deletingPathExtension().lastPathComponent + ".jpg").path
+                    if imagePath != existingPath
+                        && sourceURL.pathExtension.lowercased() == "png"
+                    {
+                        _ = TableFileOperations.delete(sourceURL)
+                    }
+
+                    let rel = relativePath(of: destURL, baseURL: tablesURL)
+                    return (true, rel)
+                }
+                return (false, "")
+            }
+
+            return (true, imagePath)
         }.value
+
+        if result.0, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            let now = Int64(Date().timeIntervalSince1970)
+            tables[index] = table.with(image: result.1, modifiedAt: now)
+            saveTables()
+            return true
+        }
+
+        return false
     }
 
     func setTableImage(table: Table, image: UIImage) async -> Bool {
-        return await Task {
-            performSetImageFromUIImage(table: table, image: image)
+        let tablesURL = tablesURL!
+        let tableFileURL = tablesURL.appendingPathComponent(table.path)
+        let workingDir = tableFileURL.deletingLastPathComponent()
+
+        guard let jpegData = image.jpegData(compressionQuality: 0.8) else {
+            return false
+        }
+
+        let result = await Task.detached(priority: .userInitiated) {
+            func relativePath(of url: URL, baseURL: URL) -> String {
+                let fullPath = url.resolvingSymlinksInPath().path
+                let basePath = baseURL.path
+
+                if fullPath.isEmpty || basePath.isEmpty {
+                    return fullPath
+                }
+
+                if !fullPath.hasPrefix(basePath) {
+                    return fullPath
+                }
+
+                var result = String(fullPath.dropFirst(basePath.count))
+                if result.hasPrefix("/") {
+                    result = String(result.dropFirst())
+                }
+
+                return result
+            }
+
+            let destURL = workingDir.appendingPathComponent(tableFileURL.deletingPathExtension().lastPathComponent + ".jpg")
+            do {
+                try jpegData.write(to: destURL)
+            } catch {
+                return (false, "")
+            }
+
+            let rel = relativePath(of: destURL, baseURL: tablesURL)
+            return (true, rel)
         }.value
+
+        if result.0, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            let now = Int64(Date().timeIntervalSince1970)
+            tables[index] = table.with(image: result.1, modifiedAt: now)
+            saveTables()
+            return true
+        }
+
+        return false
     }
 
     func exportTable(table: Table) async -> String? {
-        vpinballViewModel.showProgressHUD(title: table.name, status: "Compressing")
+        vpinballViewModel.showProgressHUD(title: table.name,
+                                          status: "Compressing")
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
         let exportPath = await performExport(table: table) { progress, status in
             await MainActor.run {
-                self.vpinballViewModel.updateProgressHUD(progress: progress, status: status)
+                self.vpinballViewModel.updateProgressHUD(progress: progress,
+                                                         status: status)
             }
         }
 
@@ -131,21 +310,61 @@ class TableManager: ObservableObject {
     }
 
     func getLoadedTablePath(table: Table) -> String? {
-        return getLoadedTablePathSync(table: table)
+        if table.path.isEmpty {
+            return nil
+        }
+
+        loadedTable = table
+        return table.fullPath
     }
 
     func clearLoadedTable(table: Table) {
-        clearLoadedTableSync(table: table)
+        if loadedTable?.uuid != table.uuid {
+            return
+        }
+
+        loadedTable = nil
     }
 
     func extractTableScript(table: Table) async -> Bool {
-        vpinballViewModel.showProgressHUD(title: table.name, status: "Extracting Script")
+        vpinballViewModel.showProgressHUD(title: table.name,
+                                          status: "Extracting Script")
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
-        let result = await Task {
-            performExtractScript(table: table)
+        let tablesURL = tablesURL!
+        let tableFileURL = tablesURL.appendingPathComponent(table.path)
+        let tablePath = tableFileURL.path
+        let scriptPath = tableFileURL.deletingPathExtension().appendingPathExtension("vbs").path
+        let result = await Task.detached(priority: .userInitiated) {
+            if TableFileOperations.exists(URL(fileURLWithPath: scriptPath)) {
+                return true
+            }
+
+            if VPinballStatus(rawValue: VPinballLoadTable(tablePath.cstring)) != .success {
+                VPinballManager.log(.error, "Failed to load table for script extraction: \(tablePath)")
+                return false
+            }
+
+            if VPinballStatus(rawValue: VPinballExtractTableScript()) != .success {
+                VPinballManager.log(.error, "Failed to extract script from table")
+                return false
+            }
+
+            if TableFileOperations.exists(URL(fileURLWithPath: scriptPath)) {
+                VPinballManager.log(.info, "Successfully extracted script: \(scriptPath)")
+                return true
+            }
+
+            VPinballManager.log(.warn, "Script file not found after extraction")
+            return false
         }.value
+
+        if result, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            let now = Int64(Date().timeIntervalSince1970)
+            tables[index] = tables[index].with(modifiedAt: now)
+            saveTables()
+        }
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
@@ -155,89 +374,208 @@ class TableManager: ObservableObject {
     }
 
     func resetTableIni(table: Table) -> Bool {
-        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-        let tableDir = (fullPath as NSString).deletingLastPathComponent
-        let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-        let iniPath = (tableDir as NSString).appendingPathComponent(baseName + ".ini")
-
-        return TableFileOperations.delete(iniPath)
+        let tablesURL = tablesURL!
+        let tableFileURL = tablesURL.appendingPathComponent(table.path)
+        let iniURL = tableFileURL.deletingPathExtension().appendingPathExtension("ini")
+        let deleted = TableFileOperations.delete(iniURL)
+        if deleted, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            let now = Int64(Date().timeIntervalSince1970)
+            tables[index] = table.with(modifiedAt: now)
+            saveTables()
+        }
+        return deleted
     }
 
     private func loadTablesPath() {
-        tablesPath = VPinballManager.shared.getPath(.tables)
-        tablesJSONPath = (VPinballManager.shared.getPath(.preferences) as NSString).appendingPathComponent("tables.json")
+        tablesURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.tables))
+        tablesJSONURL = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences))
+            .appendingPathComponent("tables.json")
 
-        if !TableFileOperations.exists(tablesPath) {
-            _ = TableFileOperations.createDirectory(tablesPath)
+        if !TableFileOperations.exists(tablesURL) {
+            _ = TableFileOperations.createDirectory(tablesURL)
         }
     }
 
-    func loadTables() {
-        var loadedTables: [Table] = []
+    func loadTables() async {
+        let tablesURL = tablesURL!
+        let tablesJSONURL = tablesJSONURL!
 
-        if TableFileOperations.exists(tablesJSONPath) {
-            if let content = TableFileOperations.read(tablesJSONPath),
-               let jsonData = content.data(using: .utf8)
-            {
-                if let response = try? JSONDecoder().decode(TablesResponse.self, from: jsonData) {
-                    loadedTables = response.tables
+        let loadedTables = await Task.detached(priority: .userInitiated) {
+            func relativePath(of url: URL, baseURL: URL) -> String {
+                let fullPath = url.resolvingSymlinksInPath().path
+                let basePath = baseURL.path
+
+                if fullPath.isEmpty || basePath.isEmpty {
+                    return fullPath
+                }
+
+                if !fullPath.hasPrefix(basePath) {
+                    return fullPath
+                }
+
+                var result = String(fullPath.dropFirst(basePath.count))
+                if result.hasPrefix("/") {
+                    result = String(result.dropFirst())
+                }
+
+                return result
+            }
+
+            func createTable(url: URL, existingUUIDs: inout Set<String>) -> Table {
+                var uuid = UUID().uuidString.lowercased()
+                while existingUUIDs.contains(uuid) {
+                    uuid = UUID().uuidString.lowercased()
+                    VPinballManager.log(.warn, "UUID collision detected: \(uuid), regenerating")
+                }
+                existingUUIDs.insert(uuid)
+
+                let relPath = relativePath(of: url, baseURL: tablesURL)
+
+                var name = url.deletingPathExtension().lastPathComponent
+                name = name.replacingOccurrences(of: "_",
+                                                 with: " ")
+
+                let now = Int64(Date().timeIntervalSince1970)
+
+                let parentURL = url.deletingLastPathComponent()
+                let stem = url.deletingPathExtension().lastPathComponent
+                let pngURL = parentURL.appendingPathComponent(stem + ".png")
+                let jpgURL = parentURL.appendingPathComponent(stem + ".jpg")
+
+                var image = ""
+                if TableFileOperations.exists(pngURL) {
+                    image = relativePath(of: pngURL, baseURL: tablesURL)
+                } else if TableFileOperations.exists(jpgURL) {
+                    image = relativePath(of: jpgURL, baseURL: tablesURL)
+                }
+
+                return Table(uuid: uuid,
+                             name: name,
+                             path: relPath,
+                             image: image,
+                             createdAt: now,
+                             modifiedAt: now)
+            }
+
+            var loadedTables: [Table] = []
+
+            if TableFileOperations.exists(tablesJSONURL) {
+                if let content = TableFileOperations.read(tablesJSONURL),
+                   let jsonData = content.data(using: .utf8)
+                {
+                    if let response = try? JSONDecoder().decode(TablesResponse.self,
+                                                                from: jsonData)
+                    {
+                        loadedTables = response.tables
+                    }
                 }
             }
-        }
 
-        var seen = Set<String>()
-        loadedTables.removeAll { table in
-            if table.uuid.isEmpty || seen.contains(table.uuid) {
-                return true
-            }
-            seen.insert(table.uuid)
-
-            let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-            if !TableFileOperations.exists(fullPath) {
-                VPinballManager.log(.info, "Removing table with missing file: \(fullPath)")
-                return true
+            func fileModifiedAt(_ url: URL) -> Int64? {
+                if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+                   let date = attrs[.modificationDate] as? Date
+                {
+                    return Int64(date.timeIntervalSince1970)
+                }
+                return nil
             }
 
-            return false
-        }
+            var bumpedMods = 0
+            for i in 0 ..< loadedTables.count {
+                let table = loadedTables[i]
+                let cleanPath = table.path.hasPrefix("/") ? relativePath(of: URL(fileURLWithPath: table.path), baseURL: tablesURL) : table.path
+                let cleanImage = table.image.hasPrefix("/") ? relativePath(of: URL(fileURLWithPath: table.image), baseURL: tablesURL) : table.image
 
-        for i in 0 ..< loadedTables.count {
-            if loadedTables[i].image.isEmpty {
-                let fullPath = (tablesPath as NSString).appendingPathComponent(loadedTables[i].path)
-                let parentPath = (fullPath as NSString).deletingLastPathComponent
-                let stem = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-                let pngPath = (parentPath as NSString).appendingPathComponent(stem + ".png")
-                let jpgPath = (parentPath as NSString).appendingPathComponent(stem + ".jpg")
+                var updated = table
+                if cleanPath != table.path || cleanImage != table.image {
+                    updated = updated.with(path: cleanPath, image: cleanImage)
+                }
 
-                if TableFileOperations.exists(pngPath) {
-                    loadedTables[i] = Table(
-                        uuid: loadedTables[i].uuid,
-                        name: loadedTables[i].name,
-                        path: loadedTables[i].path,
-                        image: relativePath(fullPath: pngPath, basePath: tablesPath),
-                        createdAt: loadedTables[i].createdAt,
-                        modifiedAt: loadedTables[i].modifiedAt
-                    )
-                } else if TableFileOperations.exists(jpgPath) {
-                    loadedTables[i] = Table(
-                        uuid: loadedTables[i].uuid,
-                        name: loadedTables[i].name,
-                        path: loadedTables[i].path,
-                        image: relativePath(fullPath: jpgPath, basePath: tablesPath),
-                        createdAt: loadedTables[i].createdAt,
-                        modifiedAt: loadedTables[i].modifiedAt
-                    )
+                var latestMod = updated.modifiedAt
+                let tableFileURL = tablesURL.appendingPathComponent(updated.path)
+                if let fileMod = fileModifiedAt(tableFileURL) {
+                    latestMod = max(latestMod, fileMod)
+                }
+                if !updated.image.isEmpty {
+                    let imageURL = tablesURL.appendingPathComponent(updated.image)
+                    if let imageMod = fileModifiedAt(imageURL) {
+                        latestMod = max(latestMod, imageMod)
+                    }
+                }
+                if latestMod != updated.modifiedAt {
+                    updated = updated.with(modifiedAt: latestMod)
+                    bumpedMods += 1
+                }
+
+                loadedTables[i] = updated
+            }
+
+            var seen = Set<String>()
+            loadedTables.removeAll { table in
+                if table.uuid.isEmpty || seen.contains(table.uuid) {
+                    return true
+                }
+                seen.insert(table.uuid)
+
+                let tableFileURL = tablesURL.appendingPathComponent(table.path)
+                if !TableFileOperations.exists(tableFileURL) {
+                    VPinballManager.log(.info, "Removing table with missing file: \(tableFileURL.path)")
+                    return true
+                }
+
+                return false
+            }
+
+            var autoImages = 0
+            for i in 0 ..< loadedTables.count {
+                if loadedTables[i].image.isEmpty {
+                    let table = loadedTables[i]
+                    let tableFileURL = tablesURL.appendingPathComponent(table.path)
+                    let parentURL = tableFileURL.deletingLastPathComponent()
+                    let stem = tableFileURL.deletingPathExtension().lastPathComponent
+                    let pngURL = parentURL.appendingPathComponent(stem + ".png")
+                    let jpgURL = parentURL.appendingPathComponent(stem + ".jpg")
+
+                    if TableFileOperations.exists(pngURL) {
+                        var updated = table.with(image: relativePath(of: pngURL, baseURL: tablesURL))
+                        if let imageMod = fileModifiedAt(pngURL) {
+                            updated = updated.with(modifiedAt: max(updated.modifiedAt, imageMod))
+                        }
+                        loadedTables[i] = updated
+                        autoImages += 1
+                    } else if TableFileOperations.exists(jpgURL) {
+                        var updated = table.with(image: relativePath(of: jpgURL, baseURL: tablesURL))
+                        if let imageMod = fileModifiedAt(jpgURL) {
+                            updated = updated.with(modifiedAt: max(updated.modifiedAt, imageMod))
+                        }
+                        loadedTables[i] = updated
+                        autoImages += 1
+                    }
                 }
             }
-        }
 
-        let vpxFiles = TableFileOperations.listFiles(tablesPath, ext: ".vpx")
-        for filePath in vpxFiles {
-            if !loadedTables.contains(where: { (tablesPath as NSString).appendingPathComponent($0.path) == filePath }) {
-                let newTable = createTable(path: filePath)
-                loadedTables.append(newTable)
+            var seenPaths = Set<String>()
+            loadedTables.removeAll { table in
+                if seenPaths.contains(table.path) {
+                    return true
+                }
+                seenPaths.insert(table.path)
+                return false
             }
-        }
+
+            let vpxFiles = TableFileOperations.listFiles(tablesURL,
+                                                         ext: ".vpx")
+            var existingUUIDs = Set(loadedTables.map { $0.uuid })
+            for fileURL in vpxFiles {
+                let relPath = relativePath(of: fileURL, baseURL: tablesURL)
+                if !loadedTables.contains(where: { $0.path == relPath }) {
+                    let newTable = createTable(url: fileURL, existingUUIDs: &existingUUIDs)
+                    loadedTables.append(newTable)
+                }
+            }
+
+            return loadedTables
+        }.value
 
         tables = loadedTables
         saveTables()
@@ -245,44 +583,55 @@ class TableManager: ObservableObject {
 
     private func saveTables() {
         let sorted = tables.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-        let response = TablesResponse(tableCount: sorted.count, tables: sorted)
+        let response = TablesResponse(tableCount: sorted.count,
+                                      tables: sorted)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .withoutEscapingSlashes]
+        encoder.outputFormatting = [.prettyPrinted,
+                                    .withoutEscapingSlashes]
 
         if let jsonData = try? encoder.encode(response),
-           let jsonString = String(data: jsonData, encoding: .utf8)
+           let jsonString = String(data: jsonData,
+                                   encoding: .utf8)
         {
-            _ = TableFileOperations.write(tablesJSONPath, content: jsonString)
+            _ = TableFileOperations.write(tablesJSONURL,
+                                          content: jsonString)
         }
     }
 
-    private func createTable(path: String) -> Table {
+    private func createTable(url: URL) -> Table {
         let uuid = generateUUID()
-        let relativePath = self.relativePath(fullPath: path, basePath: tablesPath)
+        let relPath = relativePath(of: url)
 
-        var name = (path as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-        name = name.replacingOccurrences(of: "_", with: " ")
+        var name = url.deletingPathExtension().lastPathComponent
+        name = name.replacingOccurrences(of: "_",
+                                         with: " ")
 
         let now = Int64(Date().timeIntervalSince1970)
 
-        let parentPath = (path as NSString).deletingLastPathComponent
-        let stem = (path as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-        let pngPath = (parentPath as NSString).appendingPathComponent(stem + ".png")
-        let jpgPath = (parentPath as NSString).appendingPathComponent(stem + ".jpg")
+        let parentURL = url.deletingLastPathComponent()
+        let stem = url.deletingPathExtension().lastPathComponent
+        let pngURL = parentURL.appendingPathComponent(stem + ".png")
+        let jpgURL = parentURL.appendingPathComponent(stem + ".jpg")
 
         var image = ""
-        if TableFileOperations.exists(pngPath) {
-            image = self.relativePath(fullPath: pngPath, basePath: tablesPath)
-        } else if TableFileOperations.exists(jpgPath) {
-            image = self.relativePath(fullPath: jpgPath, basePath: tablesPath)
+        if TableFileOperations.exists(pngURL) {
+            image = relativePath(of: pngURL)
+        } else if TableFileOperations.exists(jpgURL) {
+            image = relativePath(of: jpgURL)
         }
 
-        return Table(uuid: uuid, name: name, path: relativePath, image: image, createdAt: now, modifiedAt: now)
+        return Table(uuid: uuid,
+                     name: name,
+                     path: relPath,
+                     image: image,
+                     createdAt: now,
+                     modifiedAt: now)
     }
 
-    private func findTable(path: String) -> Table? {
-        return tables.first { (tablesPath as NSString).appendingPathComponent($0.path) == path }
+    private func findTable(url: URL) -> Table? {
+        let relPath = relativePath(of: url)
+        return tables.first { $0.path == relPath }
     }
 
     private func generateUUID() -> String {
@@ -327,7 +676,7 @@ class TableManager: ObservableObject {
         var candidate = sanitized
         var counter = 2
 
-        while TableFileOperations.exists((tablesPath as NSString).appendingPathComponent(candidate)) {
+        while TableFileOperations.exists(tablesURL.appendingPathComponent(candidate)) {
             candidate = "\(sanitized)-\(counter)"
             counter += 1
         }
@@ -335,7 +684,69 @@ class TableManager: ObservableObject {
         return candidate
     }
 
-    private func relativePath(fullPath: String, basePath: String) -> String {
+    private func coordinatedCopy(from sourceURL: URL, to destURL: URL) async -> Bool {
+        await Task.detached {
+            var coordinatorError: NSError?
+            var copySuccess = false
+
+            let coordinator = NSFileCoordinator()
+            coordinator.coordinate(readingItemAt: sourceURL, options: [], error: &coordinatorError) { coordinatedURL in
+                do {
+                    if FileManager.default.fileExists(atPath: destURL.path) {
+                        try FileManager.default.removeItem(at: destURL)
+                    }
+                    try FileManager.default.copyItem(at: coordinatedURL, to: destURL)
+                    copySuccess = true
+                } catch {}
+            }
+
+            return copySuccess
+        }.value
+    }
+
+    private func downloadUbiquitousItem(
+        url: URL,
+        onProgress: @escaping (Int) -> Void
+    ) async {
+        let stream = AsyncStream<Int> { continuation in
+            Task.detached(priority: .utility) {
+                do {
+                    try FileManager.default.startDownloadingUbiquitousItem(at: url)
+                } catch {
+                    continuation.finish()
+                    return
+                }
+
+                var progress = 0
+                while true {
+                    let values = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+                    if let status = values?.ubiquitousItemDownloadingStatus,
+                       status == .current
+                    {
+                        continuation.yield(100)
+                        continuation.finish()
+                        return
+                    }
+
+                    if progress < 95 {
+                        progress += 1
+                        continuation.yield(progress)
+                    }
+
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                }
+            }
+        }
+
+        for await value in stream {
+            onProgress(value)
+        }
+    }
+
+    private func relativePath(of url: URL) -> String {
+        let fullPath = url.resolvingSymlinksInPath().path
+        let basePath = tablesURL.path
+
         if fullPath.isEmpty || basePath.isEmpty {
             return fullPath
         }
@@ -352,54 +763,64 @@ class TableManager: ObservableObject {
         return result
     }
 
-    private func performImport(path: String, onProgress: ((Int) async -> Void)? = nil) async -> [Table] {
-        if !TableFileOperations.exists(path) {
-            return []
+    private func performImport(url: URL, onProgress: ((Int) async -> Void)? = nil) async -> Table? {
+        if !TableFileOperations.exists(url) {
+            return nil
         }
 
-        let ext = (path as NSString).pathExtension.lowercased()
+        let ext = url.pathExtension.lowercased()
 
         if ext == "vpxz" || ext == "zip" {
-            return await importArchive(path: path, onProgress: onProgress)
-        } else if ext == "vpx" {
-            if let table = importVPX(path: path) {
-                return [table]
+            if let destVpxFile = await importArchive(url: url,
+                                                     onProgress: onProgress)
+            {
+                let newTable = createTable(url: destVpxFile)
+                tables.append(newTable)
+                saveTables()
+                return newTable
             }
+            return nil
+        } else if ext == "vpx" {
+            if let destVpxFile = await importVPX(url: url) {
+                let newTable = createTable(url: destVpxFile)
+                tables.append(newTable)
+                saveTables()
+                return newTable
+            }
+            return nil
         }
 
-        return []
+        return nil
     }
 
-    private func importVPX(path: String) -> Table? {
-        let stem = (path as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
+    private func importVPX(url: URL) async -> URL? {
+        let stem = url.deletingPathExtension().lastPathComponent
         let name = stem.replacingOccurrences(of: "_", with: " ")
-
         let folderName = getUniqueFolder(baseName: name)
-        let destFolder = (tablesPath as NSString).appendingPathComponent(folderName)
+        let destFolder = tablesURL.appendingPathComponent(folderName)
+        let destFile = destFolder.appendingPathComponent(url.lastPathComponent)
 
-        if !TableFileOperations.createDirectory(destFolder) {
-            return nil
-        }
+        let result = await Task.detached(priority: .userInitiated) {
+            if !TableFileOperations.createDirectory(destFolder) {
+                return false
+            }
+            if !TableFileOperations.copy(from: url,
+                                         to: destFile)
+            {
+                return false
+            }
+            return true
+        }.value
 
-        let fileName = (path as NSString).lastPathComponent
-        let destFile = (destFolder as NSString).appendingPathComponent(fileName)
-
-        if !TableFileOperations.copy(from: path, to: destFile) {
-            return nil
-        }
-
-        let newTable = createTable(path: destFile)
-        tables.append(newTable)
-        saveTables()
-        VPinballManager.log(.info, "Successfully imported table: \(name)")
-        return newTable
+        return result ? destFile : nil
     }
 
-    private func importArchive(path: String, onProgress: ((Int) async -> Void)? = nil) async -> [Table] {
-        let tempDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("vpinball_import_\(Int(Date().timeIntervalSince1970))")
+    private func importArchive(url: URL, onProgress: ((Int) async -> Void)? = nil) async -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("vpinball_import_\(Int(Date().timeIntervalSince1970))")
 
         if !TableFileOperations.createDirectory(tempDir) {
-            return []
+            return nil
         }
 
         defer {
@@ -416,245 +837,66 @@ class TableManager: ObservableObject {
         }
 
         let result = await Task.detached {
-            VPinballZipExtract(path.cstring, tempDir.cstring, zipCallback)
+            VPinballZipExtract(url.path.cstring, tempDir.path.cstring, zipCallback)
         }.value
         zipProgressHandler = nil
 
         if VPinballStatus(rawValue: result) != .success {
-            VPinballManager.log(.error, "Archive extraction failed")
-            return []
+            return nil
         }
 
-        VPinballManager.log(.info, "Archive extraction complete")
+        let vpxResult = await Task.detached(priority: .userInitiated) {
+            let vpxFiles = TableFileOperations.listFiles(tempDir,
+                                                         ext: ".vpx")
+            if vpxFiles.count != 1 {
+                return (nil as URL?, vpxFiles.isEmpty)
+            }
+            return (vpxFiles[0], false)
+        }.value
 
-        let vpxFiles = TableFileOperations.listFiles(tempDir, ext: ".vpx")
-
-        if vpxFiles.isEmpty {
-            return []
+        guard let vpxURL = vpxResult.0 else {
+            vpinballViewModel.alertError = vpxResult.1
+                ? "No tables found in archive"
+                : "Archive contains multiple tables"
+            return nil
         }
 
-        var newTables: [Table] = []
+        let vpxName = vpxURL.deletingPathExtension().lastPathComponent
+        let sourceDir = vpxURL.deletingLastPathComponent()
 
-        for vpxFile in vpxFiles {
-            let vpxName = (vpxFile as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-            let sourceDir = (vpxFile as NSString).deletingLastPathComponent
-            let fileName = (vpxFile as NSString).lastPathComponent
+        let folderName = getUniqueFolder(baseName: vpxName)
+        let destFolder = tablesURL.appendingPathComponent(folderName)
+        let destVpxFile = destFolder.appendingPathComponent(vpxURL.lastPathComponent)
 
-            let folderName = getUniqueFolder(baseName: vpxName)
-            let destFolder = (tablesPath as NSString).appendingPathComponent(folderName)
-
+        let copied = await Task.detached(priority: .userInitiated) {
             if !TableFileOperations.createDirectory(destFolder) {
-                continue
+                return false
             }
-
-            if !TableFileOperations.copyDirectory(from: sourceDir, to: destFolder) {
-                continue
+            if !TableFileOperations.copyDirectory(from: sourceDir,
+                                                  to: destFolder)
+            {
+                return false
             }
+            return true
+        }.value
 
-            let destVpxFile = (destFolder as NSString).appendingPathComponent(fileName)
-            let newTable = createTable(path: destVpxFile)
-            newTables.append(newTable)
-            VPinballManager.log(.info, "Successfully imported table from archive: \(vpxName)")
-        }
-
-        if !newTables.isEmpty {
-            tables.append(contentsOf: newTables)
-            saveTables()
-        }
-
-        return newTables
-    }
-
-    private func performDelete(table: Table) -> Bool {
-        let tablePath = (tablesPath as NSString).appendingPathComponent(table.path)
-        let tableDir = (tablePath as NSString).deletingLastPathComponent
-
-        if tableDir.isEmpty || tableDir == tablesPath || tableDir + "/" == tablesPath {
-            return false
-        }
-
-        if TableFileOperations.exists(tableDir) {
-            let vpxFiles = TableFileOperations.listFiles(tableDir, ext: ".vpx")
-
-            if vpxFiles.count <= 1 {
-                if !TableFileOperations.deleteDirectory(tableDir) {
-                    return false
-                }
-            } else {
-                if !TableFileOperations.delete(tablePath) {
-                    return false
-                }
-            }
-        }
-
-        tables.removeAll { $0.uuid == table.uuid }
-        saveTables()
-
-        return true
+        return copied ? destVpxFile : nil
     }
 
     private func performRename(table: Table, newName: String) -> Bool {
         if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
             let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = Table(
-                uuid: tables[index].uuid,
-                name: newName,
-                path: tables[index].path,
-                image: tables[index].image,
-                createdAt: tables[index].createdAt,
-                modifiedAt: now
-            )
-
+            tables[index] = tables[index].with(name: newName, modifiedAt: now)
             saveTables()
             return true
-        } else {
-            return false
         }
-    }
-
-    private func performSetImage(table: Table, imagePath: String) -> Bool {
-        if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
-            if imagePath.isEmpty {
-                if !table.image.isEmpty {
-                    let currentImagePath = (tablesPath as NSString).appendingPathComponent(table.image)
-                    if TableFileOperations.exists(currentImagePath) {
-                        _ = TableFileOperations.delete(currentImagePath)
-                    }
-                }
-
-                let now = Int64(Date().timeIntervalSince1970)
-                tables[index] = Table(
-                    uuid: table.uuid,
-                    name: table.name,
-                    path: table.path,
-                    image: "",
-                    createdAt: table.createdAt,
-                    modifiedAt: now
-                )
-
-                saveTables()
-                return true
-            }
-
-            if imagePath.hasPrefix("/") {
-                if let sourceImage = UIImage(contentsOfFile: imagePath) {
-                    if let jpegData = sourceImage.jpegData(compressionQuality: 0.8) {
-                        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-                        let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-
-                        let workingDir: String
-                        if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
-                            let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
-                            workingDir = (loadedPath as NSString).deletingLastPathComponent
-                        } else {
-                            workingDir = (fullPath as NSString).deletingLastPathComponent
-                        }
-
-                        let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
-
-                        do {
-                            try jpegData.write(to: URL(fileURLWithPath: destPath))
-                        } catch {
-                            return false
-                        }
-
-                        if imagePath != destPath && (imagePath as NSString).pathExtension.lowercased() == "png" {
-                            _ = TableFileOperations.delete(imagePath)
-                        }
-
-                        let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
-                        let now = Int64(Date().timeIntervalSince1970)
-
-                        tables[index] = Table(
-                            uuid: table.uuid,
-                            name: table.name,
-                            path: table.path,
-                            image: relPath,
-                            createdAt: table.createdAt,
-                            modifiedAt: now
-                        )
-
-                        saveTables()
-                        return true
-                    } else {
-                        return false
-                    }
-                } else {
-                    return false
-                }
-            }
-
-            let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = Table(
-                uuid: table.uuid,
-                name: table.name,
-                path: table.path,
-                image: imagePath,
-                createdAt: table.createdAt,
-                modifiedAt: now
-            )
-
-            saveTables()
-            return true
-        } else {
-            return false
-        }
-    }
-
-    private func performSetImageFromUIImage(table: Table, image: UIImage) -> Bool {
-        if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
-            if let jpegData = image.jpegData(compressionQuality: 0.8) {
-                let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-                let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-
-                let workingDir: String
-                if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
-                    let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
-                    workingDir = (loadedPath as NSString).deletingLastPathComponent
-                } else {
-                    workingDir = (fullPath as NSString).deletingLastPathComponent
-                }
-
-                let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
-
-                do {
-                    try jpegData.write(to: URL(fileURLWithPath: destPath))
-                } catch {
-                    return false
-                }
-
-                let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
-                let now = Int64(Date().timeIntervalSince1970)
-
-                tables[index] = Table(
-                    uuid: table.uuid,
-                    name: table.name,
-                    path: table.path,
-                    image: relPath,
-                    createdAt: table.createdAt,
-                    modifiedAt: now
-                )
-
-                saveTables()
-                return true
-            } else {
-                return false
-            }
-        } else {
-            return false
-        }
+        return false
     }
 
     private func performExport(table: Table, onProgress: ((Int, String) async -> Void)? = nil) async -> String? {
         let sanitizedName = sanitizeName(table.name)
-        let tempFile = (NSTemporaryDirectory() as NSString).appendingPathComponent(sanitizedName + ".vpxz")
-
-        if TableFileOperations.exists(tempFile) {
-            _ = TableFileOperations.delete(tempFile)
-        }
-
-        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-        let tableDirToCompress = (fullPath as NSString).deletingLastPathComponent
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(sanitizedName + ".vpxz")
+        let tableDirURL = table.baseURL
 
         await onProgress?(60, "Compressing")
 
@@ -666,8 +908,13 @@ class TableManager: ObservableObject {
         }
 
         let result = await Task.detached {
-            VPinballZipCreate(tableDirToCompress.cstring, tempFile.cstring, zipCallback)
+            if TableFileOperations.exists(tempURL) {
+                _ = TableFileOperations.delete(tempURL)
+            }
+
+            return VPinballZipCreate(tableDirURL.path.cstring, tempURL.path.cstring, zipCallback)
         }.value
+
         zipProgressHandler = nil
 
         if VPinballStatus(rawValue: result) != .success {
@@ -675,73 +922,16 @@ class TableManager: ObservableObject {
         }
 
         await onProgress?(100, "Complete")
-        return tempFile
-    }
-
-    private func getLoadedTablePathSync(table: Table) -> String? {
-        if table.path.isEmpty {
-            return nil
-        }
-
-        loadedTable = table
-        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-        return fullPath
-    }
-
-    private func clearLoadedTableSync(table: Table) {
-        if loadedTable?.uuid != table.uuid {
-            return
-        }
-
-        loadedTable = nil
-    }
-
-    private func performExtractScript(table: Table) -> Bool {
-        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-        let tableDir = (fullPath as NSString).deletingLastPathComponent
-        let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-        let scriptPath = (tableDir as NSString).appendingPathComponent(baseName + ".vbs")
-
-        if TableFileOperations.exists(scriptPath) {
-            return true
-        }
-
-        if VPinballStatus(rawValue: VPinballLoadTable(fullPath.cstring)) != .success {
-            VPinballManager.log(.error, "Failed to load table for script extraction: \(fullPath)")
-            return false
-        }
-
-        if VPinballStatus(rawValue: VPinballExtractTableScript()) != .success {
-            VPinballManager.log(.error, "Failed to extract script from table")
-            return false
-        }
-
-        if TableFileOperations.exists(scriptPath) {
-            VPinballManager.log(.info, "Successfully extracted script: \(scriptPath)")
-            return true
-        }
-
-        VPinballManager.log(.warn, "Script file not found after extraction")
-        return false
+        return tempURL.path
     }
 
     func filteredTables(searchText: String, sortOrder: SortOrder) -> [Table] {
-        var filtered = tables
-
-        if !searchText.isEmpty {
-            filtered = filtered.filter { table in
-                table.name.localizedCaseInsensitiveContains(searchText)
+        tables
+            .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+            .sorted {
+                sortOrder == .forward
+                    ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    : $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
             }
-        }
-
-        filtered = filtered.sorted { table1, table2 in
-            if sortOrder == .forward {
-                return table1.name.localizedCaseInsensitiveCompare(table2.name) == .orderedAscending
-            } else {
-                return table1.name.localizedCaseInsensitiveCompare(table2.name) == .orderedDescending
-            }
-        }
-
-        return filtered
     }
 }

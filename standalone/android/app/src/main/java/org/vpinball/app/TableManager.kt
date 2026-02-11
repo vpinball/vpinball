@@ -214,6 +214,15 @@ class TableManager(private val context: Context) {
         }
     }
 
+    private fun fileModifiedAt(path: String): Long? {
+        return try {
+            val file = File(path)
+            if (file.exists()) file.lastModified() / 1000 else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun loadTables(onProgress: ((Int, String) -> Unit)? = null) {
         var loadedTables = mutableListOf<Table>()
 
@@ -234,6 +243,17 @@ class TableManager(private val context: Context) {
             }
         }
 
+        onProgress?.invoke(20, "Normalizing paths...")
+
+        for (i in loadedTables.indices) {
+            val table = loadedTables[i]
+            val cleanPath = if (table.path.startsWith("/")) relativePath(table.path, tablesPath) else table.path
+            val cleanImage = if (table.image.startsWith("/")) relativePath(table.image, tablesPath) else table.image
+            if (cleanPath != table.path || cleanImage != table.image) {
+                loadedTables[i] = table.copy(path = cleanPath, image = cleanImage)
+            }
+        }
+
         onProgress?.invoke(30, "Validating tables...")
 
         val seen = mutableSetOf<String>()
@@ -249,6 +269,34 @@ class TableManager(private val context: Context) {
             }
 
             false
+        }
+
+        val seenPaths = mutableSetOf<String>()
+        loadedTables.removeAll { table ->
+            if (seenPaths.contains(table.path)) {
+                return@removeAll true
+            }
+            seenPaths.add(table.path)
+            false
+        }
+
+        onProgress?.invoke(40, "Updating timestamps...")
+
+        if (!requiresStaging) {
+            for (i in loadedTables.indices) {
+                val table = loadedTables[i]
+                var latestMod = table.modifiedAt
+
+                fileModifiedAt(buildPath(table.path))?.let { fileMod -> latestMod = maxOf(latestMod, fileMod) }
+
+                if (table.image.isNotEmpty()) {
+                    fileModifiedAt(buildPath(table.image))?.let { imageMod -> latestMod = maxOf(latestMod, imageMod) }
+                }
+
+                if (latestMod != table.modifiedAt) {
+                    loadedTables[i] = table.copy(modifiedAt = latestMod)
+                }
+            }
         }
 
         onProgress?.invoke(50, "Scanning for images...")
@@ -276,7 +324,12 @@ class TableManager(private val context: Context) {
                     }
 
                 if (updatedImage != table.image) {
-                    loadedTables[index] = table.copy(image = updatedImage)
+                    var updated = table.copy(image = updatedImage)
+                    if (!requiresStaging) {
+                        val imageFullPath = buildPath(updatedImage)
+                        fileModifiedAt(imageFullPath)?.let { imageMod -> updated = updated.copy(modifiedAt = maxOf(updated.modifiedAt, imageMod)) }
+                    }
+                    loadedTables[index] = updated
                 }
             }
         }

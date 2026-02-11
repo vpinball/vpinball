@@ -151,6 +151,13 @@ void VPinballLib::AppIterate()
 
 void VPinballLib::AppEvent(SDL_Event* event)
 {
+#ifdef __APPLE__
+   if (event->type == SDL_EVENT_DROP_FILE && event->drop.data) {
+      VPinball_CallIOSOpenURLHandler(event->drop.data);
+      return;
+   }
+#endif
+
    std::lock_guard<std::mutex> lock(m_eventMutex);
    if (m_gameLoop)
       m_eventQueue.push(*event);

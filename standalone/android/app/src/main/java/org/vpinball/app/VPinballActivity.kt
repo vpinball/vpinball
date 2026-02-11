@@ -9,11 +9,11 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.vpinball.app.ui.VPinballContent
 
 class VPinballActivity : ComponentActivity() {
-    val viewModel: VPinballViewModel by inject()
+    val viewModel: VPinballViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +21,8 @@ class VPinballActivity : ComponentActivity() {
         VPinballManager.onActivityReady(this)
 
         VPinballManager.whenReady { TableManager.initialize(this) }
+
+        handleIntent(intent)
 
         setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
@@ -51,8 +53,18 @@ class VPinballActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
     override fun onDestroy() {
         VPinballManager.setMainActivity(null)
         super.onDestroy()
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+        viewModel.openUri(uri)
     }
 }
