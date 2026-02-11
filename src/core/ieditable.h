@@ -159,8 +159,6 @@ public:
    type *dst = type::COMCreate(); \
    dst->Init(table, 0.f, 0.f, false, true); \
    memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
-   if (dst->GetScriptable() && table->m_tableEditor) \
-      table->m_tableEditor->m_pcv->AddItem(dst->GetScriptable(), false); \
    dst->m_isVisible = m_isVisible; \
    dst->m_backglass = m_backglass; \
    dst->m_locked = m_locked; \

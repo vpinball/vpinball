@@ -134,7 +134,16 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 lvitem.iSubItem = 0;
                 ListView_GetItem(hListHwnd, &lvitem);
                 Collection * const pcol = (Collection *)lvitem.lParam;
-                pt->m_table->SetCollectionName(pcol, pinfo->item.pszText, hListHwnd, pinfo->item.iItem);
+                wstring newName = MakeWString(pinfo->item.pszText);
+                if (!pt->m_table->IsNameUnique(newName))
+                {
+                   WCHAR uniqueName[std::size(pcol->m_wzName)];
+                   pt->m_table->GetUniqueName(newName, uniqueName, std::size(pcol->m_wzName));
+                   newName = uniqueName;
+                }
+                pt->m_table->RenameCollection(pcol, newName);
+                if (hListHwnd)
+                   ListView_SetItemText(hListHwnd, pinfo->item.iItem, 0, (char *)MakeString(pcol->m_wzName).c_str());
                 pt->m_table->SetNonUndoableDirty(eSaveDirty);
                 return TRUE;
             }
@@ -490,7 +499,15 @@ void CollectionDialog::OnOK()
     const size_t groupElements = GetDlgItem(IDC_GROUP_CHECK).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
-    pCurCollection.ppt->m_table->SetCollectionName(pcol, GetDlgItem(IDC_NAME).GetWindowText().GetString(), nullptr, 0);
+    wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString());
+    if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
+    {
+       WCHAR uniqueName[std::size(pCurCollection.pcol->m_wzName)];
+       pCurCollection.ppt->m_table->GetUniqueName(newName, uniqueName, std::size(pCurCollection.pcol->m_wzName));
+       newName = uniqueName;
+    }
+
+    pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
 
     CDialog::OnOK();
 }

@@ -363,7 +363,6 @@ public:
    void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-   void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
 #ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
@@ -467,6 +466,7 @@ public:
    void ReorderParts(bool isDrawingOrder);
    void AddCollection(Collection *collection);
    void RemoveCollection(Collection *collection);
+   void RenameCollection(Collection *collection, const wstring &newName);
    bool IsNameUnique(const wstring &wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
@@ -715,7 +715,6 @@ public:
 
    PinUndo m_undo;
 
-   CodeViewer* m_pcv;
    vector<char> m_original_table_script; // Script defined in the loaded file
    std::filesystem::path m_external_script_name; // if defined, file that override internal script
    string m_script_text; // Actual script (either a copy of the original or the one loaded from the override file)

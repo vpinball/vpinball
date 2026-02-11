@@ -17,11 +17,12 @@
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table) 
-   , m_pcv(table->m_pcv)
+   , m_pcv(std::make_unique<CodeViewer>(table))
    , m_vpxEditor(vpxEditor)
 {
    m_table->AddRef();
    m_table->m_tableEditor = this;
+   m_pcv->Create(nullptr);
    SetDefaultView();
 }
 
