@@ -53,7 +53,7 @@ void ScoreView::Load(const std::filesystem::path& path)
    {
       for (const auto& entry : std::filesystem::directory_iterator(path))
       {
-         if (!entry.is_directory() && entry.path().extension().string() == ".scv")
+         if (!entry.is_directory() && lowerCase(entry.path().extension()) == ".scv")
          {
             std::ifstream ifs(entry.path());
             Parse(entry.path());

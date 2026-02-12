@@ -84,7 +84,7 @@ void PUPLabel::SetCaption(const string& szCaption)
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
             if (pPlaylist)
             {
-               std::filesystem::path szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
+               std::filesystem::path szPath = pPlaylist->GetPlayFilePath(fs_path.filename());
                if (!szPath.empty())
                {
                   m_szPath = szPath;

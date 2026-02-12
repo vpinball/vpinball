@@ -23,6 +23,19 @@ static inline bool StrCompareNoCase(const string& strA, const string& strB)
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+inline void StrToLower(std::filesystem::path& path)
+{
+   std::u8string str = path.u8string();
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
+   path = str;
+}
+
+std::filesystem::path lowerCase(std::filesystem::path input)
+{
+   StrToLower(input);
+   return input;
+}
+
 static inline string trim_string(const string& str)
 {
    size_t start = 0;

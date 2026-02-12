@@ -215,16 +215,16 @@ void PUPManager::LoadFonts()
       {
          if (entry.is_regular_file())
          {
-            string szFontPath = entry.path().string();
-            if (extension_from_path(szFontPath) == "ttf")
+            std::filesystem::path szFontPath = entry.path();
+            if (lowerCase(szFontPath.extension()) == ".ttf")
             {
-               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
+               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.string().c_str(), 8))
                {
                   AddFont(pFont, entry.path().filename().string());
                }
                else
                {
-                  LOGE("Failed to load font: %s %s", szFontPath.c_str(), SDL_GetError());
+                  LOGE("Failed to load font: %s %s", szFontPath.string().c_str(), SDL_GetError());
                }
             }
          }
@@ -250,7 +250,7 @@ void PUPManager::LoadPlaylists()
             continue;
          PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(this, line);
          if (pPlaylist) {
-            string folderNameLower = lowerCase(pPlaylist->GetFolder());
+            string folderNameLower = lowerCase(pPlaylist->GetFolder().string());
             if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end()) {
                m_playlists.push_back(pPlaylist);
                lowerPlaylistNames.insert(folderNameLower);

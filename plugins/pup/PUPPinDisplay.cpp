@@ -591,7 +591,8 @@ string PUPPinDisplay::GetVersion() const
    constexpr int nVersionNo1 = 5;
    constexpr int nVersionNo2 = 99;
    constexpr int nVersionNo3 = 99;
-   return std::to_string(nVersionNo0) + '.' + std::to_string(nVersionNo1) + '.' + std::to_string(nVersionNo2) + '.' + std::to_string(nVersionNo3);
+   static const string version = std::to_string(nVersionNo0) + '.' + std::to_string(nVersionNo1) + '.' + std::to_string(nVersionNo2) + '.' + std::to_string(nVersionNo3);
+   return version;
 }
 
 /* STDMETHODIMP PUPPinDisplay::GrabDC2(int pWidth, int pHeight, BSTR wintitle, SAFEARRAY** pixels)

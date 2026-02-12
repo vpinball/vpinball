@@ -39,13 +39,12 @@ Controller::~Controller()
 string Controller::GetVersion() const
 {
    // TODO libpinmame should report its version
-   int nVersionNo0 = 03;
-   int nVersionNo1 = 07;
-   int nVersionNo2 = 00;
-   int nVersionNo3 = 00;
-   char szVersion[8 + 1];
-   snprintf(szVersion, sizeof(szVersion), "%02i%02i%02i%02i", nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
-   return string(szVersion);
+   constexpr int nVersionNo0 = 03;
+   constexpr int nVersionNo1 = 07;
+   constexpr int nVersionNo2 = 00;
+   constexpr int nVersionNo3 = 00;
+   static const string version = std::format("{:02d}{:02d}{:02d}{:02d}", nVersionNo0, nVersionNo1, nVersionNo2, nVersionNo3);
+   return version;
 }
 
 Game* Controller::GetGames(const string& name) const

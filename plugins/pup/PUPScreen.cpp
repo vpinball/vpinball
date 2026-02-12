@@ -181,7 +181,7 @@ void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
    if (!pPlaylist)
       return;
 
-   m_playlistMap[lowerCase(pPlaylist->GetFolder())] = pPlaylist;
+   m_playlistMap[lowerCase(pPlaylist->GetFolder().string())] = pPlaylist;
 }
 
 PUPPlaylist* PUPScreen::GetPlaylist(const string& szFolder)
