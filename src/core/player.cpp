@@ -104,40 +104,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // make sure the load directory is the active directory
    SetCurrentDirectory(table->m_filename.parent_path().string().c_str());
-
-#ifdef __STANDALONE__
-   Textbox *const implicitDMD = (Textbox *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, table, 0, 0);
-   table->RemovePart(implicitDMD);
-   wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
-   implicitDMD->m_d.m_visible = false;
-   implicitDMD->m_d.m_isDMD = true;
-   implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
-   table->AddPart(implicitDMD);
-   PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
-
-   Flasher *const implicitDMD2 = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, table, 0, 0);
-   table->RemovePart(implicitDMD2);
-   wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
-   int dmdWidth = 128 * 4; // (658)
-   int dmdHeight = 38 * 4; // (189)
-   int x = ((table->m_right - table->m_left) - dmdWidth) / 2;
-   int y = ((table->m_bottom - table->m_top) - dmdHeight) / 2;
-   implicitDMD2->UpdatePoint(0, x, y);
-   implicitDMD2->UpdatePoint(1, x, y + dmdHeight);
-   implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
-   implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
-   implicitDMD2->m_d.m_isVisible = false;
-   implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
-   implicitDMD2->m_d.m_color = RGB(255, 255, 255);
-   implicitDMD2->m_d.m_filter = Filter_Overlay;
-   implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
-   implicitDMD2->m_d.m_alpha = 150;
-   implicitDMD2->m_d.m_intensity_scale = 1;
-   implicitDMD2->m_d.m_modulate_vs_add = 1;
-   implicitDMD2->m_d.m_addBlend = true;
-   table->AddPart(implicitDMD2);
-   PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
-#endif
    
    table->SetupLookUpTables(true);
 
