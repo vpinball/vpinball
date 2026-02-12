@@ -387,7 +387,7 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          if ((nArgs == 2) && (i == 1))
          {
             std::filesystem::path filename = GetPathFromArg(szArglist[i]);
-            if (filename.extension().string() == "vpx" && FileExists(filename))
+            if (lowerCase(filename.extension().string()) == ".vpx" && FileExists(filename))
             {
                commands.push_back(std::make_unique<PlayTableCommand>(filename));
                i++;
