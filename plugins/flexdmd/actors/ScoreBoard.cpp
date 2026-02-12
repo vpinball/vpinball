@@ -3,36 +3,15 @@
 #include <sstream>
 
 namespace {
-const std::locale& ScoreLocale()
-{
-   static const std::locale loc = [] {
-      try { return std::locale(""); } // Use user/system locale when available
-      catch (...) { return std::locale::classic(); }
-   }();
-   return loc;
-}
+static const char point = (std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep() == 0xA0/*NBSP grouping separator*/) ? ' ' : std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep(); // gets the OS locale thousands separator (e.g. ',' or '.' or ''' or ' ')
 
-std::string FormatWithCommas(int value)
+string FormatScore(const int value)
 {
-   const bool negative = value < 0;
-   uint64_t n = negative ? static_cast<uint64_t>(-(int64_t)value) : static_cast<uint64_t>(value);
-   std::string s = std::to_string(n);
-   for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
-      s.insert(static_cast<size_t>(i), 1, ',');
-   return negative ? "-" + s : s;
-}
-
-std::string FormatScore(int value)
-{
-   std::ostringstream oss;
-   oss.imbue(ScoreLocale());
-   oss << value;
-   std::string s = oss.str();
-   for (char& c : s)
-      if (static_cast<unsigned char>(c) == 0xA0) // NBSP grouping separator
-         c = ' ';
-   if ((value <= -1000 || value >= 1000) && s == std::to_string(value))
-      return FormatWithCommas(value);
+   string s = std::to_string(abs(value));
+   for (int i = static_cast<int>(s.length()) - 3; i > 0; i -= 3) // or should we rather respect locale grouping sizes? (e.g. in India, the first grouping is 3 digits, but then it groups by 2 digits, e.g. 1,00,000 for one hundred thousand instead of 100,000)
+      s.insert(i, 1, point);
+   if (value < 0)
+      s.insert(0, 1, '-');
    return s;
 }
 }
