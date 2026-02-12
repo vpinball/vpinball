@@ -28,6 +28,7 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
 
 PinTableWnd::~PinTableWnd()
 {
+   m_table->m_tableEditor = nullptr;
    m_table->Release();
 #ifndef __STANDALONE__
    if (m_hbmOffScreen)

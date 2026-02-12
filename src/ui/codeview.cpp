@@ -413,17 +413,12 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 
 void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
 {
-   if (g_pplayer && g_pplayer->m_liveUI && !m_suppressErrorDialogs)
-   {
-      g_pplayer->m_liveUI->PushNotification("Script error: " + string_from_utf8_or_iso8859_1(description.data(), description.size()), 5000);
-   }
-
 #ifndef __STANDALONE__
    // Show the error in the last error log
    AppendLastErrorTextW(MakeWString(description));
    SetLastErrorVisibility(true);
 
-   if (g_pvp && IsWindow() && !m_suppressErrorDialogs && type != ScriptInterpreter::ErrorType::DebugConsole)
+   if (!m_suppressErrorDialogs && type != ScriptInterpreter::ErrorType::DebugConsole)
    {
       if (g_pplayer)
       {
@@ -458,7 +453,7 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
          g_pvp->EnableWindow(TRUE);
 
          if (const auto pt = g_pvp->GetActiveTableEditor(); pt != nullptr)
-            ::SetFocus(pt->m_table->m_tableEditor->m_pcv->m_hwndScintilla);
+            ::SetFocus(pt->m_pcv->m_hwndScintilla);
       }
    }
 #endif
