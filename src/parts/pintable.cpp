@@ -2062,8 +2062,10 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
       return;
    }
 
+   m_script_text = string_from_utf8_or_iso8859_1(buffer.data(), buffer.size());
    if (m_tableEditor)
-      m_tableEditor->m_pcv->SetScript(string_from_utf8_or_iso8859_1(buffer.data(), buffer.size()));
+      m_tableEditor->m_pcv->SetScript(m_script_text);
+
    m_external_script_name = scriptPath;
 }
 
