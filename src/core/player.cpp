@@ -1128,12 +1128,17 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
    if (m_playMode == Player::PlayMode::CaptureAttract)
       SetCloseState(Player::CloseState::CS_STOP_PLAY);
 
-#ifdef __STANDALONE__
-   PLOGE << (type == ScriptInterpreter::ErrorType::Runtime ? "Runtime" : "Compile") << " error on line " << line << ", col " << column << ": " << description;
-#endif
-
    if (m_ptable->m_tableEditor)
       m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+
+   if (g_isStandalone)
+   {
+      const string errorType = (type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime" : "Compile";
+      const string desc = string_from_utf8_or_iso8859_1(description.data(), description.size());
+      PLOGE << errorType << " error on line " << line << ", col " << column << ": " << desc;
+      if (g_pplayer && g_pplayer->m_liveUI)
+         g_pplayer->m_liveUI->PushNotification(errorType + " error: " + desc, 5000);
+   }
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
