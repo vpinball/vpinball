@@ -163,8 +163,8 @@ void Logger::SetupLogger(const bool enable)
       if (!initialized)
       {
          initialized = true;
-         const string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
-         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
+         const std::filesystem::path logPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
+         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.wstring().c_str(), 1024 * 1024 * 5, 1);
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
@@ -205,7 +205,7 @@ void Logger::Init()
 
 void Logger::Truncate()
 {
-   std::string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
+   std::filesystem::path szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
    std::ofstream ofs(szLogPath, std::ofstream::out | std::ofstream::trunc);
    ofs.close();
 }

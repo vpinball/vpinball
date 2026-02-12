@@ -222,7 +222,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    // We always create all render data to support live editor
    //if (m_d.m_baseVisible)
    {
-      m_baseTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperBase.webp").string()));
+      m_baseTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperBase.webp")));
       std::shared_ptr<IndexBuffer> baseIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       std::shared_ptr<VertexBuffer> baseVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -234,7 +234,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    //if (m_d.m_skirtVisible)
    {
-      m_skirtTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperSkirt.webp").string()));
+      m_skirtTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperSkirt.webp")));
       std::shared_ptr<IndexBuffer> socketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       std::shared_ptr<VertexBuffer> socketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -246,7 +246,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    //if (m_d.m_ringVisible)
    {
-      m_ringTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperRing.webp").string()));
+      m_ringTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperRing.webp")));
       std::shared_ptr<IndexBuffer> ringIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperRingNumIndices, bumperRingIndices);
       std::shared_ptr<VertexBuffer> ringVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -260,7 +260,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    //if (m_d.m_capVisible)
    {
-      m_capTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperCap.webp").string()));
+      m_capTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperCap.webp")));
       std::shared_ptr<IndexBuffer> capIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperCapNumIndices, bumperCapIndices);
       std::shared_ptr<VertexBuffer> capVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;

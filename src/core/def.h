@@ -801,7 +801,7 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 #define GetExecutablePathW() GetModulePath<wstring>(nullptr)
 #endif
 
-vector<uint8_t> read_file(const string& filename, const bool binary = true);
+vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);

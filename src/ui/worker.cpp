@@ -77,7 +77,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    FastIStorage * const pstgroot = pasp->pstg;
 
-   const wstring wzT = (g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true) / std::format("AutoSave{}.vpx", pasp->tableindex)).wstring();
+   const std::filesystem::path fn = g_app->m_fileLocator.GetTablePath(pasp->table, FileLocator::TableSubFolder::AutoSave, true) / std::format("AutoSave{}.vpx", pasp->tableindex);
 
    STGOPTIONS stg;
    stg.usVersion = 1;
@@ -86,7 +86,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    IStorage* pstgDisk;
    HRESULT hr;
-   if (SUCCEEDED(hr = StgCreateStorageEx(wzT.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+   if (SUCCEEDED(hr = StgCreateStorageEx(fn.wstring().c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
       STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgDisk)))
    {
       pstgroot->CopyTo(0, nullptr, nullptr, pstgDisk);

@@ -19,7 +19,7 @@ vector<wstring> IScriptable::GetMethodNames()
       if (SUCCEEDED(pti->GetTypeAttr(&pta)))
       {
          // Iterate through all functions in the interface
-         for (int i = 0; i < pta->cFuncs; i++)
+         for (unsigned int i = 0; i < pta->cFuncs; i++)
          {
             FUNCDESC *pfd;
             if (SUCCEEDED(pti->GetFuncDesc(i, &pfd)))
@@ -65,7 +65,7 @@ vector<wstring> IScriptable::GetEventNames()
       {
          TYPEATTR *pta;
          pti->GetTypeAttr(&pta);
-         for (int i = 0; i < pta->cImplTypes; i++)
+         for (unsigned int i = 0; i < pta->cImplTypes; i++)
          {
             HREFTYPE href;
             ITypeInfo *ptiChild;

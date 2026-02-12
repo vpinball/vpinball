@@ -503,11 +503,11 @@ void ImageDialog::Export()
 
             if (!renameOnExport)
             {
-               const int len0 = (int)ppi->GetFilePath().length();
+               const int len0 = (int)ppi->GetFilePath().string().length();
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (ppi->GetFilePath()[begin] == '\\' || ppi->GetFilePath()[begin] == '/')
+                  if (ppi->GetFilePath().string()[begin] == '\\' || ppi->GetFilePath().string()[begin] == '/')
                   {
                      begin++;
                      break;
@@ -515,15 +515,15 @@ void ImageDialog::Export()
                }
                if (begin > 0)
                {
-                  memcpy(g_filename, ppi->GetFilePath().c_str() + begin, len0 - begin);
+                  memcpy(g_filename, ppi->GetFilePath().string().c_str() + begin, len0 - begin);
                   g_filename[len0 - begin] = '\0';
                }
             }
             else
             {
                strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
-               const size_t idx = ppi->GetFilePath().find_last_of('.');
-               strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               const size_t idx = ppi->GetFilePath().string().find_last_of('.');
+               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = sizeof(g_filename);
@@ -578,21 +578,21 @@ void ImageDialog::Export()
                      if (!renameOnExport)
                      {
                         int begin;
-                        for (begin = (int)ppi->GetFilePath().length(); begin >= 0; begin--)
+                        for (begin = (int)ppi->GetFilePath().string().length(); begin >= 0; begin--)
                         {
-                           if (ppi->GetFilePath()[begin] == PATH_SEPARATOR_CHAR)
+                           if (ppi->GetFilePath().string()[begin] == PATH_SEPARATOR_CHAR)
                            {
                               begin++;
                               break;
                            }
                         }
-                        filename += ppi->GetFilePath().c_str() + begin;
+                        filename += ppi->GetFilePath().string().c_str() + begin;
                      }
                      else
                      {
                         filename += ppi->m_name;
-                        const size_t idx = ppi->GetFilePath().find_last_of('.');
-                        filename += ppi->GetFilePath().c_str() + idx;
+                        const size_t idx = ppi->GetFilePath().string().find_last_of('.');
+                        filename += ppi->GetFilePath().string().c_str() + idx;
                      }
                   }
 
@@ -681,7 +681,7 @@ void ImageDialog::Reimport()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const HANDLE hFile = CreateFile(ppi->GetFilePath().c_str(), GENERIC_READ, FILE_SHARE_READ,
+               const HANDLE hFile = CreateFile(ppi->GetFilePath().string().c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
                if (hFile != INVALID_HANDLE_VALUE)
@@ -703,7 +703,7 @@ void ImageDialog::Reimport()
                   pt->UpdatePropertyImageList();
                }
                else
-                  MessageBox(ppi->GetFilePath().c_str(), "FILE NOT FOUND!", MB_OK);
+                  MessageBox(ppi->GetFilePath().string().c_str(), "FILE NOT FOUND!", MB_OK);
 
                sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
             }
@@ -731,7 +731,7 @@ void ImageDialog::UpdateAll()
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != nullptr)
       {
-         const HANDLE hFile = CreateFile(ppi->GetFilePath().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+         const HANDLE hFile = CreateFile(ppi->GetFilePath().string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);

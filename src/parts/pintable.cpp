@@ -1498,8 +1498,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    IStorage* pstgRoot;
    if (FAILED(hr = StgOpenStorage(m_filename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
-      char msg[MAXSTRING+32];
-      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.string().c_str());
+      const string msg = std::format("Error 0x{:X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
       ShowError(msg);
       return hr;
    }
@@ -1566,9 +1565,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             }
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
-               char errorMsg[256];
-               errorMsg[0] = '\0';
-               sprintf_s(errorMsg, sizeof(errorMsg), "This table was saved with file version %i.%02i and is newer than the supported file version %i.%02i!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
+               const string errorMsg = std::format("This table was saved with file version {}.{:02d} and is newer than the supported file version {}.{:02d}!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
                ShowError(errorMsg);
                /*
                               pstgRoot->Release();
@@ -2030,7 +2027,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       LoadScriptOverride(filenameAuto);
    else
    {
-      std::filesystem::path folderVbs = tablePath / (tablePath.filename().string() + ".vbs");
+      auto fn = tablePath.filename();
+      fn += ".vbs";
+      std::filesystem::path folderVbs = tablePath / fn;
       folderVbs = find_case_insensitive_file_path(folderVbs);
       if (!folderVbs.empty())
          LoadScriptOverride(folderVbs);
@@ -4265,7 +4264,7 @@ bool PinTable::ExportImage(const Texture * const ppi, const string &filename)
    return ppi->SaveFile(filename);
 }
 
-Texture *PinTable::ImportImage(const string &filename, const string &imagename)
+Texture *PinTable::ImportImage(const std::filesystem::path &filename, const string &imagename)
 {
    Texture *existing = nullptr;
    if (!imagename.empty())

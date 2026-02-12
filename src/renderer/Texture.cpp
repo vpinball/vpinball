@@ -88,18 +88,13 @@ std::shared_ptr<BaseTexture> BaseTexture::Create(const unsigned int w, const uns
    return result;
 }
 
-std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const string& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    if (filename.empty())
       return nullptr;
    PinBinary ppb;
    ppb.ReadFromFile(filename);
    return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
-}
-
-std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
-{
-   return CreateFromFile(filename.string(), maxTexDimension, resizeOnLowMem);
 }
 
 std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
@@ -494,26 +489,26 @@ void BaseTexture::FlipY()
    m_aliases.clear();
 }
 
-bool BaseTexture::Save(const string& filepath) const
+bool BaseTexture::Save(const std::filesystem::path& filepath) const
 {
    if ((m_format != SRGBA) && (m_format != SRGB))
       return false;
 
-   const string ext = extension_from_path(filepath);
+   const string ext = lowerCase(filepath.extension().string());
    bool success = false;
 
    // Create parent directory if needed
-   std::filesystem::create_directories(std::filesystem::path(filepath).parent_path());
+   std::filesystem::create_directories(filepath.parent_path());
 
-   if (ext == "bmp")
+   if (ext == ".bmp")
    {
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
-         success = SDL_SaveBMP(pSurface, filepath.c_str());
+         success = SDL_SaveBMP(pSurface, filepath.string().c_str());
          SDL_DestroySurface(pSurface);
       }
    }
-   else if (ext == "qoi")
+   else if (ext == ".qoi")
    {
       qoi_desc desc { .width = m_width, .height = m_height, .channels = static_cast<unsigned char>(m_format == SRGB ? 3 :4), .colorspace = QOI_SRGB };
       int size;
@@ -531,7 +526,7 @@ bool BaseTexture::Save(const string& filepath) const
          }
          catch (const std::filesystem::filesystem_error& e)
          {
-            PLOGE << "Failed to save file " << filepath.c_str() << ": " << e.what();
+            PLOGE << "Failed to save file " << filepath.string().c_str() << ": " << e.what();
          }
          QOI_FREE(encoded);
       }
@@ -541,13 +536,13 @@ bool BaseTexture::Save(const string& filepath) const
    #ifdef __STANDALONE__
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
-         if (ext == "png")
-            success = IMG_SavePNG(pSurface, filepath.c_str());
-         else if (ext == "jpg" || ext == "jpeg")
-            success = IMG_SaveJPG(pSurface, filepath.c_str(), 75);
+         if (ext == ".png")
+            success = IMG_SavePNG(pSurface, filepath.string().c_str());
+         else if (ext == ".jpg" || ext == ".jpeg")
+            success = IMG_SaveJPG(pSurface, filepath.string().c_str(), 75);
          // Needs latest SDL3_image for WEBP support
-         //else if (ext == "webp")
-         //   success = IMG_SaveWEBP(pSurface, filepath.c_str(), 75);
+         //else if (ext == ".webp")
+         //   success = IMG_SaveWEBP(pSurface, filepath.string().c_str(), 75);
          SDL_DestroySurface(pSurface);
       }
 
@@ -561,13 +556,13 @@ bool BaseTexture::Save(const string& filepath) const
          else
             copy_bgra_rgba<false>((unsigned int*)bits, (const unsigned int*)m_data, m_width * m_height);
          FreeImage_FlipVertical(bitmap);
-         if (ext == "png")
-            success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), PNG_Z_DEFAULT_COMPRESSION);
-         else if (ext == "jpg" || ext == "jpeg")
-            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), JPEG_QUALITYGOOD);
-         else if (ext == "webp")
+         if (ext == ".png")
+            success = FreeImage_Save(FIF_PNG, bitmap, filepath.string().c_str(), PNG_Z_DEFAULT_COMPRESSION);
+         else if (ext == ".jpg" || ext == ".jpeg")
+            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.string().c_str(), JPEG_QUALITYGOOD);
+         else if (ext == ".webp")
             //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
-            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
+            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.string().c_str(), WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
    #endif
@@ -1068,7 +1063,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
    return tex;
 }
 
-Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
+Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bool isImageData)
 {
    PinBinary* const ppb = new PinBinary();
    ppb->ReadFromFile(filename);
@@ -1080,7 +1075,7 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
       return nullptr;
    }
 
-   Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
+   Texture* tex = new Texture(TitleFromFilename(filename.string()), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = imageBuffer;
    tex->UpdateMD5();
    tex->UpdateOpaque();
@@ -1103,7 +1098,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt) const
 {
    BiffWriter bw(pstream, 0);
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteString(FID(PATH), m_ppb->m_path);
+   bw.WriteString(FID(PATH), m_ppb->m_path.string());
    bw.WriteInt(FID(WDTH), m_width);
    bw.WriteInt(FID(HGHT), m_height);
    if (pt->GetImageLink(this))
@@ -1126,8 +1121,8 @@ bool Texture::IsHDR() const
    if (buffer)
       return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
           || buffer->m_format == BaseTexture::RGB_FP32 || buffer->m_format == BaseTexture::RGBA_FP32;
-   string ext = extension_from_path(m_ppb->m_path);
-   return (ext == "exr") || (ext == "hdr");
+   string ext = lowerCase(m_ppb->m_path.extension().string());
+   return (ext == ".exr") || (ext == ".hdr");
 }
 
 size_t Texture::GetEstimatedGPUSize() const

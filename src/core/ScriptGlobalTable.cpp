@@ -374,19 +374,19 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    auto table = g_pplayer ? g_pplayer->m_ptable : g_pvp ? g_pvp->GetActiveTable() : nullptr;
    if (table == nullptr)
       return E_FAIL;
-   const string path = g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::User, true).string() + PATH_SEPARATOR_CHAR;
+   const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::User, true) / "";
    if (!DirExists(path))
       return E_FAIL;
-   *pVal = MakeWideBSTR(path);
+   *pVal = MakeWideBSTR(path.string());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 {
-   string szPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR;
-   if (!DirExists(szPath))
+   std::filesystem::path path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "";
+   if (!DirExists(path))
       return E_FAIL;
-   *pVal = MakeWideBSTR(szPath);
+   *pVal = MakeWideBSTR(path.string());
 
    return S_OK;
 }
@@ -400,19 +400,19 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
    PinTable *table = g_pplayer ? g_pplayer->m_ptable : g_pvp ? g_pvp->GetActiveTable() : nullptr;
    if (table == nullptr)
       return E_FAIL;
-   const string path = (g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::Music, false) / childDir).string() + PATH_SEPARATOR_CHAR;
+   const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(table, FileLocator::TableSubFolder::Music, false) / childDir / "";
    if (!DirExists(path))
       return E_FAIL;
-   *pVal = MakeWideBSTR(path);
+   *pVal = MakeWideBSTR(path.string());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
 {
-   const string path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts).string() + PATH_SEPARATOR_CHAR;
+   const std::filesystem::path path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts) / "";
    if (!DirExists(path))
       return E_FAIL;
-   *pVal = MakeWideBSTR(path);
+   *pVal = MakeWideBSTR(path.string());
    return S_OK;
 }
 
@@ -515,7 +515,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, true) / "VPReg.stg").string());
+   const wstring wzPath = (g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, true) / "VPReg.stg").wstring();
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -603,10 +603,10 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = MakeWString((g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, false) / "VPReg.stg").string());
+   const std::filesystem::path path = g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::User, false) / "VPReg.stg";
 
    IStorage *pstgRoot;
-   if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
+   if (FAILED(hr = StgOpenStorage(path.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
    {
       SetVarBstr(Value, SysAllocString(L""));
       return S_OK;

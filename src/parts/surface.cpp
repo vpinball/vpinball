@@ -693,7 +693,7 @@ void Surface::ExportMesh(ObjLoader& loader)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         loader.WriteMaterial(m_d.m_szImage, tex->GetFilePath(), mat);
+         loader.WriteMaterial(m_d.m_szImage, tex->GetFilePath().string(), mat);
          loader.UseTexture(m_d.m_szImage);
       }
       else

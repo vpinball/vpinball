@@ -16,18 +16,18 @@ FileLocator::FileLocator()
 // Evaluate path of exe (without the exe's filename)
 std::filesystem::path FileLocator::EvaluateAppPath()
 {
-   string appPath;
+   std::filesystem::path appPath;
 #ifdef __ANDROID__
    // Android may not open files in the APK ressources through fopen so we copy them outside of the apk in the internal storage
-   appPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
+   appPath = std::filesystem::path(SDL_GetAndroidInternalStoragePath()) / "";
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
    // FIXME still app path is for readonly files, so shouldn't it just be SDL_GetBasePath() ?
-   path = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
+   appPath = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
 #else
    appPath = SDL_GetBasePath();
 #endif
-   return std::filesystem::path(appPath);
+   return appPath;
 }
 
 void FileLocator::SetupPrefPath()

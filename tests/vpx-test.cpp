@@ -97,7 +97,7 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
             uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];
             diffData[i] = dif > 64 ? 255 : dif * 4; // Scale to 0-255
          }
-         diff->Save(diffPath.string());
+         diff->Save(diffPath);
       }
       else if (FileExists(diffPath))
       {

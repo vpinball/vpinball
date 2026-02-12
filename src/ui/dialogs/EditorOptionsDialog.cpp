@@ -336,7 +336,7 @@ void EditorOptionsDialog::OnOK()
           std::filesystem::rename(prefPath, appPath);
        else if (!checked && FileExists(appPath)) // moving to preferences folder
           std::filesystem::rename(appPath, prefPath);
-       g_app->m_settings.SetIniPath((checked ? appPath : prefPath).string());
+       g_app->m_settings.SetIniPath(checked ? appPath : prefPath);
     }
 
     // Go through and reset the autosave time on all the tables

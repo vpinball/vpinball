@@ -198,17 +198,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BallEnv.exr").string()));
+   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BallEnv.exr")));
    m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false);
    ballTex = nullptr;
 
-   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "AODither.webp").string()));
+   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "AODither.webp")));
    m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true);
    aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
    std::shared_ptr<const BaseTexture> envTex
-      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp").string()));
+      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp")));
    m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling
@@ -1204,7 +1204,7 @@ void Renderer::UpdateStereoShaderState()
 static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const std::filesystem::path& path)
 {
    if (tex == nullptr)
-      tex.reset(Texture::CreateFromFile(path.string(), false));
+      tex.reset(Texture::CreateFromFile(path, false));
    return tex.get();
 }
 

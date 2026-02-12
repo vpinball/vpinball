@@ -10,7 +10,6 @@ bool FileExists(const std::filesystem::path& filePath);
 string TitleFromFilename(const string& filename);
 string ExtensionFromFilename(const string& filename);
 string PathFromFilename(const string& filename);
-string TitleAndPathFromFilename(const string& filename);
 bool ReplaceExtensionFromFilename(string& filename, const string& newextension);
 
 class BiffReader;

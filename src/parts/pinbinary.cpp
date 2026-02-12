@@ -2,11 +2,11 @@
 
 #include "core/stdafx.h"
 
-bool PinBinary::ReadFromFile(const string& filename)
+bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
 {
    m_buffer = read_file(filename);
    m_path = filename;
-   m_name = TitleFromFilename(filename);
+   m_name = TitleFromFilename(filename.string());
    return true;
 }
 
@@ -21,7 +21,7 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
    BiffWriter bw(pstream, 0);
 
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteString(FID(PATH), m_path);
+   bw.WriteString(FID(PATH), m_path.string());
    bw.WriteInt(FID(SIZE), static_cast<int>(m_buffer.size()));
    bw.WriteStruct(FID(DATA), m_buffer.data(), static_cast<int>(m_buffer.size()));
    bw.WriteTag(FID(ENDB));
@@ -43,7 +43,13 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(NAME): pbr->GetString(m_name); break;
-   case FID(PATH): pbr->GetString(m_path); break;
+   case FID(PATH):
+   {
+      string path;
+      pbr->GetString(path);
+      m_path = path;
+      break;
+   }
    case FID(SIZE):
    {
       int size;

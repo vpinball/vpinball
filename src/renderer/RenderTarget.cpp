@@ -368,7 +368,6 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (status != GL_FRAMEBUFFER_COMPLETE)
    {
-      char msg[256];
       const char* errorCode;
       switch (status)
       {
@@ -386,7 +385,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 #endif
       default: errorCode = "unknown"; break;
       }
-      sprintf_s(msg, sizeof(msg), "glCheckFramebufferStatus returned 0x%08X %s", glCheckFramebufferStatus(m_framebuffer), errorCode);
+      const string msg = std::format("glCheckFramebufferStatus returned 0x{:08X} {}", glCheckFramebufferStatus(m_framebuffer), errorCode);
       ShowError(msg);
 
 #ifndef __OPENGLES__

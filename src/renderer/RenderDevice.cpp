@@ -225,7 +225,7 @@ void RenderDevice::CaptureGLScreenshot()
          glReadBuffer(GL_BACK);
          glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
          tex->FlipY();
-         success = tex->Save(m_screenshotFilename[0].string());
+         success = tex->Save(m_screenshotFilename[0]);
       }
    #endif
    m_screenshotCallback(success);
@@ -292,7 +292,7 @@ void RenderDevice::CaptureDX9Screenshot()
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
             bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
-      success = tex->Save(m_screenshotFilename[0].string());
+      success = tex->Save(m_screenshotFilename[0]);
    }
    pSurface->Release();
    pBackBuffer->Release();

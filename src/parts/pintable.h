@@ -336,7 +336,7 @@ public:
    bool ExportSound(VPX::Sound *const pps, const string &filename);
    void RemoveSound(VPX::Sound *const pps);
    bool ExportImage(const Texture *const ppi, const string &filename);
-   Texture* ImportImage(const string &filename, const string &imageName);
+   Texture* ImportImage(const std::filesystem::path &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
 
    Texture *GetImage(const string &szName) const;
@@ -564,13 +564,15 @@ public:
 
       // Table ini file alongside table file, name matching table filename
       std::filesystem::path tableIni = m_filename;
-      tableIni.replace_extension("ini");
+      tableIni.replace_extension(".ini");
       if (FileExists(tableIni))
          return tableIni;
 
       // Table ini file alongside table file, name matching folder name
       const auto folder = m_filename.parent_path();
-      std::filesystem::path folderIni = folder / (folder.filename().string() + ".ini");
+      auto fn = folder.filename();
+      fn += ".ini";
+      std::filesystem::path folderIni = folder / fn;
       folderIni = find_case_insensitive_file_path(folderIni);
       if (!folderIni.empty())
          return folderIni;

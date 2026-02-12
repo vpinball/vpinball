@@ -415,14 +415,13 @@ void ShowError(const char* const sz)
       MessageBox(nullptr, sz, "Visual Pinball Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
-vector<uint8_t> read_file(const string& filename, const bool binary)
+vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary)
 {
    vector<uint8_t> data;
    std::ifstream file(filename, binary ? (std::ios::binary | std::ios::ate) : std::ios::ate);
    if (!file)
    {
-      const string text = "The file \"" + filename + "\" could not be opened.";
-      ShowError(text);
+      ShowError("The file \"" + filename.string() + "\" could not be opened.");
       return data;
    }
    data.resize((size_t)file.tellg());

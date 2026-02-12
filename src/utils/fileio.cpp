@@ -58,12 +58,6 @@ string PathFromFilename(const string &filename)
    return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
 }
 
-// same as removing the file extension
-string TitleAndPathFromFilename(const string &filename)
-{
-   return filename.substr(0, filename.find_last_of('.')); // in case no '.' is found, will then copy full filename
-}
-
 bool ReplaceExtensionFromFilename(string& filename, const string& newextension)
 {
    const size_t i = filename.find_last_of('.');

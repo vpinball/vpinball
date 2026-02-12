@@ -29,7 +29,7 @@ ScriptInterpreter::ScriptInterpreter()
 #ifndef __STANDALONE__
    // This can fail on some systems (I tested with wine 6.9 and this fails)
    // In that case, m_pProcessDebugManager will remain as nullptr
-   CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager);
+   const HRESULT debugResult = CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager); //!! dto.?
 
    // Also check if we have a debugger installed
    // If not, we should abandon the process debug manager and fall back to plain basic errors
@@ -158,12 +158,14 @@ void ScriptInterpreter::RemoveItem(const IScriptable *const piscript)
 
 void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
 {
-   WCHAR *const wzScript = MakeWide(script);
-   EXCEPINFO exception {};
    if (m_pScriptParse)
+   {
+      WCHAR *const wzScript = MakeWide(script);
+      EXCEPINFO exception {};
       m_pScriptParse->ParseScriptText(wzScript, isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
          isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
-   delete[] wzScript;
+      delete[] wzScript;
+   }
    if (m_pScript)
       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 }

@@ -42,7 +42,6 @@ public:
    ~BaseTexture() override;
 
    static std::shared_ptr<BaseTexture> Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
-   static std::shared_ptr<BaseTexture> CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromFile(const std::filesystem::path &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
@@ -86,7 +85,7 @@ public:
    const string& GetName() const override { return m_name; }
 
    void FlipY();
-   bool Save(const string& filepath) const;
+   bool Save(const std::filesystem::path& filepath) const;
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
@@ -145,7 +144,7 @@ private:
 class Texture final : public ITexManCacheable
 {
 public:
-   static Texture *CreateFromFile(const string &filename, const bool isImageData = true);
+   static Texture *CreateFromFile(const std::filesystem::path& filename, const bool isImageData = true);
    static Texture *CreateFromStream(IStream * const pstream, int version, PinTable * const pt);
    ~Texture() override;
 
@@ -161,7 +160,7 @@ public:
 
    size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
    const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }
-   const string& GetFilePath() const { return m_ppb->m_path; }
+   const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 
    const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
