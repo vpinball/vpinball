@@ -164,7 +164,11 @@ void Logger::SetupLogger(const bool enable)
       {
          initialized = true;
          const std::filesystem::path logPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
+#if PLOG_CHAR_IS_UTF8
+         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.string().c_str(), 1024 * 1024 * 5, 1);
+#else
          static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.wstring().c_str(), 1024 * 1024 * 5, 1);
+#endif
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
