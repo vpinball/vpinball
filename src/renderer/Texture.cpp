@@ -673,16 +673,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
             if (tex == nullptr)
                return nullptr;
-            uint16_t* const __restrict dest_data16 = reinterpret_cast<uint16_t*>(tex->data());
-            const uint16_t* const __restrict src_data16 = reinterpret_cast<const uint16_t*>(datac());
-            const size_t size = (size_t)width() * height();
-            for (size_t o = 0; o < size; ++o)
-            {
-               dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
-               dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
-               dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
-               dest_data16[o * 4 + 3] = 0x3C00; //=1.f
-            }
+            copy_rgb_rgba(reinterpret_cast<uint16_t*>(tex->data()), reinterpret_cast<const uint16_t*>(datac()), (size_t)width() * height());
          }
          break;
          default: break;
@@ -697,16 +688,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
             if (tex == nullptr)
                return nullptr;
-            uint32_t* const __restrict dest_data32 = reinterpret_cast<uint32_t*>(tex->data());
-            const uint32_t* const __restrict src_data32 = reinterpret_cast<const uint32_t*>(datac());
-            const size_t size = (size_t)width() * height();
-            for (size_t o = 0; o < size; ++o)
-            {
-               dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
-               dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
-               dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
-               dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
-            }
+            copy_rgb_rgba(reinterpret_cast<float*>(tex->data()), reinterpret_cast<const float*>(datac()), (size_t)width() * height());
          }
          break;
          default: break;
@@ -995,13 +977,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
             if (has_alpha)
                memcpy(dst, src, pitch);
             else
-               for (unsigned int x = 0; x < width; x++, dst += 3) // copy without alpha channel
-               {
-                  const unsigned int rgba = src[x];
-                  dst[0] = rgba;
-                  dst[1] = rgba >> 8;
-                  dst[2] = rgba >> 16;
-               }
+               copy_rgba_rgb<false>(dst, src, width); // copy without alpha channel
          }
 
          // Convert to a lossless webp
@@ -1010,7 +986,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
          ppb = new PinBinary();
          ppb->m_buffer.resize(FreeImage_TellMemory(memStream));
          ppb->m_name = name;
-         string ext = extension_from_path(path);
+         const string ext = extension_from_path(path);
          if (!ext.empty())
          {
             path.erase(path.length() - ext.length());
@@ -1121,7 +1097,7 @@ bool Texture::IsHDR() const
    if (buffer)
       return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
           || buffer->m_format == BaseTexture::RGB_FP32 || buffer->m_format == BaseTexture::RGBA_FP32;
-   string ext = lowerCase(m_ppb->m_path.extension().string());
+   const string ext = lowerCase(m_ppb->m_path.extension().string());
    return (ext == ".exr") || (ext == ".hdr");
 }
 
