@@ -436,7 +436,7 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
       return static_cast<int>(m_dmd->MatchIndexed(m_idFrame.data(), 128, 32));
    }
 
-   if (src.width <= 256 && src.height == 64)
+   if (src.width <= 256 && src.height == 64) // should be 192x64 or 256x64
    {
       // Resize with a triangle filter to mimic what original implementation in Freezy's DmdExt (https://github.com/freezy/dmd-extensions)
       // does, that is to say:
@@ -449,11 +449,17 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
       // - https://photosauce.net/blog/post/examining-iwicbitmapscaler-and-the-wicbitmapinterpolationmode-values
       //
       // The Baywatch Pup pack was used to validate this (the filter is still a guess since Windows code is not available)
+      //
+      //
+      // This boils down to a 2x2 box filter in this case (256(or lower) x 64 -> 128 x 32), also no border checking needed then
+      // (which is also the same thing that PinMAME used internally to drive PinDMDs and the like for 256x64)
+      // (for the 192x64 case, only every 2nd pixel was filtered there in order to also output 128x32, while this routine here outputs a centered 96x32 image)
       const unsigned int ofsX = (128 - (src.width / 2)) / 2;
       for (unsigned int y = 0; y < 32; y++)
       {
          for (unsigned int x = 0; x < src.width / 2; x++)
          {
+#if 0 // keep this code around, in case at some point a radius greater than 1 is needed
             float lum = 0., sum = 0.;
             constexpr int radius = 1;
             for (int dx = 1 - radius; dx <= radius; dx++)
@@ -469,7 +475,16 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
                   sum += weight;
                }
             }
-            m_idFrame[y * 128 + ofsX + x] = (uint8_t)roundf(lum / sum);
+            m_idFrame[y * 128 + ofsX + x] = (uint8_t)(lum / sum + 0.5f);
+#else
+            const unsigned int px = x * 2;
+            const unsigned int py = y * (2 * src.width);
+            uint32_t lum = frame[py + px];
+            lum += frame[py + px + 1];
+            lum += frame[py + px + src.width];
+            lum += frame[py + px + src.width + 1];
+            m_idFrame[y * 128 + ofsX + x] = (uint8_t)((lum + 2) >> 2);
+#endif
          }
       }
       return static_cast<int>(m_dmd->MatchIndexed(m_idFrame.data(), 128, 32));
