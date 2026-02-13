@@ -3334,7 +3334,7 @@ void PinTable::ExportTableMesh()
 // - without UI interaction, triggered to load user settings preference to table **settings**.
 void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
 {
-   string file = filename.string();
+   std::filesystem::path file = filename;
    const bool toUserSettings = !filename.empty();
    const bool wasModified = m_settings.IsModified();
    if (!toUserSettings)
@@ -3349,17 +3349,16 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
          "ini", 0, toUserSettings ? "Import POV to user settings"s : "Import POV to table properties"s))
          return;
       file = fileNames[0];
-      const size_t index = file.find_last_of(PATH_SEPARATOR_CHAR);
-      if (index != string::npos)
-         g_app->m_settings.SetRecentDir_POVDir(file.substr(0, index), false);
+      if(file.has_parent_path())
+         g_app->m_settings.SetRecentDir_POVDir(file.parent_path().string(), false);
 #endif
    }
 
-   const string ext = lowerCase(ExtensionFromFilename(file));
+   const string ext = lowerCase(file.extension().string());
 
    static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
    static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
-   if (ext == "ini")
+   if (ext == ".ini")
    {
       Settings settings;
       settings.SetIniPath(file);
@@ -3377,7 +3376,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
             mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
       }
    }
-   else if (ext == "pov" || ext == "xml")
+   else if (ext == ".pov" || ext == ".xml")
    {
       tinyxml2::XMLDocument xmlDoc;
       try
