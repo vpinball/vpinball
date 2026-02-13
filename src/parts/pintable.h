@@ -299,7 +299,6 @@ public:
    PinTable *CopyForPlay();
 
    void ClearForOverwrite() final;
-   void InitBuiltinTable(const size_t tableId);
    void RemoveInvalidReferences();
 
    HRESULT GetTypeName(BSTR *pVal) const final;

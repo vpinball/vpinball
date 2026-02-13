@@ -162,30 +162,6 @@ void PinTable::ClearForOverwrite()
    m_vrenderprobe.clear();
 }
 
-void PinTable::InitBuiltinTable(const size_t tableId)
-{
-#ifndef __STANDALONE__
-   string path;
-   // Get our new table resource, get it to be opened as a storage, and open it like a normal file
-   switch (tableId)
-   {
-   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"s; break;
-   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"s; break;
-   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"s; break;
-   case ID_NEW_BLANKTABLE:
-   default: path = "blankTable.vpx"s;
-   }
-   m_glassTopHeight = m_glassBottomHeight = 210;
-   for (int i = 0; i < 16; i++)
-      m_rgcolorcustom[i] = RGB(0, 0, 0);
-   LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path).string());
-   m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
-   m_vpinball->m_NextTableID++;
-   m_settings.SetIniPath(std::filesystem::path());
-   m_filename.clear();
-#endif
-}
-
 void PinTable::SetMouseCapture()
 {
 #ifndef __STANDALONE__
@@ -5162,73 +5138,55 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
 float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 {
-   if (!name.empty())
-   {
+   if (name.empty())
+      return 0.f;
+
    const wstring wname = MakeWString(name);
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for (const IEditable *const item : m_vedit)
    {
-      const IEditable * const item = m_vedit[i];
-      if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
-      {
-         if (wname == item->GetScriptable()->m_wzName)
-         {
-            if (item->GetItemType() == eItemSurface)
-               return ((const Surface *)item)->m_d.m_heighttop;
-            else //if (item->GetItemType() == eItemRamp)
-               return ((const Ramp *)item)->GetSurfaceHeight(x, y);
-         }
-      }
-   }
+      if ((item->GetItemType() == eItemSurface) && (wname == item->GetScriptable()->m_wzName))
+         return static_cast<const Surface *>(item)->m_d.m_heighttop;
+      else if ((item->GetItemType() == eItemRamp) && (wname == item->GetScriptable()->m_wzName))
+         return static_cast<const Ramp *>(item)->GetSurfaceHeight(x, y);
    }
 
+   PLOGE << "Failed to find part '" << name << "' to set other part height";
    return 0.f;
 }
 
 Material* PinTable::GetSurfaceMaterial(const string& name) const
 {
-   if (!name.empty())
-   {
+   if (name.empty())
+      return GetMaterial(m_playfieldMaterial);
+
    const wstring wname = MakeWString(name);
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for (const IEditable *const item : m_vedit)
    {
-      const IEditable * const item = m_vedit[i];
-      if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
-      {
-         if (wname == item->GetScriptable()->m_wzName)
-         {
-            if (item->GetItemType() == eItemSurface)
-               return GetMaterial(((const Surface *)item)->m_d.m_szTopMaterial);
-            else //if (item->GetItemType() == eItemRamp)
-               return GetMaterial(((const Ramp *)item)->m_d.m_szMaterial);
-         }
-      }
-   }
+      if ((item->GetItemType() == eItemSurface) && (wname == item->GetScriptable()->m_wzName))
+         return GetMaterial(static_cast<const Surface *>(item)->m_d.m_szTopMaterial);
+      else if ((item->GetItemType() == eItemRamp) && (wname == item->GetScriptable()->m_wzName))
+         return GetMaterial(static_cast<const Ramp *>(item)->m_d.m_szMaterial);
    }
 
+   PLOGE << "Failed to find part '" << name << "' to set other part material";
    return GetMaterial(m_playfieldMaterial);
 }
 
 Texture* PinTable::GetSurfaceImage(const string& name) const
 {
    if (!name.empty())
-   {
+      GetImage(m_image);
+
    const wstring wname = MakeWString(name);
-   for (size_t i = 0; i < m_vedit.size(); i++)
+   for (const IEditable *const item : m_vedit)
    {
-      const IEditable * const item = m_vedit[i];
-      if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
-      {
-         if (wname == item->GetScriptable()->m_wzName)
-         {
-            if (item->GetItemType() == eItemSurface)
-               return GetImage(((const Surface *)item)->m_d.m_szImage);
-            else //if (item->GetItemType() == eItemRamp)
-               return GetImage(((const Ramp *)item)->m_d.m_szImage);
-         }
-      }
-   }
+      if ((item->GetItemType() == eItemSurface) && (wname == item->GetScriptable()->m_wzName))
+         return GetImage(static_cast<const Surface *>(item)->m_d.m_szImage);
+      else if ((item->GetItemType() == eItemRamp) && (wname == item->GetScriptable()->m_wzName))
+         return GetImage(static_cast<const Ramp *>(item)->m_d.m_szImage);
    }
 
+   PLOGE << "Failed to find part '" << name << "' to set other part image";
    return GetImage(m_image);
 }
 
