@@ -224,11 +224,6 @@ void WinEditor::LoadEditorSetupFromSettings()
    m_convertToUnit = g_app->m_settings.GetEditor_Units();
 }
 
-void WinEditor::AddMDITable(PinTableMDI* mdiTable) 
-{
-   AddMDIChild(mdiTable); 
-}
-
 void WinEditor::SetClipboard(vector<IStream*> * const pvstm)
 {
    for (size_t i = 0; i < m_vstmclipboard.size(); i++)
@@ -1030,7 +1025,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
       m_ptableActive = ppt->m_table;
 #endif
 
-      AddMDITable(mdiTable);
+      AddMDIChild(mdiTable);
 
       // make sure the load directory is the active directory
       const string tablePath = PathFromFilename(filename);
@@ -2397,10 +2392,26 @@ void WinEditor::OpenNewTable(size_t tableId)
 #ifndef __STANDALONE__
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    CComObject<PinTable> *const ppt = mdiTable->GetTable();
-   ppt->InitBuiltinTable(tableId);
+   string path;
+   switch (tableId)
+   {
+   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"s; break;
+   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"s; break;
+   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"s; break;
+   case ID_NEW_BLANKTABLE:
+   default: path = "blankTable.vpx"s;
+   }
+   ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
+   for (int i = 0; i < 16; i++)
+      ppt->m_rgcolorcustom[i] = RGB(0, 0, 0);
+   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path).string());
+   ppt->m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_NextTableID);
+   m_NextTableID++;
+   ppt->m_settings.SetIniPath(std::filesystem::path());
+   ppt->m_filename.clear();
 
    m_vtable.push_back(mdiTable->GetTableWnd());
-   AddMDITable(mdiTable);
+   AddMDIChild(mdiTable);
    mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
    GetLayersListDialog()->ResetView();
    ToggleToolbar();

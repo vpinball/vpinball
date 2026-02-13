@@ -75,7 +75,6 @@ private:
    void UpdateRecentFileList(const std::filesystem::path& filename);
 
 public:
-   void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void CloseAllDialogs();
    void ToggleScriptEditor();

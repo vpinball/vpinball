@@ -97,6 +97,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
    g_pplayer = this;
+   m_ptable->AddRef();
 
    // Prepare table for playing
 
@@ -649,6 +650,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
+
+#ifndef __STANDALONE__
+      if (m_detectScriptHang && g_pvp)
+         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
+#endif
    }
 
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
@@ -711,8 +717,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 #endif
 
 #ifndef __STANDALONE__
-   if (m_detectScriptHang && g_pvp)
-      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
    m_progressDialog.Destroy();
    LockForegroundWindow(true);
 #endif
@@ -975,6 +979,8 @@ Player::~Player()
 
    restore_win_timer_resolution();
 
+   m_ptable->Release();
+
    while (ShowCursor(FALSE) >= 0);
    while (ShowCursor(TRUE) < 0);
    PLOGI << "Player closed.";
@@ -1140,6 +1146,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    CComObject<Ball> *pBall;
    CComObject<Ball>::CreateInstance(&pBall);
    pBall->Init(m_ptable, x, y, false, true);
+   m_ptable->AddPart(pBall);
    pBall->m_hitBall.m_d.m_pos.z = z + radius;
    pBall->m_hitBall.m_d.m_mass = mass;
    pBall->m_hitBall.m_d.m_radius = radius;
@@ -1147,8 +1154,6 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_hitBall.m_d.m_vel.y = vy;
    pBall->m_hitBall.m_d.m_vel.z = vz;
    pBall->m_d.m_useTableRenderSettings = true;
-   pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
-   m_ptable->AddPart(pBall);
    m_vhitables.push_back(pBall);
    pBall->TimerSetup(m_vht);
    pBall->RenderSetup(m_renderer->m_renderDevice);
