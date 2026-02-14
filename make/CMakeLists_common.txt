@@ -240,14 +240,6 @@ set(VPX_SOURCES
    src/renderer/Window.cpp
    src/renderer/Window.h
 
-   src/ui/codeview.cpp
-   src/ui/codeview.h
-   src/ui/codeviewedit.cpp
-   src/ui/codeviewedit.h
-   src/ui/hitrectsur.cpp
-   src/ui/hitrectsur.h
-   src/ui/hitsur.cpp
-   src/ui/hitsur.h
    src/ui/VPXFileFeedback.h
 
    src/ui/live/BallControl.cpp
@@ -354,6 +346,14 @@ set(VPX_SOURCES
    src/ui/live/ingameui/VRSettingsPage.h
    src/ui/live/ingameui/VRSettingsPage.cpp
 
+   src/ui/win/codeview.cpp
+   src/ui/win/codeview.h
+   src/ui/win/codeviewedit.cpp
+   src/ui/win/codeviewedit.h
+   src/ui/win/hitrectsur.cpp
+   src/ui/win/hitrectsur.h
+   src/ui/win/hitsur.cpp
+   src/ui/win/hitsur.h
    src/ui/win/PinTableMDI.cpp
    src/ui/win/PinTableMDI.h
    src/ui/win/PinTableWnd.cpp

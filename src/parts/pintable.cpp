@@ -3,7 +3,7 @@
 #include "core/stdafx.h"
 #include "core/vpversion.h"
 #include "parts/Sound.h"
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "utils/hash.h"
 #include <algorithm>
 #include "utils/objloader.h"
@@ -13,8 +13,8 @@
 #include "renderer/Shader.h"
 #include "ui/VPXFileFeedback.h"
 #ifndef __STANDALONE__
-#include "ui/dialogs/VPXLoadFileProgressBar.h"
-#include "ui/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/VPXLoadFileProgressBar.h"
+#include "ui/win/dialogs/VPXSaveFileProgressBar.h"
 #include "FreeImage.h"
 #endif
 #include "ThreadPool.h"

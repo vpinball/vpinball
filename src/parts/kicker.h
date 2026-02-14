@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 
 class KickerData final : public BaseProperty
 {

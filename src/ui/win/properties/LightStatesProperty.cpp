@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/LightStatesProperty.h"
+#include "ui/win/properties/LightStatesProperty.h"
 
 LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
 {

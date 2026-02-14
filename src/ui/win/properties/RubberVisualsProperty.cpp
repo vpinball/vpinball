@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/RubberVisualsProperty.h"
+#include "ui/win/properties/RubberVisualsProperty.h"
 
 RubberVisualsProperty::RubberVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_VISUALS, pvsel)
 {

@@ -16,7 +16,7 @@
 #include "ui/win/PinTableMDI.h"
 
 #ifndef __STANDALONE__
-#include "ui/dialogs/SearchSelectDialog.h"
+#include "ui/win/dialogs/SearchSelectDialog.h"
 #else
 #include <iostream>
 class Light;

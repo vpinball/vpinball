@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>

@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/DragpointVisualsProperty.h"
+#include "ui/win/properties/DragpointVisualsProperty.h"
 
 DragpointVisualsProperty::DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(id, pvsel), m_id(id)
 {

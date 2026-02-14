@@ -5,7 +5,7 @@
 #include "codeviewedit.h"
 
 #ifndef __STANDALONE__
-#include "ui/dialogs/ScriptErrorDialog.h"
+#include "dialogs/ScriptErrorDialog.h"
 #include "scintilla.h"
 #endif
 

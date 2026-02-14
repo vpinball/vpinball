@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/TableLightsProperty.h"
+#include "ui/win/properties/TableLightsProperty.h"
 
 TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {

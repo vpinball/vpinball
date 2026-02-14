@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/BallPhysicsProperty.h"
+#include "ui/win/properties/BallPhysicsProperty.h"
 
 BallPhysicsProperty::BallPhysicsProperty(const VectorProtected<ISelect> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_PHYSICS, pvsel)

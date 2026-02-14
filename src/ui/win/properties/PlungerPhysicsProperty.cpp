@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/PlungerPhysicsProperty.h"
+#include "ui/win/properties/PlungerPhysicsProperty.h"
 
 PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {

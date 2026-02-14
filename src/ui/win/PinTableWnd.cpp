@@ -4,13 +4,13 @@
 
 #include "PinTableWnd.h"
 
-#include "ui/paintsur.h"
+#include "ui/win/paintsur.h"
 
-#include "ui/worker.h"
+#include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
-#include "ui/dialogs/VPXLoadFileProgressBar.h"
-#include "ui/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/VPXLoadFileProgressBar.h"
+#include "ui/win/dialogs/VPXSaveFileProgressBar.h"
 #include "FreeImage.h"
 #endif
 

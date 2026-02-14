@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/properties/PlungerVisualsProperty.h"
+#include "ui/win/properties/PlungerVisualsProperty.h"
 
 PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
