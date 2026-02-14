@@ -697,7 +697,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
-   PLOGI << "Prerendering static parts"; // For profiling
    wintimer_init();
    m_physics->StartPhysics();
    m_renderer->RenderFrame();
@@ -1048,13 +1047,18 @@ void Player::OnFocusChanged()
    // A lost focus event happens during player destruction when the main window is destroyed
    if (m_closing == CS_CLOSED)
       return;
-   if (m_playfieldWnd->IsFocused())
+   const bool wasPlaying = IsPlaying();
+   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
+   if (wasPlaying != willPlay)
    {
-      PLOGI << "Playfield window gained focus";
-   }
-   else
-   {
-      #ifdef _MSC_VER
+      ApplyPlayingState(willPlay);
+      if (m_playfieldWnd->IsFocused())
+      {
+         PLOGI << "Playfield window gained focus";
+      }
+      else
+      {
+#ifdef _MSC_VER
          HWND foregroundWnd = GetForegroundWindow();
          if (foregroundWnd)
          {
@@ -1079,14 +1083,11 @@ void Player::OnFocusChanged()
             PLOGI << "Playfield window lost focus.";
          }
 
-      #else
+#else
          PLOGI << "Playfield window lost focus.";
-      #endif
+#endif
+      }
    }
-   const bool wasPlaying = IsPlaying();
-   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
-   if (wasPlaying != willPlay)
-      ApplyPlayingState(willPlay);
 }
 
 void Player::ApplyPlayingState(const bool play)
@@ -1380,7 +1381,10 @@ void Player::ProcessOSMessages()
    {
       switch (e.type)
       {
-      case SDL_EVENT_QUIT: SetCloseState(Player::CloseState::CS_STOP_PLAY); break;
+      case SDL_EVENT_QUIT:
+         SetCloseState(Player::CloseState::CS_STOP_PLAY);
+         break;
+
       case SDL_EVENT_WINDOW_FOCUS_GAINED:
       case SDL_EVENT_WINDOW_FOCUS_LOST:
          isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();

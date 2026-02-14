@@ -204,11 +204,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
         if (std::filesystem::exists(altsoundGamePath)) {
             LOGI("Found altsound directory for game: %s at %s", msg->gameId, altsoundGamePath.c_str());
             StartAltSound(msg->gameId, basePath.string(), msg->hardwareGen);
-        } else {
-            LOGI("No altsound directory found for game: %s (checked: %s)", msg->gameId, altsoundGamePath.c_str());
         }
-    } else {
-        LOGI("No altsound base directory found for game: %s", msg->gameId);
     }
 }
 
