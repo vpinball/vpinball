@@ -35,7 +35,7 @@ InputManager::InputManager()
    SDL_TouchID* touchDevices = SDL_GetTouchDevices(&nTouchDevices);
    for (int i = 0; i < nTouchDevices; i++)
    {
-      PLOGI << "Touch device detected: '" << SDL_GetTouchDeviceName(touchDevices[i]) << "' "
+      PLOGI << "Touch device detected: '" << SDL_GetTouchDeviceName(touchDevices[i]) << '\''
             << ((SDL_GetTouchDeviceType(touchDevices[i]) == SDL_TOUCH_DEVICE_DIRECT) ? " - Enabling touch support" : " - Skipping (not a touch screen)");
       if (SDL_GetTouchDeviceType(touchDevices[i]) == SDL_TOUCH_DEVICE_DIRECT)
          m_supportsTouch = true;

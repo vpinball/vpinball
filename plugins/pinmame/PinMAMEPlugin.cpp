@@ -222,13 +222,17 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
    if (size > 0) {
       char* const buffer = new char[size + 1];
       vsnprintf(buffer, size + 1, format, args);
-      if (logLevel == PINMAME_LOG_LEVEL_INFO)
+      if (string(buffer).starts_with("Average FPS:"s))
       {
-         LOGI("%s", buffer);
+         // Skip as the FPS does not correspond to anything here
+      }
+      else if (logLevel == PINMAME_LOG_LEVEL_INFO)
+      {
+         LOGI("PinMAME: %s", buffer);
       }
       else if (logLevel == PINMAME_LOG_LEVEL_ERROR)
       {
-         LOGE("%s", buffer);
+         LOGE("PinMAME: %s", buffer);
       }
       delete [] buffer;
    }
@@ -275,7 +279,7 @@ static void StopAudioStream()
 
 int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData)
 {
-   LOGI("format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d", p_audioInfo->format, p_audioInfo->channels, p_audioInfo->sampleRate,
+   LOGI("PinMAME: format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d", p_audioInfo->format, p_audioInfo->channels, p_audioInfo->sampleRate,
       p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame, p_audioInfo->bufferSize);
    if (((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT))
       && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
