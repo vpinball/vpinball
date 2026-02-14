@@ -627,13 +627,12 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_isFSSViewModeEnabled = src->m_isFSSViewModeEnabled;
    dst->m_viewModeOverride = src->m_viewModeOverride;
-   dst->UpdateCurrentBGSet();
-   dst->m_currentBackglassMode = dst->m_currentBackglassMode;
+   dst->m_viewMode = src->m_viewMode;
+   dst->m_currentBackglassMode = src->m_currentBackglassMode;
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
       dst->m_BG_image[i] = src->m_BG_image[i];
-      dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, (ViewSetupID) i);
    }
    dst->m_materials.reserve(src->m_materials.size() + dst->m_materials.size());
    for (Material* srcMat : src->m_materials)
