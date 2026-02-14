@@ -170,11 +170,13 @@ public:
 
 private:
    void InitShape();
+   void UpdateCenter();
 
    PinTable *m_ptable = nullptr;
 
    unsigned int m_numVertices = 0;
    int m_numPolys = 0;
+   bool m_centerClean = false;
    float m_minx = FLT_MAX;
    float m_maxx = -FLT_MAX;
    float m_miny = FLT_MAX;
