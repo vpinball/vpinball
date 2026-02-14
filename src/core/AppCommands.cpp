@@ -51,15 +51,58 @@ ExportVBSCommand::ExportVBSCommand(const std::filesystem::path& tableFilename)
 
 void ExportVBSCommand::Execute()
 {
-   CComObject<PinTable>* table = LoadTable();
+   string script;
+   HRESULT hr;
+   IStorage* pstgRoot;
+   if (SUCCEEDED(hr = StgOpenStorage(m_tableFilename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
+   {
+      IStorage* pstgData;
+      if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgData)))
+      {
+         int loadfileversion = 0;
+         IStream* pstmVersion;
+         if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
+         {
+            ULONG read;
+            hr = pstmVersion->Read(&loadfileversion, sizeof(int), &read);
+            pstmVersion->Release();
+            IStream* pstmGame;
+            if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
+            {
+               BiffReader reader(pstmGame, nullptr, loadfileversion, 0, 0);
+               reader.Load(
+                  [&script](int id, BiffReader* pbr)
+                  {
+                     if (id != FID(CODE))
+                        return true;
+                     ULONG read = 0;
+                     int cchar;
+                     pbr->m_pistream->Read(&cchar, sizeof(int), &read);
+                     char* szText = new char[cchar + 1];
+                     pbr->m_pistream->Read(szText, cchar * (int)sizeof(char), &read);
+                     szText[cchar] = '\0';
+                     script = string_from_utf8_or_iso8859_1(szText, cchar);
+                     delete[] szText;
+                     return true;
+                  });
+               pstmGame->Release();
+            }
+         }
+         pstgData->Release();
+      }
+      pstgRoot->Release();
+   }
+
+   //CComObject<PinTable>* table = LoadTable();
    std::filesystem::path scriptFilename = m_tableFilename;
    scriptFilename.replace_extension(".vbs");
    if (std::ofstream outFile(scriptFilename, std::ios::binary); outFile)
    {
-      outFile.write(table->m_original_table_script.data(), table->m_original_table_script.size());
+      //outFile.write(table->m_original_table_script.data(), table->m_original_table_script.size());
+      outFile << script;
       outFile.close();
    }
-   table->Release();
+   //table->Release();
 }
 
 
