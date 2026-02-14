@@ -91,4 +91,8 @@ private:
 
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
+
+private:
+   POINT m_ptLast {}; // Last point when dragging
+
 };

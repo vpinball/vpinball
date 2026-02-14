@@ -788,6 +788,9 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    // object and not being able to use the cursor keys/wheely mouse)
    m_vpxEditor->SetFocus();
 
+   m_ptLast.x = x;
+   m_ptLast.y = y;
+
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
       if (GetZoom() < MAX_ZOOM)
@@ -945,8 +948,6 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
 
 void PinTableWnd::OnRightButtonUp(int x, int y)
 {
-   m_table->GetSelectedItem()->OnRButtonUp(x, y);
-
    const int ks = GetKeyState(VK_CONTROL);
 
    // Only bring up context menu if we weren't in magnify mode
@@ -971,45 +972,49 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
 {
    if (const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0); middleMouseButtonPressed)
    {
-      // panning feature starts here...if the user holds the middle mouse button and moves the mouse
-      // everything is moved in the direction of the mouse was moved
-      const int dx = abs(m_oldMousePos.x - x);
-      const int dy = abs(m_oldMousePos.y - y);
-      if (m_oldMousePos.x > x)
-         m_table->m_winEditorViewOffset.x += (float)dx;
-      if (m_oldMousePos.x < x)
-         m_table->m_winEditorViewOffset.x -= (float)dx;
-      if (m_oldMousePos.y > y)
-         m_table->m_winEditorViewOffset.y += (float)dy;
-      if (m_oldMousePos.y < y)
-         m_table->m_winEditorViewOffset.y -= (float)dy;
-
-      m_table->SetDirtyDraw();
+      // If the user holds the middle mouse button and moves the mouse everything is moved in the direction of the mouse was moved
+      m_table->m_winEditorViewOffset.x += static_cast<float>(m_oldMousePos.x - x);
+      m_table->m_winEditorViewOffset.y += static_cast<float>(m_oldMousePos.y - y);
       SetMyScrollInfo();
-
-      m_oldMousePos.x = x;
-      m_oldMousePos.y = y;
-      return;
-   }
-
-   const Vertex2D v = m_table->TransformPoint(x, y);
-
-   m_vpxEditor->SetPosCur(v.x, v.y);
-
-   if (!m_table->m_dragging) // Not doing band select
-   {
-      for (int i = 0; i < m_table->m_vmultisel.size(); i++)
-         m_table->m_vmultisel[i].OnMouseMove(x, y);
+      Redraw();
    }
    else
    {
       const Vertex2D v = m_table->TransformPoint(x, y);
+      m_vpxEditor->SetPosCur(v.x, v.y);
 
-      m_table->m_rcDragRect.right = v.x;
-      m_table->m_rcDragRect.bottom = v.y;
+      if (!m_table->m_dragging) // Not doing band select
+      {
+         if ((x != m_ptLast.x) || (y != m_ptLast.y))
+         {
+            for (int i = 0; i < m_table->m_vmultisel.size(); i++)
+            {
+               if (m_table->m_vmultisel[i].m_dragging && !m_table->m_vmultisel[i].GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
+               {
+                  if (!m_table->m_vmultisel[i].m_markedForUndo)
+                  {
+                     m_table->m_vmultisel[i].m_markedForUndo = true;
+                     m_table->m_vmultisel[i].GetIEditable()->BeginUndo();
+                     m_table->m_vmultisel[i].GetIEditable()->MarkForUndo();
+                  }
 
-      if (m_table->m_dragging)
-         m_table->SetDirtyDraw();
+                  const float inv_zoom = 1.0f / GetZoom();
+                  m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
+                  m_table->m_vmultisel[i].SetObjectPos();
+                  Redraw();
+               }
+            }
+            m_ptLast.x = x;
+            m_ptLast.y = y;
+         }
+      }
+      else
+      {
+         const Vertex2D v = m_table->TransformPoint(x, y);
+         m_table->m_rcDragRect.right = v.x;
+         m_table->m_rcDragRect.bottom = v.y;
+         Redraw();
+      }
    }
 
    m_oldMousePos.x = x;
