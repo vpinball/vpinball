@@ -42,7 +42,7 @@ add_compile_options(
 )
 
 set_source_files_properties(
-   src/ui/vpinball.rc LANGUAGE RC
+   src/ui/win/vpinball.rc LANGUAGE RC
 )
 
 set_source_files_properties(src/shaders/hlsl_glsl/BallShader.hlsl PROPERTIES 
@@ -99,151 +99,14 @@ add_executable(vpinball WIN32
 
    src/core/stdafx.cpp
    src/core/stdafx.h
+
+   src/core/vpinball.idl
+
    src/renderer/captureExt.cpp
    src/renderer/captureExt.h
 
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
-
-   src/ui/win/DragPointDialogs.h
-   src/ui/win/DragPointDialogs.cpp
-
-   src/ui/paintsur.cpp
-   src/ui/paintsur.h
-   src/ui/worker.cpp
-   src/ui/worker.h
-   src/ui/resource.h
-   src/ui/Debugger.cpp
-   src/ui/Debugger.h
-   src/ui/dialogs/AboutDialog.cpp
-   src/ui/dialogs/AboutDialog.h
-   src/ui/dialogs/CollectionManagerDialog.cpp
-   src/ui/dialogs/CollectionManagerDialog.h
-   src/ui/dialogs/DimensionDialog.cpp
-   src/ui/dialogs/DimensionDialog.h
-   src/ui/dialogs/DrawingOrderDialog.cpp
-   src/ui/dialogs/DrawingOrderDialog.h
-   src/ui/dialogs/EditorOptionsDialog.cpp
-   src/ui/dialogs/EditorOptionsDialog.h
-   src/ui/dialogs/ImageDialog.cpp
-   src/ui/dialogs/ImageDialog.h
-   src/ui/dialogs/PlayerOptionsDialog.cpp
-   src/ui/dialogs/PlayerOptionsDialog.h
-   src/ui/dialogs/LayersListDialog.cpp
-   src/ui/dialogs/LayersListDialog.h
-   src/ui/dialogs/MaterialDialog.cpp
-   src/ui/dialogs/MaterialDialog.h
-   src/ui/dialogs/NotesDialog.cpp
-   src/ui/dialogs/NotesDialog.h
-   src/ui/dialogs/ScriptErrorDialog.cpp
-   src/ui/dialogs/ScriptErrorDialog.h
-   src/ui/dialogs/RenderProbeDialog.cpp
-   src/ui/dialogs/RenderProbeDialog.h
-   src/ui/dialogs/PhysicsOptionsDialog.cpp
-   src/ui/dialogs/PhysicsOptionsDialog.h
-   src/ui/dialogs/WhereUsedDialog.cpp
-   src/ui/dialogs/WhereUsedDialog.h
-   src/ui/dialogs/SearchSelectDialog.cpp
-   src/ui/dialogs/SearchSelectDialog.h
-   src/ui/dialogs/SoundDialog.cpp
-   src/ui/dialogs/SoundDialog.h
-   src/ui/dialogs/TableInfoDialog.cpp
-   src/ui/dialogs/TableInfoDialog.h
-   src/ui/dialogs/ToolbarDialog.cpp
-   src/ui/dialogs/ToolbarDialog.h
-   src/ui/dialogs/VPXLoadFileProgressBar.cpp
-   src/ui/dialogs/VPXLoadFileProgressBar.h
-   src/ui/dialogs/VPXSaveFileProgressBar.cpp
-   src/ui/dialogs/VPXSaveFileProgressBar.h
-
-   src/ui/properties/BackglassCameraProperty.cpp
-   src/ui/properties/BackglassCameraProperty.h
-   src/ui/properties/BackglassVisualsProperty.cpp
-   src/ui/properties/BackglassVisualsProperty.h
-   src/ui/properties/BallPhysicsProperty.cpp
-   src/ui/properties/BallPhysicsProperty.h
-   src/ui/properties/BallVisualsProperty.cpp
-   src/ui/properties/BallVisualsProperty.h
-   src/ui/properties/BumperPhysicsProperty.cpp
-   src/ui/properties/BumperPhysicsProperty.h
-   src/ui/properties/BumperVisualsProperty.cpp
-   src/ui/properties/BumperVisualsProperty.h
-   src/ui/properties/DecalVisualsProperty.cpp
-   src/ui/properties/DecalVisualsProperty.h
-   src/ui/properties/DispreelStateProperty.cpp
-   src/ui/properties/DispreelStateProperty.h
-   src/ui/properties/DispreelVisualsProperty.cpp
-   src/ui/properties/DispreelVisualsProperty.h
-   src/ui/properties/DragpointVisualsProperty.cpp
-   src/ui/properties/DragpointVisualsProperty.h
-   src/ui/properties/FlasherVisualsProperty.cpp
-   src/ui/properties/FlasherVisualsProperty.h
-   src/ui/properties/FlipperPhysicsProperty.cpp
-   src/ui/properties/FlipperVisualsProperty.h
-   src/ui/properties/FlipperPhysicsProperty.h
-   src/ui/properties/FlipperVisualsProperty.cpp
-   src/ui/properties/GatePhysicsProperty.cpp
-   src/ui/properties/GatePhysicsProperty.h
-   src/ui/properties/GateVisualsProperty.cpp
-   src/ui/properties/GateVisualsProperty.h
-   src/ui/properties/HitTargetPhysicsProperty.cpp
-   src/ui/properties/HitTargetPhysicsProperty.h
-   src/ui/properties/HitTargetVisualsProperty.cpp
-   src/ui/properties/HitTargetVisualsProperty.h
-   src/ui/properties/KickerPhysicsProperty.cpp
-   src/ui/properties/KickerPhysicsProperty.h
-   src/ui/properties/KickerVisualsProperty.cpp
-   src/ui/properties/KickerVisualsProperty.h
-   src/ui/properties/LightseqStatesProperty.cpp
-   src/ui/properties/LightseqStatesProperty.h
-   src/ui/properties/LightStatesProperty.cpp
-   src/ui/properties/LightStatesProperty.h
-   src/ui/properties/LightVisualsProperty.cpp
-   src/ui/properties/LightVisualsProperty.h
-   src/ui/properties/PartGroupVisualsProperty.cpp
-   src/ui/properties/PartGroupVisualsProperty.h
-   src/ui/properties/PlungerPhysicsProperty.cpp
-   src/ui/properties/PlungerPhysicsProperty.h
-   src/ui/properties/PlungerVisualsProperty.cpp
-   src/ui/properties/PlungerVisualsProperty.h
-   src/ui/properties/PrimitivePhysicsProperty.cpp
-   src/ui/properties/PrimitivePhysicsProperty.h
-   src/ui/properties/PrimitivePositionProperty.cpp
-   src/ui/properties/PrimitivePositionProperty.h
-   src/ui/properties/PrimitiveVisualsProperty.cpp
-   src/ui/properties/PrimitiveVisualsProperty.h
-   src/ui/properties/PropertyDialog.cpp
-   src/ui/properties/PropertyDialog.h
-   src/ui/properties/RampPhysicsProperty.cpp
-   src/ui/properties/RampPhysicsProperty.h
-   src/ui/properties/RampVisualsProperty.cpp
-   src/ui/properties/RampVisualsProperty.h
-   src/ui/properties/RubberPhysicsProperty.cpp
-   src/ui/properties/RubberPhysicsProperty.h
-   src/ui/properties/RubberVisualsProperty.cpp
-   src/ui/properties/RubberVisualsProperty.h
-   src/ui/properties/SpinnerPhysicsProperty.cpp
-   src/ui/properties/SpinnerVisualsProperty.h
-   src/ui/properties/SpinnerVisualsProperty.cpp
-   src/ui/properties/SpinnerPhysicsProperty.h
-   src/ui/properties/TableAudioProperty.cpp
-   src/ui/properties/TableAudioProperty.h
-   src/ui/properties/TableLightsProperty.cpp
-   src/ui/properties/TableLightsProperty.h
-   src/ui/properties/TablePhysicsProperty.cpp
-   src/ui/properties/TablePhysicsProperty.h
-   src/ui/properties/TableVisualsProperty.cpp
-   src/ui/properties/TableVisualsProperty.h
-   src/ui/properties/TextboxVisualsProperty.cpp
-   src/ui/properties/TextboxVisualsProperty.h
-   src/ui/properties/TriggerPhysicsProperty.cpp
-   src/ui/properties/TriggerPhysicsProperty.h
-   src/ui/properties/TriggerVisualsProperty.cpp
-   src/ui/properties/TriggerVisualsProperty.h
-   src/ui/properties/WallPhysicsProperty.cpp
-   src/ui/properties/WallPhysicsProperty.h
-   src/ui/properties/WallVisualsProperty.cpp
-   src/ui/properties/WallVisualsProperty.h
 
    src/utils/StackTrace.cpp
    src/utils/StackTrace.h
@@ -254,31 +117,169 @@ add_executable(vpinball WIN32
    src/utils/CrashHandler.cpp
    src/utils/CrashHandler.h
 
-   src/ui/vpinball.rc
-   src/core/vpinball.idl
+   src/ui/win/DragPointDialogs.h
+   src/ui/win/DragPointDialogs.cpp
+   src/ui/win/paintsur.cpp
+   src/ui/win/paintsur.h
+   src/ui/win/worker.cpp
+   src/ui/win/worker.h
+   src/ui/win/resource.h
+   src/ui/win/Debugger.cpp
+   src/ui/win/Debugger.h
+   src/ui/win/vpinball.rc
+   
+   src/ui/win/dialogs/AboutDialog.cpp
+   src/ui/win/dialogs/AboutDialog.h
+   src/ui/win/dialogs/CollectionManagerDialog.cpp
+   src/ui/win/dialogs/CollectionManagerDialog.h
+   src/ui/win/dialogs/DimensionDialog.cpp
+   src/ui/win/dialogs/DimensionDialog.h
+   src/ui/win/dialogs/DrawingOrderDialog.cpp
+   src/ui/win/dialogs/DrawingOrderDialog.h
+   src/ui/win/dialogs/EditorOptionsDialog.cpp
+   src/ui/win/dialogs/EditorOptionsDialog.h
+   src/ui/win/dialogs/ImageDialog.cpp
+   src/ui/win/dialogs/ImageDialog.h
+   src/ui/win/dialogs/PlayerOptionsDialog.cpp
+   src/ui/win/dialogs/PlayerOptionsDialog.h
+   src/ui/win/dialogs/LayersListDialog.cpp
+   src/ui/win/dialogs/LayersListDialog.h
+   src/ui/win/dialogs/MaterialDialog.cpp
+   src/ui/win/dialogs/MaterialDialog.h
+   src/ui/win/dialogs/NotesDialog.cpp
+   src/ui/win/dialogs/NotesDialog.h
+   src/ui/win/dialogs/ScriptErrorDialog.cpp
+   src/ui/win/dialogs/ScriptErrorDialog.h
+   src/ui/win/dialogs/RenderProbeDialog.cpp
+   src/ui/win/dialogs/RenderProbeDialog.h
+   src/ui/win/dialogs/PhysicsOptionsDialog.cpp
+   src/ui/win/dialogs/PhysicsOptionsDialog.h
+   src/ui/win/dialogs/WhereUsedDialog.cpp
+   src/ui/win/dialogs/WhereUsedDialog.h
+   src/ui/win/dialogs/SearchSelectDialog.cpp
+   src/ui/win/dialogs/SearchSelectDialog.h
+   src/ui/win/dialogs/SoundDialog.cpp
+   src/ui/win/dialogs/SoundDialog.h
+   src/ui/win/dialogs/TableInfoDialog.cpp
+   src/ui/win/dialogs/TableInfoDialog.h
+   src/ui/win/dialogs/ToolbarDialog.cpp
+   src/ui/win/dialogs/ToolbarDialog.h
+   src/ui/win/dialogs/VPXLoadFileProgressBar.cpp
+   src/ui/win/dialogs/VPXLoadFileProgressBar.h
+   src/ui/win/dialogs/VPXSaveFileProgressBar.cpp
+   src/ui/win/dialogs/VPXSaveFileProgressBar.h
 
-   src/ui/res/ball.rgs
-   src/ui/res/bumper.rgs
-   src/ui/res/hittarget.rgs
-   src/ui/res/dispreel.rgs
-   src/ui/res/dragpoint.rgs
-   src/ui/res/flasher.rgs
-   src/ui/res/rubber.rgs
-   src/ui/res/flipper.rgs
-   src/ui/res/gate.rgs
-   src/ui/res/kicker.rgs
-   src/ui/res/light.rgs
-   src/ui/res/lightseq.rgs
-   src/ui/res/pieventhandler.rgs
-   src/ui/res/plunger.rgs
-   src/ui/res/primitive.rgs
-   src/ui/res/ramp.rgs
-   src/ui/res/spinner.rgs
-   src/ui/res/surface.rgs
-   src/ui/res/textbox.rgs
-   src/ui/res/timer.rgs
-   src/ui/res/trigger.rgs
-   src/ui/res/vpinball.rgs
+   src/ui/win/properties/BackglassCameraProperty.cpp
+   src/ui/win/properties/BackglassCameraProperty.h
+   src/ui/win/properties/BackglassVisualsProperty.cpp
+   src/ui/win/properties/BackglassVisualsProperty.h
+   src/ui/win/properties/BallPhysicsProperty.cpp
+   src/ui/win/properties/BallPhysicsProperty.h
+   src/ui/win/properties/BallVisualsProperty.cpp
+   src/ui/win/properties/BallVisualsProperty.h
+   src/ui/win/properties/BumperPhysicsProperty.cpp
+   src/ui/win/properties/BumperPhysicsProperty.h
+   src/ui/win/properties/BumperVisualsProperty.cpp
+   src/ui/win/properties/BumperVisualsProperty.h
+   src/ui/win/properties/DecalVisualsProperty.cpp
+   src/ui/win/properties/DecalVisualsProperty.h
+   src/ui/win/properties/DispreelStateProperty.cpp
+   src/ui/win/properties/DispreelStateProperty.h
+   src/ui/win/properties/DispreelVisualsProperty.cpp
+   src/ui/win/properties/DispreelVisualsProperty.h
+   src/ui/win/properties/DragpointVisualsProperty.cpp
+   src/ui/win/properties/DragpointVisualsProperty.h
+   src/ui/win/properties/FlasherVisualsProperty.cpp
+   src/ui/win/properties/FlasherVisualsProperty.h
+   src/ui/win/properties/FlipperPhysicsProperty.cpp
+   src/ui/win/properties/FlipperVisualsProperty.h
+   src/ui/win/properties/FlipperPhysicsProperty.h
+   src/ui/win/properties/FlipperVisualsProperty.cpp
+   src/ui/win/properties/GatePhysicsProperty.cpp
+   src/ui/win/properties/GatePhysicsProperty.h
+   src/ui/win/properties/GateVisualsProperty.cpp
+   src/ui/win/properties/GateVisualsProperty.h
+   src/ui/win/properties/HitTargetPhysicsProperty.cpp
+   src/ui/win/properties/HitTargetPhysicsProperty.h
+   src/ui/win/properties/HitTargetVisualsProperty.cpp
+   src/ui/win/properties/HitTargetVisualsProperty.h
+   src/ui/win/properties/KickerPhysicsProperty.cpp
+   src/ui/win/properties/KickerPhysicsProperty.h
+   src/ui/win/properties/KickerVisualsProperty.cpp
+   src/ui/win/properties/KickerVisualsProperty.h
+   src/ui/win/properties/LightseqStatesProperty.cpp
+   src/ui/win/properties/LightseqStatesProperty.h
+   src/ui/win/properties/LightStatesProperty.cpp
+   src/ui/win/properties/LightStatesProperty.h
+   src/ui/win/properties/LightVisualsProperty.cpp
+   src/ui/win/properties/LightVisualsProperty.h
+   src/ui/win/properties/PartGroupVisualsProperty.cpp
+   src/ui/win/properties/PartGroupVisualsProperty.h
+   src/ui/win/properties/PlungerPhysicsProperty.cpp
+   src/ui/win/properties/PlungerPhysicsProperty.h
+   src/ui/win/properties/PlungerVisualsProperty.cpp
+   src/ui/win/properties/PlungerVisualsProperty.h
+   src/ui/win/properties/PrimitivePhysicsProperty.cpp
+   src/ui/win/properties/PrimitivePhysicsProperty.h
+   src/ui/win/properties/PrimitivePositionProperty.cpp
+   src/ui/win/properties/PrimitivePositionProperty.h
+   src/ui/win/properties/PrimitiveVisualsProperty.cpp
+   src/ui/win/properties/PrimitiveVisualsProperty.h
+   src/ui/win/properties/PropertyDialog.cpp
+   src/ui/win/properties/PropertyDialog.h
+   src/ui/win/properties/RampPhysicsProperty.cpp
+   src/ui/win/properties/RampPhysicsProperty.h
+   src/ui/win/properties/RampVisualsProperty.cpp
+   src/ui/win/properties/RampVisualsProperty.h
+   src/ui/win/properties/RubberPhysicsProperty.cpp
+   src/ui/win/properties/RubberPhysicsProperty.h
+   src/ui/win/properties/RubberVisualsProperty.cpp
+   src/ui/win/properties/RubberVisualsProperty.h
+   src/ui/win/properties/SpinnerPhysicsProperty.cpp
+   src/ui/win/properties/SpinnerVisualsProperty.h
+   src/ui/win/properties/SpinnerVisualsProperty.cpp
+   src/ui/win/properties/SpinnerPhysicsProperty.h
+   src/ui/win/properties/TableAudioProperty.cpp
+   src/ui/win/properties/TableAudioProperty.h
+   src/ui/win/properties/TableLightsProperty.cpp
+   src/ui/win/properties/TableLightsProperty.h
+   src/ui/win/properties/TablePhysicsProperty.cpp
+   src/ui/win/properties/TablePhysicsProperty.h
+   src/ui/win/properties/TableVisualsProperty.cpp
+   src/ui/win/properties/TableVisualsProperty.h
+   src/ui/win/properties/TextboxVisualsProperty.cpp
+   src/ui/win/properties/TextboxVisualsProperty.h
+   src/ui/win/properties/TriggerPhysicsProperty.cpp
+   src/ui/win/properties/TriggerPhysicsProperty.h
+   src/ui/win/properties/TriggerVisualsProperty.cpp
+   src/ui/win/properties/TriggerVisualsProperty.h
+   src/ui/win/properties/WallPhysicsProperty.cpp
+   src/ui/win/properties/WallPhysicsProperty.h
+   src/ui/win/properties/WallVisualsProperty.cpp
+   src/ui/win/properties/WallVisualsProperty.h
+
+   src/ui/win/res/ball.rgs
+   src/ui/win/res/bumper.rgs
+   src/ui/win/res/hittarget.rgs
+   src/ui/win/res/dispreel.rgs
+   src/ui/win/res/dragpoint.rgs
+   src/ui/win/res/flasher.rgs
+   src/ui/win/res/rubber.rgs
+   src/ui/win/res/flipper.rgs
+   src/ui/win/res/gate.rgs
+   src/ui/win/res/kicker.rgs
+   src/ui/win/res/light.rgs
+   src/ui/win/res/lightseq.rgs
+   src/ui/win/res/pieventhandler.rgs
+   src/ui/win/res/plunger.rgs
+   src/ui/win/res/primitive.rgs
+   src/ui/win/res/ramp.rgs
+   src/ui/win/res/spinner.rgs
+   src/ui/win/res/surface.rgs
+   src/ui/win/res/textbox.rgs
+   src/ui/win/res/timer.rgs
+   src/ui/win/res/trigger.rgs
+   src/ui/win/res/vpinball.rgs
 
    src/shaders/hlsl_glsl/BallShader.hlsl
    src/shaders/hlsl_glsl/BasicShader.hlsl
