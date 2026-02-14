@@ -122,6 +122,12 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       c_hardScatter = ANGTORAD(table->m_overridePhysics ? fOverrideContactScatterAngle : table->m_defaultScatter);
    }
 
+   if (!IsEditorMode())
+   {
+      for (int i = 0; i < 3; i++)
+         table->mViewSetups[i].ApplyTableOverrideSettings(table->m_settings, (ViewSetupID)i);
+   }
+
    m_logicProfiler.NewFrame(0);
    m_renderProfiler = new FrameProfiler();
    m_renderProfiler->NewFrame(0);
