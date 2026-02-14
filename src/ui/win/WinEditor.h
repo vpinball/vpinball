@@ -101,15 +101,6 @@ public:
    void SetActionCur(const string& szaction);
    void SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName);
 
-   STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
-   STDMETHOD_(ULONG, AddRef)();
-   STDMETHOD_(ULONG, Release)();
-
-   STDMETHOD(PlaySound)(BSTR bstr);
-
-   STDMETHOD(FireKnocker)(int Count);
-   STDMETHOD(QuitPlayer)(int CloseType);
-
    void CloseTable(PinTableWnd * ppt);
 
    void ToggleToolbar();
