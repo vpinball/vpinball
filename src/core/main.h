@@ -169,7 +169,6 @@ using std::vector;
 typedef LPSTR LPTSTR;
 typedef LPCSTR LPCTSTR;
 
-class SearchSelectDialog final { };
 class LayersListDialog final { };
 class ImageDialog final { };
 class SoundDialog final { };

@@ -5,7 +5,7 @@
 class SearchSelectDialog final : public CDialog
 {
 public:
-   SearchSelectDialog();
+   SearchSelectDialog(PinTableWnd *table);
    void Update();
 
 protected:
@@ -26,7 +26,7 @@ private:
 
    HWND m_hElementList;
    CResizer m_resizer;
-   CCO(PinTable) *m_curTable;
+   PinTableWnd *m_curTable;
 
    static int m_lastSortColumn;
    static bool m_columnSortOrder;

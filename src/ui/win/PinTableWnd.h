@@ -44,6 +44,10 @@ public:
    void EndAutoSaveCounter();
    void AutoSave();
 
+   void ShowSearchSelectDlg();
+
+   void OnPartChanged(IEditable *part);
+
    CComObject<PinTable> *const m_table;
    
    std::unique_ptr<CodeViewer> m_pcv;
@@ -77,6 +81,8 @@ private:
 
    WinEditor *const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
+
+   std::unique_ptr<class SearchSelectDialog> m_searchSelectDlg;
 
    bool m_moving = false;
    short2 m_oldMousePos;

@@ -15,9 +15,7 @@
 
 #include "ui/win/PinTableMDI.h"
 
-#ifndef __STANDALONE__
-#include "ui/win/dialogs/SearchSelectDialog.h"
-#else
+#ifdef __STANDALONE__
 #include <iostream>
 class Light;
 #endif
@@ -767,8 +765,6 @@ public:
    bool m_enableAO;
    bool m_enableSSR;
    float m_bloom_strength;
-
-   SearchSelectDialog m_searchSelectDlg;
 
    volatile std::atomic<bool> m_savingActive = false;
 

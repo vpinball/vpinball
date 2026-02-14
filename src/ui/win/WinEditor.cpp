@@ -2155,24 +2155,8 @@ void WinEditor::ToggleScriptEditor()
 void WinEditor::ShowSearchSelect()
 {
 #ifndef __STANDALONE__
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
-   {
-      if (!ptCur->m_searchSelectDlg.IsWindow())
-      {
-         ptCur->m_searchSelectDlg.Create(GetHwnd());
-
-         const string windowName = "Search/Select Element - " + ptCur->m_filename.string();
-         ptCur->m_searchSelectDlg.SetWindowText(windowName.c_str());
-
-         ptCur->m_searchSelectDlg.ShowWindow();
-      }
-      else
-      {
-         ptCur->m_searchSelectDlg.ShowWindow();
-         ptCur->m_searchSelectDlg.SetForegroundWindow();
-      }
-   }
+   if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
+      ptCur->ShowSearchSelectDlg();
 #endif
 }
 
