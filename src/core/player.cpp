@@ -2113,11 +2113,10 @@ void Player::FinishFrame()
    // Remove ball from table (but they may outlive as they may be in use for rendering) for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
-      m_ptable->RemovePart(pBall);
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
       if (m_scriptInterpreter)
          m_scriptInterpreter->RemoveItem(pBall);
-      pBall->Release();
+      m_ptable->RemovePart(pBall);
    }
    m_vballDelete.clear();
 
