@@ -347,7 +347,7 @@ private:
                      success &= mapButton(ButtonMapping::Create(deviceId, northButton), m_pininput.GetAddCreditActionId(0));
                      success &= mapButton(ButtonMapping::Create(deviceId, eastButton), m_pininput.GetStartActionId());
                      success &= mapButton(ButtonMapping::Create(deviceId, southButton), m_pininput.GetLaunchBallActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, backButton), m_pininput.GetExitInteractiveActionId());
+                     success &= mapButton(ButtonMapping::Create(deviceId, backButton), m_pininput.GetOpenInGameUIActionId());
                      // success &= mapButton(ButtonMapping::Create(deviceId, startButton), m_pininput.()); // In Game UI
                      if (dpadLeftButton != 0xFFFF && dpadRightButton != 0xFFFF && dpadUpButton != 0xFFFF && dpadDownButton != 0xFFFF)
                      {

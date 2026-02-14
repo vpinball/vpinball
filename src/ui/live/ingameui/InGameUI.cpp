@@ -9,7 +9,6 @@
 #include "CabinetSettingsPage.h"
 #include "DisplayProfileSettingsPage.h"
 #include "DisplaySettingsPage.h"
-#include "ExitSplashPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
 #include "InputSettingsPage.h"
@@ -30,7 +29,6 @@ namespace VPX::InGameUI
 InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
 {
-   AddPage("exit"s, []() { return std::make_unique<ExitSplashPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
    AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
@@ -49,7 +47,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
 }
 
-void InGameUI::AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory)
+void InGameUI::AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory)
 {
    m_pages[path] = pageFactory;
 }
@@ -235,7 +233,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))
       GetActivePage()->Save();
 
-   if (state.IsKeyPressed(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetOpenInGameUIActionId(), m_prevActionState))
       NavigateBack();
 }
 

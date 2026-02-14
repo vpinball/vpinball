@@ -34,7 +34,7 @@ public:
    unsigned int GetLeftMagnaActionId() const { return m_leftMagnaActionId; }
    unsigned int GetRightMagnaActionId() const { return m_rightMagnaActionId; }
    unsigned int GetExitGameActionId() const { return m_exitGameActionId; }
-   unsigned int GetExitInteractiveActionId() const { return m_exitInteractiveActionId; }
+   unsigned int GetOpenInGameUIActionId() const { return m_openInGameUIActionId; }
    unsigned int GetLockbarActionId() const { return m_lockbarActionId; }
    unsigned int GetJoyCustomActionId(int idx) const { assert(0 <= idx && idx < 4); return m_joyCustomActionId[idx]; }
    unsigned int GetVolumeDownActionId() const { return m_volumeDownActionId; }
@@ -213,7 +213,7 @@ private:
    unsigned int m_leftMagnaActionId;
    unsigned int m_rightMagnaActionId;
    unsigned int m_exitGameActionId;
-   unsigned int m_exitInteractiveActionId;
+   unsigned int m_openInGameUIActionId;
    unsigned int m_lockbarActionId;
    unsigned int m_joyCustomActionId[4];
    unsigned int m_volumeDownActionId;
@@ -283,9 +283,6 @@ private:
 
    vector<std::unique_ptr<InputHandler>> m_inputHandlers;
    class SDLInputHandler* m_sdlHandler = nullptr;
-
-   uint32_t m_exitPressTimestamp = 0;
-   uint32_t m_exitAppPressLengthMs = 0;
 
    void Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs);
    uint32_t m_autoStartTimestamp = 0;

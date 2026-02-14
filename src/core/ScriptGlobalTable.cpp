@@ -287,7 +287,7 @@ STDMETHODIMP ScriptGlobalTable::get_VPXActionKey(LONG index, LONG *pVal)
    case 14: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftMagnaActionId(); break;
    case 15: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightMagnaActionId(); break;
    case 16: *pVal = 0x10000 | g_pplayer->m_pininput.GetExitGameActionId(); break;
-   case 17: *pVal = 0x10000 | g_pplayer->m_pininput.GetExitInteractiveActionId(); break;
+   case 17: *pVal = 0x10000 | g_pplayer->m_pininput.GetOpenInGameUIActionId(); break;
    case 18: *pVal = 0x10000 | g_pplayer->m_pininput.GetLockbarActionId(); break;
    case 19: *pVal = 0x10000 | g_pplayer->m_pininput.GetResetActionId(); break;
    case 20: *pVal = 0x10000 | g_pplayer->m_pininput.GetVolumeDownActionId(); break;

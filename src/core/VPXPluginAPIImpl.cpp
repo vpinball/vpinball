@@ -512,7 +512,7 @@ void VPXPluginAPIImpl::OnGameStart()
    m_actionMap[VPXACTION_Lockbar] = { inputManager.GetLockbarActionId(), -1 };
    //m_actionMap[VPXACTION_Pause] = { inputManager.GetPauseActionId(), -1 };
    m_actionMap[VPXACTION_PerfOverlay] = { inputManager.GetLeftFlipperActionId(), -1 };
-   m_actionMap[VPXACTION_ExitInteractive] = { inputManager.GetExitInteractiveActionId(), -1 };
+   m_actionMap[VPXACTION_OpenInGameUI] = { inputManager.GetOpenInGameUIActionId(), -1 };
    m_actionMap[VPXACTION_ExitGame] = { inputManager.GetExitGameActionId(), -1 };
    //m_actionMap[VPXACTION_InGameUI] = { inputManager.GetIn(), -1 };
    m_actionMap[VPXACTION_VolumeDown] = { inputManager.GetVolumeDownActionId(), -1 };

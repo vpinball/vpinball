@@ -694,7 +694,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == PlayMode::EditPOV)
-      m_liveUI->OpenInGameUI();
+      m_liveUI->OpenInGameUI("settings/pov"s);
    else if ((playMode == PlayMode::LiveEdit || playMode == PlayMode::FullEdit))
    {
       assert(m_renderer->m_stereo3D != STEREO_VR);
@@ -2128,7 +2128,7 @@ void Player::FinishFrame()
       if (g_pvp && g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else
-         m_liveUI->OpenMainSplash();
+         m_liveUI->OpenInGameUI();
    }
 
    // Brute force stop: blast into space
