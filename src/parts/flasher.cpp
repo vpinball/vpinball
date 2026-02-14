@@ -63,6 +63,35 @@ void Flasher::InitShape()
    }
 }
 
+void Flasher::UpdateCenter()
+{
+   if (m_centerClean)
+      return;
+
+   m_minx = FLT_MAX;
+   m_miny = FLT_MAX;
+   m_maxx = -FLT_MAX;
+   m_maxy = -FLT_MAX;
+
+   vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
+
+   for (const RenderVertex& pv0 : vvertex)
+   {
+      if (pv0.x > m_maxx)
+         m_maxx = pv0.x;
+      if (pv0.x < m_minx)
+         m_minx = pv0.x;
+      if (pv0.y > m_maxy)
+         m_maxy = pv0.y;
+      if (pv0.y < m_miny)
+         m_miny = pv0.y;
+   }
+
+   m_d.m_vCenter.x = 0.5f * (m_minx + m_maxx);
+   m_d.m_vCenter.y = 0.5f * (m_miny + m_maxy);
+}
+
 HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
@@ -227,6 +256,10 @@ void Flasher::UIRenderPass2(Sur * const psur)
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
    }
+
+   // Little cross at the object center
+   psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
+   psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
 }
 
 void Flasher::RenderBlueprint(Sur *psur, const bool solid)
@@ -306,14 +339,11 @@ void Flasher::Translate(const Vertex2D &pvOffset)
 
 void Flasher::MoveOffset(const float dx, const float dy)
 {
-   m_d.m_vCenter.x += dx;
-   m_d.m_vCenter.y += dy;
    for (auto& pdp : m_vdpoint)
    {
       pdp->m_v.x += dx;
       pdp->m_v.y += dy;
    }
-
    for (auto &vert : m_vertices)
    {
       vert.x += dx;
@@ -323,6 +353,8 @@ void Flasher::MoveOffset(const float dx, const float dy)
    m_maxx += dx;
    m_miny += dy;
    m_maxy += dy;
+   m_d.m_vCenter.x += dx;
+   m_d.m_vCenter.y += dy;
    m_dynamicVertexBufferRegenerate = true;
 }
 
@@ -402,8 +434,8 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteFloat(FID(FHEI), m_d.m_height);
-   bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x);
-   bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y);
+   bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x); // Just for information, as it is computed from dragpoints
+   bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y); // Just for information, as it is computed from dragpoints
    bw.WriteFloat(FID(FROX), m_d.m_rotX);
    bw.WriteFloat(FID(FROY), m_d.m_rotY);
    bw.WriteFloat(FID(FROZ), m_d.m_rotZ);
@@ -471,8 +503,8 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    {
    case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(FHEI): pbr->GetFloat(m_d.m_height); break;
-   case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break;
-   case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break;
+   case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
+   case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
    case FID(FROX): pbr->GetFloat(m_d.m_rotX); break;
    case FID(FROY): pbr->GetFloat(m_d.m_rotY); break;
    case FID(FROZ): pbr->GetFloat(m_d.m_rotZ); break;
@@ -524,6 +556,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
 
 HRESULT Flasher::InitPostLoad()
 {
+   UpdateCenter();
    return S_OK;
 }
 
@@ -543,6 +576,7 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP Flasher::get_X(float *pVal)
 {
+   UpdateCenter();
    *pVal = m_d.m_vCenter.x;
    m_vpinball->SetStatusBarUnitInfo(string(), true);
 
@@ -551,6 +585,7 @@ STDMETHODIMP Flasher::get_X(float *pVal)
 
 STDMETHODIMP Flasher::put_X(float newVal)
 {
+   UpdateCenter();
    if (m_d.m_vCenter.x != newVal)
       MoveOffset(newVal - m_d.m_vCenter.x, 0.f);
 
@@ -559,12 +594,14 @@ STDMETHODIMP Flasher::put_X(float newVal)
 
 STDMETHODIMP Flasher::get_Y(float *pVal)
 {
+   UpdateCenter();
    *pVal = m_d.m_vCenter.y;
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_Y(float newVal)
 {
+   UpdateCenter();
    if (m_d.m_vCenter.y != newVal)
       MoveOffset(0.f, newVal - m_d.m_vCenter.y);
 
@@ -1023,6 +1060,9 @@ void Flasher::RenderSetup(RenderDevice *device)
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
+   UpdateCenter();
+   m_centerClean = true; // Modifying points is not allowed while rendering, so center stays clean
+
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
@@ -1059,7 +1099,7 @@ void Flasher::RenderSetup(RenderDevice *device)
       if (pv0->y > m_maxy) m_maxy = pv0->y;
       if (pv0->y < m_miny) m_miny = pv0->y;
    }
-   
+
    const float inv_width = 1.0f / (m_maxx - m_minx);
    const float inv_height = 1.0f / (m_maxy - m_miny);
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
@@ -1114,6 +1154,7 @@ void Flasher::RenderRelease()
 {
    assert(m_rd != nullptr);
    ResetVideoCap();
+   m_centerClean = false;
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
    m_vertices.clear();
@@ -1196,7 +1237,7 @@ void Flasher::Render(const unsigned int renderMask)
       m_meshBuffer->m_vb->Unlock();
    }
 
-   const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+   const Vertex3Ds pos(0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy), m_d.m_height);
 
    if (m_backglass)
       g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(false, false, true);
