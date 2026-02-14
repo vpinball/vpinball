@@ -53,6 +53,7 @@ private:
 
    mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 
+   const string m_callbackId;
    static void OnSoundEnd(void* pUserData, ma_sound* pSound);
 };
 

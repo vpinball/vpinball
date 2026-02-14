@@ -266,7 +266,6 @@ public:
    bool m_PlaySound;
    int m_MusicVolume; // -100..100
    int m_SoundVolume; // -100..100
-   bool m_musicPlaying = false;
 
    std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
 

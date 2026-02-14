@@ -812,6 +812,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_GameEvents_Init)]  void Init();
                 [id(DISPID_GameEvents_KeyDown)]  void KeyDown( [in] long keycode);
                 [id(DISPID_GameEvents_KeyUp)]  void KeyUp( [in] long keycode);
+                [id(DISPID_GameEvents_SoundDone)]  void SoundDone( [in] BSTR sound);
                 [id(DISPID_GameEvents_MusicDone)]  void MusicDone();
                 [id(DISPID_GameEvents_Exit)]  void Exit();
                 [id(DISPID_GameEvents_Paused)]  void Paused();

@@ -2097,15 +2097,6 @@ void Player::FinishFrame()
          m_pininput.ProcessInput(); // trigger input events mainly for VPM<->VP roundtrip
    #endif
 
-   // Detect & fire end of music events
-   if (IsPlaying())
-   {
-      bool musicPlaying = m_audioPlayer->IsMusicPlaying();
-      if (m_musicPlaying && !musicPlaying)
-         m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
-      m_musicPlaying = musicPlaying;
-   }
-
    // Pause after performing a simulation step
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
       SetPlayState(false);
