@@ -973,9 +973,10 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
    if (const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0); middleMouseButtonPressed)
    {
       // If the user holds the middle mouse button and moves the mouse everything is moved in the direction of the mouse was moved
-      m_table->m_winEditorViewOffset.x += static_cast<float>(m_oldMousePos.x - x);
-      m_table->m_winEditorViewOffset.y += static_cast<float>(m_oldMousePos.y - y);
-      SetMyScrollInfo();
+      const float inv_zoom = 1.0f / GetZoom();
+      m_table->m_winEditorViewOffset.x += static_cast<float>(m_oldMousePos.x - x) * inv_zoom;
+      m_table->m_winEditorViewOffset.y += static_cast<float>(m_oldMousePos.y - y) * inv_zoom;
+      //SetMyScrollInfo();
       Redraw();
    }
    else
