@@ -45,7 +45,7 @@ InputManager::InputManager()
    auto addTouchRegion = [this](const RECT& region, unsigned int actionId) { m_touchRegionMap.emplace_back(region, actionId, m_inputActions[actionId]->NewDirectStateSlot()); };
    // RECT definition is left, top, right, bottom in % of screen
    addTouchRegion(RECT { 0, 0, 50, 10 }, GetAddCreditActionId(0));
-   addTouchRegion(RECT { 50, 0, 100, 10 }, GetExitInteractiveActionId());
+   addTouchRegion(RECT { 50, 0, 100, 10 }, GetOpenInGameUIActionId());
    addTouchRegion(RECT { 0, 10, 50, 30 }, GetLeftMagnaActionId());
    addTouchRegion(RECT { 50, 10, 100, 30 }, GetRightMagnaActionId());
    addTouchRegion(RECT { 0, 30, 50, 60 }, GetLeftNudgeActionId());
@@ -69,9 +69,6 @@ InputManager::InputManager()
    m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos"s, "Plunger Position"s, SensorMapping::Type::Position);
    m_plungerVelocitySensor = std::make_unique<PhysicsSensor>(this, "PlungerVel"s, "Plunger Velocity"s, SensorMapping::Type::Velocity);
    m_plungerPositionSensor->SetFilter(std::make_unique<PlungerPositionFilter>());
-
-   m_exitPressTimestamp = 0;
-   m_exitAppPressLengthMs = settings.GetPlayer_Exitconfirm() * 1000 / 60;
 
    m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
 
@@ -683,74 +680,41 @@ void InputManager::CreateInputActions()
    auto pause = AddAction(std::make_unique<InputAction>(this, "Pause"s, "Pause Game"s, keyMapping(SDL_SCANCODE_P),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (!isPressed)
-            return;
-         g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
+         if (isPressed)
+            g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
       }));
 
    auto perfOverlay = AddAction(std::make_unique<InputAction>(this, "PerfOverlay"s, "Toggle Perf. Overlay"s, keyMapping(SDL_SCANCODE_F11),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (!isPressed)
-            return;
-         g_pplayer->m_liveUI->ToggleFPS();
+         if (isPressed)
+            g_pplayer->m_liveUI->ToggleFPS();
       }));
-
-   auto exitAction = AddAction(std::make_unique<InputAction>(this, "ExitInteractive"s, "Interactive Exit"s, keyMapping(SDL_SCANCODE_ESCAPE),
-      [this](const InputAction&, bool wasPressed, bool isPressed)
-      {
-         if (!isPressed)
-         {
-            m_exitPressTimestamp = 0; // Discard long press exit
-            return;
-         }
-         else if (wasPressed // Is this a repeat event (long press)?
-            && m_exitPressTimestamp // Exit has not been discarded
-            && (g_pplayer->m_time_msec > 1000) // Game has been played at least 1 second
-            && ((msec() - m_exitPressTimestamp) > m_exitAppPressLengthMs)) // Exit button has been pressed continuously long enough
-         { // Close app if pressed long enough
-            g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-         }
-         else if (g_pplayer->m_liveUI->IsOpened())
-         {
-            // Discard event as the UI is already opened and will process it
-         }
-         else if (!wasPressed)
-         { // Open interactive UI
-            m_exitPressTimestamp = msec();
-            g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-         }
-      }));
-   exitAction->SetRepeatPeriod(0);
-   m_exitInteractiveActionId = exitAction->GetActionId();
-
+   
    m_exitGameActionId = AddAction(
-      std::make_unique<InputAction>(this, "ExitGame"s, "Exit Game"s, keyMapping(SDL_SCANCODE_Q),
+      std::make_unique<InputAction>(this, "ExitGame"s, "Exit Game"s, keyMapping(SDL_SCANCODE_ESCAPE),
          [](const InputAction& action, bool, bool isPressed)
          {
-            // Discard event as the UI is already opened and will process it, except while on the Exit splash where this action is still sensible
-            if (g_pplayer->m_liveUI->IsOpened() && !g_pplayer->m_liveUI->m_inGameUI.IsOpened("exit"s))
-               return;
-            CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
-            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-            g_pplayer->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
-            #ifdef __STANDALONE__
+            if (isPressed && !g_pplayer->m_liveUI->IsOpened())
+            {
+               CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
+               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+               g_pplayer->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
+#ifdef __STANDALONE__
                g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
-            #else
+#else
                g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
-            #endif
+#endif
+            }
          }))->GetActionId();
 
-   auto inGameUI = AddAction(std::make_unique<InputAction>(this, "InGameUI"s, "Toggle InGame UI"s, keyMapping(SDL_SCANCODE_F12),
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (!isPressed)
-            return;
-         if (g_pplayer->m_liveUI->IsInGameUIOpened())
-            g_pplayer->m_liveUI->HideUI();
-         else
-            g_pplayer->m_liveUI->OpenInGameUI();
-      }));
+   m_openInGameUIActionId = AddAction(
+      std::make_unique<InputAction>(this, "InGameUI"s, "Toggle InGame UI"s, keyMapping(SDL_SCANCODE_F12),
+         [](const InputAction&, bool, bool isPressed)
+         {
+            if (isPressed && !g_pplayer->m_liveUI->IsOpened())
+               g_pplayer->m_liveUI->OpenInGameUI();
+         }))->GetActionId();
 
    auto volumeDown = AddAction(std::make_unique<InputAction>(this, "VolumeDown"s, "Volume Down"s, keyMapping(SDL_SCANCODE_MINUS),
       [this](const InputAction&, bool, bool isPressed)

@@ -11,6 +11,12 @@ class HomePage final : public InGameUIPage
 {
 public:
    HomePage();
+
+   void Render(float elapsedMs) override;
+
+private:
+   void BuildPage();
+
 };
 
 }

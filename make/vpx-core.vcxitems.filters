@@ -501,9 +501,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.cpp" >
-      <Filter>ui\live\ingame</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1389,9 +1386,6 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h">
-      <Filter>ui\live\ingame</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.h" >
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h">
