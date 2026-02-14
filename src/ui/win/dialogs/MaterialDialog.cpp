@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "MaterialDialog.h"
 
 typedef struct _tagSORTDATA

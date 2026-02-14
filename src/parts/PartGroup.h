@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "timer.h"
 
 class PartGroupData final

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "physics/hitable.h"
 #include "physics/hitball.h"
 #include "renderer/Renderable.h"

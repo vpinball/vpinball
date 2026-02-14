@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "Debugger.h"
 
 #define RECOMPUTEBUTTONCHECK (WM_USER+100)

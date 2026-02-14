@@ -214,7 +214,7 @@ class SCNotification final { };
 #include "math/matrix.h"
 #include "math/bbox.h"
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 
 #include "dispid.h"
 
@@ -238,7 +238,7 @@ class SCNotification final { };
 #include "core/Scriptable.h"
 #include "parts/Collection.h"
 #include "core/ieditable.h"
-#include "ui/codeview.h"
+#include "ui/win/codeview.h"
 
 #include "parts/pinbinary.h"
 
@@ -254,9 +254,9 @@ class SCNotification final { };
 #include "physics/collide.h"
 #include "renderer/Renderer.h"
 
-#include "ui/sur.h"
-#include "ui/hitsur.h"
-#include "ui/hitrectsur.h"
+#include "ui/win/sur.h"
+#include "ui/win/hitsur.h"
+#include "ui/win/hitrectsur.h"
 
 #include "parts/ball.h"
 

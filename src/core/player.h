@@ -6,7 +6,7 @@
 #include "renderer/Renderer.h"
 #include "renderer/Window.h"
 #include "physics/PhysicsEngine.h"
-#include "ui/Debugger.h"
+#include "ui/win/Debugger.h"
 #include "ui/live/LiveUI.h"
 #include "input/InputManager.h"
 #include "plugins/ControllerPlugin.h"

@@ -10,22 +10,22 @@
 
 #ifndef __STANDALONE__
    #include <wxx_dockframe.h>
-   #include "ui/dialogs/ImageDialog.h"
-   #include "ui/dialogs/SoundDialog.h"
-   #include "ui/dialogs/EditorOptionsDialog.h"
-   #include "ui/dialogs/CollectionManagerDialog.h"
-   #include "ui/dialogs/PhysicsOptionsDialog.h"
-   #include "ui/dialogs/RenderProbeDialog.h"
-   #include "ui/dialogs/TableInfoDialog.h"
-   #include "ui/dialogs/DimensionDialog.h"
-   #include "ui/dialogs/MaterialDialog.h"
-   #include "ui/dialogs/SoundDialog.h"
-   #include "ui/dialogs/AboutDialog.h"
-   #include "ui/dialogs/DrawingOrderDialog.h"
-   #include "ui/dialogs/ToolbarDialog.h"
-   #include "ui/dialogs/LayersListDialog.h"
-   #include "ui/dialogs/NotesDialog.h"
-   #include "ui/properties/PropertyDialog.h"
+   #include "dialogs/ImageDialog.h"
+   #include "dialogs/SoundDialog.h"
+   #include "dialogs/EditorOptionsDialog.h"
+   #include "dialogs/CollectionManagerDialog.h"
+   #include "dialogs/PhysicsOptionsDialog.h"
+   #include "dialogs/RenderProbeDialog.h"
+   #include "dialogs/TableInfoDialog.h"
+   #include "dialogs/DimensionDialog.h"
+   #include "dialogs/MaterialDialog.h"
+   #include "dialogs/SoundDialog.h"
+   #include "dialogs/AboutDialog.h"
+   #include "dialogs/DrawingOrderDialog.h"
+   #include "dialogs/ToolbarDialog.h"
+   #include "dialogs/LayersListDialog.h"
+   #include "dialogs/NotesDialog.h"
+   #include "properties/PropertyDialog.h"
 
    #define OVERRIDE override
 #else

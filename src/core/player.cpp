@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 
-#include "ui/worker.h"
+#include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"

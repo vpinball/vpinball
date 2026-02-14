@@ -4,9 +4,9 @@
 
 #include "core/stdafx.h"
 #include "ui/VPXFileFeedback.h"
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #ifndef __STANDALONE__
-#include "ui/dialogs/PlayerOptionsDialog.h"
+#include "ui/win/dialogs/PlayerOptionsDialog.h"
 #endif
 
 #ifdef __STANDALONE__
@@ -27,7 +27,7 @@
 
 #include "ui/win/PinTableMDI.h"
 
-#include "ui/worker.h"
+#include "ui/win/worker.h"
 
 
 #if defined(IMSPANISH)
