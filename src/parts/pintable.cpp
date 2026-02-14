@@ -3652,14 +3652,8 @@ void PinTable::Undo()
 {
    m_undo.Undo();
 
-   SetDirtyDraw();
-   m_tableEditor->SetMyScrollInfo();
-
-#ifndef __STANDALONE__
-   if (m_searchSelectDlg.IsWindow())
-      m_searchSelectDlg.Update();
-   m_vpinball->GetLayersListDialog()->Update();
-#endif
+   if (m_tableEditor)
+      m_tableEditor->OnPartChanged(this);
 }
 
 void PinTable::Uncreate(IEditable *pie)
@@ -4018,8 +4012,8 @@ void PinTable::OnDelete()
    m_vpinball->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
    m_vpinball->SetPropSel(m_vmultisel);
-   if (m_searchSelectDlg.IsWindow())
-      m_searchSelectDlg.Update();
+   if (m_tableEditor)
+      m_tableEditor->OnPartChanged(this);
 
    SetDirtyDraw();
 #endif
@@ -4042,8 +4036,8 @@ void PinTable::UseTool(int x, int y, int tool)
       pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
       m_vpinball->GetLayersListDialog()->Update();
 
-      if (m_searchSelectDlg.IsWindow())
-         m_searchSelectDlg.Update();
+      if (m_tableEditor)
+         m_tableEditor->OnPartChanged(this);
 
       BeginUndo();
       m_undo.MarkForCreate(pie);

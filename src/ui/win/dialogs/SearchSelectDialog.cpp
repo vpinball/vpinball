@@ -18,7 +18,10 @@ bool SearchSelectDialog::m_switchSortOrder;
 bool SearchSelectDialog::m_columnSortOrder;
 int SearchSelectDialog::m_lastSortColumn;
 
-SearchSelectDialog::SearchSelectDialog() : CDialog(IDD_SEARCH_SELECT_ELEMENT), m_hElementList(nullptr), m_curTable(nullptr)
+SearchSelectDialog::SearchSelectDialog(PinTableWnd *table)
+   : CDialog(IDD_SEARCH_SELECT_ELEMENT)
+   , m_hElementList(nullptr)
+   , m_curTable(table)
 {
    m_switchSortOrder = false;
    m_columnSortOrder = true;
@@ -79,9 +82,9 @@ void SearchSelectDialog::Update()
       ListView_DeleteAllItems(m_hElementList);
 
    int idx = 0;
-   for (int i = 0; i < m_curTable->m_vcollection.size(); i++)
+   for (int i = 0; i < m_curTable->m_table->m_vcollection.size(); i++)
    {
-      CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
+      CComObject<Collection> *const pcol = m_curTable->m_table->m_vcollection.ElementAt(i);
       char * const szT = MakeChar(pcol->m_wzName);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
@@ -94,7 +97,7 @@ void SearchSelectDialog::Update()
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Collection");
       idx++;
    }
-   for (IEditable *const piedit : m_curTable->GetParts())
+   for (IEditable *const piedit : m_curTable->m_table->GetParts())
    {
       if (IScriptable *const piscript = piedit->GetScriptable(); piscript)
       {
@@ -122,7 +125,9 @@ void SearchSelectDialog::OnClose()
 BOOL SearchSelectDialog::OnInitDialog()
 {
    m_hElementList = GetDlgItem(IDC_ELEMENT_LIST).GetHwnd();
-   m_curTable = g_pvp->GetActiveTable();
+
+   const string windowName = "Search/Select Element - " + m_curTable->m_table->m_filename.string();
+   SetWindowText(windowName.c_str());
 
    m_switchSortOrder = false;
 
@@ -145,7 +150,7 @@ void SearchSelectDialog::SelectElement()
 {
     const int count = ListView_GetSelectedCount(m_hElementList);
 
-    m_curTable->ClearMultiSel();
+    m_curTable->m_table->ClearMultiSel();
     int iItem = -1;
     for (int i = 0; i < count; i++)
     {
@@ -164,7 +169,7 @@ void SearchSelectDialog::SelectElement()
               {
                  ISelect *const pisel = pcol->m_visel.ElementAt(0);
                  if (pisel)
-                    m_curTable->AddMultiSel(pisel, false, true, false);
+                    m_curTable->m_table->AddMultiSel(pisel, false, true, false);
               }
            }
            else
@@ -172,7 +177,7 @@ void SearchSelectDialog::SelectElement()
               IScriptable * const pscript = (IScriptable*)lv.lParam;
               ISelect *const pisel = pscript->GetISelect();
               if (pisel)
-                 m_curTable->AddMultiSel(pisel, true, true, false);
+                 m_curTable->m_table->AddMultiSel(pisel, true, true, false);
            }
         }
     }
@@ -332,7 +337,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 9, (LPSTR)(ramp->m_d.m_tdr.m_TimerEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 10, (LPSTR)f2sz(ramp->m_d.m_depthBias).c_str());
 
-      const Material *const mat = m_curTable->GetMaterial(ramp->m_d.m_szMaterial);
+      const Material *const mat = m_curTable->m_table->GetMaterial(ramp->m_d.m_szMaterial);
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(mat == nullptr || !mat->m_bOpacityActive ? usedStringYes : usedStringNo)); //!!
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(ramp->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");

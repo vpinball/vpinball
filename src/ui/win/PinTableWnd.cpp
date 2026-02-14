@@ -5,13 +5,15 @@
 #include "PinTableWnd.h"
 
 #include "ui/win/paintsur.h"
-
 #include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/VPXLoadFileProgressBar.h"
 #include "ui/win/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/SearchSelectDialog.h"
 #include "FreeImage.h"
+#else
+class SearchSelectDialog { };
 #endif
 
 
@@ -1280,5 +1282,38 @@ void PinTableWnd::FVerifySaveToClose()
 
       m_vpxEditor->SetActionCur(string());
    }
+#endif
+}
+
+void PinTableWnd::OnPartChanged(IEditable *part)
+{
+#ifndef __STANDALONE__
+   switch (part->GetItemType())
+   {
+   case eItemTable:
+      Redraw();
+      SetMyScrollInfo();
+      m_vpxEditor->GetLayersListDialog()->Update();
+      if (m_searchSelectDlg)
+         m_searchSelectDlg->Update();
+      break;
+
+   default:
+      // Not yet implemented
+      assert(false);
+   }
+#endif
+}
+
+void PinTableWnd::ShowSearchSelectDlg()
+{
+#ifndef __STANDALONE__
+   if (m_searchSelectDlg == nullptr)
+   {
+      m_searchSelectDlg = std::make_unique<SearchSelectDialog>(this);
+      m_searchSelectDlg->Create(GetHwnd());
+   }
+   m_searchSelectDlg->ShowWindow();
+   m_searchSelectDlg->SetForegroundWindow();
 #endif
 }
