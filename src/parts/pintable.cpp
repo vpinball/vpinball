@@ -5168,8 +5168,8 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
 
 Texture* PinTable::GetSurfaceImage(const string& name) const
 {
-   if (!name.empty())
-      GetImage(m_image);
+   if (name.empty())
+      return GetImage(m_image);
 
    const wstring wname = MakeWString(name);
    for (const IEditable *const item : m_vedit)
