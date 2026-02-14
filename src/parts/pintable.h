@@ -309,7 +309,6 @@ public:
    // ISelect
    void OnLButtonDown(int x, int y) final;
    void OnLButtonUp(int x, int y) final { }
-   void OnMouseMove(int x, int y) final { }
    void SetDirtyDraw() final;
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop

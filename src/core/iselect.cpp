@@ -16,8 +16,6 @@ void ISelect::OnLButtonDown(int x, int y)
 {
    m_dragging = true;
    m_markedForUndo = false; // So we will be marked when and if we are dragged
-   m_ptLast.x = x;
-   m_ptLast.y = y;
 
    GetPTable()->SetMouseCapture();
 
@@ -36,31 +34,6 @@ void ISelect::OnLButtonUp(int x, int y)
    {
       m_markedForUndo = false;
       STOPUNDOSELECT
-   }
-}
-
-void ISelect::OnMouseMove(int x, int y)
-{
-   if ((x == m_ptLast.x) && (y == m_ptLast.y))
-      return;
-
-   if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
-   {
-      PinTable * const ptable = GetPTable();
-      const float inv_zoom = 1.0f / ptable->m_tableEditor->GetZoom();
-
-      if (!m_markedForUndo)
-      {
-         m_markedForUndo = true;
-         STARTUNDOSELECT
-      }
-      MoveOffset((float)(x - m_ptLast.x)*inv_zoom, (float)(y - m_ptLast.y)*inv_zoom);
-
-      ptable->SetDirtyDraw();
-
-      m_ptLast.x = x;
-      m_ptLast.y = y;
-      SetObjectPos();
    }
 }
 
