@@ -1344,37 +1344,6 @@ void WinEditor::UpdateRecentFileList(const std::filesystem::path &filename)
    }
 }
 
-STDMETHODIMP WinEditor::QueryInterface(REFIID iid, void **ppvObjOut)
-{
-   if (!ppvObjOut)
-      return E_INVALIDARG;
-
-   *ppvObjOut = nullptr;
-
-   if (*ppvObjOut)
-   {
-      this->AddRef();
-      return S_OK;
-   }
-
-   return E_NOINTERFACE;
-}
-
-
-STDMETHODIMP_(ULONG) WinEditor::AddRef()
-{
-   //!! ?? ASSERT(m_cref, "bad m_cref");
-   return ++m_cref;
-}
-
-STDMETHODIMP_(ULONG) WinEditor::Release()
-{
-   assert(m_cref);
-   m_cref--; // FIXME we are doing refcounting without memory management
-
-   return m_cref;
-}
-
 void WinEditor::PreCreate(CREATESTRUCT& cs)
 {
    // do the base class stuff
@@ -1681,7 +1650,12 @@ LRESULT WinEditor::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
    case 2:
       // CLOSE_APP
       // Close the player and exit the program
-      QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+      if (g_pplayer)
+         g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
+#ifndef __STANDALONE__
+      else
+         PostMessage(WM_CLOSE, 0, 0);
+#endif
 
       // If we're showing a modal dialog, close it.  Closing one dialog
       // can trigger opening another, so iterate this until no modal
@@ -1803,34 +1777,6 @@ Win32xx::DockPtr WinEditor::NewDockerFromID(int id)
    return nullptr;
 }
 #endif
-
-STDMETHODIMP WinEditor::PlaySound(BSTR bstr)
-{
-   if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
-
-   return S_OK;
-}
-
-STDMETHODIMP WinEditor::FireKnocker(int Count)
-{
-   if (g_pplayer) g_pplayer->m_ptable->FireKnocker(Count);
-
-   return S_OK;
-}
-
-STDMETHODIMP WinEditor::QuitPlayer(int CloseType)
-{
-   if (g_pplayer)
-   {
-      g_pplayer->SetCloseState((Player::CloseState)CloseType);
-   }
-#ifndef __STANDALONE__
-   else
-      PostMessage(WM_CLOSE, 0, 0);
-#endif
-
-   return S_OK;
-}
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {

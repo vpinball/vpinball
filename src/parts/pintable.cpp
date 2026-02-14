@@ -6625,7 +6625,9 @@ STDMETHODIMP PinTable::FireKnocker(int Count)
 
 STDMETHODIMP PinTable::QuitPlayer(int CloseType)
 {
-   return m_vpinball->QuitPlayer(CloseType);
+   if (g_pplayer)
+      g_pplayer->SetCloseState((Player::CloseState)CloseType);
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Version(int *pVal)
