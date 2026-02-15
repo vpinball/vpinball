@@ -235,6 +235,9 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
 
    if (state.IsKeyPressed(m_player->m_pininput.GetOpenInGameUIActionId(), m_prevActionState))
       NavigateBack();
+
+   if (state.IsKeyPressed(m_player->m_pininput.GetExitGameActionId(), m_prevActionState))
+      NavigateBack();
 }
 
 // Legacy keyboard fly camera when in ingame option. Remove ?
