@@ -638,7 +638,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_scriptInterpreter->AddRef();
       m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
          { OnScriptError(type, line, column, description, stackDump); });
-      m_scriptInterpreter->Init(m_ptable);
+      m_scriptInterpreter->Start(m_ptable);
       m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_script_text), false);
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
@@ -771,8 +771,9 @@ Player::~Player()
 
    if (m_scriptInterpreter)
    {
-      m_scriptInterpreter->Stop();
-      m_scriptInterpreter->Release();
+      m_scriptInterpreter->Stop(m_ptable);
+      ULONG refCount = m_scriptInterpreter->Release();
+      assert(refCount == 0);
    }
 
    // Release plugin message Ids
@@ -1152,6 +1153,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 {
    CComObject<Ball> *pBall;
    CComObject<Ball>::CreateInstance(&pBall);
+   pBall->AddRef();
    pBall->Init(m_ptable, x, y, false, true);
    m_ptable->AddPart(pBall);
    pBall->m_hitBall.m_d.m_pos.z = z + radius;
@@ -1166,6 +1168,8 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->RenderSetup(m_renderer->m_renderDevice);
    pBall->PhysicSetup(m_physics, false);
    m_vball.push_back(pBall);
+   pBall->Release(); // The ball is owned by the table, not by the player
+   assert(GetRefCount(pBall) == 1);
    if (!m_pactiveballDebug)
       m_pactiveballDebug = pBall;
    if (m_scriptInterpreter)
