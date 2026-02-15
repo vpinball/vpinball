@@ -89,6 +89,13 @@ void HomePage::BuildPage()
             BuildPage();
          }));
 
+   if (g_isMobile)
+      AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() {
+         #ifdef __LIBVPINBALL__
+            m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_CAPTURE_SCREENSHOT);
+         #endif
+      }));
+
    ////////////////////////////////////////////////////////////////////////////////////////////////
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Settings"s));
 
