@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 
+#include "core/AppCommands.h"
 #include "core/TableDB.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "core/extern.h"
@@ -216,7 +217,8 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
             case VPINBALL_EVENT_LOADING_IMAGES:
             case VPINBALL_EVENT_LOADING_FONTS:
             case VPINBALL_EVENT_LOADING_COLLECTIONS:
-            case VPINBALL_EVENT_PRERENDERING: {
+            case VPINBALL_EVENT_PRERENDERING:
+            case VPINBALL_EVENT_EXTRACT_SCRIPT: {
                ProgressData* progressData = (ProgressData*)data;
                j["progress"] = progressData->progress;
                jsonString = j.dump();
@@ -476,21 +478,21 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
    return VPINBALL_STATUS_SUCCESS;
 }
 
-VPINBALL_STATUS VPinballLib::ExtractTableScript()
+VPINBALL_STATUS VPinballLib::ExtractTableScript(const string& tablePath)
 {
-   if (!m_pTable)
+   ProgressData progressData = { 50 };
+   SendEvent(VPINBALL_EVENT_EXTRACT_SCRIPT, &progressData);
+
+   ExportVBSCommand cmd(tablePath);
+   cmd.Execute();
+
+   std::filesystem::path scriptFilename(tablePath);
+   scriptFilename.replace_extension(".vbs");
+   if (!FileExists(scriptFilename))
       return VPINBALL_STATUS_FAILURE;
 
-   std::filesystem::path tempPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "temp_script.vbs");
-   std::ofstream outFile(tempPath, std::ios::binary);
-   if (!outFile)
-      return VPINBALL_STATUS_FAILURE;
-
-   outFile.write(m_pTable->m_original_table_script.data(), m_pTable->m_original_table_script.size());
-   outFile.close();
-
-   m_pTable->Release();
-   m_pTable = nullptr;
+   progressData.progress = 100;
+   SendEvent(VPINBALL_EVENT_EXTRACT_SCRIPT, &progressData);
 
    return VPINBALL_STATUS_SUCCESS;
 }

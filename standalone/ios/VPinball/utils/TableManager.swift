@@ -341,13 +341,8 @@ class TableManager: ObservableObject {
                 return true
             }
 
-            if VPinballStatus(rawValue: VPinballLoadTable(tablePath.cstring)) != .success {
-                VPinballManager.log(.error, "Failed to load table for script extraction: \(tablePath)")
-                return false
-            }
-
-            if VPinballStatus(rawValue: VPinballExtractTableScript()) != .success {
-                VPinballManager.log(.error, "Failed to extract script from table")
+            if VPinballStatus(rawValue: VPinballExtractTableScript(tablePath.cstring)) != .success {
+                VPinballManager.log(.error, "Failed to extract script from table: \(tablePath)")
                 return false
             }
 
