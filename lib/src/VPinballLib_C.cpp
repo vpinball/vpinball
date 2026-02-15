@@ -145,9 +145,12 @@ VPINBALLAPI VPINBALL_STATUS VPinballLoadTable(const char* pPath)
    return VPinballLib::VPinballLib::Instance().LoadTable(pPath);
 }
 
-VPINBALLAPI VPINBALL_STATUS VPinballExtractTableScript()
+VPINBALLAPI VPINBALL_STATUS VPinballExtractTableScript(const char* pPath)
 {
-   return VPinballLib::VPinballLib::Instance().ExtractTableScript();
+   if (pPath == nullptr)
+      return VPINBALL_STATUS_FAILURE;
+
+   return VPinballLib::VPinballLib::Instance().ExtractTableScript(pPath);
 }
 
 VPINBALLAPI VPINBALL_STATUS VPinballPlay()

@@ -17,7 +17,7 @@ public class VPinballJNI {
     public native void VPinballUpdateWebServer();
     public native String VPinballGetPath(int pathType);
     public native int VPinballLoadTable(String path);
-    public native int VPinballExtractTableScript();
+    public native int VPinballExtractTableScript(String path);
     public native int VPinballPlay();
     public native void VPinballStop();
     public native boolean VPinballInitOpenXR(Object activity);

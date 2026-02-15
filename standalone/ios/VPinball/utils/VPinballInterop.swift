@@ -105,6 +105,7 @@ enum VPinballExternalDMD: CInt {
 
 enum VPinballEvent: CInt {
     case initComplete
+    case extractScript
     case loadingItems
     case loadingSounds
     case loadingImages
@@ -119,6 +120,8 @@ enum VPinballEvent: CInt {
 
     var name: String? {
         switch self {
+        case .extractScript:
+            return "Extracting Script"
         case .loadingItems:
             return "Loading Items"
         case .loadingSounds:
@@ -213,7 +216,7 @@ func VPinballGetPath(_ pathType: CInt) -> UnsafePointer<CChar>
 func VPinballLoadTable(_ pPath: UnsafePointer<CChar>) -> CInt
 
 @_silgen_name("VPinballExtractTableScript")
-func VPinballExtractTableScript() -> CInt
+func VPinballExtractTableScript(_ pPath: UnsafePointer<CChar>) -> CInt
 
 @_silgen_name("VPinballPlay")
 func VPinballPlay() -> CInt

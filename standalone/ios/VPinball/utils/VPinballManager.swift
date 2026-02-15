@@ -22,7 +22,8 @@ class VPinballManager {
             let vpinballManager = VPinballManager.shared
             let event = VPinballEvent(rawValue: value)
             switch event {
-            case .loadingItems,
+            case .extractScript,
+                 .loadingItems,
                  .loadingSounds,
                  .loadingImages,
                  .loadingFonts,
