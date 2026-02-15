@@ -87,13 +87,14 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── music/                                   <= Folder from which music are loaded when script use the PlayMusic command
 │   ├── Multiball Theme.ogg
 │   └── ...
-├── pinmame/                                 <= PinMAME plugin will look here for rom & nvram files
+├── pinmame/                                 <= PinMAME plugin will look here for rom, nvram, and alias files
 │   ├── roms/
 │   │   ├── xxx.zip
 │   │   └── yyy.zip
-│   └── nvram/
-│       ├── xxx.nv
-│       └── yyy.nv
+│   ├── nvram/
+│   │   ├── xxx.nv
+│   │   └── yyy.nv
+│   └── alias.txt
 ├── pupvideos/                               <= PinUp player plugin will look here for pinup videos
 │   └── xxx/
 │       └── ...
