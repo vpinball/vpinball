@@ -78,67 +78,86 @@ void DisplayProfileSettingsPage::BuildDMDPage()
       [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].z = v; }));
 
    // TODO it would be nice to implement a pincab friendly color picker
+   m_srgbLit.r = static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].x) * 255.f);
+   m_srgbLit.g = static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].y) * 255.f);
+   m_srgbLit.b = static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].z) * 255.f);
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].x) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.r; }, //
       [this, profile](Settings& settings) { return settings.GetDMD_ProfileDotTint(profile) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.r = v;
+         m_player->m_renderer->m_dmdDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetDMD_ProfileDotTint(profile, (settings.GetDMD_ProfileDotTint(profile) & 0xFFFF00) | v, isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].y) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.g; }, //
       [this, profile](Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 8) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.g = v;
+         m_player->m_renderer->m_dmdDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetDMD_ProfileDotTint(profile, (settings.GetDMD_ProfileDotTint(profile) & 0xFF00FF) | (v << 8), isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].z) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.b; }, //
       [this, profile](Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 16) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.b = v;
+         m_player->m_renderer->m_dmdDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetDMD_ProfileDotTint(profile, (settings.GetDMD_ProfileDotTint(profile) & 0x00FFFF) | (v << 16), isTableOverride); }));
 
 
    // TODO it would be nice to implement a pincab friendly color picker
+   m_srgbUnlit.r = static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].x) * 255.f);
+   m_srgbUnlit.g = static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].y) * 255.f);
+   m_srgbUnlit.b = static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].z) * 255.f);
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].x) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.r; }, //
       [this, profile](Settings& settings) { return settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.r = v;
+         m_player->m_renderer->m_dmdUnlitDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetDMD_ProfileUnlitDotColor(profile, (settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFFFF00) | v, isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].y) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.g; }, //
       [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 8) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.g = v;
+         m_player->m_renderer->m_dmdUnlitDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetDMD_ProfileUnlitDotColor(profile, (settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF00FF) | (v << 8), isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].z) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.b; }, //
       [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 16) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.b = v;
+         m_player->m_renderer->m_dmdUnlitDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetDMD_ProfileUnlitDotColor(profile, (settings.GetDMD_ProfileUnlitDotColor(profile) & 0x00FFFF) | (v << 16), isTableOverride); }));
-
-   /* ScaleFX for DMD is broken
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propDMD_ProfileScaleFX[profile], //
-      [this, profile]() { return false; }, //
-      [this, profile](bool v) { }));
-   */
 }
 
 void DisplayProfileSettingsPage::BuildAlphaPage()
@@ -156,56 +175,82 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
       [this, profile](float, float v) { m_player->m_renderer->m_segUnlitColor[profile].w = v; }));
 
    // TODO it would be nice to implement a pincab friendly color picker
+   m_srgbLit.r = static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].x) * 255.f);
+   m_srgbLit.g = static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].y) * 255.f);
+   m_srgbLit.b = static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].z) * 255.f);
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].x) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.r; }, //
       [this, profile](Settings& settings) { return settings.GetAlpha_ProfileColor(profile) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.r = v;
+         m_player->m_renderer->m_segColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetAlpha_ProfileColor(profile, (settings.GetAlpha_ProfileColor(profile) & 0xFFFF00) | v, isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].y) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.g; }, //
       [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 8) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.g = v;
+         m_player->m_renderer->m_segColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetAlpha_ProfileColor(profile, (settings.GetAlpha_ProfileColor(profile) & 0xFF00FF) | (v << 8), isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].z) * 255.f); }, //
+      [this, profile]() { return m_srgbLit.b; }, //
       [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 16) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbLit.b = v;
+         m_player->m_renderer->m_segColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetAlpha_ProfileColor(profile, (settings.GetAlpha_ProfileColor(profile) & 0x00FFFF) | (v << 16), isTableOverride); }));
 
 
    // TODO it would be nice to implement a pincab friendly color picker
+   m_srgbUnlit.r = static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].x) * 255.f);
+   m_srgbUnlit.g = static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].y) * 255.f);
+   m_srgbUnlit.b = static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].z) * 255.f);
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].x) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.r; }, //
       [this, profile](Settings& settings) { return settings.GetAlpha_ProfileUnlit(profile) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.r = v;
+         m_player->m_renderer->m_segUnlitColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetAlpha_ProfileUnlit(profile, (settings.GetAlpha_ProfileUnlit(profile) & 0xFFFF00) | v, isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].y) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.g; }, //
       [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 8) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.g = v;
+         m_player->m_renderer->m_segUnlitColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetAlpha_ProfileUnlit(profile, (settings.GetAlpha_ProfileUnlit(profile) & 0xFF00FF) | (v << 8), isTableOverride); }));
-
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
-      [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].z) * 255.f); }, //
+      [this, profile]() { return m_srgbUnlit.b; }, //
       [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 16) & 0xFF; }, //
-      [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
+      [this, profile](int, int v)
+      {
+         m_srgbUnlit.b = v;
+         m_player->m_renderer->m_segUnlitColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f);
+      }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
       { settings.SetAlpha_ProfileUnlit(profile, (settings.GetAlpha_ProfileUnlit(profile) & 0x00FFFF) | (v << 16), isTableOverride); }));
