@@ -65,8 +65,8 @@ InGameUIItem::InGameUIItem(const FloatPropertyDef& prop, float displayScale, con
    , m_getFloatValue(getValue)
    , m_getStoredFloatValue(getStoredValue)
    , m_onChangeFloat(onChange)
-   , m_onResetSave(onResetSave)
    , m_onSaveFloat(onSave)
+   , m_onResetSave(onResetSave)
 {
 }
 
@@ -74,7 +74,7 @@ InGameUIItem::InGameUIItem(
    const PropertyRegistry::PropId propId, float displayScale, const string& format, const std::function<float()>& getValue, const std::function<void(float, float)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetFloatProperty(propId), displayScale, format, getValue, //
-        [propId](Settings& settings) { return settings.GetFloat(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](const Settings& settings) { return settings.GetFloat(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](float v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
@@ -87,19 +87,19 @@ InGameUIItem::InGameUIItem(const IntPropertyDef& prop, const string& format, con
    , m_label(prop.m_label)
    , m_tooltip(prop.m_description)
    , m_property(std::make_unique<IntPropertyDef>(prop))
-   , m_format(std::move(format))
+   , m_format(format)
    , m_getIntValue(getValue)
    , m_getStoredIntValue(getStoredValue)
    , m_onChangeInt(onChange)
-   , m_onResetSave(onResetSave)
    , m_onSaveInt(onSave)
+   , m_onResetSave(onResetSave)
 {
 }
 
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const string& format, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetIntProperty(propId), format, getValue, //
-        [propId](Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](const Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](int v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
@@ -115,15 +115,15 @@ InGameUIItem::InGameUIItem(const EnumPropertyDef& prop, const std::function<int(
    , m_getIntValue(getValue)
    , m_getStoredIntValue(getStoredValue)
    , m_onChangeInt(onChange)
-   , m_onResetSave(onResetSave)
    , m_onSaveInt(onSave)
+   , m_onResetSave(onResetSave)
 {
 }
 
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetEnumProperty(propId), getValue, //
-        [propId](Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](const Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](int v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
@@ -131,7 +131,7 @@ InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::fun
 }
 
 InGameUIItem::InGameUIItem(const BoolPropertyDef& prop, const std::function<bool()>& getValue, const std::function<bool(Settings&)>& getStoredValue,
-   const std::function<void(bool)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(float, Settings&, bool)>& onSave)
+   const std::function<void(bool)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(bool, Settings&, bool)>& onSave)
    : m_type(Type::Property)
    , m_label(prop.m_label)
    , m_tooltip(prop.m_description)
@@ -139,18 +139,42 @@ InGameUIItem::InGameUIItem(const BoolPropertyDef& prop, const std::function<bool
    , m_getBoolValue(getValue)
    , m_getStoredBoolValue(getStoredValue)
    , m_onChangeBool(onChange)
-   , m_onResetSave(onResetSave)
    , m_onSaveBool(onSave)
+   , m_onResetSave(onResetSave)
 {
 }
 
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::function<bool()>& getValue, const std::function<void(bool)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetBoolProperty(propId), getValue, //
-        [propId](Settings& settings) { return settings.GetBool(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](const Settings& settings) { return settings.GetBool(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](bool v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
+{
+}
+
+InGameUIItem::InGameUIItem(const StringPropertyDef& prop, const std::function<string()>& getValue, const std::function<string(Settings&)>& getStoredValue,
+   const std::function<void(const string&, const string&)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(const string&, Settings&, bool)>& onSave)
+   : m_type(Type::Property)
+   , m_label(prop.m_label)
+   , m_tooltip(prop.m_description)
+   , m_property(std::make_unique<StringPropertyDef>(prop))
+   , m_getStringValue(getValue)
+   , m_getStoredStringValue(getStoredValue)
+   , m_onChangeString(onChange)
+   , m_onSaveString(onSave)
+   , m_onResetSave(onResetSave)
+{
+}
+
+InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::function<string()>& getValue, const std::function<void(const string&, const string&)>& onChange)
+   : InGameUIItem(
+        *Settings::GetRegistry().GetStringProperty(propId), getValue, //
+        [propId](const Settings& settings) { return settings.GetString(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        onChange, //
+        [propId](Settings& settings) { settings.Reset(propId); }, //
+        [propId](const string& v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
 {
 }
 
@@ -181,6 +205,7 @@ bool InGameUIItem::IsModified() const
       case PropertyDef::Type::Enum: return GetIntValue() != dynamic_cast<EnumPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
       case PropertyDef::Type::Bool: return GetBoolValue() != m_getStoredBoolValue(settings);
       case PropertyDef::Type::Float: return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings));
+      case PropertyDef::Type::String: return GetStringValue() != m_getStoredStringValue(settings);
       default: assert(false); return false;
       }
    case Type::ActionInputMapping: return m_inputAction->GetMappingString() != m_initialMappingString; break;
@@ -200,6 +225,7 @@ bool InGameUIItem::IsDefaultValue() const
       case PropertyDef::Type::Enum: return GetIntValue() == dynamic_cast<EnumPropertyDef*>(m_property.get())->m_def;
       case PropertyDef::Type::Bool: return GetBoolValue() == dynamic_cast<BoolPropertyDef*>(m_property.get())->m_def;
       case PropertyDef::Type::Float: return GetFloatValue() == dynamic_cast<FloatPropertyDef*>(m_property.get())->m_def;
+      case PropertyDef::Type::String: return GetStringValue() == dynamic_cast<StringPropertyDef*>(m_property.get())->m_def;
       default: assert(false); return true;
       }
    case Type::ActionInputMapping: return m_inputAction->GetMappingString() == m_defMappingString;
@@ -220,6 +246,7 @@ void InGameUIItem::ResetToStoredValue()
       case PropertyDef::Type::Enum: SetValue(m_getStoredIntValue(settings)); break;
       case PropertyDef::Type::Bool: SetValue(m_getStoredBoolValue(settings)); break;
       case PropertyDef::Type::Float: SetValue(m_getStoredFloatValue(settings)); break;
+      case PropertyDef::Type::String: SetValue(m_getStoredStringValue(settings)); break;
       default: assert(false); break;
       }
       break;
@@ -240,6 +267,7 @@ void InGameUIItem::ResetToDefault()
       case PropertyDef::Type::Enum: SetValue(dynamic_cast<EnumPropertyDef*>(m_property.get())->m_def); break;
       case PropertyDef::Type::Bool: SetValue(dynamic_cast<BoolPropertyDef*>(m_property.get())->m_def); break;
       case PropertyDef::Type::Float: SetValue(dynamic_cast<FloatPropertyDef*>(m_property.get())->m_def); break;
+      case PropertyDef::Type::String: SetValue(dynamic_cast<StringPropertyDef*>(m_property.get())->m_def); break;
       default: assert(false);
       }
       break;
@@ -267,6 +295,7 @@ void InGameUIItem::Save(Settings& settings, bool isTableOverride)
       case PropertyDef::Type::Enum: m_onSaveInt(GetIntValue(), settings, isTableOverride); break;
       case PropertyDef::Type::Bool: m_onSaveBool(GetBoolValue(), settings, isTableOverride); break;
       case PropertyDef::Type::Float: m_onSaveFloat(GetFloatValue(), settings, isTableOverride); break;
+      case PropertyDef::Type::String: m_onSaveString(GetStringValue(), settings, isTableOverride); break;
       default: assert(false);
       }
       break;
@@ -309,6 +338,12 @@ bool InGameUIItem::GetBoolValue() const
    return m_getBoolValue();
 }
 
+string InGameUIItem::GetStringValue() const
+{
+   assert(m_property && m_property->m_type == PropertyDef::Type::String);
+   return m_getStringValue();
+}
+
 
 void InGameUIItem::SetValue(float value) const
 {
@@ -338,6 +373,14 @@ void InGameUIItem::SetValue(bool value) const
    assert(m_property && m_property->m_type == PropertyDef::Type::Bool);
    if (GetBoolValue() != value)
       m_onChangeBool(value);
+}
+
+void InGameUIItem::SetValue(const string& value) const
+{
+   assert(m_property && m_property->m_type == PropertyDef::Type::String);
+   const string prev = GetStringValue();
+   if (prev != value)
+      m_onChangeString(prev, value);
 }
 
 }
