@@ -298,6 +298,4 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
 
     vpxApi = nullptr;
     msgApi = nullptr;
-
-    LOGI("AltSound Plugin unloaded");
 }
