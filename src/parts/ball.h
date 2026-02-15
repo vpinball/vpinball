@@ -103,7 +103,7 @@ class Ball :
    public CComCoClass<Ball, &CLSID_Ball>,
    public EventProxy<Ball, &DIID_IBallEvents>,
    public IConnectionPointContainerImpl<Ball>,
-   public IProvideClassInfo2Impl<&CLSID_Ball, &DIID_IBallEvents, &LIBID_VPinballLib>,
+   public IProvideClassInfo2Impl<&IID_IBall, &DIID_IBallEvents, &LIBID_VPinballLib>,
 
    public ISelect,
    public IEditable,
