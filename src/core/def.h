@@ -207,6 +207,12 @@ inline void ref_count_trigger(const ULONG r, const char *file, const int line) /
 #endif
 }
 
+template <class T> inline ULONG GetRefCount(T& obj)
+{
+   assert(obj->AddRef() > 1); // Assert as the object is supposed to have at least one owner beside us (otherwise it will get deleted in the release call below)
+   return obj->Release();
+}
+
 #define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=nullptr; } }
 #define SAFE_RELEASE_NO_SET(p)	{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); } }
 #define SAFE_RELEASE_NO_CHECK_NO_SET(p)	{ const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); }

@@ -960,13 +960,13 @@ void CodeViewer::Compile(const bool message)
    CComObject<ScriptInterpreter>* interpreter;
    CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
    interpreter->AddRef();
-   interpreter->Init(m_table);
+   interpreter->Start(m_table);
    interpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string& description, const vector<string>& stackDump)
       { OnScriptError(type, line, column, description, stackDump); });
    interpreter->Evaluate(m_table->m_script_text, false);
    if (message && !interpreter->HasError())
       MessageBox("Compilation successful", "Compile", MB_OK);
-   interpreter->Stop();
+   interpreter->Stop(m_table);
    interpreter->Release();
 }
 
