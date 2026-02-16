@@ -128,9 +128,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
            ShowError("Unable to load SciLexerVP.DLL or SciLexer.DLL");
        #endif
    }
-
-   // register the PinSim::FrontEndControls name window message
-   m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
 
    wintimer_init();
@@ -1621,106 +1618,12 @@ LRESULT WinEditor::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    }
 
    default:
-      // check for the PinSim::FrontEndControls registered message
-      if (uMsg == m_pinSimFrontEndControlsMsg)
-         return OnFrontEndControlsMsg(wParam, lParam);
-
-      // not handled
       break;
    }
    return WndProcDefault(uMsg, wParam, lParam);
 #else
    return 0;
 #endif
-}
-
-// See http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm
-LRESULT WinEditor::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
-{
-#ifndef __STANDALONE__
-   // the WPARAM contains a sub-command code telling us the specific action
-   // the caller is requesting
-   switch (wParam)
-   {
-   case 1:
-      // IS_HANDLER_WINDOW
-      // Return the current supported interface version (1)
-      return 1;
-
-   case 2:
-      // CLOSE_APP
-      // Close the player and exit the program
-      if (g_pplayer)
-         g_pplayer->SetCloseState(Player::CloseState::CS_CLOSE_APP);
-#ifndef __STANDALONE__
-      else
-         PostMessage(WM_CLOSE, 0, 0);
-#endif
-
-      // If we're showing a modal dialog, close it.  Closing one dialog
-      // can trigger opening another, so iterate this until no modal
-      // dialogs are found (but limit the iterations, in case we're in
-      // some kind of pathological situation where the dialogs are
-      // displayed in an infinite loop).
-      for (int tries = 0 ; tries < 20 ; ++tries)
-      {
-          // enumerate the windows on this thread
-          struct WindowLister
-          {
-              WindowLister()
-              {
-                  EnumThreadWindows(GetCurrentThreadId(), [](HWND hwnd, LPARAM param) -> BOOL 
-                  {
-                     // check for an enabled, visible model dialog window (window class "#32770")
-                     char cls[128];
-                     if (::IsWindowVisible(hwnd) && ::IsWindowEnabled(hwnd)
-                         && ::RealGetWindowClassA(hwnd, cls, std::size(cls)) != 0
-                         && cls == "#32770"s)
-                     {
-                        // close it by sending IDCANCEL
-                        DWORD_PTR result;
-                        ::SendMessageTimeout(hwnd, WM_COMMAND, IDCANCEL, 0, SMTO_ABORTIFHUNG, 100, &result);
-
-                        // note that we found at least one window to close
-                        reinterpret_cast<WindowLister*>(param)->closed = true;
-                     }
-
-                     // continue the iteration
-                     return TRUE;
-                  }, reinterpret_cast<LPARAM>(this));
-              }
-              bool closed = false;
-          };
-          WindowLister wl;
-
-          // if we didn't find anything to close, nothing changed during this
-          // iteration, so we don't need to keep looping
-          if (!wl.closed)
-              break;
-      }
-
-      // handled
-      return 1;
-
-   case 3:
-      // GAME_TO_FOREGROUND
-      // If a player is running, bring its main window to the foreground
-      if (g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr)
-         g_pplayer->m_playfieldWnd->RaiseAndFocus();
-
-      // handled
-      return 1;
-
-   case 4:
-      // QUERY_GAME_HWND
-      // If a player is running, return its main window handle
-      return (g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr) ?
-         reinterpret_cast<DWORD_PTR>(g_pplayer->m_playfieldWnd->GetNativeHWND()) : 0;
-   }
-#endif // __STANDALONE__
-
-   // not handled
-   return 0;
 }
 
 LRESULT WinEditor::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
