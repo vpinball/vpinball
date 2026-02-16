@@ -776,6 +776,9 @@ Player::~Player()
       assert(refCount == 0);
    }
 
+   // Flush pending callbacks
+   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+
    // Release plugin message Ids
    const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
