@@ -488,19 +488,23 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
    {
       MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(
          VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0,
-         [](void* userData)
+         [](void* callbackInfo)
          {
-            const SoundPlayer* const me = static_cast<SoundPlayer*>(userData);
-            if (g_pplayer && me->m_callbackId.empty())
-               g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
-            else
+            string* callbackId = static_cast<string*>(callbackInfo);
+            if (g_pplayer != nullptr)
             {
-               CComVariant rgvar[1] = { CComVariant(me->m_callbackId.c_str()) };
-               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-               g_pplayer->m_ptable->FireDispID(DISPID_GameEvents_SoundDone, &dispparams);
+               if (callbackId->empty())
+                  g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
+               else
+               {
+                  CComVariant rgvar[1] = { CComVariant(callbackId->c_str()) };
+                  DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+                  g_pplayer->m_ptable->FireDispID(DISPID_GameEvents_SoundDone, &dispparams);
+               }
             }
+            delete callbackId;
          },
-         me);
+         new string(me->m_callbackId));
       return;
    }
    if (me->m_loopCount > 0)
