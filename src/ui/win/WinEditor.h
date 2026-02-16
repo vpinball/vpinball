@@ -175,13 +175,6 @@ public:
 
    ULONG m_cref;
 
-   // registered window message ID for PinSim::FrontEndControls
-   // (http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm)
-   UINT m_pinSimFrontEndControlsMsg;
-
-   // handler for PinSim::FrontEndControls messages
-   LRESULT OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam);
-
    vector<PinTableWnd*> m_vtable;
    CComObject<PinTable> *m_ptableActive = nullptr;
 
