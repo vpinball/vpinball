@@ -755,8 +755,7 @@ class TableManager(private val context: Context) {
             val changedFileExtensions = listOf("txt", "ini", "cfg", "xml", "nv", "jpg", "png")
             val workingDirFile = File(loadedTableWorkingDir)
             val filesToCopy =
-                workingDirFile.listFiles()?.filter { file -> file.isFile && changedFileExtensions.contains(file.extension.lowercase()) }
-                    ?: emptyList()
+                workingDirFile.walkTopDown().filter { file -> file.isFile && changedFileExtensions.contains(file.extension.lowercase()) }.toList()
 
             if (filesToCopy.isNotEmpty()) {
                 onProgress?.invoke(30, "Copying ${filesToCopy.size} file(s)...")
@@ -764,7 +763,7 @@ class TableManager(private val context: Context) {
                 var failedCount = 0
 
                 filesToCopy.forEach { file ->
-                    val relativePath = file.name
+                    val relativePath = file.relativeTo(workingDirFile).path
                     val destPath = buildPath("$tableDir/$relativePath")
 
                     if (fileOps.copy(file.absolutePath, destPath)) {
@@ -773,7 +772,7 @@ class TableManager(private val context: Context) {
                         onProgress?.invoke(progress, "Copied $copiedCount/${filesToCopy.size}")
                     } else {
                         failedCount++
-                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: ${file.name}")
+                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: $relativePath")
                     }
                 }
 
