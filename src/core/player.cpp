@@ -769,6 +769,9 @@ Player::~Player()
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
    }
 
+   delete m_liveUI;
+   m_liveUI = nullptr;
+
    if (m_scriptInterpreter)
    {
       m_scriptInterpreter->Stop(m_ptable);
@@ -903,8 +906,6 @@ Player::~Player()
    g_DXGIRegistry.ReleaseAll();
 #endif
 
-   delete m_liveUI;
-   m_liveUI = nullptr;
    delete m_physics;
    m_physics = nullptr;
 
