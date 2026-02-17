@@ -100,15 +100,17 @@ static void ColorizeThread()
             {
                std::lock_guard<std::mutex> lock2(stateMutex);
                bool newState = false;
+               unsigned int outWidth = vniFrame->width;
+               unsigned int outHeight = vniFrame->height;
                if (state == nullptr)
                {
-                  state = new ColorizationState(dmdId.width, dmdId.height);
+                  state = new ColorizationState(outWidth, outHeight);
                   newState = true;
                }
-               else if (state->m_width != dmdId.width || state->m_height != dmdId.height)
+               else if (state->m_width != outWidth || state->m_height != outHeight)
                {
                   delete state;
-                  state = new ColorizationState(dmdId.width, dmdId.height);
+                  state = new ColorizationState(outWidth, outHeight);
                   newState = true;
                }
 
