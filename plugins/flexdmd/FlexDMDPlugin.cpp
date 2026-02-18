@@ -250,6 +250,8 @@ PSC_CLASS_START(UltraDMD)
    PSC_FUNCTION1(UltraDMD, void, CancelRenderingWithId, string)
    PSC_FUNCTION0(UltraDMD, void, Clear)
    PSC_FUNCTION1(UltraDMD, void, SetProjectFolder, string)
+   PSC_PROP_RW(UltraDMD, uint, Color)
+   PSC_FUNCTION1(UltraDMD, bool, SetColorString, string)
    PSC_FUNCTION1(UltraDMD, void, SetVideoStretchMode, int)
    PSC_FUNCTION3(UltraDMD, void, SetScoreboardBackgroundImage, string, int, int)
    PSC_FUNCTION3(UltraDMD, int32, CreateAnimationFromImages, int, bool, string)
@@ -321,6 +323,19 @@ static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId, nextDmdId;
 
 static std::vector<FlexDMD*> flexDmds;
+
+MSGPI_STRING_VAL_SETTING(ultraDmdColorProp, "UltraDMDColor", "UltraDMD Color",
+   "Default UltraDMD/FlexDMD text color (#RRGGBB, RRGGBB, #RRGGBBAA or RRGGBBAA)", true, "FF5820", 16);
+
+static ColorRGBA32 GetConfiguredUltraDMDColor()
+{
+   const string configuredColor = ultraDmdColorProp_Get();
+   ColorRGBA32 color;
+   if (try_parse_color(configuredColor, color))
+      return color;
+   LOGW("Invalid UltraDMDColor setting '%s'; using fallback FF5820", configuredColor.c_str());
+   return 0x00FF5820;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -621,6 +636,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
 
    // Setup login
    LPISetup(endpointId, msgApi);
+   msgApi->RegisterSetting(endpointId, &ultraDmdColorProp);
 
    // Contribute DMDs and segment displays when show is true
    onDmdSrcChangeId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
@@ -683,6 +699,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
    FlexDMD_SCD->CreateObject = []() {
       FlexDMD* pFlex = new FlexDMD(vpxApi);
       pFlex->SetId(nextDmdId);
+      pFlex->SetColor(GetConfiguredUltraDMDColor());
       pFlex->SetOnDMDChangedHandler(OnShowChanged);
       pFlex->SetOnDestroyHandler(OnFlexDestroyed);
       nextDmdId++;
