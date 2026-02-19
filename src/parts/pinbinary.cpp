@@ -6,7 +6,7 @@ bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
 {
    m_buffer = read_file(filename);
    m_path = filename;
-   m_name = TitleFromFilename(filename.string());
+   m_name = TitleFromFilename(filename);
    return true;
 }
 

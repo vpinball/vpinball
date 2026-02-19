@@ -10,9 +10,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
    // statics as they need to survive as C string after this function returns
    static string path;
-   path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
+   path = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "").string();
    static string prefPath;
-   prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+   prefPath = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "").string();
    info->path = path.c_str();
    info->prefPath = prefPath.c_str();
 }

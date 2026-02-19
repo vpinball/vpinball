@@ -1025,12 +1025,12 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
       AddMDIChild(mdiTable);
 
       // make sure the load directory is the active directory
-      const string tablePath = PathFromFilename(filename);
-      SetCurrentDirectory(tablePath.c_str());
+      const std::filesystem::path tablePath = PathFromFilename(filename);
+      SetCurrentDirectory(tablePath.string().c_str());
 
       PLOGI << "UI Post Load Start";
 
-      g_app->m_settings.SetRecentDir_LoadDir(tablePath, false);
+      g_app->m_settings.SetRecentDir_LoadDir(tablePath.string(), false);
       UpdateRecentFileList(filename);
 
       ppt->m_table->AddMultiSel(ppt->m_table, false, true, false);
@@ -2203,7 +2203,7 @@ void WinEditor::SaveTable(const bool saveAs)
 
       // assign user selected file name as new internal filename, and save as new default
       ptCur->m_filename = fileName;
-      ptCur->m_title = TitleFromFilename(ptCur->m_filename.filename().string());
+      ptCur->m_title = TitleFromFilename(ptCur->m_filename);
       g_app->m_settings.SetRecentDir_LoadDir(ptCur->m_filename.parent_path().string(), false); // truncate after folder(s)
       SetCaption(ptCur->m_title.c_str());
    }

@@ -9,16 +9,6 @@ static std::mutex mtx; //!! only used for Wine multithreading bug workaround
 #include <fstream>
 #endif
 
-bool DirExists(const string& dirPath)
-{
-   return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
-}
-
-bool FileExists(const string& filePath)
-{
-   return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath);
-}
-
 bool DirExists(const std::filesystem::path& dirPath)
 {
    return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath);
@@ -29,46 +19,14 @@ bool FileExists(const std::filesystem::path& filePath)
    return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath);
 }
 
-string ExtensionFromFilename(const string& filename)
+string TitleFromFilename(const std::filesystem::path& filename)
 {
-   const size_t pos = filename.find_last_of('.');
-   return (pos == string::npos) ? string() : filename.substr(pos + 1);
+   return filename.stem().string();
 }
 
-string TitleFromFilename(const string& filename)
+std::filesystem::path PathFromFilename(const std::filesystem::path &filename)
 {
-   // Find the last path separator
-   size_t begin = filename.find_last_of(PATH_SEPARATOR_CHAR);
-   if (begin == string::npos)
-      begin = 0;
-   else
-      begin++;
-
-   // Find the last dot after the last path separator
-   size_t end = filename.find_last_of('.');
-   if (end == string::npos || end < begin)
-      end = filename.length();
-
-   return filename.substr(begin, end - begin);
-}
-
-string PathFromFilename(const string &filename)
-{
-   const size_t pos = filename.find_last_of(PATH_SEPARATOR_CHAR);
-   return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
-}
-
-bool ReplaceExtensionFromFilename(string& filename, const string& newextension)
-{
-   const size_t i = filename.find_last_of('.');
-
-   if (i != string::npos)
-   {
-      filename.replace(i + 1, newextension.length(), newextension);
-      return true;
-   }
-
-   return false;
+   return filename.parent_path();
 }
 
 BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
