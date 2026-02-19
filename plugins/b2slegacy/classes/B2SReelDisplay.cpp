@@ -26,10 +26,10 @@ B2SReelDisplay::~B2SReelDisplay()
    delete m_pTimerIA;
 }
 
-bool B2SReelDisplay::IsInAction()
+bool B2SReelDisplay::IsInAction() const
 {
    bool ret = false;
-   for (auto& [key, pReelbox] : m_reels) {
+   for (const auto& [key, pReelbox] : m_reels) {
       if (pReelbox->IsInAction()) {
          ret = true;
          break;
@@ -55,9 +55,7 @@ void B2SReelDisplay::SetScore_(int score, int startAtIndex)
    if (!m_reels.empty()) {
       m_pTimerIA->Start();
 
-      std::ostringstream oss;
-      oss << std::setw(m_digits) << std::setfill('0') << score;
-      const string scoreAsStringX = oss.str();
+      const string scoreAsStringX = std::format("{:0{}d}", score, m_digits);
 
       int j = 1;
       for (int i = m_startDigit + m_digits - startAtIndex - 1; i >= m_startDigit; i--) {

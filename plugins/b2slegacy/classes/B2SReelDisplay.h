@@ -17,7 +17,7 @@ public:
    void SetStartDigit(int startDigit) { m_startDigit = startDigit; }
    int GetDigits() const { return m_digits; }
    void SetDigits(int digits) { m_digits = digits; }
-   bool IsInAction();
+   bool IsInAction() const;
    int GetScore() const { return m_score; }
    void SetScore(int score);
    void SetScore_(int score, int startIndex = 0);

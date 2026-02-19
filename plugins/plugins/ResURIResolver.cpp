@@ -145,7 +145,7 @@ float ResURIResolver::GetFloatState(const string &link)
       return cache->second(link);
 
    floatCacheLambda lambda = nullptr;
-   const auto uri = uri::parse_uri(link);
+   const auto& uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;
@@ -225,7 +225,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
       return cache->second(link);
 
    segCacheLambda lambda = nullptr;
-   const auto uri = uri::parse_uri(link);
+   const auto& uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;
@@ -317,7 +317,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       return cache->second(link);
 
    displayCacheLambda lambda = nullptr;
-   const auto uri = uri::parse_uri(link);
+   const auto& uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;

@@ -30,7 +30,7 @@ bool RunningAnimationsCollection::Remove(const string& item)
    return true;
 }
 
-bool RunningAnimationsCollection::Contains(const string& item)
+bool RunningAnimationsCollection::Contains(const string& item) const
 {
    auto it = std::find(begin(), end(), item);
    return it != end();

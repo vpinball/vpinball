@@ -10,7 +10,7 @@ public:
 
    void Add(const string& item);
    bool Remove(const string& item);
-   bool Contains(const string& item);
+   bool Contains(const string& item) const;
 
 private:
    static RunningAnimationsCollection* m_pInstance;

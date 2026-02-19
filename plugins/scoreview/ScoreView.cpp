@@ -215,7 +215,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       else if (key == "Rect")
       {
          CHECK_FIELD((indent == 2) && (visual != nullptr));
-         auto rect = parseArray(value);
+         const auto rect = parseArray(value);
          CHECK_FIELD(rect.size() == 4);
          visual->x = rect[0];
          visual->y = rect[1];
@@ -226,7 +226,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       else if (key == "Pad")
       {
          CHECK_FIELD((indent == 2) && (visual != nullptr)); // Display pad inside rect
-         auto rect = parseArray(value);
+         const auto rect = parseArray(value);
          CHECK_FIELD(rect.size() == 4);
          visual->glassPad.x = clamp(rect[0] / layout.height, 0.f, 1.f);
          visual->glassPad.y = clamp(rect[1] / layout.width, 0.f, 1.f);
@@ -335,7 +335,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       else if (key == "Tint")
       {
          CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass tint
-         auto tint = parseArray(value);
+         const auto tint = parseArray(value);
          CHECK_FIELD(tint.size() == 3);
          visual->glassTint.x = tint[0];
          visual->glassTint.y = tint[1];
@@ -354,7 +354,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       else if (key == "Area")
       {
          CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image area
-         auto rect = parseArray(value);
+         const auto rect = parseArray(value);
          CHECK_FIELD(rect.size() == 4);
          visual->glassArea.x = rect[0];
          visual->glassArea.y = rect[1];
@@ -364,7 +364,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
       else if (key == "Ambient")
       {
          CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image ambient
-         auto rect = parseArray(value);
+         const auto rect = parseArray(value);
          CHECK_FIELD(rect.size() == 3)
          visual->glassAmbient.x = InvsRGB(rect[0]);
          visual->glassAmbient.y = InvsRGB(rect[1]);

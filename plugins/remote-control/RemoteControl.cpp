@@ -343,7 +343,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
             using namespace std::literals;
             StateMsg stateMsg;
             UdpClientSocket client(hostProp_Get(), portProp_Val, 500);
-            auto start = std::chrono::steady_clock::now();
+            const auto start = std::chrono::steady_clock::now();
             while (runMode != RunMode::RunModeNone)
             {
                msgReadySem.acquire();

@@ -42,7 +42,7 @@ void SegmentNumber::AssignStyle()
 void SegmentNumber::Draw(VPXGraphics* pRenderer)
 {
    int onCount = 0, offCount = 0;
-   for (auto& pSegment : m_segments) {
+   for (const auto& pSegment : m_segments) {
       if (pSegment->IsOn()) onCount++; else offCount++;
    }
 

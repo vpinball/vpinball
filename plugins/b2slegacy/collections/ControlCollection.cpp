@@ -13,7 +13,7 @@ void ControlCollection::Add(ControlInfo* pControlInfo)
 {
    bool add = true;
 
-   for (auto& it : *this) {
+   for (const auto& it : *this) {
       if (it->GetStartDigit() == pControlInfo->GetStartDigit()) {
          add = false;
          break;
@@ -35,7 +35,7 @@ void ControlCollection::SetScore(B2SData* pB2SData, int score)
    else if ((int)scoreAsString.length() > m_digits)
       scoreAsString = scoreAsString.substr(scoreAsString.length() - m_digits);
 
-   for (auto& pControl : *this) {
+   for (const auto& pControl : *this) {
       // get the part of the score
       const string partofscore = scoreAsString.substr(0, pControl->GetDigits());
 

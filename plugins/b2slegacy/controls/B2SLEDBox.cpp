@@ -43,7 +43,7 @@ void B2SLEDBox::OnResize()
        vector<SDL_FPoint> scaled(entry.size());
        for (size_t i = 0; i < entry.size(); ++i)
           scaled[i] = { entry[i].x * width, entry[i].y * height };
-       m_currentSeg.push_back(scaled);
+       m_currentSeg.push_back(std::move(scaled));
     }
 }
 

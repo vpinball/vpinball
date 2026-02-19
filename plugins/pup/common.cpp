@@ -86,7 +86,7 @@ vector<string> parse_csv_line(const string& line)
       }
    }
 
-   parts.push_back(field);
+   parts.push_back(std::move(field));
 
    return parts;
 }
