@@ -202,8 +202,17 @@ static unsigned int getScriptApiMsgId = 0;
 static unsigned int getVpxApiMsgId = 0;
 
 static uint32_t endpointId;
+static unsigned int getControllerMsgId;
 
 static Controller* controller = nullptr;
+
+// Message handler to provide Controller pointer to other plugins
+static void OnGetController(const unsigned int eventId, void* userData, void* eventData) {
+    void** ptrOut = static_cast<void**>(eventData);
+    if (ptrOut) {
+        *ptrOut = static_cast<void*>(controller);
+    }
+}
 
 PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
@@ -380,6 +389,9 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    getAudioSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
    msgApi->SubscribeMsg(endpointId, getAudioSrcId, OnGetAudioSrc, nullptr);
 
+   // Provide a message for other plugins to get the Controller pointer
+   msgApi->SubscribeMsg(endpointId, getControllerMsgId = msgApi->GetMsgID("PinMAME", "GetController"), OnGetController, nullptr);
+
    // Contribute our API to the script engine
    getScriptApiMsgId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiMsgId, &scriptApi);
@@ -478,6 +490,9 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
    if (controller)
       controller->Stop();
    StopAudioStream();
+   PinmameSetMsgAPI(nullptr, 0);
+   msgApi->UnsubscribeMsg(getControllerMsgId, OnGetController);
+   msgApi->ReleaseMsgID(getControllerMsgId);
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
