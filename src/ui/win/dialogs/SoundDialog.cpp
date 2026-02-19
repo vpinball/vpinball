@@ -395,7 +395,7 @@ void SoundDialog::ReImport()
                 ListView_GetItem( hSoundList, &lvitem );
                 VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
-                const HANDLE hFile = CreateFile(pps->GetImportPath().c_str(), GENERIC_READ, FILE_SHARE_READ,
+                const HANDLE hFile = CreateFile(pps->GetImportPath().string().c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 
                 if (hFile != INVALID_HANDLE_VALUE)
@@ -406,7 +406,7 @@ void SoundDialog::ReImport()
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
                 else
-                   MessageBox(pps->GetImportPath().c_str(), "FILE NOT FOUND!", MB_OK);
+                   MessageBox(pps->GetImportPath().string().c_str(), "FILE NOT FOUND!", MB_OK);
 
                 sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED );
             }
@@ -478,7 +478,7 @@ void SoundDialog::Export()
             char filename[MAXSTRING];
             if (!renameOnExport)
             {
-               string filename2 = pps->GetImportPath();
+               string filename2 = pps->GetImportPath().string();
                const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
                if (pos != string::npos)
                   filename2 = filename2.substr(pos + 1);
@@ -487,8 +487,8 @@ void SoundDialog::Export()
             else
             {
                string filename2 = pps->GetName();
-               const size_t pos = pps->GetImportPath().find_last_of('.');
-               filename2 += pos != string::npos ? pps->GetImportPath().substr(pos) : ".ogg"s;
+               const size_t pos = pps->GetImportPath().string().find_last_of('.');
+               filename2 += pos != string::npos ? pps->GetImportPath().string().substr(pos) : ".ogg"s;
                strncpy_s(filename, sizeof(filename), filename2.c_str());
             }
             ofn.lpstrFile = filename;
@@ -517,21 +517,21 @@ void SoundDialog::Export()
                      if (!renameOnExport)
                      {
                         int begin;
-                        for (begin = (int)pps->GetImportPath().length(); begin >= 0; begin--)
+                        for (begin = (int)pps->GetImportPath().string().length(); begin >= 0; begin--)
                         {
-                           if (pps->GetImportPath()[begin] == PATH_SEPARATOR_CHAR)
+                           if (pps->GetImportPath().string()[begin] == PATH_SEPARATOR_CHAR)
                            {
                               begin++;
                               break;
                            }
                         }
-                        filen += pps->GetImportPath().c_str() + begin;
+                        filen += pps->GetImportPath().string().c_str() + begin;
                      }
                      else
                      {
                         filen += pps->GetName();
-                        const size_t idx = pps->GetImportPath().find_last_of('.');
-                        filen += pps->GetImportPath().c_str() + idx;
+                        const size_t idx = pps->GetImportPath().string().find_last_of('.');
+                        filen += pps->GetImportPath().string().c_str() + idx;
                      }
                   }
 

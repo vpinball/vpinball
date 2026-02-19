@@ -20,14 +20,6 @@ using namespace std::string_literals;
    #include <windows.h>
 #endif
 
-#if !defined(PATH_SEPARATOR_CHAR)
-  #ifdef _MSC_VER
-    #define PATH_SEPARATOR_CHAR '\\'
-  #else
-    #define PATH_SEPARATOR_CHAR '/'
-  #endif
-#endif
-
 #if !defined(GET_PLATFORM_BITS_ENUM)
    #if (INTPTR_MAX == INT32_MAX)
       #define GET_PLATFORM_BITS_ENUM 0

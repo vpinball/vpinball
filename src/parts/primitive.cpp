@@ -1949,18 +1949,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             const bool doForsyth = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
             if (importMaterial)
             {
-               string szMatName = szFileName;
-               if (ReplaceExtensionFromFilename(szMatName, "mtl"s))
+               std::filesystem::path szMatName = std::filesystem::path(szFileName).replace_extension(".mtl");
+               Material * const mat = new Material();
+               if (ObjLoader::LoadMaterial(szMatName.string(), mat))
                {
-                  Material * const mat = new Material();
-                  if (ObjLoader::LoadMaterial(szMatName, mat))
-                  {
-                     prim->GetPTable()->AddMaterial(mat);
-                     prim->m_d.m_szMaterial = mat->m_name;
-                  }
+                  prim->GetPTable()->AddMaterial(mat);
+                  prim->m_d.m_szMaterial = mat->m_name;
                }
-               else
-                  ShowError("Could not load material file.");
             }
             if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
             {

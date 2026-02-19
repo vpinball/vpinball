@@ -1436,7 +1436,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& filename)
+HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    if (m_vpinball)
@@ -1450,7 +1450,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename)
    return LoadGameFromFilename(filename, feedback);
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& feedback)
+HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback)
 {
    if (filename.empty())
    {
@@ -1458,7 +1458,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       return S_FALSE;
    }
 
-   PLOGI << "LoadGameFromFilename " + filename; // For profiling
+   PLOGI << "LoadGameFromFilename " + filename.string(); // For profiling
 
    m_filename = filename;
 
@@ -1953,7 +1953,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    m_title = TitleFromFilename(filename);
 #ifndef __STANDALONE__
-   const DWORD attr = GetFileAttributes(filename.c_str());
+   const DWORD attr = GetFileAttributes(filename.string().c_str());
    if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
       m_title += " [READ ONLY]";
 #endif
@@ -2553,9 +2553,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
+bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
 {
-   if (extension_from_path(pps->GetImportPath()) == extension_from_path(filename))
+   if (pps->GetImportPath().extension() == filename.extension())
    {
       if (pps->SaveToFile(filename))
          return true;
@@ -2571,7 +2571,7 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
    return false;
 }
 
-void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
+void PinTable::ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    vector<uint8_t> data = read_file(filename);
@@ -2581,7 +2581,7 @@ void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
 }
 
 
-VPX::Sound *PinTable::ImportSound(const string &filename)
+VPX::Sound *PinTable::ImportSound(const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    VPX::Sound *const pps = VPX::Sound::CreateFromFile(filename);

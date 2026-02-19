@@ -1051,7 +1051,7 @@ Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bo
       return nullptr;
    }
 
-   Texture* tex = new Texture(TitleFromFilename(filename.string()), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
+   Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = imageBuffer;
    tex->UpdateMD5();
    tex->UpdateOpaque();
