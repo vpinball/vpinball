@@ -107,7 +107,7 @@ private:
     * 
     * For example, wine 6.9 says ...
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
-    * ... if I try to create CLSID_PrrocessDebugManager
+    * ... if I try to create CLSID_ProcessDebugManager
     */
 #ifndef __STANDALONE__
    IProcessDebugManager *m_pProcessDebugManager = nullptr;

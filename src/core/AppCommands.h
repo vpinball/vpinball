@@ -105,7 +105,7 @@ class CaptureAttractCommand : public TableBasedCommand
 public:
    CaptureAttractCommand(const std::filesystem::path& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop);
    ~CaptureAttractCommand() override = default;
-   void Execute();
+   void Execute() override;
 
 private:
    int m_nFrames = 0; // Number of frames to capture for attract mode capture, 0 = disabled
@@ -131,13 +131,13 @@ public:
 
    // Apply command line parameters to the app, and prepare the command to execute (if any)
    void ProcessCommandLine();
-   void ProcessCommandLine(int argc, const char* argv[]);
+   void ProcessCommandLine(int nArgs, const char* szArglist[]);
 
    std::unique_ptr<AppCommand> m_command;
 
 private:
    static const char** CommandLineToArgvA(const char* const CmdLine, int* const _argc);
-   std::filesystem::path GetPathFromArg(const string& arg);
+   static std::filesystem::path GetPathFromArg(const string& arg);
    static string GetCommandLineHelp();
    static void OnCommandLineError(const string& title, const string& message);
 };

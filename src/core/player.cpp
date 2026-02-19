@@ -860,7 +860,7 @@ Player::~Player()
          vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
          for (ITexManCacheable *memtex : textures)
          {
-            auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
+            const auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
             if (tex != m_ptable->m_vimage.end())
             {
                tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
@@ -1613,7 +1613,7 @@ private:
             // distance favor longer loops with lowest difference between light states
             float distance = 1.f;
             for (int k = 0; k < m_nLights; k++)
-               distance += powf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k], 2.f);
+               distance += sqrf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k]);
             distance = distance * 100.f / static_cast<float>(m_nLights); // Normalize against a 'standard' number of lights
             distance = distance / static_cast<float>(m_captureFrameNumber - j); // Take loop length in account
             if (distance < lowestDistance)

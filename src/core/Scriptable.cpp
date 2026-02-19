@@ -78,7 +78,7 @@ vector<wstring> IScriptable::GetEventNames()
                pti->GetRefTypeOfImplType(i, &href);
                pti->GetRefTypeInfo(href, &ptiChild);
                ptiChild->GetTypeAttr(&ptaChild);
-               for (int l = 0; l < ptaChild->cFuncs; l++)
+               for (UINT l = 0; l < ptaChild->cFuncs; l++)
                {
                   FUNCDESC *pfd;
                   ptiChild->GetFuncDesc(l, &pfd);

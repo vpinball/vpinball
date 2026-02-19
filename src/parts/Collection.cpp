@@ -68,9 +68,9 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Collection::InitPostLoad(PinTable *const pt)
+HRESULT Collection::InitPostLoad(const PinTable *const pt)
 {
-   for (wstring tmp_isel_name : m_tmp_isel_name)
+   for (const wstring& tmp_isel_name : m_tmp_isel_name)
    {
       for (IEditable* editable : pt->GetParts())
       {

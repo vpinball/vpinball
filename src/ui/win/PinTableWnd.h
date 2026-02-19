@@ -55,9 +55,9 @@ public:
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd
-   void OnInitialUpdate() override final;
-   BOOL OnEraseBkgnd(CDC &dc) override final;
-   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override final;
+   void OnInitialUpdate() final;
+   BOOL OnEraseBkgnd(CDC &dc) final;
+   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
 #endif
 
 private:

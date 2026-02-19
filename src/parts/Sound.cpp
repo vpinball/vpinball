@@ -102,7 +102,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       const size_t waveFileSize = sizeof(WaveHeader) + cdata;
       data.resize(waveFileSize);
       // [Master RIFF chunk]
-      auto const waveHeader = reinterpret_cast<WaveHeader*>(data.data());
+      const auto waveHeader = reinterpret_cast<WaveHeader*>(data.data());
       waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
       waveHeader->dwSize = static_cast<uint32_t>(waveFileSize - 8); // File size - 8
       waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
@@ -201,7 +201,7 @@ void Sound::SaveToStream(IStream* pstm) const
    pstm->Write(&dummyPath, dummyLen, &writ);
    if (isWav(m_path))
    {
-      auto const waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
+      const auto waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
       WAVEFORMATEX wfx;
       wfx.wFormatTag = waveHeader->wFormatTag;
       wfx.nChannels = waveHeader->wNChannels;

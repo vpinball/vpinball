@@ -376,7 +376,7 @@ string CommandLineProcessor::GetCommandLineHelp()
    {
       if (opt.name >= OPTION_CUSTOM1 && opt.name <= OPTION_CUSTOM9)
          continue;
-      ss << "-" << opt.arg << "  " << opt.desc << "\n";
+      ss << '-' << opt.arg << "  " << opt.desc << '\n';
    }
    ss << "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
    return ss.str();

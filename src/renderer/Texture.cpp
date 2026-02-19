@@ -1212,7 +1212,7 @@ void Texture::UpdateOpaque() const
    if (!m_isOpaqueDirty)
       return;
    m_isOpaqueDirty = false;
-   auto bitmap = GetRawBitmap(false, 0);
+   const auto bitmap = GetRawBitmap(false, 0);
    m_isOpaque = bitmap ? bitmap->IsOpaque() : false;
 }
 

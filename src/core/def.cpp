@@ -557,17 +557,14 @@ bool try_parse_float(const string& str, float& value)
 
 bool try_parse_color(const string& str, OLE_COLOR& value)
 {
-   string hexStr;
-   if (str[0] == '#')
-      hexStr = str.substr(1);
-   else
-      hexStr = str;
+   const size_t start = (!str.empty() && str[0] == '#') ? 1 : 0;
+   string hexStr(str, start);
 
    if (hexStr.size() == 6)
       hexStr += "FF";
-
-   if (hexStr.size() != 8)
-      return false;
+   else
+      if (hexStr.size() != 8)
+         return false;
 
    uint32_t rgba;
    std::stringstream ss;
@@ -630,7 +627,7 @@ vector<string> parse_csv_line(const string& line)
       }
    }
 
-   parts.push_back(field);
+   parts.push_back(std::move(field));
 
    return parts;
 }
@@ -638,9 +635,7 @@ vector<string> parse_csv_line(const string& line)
 string color_to_hex(OLE_COLOR color)
 {
    const uint32_t rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
-   std::stringstream stream;
-   stream << std::setfill('0') << std::setw(8) << std::hex << rgba;
-   return stream.str();
+   return std::format("{:08x}", rgba);
 }
 
 bool string_contains_case_insensitive(const string& str1, const string& str2)
@@ -711,11 +706,11 @@ static constexpr uint8_t utf8d[] = {
 };
 
 // old ANSI to UTF-8 (allocates new mem block)
-static char* iso8859_1_to_utf8(const char* str, const size_t length)
+static string iso8859_1_to_utf8(const char* str, const size_t length)
 {
-   char* const utf8 = new char[1 + 2 * length]; // worst case
+   string utf8(2 * length, '\0'); // worst case
 
-   char* c = utf8;
+   char* c = utf8.data();
    for (size_t i = 0; i < length; ++i, ++str)
    {
       if (*str & 0x80)
@@ -729,7 +724,7 @@ static char* iso8859_1_to_utf8(const char* str, const size_t length)
       else
          *c++ = *str;
    }
-   *c++ = '\0';
+   utf8.resize(c - utf8.data());
 
    return utf8;
 }
@@ -748,7 +743,7 @@ static uint32_t validate_utf8(uint32_t* const state, const char* const str, cons
 {
    for (size_t i = 0; i < length; i++)
    {
-      const uint32_t type = utf8d[(uint8_t)str[i]];
+      const uint8_t type = utf8d[(uint8_t)str[i]];
       *state = utf8d[256 + (*state) * 16 + type];
 
       if (*state == UTF8_REJECT)
@@ -761,18 +756,12 @@ string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize)
 {
    uint32_t state = UTF8_ACCEPT;
    if (validate_utf8(&state, src, srcSize) == UTF8_REJECT)
-   {
-      char* const utf8Text = iso8859_1_to_utf8(src, srcSize); // old ANSI characters? -> convert to UTF-8
-      string result(utf8Text);
-      delete[] utf8Text;
-      return result;
-   }
+      return iso8859_1_to_utf8(src, srcSize); // old ANSI characters? -> convert to UTF-8
    else
-   {
       return string(src, srcSize);
-   }
 }
 
+//
 
 string create_hex_dump(const uint8_t* buffer, size_t size)
 {
@@ -832,7 +821,7 @@ vector<string> add_line_numbers(const char* src)
          src++;
       }
 
-      result.push_back(line);
+      result.push_back(std::move(line));
       lineNumber++;
 
       if (*src == '\n') {

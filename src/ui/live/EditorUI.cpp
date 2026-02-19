@@ -1110,7 +1110,7 @@ void EditorUI::UpdateOutlinerUI()
                   group->m_isVisible = !group->m_isVisible;
                ImGui::PopStyleColor();
             }
-            stack.push_back({ static_cast<PartGroup *>(edit->GetEditable()), (stack.empty() || stack.back().opened) ? opened : false });
+            stack.emplace_back(static_cast<PartGroup *>(edit->GetEditable()), (stack.empty() || stack.back().opened) ? opened : false);
          }
          else
          {

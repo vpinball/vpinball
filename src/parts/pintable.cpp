@@ -1212,7 +1212,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
       string customInfo;
       ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
-      m_vCustomInfoContent.push_back(customInfo);
+      m_vCustomInfoContent.push_back(std::move(customInfo));
    }
 
    return hr;
@@ -2354,7 +2354,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       string tmp;
       pbr->GetString(tmp);
-      m_vCustomInfoTag.push_back(tmp);
+      m_vCustomInfoTag.push_back(std::move(tmp));
       break;
    }
    case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
@@ -4670,7 +4670,7 @@ string PinTable::AuditTable(bool log) const
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
    auto audioPlayer = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
-   for (auto sound : m_vsound)
+   for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);
       if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)

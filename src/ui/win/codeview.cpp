@@ -1314,7 +1314,7 @@ void CodeViewer::ListEventsFromItem()
    ::SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
-   for (auto event : pscript->GetEventNames())
+   for (const auto& event : pscript->GetEventNames())
    {
       string method = MakeString(event);
       const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)method.c_str());

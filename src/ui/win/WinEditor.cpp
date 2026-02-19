@@ -215,7 +215,7 @@ void WinEditor::LoadEditorSetupFromSettings()
    {
       string szTableName = g_app->m_settings.GetRecentDir_TableFileName(i);
       if (!szTableName.empty())
-         m_recentTableList.emplace_back(szTableName);
+         m_recentTableList.push_back(std::move(szTableName));
    }
 
    m_convertToUnit = g_app->m_settings.GetEditor_Units();

@@ -123,8 +123,8 @@ void PerfUI::RenderFPS()
       const ImGuiStyle &style = g.Style;
       ImVec2 graph_size;
       graph_size.x = ImGui::CalcItemWidth();
-      const auto blockHeight = ImGui::GetTextLineHeight() + (style.FramePadding.y * 2);
-      graph_size.y = (style.FramePadding.y * 1) + blockHeight * 1;
+      const float blockHeight = ImGui::GetTextLineHeight() + (style.FramePadding.y * 2.f);
+      graph_size.y = (style.FramePadding.y * 1.f) + blockHeight * 1.f;
       #ifdef ENABLE_BGFX
          graph_size.y += blockHeight;
       #endif

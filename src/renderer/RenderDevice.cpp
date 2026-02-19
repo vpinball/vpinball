@@ -679,9 +679,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             uint64_t now = usec();
-            const unsigned int targetFrameLength = useVSync ? (static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-                                                            :  static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            if (now - lastFlipTick < targetFrameLength)
+            const int targetFrameLength = useVSync ? (static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+                                                   :  static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+            if ((int64_t)(now - lastFlipTick) < (int64_t)targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
                uSleep(targetFrameLength - (now - lastFlipTick));
