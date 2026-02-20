@@ -933,7 +933,10 @@ void CodeViewer::SetScript(const string& script)
 {
 #ifndef __STANDALONE__
    if (m_hwndScintilla)
-      ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+   {
+      string copy(script); // As the provided string is modified by the call
+      ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)copy.c_str());
+   }
    // Allow updates to take, now that we know the script size
    UpdateScinFromPrefs();
 #endif
