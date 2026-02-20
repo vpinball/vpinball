@@ -60,7 +60,8 @@ void PinTableWnd::Redraw()
 {
 #ifndef __STANDALONE__
    m_dirtyDraw = true;
-   InvalidateRect(false);
+   if (IsWindow())
+      InvalidateRect(false);
 #endif
 }
 
