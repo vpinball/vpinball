@@ -1605,6 +1605,14 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      pstmItem = nullptr;
                      if (FAILED(hr)) break;
 
+                     if (piedit->GetScriptable() && !IsNameUnique(piedit->GetScriptable()->m_wzName))
+                     {
+                        PLOGE << "Invalid file: parts do not have unique names.";
+                        WCHAR uniqueName[MAXNAMEBUFFER];
+                        GetUniqueName(piedit->GetScriptable()->m_wzName, uniqueName, std::size(piedit->GetScriptable()->m_wzName));
+                        piedit->SetName(MakeString(uniqueName));
+                     }
+                     
                      AddPart(piedit);
 
                      //hr = piedit->InitPostLoad();
