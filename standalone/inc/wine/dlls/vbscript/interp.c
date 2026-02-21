@@ -2489,6 +2489,11 @@ static HRESULT interp_incc(exec_ctx_t *ctx)
 
     TRACE("\n");
 
+#ifdef __STANDALONE__
+    if(V_VT(stack_top(ctx, 0)) == VT_EMPTY)
+        return MAKE_VBSERROR(92);
+#endif
+
     hres = lookup_identifier(ctx, ident, VBDISP_LET, &ref);
     if(FAILED(hres))
         return hres;
