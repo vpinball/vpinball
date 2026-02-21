@@ -27,6 +27,8 @@ Kicker *Kicker::CopyForPlay(PinTable *live_table) const
 
 void Kicker::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format( "Radius: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_radius));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }

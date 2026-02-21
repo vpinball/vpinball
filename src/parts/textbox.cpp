@@ -732,7 +732,8 @@ STDMETHODIMP Textbox::put_Height(float newVal)
 STDMETHODIMP Textbox::get_X(float *pVal)
 {
    *pVal = m_d.m_v1.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }
