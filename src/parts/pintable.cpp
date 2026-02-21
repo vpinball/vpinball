@@ -1987,14 +1987,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    RemoveInvalidReferences();
 
-   if (m_tableEditor)
-   {
-      m_tableEditor->m_pcv->SetScript(m_script_text);
-      m_tableEditor->m_pcv->AddItem(this, false);
-      m_tableEditor->m_pcv->AddItem(m_psgt, true);
-      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
-   }
-
    std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
    std::filesystem::path tableFile = std::filesystem::path(filename).filename();
    
@@ -2024,6 +2016,14 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       ImportVPP(filenameAuto);
    else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
       ImportVPP(filenameAuto2);
+
+   if (m_tableEditor)
+   {
+      m_tableEditor->m_pcv->SetScript(m_script_text);
+      m_tableEditor->m_pcv->AddItem(this, false);
+      m_tableEditor->m_pcv->AddItem(m_psgt, true);
+      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+   }
 
    return hr;
 }
