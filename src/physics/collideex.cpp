@@ -156,6 +156,7 @@ HitGate::HitGate(Gate* const pgate, const float height)
    m_gateMover.m_pgate = pgate;
    m_gateMover.m_open = false;
    m_gateMover.m_forcedMove = false;
+   m_gateMover.m_hitDirection = false;
    m_twoWay = false;
 }
 
