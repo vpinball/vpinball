@@ -126,53 +126,73 @@ static void PollThread(const string& tablePath, const string& gameId)
    assert(pDOF != nullptr);
    SetThreadName("DOF.PollThread"s);
    pDOF->Init(tablePath.c_str(), gameId.c_str());
-   bool isInitialState = true;
-   vector<bool> wireStates, solStates, lampStates, giStates;
+   vector<bool> switchStates, solStates, lampStates, giStates;
    while (isRunning)
    {
       {
          std::lock_guard<std::mutex> lock(sourceMutex);
 
-         isInitialState |= wireStates.size() != pinmameInputSrc.nInputs;
-         isInitialState |= solStates.size() != nPmSolenoids;
-         isInitialState |= lampStates.size() != nPmLamps;
-         isInitialState |= giStates.size() != nPmGIs;
+         bool switchStatesInit = switchStates.size() != pinmameInputSrc.nInputs;
+         bool solStatesInit = solStates.size() != nPmSolenoids;
+         bool lampStatesInit = lampStates.size() != nPmLamps;
+         bool giStatesInit = giStates.size() != nPmGIs;
 
-         wireStates.resize(pinmameInputSrc.nInputs);
+         switchStates.resize(pinmameInputSrc.nInputs);
          for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
          {
+            int deviceId = pinmameInputSrc.inputDefs[i].deviceId;
             bool state = pinmameInputSrc.GetInputState(i);
-            if (isInitialState || (wireStates[i] != state))
-               pDOF->DataReceive('W', i + 1, state ? 1 : 0);
+
+            if (switchStatesInit || switchStates[i] != state) {
+               pDOF->DataReceive('W', deviceId, state);
+
+               switchStates[i] = state;
+            }
          }
 
          solStates.resize(nPmSolenoids);
          for (unsigned int i = 0; i < nPmSolenoids; i++)
          {
-            float state = pinmameDevSrc.GetFloatState(i);
-            if (isInitialState || (solStates[i] && state < 0.25f) || (!solStates[i] && state > 0.75f))
-               pDOF->DataReceive('S', i + 1, state > 0.5f ? 1 : 0);
+            // DOF uses the PinMame index for Solenoids
+            int deviceId = i + 1;
+            bool state = pinmameDevSrc.GetFloatState(i) > 0.5f;
+
+            if(solStatesInit || state != solStates[i]) {
+              pDOF->DataReceive('S', deviceId, state);
+
+              solStates[i] = state;
+            }
          }
 
          lampStates.resize(nPmLamps);
          for (unsigned int i = 0; i < nPmLamps; i++)
          {
-            float state = pinmameDevSrc.GetFloatState(pmLampIndex + i);
-            if (isInitialState || (lampStates[i] && state < 0.25f) || (!lampStates[i] && state > 0.75f))
-               pDOF->DataReceive('L', i + 1, state > 0.5f ? 1 : 0);
+            int deviceIndex = pmLampIndex + i;
+            int deviceId = pinmameDevSrc.deviceDefs[deviceIndex].deviceId;
+            bool state = pinmameDevSrc.GetFloatState(deviceIndex) > 0.5f;
+
+            if (lampStatesInit || state != lampStates[i]) {
+              pDOF->DataReceive('L', deviceId, state);
+
+              lampStates[i] = state;
+            }
          }
 
          giStates.resize(nPmGIs);
          for (unsigned int i = 0; i < nPmGIs; i++)
          {
-            float state = pinmameDevSrc.GetFloatState(pmGiIndex + i);
-            if (isInitialState || (giStates[i] && state < 0.25f) || (!giStates[i] && state > 0.75f))
-               pDOF->DataReceive('G', i + 1, state > 0.5f ? 1 : 0);
-         }
+            int deviceIndex = pmGiIndex + i;
+            int deviceId = pinmameDevSrc.deviceDefs[deviceIndex].deviceId;
+            bool state = pinmameDevSrc.GetFloatState(deviceIndex) > 0.5f;
 
-         isInitialState = false;
+            if (giStatesInit || state != giStates[i]) {
+               pDOF->DataReceive('G', deviceId, state);
+
+               giStates[i] = state;
+            }
+         }
       }
-      
+
       // Fixed update at 60 FPS
       std::this_thread::sleep_for(std::chrono::microseconds(16666));
    }
@@ -273,7 +293,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
          nPmSolenoids++;
    }
 
-   LOGI("DOFPlugin: OnDevSrcChanged - Found %d PinMAME devices (Sol:%d, Lamps:%d, GI:%d)", 
+   LOGI("DOFPlugin: OnDevSrcChanged - Found %d PinMAME devices (Sol:%d, Lamps:%d, GI:%d)",
         pinmameDevSrc.nDevices, nPmSolenoids, nPmLamps, nPmGIs);
 }
 
