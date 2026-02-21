@@ -307,6 +307,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h
    src/ui/live/ingameui/AudioSettingsPage.cpp
+   src/ui/live/ingameui/CabinetRender.h
+   src/ui/live/ingameui/CabinetRender.cpp
    src/ui/live/ingameui/CabinetSettingsPage.h
    src/ui/live/ingameui/CabinetSettingsPage.cpp
    src/ui/live/ingameui/DisplayProfileSettingsPage.h

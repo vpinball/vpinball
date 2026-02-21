@@ -3,6 +3,7 @@
 #pragma once
 
 #include "InGameUIPage.h"
+#include "CabinetRender.h"
 
 namespace VPX::InGameUI
 {
@@ -14,6 +15,7 @@ public:
 
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
+   void Render(float elapsed) override;
    void Save() override;
    void ResetToStoredValues() override;
    void ResetToDefaults() override;
@@ -34,6 +36,8 @@ private:
    bool m_staticPrepassDisabled = false;
 
    unsigned int m_glassNotifId = 0;
+
+   CabinetRender m_cabinetRender;
 };
 
 }
