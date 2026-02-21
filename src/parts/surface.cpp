@@ -1316,6 +1316,8 @@ HRESULT Surface::InitPostLoad()
 
 void Surface::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("TopHeight: {:.03f} | BottomHeight: {:.03f}", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
