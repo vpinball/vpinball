@@ -227,8 +227,8 @@ UltraDMD* FlexDMD::NewUltraDMD() { return new UltraDMD(this); }
 
 Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, int borderSize)
 {
-   const string tintHex = std::format("{:08x}", ((tint & 0x0000FF) << 24) | ((tint & 0x00FF00) << 8) | ((tint & 0xFF0000) >> 8) | 0xFF);
-   const string borderHex = std::format("{:08x}", ((borderTint & 0x0000FF) << 24) | ((borderTint & 0x00FF00) << 8) | ((borderTint & 0xFF0000) >> 8) | 0xFF);
+   const string tintHex = std::format("{:08X}", ((tint & 0x0000FFu) << 24) | ((tint & 0x00FF00u) << 8) | ((tint & 0xFF0000u) >> 8) | 0xFFu);
+   const string borderHex = std::format("{:08X}", ((borderTint & 0x0000FFu) << 24) | ((borderTint & 0x00FF00u) << 8) | ((borderTint & 0xFF0000u) >> 8) | 0xFFu);
    AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex, nullptr);
    Font* pFont = m_pAssetManager->GetFont(pAssetSrc);
    pAssetSrc->Release();

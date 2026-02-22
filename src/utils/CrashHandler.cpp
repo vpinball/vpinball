@@ -273,7 +273,7 @@ namespace
       uintptr_t stack[32];
       const uint32_t num = bx::getCallStackExact(3, BX_COUNTOF(stack), stack); // 3 to skip exception handler calls
       const int32_t total = bx::writeCallstack(&smb, stack, num, bx::ErrorIgnore {});
-      temp[total] = 0;
+      temp[total] = '\0';
       fprintf(f, "Call stack\n==========\n%s\n", temp);
       #else
       char callStack[2048] = {};

@@ -251,9 +251,9 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
       if (const string& group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
          groups.push_back(group);
 
-   auto toHex = [](int rgba) -> string
+   auto toHex = [](unsigned int rgba) -> string
    {
-      return std::format("{:08x}", rgba);
+      return std::format("{:#010X}", rgba);
    };
 
    for (const string& group : groups)
@@ -286,9 +286,9 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
             {
                if (dynamic_cast<const IntPropertyDef*>(prop)->m_max == 0xFFFFFF)
                {
-                  file << " [Default: 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
+                  file << " [Default: " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
                   if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
-                     file << " in 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
+                     file << " in " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
                   file << ']';
                }
                else

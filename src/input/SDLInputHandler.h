@@ -240,7 +240,7 @@ private:
          SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, &crc16);
          if (product)
          {
-            joyName = std::format("{} #{:04x}", SDL_GetJoystickName(joystick), product);
+            joyName = std::format("{} #{:#06X}", SDL_GetJoystickName(joystick), product);
          }
          else
          {

@@ -57,11 +57,11 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
       glassTop.x += glassLength * cosf(glassAngle) * scale;
       glassTop.y -= glassLength * sinf(glassAngle) * scale;
       ImVec2 pfBottom = glassBottom;
-      pfBottom.x += VPUTOCM(table->m_glassBottomHeight) * cosf(playfieldAngle - M_PIf * 0.5f) * scale;
-      pfBottom.y -= VPUTOCM(table->m_glassBottomHeight) * sinf(playfieldAngle - M_PIf * 0.5f) * scale;
+      pfBottom.x += VPUTOCM(table->m_glassBottomHeight) * cosf(playfieldAngle - (float)(M_PI * 0.5)) * scale;
+      pfBottom.y -= VPUTOCM(table->m_glassBottomHeight) * sinf(playfieldAngle - (float)(M_PI * 0.5)) * scale;
       ImVec2 pfTop = glassTop;
-      pfTop.x += VPUTOCM(table->m_glassTopHeight) * cosf(playfieldAngle - M_PIf * 0.5f) * scale;
-      pfTop.y -= VPUTOCM(table->m_glassTopHeight) * sinf(playfieldAngle - M_PIf * 0.5f) * scale;
+      pfTop.x += VPUTOCM(table->m_glassTopHeight) * cosf(playfieldAngle - (float)(M_PI * 0.5)) * scale;
+      pfTop.y -= VPUTOCM(table->m_glassTopHeight) * sinf(playfieldAngle - (float)(M_PI * 0.5)) * scale;
 
       ImVec2 backglassFrontBottom = glassTop + ImVec2(-5.f * scale, 0.f);
       ImVec2 backglassBackBottom = backglassFrontBottom + ImVec2(15.f * scale, 0.f);
@@ -93,8 +93,8 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
       draw_list->AddLine(pfBottom, pfTop, pfColor, 2); // Playfield
 
       screenOrig = pfBottom;
-      screenOrig.x += VPUTOCM(table->GetViewSetup().mWindowBottomZOfs) * cosf(playfieldAngle + M_PIf * 0.5f) * scale;
-      screenOrig.y -= VPUTOCM(table->GetViewSetup().mWindowBottomZOfs) * sinf(playfieldAngle + M_PIf * 0.5f) * scale;
+      screenOrig.x += VPUTOCM(table->GetViewSetup().mWindowBottomZOfs) * cosf(playfieldAngle + (float)(M_PI * 0.5)) * scale;
+      screenOrig.y -= VPUTOCM(table->GetViewSetup().mWindowBottomZOfs) * sinf(playfieldAngle + (float)(M_PI * 0.5)) * scale;
    }
 
    // Screen

@@ -1473,7 +1473,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    IStorage* pstgRoot;
    if (FAILED(hr = StgOpenStorage(m_filename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
-      const string msg = std::format("Error 0x{:X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
+      const string msg = std::format("Error {:#010X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
       ShowError(msg);
       return hr;
    }
@@ -3014,25 +3014,25 @@ Vertex2D PinTable::EvaluateGlassHeight() const
    auto intersect2D = [](const RenderVertex &v1, const RenderVertex &v2, float y)
    {
       if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
-         return Vertex2D(FLT_MAX, FLT_MAX);
+         return Vertex2D{FLT_MAX, FLT_MAX};
       if (fabs(v2.y - v1.y) < 0.01f)
-         return Vertex2D(v1.x, v1.y);
+         return Vertex2D{v1.x, v1.y};
       const float alpha = (y - v1.y) / (v2.y - v1.y);
-      return Vertex2D(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha));
+      return Vertex2D{lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha)};
    };
    auto submitEdge2D = [this, &intersect2D, &submitVertex](const RenderVertex &v1, const RenderVertex &v2, float y, float z)
    {
       if (Vertex2D pt = intersect2D(v1, v2, y); pt.x != FLT_MAX)
-         submitVertex(Vertex3Ds(pt.x, pt.y, z));
+         submitVertex(Vertex3Ds{pt.x, pt.y, z});
    };
    auto intersect3D = [](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
    {
       if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
-         return Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+         return Vertex3Ds{FLT_MAX, FLT_MAX, FLT_MAX};
       if (fabs(v2.y - v1.y) < 0.01f)
-         return Vertex3Ds(v1.x, v1.y, max(v1.z, v2.z));
+         return Vertex3Ds{v1.x, v1.y, max(v1.z, v2.z)};
       const float alpha = (y - v1.y) / (v2.y - v1.y);
-      return Vertex3Ds(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha));
+      return Vertex3Ds{lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha)};
    };
    auto submitEdge3D = [this, &intersect3D, &submitVertex](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
    {

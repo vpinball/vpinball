@@ -309,7 +309,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    catch (HRESULT hr)
    {
-      ShowError(std::format("Renderer initialization error code: {:x}", static_cast<unsigned int>(hr)));
+      ShowError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
       throw hr;
    }
 

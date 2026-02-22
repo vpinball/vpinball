@@ -635,7 +635,7 @@ vector<string> parse_csv_line(const string& line)
 string color_to_hex(OLE_COLOR color)
 {
    const uint32_t rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
-   return std::format("{:08x}", rgba);
+   return std::format("{:08X}", rgba);
 }
 
 bool string_contains_case_insensitive(const string& str1, const string& str2)
