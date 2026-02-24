@@ -24,14 +24,12 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
 {
    assert(mMode == VLM_WINDOW);
    const float realToVirtual = GetRealToVirtualScale(table);
-   const float screenBotZ = GetWindowBottomZOffset();
-   const float screenTopZ = GetWindowTopZOffset();
    // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
-   const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(screenInclination));
+   const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom) - ANGTORAD(screenInclination));
    const vec3 pos = rotx.MultiplyVectorNoPerspective(CMTOVPU(playerPos));
    mViewX = pos.x;
    mViewY = pos.y;
-   mViewZ = pos.z + screenBotZ * mSceneScaleY / realToVirtual;
+   mViewZ = pos.z + mWindowBottomZOfs * mSceneScaleY / realToVirtual;
 }
 
 void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
@@ -55,7 +53,7 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
       // We compare and propose the value to the user if there is a large enough difference
       if (VPUTOINCHES(fabs(topHeight - table->m_glassTopHeight)) > 1.f || VPUTOINCHES(fabs(bottomHeight - table->m_glassBottomHeight)) > 1.f)
       {
-         glassNotification(std::format("Glass position was evaluated to {:.2f}cm / {:.2f}cm\nIt differs from the defined glass position {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight),
+         glassNotification(std::format("Glass height was evaluated to {:.2f}cm / {:.2f}cm\nIt differs from the defined glass position {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight),
             VPUTOCM(topHeight), VPUTOCM(table->m_glassBottomHeight), VPUTOCM(table->m_glassTopHeight)));
       }
       topHeight = table->m_glassTopHeight;

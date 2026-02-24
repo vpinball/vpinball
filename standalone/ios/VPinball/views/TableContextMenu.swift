@@ -49,9 +49,9 @@ struct TableContextMenu: View {
         }
     }
 
-    private func handleAction(_ type: VPinballViewModel.ActionType, delay: TimeInterval = 0.5) {
+    private func handleAction(_ type: MainViewModel.ActionType, delay: TimeInterval = 0.5) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            VPinballViewModel.shared.setAction(type, table: table)
+            MainViewModel.shared.setAction(type, table: table)
         }
     }
 }

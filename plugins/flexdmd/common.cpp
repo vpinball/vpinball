@@ -49,17 +49,14 @@ bool try_parse_int(const string& str, int& value)
 
 bool try_parse_color(const string& str, ColorRGBA32& value)
 {
-   string hexStr;
-   if (str[0] == '#')
-      hexStr = str.substr(1);
-   else
-      hexStr = str;
+   const size_t start = (!str.empty() && str[0] == '#') ? 1 : 0;
+   string hexStr(str, start);
 
    if (hexStr.size() == 6)
       hexStr += "FF";
-
-   if (hexStr.size() != 8)
-      return false;
+   else
+      if (hexStr.size() != 8)
+         return false;
 
    uint32_t rgba;
    std::stringstream ss;
@@ -116,7 +113,7 @@ string find_case_insensitive_file_path(const string& szPath)
       if (std::filesystem::exists(p, ec))
          return p.string();
 
-      auto parent = p.parent_path();
+      const auto parent = p.parent_path();
       string base;
       if (parent.empty() || parent == p) {
          base = "."s;
@@ -126,7 +123,7 @@ string find_case_insensitive_file_path(const string& szPath)
             return string();
       }
 
-      for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      for (const auto& ent : std::filesystem::directory_iterator(base, ec)) {
          if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
             auto found = ent.path().string();
             if (found != path) {

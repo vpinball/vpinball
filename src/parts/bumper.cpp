@@ -988,7 +988,8 @@ STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal)
 STDMETHODIMP Bumper::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

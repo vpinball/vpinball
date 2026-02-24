@@ -81,10 +81,10 @@ void GraphicsPath::AddRectangle(const SDL_FRect& rect)
    if (rect.w == 0 || rect.h == 0)
       return;
 
-   m_points.push_back({rect.x, rect.y});
-   m_points.push_back({rect.x + rect.w, rect.y});
-   m_points.push_back({rect.x + rect.w, rect.y + rect.h});
-   m_points.push_back({rect.x, rect.y + rect.h});
+   m_points.emplace_back(rect.x, rect.y);
+   m_points.emplace_back(rect.x + rect.w, rect.y);
+   m_points.emplace_back(rect.x + rect.w, rect.y + rect.h);
+   m_points.emplace_back(rect.x, rect.y + rect.h);
 }
 
 void GraphicsPath::Transform(Matrix* pMatrix)

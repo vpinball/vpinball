@@ -385,7 +385,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 #endif
       default: errorCode = "unknown"; break;
       }
-      const string msg = std::format("glCheckFramebufferStatus returned 0x{:08X} {}", glCheckFramebufferStatus(m_framebuffer), errorCode);
+      const string msg = std::format("glCheckFramebufferStatus returned {:#010X} {}", (unsigned int)glCheckFramebufferStatus(m_framebuffer), errorCode);
       ShowError(msg);
 
 #ifndef __OPENGLES__

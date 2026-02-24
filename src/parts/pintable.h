@@ -327,9 +327,9 @@ public:
    enum class OptionEventType { Initialized, Changed, Reseted, EndOfEdit };
    void FireOptionEvent(OptionEventType event);
 
-   VPX::Sound *ImportSound(const string &filename);
-   void ReImportSound(VPX::Sound *const pps, const string &filename);
-   bool ExportSound(VPX::Sound *const pps, const string &filename);
+   VPX::Sound *ImportSound(const std::filesystem::path &filename);
+   void ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
+   bool ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
    void RemoveSound(VPX::Sound *const pps);
    bool ExportImage(const Texture *const ppi, const string &filename);
    Texture* ImportImage(const std::filesystem::path &filename, const string &imageName);
@@ -420,8 +420,8 @@ public:
    static HRESULT WriteInfoValue(IStorage *pstg, const wstring& wzName, const string &szValue, HCRYPTHASH hcrypthash);
    static HRESULT ReadInfoValue(IStorage *pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) final;
-   HRESULT LoadGameFromFilename(const string &filename);
-   HRESULT LoadGameFromFilename(const string &filename, VPXFileFeedback& feedback);
+   HRESULT LoadGameFromFilename(const std::filesystem::path &filename);
+   HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);

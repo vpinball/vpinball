@@ -18,7 +18,6 @@ import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStorageMode
-import org.vpinball.app.jni.VPinballViewMode
 import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 
 class SettingsViewModel : ViewModel() {
@@ -40,9 +39,6 @@ class SettingsViewModel : ViewModel() {
         private set
 
     // Display
-
-    var bgSet by mutableStateOf(VPinballViewMode.DESKTOP_FSS)
-        private set
 
     // Performance
 
@@ -83,7 +79,7 @@ class SettingsViewModel : ViewModel() {
         // General
 
         haptics = VPinballManager.loadValue(STANDALONE, "Haptics", true)
-        renderingModeOverride = (VPinballManager.loadValue(STANDALONE, "RenderingModeOverride", 2) == 2)
+        renderingModeOverride = (VPinballManager.loadValue(STANDALONE, "RenderingModeOverride", -1) == 2)
         gfxBackend = VPinballGfxBackend.fromString(VPinballManager.loadValue(PLAYER, "GfxBackend", VPinballGfxBackend.OPENGLES.value))
 
         val savedSAFPath = VPinballManager.loadValue(STANDALONE, "SAFPath", "")
@@ -101,10 +97,6 @@ class SettingsViewModel : ViewModel() {
                     }
                 }
             }
-
-        // Display
-
-        bgSet = VPinballViewMode.fromInt(VPinballManager.loadValue(PLAYER, "BGSet", VPinballViewMode.DESKTOP_FSS.value))
 
         // Performance
 
@@ -185,11 +177,6 @@ class SettingsViewModel : ViewModel() {
     }
 
     // Display
-
-    fun handleBGSet(value: VPinballViewMode) {
-        bgSet = value
-        VPinballManager.saveValue(PLAYER, "BGSet", bgSet.value)
-    }
 
     // Performance
 

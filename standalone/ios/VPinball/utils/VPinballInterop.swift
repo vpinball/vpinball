@@ -27,27 +27,6 @@ enum VPinballSettingsSection: String {
     case pluginDMDUtil = "Plugin.DMDUtil"
 }
 
-enum VPinballViewMode: CInt {
-    case desktopFSS
-    case cabinet
-    case desktopNoFSS
-
-    static let all: [VPinballViewMode] = [.desktopFSS,
-                                          .cabinet,
-                                          .desktopNoFSS]
-
-    var name: String {
-        switch self {
-        case .desktopFSS:
-            return "Desktop & FSS"
-        case .cabinet:
-            return "Cabinet"
-        case .desktopNoFSS:
-            return "Desktop (no FSS)"
-        }
-    }
-}
-
 enum VPinballMaxTexDimension: CInt {
     case unlimited = 0
     case max256 = 256

@@ -1212,7 +1212,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
       string customInfo;
       ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
-      m_vCustomInfoContent.push_back(customInfo);
+      m_vCustomInfoContent.push_back(std::move(customInfo));
    }
 
    return hr;
@@ -1436,7 +1436,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& filename)
+HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    if (m_vpinball)
@@ -1450,7 +1450,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename)
    return LoadGameFromFilename(filename, feedback);
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& feedback)
+HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback)
 {
    if (filename.empty())
    {
@@ -1458,7 +1458,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       return S_FALSE;
    }
 
-   PLOGI << "LoadGameFromFilename " + filename; // For profiling
+   PLOGI << "LoadGameFromFilename " + filename.string(); // For profiling
 
    m_filename = filename;
 
@@ -1473,7 +1473,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    IStorage* pstgRoot;
    if (FAILED(hr = StgOpenStorage(m_filename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
-      const string msg = std::format("Error 0x{:X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
+      const string msg = std::format("Error {:#010X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
       ShowError(msg);
       return hr;
    }
@@ -1605,6 +1605,14 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      pstmItem = nullptr;
                      if (FAILED(hr)) break;
 
+                     if (piedit->GetScriptable() && !IsNameUnique(piedit->GetScriptable()->m_wzName))
+                     {
+                        PLOGE << "Invalid file: parts do not have unique names.";
+                        WCHAR uniqueName[MAXNAMEBUFFER];
+                        GetUniqueName(piedit->GetScriptable()->m_wzName, uniqueName, std::size(piedit->GetScriptable()->m_wzName));
+                        piedit->SetName(MakeString(uniqueName));
+                     }
+                     
                      AddPart(piedit);
 
                      //hr = piedit->InitPostLoad();
@@ -1953,7 +1961,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    m_title = TitleFromFilename(filename);
 #ifndef __STANDALONE__
-   const DWORD attr = GetFileAttributes(filename.c_str());
+   const DWORD attr = GetFileAttributes(filename.string().c_str());
    if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
       m_title += " [READ ONLY]";
 #endif
@@ -1978,14 +1986,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       m_currentBackglassMode = BG_FSS;
 
    RemoveInvalidReferences();
-
-   if (m_tableEditor)
-   {
-      m_tableEditor->m_pcv->SetScript(m_script_text);
-      m_tableEditor->m_pcv->AddItem(this, false);
-      m_tableEditor->m_pcv->AddItem(m_psgt, true);
-      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
-   }
 
    std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
    std::filesystem::path tableFile = std::filesystem::path(filename).filename();
@@ -2016,6 +2016,14 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       ImportVPP(filenameAuto);
    else if (const std::filesystem::path filenameAuto2 = tablePath / "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
       ImportVPP(filenameAuto2);
+
+   if (m_tableEditor)
+   {
+      m_tableEditor->m_pcv->SetScript(m_script_text);
+      m_tableEditor->m_pcv->AddItem(this, false);
+      m_tableEditor->m_pcv->AddItem(m_psgt, true);
+      //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
+   }
 
    return hr;
 }
@@ -2354,7 +2362,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       string tmp;
       pbr->GetString(tmp);
-      m_vCustomInfoTag.push_back(tmp);
+      m_vCustomInfoTag.push_back(std::move(tmp));
       break;
    }
    case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
@@ -2553,9 +2561,9 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
+bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
 {
-   if (extension_from_path(pps->GetImportPath()) == extension_from_path(filename))
+   if (pps->GetImportPath().extension() == filename.extension())
    {
       if (pps->SaveToFile(filename))
          return true;
@@ -2571,7 +2579,7 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
    return false;
 }
 
-void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
+void PinTable::ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    vector<uint8_t> data = read_file(filename);
@@ -2581,7 +2589,7 @@ void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
 }
 
 
-VPX::Sound *PinTable::ImportSound(const string &filename)
+VPX::Sound *PinTable::ImportSound(const std::filesystem::path &filename)
 {
 #ifndef __STANDALONE__
    VPX::Sound *const pps = VPX::Sound::CreateFromFile(filename);
@@ -3006,25 +3014,25 @@ Vertex2D PinTable::EvaluateGlassHeight() const
    auto intersect2D = [](const RenderVertex &v1, const RenderVertex &v2, float y)
    {
       if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
-         return Vertex2D(FLT_MAX, FLT_MAX);
+         return Vertex2D{FLT_MAX, FLT_MAX};
       if (fabs(v2.y - v1.y) < 0.01f)
-         return Vertex2D(v1.x, v1.y);
+         return Vertex2D{v1.x, v1.y};
       const float alpha = (y - v1.y) / (v2.y - v1.y);
-      return Vertex2D(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha));
+      return Vertex2D{lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha)};
    };
    auto submitEdge2D = [this, &intersect2D, &submitVertex](const RenderVertex &v1, const RenderVertex &v2, float y, float z)
    {
       if (Vertex2D pt = intersect2D(v1, v2, y); pt.x != FLT_MAX)
-         submitVertex(Vertex3Ds(pt.x, pt.y, z));
+         submitVertex(Vertex3Ds{pt.x, pt.y, z});
    };
    auto intersect3D = [](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
    {
       if ((v1.y < y - marginY && v2.y < y - marginY) || (v1.y > y + marginY && v2.y > y + marginY))
-         return Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+         return Vertex3Ds{FLT_MAX, FLT_MAX, FLT_MAX};
       if (fabs(v2.y - v1.y) < 0.01f)
-         return Vertex3Ds(v1.x, v1.y, max(v1.z, v2.z));
+         return Vertex3Ds{v1.x, v1.y, max(v1.z, v2.z)};
       const float alpha = (y - v1.y) / (v2.y - v1.y);
-      return Vertex3Ds(lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha));
+      return Vertex3Ds{lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha)};
    };
    auto submitEdge3D = [this, &intersect3D, &submitVertex](const Vertex3Ds &v1, const Vertex3Ds &v2, float y)
    {
@@ -4670,7 +4678,7 @@ string PinTable::AuditTable(bool log) const
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
    auto audioPlayer = std::make_unique<VPX::AudioPlayer>(m_settings.GetPlayer_SoundDeviceBG(), m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(m_settings.GetPlayer_Sound3D()));
-   for (auto sound : m_vsound)
+   for (const auto sound : m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);
       if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)

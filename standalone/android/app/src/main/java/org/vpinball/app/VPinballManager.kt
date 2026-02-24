@@ -39,8 +39,6 @@ object VPinballManager : KoinComponent {
 
     private var playerActivity: VPinballPlayerActivity? = null
     private var mainActivity: VPinballActivity? = null
-    private var activeTable: Table? = null
-    private var error: String? = null
 
     private var lastProgressEvent: VPinballEvent? = null
     private var lastProgress: Int? = null
@@ -91,156 +89,136 @@ object VPinballManager : KoinComponent {
 
     private fun performInit() {
         vpinballJNI.VPinballInit { value, jsonData ->
-            mainActivity?.let { activity ->
-                val viewModel = activity.viewModel
-                val event = VPinballEvent.entries.find { it.ordinal == value }
-                when (event) {
-                    VPinballEvent.INIT_COMPLETE -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            runCatching { FileUtils.copyAssets(context.assets, "", File(vpinballJNI.VPinballGetPath(VPinballPath.ROOT.value))) }
+            val activity = mainActivity ?: return@VPinballInit
+            val viewModel = activity.viewModel
+            val event = VPinballEvent.entries.find { it.ordinal == value } ?: return@VPinballInit
 
-                            synchronized(initLock) {
-                                initState = InitState.INITIALIZED
-                                pendingCallbacks.forEach { callback -> CoroutineScope(Dispatchers.Main).launch { callback() } }
-                                pendingCallbacks.clear()
-                            }
+            when (event) {
+                VPinballEvent.INIT_COMPLETE -> {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        runCatching { FileUtils.copyAssets(context.assets, "", File(vpinballJNI.VPinballGetPath(VPinballPath.ROOT.value))) }
+
+                        synchronized(initLock) {
+                            initState = InitState.INITIALIZED
+                            pendingCallbacks.forEach { callback -> CoroutineScope(Dispatchers.Main).launch { callback() } }
+                            pendingCallbacks.clear()
                         }
                     }
-                    VPinballEvent.EXTRACT_SCRIPT,
-                    VPinballEvent.LOADING_ITEMS,
-                    VPinballEvent.LOADING_SOUNDS,
-                    VPinballEvent.LOADING_IMAGES,
-                    VPinballEvent.LOADING_FONTS,
-                    VPinballEvent.LOADING_COLLECTIONS,
-                    VPinballEvent.PRERENDERING -> {
-                        val progressData =
-                            jsonData?.let { jsonStr ->
-                                try {
-                                    Json.decodeFromString<VPinballProgressData>(jsonStr)
-                                } catch (e: Exception) {
-                                    log(VPinballLogLevel.WARN, "Failed to parse progress data JSON: $jsonStr - ${e.message}")
-                                    null
-                                }
-                            }
-
-                        val shouldUpdate = lastProgressEvent != event || lastProgress != progressData?.progress
-                        if (shouldUpdate) {
-                            log(VPinballLogLevel.INFO, "event=${event.name}, data=${progressData}")
-                            lastProgressEvent = event
-                            lastProgress = progressData?.progress
-
-                            progressData?.let {
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    viewModel.title(activeTable?.name ?: "")
-                                    viewModel.progress(progressData.progress)
-                                    viewModel.status(event.text)
-                                }
+                }
+                VPinballEvent.EXTRACT_SCRIPT,
+                VPinballEvent.LOADING_ITEMS,
+                VPinballEvent.LOADING_SOUNDS,
+                VPinballEvent.LOADING_IMAGES,
+                VPinballEvent.LOADING_FONTS,
+                VPinballEvent.LOADING_COLLECTIONS,
+                VPinballEvent.PRERENDERING -> {
+                    val progressData =
+                        jsonData?.let { jsonStr ->
+                            try {
+                                Json.decodeFromString<VPinballProgressData>(jsonStr)
+                            } catch (e: Exception) {
+                                log(VPinballLogLevel.WARN, "Failed to parse progress data JSON: $jsonStr - ${e.message}")
+                                null
                             }
                         }
+
+                    val shouldUpdate = lastProgressEvent != event || lastProgress != progressData?.progress
+                    if (shouldUpdate) {
+                        log(VPinballLogLevel.INFO, "event=${event.name}, data=${progressData}")
+                        lastProgressEvent = event
+                        lastProgress = progressData?.progress
+
+                        progressData?.let { CoroutineScope(Dispatchers.Main).launch { viewModel.updateHUD(progressData.progress, event.text ?: "") } }
                     }
-                    VPinballEvent.PLAYER_STARTED -> {
-                        lastProgressEvent = null
-                        lastProgress = null
-                        CoroutineScope(Dispatchers.Main).launch {
-                            viewModel.playing(true)
-                            delay(500)
-                            viewModel.loading(false)
+                }
+                VPinballEvent.PLAYER_STARTED -> {
+                    lastProgressEvent = null
+                    lastProgress = null
+                    CoroutineScope(Dispatchers.Main).launch {
+                        viewModel.isPlaying = true
+                        delay(500)
+                        viewModel.hideHUD()
+                    }
+                }
+                VPinballEvent.RUMBLE -> {
+                    val rumbleData =
+                        jsonData?.let { jsonStr ->
+                            try {
+                                Json.decodeFromString<VPinballRumbleData>(jsonStr)
+                            } catch (e: Exception) {
+                                log(VPinballLogLevel.WARN, "Failed to parse rumble data JSON: $jsonStr - ${e.message}")
+                                null
+                            }
                         }
-                    }
-                    VPinballEvent.RUMBLE -> {
-                        val rumbleData =
-                            jsonData?.let { jsonStr ->
-                                try {
-                                    Json.decodeFromString<VPinballRumbleData>(jsonStr)
-                                } catch (e: Exception) {
-                                    log(VPinballLogLevel.WARN, "Failed to parse rumble data JSON: $jsonStr - ${e.message}")
-                                    null
-                                }
-                            }
-                        rumbleData?.let { rumble(it) }
-                    }
-                    VPinballEvent.PLAYER_CLOSED -> {
-                        val tableToCleanup = activeTable
-                        activeTable = null
-                        CoroutineScope(Dispatchers.Main).launch {
-                            viewModel.playing(false)
+                    rumbleData?.let { rumble(it) }
+                }
+                VPinballEvent.PLAYER_CLOSED -> {
+                    val tableToCleanup = viewModel.activeTable
+                    viewModel.activeTable = null
+                    CoroutineScope(Dispatchers.Main).launch {
+                        viewModel.isPlaying = false
+                        viewModel.hideHUD()
+                        delay(100)
 
-                            error?.let { error ->
-                                delay(500)
-                                showError(error)
-                            }
-
-                            viewModel.stopped()
-                            delay(100)
-
-                            tableToCleanup?.let { table ->
-                                if (SAFFileSystem.isUsingSAF()) {
-                                    viewModel.loading(true, null)
-                                    viewModel.title(table.name)
-                                    viewModel.progress(0)
-                                    viewModel.status("Saving changes...")
-                                    delay(50)
-
-                                    withContext(Dispatchers.IO) {
-                                        TableManager.getInstance().cleanupLoadedTable(table) { progress, status ->
-                                            CoroutineScope(Dispatchers.Main).launch {
-                                                viewModel.progress(progress)
-                                                viewModel.status(status)
-                                            }
-                                        }
-                                    }
-
-                                    viewModel.loading(false)
-                                    viewModel.progress(0)
-                                    viewModel.status(null)
-                                } else {
-                                    withContext(Dispatchers.IO) { TableManager.getInstance().cleanupLoadedTable(table) }
-                                }
+                        tableToCleanup?.let { table ->
+                            if (SAFFileSystem.isUsingSAF()) {
+                                viewModel.showHUD(table.name, "Saving changes...")
+                                delay(50)
 
                                 withContext(Dispatchers.IO) {
-                                    TableManager.getInstance().reloadTableImage(table)?.let { updatedTable ->
-                                        LandingScreenViewModel.triggerUpdateTable(updatedTable)
+                                    TableManager.getInstance().cleanupLoadedTable(table) { progress, status ->
+                                        CoroutineScope(Dispatchers.Main).launch { viewModel.updateHUD(progress, status) }
                                     }
                                 }
+
+                                viewModel.hideHUD()
+                            } else {
+                                withContext(Dispatchers.IO) { TableManager.getInstance().cleanupLoadedTable(table) }
                             }
 
-                            delay(2000)
-                            playerActivity?.finish()
-                        }
-                    }
-                    VPinballEvent.WEB_SERVER -> {
-                        val webServerData =
-                            jsonData?.let { jsonStr ->
-                                try {
-                                    Json.decodeFromString<VPinballWebServerData>(jsonStr)
-                                } catch (_: Exception) {
-                                    null
-                                }
-                            }
-                        CoroutineScope(Dispatchers.Main).launch { viewModel.webServerURL = webServerData?.url ?: "" }
-                    }
-                    VPinballEvent.COMMAND -> {
-                        val commandData =
-                            jsonData?.let { jsonStr ->
-                                try {
-                                    Json.decodeFromString<VPinballCommandData>(jsonStr)
-                                } catch (e: Exception) {
-                                    log(VPinballLogLevel.WARN, "Failed to parse command data JSON: $jsonStr - ${e.message}")
-                                    null
-                                }
-                            }
-                        commandData?.let {
-                            if (it.command == "reloadTables") {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    TableManager.getInstance().refresh()
-                                    LandingScreenViewModel.triggerRefresh()
+                            withContext(Dispatchers.IO) {
+                                TableManager.getInstance().reloadTableImage(table)?.let { updatedTable ->
+                                    LandingScreenViewModel.triggerUpdateTable(updatedTable)
                                 }
                             }
                         }
+
+                        delay(2000)
+                        playerActivity?.finish()
                     }
-                    else -> {
-                        log(VPinballLogLevel.WARN, "event=${event}")
+                }
+                VPinballEvent.WEB_SERVER -> {
+                    val webServerData =
+                        jsonData?.let { jsonStr ->
+                            try {
+                                Json.decodeFromString<VPinballWebServerData>(jsonStr)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        }
+                    CoroutineScope(Dispatchers.Main).launch { viewModel.webServerURL = webServerData?.url }
+                }
+                VPinballEvent.COMMAND -> {
+                    val commandData =
+                        jsonData?.let { jsonStr ->
+                            try {
+                                Json.decodeFromString<VPinballCommandData>(jsonStr)
+                            } catch (e: Exception) {
+                                log(VPinballLogLevel.WARN, "Failed to parse command data JSON: $jsonStr - ${e.message}")
+                                null
+                            }
+                        }
+                    commandData?.let {
+                        if (it.command == "reloadTables") {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                TableManager.getInstance().refresh()
+                                LandingScreenViewModel.triggerRefresh()
+                            }
+                        }
                     }
+                }
+                else -> {
+                    log(VPinballLogLevel.WARN, "event=${event}")
                 }
             }
         }
@@ -336,9 +314,7 @@ object VPinballManager : KoinComponent {
     }
 
     suspend fun load(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
-        if (activeTable != null) return false
-        activeTable = table
-        error = null
+        val viewModel = mainActivity?.viewModel ?: return false
 
         return withContext(Dispatchers.IO) {
             if (loadValue(STANDALONE, "ResetLogOnPlay", true)) {
@@ -349,13 +325,11 @@ object VPinballManager : KoinComponent {
 
             if (tablePath == null) {
                 log(VPinballLogLevel.ERROR, "Unable to stage table: ${table.uuid}")
-                activeTable = null
                 delay(500)
                 withContext(Dispatchers.Main) {
-                    mainActivity?.let {
-                        it.viewModel.stopped()
-                        it.viewModel.setError("Unable to stage table.")
-                    }
+                    viewModel.activeTable = null
+                    viewModel.hideHUD()
+                    LandingScreenViewModel.triggerError("Unable to stage table.")
                 }
                 return@withContext false
             }
@@ -364,13 +338,11 @@ object VPinballManager : KoinComponent {
                 true
             } else {
                 log(VPinballLogLevel.ERROR, "Unable to load table: ${table.uuid}")
-                activeTable = null
                 delay(500)
                 withContext(Dispatchers.Main) {
-                    mainActivity?.let {
-                        it.viewModel.stopped()
-                        it.viewModel.setError("Unable to load table.")
-                    }
+                    viewModel.activeTable = null
+                    viewModel.hideHUD()
+                    LandingScreenViewModel.triggerError("Unable to load table.")
                 }
                 false
             }
@@ -378,7 +350,7 @@ object VPinballManager : KoinComponent {
     }
 
     fun play() {
-        if (activeTable == null) {
+        if (mainActivity?.viewModel?.activeTable == null) {
             log(VPinballLogLevel.ERROR, "No table loaded for playback")
             return
         }
@@ -391,11 +363,9 @@ object VPinballManager : KoinComponent {
     }
 
     fun showError(message: String) {
-        mainActivity?.let { activity ->
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(250)
-                activity.viewModel.setError(message)
-            }
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(250)
+            LandingScreenViewModel.triggerError(message)
         }
     }
 

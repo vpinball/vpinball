@@ -39,16 +39,6 @@ enum class VPinballSettingsSection(val value: String) {
     }
 }
 
-enum class VPinballViewMode(val value: Int, override val text: String) : VPinballDisplayText {
-    DESKTOP_FSS(0, "Desktop & FSS"),
-    CABINET(1, "Cabinet"),
-    DESKTOP_NO_FSS(2, "Desktop (no FSS)");
-
-    companion object {
-        @JvmStatic fun fromInt(value: Int): VPinballViewMode = entries.firstOrNull { it.value == value } ?: DESKTOP_FSS
-    }
-}
-
 enum class VPinballMaxTexDimension(val value: Int, override val text: String) : VPinballDisplayText {
     MAX_256(256, "256"),
     MAX_384(384, "384"),

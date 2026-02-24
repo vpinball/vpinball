@@ -216,8 +216,15 @@ void LayersListDialog::SetActiveTable(PinTable* ptable)
       m_layerTreeView.SetActiveTable(ptable);
       if (IsSyncedOnSelection())
       {
-         ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
-         m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+         if (m_activeTable)
+         {
+            ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+            m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+         }
+         else
+         {
+            m_layerTreeView.Select(nullptr);
+         }
       }
       UpdateCommands();
    }

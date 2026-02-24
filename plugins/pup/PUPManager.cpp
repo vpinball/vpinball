@@ -514,7 +514,7 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
          const bool isTriggered = triggers[0]->IsTriggered();
          if (isTriggered && !wasTriggered)
          {
-            for (auto trigger : triggers)
+            for (const auto& trigger : triggers)
             {
                // Dispatch trigger action on main thread
                m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
@@ -597,7 +597,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    //   2. overlay
    // - active label page (not sure if back/front apply to label pages)
    vector<std::shared_ptr<PUPScreen>> screens;
-   for (auto screen : me->m_screenOrder)
+   for (const auto& screen : me->m_screenOrder)
    {
       const PUPScreen* parent = screen.get();
       while (parent && parent != rootScreen.get())

@@ -30,7 +30,7 @@ enum class Link(val url: String) {
 enum class Credit(val displayName: String, val authors: String? = null, val link: Link? = null) {
     VPINBALL(
         "Visual Pinball",
-        "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi",
+        "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi, evilwraith",
         Link.VPINBALL,
     ),
     PINMAME(
@@ -43,7 +43,7 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
     LIBZEDMD("libzedmd", "mkalkbrenner, jsm174, zesinger, Cpasjuste, bartdesign", Link.LIBZEDMD),
     LIBSERUM("libserum", "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc", Link.LIBSERUM),
     LIBDOF("libdof", "jsm174, dekay", Link.LIBDOF),
-    LIBVNI("libvni", "mkalkbrenner, freezy", Link.LIBVNI),
+    LIBVNI("libvni", "mkalkbrenner, freezy, jsm174", Link.LIBVNI),
     ARTWORK("Artwork", "smillard316 (Table placeholder), adam.co (App icon enhancements)"),
     OTHER("Other third party libraries", link = Link.THIRDPARTY),
 }

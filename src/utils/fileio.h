@@ -3,14 +3,10 @@
 #pragma once
 #define FID(A) (int)((unsigned int)(#A[0])|((unsigned int)(#A[1])<<8)|((unsigned int)(#A[2])<<16)|((unsigned int)(#A[3])<<24))
 
-bool DirExists(const string& dirPath);
-bool FileExists(const string& filePath);
 bool DirExists(const std::filesystem::path& dirPath);
 bool FileExists(const std::filesystem::path& filePath);
-string TitleFromFilename(const string& filename);
-string ExtensionFromFilename(const string& filename);
-string PathFromFilename(const string& filename);
-bool ReplaceExtensionFromFilename(string& filename, const string& newextension);
+string TitleFromFilename(const std::filesystem::path& filename);
+std::filesystem::path PathFromFilename(const std::filesystem::path& filename);
 
 class BiffReader;
 

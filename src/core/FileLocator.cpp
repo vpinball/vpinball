@@ -18,7 +18,7 @@ std::filesystem::path FileLocator::EvaluateAppPath()
 {
    std::filesystem::path appPath;
 #ifdef __ANDROID__
-   // Android may not open files in the APK ressources through fopen so we copy them outside of the apk in the internal storage
+   // Android may not open files in the APK resources through fopen so we copy them outside of the apk in the internal storage
    appPath = std::filesystem::path(SDL_GetAndroidInternalStoragePath()) / "";
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
@@ -32,7 +32,7 @@ std::filesystem::path FileLocator::EvaluateAppPath()
 
 void FileLocator::SetupPrefPath()
 {
-   string basePrefPath;
+   std::filesystem::path basePrefPath;
 #if defined(__ANDROID__)
    char* szPrefPath = SDL_GetPrefPath(NULL, "");
    basePrefPath = szPrefPath;
@@ -48,7 +48,7 @@ void FileLocator::SetupPrefPath()
 
    // Preference are stored per minor version (grouping all minor revision together, as minor revisions are not allowed to need user setup changes)
    const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
-   m_prefPath = std::filesystem::path(basePrefPath) / versionPath;
+   m_prefPath = basePrefPath / versionPath;
    if (DirExists(m_prefPath))
       return;
 
@@ -86,12 +86,12 @@ void FileLocator::SetupPrefPath()
       for (int minor = (major == VP_VERSION_MAJOR ? VP_VERSION_MINOR : 9); prevPref.empty() && minor >= 0; minor--)
       {
          const string testVersion = std::format("{}.{}", major, minor);
-         if (auto testPath = std::filesystem::path(basePrefPath) / testVersion; testPath != m_prefPath && DirExists(testPath))
+         if (auto testPath = basePrefPath / testVersion; testPath != m_prefPath && DirExists(testPath))
             prevPref = testPath;
       }
    }
-   if (prevPref.empty() && DirExists(std::filesystem::path(basePrefPath)))
-      prevPref = std::filesystem::path(basePrefPath);
+   if (prevPref.empty() && DirExists(basePrefPath))
+      prevPref = basePrefPath;
    if (!prevPref.empty())
    {
       PLOGI << "Initializing new preference folder from previous install in: " << prevPref;
@@ -353,7 +353,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
                   path = withSubFolder(m_prefPath);
                   if (!DirExists(path))
                   {
-                     // Not found: defaults to folder along table, not creating the dirs (backward compatiblity behavior)
+                     // Not found: defaults to folder along table, not creating the dirs (backward compatibility behavior)
                      path = withSubFolder(table->m_filename.parent_path());
                   }
                }

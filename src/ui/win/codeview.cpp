@@ -933,7 +933,10 @@ void CodeViewer::SetScript(const string& script)
 {
 #ifndef __STANDALONE__
    if (m_hwndScintilla)
-      ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+   {
+      string copy(script); // As the provided string is modified by the call
+      ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)copy.c_str());
+   }
    // Allow updates to take, now that we know the script size
    UpdateScinFromPrefs();
 #endif
@@ -1314,7 +1317,7 @@ void CodeViewer::ListEventsFromItem()
    ::SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
-   for (auto event : pscript->GetEventNames())
+   for (const auto& event : pscript->GetEventNames())
    {
       string method = MakeString(event);
       const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)method.c_str());

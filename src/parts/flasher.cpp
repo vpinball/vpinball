@@ -578,7 +578,8 @@ STDMETHODIMP Flasher::get_X(float *pVal)
 {
    UpdateCenter();
    *pVal = m_d.m_vCenter.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

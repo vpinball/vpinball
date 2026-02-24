@@ -624,7 +624,8 @@ STDMETHODIMP DispReel::put_Height(float newVal)
 STDMETHODIMP DispReel::get_X(float *pVal)
 {
    *pVal = GetX();
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

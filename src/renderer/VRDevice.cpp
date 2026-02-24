@@ -812,7 +812,7 @@ VRDevice::VRDevice(const Settings& settings)
       extensionProperties.resize(extensionCount, { XR_TYPE_EXTENSION_PROPERTIES });
       OPENXR_CHECK(xrEnumerateInstanceExtensionProperties(nullptr, extensionCount, &extensionCount, extensionProperties.data()), "Failed to enumerate InstanceExtensionProperties.");
       #ifdef DEBUG
-         for (auto& extensionProperty : extensionProperties)
+         for (const auto& extensionProperty : extensionProperties)
          {
             PLOGD << "OpenXR supported extension: " << extensionProperty.extensionName << ", version " << extensionProperty.extensionVersion;
          }
@@ -1233,7 +1233,7 @@ void VRDevice::SetupHMD()
    m_environmentBlendModes.resize(environmentBlendModeCount);
    OPENXR_CHECK(xrEnumerateEnvironmentBlendModes(m_xrInstance, m_systemID, m_viewConfiguration, environmentBlendModeCount, &environmentBlendModeCount, m_environmentBlendModes.data()), "Failed to enumerate EnvironmentBlend Modes.");
    #ifdef DEBUG
-      for (auto& environmentBlendMode : m_environmentBlendModes)
+      for (const auto environmentBlendMode : m_environmentBlendModes)
       {
          static const char* blendModeNames[] = { "Opaque", "Additive", "Alpha" };
          PLOGD << "OpenXR supported blend mode: " << (1 <= environmentBlendMode && environmentBlendMode < 4 ? blendModeNames[environmentBlendMode - 1] : std::to_string(environmentBlendMode).c_str());

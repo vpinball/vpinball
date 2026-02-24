@@ -2,11 +2,9 @@ import SwiftUI
 
 struct SettingsWebServerView: View {
     @ObservedObject var settingsModel: SettingsModel
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
+    @ObservedObject var vpinballModel = VPinballModel.shared
 
     var showInput: (String, String, UIKeyboardType, @escaping (String) -> Void) -> Void
-
-    let vpinballManager = VPinballManager.shared
 
     var body: some View {
         Section {
@@ -33,7 +31,7 @@ struct SettingsWebServerView: View {
             Text("Web Server")
         }
         footer: {
-            if let url = vpinballViewModel.webServerURL, !url.isEmpty {
+            if let url = vpinballModel.webServerURL, !url.isEmpty {
                 Text(.init("Web Server is running and can be accessed at: \(url)."))
             } else {
                 Text("Web Server is not running.")

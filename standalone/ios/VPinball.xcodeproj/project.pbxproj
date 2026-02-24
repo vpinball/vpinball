@@ -20,7 +20,7 @@
 		C145FE1E2C5B4ADB0049D313 /* SettingsExternalDMDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */; };
 		C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */; };
 		C15528C42EA016BA005CBB91 /* TableFileOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15528C32EA016BA005CBB91 /* TableFileOperations.swift */; };
-		C15DE5762C7257F1001F1D13 /* VPinballViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */; };
+		C15DE5762C7257F1001F1D13 /* VPinballModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15DE5752C7257F1001F1D13 /* VPinballModel.swift */; };
 		C15DE57C2C75A324001F1D13 /* CodeWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15DE57B2C75A324001F1D13 /* CodeWebView.swift */; };
 		C1610F1C2C4BE8930049ED87 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */; };
 		C1610F202C4D31350049ED87 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1610F1F2C4D31350049ED87 /* Enums.swift */; };
@@ -40,6 +40,7 @@
 		C19E19C92F38DCB900B9030B /* TableContextPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C19E19C32F38DCB900B9030B /* TableContextPreview.swift */; };
 		C1A292E32C4720090056A3C0 /* MailComposeViewControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A292E22C4720090056A3C0 /* MailComposeViewControllerView.swift */; };
 		C1A292E92C4751C20056A3C0 /* CodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A292E82C4751C20056A3C0 /* CodeView.swift */; };
+		C1AA00012F3A000000000001 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA00002F3A000000000001 /* MainViewModel.swift */; };
 		C1B20FC92DF1F0110012E33F /* SettingsWebServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B20FC82DF1F0110012E33F /* SettingsWebServerView.swift */; };
 		C1D5C4042E9B52750059F90F /* VPinballIOSStartup.m in Sources */ = {isa = PBXBuildFile; fileRef = C1D5C4022E9B52750059F90F /* VPinballIOSStartup.m */; };
 		C1D5C4052E9B52750059F90F /* VPinballIOSStartup.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D5C4032E9B52750059F90F /* VPinballIOSStartup.swift */; };
@@ -89,7 +90,7 @@
 		C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsExternalDMDView.swift; sourceTree = "<group>"; };
 		C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsPerformanceView.swift; sourceTree = "<group>"; wrapsLines = 0; };
 		C15528C32EA016BA005CBB91 /* TableFileOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableFileOperations.swift; sourceTree = "<group>"; };
-		C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballViewModel.swift; sourceTree = "<group>"; };
+		C15DE5752C7257F1001F1D13 /* VPinballModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballModel.swift; sourceTree = "<group>"; };
 		C15DE57B2C75A324001F1D13 /* CodeWebView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeWebView.swift; sourceTree = "<group>"; };
 		C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		C1610F1F2C4D31350049ED87 /* Enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
@@ -108,6 +109,7 @@
 		C19E19C52F38DCB900B9030B /* TableGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableGridView.swift; sourceTree = "<group>"; };
 		C1A292E22C4720090056A3C0 /* MailComposeViewControllerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MailComposeViewControllerView.swift; sourceTree = "<group>"; };
 		C1A292E82C4751C20056A3C0 /* CodeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeView.swift; sourceTree = "<group>"; };
+		C1AA00002F3A000000000001 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 		C1B20FC82DF1F0110012E33F /* SettingsWebServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWebServerView.swift; sourceTree = "<group>"; };
 		C1D5C4022E9B52750059F90F /* VPinballIOSStartup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VPinballIOSStartup.m; sourceTree = "<group>"; };
 		C1D5C4032E9B52750059F90F /* VPinballIOSStartup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPinballIOSStartup.swift; sourceTree = "<group>"; };
@@ -206,9 +208,10 @@
 		C162663F2C29955E0002FD15 /* models */ = {
 			isa = PBXGroup;
 			children = (
-				C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */,
+				C1AA00002F3A000000000001 /* MainViewModel.swift */,
 				C1D90AE42C9A6007006CB735 /* SettingsModel.swift */,
 				C104D1C92E52744800FD86CC /* Table.swift */,
+				C15DE5752C7257F1001F1D13 /* VPinballModel.swift */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -374,7 +377,8 @@
 				C1610F1C2C4BE8930049ED87 /* ViewModifiers.swift in Sources */,
 				C1D90AE52C9A6007006CB735 /* SettingsModel.swift in Sources */,
 				C11419052C277D9800582B6F /* VPinballApp.swift in Sources */,
-				C15DE5762C7257F1001F1D13 /* VPinballViewModel.swift in Sources */,
+				C1AA00012F3A000000000001 /* MainViewModel.swift in Sources */,
+				C15DE5762C7257F1001F1D13 /* VPinballModel.swift in Sources */,
 				C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */,
 				C16266452C29955E0002FD15 /* SplashView.swift in Sources */,
 				C1920AFC2C6A281A00483104 /* TableImagePlaceholderView.swift in Sources */,

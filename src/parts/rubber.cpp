@@ -20,6 +20,8 @@ Rubber *Rubber::CopyForPlay(PinTable *live_table) const
 
 void Rubber::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("Height: {:.3f} | Thickness: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }

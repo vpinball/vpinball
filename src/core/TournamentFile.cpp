@@ -15,9 +15,9 @@ namespace VPX::TournamentFile
 
 static constexpr uint8_t lookupRev[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
 
-constexpr inline uint8_t reverse(const uint8_t n) { return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4]; }
+static constexpr inline uint8_t reverse(const uint8_t n) { return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4]; }
 
-static unsigned int GenerateTournamentFileInternal(PinTable* table, uint8_t *const dmd_data, const unsigned int dmd_size, const std::filesystem::path &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
+static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_t *const dmd_data, const unsigned int dmd_size, const std::filesystem::path &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
 {
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;

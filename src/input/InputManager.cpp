@@ -339,7 +339,7 @@ void InputManager::SaveDevicesToSettings() const
       settings.Set(namePropId, device.m_name, false);
       settings.Set(typePropId, static_cast<int>(device.m_type), false);
       int index = 0;
-      for (auto& [button, def] : device.m_buttonOrAxisNames)
+      for (const auto& [button, def] : device.m_buttonOrAxisNames)
       {
          const auto elementPropId = Settings::GetRegistry().Register(
             std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Element" + std::to_string(index), ""s, ""s, false, ""s));
@@ -602,7 +602,7 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
    POINT point;
    point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * relativeX);
    point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * relativeY);
-   for (auto& region : m_touchRegionMap)
+   for (const auto& region : m_touchRegionMap)
    {
       if (const bool wasPressed = m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); wasPressed == isPressed)
          continue;

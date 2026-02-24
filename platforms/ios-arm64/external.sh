@@ -41,6 +41,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    tar xzf SDL-${SDL_SHA}.tar.gz
    mv SDL-${SDL_SHA} SDL
    cd SDL
+   cp ../../../../../platforms/ios-arm64/SDL/SDL_uikitappdelegate.m src/video/uikit/SDL_uikitappdelegate.m
    cmake \
       -DSDL_SHARED=OFF \
       -DSDL_STATIC=ON \

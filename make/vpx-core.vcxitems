@@ -926,6 +926,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp" />
@@ -1725,6 +1726,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/TriggerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h" />

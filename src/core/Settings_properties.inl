@@ -1355,10 +1355,9 @@ PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
 PropBoolDyn(PluginVNI, Enable, "Enable"s, "Enable VNI plugin"s, g_isStandalone);
 
 // Standalone
-PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
+PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
 PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
 PropBool(Standalone, ResetLogOnPlay, "Reset Log on Play"s, ""s, g_isMobile);
-PropString(Standalone, VPRegPath, "VPRegPath"s, ""s, ""s);
 
 // Editor settings
 PropIntUnbounded(Editor, WindowLeft, "WindowLeft"s, "Main window left"s, -1);

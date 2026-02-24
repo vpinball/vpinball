@@ -323,11 +323,11 @@ static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes typ
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
    #if defined(ENABLE_BGFX)
-   const string msg = std::format("Fatal Error 0x{:08X} in {}:{}", hr, file, line);
+   const string msg = std::format("Fatal Error {:#010X} in {}:{}", (unsigned int)hr, file, line);
    #elif defined(ENABLE_OPENGL)
-   const string msg = std::format("Fatal Error 0x{:08X} {} in {}:{}", hr, glErrorToString(hr), file, line);
+   const string msg = std::format("Fatal Error {:#010X} {} in {}:{}", (unsigned int)hr, glErrorToString(hr), file, line);
    #elif defined(ENABLE_DX9)
-   const string msg = std::format("Fatal Error {} (0x{:x}: {}) at {}:{}", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   const string msg = std::format("Fatal Error {} ({:#010X}: {}) at {}:{}", DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
    #endif
    ShowError(msg);
    assert(false);
@@ -337,11 +337,11 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 void ReportError(const string& errorText, const HRESULT hr, const char *file, const int line)
 {
    #if defined(ENABLE_BGFX)
-   const string msg = std::format("Error 0x{:08X} in {}:{}\n{}", hr, file, line, errorText);
+   const string msg = std::format("Error {:#010X} in {}:{}\n{}", (unsigned int)hr, file, line, errorText);
    #elif defined(ENABLE_OPENGL)
-   const string msg = std::format("Error 0x{:08X} {} in {}:{}\n{}", hr, glErrorToString(hr), file, line, errorText);
+   const string msg = std::format("Error {:#010X} {} in {}:{}\n{}", (unsigned int)hr, glErrorToString(hr), file, line, errorText);
    #elif defined(ENABLE_DX9)
-   const string msg = std::format("{} {} (0x{:x}: {}) at {}:{}", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   const string msg = std::format("{} {} ({:#010X}: {}) at {}:{}", errorText, DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
    #endif
    ShowError(msg);
 }
@@ -679,9 +679,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             uint64_t now = usec();
-            const unsigned int targetFrameLength = useVSync ? (static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-                                                            :  static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            if (now - lastFlipTick < targetFrameLength)
+            const int targetFrameLength = useVSync ? (static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+                                                   :  static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+            if ((int64_t)(now - lastFlipTick) < (int64_t)targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
                uSleep(targetFrameLength - (now - lastFlipTick));

@@ -77,7 +77,7 @@ PictureBoxAnimation::PictureBoxAnimation(
 
    // pick up all involved lights
    m_lightsInvolved.clear();
-   for (auto& [key, pEntry] : m_entries) {
+   for (const auto& [key, pEntry] : m_entries) {
       for (const auto& bulb : *pEntry->GetBulbs()) {
          if (!bulb.empty() && std::find(m_lightsInvolved.begin(), m_lightsInvolved.end(), bulb) == m_lightsInvolved.end())
             m_lightsInvolved.push_back(bulb);
@@ -138,13 +138,13 @@ void PictureBoxAnimation::Start()
 
    // maybe switch on or off all involved lights
    if (GetLightsStateAtAnimationStart() == eLightsStateAtAnimationStart_InvolvedLightsOff || GetLightsStateAtAnimationStart() == eLightsStateAtAnimationStart_InvolvedLightsOn) {
-      for (auto& groupname : m_lightsInvolved)
+      for (const auto& groupname : m_lightsInvolved)
          LightGroup(groupname, (GetLightsStateAtAnimationStart() == eLightsStateAtAnimationStart_InvolvedLightsOn));
    }
 
    // maybe lock some illu
    if (IsLockInvolvedLamps()) {
-      for (auto& groupname : m_lightsInvolved) {
+      for (const auto& groupname : m_lightsInvolved) {
          if (m_pB2SData->GetIlluminationLocks()->contains(groupname))
             (*m_pB2SData->GetIlluminationLocks())[groupname]++;
          else
@@ -207,7 +207,7 @@ void PictureBoxAnimation::Stop()
 
    // maybe unlock all illu
    if (IsLockInvolvedLamps()) {
-      for (auto& groupname : m_lightsInvolved) {
+      for (const auto& groupname : m_lightsInvolved) {
          if (m_pB2SData->GetIlluminationLocks()->contains(groupname)) {
             if ((*m_pB2SData->GetIlluminationLocks())[groupname] > 1)
                (*m_pB2SData->GetIlluminationLocks())[groupname]--;
@@ -220,11 +220,11 @@ void PictureBoxAnimation::Stop()
 
    // maybe switch all involved lights on/off or set some lights to initial state
    if (GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_InvolvedLightsOff || GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_InvolvedLightsOn) {
-      for (auto& groupname : m_lightsInvolved)
+      for (const auto& groupname : m_lightsInvolved)
          LightGroup(groupname, (GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_InvolvedLightsOn));
    }
    else if (GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_LightsReseted) {
-      for (auto& [key, value] : m_lightsStateAtStartup)
+      for (const auto& [key, value] : m_lightsStateAtStartup)
          LightBulb(key, value);
       if (m_pMainFormBackgroundImage) {
          FormBackglass* pFormBackglass = dynamic_cast<FormBackglass*>(m_pForm);
@@ -255,7 +255,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(Timer* pTimer)
             if (pCurrentEntryAction->GetCorrector() != 0 && IsPlayReverse())
                pCurrentEntryAction = m_entries[index + pCurrentEntryAction->GetCorrector()];
             // light or unlight bulbs
-            for (auto& groupname : *pCurrentEntryAction->GetBulbs()) {
+            for (const auto& groupname : *pCurrentEntryAction->GetBulbs()) {
                if (!groupname.empty())
                   LightGroup(groupname, pCurrentEntryAction->IsVisible());
             }

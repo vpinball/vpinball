@@ -5,7 +5,7 @@
 namespace VPX::TournamentFile
 {
    // Save a tournament file from the global Player instance
-   // The file is generated alogn the table file, with '.txt' extension
+   // The file is generated along the table file, with '.txt' extension
    extern void GenerateTournamentFile();
 
    // Generate an image from a tournament file

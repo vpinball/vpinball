@@ -492,6 +492,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1377,6 +1380,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetRender.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.h">

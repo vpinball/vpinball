@@ -10,16 +10,17 @@ private let zipCallback: VPinballZipCallback = { current, total, _ in
 }
 
 @MainActor
-class TableManager: ObservableObject {
+class TableManager {
     static let shared = TableManager()
 
-    @Published private(set) var tables: [Table] = []
+    var tables: [Table] {
+        get { VPinballModel.shared.tables }
+        set { VPinballModel.shared.tables = newValue }
+    }
 
     private var tablesURL: URL!
     private var tablesJSONURL: URL!
     private var loadedTable: Table?
-
-    private let vpinballViewModel = VPinballViewModel.shared
 
     init() {
         loadTablesPath()
@@ -40,7 +41,7 @@ class TableManager: ObservableObject {
         let ext = url.pathExtension.lowercased()
         let fileName = url.lastPathComponent.removingPercentEncoding ?? url.lastPathComponent
 
-        vpinballViewModel.showProgressHUD(
+        VPinballModel.shared.showHUD(
             title: fileName,
             status: "Copying file"
         )
@@ -55,7 +56,7 @@ class TableManager: ObservableObject {
         }
 
         if !TableFileOperations.createDirectory(stagingDir) {
-            vpinballViewModel.hideHUD()
+            VPinballModel.shared.hideHUD()
             return false
         }
 
@@ -63,36 +64,24 @@ class TableManager: ObservableObject {
 
         let isSecurityScoped = url.startAccessingSecurityScopedResource()
 
-        if FileManager.default.isUbiquitousItem(at: url) {
-            vpinballViewModel.updateProgressHUD(
-                progress: 0,
-                status: "Downloading"
-            )
-            await downloadUbiquitousItem(url: url) { [vpinballViewModel] percent in
-                vpinballViewModel.updateProgressHUD(
-                    progress: percent * 55 / 100,
-                    status: "Downloading"
-                )
-            }
-        }
-
-        vpinballViewModel.updateProgressHUD(
-            progress: 55,
+        VPinballModel.shared.updateHUD(
+            progress: 10,
             status: "Copying file"
         )
 
-        let copied = await coordinatedCopy(from: url, to: stagedURL)
+        let copied = await coordinatedCopy(from: url,
+                                           to: stagedURL)
 
         if isSecurityScoped {
             url.stopAccessingSecurityScopedResource()
         }
 
         if !copied {
-            vpinballViewModel.hideHUD()
+            VPinballModel.shared.hideHUD()
             return false
         }
 
-        vpinballViewModel.updateProgressHUD(
+        VPinballModel.shared.updateHUD(
             progress: 60,
             status: ext == "vpx" ? "Importing table" : "Importing archive"
         )
@@ -101,24 +90,24 @@ class TableManager: ObservableObject {
 
         let importedTable = await performImport(url: stagedURL) { progress in
             await MainActor.run {
-                self.vpinballViewModel.updateProgressHUD(
+                VPinballModel.shared.updateHUD(
                     progress: progress,
                     status: ext == "vpx" ? "Importing table" : "Importing archive"
                 )
             }
         }
 
-        vpinballViewModel.updateProgressHUD(
+        VPinballModel.shared.updateHUD(
             progress: 100,
             status: "Import complete"
         )
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
-        vpinballViewModel.hideHUD()
+        VPinballModel.shared.hideHUD()
 
         if let table = importedTable {
-            vpinballViewModel.scrollToTable = table
+            MainViewModel.shared.scrollToTable = table
         }
 
         return importedTable != nil
@@ -172,7 +161,7 @@ class TableManager: ObservableObject {
         let workingDir = tableFileURL.deletingLastPathComponent()
         let tableImageURL = tablesURL.appendingPathComponent(table.image)
 
-        let result = await Task.detached(priority: .userInitiated) {
+        let (success, resolvedImage) = await Task.detached(priority: .userInitiated) {
             func relativePath(of url: URL, baseURL: URL) -> String {
                 let fullPath = url.resolvingSymlinksInPath().path
                 let basePath = baseURL.path
@@ -228,9 +217,9 @@ class TableManager: ObservableObject {
             return (true, imagePath)
         }.value
 
-        if result.0, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+        if success, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
             let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = table.with(image: result.1, modifiedAt: now)
+            tables[index] = table.with(image: resolvedImage, modifiedAt: now)
             saveTables()
             return true
         }
@@ -243,68 +232,66 @@ class TableManager: ObservableObject {
         let tableFileURL = tablesURL.appendingPathComponent(table.path)
         let workingDir = tableFileURL.deletingLastPathComponent()
 
-        guard let jpegData = image.jpegData(compressionQuality: 0.8) else {
-            return false
-        }
+        if let jpegData = image.jpegData(compressionQuality: 0.8) {
+            let (success, resolvedImage) = await Task.detached(priority: .userInitiated) {
+                func relativePath(of url: URL, baseURL: URL) -> String {
+                    let fullPath = url.resolvingSymlinksInPath().path
+                    let basePath = baseURL.path
 
-        let result = await Task.detached(priority: .userInitiated) {
-            func relativePath(of url: URL, baseURL: URL) -> String {
-                let fullPath = url.resolvingSymlinksInPath().path
-                let basePath = baseURL.path
+                    if fullPath.isEmpty || basePath.isEmpty {
+                        return fullPath
+                    }
 
-                if fullPath.isEmpty || basePath.isEmpty {
-                    return fullPath
+                    if !fullPath.hasPrefix(basePath) {
+                        return fullPath
+                    }
+
+                    var result = String(fullPath.dropFirst(basePath.count))
+                    if result.hasPrefix("/") {
+                        result = String(result.dropFirst())
+                    }
+
+                    return result
                 }
 
-                if !fullPath.hasPrefix(basePath) {
-                    return fullPath
+                let destURL = workingDir.appendingPathComponent(tableFileURL.deletingPathExtension().lastPathComponent + ".jpg")
+                do {
+                    try jpegData.write(to: destURL)
+                } catch {
+                    return (false, "")
                 }
 
-                var result = String(fullPath.dropFirst(basePath.count))
-                if result.hasPrefix("/") {
-                    result = String(result.dropFirst())
-                }
+                let rel = relativePath(of: destURL, baseURL: tablesURL)
+                return (true, rel)
+            }.value
 
-                return result
+            if success, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+                let now = Int64(Date().timeIntervalSince1970)
+                tables[index] = table.with(image: resolvedImage, modifiedAt: now)
+                saveTables()
+                return true
             }
-
-            let destURL = workingDir.appendingPathComponent(tableFileURL.deletingPathExtension().lastPathComponent + ".jpg")
-            do {
-                try jpegData.write(to: destURL)
-            } catch {
-                return (false, "")
-            }
-
-            let rel = relativePath(of: destURL, baseURL: tablesURL)
-            return (true, rel)
-        }.value
-
-        if result.0, let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
-            let now = Int64(Date().timeIntervalSince1970)
-            tables[index] = table.with(image: result.1, modifiedAt: now)
-            saveTables()
-            return true
         }
 
         return false
     }
 
     func exportTable(table: Table) async -> String? {
-        vpinballViewModel.showProgressHUD(title: table.name,
-                                          status: "Compressing")
+        VPinballModel.shared.showHUD(title: table.name,
+                                     status: "Compressing")
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
         let exportPath = await performExport(table: table) { progress, status in
             await MainActor.run {
-                self.vpinballViewModel.updateProgressHUD(progress: progress,
-                                                         status: status)
+                VPinballModel.shared.updateHUD(progress: progress,
+                                               status: status)
             }
         }
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
-        vpinballViewModel.hideHUD()
+        VPinballModel.shared.hideHUD()
 
         return exportPath
     }
@@ -327,8 +314,8 @@ class TableManager: ObservableObject {
     }
 
     func extractTableScript(table: Table) async -> Bool {
-        vpinballViewModel.showProgressHUD(title: table.name,
-                                          status: "Extracting Script")
+        VPinballModel.shared.showHUD(title: table.name,
+                                     status: "Extracting Script")
 
         try? await Task.sleep(nanoseconds: 100_000_000)
 
@@ -363,7 +350,7 @@ class TableManager: ObservableObject {
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
-        vpinballViewModel.hideHUD()
+        VPinballModel.shared.hideHUD()
 
         return result
     }
@@ -699,45 +686,6 @@ class TableManager: ObservableObject {
         }.value
     }
 
-    private func downloadUbiquitousItem(
-        url: URL,
-        onProgress: @escaping (Int) -> Void
-    ) async {
-        let stream = AsyncStream<Int> { continuation in
-            Task.detached(priority: .utility) {
-                do {
-                    try FileManager.default.startDownloadingUbiquitousItem(at: url)
-                } catch {
-                    continuation.finish()
-                    return
-                }
-
-                var progress = 0
-                while true {
-                    let values = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
-                    if let status = values?.ubiquitousItemDownloadingStatus,
-                       status == .current
-                    {
-                        continuation.yield(100)
-                        continuation.finish()
-                        return
-                    }
-
-                    if progress < 95 {
-                        progress += 1
-                        continuation.yield(progress)
-                    }
-
-                    try? await Task.sleep(nanoseconds: 300_000_000)
-                }
-            }
-        }
-
-        for await value in stream {
-            onProgress(value)
-        }
-    }
-
     private func relativePath(of url: URL) -> String {
         let fullPath = url.resolvingSymlinksInPath().path
         let basePath = tablesURL.path
@@ -840,22 +788,18 @@ class TableManager: ObservableObject {
             return nil
         }
 
-        let vpxResult = await Task.detached(priority: .userInitiated) {
-            let vpxFiles = TableFileOperations.listFiles(tempDir,
-                                                         ext: ".vpx")
-            if vpxFiles.count != 1 {
-                return (nil as URL?, vpxFiles.isEmpty)
-            }
-            return (vpxFiles[0], false)
+        let vpxFiles = await Task.detached(priority: .userInitiated) {
+            TableFileOperations.listFiles(tempDir, ext: ".vpx")
         }.value
 
-        guard let vpxURL = vpxResult.0 else {
-            vpinballViewModel.alertError = vpxResult.1
+        if vpxFiles.count != 1 {
+            MainViewModel.shared.handleShowError(message: vpxFiles.isEmpty
                 ? "No tables found in archive"
-                : "Archive contains multiple tables"
+                : "Archive contains multiple tables")
             return nil
         }
 
+        let vpxURL = vpxFiles[0]
         let vpxName = vpxURL.deletingPathExtension().lastPathComponent
         let sourceDir = vpxURL.deletingLastPathComponent()
 
@@ -918,15 +862,5 @@ class TableManager: ObservableObject {
 
         await onProgress?(100, "Complete")
         return tempURL.path
-    }
-
-    func filteredTables(searchText: String, sortOrder: SortOrder) -> [Table] {
-        tables
-            .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
-            .sorted {
-                sortOrder == .forward
-                    ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                    : $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
-            }
     }
 }

@@ -60,7 +60,8 @@ void PinTableWnd::Redraw()
 {
 #ifndef __STANDALONE__
    m_dirtyDraw = true;
-   InvalidateRect(false);
+   if (IsWindow())
+      InvalidateRect(false);
 #endif
 }
 
@@ -1011,9 +1012,9 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       }
       else
       {
-         const Vertex2D v = m_table->TransformPoint(x, y);
-         m_table->m_rcDragRect.right = v.x;
-         m_table->m_rcDragRect.bottom = v.y;
+         const Vertex2D vec = m_table->TransformPoint(x, y);
+         m_table->m_rcDragRect.right = vec.x;
+         m_table->m_rcDragRect.bottom = vec.y;
          Redraw();
       }
    }

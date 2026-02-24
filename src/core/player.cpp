@@ -309,7 +309,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    catch (HRESULT hr)
    {
-      ShowError(std::format("Renderer initialization error code: {:x}", static_cast<unsigned int>(hr)));
+      ShowError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
       throw hr;
    }
 
@@ -779,9 +779,6 @@ Player::~Player()
       assert(refCount == 0);
    }
 
-   // Flush pending callbacks
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-
    // Release plugin message Ids
    const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
@@ -863,7 +860,7 @@ Player::~Player()
          vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
          for (ITexManCacheable *memtex : textures)
          {
-            auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
+            const auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
             if (tex != m_ptable->m_vimage.end())
             {
                tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
@@ -1616,7 +1613,7 @@ private:
             // distance favor longer loops with lowest difference between light states
             float distance = 1.f;
             for (int k = 0; k < m_nLights; k++)
-               distance += powf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k], 2.f);
+               distance += sqrf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k]);
             distance = distance * 100.f / static_cast<float>(m_nLights); // Normalize against a 'standard' number of lights
             distance = distance / static_cast<float>(m_captureFrameNumber - j); // Take loop length in account
             if (distance < lowestDistance)
@@ -1681,19 +1678,18 @@ private:
       }
    }
 
-   string GetFilename(VPXWindowId id, int index, bool isTmp) const
+   std::filesystem::path GetFilename(VPXWindowId id, int index, bool isTmp) const
    {
       // The critical path is disk access and memory management:
       // - png is well compressed but far too slow
       // - bmp is fast to save but huge on disk (multiple times faster than png, but huge)
       // - qoi is both faster to save and small enough on disk (twice faster than bmp)
       // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
-      std::stringstream ss;
-      ss << m_player->m_ptable->m_filename.parent_path() << "Capture" << PATH_SEPARATOR_CHAR
-         << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
-             id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
-         << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.qoi" : ".qoi");
-      return ss.str();
+      return m_player->m_ptable->m_filename.parent_path() / "Capture"
+         / std::format("{}_{:05}{}.qoi",
+            (id == VPXWindowId::VPXWINDOW_Playfield        ? "Playfield"
+                  : id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"
+                                                           : "Unknown"), index, (isTmp ? "_tmp" : ""));
    };
 
    Player *const m_player;

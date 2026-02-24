@@ -1051,7 +1051,7 @@ Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bo
       return nullptr;
    }
 
-   Texture* tex = new Texture(TitleFromFilename(filename.string()), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
+   Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = imageBuffer;
    tex->UpdateMD5();
    tex->UpdateOpaque();
@@ -1212,7 +1212,7 @@ void Texture::UpdateOpaque() const
    if (!m_isOpaqueDirty)
       return;
    m_isOpaqueDirty = false;
-   auto bitmap = GetRawBitmap(false, 0);
+   const auto bitmap = GetRawBitmap(false, 0);
    m_isOpaque = bitmap ? bitmap->IsOpaque() : false;
 }
 

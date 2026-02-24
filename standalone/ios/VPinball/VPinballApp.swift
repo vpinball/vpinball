@@ -2,30 +2,30 @@ import Foundation
 import SwiftUI
 
 struct VPinballAppView: View {
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
+    @ObservedObject var vpinballModel = VPinballModel.shared
 
     var body: some View {
         ZStack {
-            if vpinballViewModel.showSplash {
+            if vpinballModel.showSplash {
                 SplashView()
                     .onAppear {
                         handleAppear()
                     }
             } else {
                 MainView()
-                    .opacity(vpinballViewModel.showMainView ? 1 : 0)
+                    .opacity(vpinballModel.showMainView ? 1 : 0)
             }
         }
-        .onChange(of: vpinballViewModel.isPlaying) {
-            vpinballViewModel.showMainView = !vpinballViewModel.isPlaying
+        .onChange(of: vpinballModel.isPlaying) {
+            vpinballModel.showMainView = !vpinballModel.isPlaying
 
-            StatusBarManager.shared.setHidden(!vpinballViewModel.showMainView,
+            StatusBarManager.shared.setHidden(!vpinballModel.showMainView,
                                               animated: false)
         }
     }
 
     func handleAppear() {
         VPinballManager.shared.startup()
-        vpinballViewModel.startSplashTimer()
+        vpinballModel.startSplashTimer()
     }
 }
