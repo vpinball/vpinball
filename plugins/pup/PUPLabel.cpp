@@ -437,9 +437,6 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    SDL_FRect dest = { static_cast<float>(rect.x), static_cast<float>(rect.y), width, height };
 
-   // --- Anchor-based positioning (PinUP compatible) ---
-
-   // X
    float xposPercent = m_xPos / 100.0f;
    if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_CENTER)
       xposPercent = 0.5f;
@@ -451,7 +448,6 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    else if (m_xAlign == PUP_LABEL_XALIGN_RIGHT)
       dest.x -= width;
 
-   // Y
    float yposPercent = m_yPos / 100.0f;
    if (m_yPos == 0.f && m_yAlign == PUP_LABEL_YALIGN_CENTER)
       yposPercent = 0.5f;
