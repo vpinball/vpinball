@@ -437,17 +437,31 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    SDL_FRect dest = { static_cast<float>(rect.x), static_cast<float>(rect.y), width, height };
 
-   dest.x += static_cast<float>(rect.w) * (m_xPos == 0.f ? 0.5f : (m_xPos / 100.0f));
+   // --- Anchor-based positioning (PinUP compatible) ---
+
+   // X
+   float xposPercent = m_xPos / 100.0f;
+   if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_CENTER)
+      xposPercent = 0.5f;
+
+   dest.x += static_cast<float>(rect.w) * xposPercent;
+
    if (m_xAlign == PUP_LABEL_XALIGN_CENTER)
       dest.x -= (width / 2.f);
    else if (m_xAlign == PUP_LABEL_XALIGN_RIGHT)
       dest.x -= width;
 
-   dest.y += static_cast<float>(rect.h) * (m_yPos == 0.f ? 0.5f : (m_yPos / 100.0f));
+   // Y
+   float yposPercent = m_yPos / 100.0f;
+   if (m_yPos == 0.f && m_yAlign == PUP_LABEL_YALIGN_CENTER)
+      yposPercent = 0.5f;
+
+   dest.y += static_cast<float>(rect.h) * yposPercent;
+
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       dest.y -= (height / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y -= height;
+      dest.y = rect.y + rect.h - height - (static_cast<float>(rect.h) * yposPercent);
 
    if (m_animation)
    {
