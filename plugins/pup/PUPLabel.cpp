@@ -178,9 +178,10 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    case 2:
    {
       std::lock_guard lock(m_mutex);
-      const bool hasXPos = json["xpos"s].exists();
-      const bool hasYPos = json["ypos"s].exists();
-      for (auto& [key, value] : json.as_object())
+      RSJobject& jsonObj = json.as_object();
+      const bool hasXPos = jsonObj.count("xpos"s) > 0;
+      const bool hasYPos = jsonObj.count("ypos"s) > 0;
+      for (auto& [key, value] : jsonObj)
       {
          if (key == "mt")
          {
@@ -465,7 +466,12 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       dest.y -= (height / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y = rect.y + rect.h - height - (static_cast<float>(rect.h) * yposPercent);
+   {
+      // yPos is the bottom-edge position as a % from the top of the screen.
+      // yPos=0 is the natural default: bottom edge flush with screen bottom (100%).
+      const float yPct = (m_yPos == 0.f) ? 1.0f : yposPercent;
+      dest.y = rect.y + static_cast<float>(rect.h) * yPct - height;
+   }
 
    if (m_animation)
    {
