@@ -209,8 +209,9 @@ HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, co
    SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
+   CalculateBuiltinOriginal();
    UpdateStatusBarInfo();
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
@@ -1012,7 +1013,6 @@ void Primitive::UpdateStatusBarInfo()
 {
    if (!m_vpinball)
       return;
-   CalculateBuiltinOriginal();
    if (m_d.m_use3DMesh)
    {
        const string tbuf = "Vertices: " + std::to_string(m_mesh.NumVertices()) + " | Polygons: " + std::to_string(m_mesh.NumIndices());
@@ -1503,6 +1503,7 @@ void Primitive::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vPosition.x += dx;
    m_d.m_vPosition.y += dy;
+   CalculateBuiltinOriginal();
    UpdateStatusBarInfo();
 }
 
@@ -1515,6 +1516,7 @@ void Primitive::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vPosition.x = pv.x;
    m_d.m_vPosition.y = pv.y;
+   CalculateBuiltinOriginal();
    UpdateStatusBarInfo();
 }
 
@@ -1886,6 +1888,7 @@ void Primitive::WaitForMeshDecompression()
 HRESULT Primitive::InitPostLoad()
 {
    WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
+   CalculateBuiltinOriginal();
    UpdateStatusBarInfo();
    return S_OK;
 }
@@ -1946,18 +1949,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             const bool doForsyth = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_NO_FORSYTH) == BST_UNCHECKED;
             if (importMaterial)
             {
-               string szMatName = szFileName;
-               if (ReplaceExtensionFromFilename(szMatName, "mtl"s))
+               std::filesystem::path szMatName = std::filesystem::path(szFileName).replace_extension(".mtl");
+               Material * const mat = new Material();
+               if (ObjLoader::LoadMaterial(szMatName.string(), mat))
                {
-                  Material * const mat = new Material();
-                  if (ObjLoader::LoadMaterial(szMatName, mat))
-                  {
-                     prim->GetPTable()->AddMaterial(mat);
-                     prim->m_d.m_szMaterial = mat->m_name;
-                  }
+                  prim->GetPTable()->AddMaterial(mat);
+                  prim->m_d.m_szMaterial = mat->m_name;
                }
-               else
-                  ShowError("Could not load material file.");
             }
             if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
             {

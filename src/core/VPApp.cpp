@@ -15,7 +15,7 @@
 #include "utils/BlackBox.h"
 #endif
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include <initguid.h>
 
 #define SET_CRT_DEBUG_FIELD(a) _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
@@ -277,11 +277,11 @@ void VPApp::InitInstance()
       std::filesystem::path defaultPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
       std::filesystem::path appPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
       if (FileExists(defaultPath))
-         m_iniFileName = defaultPath.string();
+         m_iniFileName = defaultPath;
       else if (FileExists(appPath))
-         m_iniFileName = appPath.string();
+         m_iniFileName = appPath;
       else
-         m_iniFileName = defaultPath.string();
+         m_iniFileName = defaultPath;
    }
    m_settings.SetIniPath(m_iniFileName);
    m_settings.Load(true);
@@ -300,14 +300,14 @@ void VPApp::InitInstance()
    PLOGI << "Application path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
    
-   Settings::SetRecentDir_ImportDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_LoadDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_FontDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_PhysicsDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_ImageDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_MaterialDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_SoundDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
-   Settings::SetRecentDir_POVDir_Default(m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables).string() + PATH_SEPARATOR_CHAR);
+   Settings::SetRecentDir_ImportDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_LoadDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_FontDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_PhysicsDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_ImageDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_MaterialDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
 
    m_securitylevel = g_app->m_settings.GetPlayer_SecurityLevel();
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)

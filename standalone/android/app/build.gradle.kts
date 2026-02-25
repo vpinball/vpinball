@@ -129,7 +129,7 @@ android {
 }
 
 base {
-    archivesName.set("VPinball_BGFX-$versionFilename")
+    archivesName.set("VPinballX_BGFX-$versionFilename")
 }
 
 kotlin {

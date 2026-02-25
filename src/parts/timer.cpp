@@ -18,7 +18,7 @@ HRESULT Timer::Init(PinTable *const ptable, const float x, const float y, const 
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Timer::SetDefaults(const bool fromMouseClick)

@@ -1,0 +1,281 @@
+// license:GPLv3+
+
+#include "core/stdafx.h"
+#include "ui/win/resource.h"
+#include "DrawingOrderDialog.h"
+
+DrawingOrderDialog::DrawingOrderDialog(bool select)
+   : CDialog(IDD_DRAWING_ORDER)
+   , m_drawingOrderSelect(select)
+   , hOrderList(nullptr)
+{
+}
+
+DrawingOrderDialog::~DrawingOrderDialog()
+{
+}
+
+void DrawingOrderDialog::OnClose()
+{
+   CDialog::OnClose();
+}
+
+BOOL DrawingOrderDialog::OnInitDialog()
+{
+   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+   hOrderList = GetDlgItem(IDC_DRAWING_ORDER_LIST).GetHwnd();
+   LVITEM lv;
+
+   ListView_SetExtendedListViewStyle(hOrderList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+   LVCOLUMN lvc = {};
+   lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+   lvc.cx = 200;
+   lvc.pszText = (LPSTR)TEXT("Name");
+   ListView_InsertColumn(hOrderList, 0, &lvc);
+   lvc.cx = 100;
+   lvc.pszText = (LPSTR)TEXT("Height/Z");
+   ListView_InsertColumn(hOrderList, 1, &lvc);
+   lvc.cx = 100;
+   lvc.pszText = (LPSTR)TEXT("Type");
+   ListView_InsertColumn(hOrderList, 2, &lvc);
+
+   if (hOrderList != nullptr)
+      ListView_DeleteAllItems(hOrderList);
+   lv.mask = LVIF_TEXT;
+
+   // create a selection in the same drawing order as the selected elements are stored in the main vector
+   vector<ISelect*> selection;
+   if (m_drawingOrderSelect)
+   {
+      for (SSIZE_T i = pt->GetParts().size() - 1; i >= 0; i--)
+         for (int t = 0; t < pt->m_vmultisel.size(); t++)
+         {
+            if (pt->m_vmultisel.ElementAt(t) == pt->GetParts()[i]->GetISelect())
+               selection.push_back(pt->m_vmultisel.ElementAt(t));
+         }
+   }
+   for (size_t i = 0; i < (m_drawingOrderSelect ? selection.size() : pt->m_allHitElements.size()); i++)
+   {
+      IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements[i]->GetIEditable();
+      if (pedit)
+      {
+         const string szTemp = PinTable::GetElementName(pedit);
+         if (!szTemp.empty())
+         {
+            lv.iItem = (int)i;
+            lv.iSubItem = 0;
+            lv.pszText = (char*)szTemp.c_str();
+            ListView_InsertItem(hOrderList, &lv);
+            if (pedit->GetItemType() == eItemSurface)
+            {
+               const Surface * const sur = (Surface*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(sur->m_d.m_heighttop).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Wall");
+            }
+            else if (pedit->GetItemType() == eItemPrimitive)
+            {
+               const Primitive * const prim = (Primitive*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(prim->m_d.m_vPosition.z).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Primitive");
+            }
+            else if (pedit->GetItemType() == eItemRamp)
+            {
+               const Ramp * const ramp = (Ramp*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(ramp->m_d.m_heighttop).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Ramp");
+            }
+            else if (pedit->GetItemType() == eItemFlasher)
+            {
+               const Flasher * const flasher = (Flasher*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flasher->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flasher");
+            }
+            else if (pedit->GetItemType() == eItemRubber)
+            {
+               const Rubber * const rubber = (Rubber*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(rubber->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Rubber");
+            }
+            else if (pedit->GetItemType() == eItemSpinner)
+            {
+               const Spinner * const spin = (Spinner*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(spin->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Spinner");
+            }
+            else if (pedit->GetItemType() == eItemKicker)
+            {
+               const Kicker * const kick = (Kicker*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(kick->m_d.m_hitAccuracy).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Kicker");
+            }
+            else if (pedit->GetItemType() == eItemLight)
+            {
+               //const Light * const light = (Light*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)"n.a.");
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Light");
+            }
+            else if (pedit->GetItemType() == eItemBumper)
+            {
+               //const Bumper * const bump = (Bumper*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)"n.a.");
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Bumper");
+            }
+            else if (pedit->GetItemType() == eItemFlipper)
+            {
+               const Flipper * const flip = (Flipper*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flip->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flipper");
+            }
+            else if (pedit->GetItemType() == eItemGate)
+            {
+               const Gate * const gate = (Gate*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(gate->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Gate");
+            }
+            else if (pedit->GetItemType() == eItemPlunger)
+            {
+               const Plunger * const plung = (Plunger*)pedit;
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(plung->m_d.m_height).c_str());
+               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Plunger");
+            }
+         }
+      }
+   }
+   return TRUE;
+}
+
+BOOL DrawingOrderDialog::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+   UNREFERENCED_PARAMETER(lParam);
+
+   switch (LOWORD(wParam))
+   {
+      case IDC_DRAWING_ORDER_UP:
+      {
+         UpdateDrawingOrder(nullptr, true);
+         break;
+      }
+      case IDC_DRAWING_ORDER_DOWN:
+      {
+         UpdateDrawingOrder(nullptr, false);
+         break;
+      }
+      default:
+         return FALSE;
+   }
+   return TRUE;
+}
+
+void DrawingOrderDialog::OnOK()
+{
+   CDialog::OnOK();
+}
+
+void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
+{
+   CComObject<PinTable> * const pt = g_pvp->GetActiveTable();
+   char text0[256], text1[256], text2[256];
+   LVITEM lv;
+   lv.mask = LVIF_TEXT;
+   int idx = ListView_GetNextItem(hOrderList, -1, LVNI_FOCUSED);
+   if (idx == -1)
+      return;
+
+   if (up)
+   {
+      if (idx > 0)
+      {
+         ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
+         ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
+         ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+         ListView_DeleteItem(hOrderList, idx);
+         lv.iItem = idx - 1;
+         lv.iSubItem = 0;
+         lv.pszText = text0;
+         ListView_InsertItem(hOrderList, &lv);
+         ListView_SetItemText(hOrderList, idx - 1, 1, text1);
+         ListView_SetItemText(hOrderList, idx - 1, 2, text2);
+         ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
+         ListView_SetItemState(hOrderList, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
+         ListView_SetItemState(hOrderList, idx - 1, LVIS_FOCUSED, LVIS_FOCUSED);
+         ::SetFocus(hOrderList);
+         if (m_drawingOrderSelect)
+         {
+            ISelect * const psel = pt->m_vmultisel.ElementAt(idx);
+            pt->m_vmultisel.erase(idx);
+            pt->m_vmultisel.insert(psel, idx - 1);
+            pt->ReorderParts(m_drawingOrderSelect);
+         }
+         else
+         {
+            ISelect * const psel = pt->m_allHitElements[idx];
+            pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
+            pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx - 1), psel);
+            pt->ReorderParts(m_drawingOrderSelect);
+         }
+      }
+   }
+   else
+   {
+      pt->SetNonUndoableDirty(eSaveDirty);
+      if (m_drawingOrderSelect)
+      {
+         if (idx < pt->m_vmultisel.size() - 1)
+         {
+            ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
+            ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
+            ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+            ListView_DeleteItem(hOrderList, idx);
+            lv.iItem = idx + 1;
+            lv.iSubItem = 0;
+            lv.pszText = text0;
+            ListView_InsertItem(hOrderList, &lv);
+            ListView_SetItemText(hOrderList, idx + 1, 1, text1);
+            ListView_SetItemText(hOrderList, idx + 1, 2, text2);
+            ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
+            ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
+            ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
+            ::SetFocus(hOrderList);
+            ISelect * const psel = pt->m_vmultisel.ElementAt(idx);
+            pt->m_vmultisel.erase(idx);
+
+            if (idx + 1 >= pt->m_vmultisel.size())
+               pt->m_vmultisel.push_back(psel);
+            else
+               pt->m_vmultisel.insert(psel, idx + 1);
+
+            pt->ReorderParts(m_drawingOrderSelect);
+         }
+      }
+      else
+      {
+         if (idx < (int)pt->m_allHitElements.size() - 1)
+         {
+            ListView_GetItemText(hOrderList, idx, 0, text0, std::size(text0));
+            ListView_GetItemText(hOrderList, idx, 1, text1, std::size(text1));
+            ListView_GetItemText(hOrderList, idx, 2, text2, std::size(text2));
+            ListView_DeleteItem(hOrderList, idx);
+            lv.iItem = idx + 1;
+            lv.iSubItem = 0;
+            lv.pszText = text0;
+            ListView_InsertItem(hOrderList, &lv);
+            ListView_SetItemText(hOrderList, idx + 1, 1, text1);
+            ListView_SetItemText(hOrderList, idx + 1, 2, text2);
+            ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
+            ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
+            ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
+            ::SetFocus(hOrderList);
+
+            ISelect * const psel = pt->m_allHitElements[idx];
+            pt->m_allHitElements.erase(pt->m_allHitElements.begin() + idx);
+
+            if (idx + 1 >= (int)pt->m_allHitElements.size())
+               pt->m_allHitElements.push_back(psel);
+            else
+               pt->m_allHitElements.insert(pt->m_allHitElements.begin() + (idx+1), psel);
+
+            pt->ReorderParts(m_drawingOrderSelect);
+         }
+      }
+   }
+}

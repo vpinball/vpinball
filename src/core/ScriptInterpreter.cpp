@@ -29,7 +29,7 @@ ScriptInterpreter::ScriptInterpreter()
 #ifndef __STANDALONE__
    // This can fail on some systems (I tested with wine 6.9 and this fails)
    // In that case, m_pProcessDebugManager will remain as nullptr
-   CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager);
+   const HRESULT debugResult = CoCreateInstance(CLSID_ProcessDebugManager, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IProcessDebugManager, (LPVOID *)&m_pProcessDebugManager); //!! dto.?
 
    // Also check if we have a debugger installed
    // If not, we should abandon the process debug manager and fall back to plain basic errors
@@ -106,7 +106,7 @@ ScriptInterpreter::~ScriptInterpreter()
    m_pdm->Release();
 }
 
-void ScriptInterpreter::Init(PinTable* table)
+void ScriptInterpreter::Start(PinTable* table)
 {
    if (m_pScript)
    {
@@ -114,69 +114,18 @@ void ScriptInterpreter::Init(PinTable* table)
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
       m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
    }
+
    AddItem(table, false);
    AddItem((ScriptGlobalTable*) table->m_psgt, true);
    AddItem(m_pdm, false);
    for (int i = 0; i < table->m_vcollection.size(); i++)
       AddItem(&table->m_vcollection[i], false);
-   for (auto editable : table->m_vedit)
+   for (auto editable : table->GetParts())
       if (editable->GetScriptable())
          AddItem(editable->GetScriptable(), false);
 }
 
-void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bool global)
-{
-   if (auto it = m_vcvd.find(name); it != m_vcvd.end())
-   {
-      PLOGE << "Script item with name '" << MakeString(name) << "' already exists. Skipping addition of this item.";
-      return;
-   }
-
-   {
-      auto pcvd = std::make_unique<ScriptItem>();
-      pcvd->m_wName = name;
-      pcvd->m_pdisp = dispatch;
-      pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
-      pcvd->m_punk->Release();
-      pcvd->m_global = global;
-      m_vcvd[pcvd->m_wName] = std::move(pcvd);
-   }
-
-   int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
-   if (global)
-      flags |= SCRIPTITEM_GLOBALMEMBERS;
-   if (m_pScript != nullptr)
-      m_pScript->AddNamedItem(name, flags);
-}
-
-void ScriptInterpreter::RemoveItem(const IScriptable *const piscript)
-{
-   auto it = m_vcvd.find(piscript->get_Name());
-   if (it != m_vcvd.end())
-      m_vcvd.erase(it);
-}
-
-void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
-{
-   WCHAR *const wzScript = MakeWide(script);
-   EXCEPINFO exception {};
-   if (m_pScriptParse)
-      m_pScriptParse->ParseScriptText(wzScript, isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
-         isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
-   delete[] wzScript;
-   if (m_pScript)
-      m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
-}
-
-void ScriptInterpreter::GetScriptDispatch(IDispatch **ppdisp) const
-{
-   if (m_pScript)
-      m_pScript->GetScriptDispatch(nullptr, ppdisp);
-   else
-      *ppdisp = nullptr;
-}
-
-void ScriptInterpreter::Stop(bool interruptDirectly)
+void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
 {
    if (m_pScript == nullptr)
       return;
@@ -205,6 +154,71 @@ void ScriptInterpreter::Stop(bool interruptDirectly)
          m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
       }
    }
+
+   RemoveItem(table);
+   RemoveItem((ScriptGlobalTable *)table->m_psgt);
+   RemoveItem(m_pdm);
+   for (int i = 0; i < table->m_vcollection.size(); i++)
+      RemoveItem(&table->m_vcollection[i]);
+   for (auto editable : table->GetParts())
+      if (editable->GetScriptable())
+         RemoveItem(editable->GetScriptable());
+}
+
+void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bool global)
+{
+   if (auto it = m_vcvd.find(name); it != m_vcvd.end())
+   {
+      PLOGE << "Script item with name '" << MakeString(name) << "' already exists. Skipping addition of this item.";
+      return;
+   }
+
+   dispatch->AddRef();
+   {
+      auto pcvd = std::make_unique<ScriptItem>();
+      pcvd->m_wName = name;
+      pcvd->m_pdisp = dispatch;
+      pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
+      pcvd->m_punk->Release();
+      pcvd->m_global = global;
+      m_vcvd[pcvd->m_wName] = std::move(pcvd);
+   }
+
+   int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
+   if (global)
+      flags |= SCRIPTITEM_GLOBALMEMBERS;
+   if (m_pScript != nullptr)
+      m_pScript->AddNamedItem(name, flags);
+}
+
+void ScriptInterpreter::RemoveItem(IScriptable *const piscript)
+{
+   piscript->GetDispatch()->Release();
+   auto it = m_vcvd.find(piscript->get_Name());
+   if (it != m_vcvd.end())
+      m_vcvd.erase(it);
+}
+
+void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
+{
+   if (m_pScriptParse)
+   {
+      WCHAR *const wzScript = MakeWide(script);
+      EXCEPINFO exception {};
+      m_pScriptParse->ParseScriptText(wzScript, isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
+         isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
+      delete[] wzScript;
+   }
+   if (m_pScript)
+      m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+}
+
+void ScriptInterpreter::GetScriptDispatch(IDispatch **ppdisp) const
+{
+   if (m_pScript)
+      m_pScript->GetScriptDispatch(nullptr, ppdisp);
+   else
+      *ppdisp = nullptr;
 }
 
 void ScriptInterpreter::HandleScriptError(IActiveScriptError *pScriptError, IActiveScriptErrorDebug* pScriptDebugError)

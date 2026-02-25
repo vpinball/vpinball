@@ -169,9 +169,12 @@ JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadTable(J
    return status;
 }
 
-JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballExtractTableScript(JNIEnv* env, jobject obj)
+JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballExtractTableScript(JNIEnv* env, jobject obj, jstring path)
 {
-   return VPinballExtractTableScript();
+   const char* pPath = env->GetStringUTFChars(path, nullptr);
+   VPINBALL_STATUS status = VPinballExtractTableScript(pPath);
+   env->ReleaseStringUTFChars(path, pPath);
+   return status;
 }
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballPlay(JNIEnv* env, jobject obj)

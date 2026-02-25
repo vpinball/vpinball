@@ -78,9 +78,6 @@ public:
 
    virtual void OnLButtonDown(int x, int y);
    virtual void OnLButtonUp(int x, int y);
-   virtual void OnRButtonDown(int x, int y, HWND hwnd) { }
-   virtual void OnRButtonUp(int x, int y) { }
-   virtual void OnMouseMove(int x, int y);
 
    // Things to override
    virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
@@ -146,10 +143,8 @@ public:
    bool m_isVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
    bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
 
+   bool m_markedForUndo = false; // Flag set when dragged to enable undo
+
 protected:
    WinEditor *m_vpinball = nullptr;
-
-private:
-   bool m_markedForUndo = false; // Flag set when dragged to enable undo
-   POINT m_ptLast {}; // Last point when dragging
 };

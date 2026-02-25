@@ -33,7 +33,7 @@ public:
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
    HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader * const pbr) final;
-   HRESULT InitPostLoad(PinTable * const pt);
+   HRESULT InitPostLoad(const PinTable * const pt);
 
    STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;
    STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp) override;

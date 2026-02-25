@@ -32,8 +32,9 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
    if (b2sFilename.empty())
    {
-      const string folderName = tablePath.parent_path().filename().string();
-      b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / (folderName + ".directb2s"));
+      std::filesystem::path folderName = tablePath.parent_path().filename();
+      folderName += ".directb2s";
+      b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / folderName);
    }
 
    if (!b2sFilename.empty())

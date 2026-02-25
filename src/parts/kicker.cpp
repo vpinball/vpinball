@@ -27,6 +27,8 @@ Kicker *Kicker::CopyForPlay(PinTable *live_table) const
 
 void Kicker::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format( "Radius: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_radius));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
@@ -37,7 +39,7 @@ HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
@@ -243,7 +245,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerCup.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerCup.webp")));
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
           indices = kickerCupIndices;
@@ -251,7 +253,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerWilliams:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerWilliams.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerWilliams.webp")));
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
           indices = kickerWilliamsIndices;
@@ -259,7 +261,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerGottlieb:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerGottlieb.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerGottlieb.webp")));
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
           indices = kickerGottliebIndices;
@@ -267,7 +269,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup2:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerT1.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerT1.webp")));
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
           indices = kickerT1Indices;
@@ -275,7 +277,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerHole:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerHoleWood.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerHoleWood.webp")));
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
           indices = kickerHoleIndices;
@@ -284,7 +286,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        default:
        case KickerHoleSimple:
        {
-          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerHoleWood.webp").string()));
+          m_texture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "KickerHoleWood.webp")));
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
           indices = kickerSimpleHoleIndices;
@@ -979,7 +981,7 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
 
    if (g_pplayer)
    {
-      for (auto pball : g_pplayer->m_vball)
+      for (const auto pball : g_pplayer->m_vball)
       {
          if (pball->m_hitBall.m_d.m_vpVolObjs && FindIndexOf(*(pball->m_hitBall.m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
@@ -1007,7 +1009,7 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     }
 
     bool ballFound = false;
-    for (auto ball : g_pplayer->m_vball)
+    for (const auto ball : g_pplayer->m_vball)
     {
         if (ball == m_phitkickercircle->m_lastCapturedBall->m_pBall)
         {

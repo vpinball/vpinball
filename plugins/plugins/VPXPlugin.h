@@ -223,7 +223,7 @@ typedef enum
    VPXACTION_Lockbar,
    VPXACTION_Pause,
    VPXACTION_PerfOverlay,
-   VPXACTION_ExitInteractive,
+   VPXACTION_OpenInGameUI,
    VPXACTION_ExitGame,
    VPXACTION_InGameUI,
    VPXACTION_VolumeDown,

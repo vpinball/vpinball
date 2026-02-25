@@ -253,19 +253,19 @@ SDL_FRect Dream7Display::GetBounds(Matrix* const pMatrix)
    // determine the bounds of the whole display
    vector<SDL_FPoint> points;
    float extraSpacings = 0.0f;
-   for (auto& [key, spacing] : m_extraSpacings)
+   for (const auto& [key, spacing] : m_extraSpacings)
       extraSpacings += spacing;
    m_bounds = { -10.0f, -10.0f, (float)m_segmentNumbers.size() * (154.0f + m_spacing) + 15.0f - m_spacing + extraSpacings, 264.0f };
-   points.push_back({ m_bounds.x, m_bounds.y });
-   points.push_back({ m_bounds.x + m_bounds.w, m_bounds.y });
-   points.push_back({ m_bounds.x + m_bounds.w, m_bounds.y + m_bounds.h });
-   points.push_back({ m_bounds.x, m_bounds.y + m_bounds.h });
+   points.emplace_back(m_bounds.x, m_bounds.y);
+   points.emplace_back(m_bounds.x + m_bounds.w, m_bounds.y);
+   points.emplace_back(m_bounds.x + m_bounds.w, m_bounds.y + m_bounds.h);
+   points.emplace_back(m_bounds.x, m_bounds.y + m_bounds.h);
    pMatrix->TransformPoints(points);
    float minX = std::numeric_limits<float>::max();
    float minY = std::numeric_limits<float>::max();
    float maxX = -std::numeric_limits<float>::max();
    float maxY = -std::numeric_limits<float>::max();
-   for (auto& point : points) {
+   for (const auto& point : points) {
       minX = std::min(minX, point.x);
       minY = std::min(minY, point.y);
       maxX = std::max(maxX, point.x);
@@ -313,7 +313,7 @@ void Dream7Display::InitSegmentsStyle()
    for (auto& pNumber : m_segmentNumbers) {
       pNumber->Init( { xPos, 0.0f }, m_type, m_pMatrix, m_thickness);
       xPos += distance;
-      auto itr = m_extraSpacings.find(number);
+      const auto itr = m_extraSpacings.find(number);
       if (itr != m_extraSpacings.end())
          xPos += itr->second;
       number++;

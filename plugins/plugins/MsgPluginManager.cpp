@@ -20,14 +20,6 @@ using namespace std::string_literals;
    #include <windows.h>
 #endif
 
-#if !defined(PATH_SEPARATOR_CHAR)
-  #ifdef _MSC_VER
-    #define PATH_SEPARATOR_CHAR '\\'
-  #else
-    #define PATH_SEPARATOR_CHAR '/'
-  #endif
-#endif
-
 #if !defined(GET_PLATFORM_BITS_ENUM)
    #if (INTPTR_MAX == INT32_MAX)
       #define GET_PLATFORM_BITS_ENUM 0
@@ -411,7 +403,7 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       if (entry.is_directory())
       {
          mINI::INIStructure ini;
-         mINI::INIFile file(entry.path().string() + PATH_SEPARATOR_CHAR + "plugin.cfg");
+         mINI::INIFile file(entry.path() / "plugin.cfg");
          if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
          {
             std::string id = unquote(ini["configuration"s]["id"s]);
@@ -419,14 +411,14 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
                if ((*it)->m_id == id)
                   it = m_plugins.erase(it);
             const std::string libraryFile = unquote(ini["libraries"s][libraryKey]);
-            const std::string libraryPath = entry.path().string() + PATH_SEPARATOR_CHAR + libraryFile;
+            const std::filesystem::path libraryPath = entry.path() / libraryFile;
             if (!std::filesystem::exists(libraryPath))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                continue;
             }
             std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
-               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(), libraryPath,
+               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(), libraryPath.string(),
                m_nextEndpointId++);
             m_plugins.push_back(plugin);
             callback(*plugin);

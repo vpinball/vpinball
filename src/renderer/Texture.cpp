@@ -88,18 +88,13 @@ std::shared_ptr<BaseTexture> BaseTexture::Create(const unsigned int w, const uns
    return result;
 }
 
-std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const string& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    if (filename.empty())
       return nullptr;
    PinBinary ppb;
    ppb.ReadFromFile(filename);
    return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
-}
-
-std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const std::filesystem::path& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
-{
-   return CreateFromFile(filename.string(), maxTexDimension, resizeOnLowMem);
 }
 
 std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
@@ -494,26 +489,26 @@ void BaseTexture::FlipY()
    m_aliases.clear();
 }
 
-bool BaseTexture::Save(const string& filepath) const
+bool BaseTexture::Save(const std::filesystem::path& filepath) const
 {
    if ((m_format != SRGBA) && (m_format != SRGB))
       return false;
 
-   const string ext = extension_from_path(filepath);
+   const string ext = lowerCase(filepath.extension().string());
    bool success = false;
 
    // Create parent directory if needed
-   std::filesystem::create_directories(std::filesystem::path(filepath).parent_path());
+   std::filesystem::create_directories(filepath.parent_path());
 
-   if (ext == "bmp")
+   if (ext == ".bmp")
    {
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
-         success = SDL_SaveBMP(pSurface, filepath.c_str());
+         success = SDL_SaveBMP(pSurface, filepath.string().c_str());
          SDL_DestroySurface(pSurface);
       }
    }
-   else if (ext == "qoi")
+   else if (ext == ".qoi")
    {
       qoi_desc desc { .width = m_width, .height = m_height, .channels = static_cast<unsigned char>(m_format == SRGB ? 3 :4), .colorspace = QOI_SRGB };
       int size;
@@ -531,7 +526,7 @@ bool BaseTexture::Save(const string& filepath) const
          }
          catch (const std::filesystem::filesystem_error& e)
          {
-            PLOGE << "Failed to save file " << filepath.c_str() << ": " << e.what();
+            PLOGE << "Failed to save file " << filepath.string().c_str() << ": " << e.what();
          }
          QOI_FREE(encoded);
       }
@@ -541,13 +536,13 @@ bool BaseTexture::Save(const string& filepath) const
    #ifdef __STANDALONE__
       if (SDL_Surface* pSurface = ToSDLSurface(); pSurface)
       {
-         if (ext == "png")
-            success = IMG_SavePNG(pSurface, filepath.c_str());
-         else if (ext == "jpg" || ext == "jpeg")
-            success = IMG_SaveJPG(pSurface, filepath.c_str(), 75);
+         if (ext == ".png")
+            success = IMG_SavePNG(pSurface, filepath.string().c_str());
+         else if (ext == ".jpg" || ext == ".jpeg")
+            success = IMG_SaveJPG(pSurface, filepath.string().c_str(), 75);
          // Needs latest SDL3_image for WEBP support
-         //else if (ext == "webp")
-         //   success = IMG_SaveWEBP(pSurface, filepath.c_str(), 75);
+         //else if (ext == ".webp")
+         //   success = IMG_SaveWEBP(pSurface, filepath.string().c_str(), 75);
          SDL_DestroySurface(pSurface);
       }
 
@@ -561,13 +556,13 @@ bool BaseTexture::Save(const string& filepath) const
          else
             copy_bgra_rgba<false>((unsigned int*)bits, (const unsigned int*)m_data, m_width * m_height);
          FreeImage_FlipVertical(bitmap);
-         if (ext == "png")
-            success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), PNG_Z_DEFAULT_COMPRESSION);
-         else if (ext == "jpg" || ext == "jpeg")
-            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), JPEG_QUALITYGOOD);
-         else if (ext == "webp")
+         if (ext == ".png")
+            success = FreeImage_Save(FIF_PNG, bitmap, filepath.string().c_str(), PNG_Z_DEFAULT_COMPRESSION);
+         else if (ext == ".jpg" || ext == ".jpeg")
+            success = FreeImage_Save(FIF_JPEG, bitmap, filepath.string().c_str(), JPEG_QUALITYGOOD);
+         else if (ext == ".webp")
             //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would be better for our regression tests)
-            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
+            success = FreeImage_Save(FIF_WEBP, bitmap, filepath.string().c_str(), WBMP_DEFAULT);
          FreeImage_Unload(bitmap);
       }
    #endif
@@ -678,16 +673,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
             if (tex == nullptr)
                return nullptr;
-            uint16_t* const __restrict dest_data16 = reinterpret_cast<uint16_t*>(tex->data());
-            const uint16_t* const __restrict src_data16 = reinterpret_cast<const uint16_t*>(datac());
-            const size_t size = (size_t)width() * height();
-            for (size_t o = 0; o < size; ++o)
-            {
-               dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
-               dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
-               dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
-               dest_data16[o * 4 + 3] = 0x3C00; //=1.f
-            }
+            copy_rgb_rgba(reinterpret_cast<uint16_t*>(tex->data()), reinterpret_cast<const uint16_t*>(datac()), (size_t)width() * height());
          }
          break;
          default: break;
@@ -702,16 +688,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
             if (tex == nullptr)
                return nullptr;
-            uint32_t* const __restrict dest_data32 = reinterpret_cast<uint32_t*>(tex->data());
-            const uint32_t* const __restrict src_data32 = reinterpret_cast<const uint32_t*>(datac());
-            const size_t size = (size_t)width() * height();
-            for (size_t o = 0; o < size; ++o)
-            {
-               dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
-               dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
-               dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
-               dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
-            }
+            copy_rgb_rgba(reinterpret_cast<float*>(tex->data()), reinterpret_cast<const float*>(datac()), (size_t)width() * height());
          }
          break;
          default: break;
@@ -1000,13 +977,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
             if (has_alpha)
                memcpy(dst, src, pitch);
             else
-               for (unsigned int x = 0; x < width; x++, dst += 3) // copy without alpha channel
-               {
-                  const unsigned int rgba = src[x];
-                  dst[0] = rgba;
-                  dst[1] = rgba >> 8;
-                  dst[2] = rgba >> 16;
-               }
+               copy_rgba_rgb<false>(dst, src, width); // copy without alpha channel
          }
 
          // Convert to a lossless webp
@@ -1015,7 +986,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
          ppb = new PinBinary();
          ppb->m_buffer.resize(FreeImage_TellMemory(memStream));
          ppb->m_name = name;
-         string ext = extension_from_path(path);
+         const string ext = extension_from_path(path);
          if (!ext.empty())
          {
             path.erase(path.length() - ext.length());
@@ -1068,7 +1039,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
    return tex;
 }
 
-Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
+Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bool isImageData)
 {
    PinBinary* const ppb = new PinBinary();
    ppb->ReadFromFile(filename);
@@ -1103,7 +1074,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt) const
 {
    BiffWriter bw(pstream, 0);
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteString(FID(PATH), m_ppb->m_path);
+   bw.WriteString(FID(PATH), m_ppb->m_path.string());
    bw.WriteInt(FID(WDTH), m_width);
    bw.WriteInt(FID(HGHT), m_height);
    if (pt->GetImageLink(this))
@@ -1126,8 +1097,8 @@ bool Texture::IsHDR() const
    if (buffer)
       return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
           || buffer->m_format == BaseTexture::RGB_FP32 || buffer->m_format == BaseTexture::RGBA_FP32;
-   string ext = extension_from_path(m_ppb->m_path);
-   return (ext == "exr") || (ext == "hdr");
+   const string ext = lowerCase(m_ppb->m_path.extension().string());
+   return (ext == ".exr") || (ext == ".hdr");
 }
 
 size_t Texture::GetEstimatedGPUSize() const
@@ -1241,7 +1212,7 @@ void Texture::UpdateOpaque() const
    if (!m_isOpaqueDirty)
       return;
    m_isOpaqueDirty = false;
-   auto bitmap = GetRawBitmap(false, 0);
+   const auto bitmap = GetRawBitmap(false, 0);
    m_isOpaque = bitmap ? bitmap->IsOpaque() : false;
 }
 

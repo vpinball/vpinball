@@ -610,7 +610,7 @@ template <class T> inline void PropertyPane::MaterialCombo(T* obj, const string&
 template <class T> inline void PropertyPane::SurfaceCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> surfaces;
-   for (const IEditable* pe : m_table->m_vedit)
+   for (const IEditable* pe : m_table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemSurface || pe->GetItemType() == ItemTypeEnum::eItemRamp || pe->GetItemType() == ItemTypeEnum::eItemFlasher)
          surfaces.push_back(pe->GetName());
    std::sort(surfaces.begin(), surfaces.end(), [](const std::string& a, const std::string& b)
@@ -622,7 +622,7 @@ template <class T> inline void PropertyPane::SurfaceCombo(T* obj, const string& 
 template <class T> inline void PropertyPane::LightmapCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> lightmaps;
-   for (const IEditable* pe : m_table->m_vedit)
+   for (const IEditable* pe : m_table->GetParts())
       if (pe->GetItemType() == ItemTypeEnum::eItemLight)
          lightmaps.push_back(pe->GetName());
    std::sort(lightmaps.begin(), lightmaps.end(), [](const std::string& a, const std::string& b)

@@ -120,10 +120,10 @@ void PluginSettingsPage::BuildPage()
             [option](int, int v) { option.setting->intDef.Set(v); }));
          break;
       case VPX::Properties::PropertyDef::Type::String:
-      {
-         string path = option.setting->stringDef.Get();
-         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, option.setting->name + ": "s + option.setting->stringDef.Get()));
-      }
+         AddItem(std::make_unique<InGameUIItem>(
+            option.propId, //
+            [option]() { return option.setting->stringDef.Get(); }, //
+            [option](const string&, const string& v) { option.setting->stringDef.Set(v.c_str()); }));
          break;
       default: assert(false); break;
       }

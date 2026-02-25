@@ -207,6 +207,12 @@ inline void ref_count_trigger(const ULONG r, const char *file, const int line) /
 #endif
 }
 
+template <class T> inline ULONG GetRefCount(T& obj)
+{
+   assert(obj->AddRef() > 1); // Assert as the object is supposed to have at least one owner beside us (otherwise it will get deleted in the release call below)
+   return obj->Release();
+}
+
 #define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=nullptr; } }
 #define SAFE_RELEASE_NO_SET(p)	{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); } }
 #define SAFE_RELEASE_NO_CHECK_NO_SET(p)	{ const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); }
@@ -801,7 +807,7 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 #define GetExecutablePathW() GetModulePath<wstring>(nullptr)
 #endif
 
-vector<uint8_t> read_file(const string& filename, const bool binary = true);
+vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
@@ -861,6 +867,7 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
+string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize);
 string create_hex_dump(const uint8_t* buffer, size_t size);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);

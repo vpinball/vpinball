@@ -392,7 +392,7 @@ void LoadXML()
 {
    XMLDocument& doc = g_settings;
 
-   auto fn = GetFileNameForSettingsXML();
+   const auto fn = GetFileNameForSettingsXML();
    auto xml = LoadFile(fn);
 
    if (xml.empty())

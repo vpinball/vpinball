@@ -221,29 +221,24 @@ static bool try_parse_named_color(const string& str, ColorRGBA32& value)
 
 bool try_parse_color(const string& str, ColorRGBA32& value)
 {
-   const string input = trim_string(str);
-   if (input.empty())
-      return false;
-
-   string hexStr;
-   if (input[0] == '#')
-      hexStr = input.substr(1);
-   else
-      hexStr = input;
+   const size_t start = (!str.empty() && str[0] == '#') ? 1 : 0;
+   string hexStr(str, start);
 
    if (hexStr.size() == 6)
       hexStr += "FF";
+   else
+      if (hexStr.size() != 8)
+         return false;
 
-   if (hexStr.size() == 8)
-   {
-      uint32_t rgba;
-      std::stringstream ss;
-      ss << std::hex << hexStr;
-      if (ss >> rgba)
-      {
-         const uint8_t r = (rgba >> 24) & 0xFF;
-         const uint8_t g = (rgba >> 16) & 0xFF;
-         const uint8_t b = (rgba >> 8)  & 0xFF;
+   uint32_t rgba;
+   std::stringstream ss;
+   ss << std::hex << hexStr;
+   if (!(ss >> rgba))
+      return false;
+
+   const uint8_t r = (rgba >> 24) & 0xFF;
+   const uint8_t g = (rgba >> 16) & 0xFF;
+   const uint8_t b = (rgba >> 8)  & 0xFF;
 
          value = r | (g << 8) | (b << 16);
          return true;
@@ -293,7 +288,7 @@ string find_case_insensitive_file_path(const string& szPath)
       if (std::filesystem::exists(p, ec))
          return p.string();
 
-      auto parent = p.parent_path();
+      const auto parent = p.parent_path();
       string base;
       if (parent.empty() || parent == p) {
          base = "."s;
@@ -303,7 +298,7 @@ string find_case_insensitive_file_path(const string& szPath)
             return string();
       }
 
-      for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      for (const auto& ent : std::filesystem::directory_iterator(base, ec)) {
          if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
             auto found = ent.path().string();
             if (found != path) {

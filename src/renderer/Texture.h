@@ -42,7 +42,6 @@ public:
    ~BaseTexture() override;
 
    static std::shared_ptr<BaseTexture> Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
-   static std::shared_ptr<BaseTexture> CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromFile(const std::filesystem::path &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
@@ -86,7 +85,7 @@ public:
    const string& GetName() const override { return m_name; }
 
    void FlipY();
-   bool Save(const string& filepath) const;
+   bool Save(const std::filesystem::path& filepath) const;
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
@@ -145,7 +144,7 @@ private:
 class Texture final : public ITexManCacheable
 {
 public:
-   static Texture *CreateFromFile(const string &filename, const bool isImageData = true);
+   static Texture *CreateFromFile(const std::filesystem::path& filename, const bool isImageData = true);
    static Texture *CreateFromStream(IStream * const pstream, int version, PinTable * const pt);
    ~Texture() override;
 
@@ -161,7 +160,7 @@ public:
 
    size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
    const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }
-   const string& GetFilePath() const { return m_ppb->m_path; }
+   const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 
    const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
@@ -464,6 +463,106 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
        for (; o < size; ++o)
           dst[o] = (unsigned int)src[o*3 + 2] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3] << 16) | (255u << 24);
 }
+
+// Copy and convert from fp16 RGB to RGBA.
+// Source must be 3, and destination buffer 4 uint16s per pixel
+inline void copy_rgb_rgba(uint16_t *const __restrict dst, const uint16_t *const __restrict src, const size_t size)
+{
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
+    static int ssse3_supported = -1;
+    if (ssse3_supported == -1)
+    {
+       int cpuInfo[4];
+       __cpuid(cpuInfo, 1);
+       ssse3_supported = (cpuInfo[2] & (1 << 9));
+    }
+#else
+    constexpr bool ssse3_supported = true;
+#endif
+#endif
+
+    size_t o = 0;
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+    if (ssse3_supported)
+    {
+       // process 8 pixels per iteration (3 loads of 128bits RGB -> 4 stores of 128bits RGBA)
+       const __m128i shuf  = _mm_setr_epi8(0, 1, 2, 3, 4, 5, -1, -1, 6, 7, 8, 9, 10, 11, -1, -1);
+       const __m128i shuf2 = _mm_setr_epi8(4, 5, 6, 7, 8, 9, -1, -1, 10, 11, 12, 13, 14, 15, -1, -1);
+       const __m128i alpha = _mm_setr_epi16(0, 0, 0, 0x3C00, 0, 0, 0, 0x3C00); // 0x3C00 = 1.f in fp16
+       const size_t simd_end = size & ~(size_t)7;
+       for (; o < simd_end; o += 8)
+       {
+          const __m128i s0 = _mm_loadu_si128((const __m128i*)(src + o*3));      // R0 G0 B0 R1 G1 B1 R2 G2
+          const __m128i s1 = _mm_loadu_si128((const __m128i*)(src + o*3 + 8));  // B2 R3 G3 B3 R4 G4 B4 R5
+          const __m128i s2 = _mm_loadu_si128((const __m128i*)(src + o*3 + 16)); // G5 B5 R6 G6 B6 R7 G7 B7
+
+          _mm_storeu_si128((__m128i*)(dst + o*4),      _mm_or_si128(_mm_shuffle_epi8(s0, shuf), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 8),  _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(s1, s0, 12), shuf), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 16), _mm_or_si128(_mm_shuffle_epi8(_mm_alignr_epi8(s2, s1, 8), shuf), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 24), _mm_or_si128(_mm_shuffle_epi8(s2, shuf2), alpha));
+       }
+    }
+#endif
+    for (; o < size; ++o)
+    {
+       dst[o*4 + 0] = src[o*3 + 0];
+       dst[o*4 + 1] = src[o*3 + 1];
+       dst[o*4 + 2] = src[o*3 + 2];
+       dst[o*4 + 3] = 0x3C00; // = 1.f in fp16
+    }
+}
+
+// Copy and convert from fp32 RGB to RGBA.
+// Source must be 3, and destination buffer 4 floats per pixel
+inline void copy_rgb_rgba(float* const __restrict dst, const float* const __restrict src, const size_t size)
+{
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
+    static int ssse3_supported = -1;
+    if (ssse3_supported == -1)
+    {
+       int cpuInfo[4];
+       __cpuid(cpuInfo, 1);
+       ssse3_supported = (cpuInfo[2] & (1 << 9));
+    }
+#else
+    constexpr bool ssse3_supported = true;
+#endif
+#endif
+
+    size_t o = 0;
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+    if (ssse3_supported)
+    {
+       // process 4 pixels per iteration (3 loads of 128bits RGB -> 4 stores of 128bits RGBA)
+       const __m128i mask  = _mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0);
+       const __m128i alpha = _mm_setr_epi32(0, 0, 0, 0x3F800000); // = 1.f in fp32
+       const size_t simd_end = size & ~(size_t)3;
+       for (; o < simd_end; o += 4)
+       {
+          const __m128i s0 = _mm_loadu_si128((const __m128i*)(src + o*3));     // R0 G0 B0 R1
+          const __m128i s1 = _mm_loadu_si128((const __m128i*)(src + o*3 + 4)); // G1 B1 R2 G2
+          const __m128i s2 = _mm_loadu_si128((const __m128i*)(src + o*3 + 8)); // B2 R3 G3 B3
+
+          _mm_storeu_si128((__m128i*)(dst + o*4),      _mm_or_si128(_mm_and_si128(s0, mask), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 4),  _mm_or_si128(_mm_and_si128(_mm_alignr_epi8(s1, s0, 12), mask), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 8),  _mm_or_si128(_mm_and_si128(_mm_alignr_epi8(s2, s1,  8), mask), alpha));
+          _mm_storeu_si128((__m128i*)(dst + o*4 + 12), _mm_or_si128(_mm_srli_si128(s2, 4), alpha));
+       }
+    }
+#endif
+    for (; o < size; ++o)
+    {
+       dst[o*4 + 0] = src[o*3 + 0];
+       dst[o*4 + 1] = src[o*3 + 1];
+       dst[o*4 + 2] = src[o*3 + 2];
+       dst[o*4 + 3] = 1.f;
+    }
+}
+
 
 // Copy and convert from BGR to RGB (=swap R and B channels).
 // Source and destination buffers must be 3 bytes per pixel

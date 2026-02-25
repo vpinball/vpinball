@@ -60,7 +60,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
    m_d.m_visible = true;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Light::SetDefaults(const bool fromMouseClick)
@@ -1222,7 +1222,8 @@ STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 STDMETHODIMP Light::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

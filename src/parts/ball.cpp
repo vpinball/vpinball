@@ -52,7 +52,7 @@ HRESULT Ball::Init(PinTable *const ptable, const float x, const float y, const b
    m_hitBall.m_d.m_pos.x = x;
    m_hitBall.m_d.m_pos.y = y;
    m_hitBall.m_d.m_pos.z = m_hitBall.m_d.m_radius;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Ball::SetObjectPos()

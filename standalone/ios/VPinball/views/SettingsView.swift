@@ -40,7 +40,6 @@ struct SettingsView: View {
         }
     }
 
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
     @Environment(\.presentationMode) var presentationMode
 
     @State var inputTitle: String = ""
@@ -54,226 +53,203 @@ struct SettingsView: View {
     @State var showExport: ExportFile? = nil
     @State var showReset = false
 
-    var focusSection: String?
-
-    let vpinballManager = VPinballManager.shared
-
     var body: some View {
         NavigationView {
-            ScrollViewReader { proxy in
-                List {
-                    Section("General") {
-                        if UIDevice.current.userInterfaceIdiom != .pad {
-                            VStack(alignment: .leading) {
-                                Toggle(isOn: $settingsModel.haptics) {
-                                    Text("Haptics")
-                                }
-                                .tint(Color.vpxRed)
-
-                                Text("Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.")
-                                    .font(.footnote)
-                                    .foregroundStyle(Color.secondary)
-                            }
-                        }
-
+            List {
+                Section("General") {
+                    if UIDevice.current.userInterfaceIdiom != .pad {
                         VStack(alignment: .leading) {
-                            Toggle(isOn: $settingsModel.renderingModeOverride) {
-                                Text("Force VR Rendering Mode")
+                            Toggle(isOn: $settingsModel.haptics) {
+                                Text("Haptics")
                             }
                             .tint(Color.vpxRed)
 
-                            Text(.init("Provide table scripts with `RenderingMode=2` so backbox and cabinet are rendered. Useful for tables that do not provide FSS support."))
+                            Text("Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.")
                                 .font(.footnote)
                                 .foregroundStyle(Color.secondary)
                         }
                     }
+                }
 
-                    Picker("Display", selection: $settingsModel.viewMode) {
-                        ForEach(VPinballViewMode.all,
-                                id: \.self)
-                        { viewMode in
-                            Text(viewMode.name)
-                                .tag(viewMode)
-                        }
-                    }
+                SettingsPerformanceView(settingsModel: settingsModel)
+                    .id("performance")
 
-                    SettingsPerformanceView(settingsModel: settingsModel)
-                        .id("performance")
+                SettingsExternalDMDView(settingsModel: settingsModel, showInput: handleShowInput)
 
-                    SettingsExternalDMDView(settingsModel: settingsModel, showInput: handleShowInput)
+                SettingsWebServerView(settingsModel: settingsModel, showInput: handleShowInput)
 
-                    SettingsWebServerView(settingsModel: settingsModel, showInput: handleShowInput)
-
-                    Section("Advanced") {
-                        Toggle(isOn: $settingsModel.resetLogOnPlay) {
-                            Text("Reset Log on Play")
+                Section("Miscellaneous") {
+                    VStack(alignment: .leading) {
+                        Toggle(isOn: $settingsModel.renderingModeOverride) {
+                            Text("Force VR Rendering Mode")
                         }
                         .tint(Color.vpxRed)
 
-                        Button("Export \(ExportFile.log.name)...") {
-                            handleShowExport(.log)
+                        Text(.init("Provide table scripts with `RenderingMode=2` so backbox and cabinet are rendered. Useful for tables that do not provide FSS support."))
+                            .font(.footnote)
+                            .foregroundStyle(Color.secondary)
+                    }
+                }
+
+                Section("Advanced") {
+                    Toggle(isOn: $settingsModel.resetLogOnPlay) {
+                        Text("Reset Log on Play")
+                    }
+                    .tint(Color.vpxRed)
+
+                    Button("Export \(ExportFile.log.name)...") {
+                        handleShowExport(.log)
+                    }
+                    .foregroundStyle(Color.vpxRed)
+                }
+
+                Section {
+                    Button("Export \(ExportFile.ini.name)...") {
+                        handleShowExport(.ini)
+                    }
+                    .foregroundStyle(Color.vpxRed)
+                }
+
+                Section("Support") {
+                    Button(action: {
+                        handleLink(Link.docs)
+                    }, label: {
+                        HStack {
+                            Text("Learn More")
+                                .foregroundStyle(Color.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: UIFont.systemFontSize,
+                                              weight: .semibold))
+                                .foregroundStyle(Color.secondary)
                         }
-                        .foregroundStyle(Color.vpxRed)
-                    }
+                    })
 
-                    Section {
-                        Button("Export \(ExportFile.ini.name)...") {
-                            handleShowExport(.ini)
+                    let canSendMail = MFMailComposeViewController.canSendMail()
+
+                    Button(action: {
+                        handleContactUs()
+                    }, label: {
+                        HStack {
+                            Text("Contact Us")
+                                .foregroundStyle(Color.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: UIFont.systemFontSize,
+                                              weight: .semibold))
+                                .foregroundStyle(Color.secondary)
                         }
-                        .foregroundStyle(Color.vpxRed)
-                    }
+                        .opacity(canSendMail ? 1.0 : 0.4)
+                    })
+                    .disabled(!canSendMail)
 
-                    Section("Support") {
-                        Button(action: {
-                            handleLink(Link.docs)
-                        }, label: {
-                            HStack {
-                                Text("Learn More")
-                                    .foregroundStyle(Color.primary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: UIFont.systemFontSize,
-                                                  weight: .semibold))
-                                    .foregroundStyle(Color.secondary)
-                            }
-                        })
+                    Button(action: {
+                        handleLink(Link.discord)
+                    }, label: {
+                        HStack {
+                            Text("Discord (Virtual Pinball Chat)")
+                                .foregroundStyle(Color.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: UIFont.systemFontSize,
+                                              weight: .semibold))
+                                .foregroundStyle(Color.secondary)
+                        }
+                    })
+                }
 
-                        let canSendMail = MFMailComposeViewController.canSendMail()
-
-                        Button(action: {
-                            handleContactUs()
-                        }, label: {
-                            HStack {
-                                Text("Contact Us")
-                                    .foregroundStyle(Color.primary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: UIFont.systemFontSize,
-                                                  weight: .semibold))
-                                    .foregroundStyle(Color.secondary)
-                            }
-                            .opacity(canSendMail ? 1.0 : 0.4)
-                        })
-                        .disabled(!canSendMail)
-
-                        Button(action: {
-                            handleLink(Link.discord)
-                        }, label: {
-                            HStack {
-                                Text("Discord (Virtual Pinball Chat)")
-                                    .foregroundStyle(Color.primary)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: UIFont.systemFontSize,
-                                                  weight: .semibold))
-                                    .foregroundStyle(Color.secondary)
-                            }
-                        })
-                    }
-
-                    Section("Credits") {
-                        ForEach(Credit.all, id: \.self) { credit in
-                            if let link = credit.link {
-                                Button(action: {
-                                    handleLink(link)
-                                }, label: {
-                                    VStack(alignment: .leading,
-                                           spacing: 10)
-                                    {
-                                        HStack(alignment: .center) {
-                                            VStack(alignment: .leading) {
-                                                Text(credit.name)
-                                                    .foregroundStyle(Color.primary)
-                                            }
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                                .font(.system(size: UIFont.systemFontSize,
-                                                              weight: .semibold))
-                                                .foregroundStyle(Color.secondary)
-                                        }
-                                        if let authors = credit.authors {
-                                            Text(authors)
-                                                .font(.footnote)
-                                                .foregroundStyle(Color.secondary)
-                                        }
-                                    }
-                                })
-                            } else {
+                Section("Credits") {
+                    ForEach(Credit.all, id: \.self) { credit in
+                        if let link = credit.link {
+                            Button(action: {
+                                handleLink(link)
+                            }, label: {
                                 VStack(alignment: .leading,
                                        spacing: 10)
                                 {
-                                    Text(credit.name)
-                                        .foregroundStyle(Color.primary)
-
+                                    HStack(alignment: .center) {
+                                        VStack(alignment: .leading) {
+                                            Text(credit.name)
+                                                .foregroundStyle(Color.primary)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: UIFont.systemFontSize,
+                                                          weight: .semibold))
+                                            .foregroundStyle(Color.secondary)
+                                    }
                                     if let authors = credit.authors {
                                         Text(authors)
                                             .font(.footnote)
                                             .foregroundStyle(Color.secondary)
                                     }
                                 }
-                            }
-                        }
-                    }
-
-                    Section {
-                        Button(action: {
-                            handleLink(Link.licenses)
-                        }, label: {
+                            })
+                        } else {
                             VStack(alignment: .leading,
                                    spacing: 10)
                             {
-                                HStack(alignment: .center) {
-                                    VStack(alignment: .leading) {
-                                        Text("License")
-                                            .foregroundStyle(Color.primary)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: UIFont.systemFontSize,
-                                                      weight: .semibold))
+                                Text(credit.name)
+                                    .foregroundStyle(Color.primary)
+
+                                if let authors = credit.authors {
+                                    Text(authors)
+                                        .font(.footnote)
                                         .foregroundStyle(Color.secondary)
                                 }
                             }
-                        })
+                        }
                     }
+                }
 
-                    Section {
-                        Button("Reset",
-                               role: .destructive)
+                Section {
+                    Button(action: {
+                        handleLink(Link.licenses)
+                    }, label: {
+                        VStack(alignment: .leading,
+                               spacing: 10)
                         {
-                            handleReset()
-                        }
-                    }
-
-                    Text(String(cString: VPinballGetVersionStringFull()))
-                        .font(.caption)
-                        .foregroundStyle(Color.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity,
-                               alignment: .center)
-                        .listRowBackground(Color.clear)
-                }
-                .navigationBarTitleDisplayMode(.large)
-                .navigationBarTitle("Settings", displayMode: .large)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: {
-                            handleDismiss()
-                        }) {
-                            Text("Done")
-                                .bold()
-                                .foregroundStyle(Color.vpxRed)
-                        }
-                    }
-                }
-                .onAppear {
-                    if let focusSection = focusSection {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            withAnimation {
-                                proxy.scrollTo(focusSection,
-                                               anchor: .top)
+                            HStack(alignment: .center) {
+                                VStack(alignment: .leading) {
+                                    Text("License")
+                                        .foregroundStyle(Color.primary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: UIFont.systemFontSize,
+                                                  weight: .semibold))
+                                    .foregroundStyle(Color.secondary)
                             }
                         }
+                    })
+                }
+
+                Section {
+                    Button("Reset",
+                           role: .destructive)
+                    {
+                        handleReset()
+                    }
+                }
+
+                Text(String(cString: VPinballGetVersionStringFull()))
+                    .font(.caption)
+                    .foregroundStyle(Color.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity,
+                           alignment: .center)
+                    .listRowBackground(Color.clear)
+            }
+            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitle("Settings", displayMode: .large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        handleDismiss()
+                    }) {
+                        Text("Done")
+                            .bold()
+                            .foregroundStyle(Color.vpxRed)
                     }
                 }
             }
@@ -293,7 +269,7 @@ struct SettingsView: View {
                    role: .cancel) {}
         }
         .fullScreenCover(item: $showExport) { exportFile in
-            let url = URL(fileURLWithPath: vpinballManager.getPath(.preferences)).appendingPathComponent(exportFile.name)
+            let url = URL(fileURLWithPath: VPinballManager.shared.getPath(.preferences)).appendingPathComponent(exportFile.name)
             CodeView(url: url,
                      language: exportFile.language,
                      allowsClear: exportFile.allowsClear)
@@ -317,9 +293,6 @@ struct SettingsView: View {
         }
         .onChange(of: settingsModel.renderingModeOverride) {
             settingsModel.handleRenderingModeOverride()
-        }
-        .onChange(of: settingsModel.viewMode) {
-            settingsModel.handleViewMode()
         }
         .onChange(of: settingsModel.resetLogOnPlay) {
             settingsModel.handleResetLogOnPlay()
@@ -356,8 +329,8 @@ struct SettingsView: View {
 
     func handleResetAllSettings() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            vpinballManager.resetIni()
-            vpinballManager.updateWebServer()
+            VPinballManager.shared.resetIni()
+            VPinballManager.shared.updateWebServer()
 
             settingsModel.reset()
         }

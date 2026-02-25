@@ -107,7 +107,7 @@ enum Credit {
     var authors: String? {
         switch self {
         case .vpinball:
-            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi"
+            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi, evilwraith"
         case .pinmame:
             return "toxieainc, volkenborn, Steve Ellenoff, bcd, Tom, Haukap, wpcmame, Matthias Buecher, jsm174, vbousquet, mkalkbrenner, droscoe, djrobx, Thomas Behrens, bontango, tomlogic, mjrgh, Oliver, Kaegi, syllebra, JockeJarre, Randall, Perlow, gstellenberg, Netsplits, gnulnulf, Sunnucks, mattwalsh, Mark, freezy, uid68989, Sereda, Pavel, noflip95, No, francisdb, diego-link-eggy"
         case .libaltsound:

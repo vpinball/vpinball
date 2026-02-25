@@ -18,6 +18,7 @@ import org.vpinball.app.TableListSortOrder
 import org.vpinball.app.TableManager
 import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
+import org.vpinball.app.VPinballModel
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 
 class LandingScreenViewModel : ViewModel() {
@@ -56,12 +57,25 @@ class LandingScreenViewModel : ViewModel() {
         fun triggerRemoveTable(table: Table) {
             _removeTableTrigger.tryEmit(table)
         }
+
+        private val _errorTrigger = MutableSharedFlow<String>(extraBufferCapacity = 1)
+        val errorTrigger: SharedFlow<String> = _errorTrigger.asSharedFlow()
+
+        fun triggerError(message: String) {
+            _errorTrigger.tryEmit(message)
+        }
+
+        private val _openUriTrigger = MutableSharedFlow<android.net.Uri>(extraBufferCapacity = 1)
+        val openUriTrigger: SharedFlow<android.net.Uri> = _openUriTrigger.asSharedFlow()
+
+        fun triggerOpenUri(uri: android.net.Uri) {
+            _openUriTrigger.tryEmit(uri)
+        }
     }
 
-    private var tableJob: Job? = null
+    lateinit var vpinballModel: VPinballModel
 
-    private val _unfilteredTables = MutableStateFlow(emptyList<Table>())
-    val unfilteredTables: StateFlow<List<Table>> = _unfilteredTables
+    private var tableJob: Job? = null
 
     private val _filteredTables = MutableStateFlow(emptyList<Table>())
     val filteredTables: StateFlow<List<Table>> = _filteredTables
@@ -78,6 +92,12 @@ class LandingScreenViewModel : ViewModel() {
     private val _search = MutableStateFlow("")
     val search: StateFlow<String> = _search
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _importUri = MutableStateFlow<android.net.Uri?>(null)
+    val importUri: StateFlow<android.net.Uri?> = _importUri
+
     private val _isFetchingTables = MutableStateFlow(false)
     val isFetchingTables: StateFlow<Boolean> = _isFetchingTables
 
@@ -90,10 +110,6 @@ class LandingScreenViewModel : ViewModel() {
     init {
         loadSettings()
 
-        if (_unfilteredTables.value.isEmpty()) {
-            fetchTables()
-        }
-
         viewModelScope.launch { refreshTrigger.collect { refreshTables() } }
 
         viewModelScope.launch { updateTableTrigger.collect { table -> updateSingleTable(table) } }
@@ -101,6 +117,29 @@ class LandingScreenViewModel : ViewModel() {
         viewModelScope.launch { addTablesTrigger.collect { tables -> addNewTables(tables) } }
 
         viewModelScope.launch { removeTableTrigger.collect { table -> removeTable(table) } }
+
+        viewModelScope.launch { errorTrigger.collect { message -> setError(message) } }
+
+        viewModelScope.launch { openUriTrigger.collect { uri -> _importUri.update { uri } } }
+    }
+
+    fun initialize(vpinballModel: VPinballModel) {
+        this.vpinballModel = vpinballModel
+        if (vpinballModel.tables.isEmpty()) {
+            fetchTables()
+        }
+    }
+
+    fun setError(message: String) {
+        _errorMessage.update { message }
+    }
+
+    fun clearError() {
+        _errorMessage.update { null }
+    }
+
+    fun clearImportUri() {
+        _importUri.update { null }
     }
 
     fun setTableViewMode(mode: TableViewMode) {
@@ -119,22 +158,22 @@ class LandingScreenViewModel : ViewModel() {
 
         val sortedTables =
             when (order) {
-                TableListSortOrder.A_Z -> _unfilteredTables.value.sortedBy { it.name }
-                TableListSortOrder.Z_A -> _unfilteredTables.value.sortedByDescending { it.name }
+                TableListSortOrder.A_Z -> vpinballModel.tables.sortedBy { it.name }
+                TableListSortOrder.Z_A -> vpinballModel.tables.sortedByDescending { it.name }
             }
 
-        _unfilteredTables.update { sortedTables }
+        vpinballModel.tables = sortedTables
         _filteredTables.update { sortedTables }
         search(search.value)
     }
 
     fun search(query: String) {
         _search.update { query }
-        val unfilteredTables = _unfilteredTables.value
+        val tables = vpinballModel.tables
         if (query.isEmpty() || query.isBlank()) {
-            _filteredTables.update { unfilteredTables.toList() }
+            _filteredTables.update { tables.toList() }
         } else {
-            _filteredTables.update { unfilteredTables.filter { it.name.lowercase().contains(query.trim().lowercase()) } }
+            _filteredTables.update { tables.filter { it.name.lowercase().contains(query.trim().lowercase()) } }
         }
     }
 
@@ -143,19 +182,19 @@ class LandingScreenViewModel : ViewModel() {
     }
 
     private fun updateSingleTable(updatedTable: Table) {
-        _unfilteredTables.update { tables -> tables.map { if (it.uuid == updatedTable.uuid) updatedTable else it } }
+        vpinballModel.tables = vpinballModel.tables.map { if (it.uuid == updatedTable.uuid) updatedTable else it }
         _filteredTables.update { tables -> tables.map { if (it.uuid == updatedTable.uuid) updatedTable else it } }
     }
 
     private fun addNewTables(newTables: List<Table>) {
-        val combined = _unfilteredTables.value + newTables
+        val combined = vpinballModel.tables + newTables
         val sortedTables =
             when (_tableListSortOrder.value) {
                 TableListSortOrder.A_Z -> combined.sortedBy { it.name }
                 TableListSortOrder.Z_A -> combined.sortedByDescending { it.name }
             }
 
-        _unfilteredTables.update { sortedTables }
+        vpinballModel.tables = sortedTables
         _filteredTables.update { sortedTables }
         search(search.value)
 
@@ -165,7 +204,7 @@ class LandingScreenViewModel : ViewModel() {
     }
 
     private fun removeTable(table: Table) {
-        _unfilteredTables.update { tables -> tables.filter { it.uuid != table.uuid } }
+        vpinballModel.tables = vpinballModel.tables.filter { it.uuid != table.uuid }
         _filteredTables.update { tables -> tables.filter { it.uuid != table.uuid } }
     }
 
@@ -191,13 +230,13 @@ class LandingScreenViewModel : ViewModel() {
                         }.distinctBy { it.uuid }
 
                     withContext(Dispatchers.Main) {
-                        _unfilteredTables.update { sortedTables }
+                        vpinballModel.tables = sortedTables
                         _filteredTables.update { sortedTables }
                         search(search.value)
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        _unfilteredTables.update { emptyList() }
+                        vpinballModel.tables = emptyList()
                         _filteredTables.update { emptyList() }
                     }
                 } finally {

@@ -60,6 +60,7 @@ string TrimLeading(const string& str, const string& whitespace);
 string TrimTrailing(const string& str, const string& whitespace);
 bool try_parse_float(const string& str, float& value);
 bool try_parse_int(const string& str, int& value);
+std::filesystem::path lowerCase(std::filesystem::path input);
 std::filesystem::path GetPluginPath();
 
 }

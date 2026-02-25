@@ -15,9 +15,7 @@
 
 #include "ui/win/PinTableMDI.h"
 
-#ifndef __STANDALONE__
-#include "ui/dialogs/SearchSelectDialog.h"
-#else
+#ifdef __STANDALONE__
 #include <iostream>
 class Light;
 #endif
@@ -58,7 +56,6 @@ class PinTable : public CComObjectRootEx<CComSingleThreadModel>,
                  public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
                  public ISelect,
                  public IScriptable,
-                 public CodeViewer::IScriptableHost,
                  public IEditable,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
@@ -300,8 +297,6 @@ public:
    PinTable *CopyForPlay();
 
    void ClearForOverwrite() final;
-   void InitBuiltinTable(const size_t tableId);
-   void InitTablePostLoad();
    void RemoveInvalidReferences();
 
    HRESULT GetTypeName(BSTR *pVal) const final;
@@ -314,7 +309,6 @@ public:
    // ISelect
    void OnLButtonDown(int x, int y) final;
    void OnLButtonUp(int x, int y) final { }
-   void OnMouseMove(int x, int y) final { }
    void SetDirtyDraw() final;
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
@@ -333,12 +327,12 @@ public:
    enum class OptionEventType { Initialized, Changed, Reseted, EndOfEdit };
    void FireOptionEvent(OptionEventType event);
 
-   VPX::Sound *ImportSound(const string &filename);
-   void ReImportSound(VPX::Sound *const pps, const string &filename);
-   bool ExportSound(VPX::Sound *const pps, const string &filename);
+   VPX::Sound *ImportSound(const std::filesystem::path &filename);
+   void ReImportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
+   bool ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename);
    void RemoveSound(VPX::Sound *const pps);
    bool ExportImage(const Texture *const ppi, const string &filename);
-   Texture* ImportImage(const string &filename, const string &imageName);
+   Texture* ImportImage(const std::filesystem::path &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
 
    Texture *GetImage(const string &szName) const;
@@ -365,17 +359,17 @@ public:
    void NewCollection(const HWND hwndListView, const bool fFromSelection);
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-   void RemoveCollection(CComObject<Collection> *pcol);
-   void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
 #ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
 #endif
    bool FMutilSelLocked();
 
-   void SelectItem(IScriptable *piscript) final;
-   void DoCodeViewCommand(int command) final;
-   void SetDirtyScript(SaveDirtyState sds) final;
+   // Expected by CodeViewer
+   void SelectItem(IScriptable *piscript);
+   void DoCodeViewCommand(int command);
+   void SetDirtyScript(SaveDirtyState sds);
+
    void ExportMesh(ObjLoader &loader) final;
 
    // Multi-object manipulation
@@ -392,7 +386,6 @@ public:
    ItemTypeEnum GetItemType() const final { return eItemTable; }
    HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
    HRESULT InitPostLoad() final { return S_OK; }
-   HRESULT InitVBA(bool fNew, WCHAR *const wzName) final { return S_OK; }
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
@@ -419,9 +412,7 @@ public:
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
 
-   HRESULT TableSave();
-   HRESULT SaveAs();
-   HRESULT Save(const bool saveAs);
+   HRESULT Save();
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
@@ -429,8 +420,9 @@ public:
    static HRESULT WriteInfoValue(IStorage *pstg, const wstring& wzName, const string &szValue, HCRYPTHASH hcrypthash);
    static HRESULT ReadInfoValue(IStorage *pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) final;
-   HRESULT LoadGameFromFilename(const string &filename);
-   HRESULT LoadGameFromFilename(const string &filename, VPXFileFeedback& feedback);
+   HRESULT LoadGameFromFilename(const std::filesystem::path &filename);
+   HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
+   void LoadScriptOverride(const std::filesystem::path& scriptPath);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
@@ -460,10 +452,26 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
-   bool IsNameUnique(const wstring& wzName) const;
+   const vector<IEditable *>& GetParts() const { return m_vedit; }
+   bool HasPart(IEditable *part) const { return std::ranges::find(m_vedit, part) != m_vedit.end(); }
+   void AddPart(IEditable *part);
+   void RemovePart(IEditable *part);
+   void RenamePart(IEditable *part, const wstring& newName);
+   void MovePartToFront(IEditable *part);
+   void MovePartToBack(IEditable *part);
+   void ReorderParts(bool isDrawingOrder);
+   void AddCollection(Collection *collection);
+   void RemoveCollection(Collection *collection);
+   void RenameCollection(Collection *collection, const wstring &newName);
+   bool IsNameUnique(const wstring &wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
+private:
+   ankerl::unordered_dense::map<wstring, IEditable *> m_scriptableNames;
+   vector<IEditable *> m_vedit;
+
+public:
 
    float GetSurfaceHeight(const string &name, float x, float y) const;
 
@@ -529,7 +537,7 @@ public:
    bool IsLocked() const { return (m_tablelocked & 1) != 0; }
    void ToggleLock() { BeginUndo(); MarkForUndo(); m_tablelocked++; EndUndo(); SetDirtyDraw(); }
 
-   bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
+   bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_external_script_name.empty(); }
 
    // Override automatic ini path (used for commandline override)
    void SetSettingsFileName(const std::filesystem::path &path)
@@ -552,13 +560,15 @@ public:
 
       // Table ini file alongside table file, name matching table filename
       std::filesystem::path tableIni = m_filename;
-      tableIni.replace_extension("ini");
+      tableIni.replace_extension(".ini");
       if (FileExists(tableIni))
          return tableIni;
 
       // Table ini file alongside table file, name matching folder name
       const auto folder = m_filename.parent_path();
-      std::filesystem::path folderIni = folder / (folder.filename().string() + ".ini");
+      auto fn = folder.filename();
+      fn += ".ini";
+      std::filesystem::path folderIni = folder / fn;
       folderIni = find_case_insensitive_file_path(folderIni);
       if (!folderIni.empty())
          return folderIni;
@@ -667,7 +677,6 @@ public:
 
    string m_envImage;
 
-   vector<IEditable *> m_vedit;
    vector<ISelect *> m_allHitElements;
 
    vector<Texture *> m_vimage;
@@ -704,7 +713,9 @@ public:
 
    PinUndo m_undo;
 
-   CodeViewer* m_pcv;
+   vector<char> m_original_table_script; // Script defined in the loaded file
+   std::filesystem::path m_external_script_name; // if defined, file that override internal script
+   string m_script_text; // Actual script (either a copy of the original or the one loaded from the override file)
 
    CComObject<class ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
 
@@ -753,8 +764,6 @@ public:
    bool m_enableAO;
    bool m_enableSSR;
    float m_bloom_strength;
-
-   SearchSelectDialog m_searchSelectDlg;
 
    volatile std::atomic<bool> m_savingActive = false;
 

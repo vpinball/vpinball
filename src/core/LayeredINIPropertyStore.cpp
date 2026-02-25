@@ -197,7 +197,7 @@ void LayeredINIPropertyStore::Save()
    while (changed)
    {
       changed = false;
-      for (auto& [k, v] : m_ini)
+      for (const auto& [k, v] : m_ini)
          if (v.empty())
          {
             changed = true;
@@ -247,15 +247,13 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
    file << "; #######################################################\n";
 
    vector<string> groups;
-   for (auto propId : m_registry.get().GetPropertyIds())
-      if (const string group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
+   for (const auto propId : m_registry.get().GetPropertyIds())
+      if (const string& group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
          groups.push_back(group);
 
-   auto toHex = [](int rgba) -> string
+   auto toHex = [](unsigned int rgba) -> string
    {
-      std::stringstream stream;
-      stream << std::setfill('0') << std::setw(8) << std::hex << rgba;
-      return stream.str();
+      return std::format("{:#010X}", rgba);
    };
 
    for (const string& group : groups)
@@ -263,7 +261,7 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
       file << '\n';
       file << '\n';
       file << '[' << group << "]\n";
-      for (auto propId : m_registry.get().GetPropertyIds())
+      for (const auto propId : m_registry.get().GetPropertyIds())
       {
          const PropertyDef* prop = m_registry.get().GetProperty(propId);
          if (prop->m_groupId == group)
@@ -288,9 +286,9 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
             {
                if (dynamic_cast<const IntPropertyDef*>(prop)->m_max == 0xFFFFFF)
                {
-                  file << " [Default: 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
+                  file << " [Default: " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
                   if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
-                     file << " in 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
+                     file << " in " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. " << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
                   file << ']';
                }
                else

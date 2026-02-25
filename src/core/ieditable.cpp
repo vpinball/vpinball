@@ -20,11 +20,9 @@ void IEditable::SetDirtyDraw()
 
 void IEditable::Delete()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    MarkForDelete();
 
-   if (GetScriptable())
-      GetPTable()->m_pcv->RemoveItem(GetScriptable());
+   GetPTable()->RemovePart(this);
 
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
@@ -35,9 +33,7 @@ void IEditable::Delete()
 
 void IEditable::Uncreate()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
-   if (GetScriptable())
-      GetPTable()->m_pcv->RemoveItem(GetScriptable());
+   GetPTable()->RemovePart(this);
 }
 
 void IEditable::SetPartGroup(PartGroup* partGroup)
@@ -46,7 +42,7 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
    {
       if (partGroup)
       {
-         assert(std::ranges::find(GetPTable()->m_vedit, partGroup) != GetPTable()->m_vedit.end());
+         assert(GetPTable()->HasPart(partGroup));
          partGroup->AddRef();
       }
       if (m_partGroup)
@@ -163,8 +159,6 @@ void IEditable::MarkForDelete()
 
 void IEditable::Undelete()
 {
-   InitVBA(true, (WCHAR *)this);
-
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
       Collection * const pcollection = m_vCollection[i];
@@ -182,29 +176,32 @@ string IEditable::GetName() const
 
 void IEditable::SetName(const string& name)
 {
-   if (name.empty())
+   IScriptable* scriptable = GetScriptable();
+   if (name.empty() || scriptable == nullptr || GetItemType() == eItemDecal)
       return;
-   if (GetItemType() == eItemDecal)
-      return;
-   const PinTable* const pt = GetPTable();
+
+   PinTable* const pt = GetPTable();
    if (pt == nullptr)
       return;
 
-   const string oldName = MakeString(GetScriptable()->m_wzName);
-
    wstring newName = MakeWString(name);
-   if(newName.length() >= std::size(GetScriptable()->m_wzName))
-      newName.erase(std::size(GetScriptable()->m_wzName)-1);
-   const bool isEqual = newName == GetScriptable()->m_wzName;
-   if(!isEqual && !pt->IsNameUnique(newName))
+   if (newName.length() >= std::size(scriptable->m_wzName))
+      newName.erase(std::size(scriptable->m_wzName) - 1);
+
+   if (newName == scriptable->m_wzName)
+      return;
+   
+   if (!pt->IsNameUnique(newName))
    {
-      WCHAR uniqueName[std::size(GetScriptable()->m_wzName)];
-      pt->GetUniqueName(newName, uniqueName, std::size(GetScriptable()->m_wzName));
+      WCHAR uniqueName[std::size(scriptable->m_wzName)];
+      pt->GetUniqueName(newName, uniqueName, std::size(scriptable->m_wzName));
       newName = uniqueName;
    }
+
    STARTUNDO
-   // first update name in the codeview before updating it in the element itself
-   pt->m_pcv->ReplaceName(GetScriptable(), newName);
-   wcsncpy_s(GetScriptable()->m_wzName, std::size(GetScriptable()->m_wzName), newName.c_str());
+   if (pt->HasPart(this))
+      pt->RenamePart(this, newName);
+   else
+      wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
    STOPUNDO
 }

@@ -10,9 +10,9 @@ void MSGPIAPI VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
    // statics as they need to survive as C string after this function returns
    static string path;
-   path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root).string() + PATH_SEPARATOR_CHAR;
+   path = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "").string();
    static string prefPath;
-   prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences).string() + PATH_SEPARATOR_CHAR;
+   prefPath = (g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "").string();
    info->path = path.c_str();
    info->prefPath = prefPath.c_str();
 }
@@ -512,7 +512,7 @@ void VPXPluginAPIImpl::OnGameStart()
    m_actionMap[VPXACTION_Lockbar] = { inputManager.GetLockbarActionId(), -1 };
    //m_actionMap[VPXACTION_Pause] = { inputManager.GetPauseActionId(), -1 };
    m_actionMap[VPXACTION_PerfOverlay] = { inputManager.GetLeftFlipperActionId(), -1 };
-   m_actionMap[VPXACTION_ExitInteractive] = { inputManager.GetExitInteractiveActionId(), -1 };
+   m_actionMap[VPXACTION_OpenInGameUI] = { inputManager.GetOpenInGameUIActionId(), -1 };
    m_actionMap[VPXACTION_ExitGame] = { inputManager.GetExitGameActionId(), -1 };
    //m_actionMap[VPXACTION_InGameUI] = { inputManager.GetIn(), -1 };
    m_actionMap[VPXACTION_VolumeDown] = { inputManager.GetVolumeDownActionId(), -1 };

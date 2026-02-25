@@ -24,13 +24,7 @@ void ExitSplashPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Table Options & Settings"s, ""s, "homepage"s));
 
-   // FIXME remove unsupported Win32 only legacy BAM headtracking
-   #ifdef WIN32
-   if (m_player->m_headTracking)
-      AddItem(std::make_unique<InGameUIItem>("Adjust Headtracking"s, ""s, []() { ImGui::OpenPopup(ID_BAM_SETTINGS); }));
-   #endif
-
-   if (hasKeyboard && m_player->m_renderer->m_stereo3D != STEREO_VR)
+   if (hasKeyboard && m_player->m_renderer->m_stereo3D != STEREO_VR && m_player->m_ptable->m_liveBaseTable)
       AddItem(std::make_unique<InGameUIItem>("Live Editor"s, ""s,
          [this]()
          {
@@ -72,17 +66,6 @@ void ExitSplashPage::BuildPage()
             ImGui::GetIO().MousePos.y = 0;
             BuildPage();
          }));
-
-   if (!g_isStandalone)
-      AddItem(std::make_unique<InGameUIItem>("Quit Player"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_STOP_PLAY); }));
-   else
-      AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() {
-#ifndef __LIBVPINBALL__
-         m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_APP);
-#else
-         m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_CAPTURE_SCREENSHOT);
-#endif
-      }));
 }
 
 void ExitSplashPage::Render(float elapsedMs)

@@ -59,6 +59,7 @@
 #define DISPID_GameEvents_Paused 1005
 #define DISPID_GameEvents_UnPaused 1006
 #define DISPID_GameEvents_OptionEvent 1007
+#define DISPID_GameEvents_SoundDone 1008
 
 // Surface
 #define DISPID_SurfaceEvents_Slingshot 1101

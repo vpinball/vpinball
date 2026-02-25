@@ -64,7 +64,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
    m_hitoctree.SetBounds(FRect(tableBounds.left, tableBounds.right, tableBounds.top, tableBounds.bottom)); // Limit to table bounds as we don't expect to play outside of it
    m_pendingHitObjects = &m_hitoctree.BeginReset();
    m_pendingHitObjects->clear();
-   for (IEditable *const pe : table->m_vedit)
+   for (IEditable *const pe : table->GetParts())
    {
       Hitable * const ph = pe->GetIHitable();
       if (ph)

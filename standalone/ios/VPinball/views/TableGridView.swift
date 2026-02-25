@@ -12,9 +12,9 @@ enum TableGridSize: Int, Hashable {
 }
 
 struct TableGridView: View {
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
-    @ObservedObject var tableManager = TableManager.shared
+    @ObservedObject var mainViewModel = MainViewModel.shared
 
+    var tables: [Table]
     var viewMode: TableViewMode
     var gridSize: TableGridSize
     var sortOrder: SortOrder
@@ -27,16 +27,14 @@ struct TableGridView: View {
     private let rowHorizontalPadding: CGFloat = 12
     private let rowOuterPadding: CGFloat = 10
 
-    init(viewMode: TableViewMode = .grid, gridSize: TableGridSize = .medium, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
-        self.viewMode = viewMode
-        self.gridSize = gridSize
-        self.sortOrder = sortOrder
-        self.searchText = searchText
-        _scrollToTable = scrollToTable
-    }
-
     var filteredTables: [Table] {
-        return tableManager.filteredTables(searchText: searchText, sortOrder: sortOrder)
+        tables
+            .filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+            .sorted {
+                sortOrder == .forward
+                    ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    : $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
+            }
     }
 
     var body: some View {
@@ -133,8 +131,8 @@ struct TableGridView: View {
             selectedTable = nil
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                vpinballViewModel.setAction(.play,
-                                            table: table)
+                mainViewModel.setAction(.play,
+                                        table: table)
             }
         }
     }

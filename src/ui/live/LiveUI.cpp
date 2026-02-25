@@ -345,8 +345,10 @@ void LiveUI::RenderUI()
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr)
       return;
 
-   const int width = m_rd->GetCurrentPass()->m_rt->GetWidth();
-   const int height = m_rd->GetCurrentPass()->m_rt->GetHeight();
+   const ImGuiIO& io = ImGui::GetIO();
+   const bool rotated = (m_rotate == 1 || m_rotate == 3);
+   const int width = static_cast<int>(rotated ? io.DisplaySize.y : io.DisplaySize.x);
+   const int height = static_cast<int>(rotated ? io.DisplaySize.x : io.DisplaySize.y);
 
    UpdateTouchUI();
 
@@ -428,7 +430,6 @@ void LiveUI::RenderUI()
    }
 
    // Update meshes and renders
-   const ImGuiIO &io = ImGui::GetIO();
    const Matrix3D matRotate = Matrix3D::MatrixRotateZ(static_cast<float>(m_rotate * (M_PI / 2.0)));
    Matrix3D matTranslate;
    switch (m_rotate)

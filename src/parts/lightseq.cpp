@@ -14,7 +14,7 @@ HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, con
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void LightSeq::SetDefaults(const bool fromMouseClick)

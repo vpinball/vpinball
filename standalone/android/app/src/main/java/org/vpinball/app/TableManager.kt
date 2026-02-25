@@ -755,8 +755,7 @@ class TableManager(private val context: Context) {
             val changedFileExtensions = listOf("txt", "ini", "cfg", "xml", "nv", "jpg", "png")
             val workingDirFile = File(loadedTableWorkingDir)
             val filesToCopy =
-                workingDirFile.listFiles()?.filter { file -> file.isFile && changedFileExtensions.contains(file.extension.lowercase()) }
-                    ?: emptyList()
+                workingDirFile.walkTopDown().filter { file -> file.isFile && changedFileExtensions.contains(file.extension.lowercase()) }.toList()
 
             if (filesToCopy.isNotEmpty()) {
                 onProgress?.invoke(30, "Copying ${filesToCopy.size} file(s)...")
@@ -764,7 +763,7 @@ class TableManager(private val context: Context) {
                 var failedCount = 0
 
                 filesToCopy.forEach { file ->
-                    val relativePath = file.name
+                    val relativePath = file.relativeTo(workingDirFile).path
                     val destPath = buildPath("$tableDir/$relativePath")
 
                     if (fileOps.copy(file.absolutePath, destPath)) {
@@ -773,7 +772,7 @@ class TableManager(private val context: Context) {
                         onProgress?.invoke(progress, "Copied $copiedCount/${filesToCopy.size}")
                     } else {
                         failedCount++
-                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: ${file.name}")
+                        VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy back: $relativePath")
                     }
                 }
 
@@ -813,29 +812,25 @@ class TableManager(private val context: Context) {
 
             fileOps.createDirectory(cachePath)
 
-            onProgress?.invoke(30, "Copying table files...")
-            val sourceTableDir = buildPath(tableDir)
-            if (!fileOps.copyDirectory(sourceTableDir, cachePath)) {
-                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy to staging cache")
+            onProgress?.invoke(30, "Copying table...")
+            val tableFileName = File(table.path).name
+            val sourceTablePath = buildPath(table.path)
+            val stagedTablePath = File(cachePath, tableFileName).absolutePath
+            if (!fileOps.copy(sourceTablePath, stagedTablePath)) {
+                VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy table to staging cache")
                 return false
             }
 
             onProgress?.invoke(70, "Extracting script...")
-            fullPath = File(cachePath, File(table.path).name).absolutePath
+            fullPath = stagedTablePath
         } else {
             onProgress?.invoke(50, "Extracting script...")
             fullPath = buildPath(table.path)
             cachePath = null
         }
 
-        if (VPinballManager.vpinballJNI.VPinballLoadTable(fullPath) != VPinballStatus.SUCCESS.value) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to load table for script extraction: $fullPath")
-            cachePath?.let { fileOps.deleteDirectory(it) }
-            return false
-        }
-
-        if (VPinballManager.vpinballJNI.VPinballExtractTableScript() != VPinballStatus.SUCCESS.value) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract script from table")
+        if (VPinballManager.vpinballJNI.VPinballExtractTableScript(fullPath) != VPinballStatus.SUCCESS.value) {
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to extract script from table: $fullPath")
             cachePath?.let { fileOps.deleteDirectory(it) }
             return false
         }

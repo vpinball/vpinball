@@ -86,7 +86,7 @@ vec3 ReinhardToneMap(vec3 color)
 #ifdef DMD
 	#define N_SAMPLES      2                     // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
 	uniform vec4 vRes_Alpha_time;
-	#define dmdSize        (vRes_Alpha_time.xy)  // display size in dots
+	#define dmdSize        (vRes_Alpha_time.xy)  // Display size in dots
 	#define coloredDMD     (displayProperties.x != 0.0) // Linear luminance or sRGB color
 	#define sdfOffset      (displayProperties.y)        // Offset needed for SDF=0.5 at border decreasing to 0.0: 0.5 * (1.0 + (1.0 / (float(N_SAMPLES) + 0.5)) * dotSize / 2.0)
 	#define dotThreshold   (displayProperties.z)        // Threshold inside SDF (so > 0.5): 0.5 + 0.5 * (0.025 /* Antialiasing */ + dotSize * (1.0 - dotSharpness) /* Darkening around border inside dot */);

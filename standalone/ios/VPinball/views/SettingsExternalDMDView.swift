@@ -2,11 +2,8 @@ import SwiftUI
 
 struct SettingsExternalDMDView: View {
     @ObservedObject var settingsModel: SettingsModel
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
 
     var showInput: (String, String, UIKeyboardType, @escaping (String) -> Void) -> Void
-
-    let vpinballManager = VPinballManager.shared
 
     var body: some View {
         Section {

@@ -33,7 +33,6 @@ public:
    bool IsEditorViewMode() const { return m_editorUI.IsOpened() && !m_editorUI.IsPreview(); }
 
    void OpenInGameUI(const string& page = "homepage"s);
-   void OpenMainSplash() { OpenInGameUI("exit"); }
    bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
 
    void ToggleFPS() { m_perfUI.NextPerfMode(); }

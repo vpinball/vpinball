@@ -54,10 +54,10 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Upstream: 
 - License: 
 
-### PinMame
+### PinMAME
 
 - Upstream: https://github.com/vpinball/pinmame
-- License: 3-Clause BSD
+- License: 3-Clause BSD and old-MAME
 
 ### SDL / SDL Image / SDL TTF
 
@@ -197,17 +197,23 @@ Liberation Sans
 - Version: ?
 - License: MIT
 
+### Pole
+
+- Upstream: ? + customizations
+- Version: ?
+- License: ?
+
 ### Progmesh
 
 - Upstream: https://github.com/andandandand/progressive-mesh-reduction-with-edge-collapse
 - Version: ?
 - License: custom permissive
 
-### robin hood
+### qoi
 
-- Upstream: https://github.com/martinus/robin-hood-hashing
+- Upstream: ?
 - Version: ?
-- License: MIT
+- License: ?
 
 ### RSJparser
 
@@ -233,6 +239,12 @@ Liberation Sans
 - Version: ?
 - License: ?
 
+### simple-uri-parser
+
+- Upstream: https://github.com/jholloc/simple-uri-parser
+- Version: ?
+- License: MIT
+
 ### sse2neon
 
 - Upstream: https://github.com/DLTcollab/sse2neon
@@ -257,11 +269,11 @@ Liberation Sans
 - Version: ?
 - License: ZLib
 
-### simple-uri-parser
+### unordered-dense
 
-- Upstream: https://github.com/jholloc/simple-uri-parser
+- Upstream: ?
 - Version: ?
-- License: MIT
+- License: ?
 
 ### win32xx
 

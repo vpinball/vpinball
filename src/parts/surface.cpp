@@ -65,7 +65,7 @@ HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, cons
       m_vdpoint.push_back(pdp);
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #if 0
@@ -136,7 +136,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    LinkProp(m_d.m_topBottomVisible, Visible);
    LinkProp(m_d.m_sideVisible, SideVisible);
    LinkProp(m_d.m_collidable, Collidable);
-   return InitVBA(true, nullptr);
+   return S_OK;
 }
 #endif
 
@@ -693,7 +693,7 @@ void Surface::ExportMesh(ObjLoader& loader)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         loader.WriteMaterial(m_d.m_szImage, tex->GetFilePath(), mat);
+         loader.WriteMaterial(m_d.m_szImage, tex->GetFilePath().string(), mat);
          loader.UseTexture(m_d.m_szImage);
       }
       else
@@ -1316,6 +1316,8 @@ HRESULT Surface::InitPostLoad()
 
 void Surface::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("TopHeight: {:.03f} | BottomHeight: {:.03f}", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }

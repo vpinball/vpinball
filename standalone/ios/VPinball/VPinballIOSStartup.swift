@@ -50,11 +50,19 @@ func VPinball_IOSStartup(window: UnsafeMutableRawPointer?) {
 
 @_silgen_name("VPinball_IOSOpenURL")
 func VPinball_IOSOpenURL(url: UnsafePointer<CChar>?) {
-    if let url = url {
-        let urlString = String(cString: url)
-        let path = urlString.removingPercentEncoding ?? urlString
-        DispatchQueue.main.async {
-            VPinballViewModel.shared.openURL = URL(fileURLWithPath: path)
+    if let ptr = url {
+        let raw = String(cString: ptr)
+        var fileURL: URL?
+        if let url = URL(string: raw), url.scheme == "file" {
+            fileURL = url
+        } else if raw.hasPrefix("/") {
+            let path = raw.removingPercentEncoding ?? raw
+            fileURL = URL(fileURLWithPath: path)
+        }
+        if let fileURL = fileURL {
+            DispatchQueue.main.async {
+                MainViewModel.shared.openURL = fileURL
+            }
         }
     }
 }

@@ -2,21 +2,23 @@ package org.vpinball.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.vpinball.app.ui.VPinballContent
+import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 
 class VPinballActivity : ComponentActivity() {
-    val viewModel: VPinballViewModel by viewModel()
+    val viewModel: VPinballModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.addFlags(FLAG_KEEP_SCREEN_ON)
 
         VPinballManager.onActivityReady(this)
 
@@ -25,21 +27,13 @@ class VPinballActivity : ComponentActivity() {
         handleIntent(intent)
 
         setContent {
-            val state by viewModel.state.collectAsStateWithLifecycle()
-
             LaunchedEffect(Unit) { viewModel.startSplashTimer() }
 
-            LaunchedEffect(state.loading, state.table) {
-                if (state.loading && state.table != null) {
-                    val table = state.table!!
+            LaunchedEffect(viewModel.showHUD, viewModel.activeTable) {
+                if (viewModel.showHUD && viewModel.activeTable != null) {
+                    val table = viewModel.activeTable!!
 
-                    val success =
-                        VPinballManager.load(table) { progress, status ->
-                            lifecycleScope.launch {
-                                viewModel.progress(progress)
-                                viewModel.status(status)
-                            }
-                        }
+                    val success = VPinballManager.load(table) { progress, status -> lifecycleScope.launch { viewModel.updateHUD(progress, status) } }
 
                     if (success) {
                         val intent = Intent(this@VPinballActivity, VPinballPlayerActivity::class.java)
@@ -65,6 +59,6 @@ class VPinballActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        viewModel.openUri(uri)
+        LandingScreenViewModel.triggerOpenUri(uri)
     }
 }

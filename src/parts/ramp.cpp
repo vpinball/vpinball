@@ -21,6 +21,8 @@ Ramp *Ramp::CopyForPlay(PinTable *live_table) const
 
 void Ramp::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("TopH: {:.03f} | BottomH: {:.03f} | TopW: {:.03f} | BottomW: {:.03f} | LeftW: {:.03f} | RightW: {:.03f}", m_vpinball->ConvertToUnit(m_d.m_heighttop), m_vpinball->ConvertToUnit(m_d.m_heightbottom),
        m_vpinball->ConvertToUnit(m_d.m_widthtop), m_vpinball->ConvertToUnit(m_d.m_widthbottom),
        m_vpinball->ConvertToUnit(m_d.m_leftwallheightvisible), m_vpinball->ConvertToUnit(m_d.m_rightwallheightvisible));
@@ -55,7 +57,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
       m_vdpoint.push_back(pdp);
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()

@@ -1,0 +1,253 @@
+// license:GPLv3+
+
+#include "core/stdafx.h"
+#include "ui/win/resource.h"
+#include "Debugger.h"
+
+#define RECOMPUTEBUTTONCHECK (WM_USER+100)
+#define RESIZE_FROM_EXPAND   (WM_USER+101)
+
+DebuggerDialog::DebuggerDialog() : CDialog(IDD_DEBUGGER)
+{
+}
+
+BOOL DebuggerDialog::IsSubDialogMessage(MSG& msg) const
+{
+    return IsDialogMessage(msg);
+}
+
+BOOL DebuggerDialog::OnInitDialog()
+{
+    AttachItem(IDC_PLAY, m_playButton);
+    AttachItem(IDC_PAUSE, m_pauseButton);
+    AttachItem(IDC_STEP, m_stepButton);
+    AttachItem(IDC_STEPAMOUNT, m_stepAmountEdit);
+    AttachItem(IDC_THROW_BALL_SIZE_EDIT2, m_ballSizeEdit);
+    AttachItem(IDC_THROW_BALL_MASS_EDIT2, m_ballMassEdit);
+    AttachItem(IDC_EDITSIZE, m_notesEdit);
+
+    HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PLAY), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_playButton.SetIcon((HICON)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_PAUSE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_pauseButton.SetIcon((HICON)hIcon);
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_STEP), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    m_stepButton.SetIcon((HICON)hIcon);
+
+    SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+
+    CRect rcEditSize = GetDlgItem(IDC_EDITSIZE).GetWindowRect();
+    ScreenToClient(rcEditSize);
+
+    g_pplayer->m_hwndDebugOutput = CreateWindowEx(0, "Scintilla", "",
+                                                  WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
+                                                  rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), nullptr, g_app->GetInstanceHandle(), 0);
+
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
+
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
+
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
+
+    switch (g_pplayer->m_liveUI->m_ballControl.GetMode())
+    {
+    case BallControl::Mode::Disabled:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       break;
+       
+    case BallControl::Mode::DragBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       break;
+       
+    case BallControl::Mode::ThrowDraggedBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       break;
+       
+    case BallControl::Mode::ThrowNewBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       break;
+    }
+
+    m_ballSizeEdit.SetWindowText(std::to_string(g_app->m_settings.GetEditor_ThrowBallSize()).c_str());
+
+    m_ballMassEdit.SetWindowText(f2sz(g_app->m_settings.GetEditor_ThrowBallMass()).c_str());
+
+    m_resizer.Initialize(GetHwnd(), GetWindowRect());
+    m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+    m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_GUIDE2).GetHwnd(), CResizer::bottomright, 0);
+
+    LoadPosition();
+
+    return TRUE;
+}
+
+BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+
+    switch (LOWORD(wParam))
+    {
+        case IDC_PLAY:
+            g_pplayer->SetPlayState(true);
+            return TRUE;
+        case IDC_PAUSE:
+            g_pplayer->SetPlayState(false);
+            return TRUE;
+        case IDC_STEP:
+        {
+            const int ms = GetDlgItemInt(IDC_STEPAMOUNT, FALSE);
+            g_pplayer->SetPlayState(false, ms);
+            return TRUE;
+        }
+        case IDC_EXPAND:
+        {
+            SendMessage(RESIZE_FROM_EXPAND, 0, 0);
+            return TRUE;
+        }
+        case IDC_BALL_THROWING:
+        case IDC_BALL_CONTROL:
+        {
+            const size_t btChecked = GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_GETCHECK, 0, 0);
+            const size_t bcChecked = GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_GETCHECK, 0, 0);
+            g_pplayer->m_liveUI->m_ballControl.SetMode(!!bcChecked, !!btChecked);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+void DebuggerDialog::OnClose()
+{
+    g_app->m_settings.SetEditor_ThrowBallSize(GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE), false);
+    g_app->m_settings.SetEditor_ThrowBallMass(sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).GetString()), false);
+    g_pplayer->m_debugMode = false;
+    g_pplayer->m_showDebugger = false;
+    ShowWindow(SW_HIDE);
+    SavePosition();
+}
+
+void DebuggerDialog::LoadPosition()
+{
+   const CRect rcMain = GetParent().GetWindowRect();
+   const CRect rcDialog = GetWindowRect();
+   Settings::SetEditor_DebuggerPosX_Default((int)((rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2));
+   Settings::SetEditor_DebuggerPosY_Default((int) ((rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2));
+   const int x = g_app->m_settings.GetEditor_DebuggerPosX(); 
+   const int y = g_app->m_settings.GetEditor_DebuggerPosY();
+   const int w = g_app->m_settings.GetEditor_DebuggerWidth();
+   const int h = g_app->m_settings.GetEditor_DebuggerHeight();
+   const POINT p { x, y };
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void DebuggerDialog::SavePosition()
+{
+   const CRect rect = GetWindowRect();
+   g_app->m_settings.SetEditor_DebuggerPosX((int)rect.left, false);
+   g_app->m_settings.SetEditor_DebuggerPosY((int)rect.top, false);
+   g_app->m_settings.SetEditor_DebuggerWidth(rect.right - rect.left, false);
+   g_app->m_settings.SetEditor_DebuggerHeight(rect.bottom - rect.top, false);
+}
+
+LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
+{
+    const NMHDR* const pnmh = (LPNMHDR)lparam;
+    //HWND hwndRE = pnmh->hwndFrom;
+    const int code = pnmh->code;
+
+    switch (code)
+    {
+        case SCN_CHARADDED:
+        {
+            const SCNotification* const pscnmh = (SCNotification*)lparam;
+            if (pscnmh->ch == '\n') // execute code
+            {
+                ::SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
+
+                const size_t curpos = ::SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+                const size_t line = ::SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
+                const size_t lineStart = ::SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
+                const size_t lineEnd = ::SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
+
+                char* const szText = new char[lineEnd - lineStart + 1];
+                Sci_TextRange tr;
+                tr.chrg.cpMin = (Sci_PositionCR)lineStart;
+                tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
+                tr.lpstrText = szText;
+                ::SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+
+                const size_t maxlines = ::SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
+
+                if (maxlines == line + 1)
+                {
+                    // need to add a new line to the end
+                    ::SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
+                    ::SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, 1, (LPARAM)"\n");
+                }
+                else
+                {
+                    const size_t pos = ::SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
+                    ::SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
+                }
+
+                if (g_pplayer->m_scriptInterpreter)
+                  g_pplayer->m_scriptInterpreter->Evaluate(szText, true);
+                delete[] szText;
+            }
+            break;
+        }
+    }
+    return CDialog::OnNotify(wparam, lparam);
+}
+
+INT_PTR DebuggerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    m_resizer.HandleMessage(uMsg, wParam, lParam);
+
+    switch (uMsg)
+    {
+        case RECOMPUTEBUTTONCHECK:
+        {
+            int PlayDown = BST_UNCHECKED;
+            int PauseDown = BST_UNCHECKED;
+            int StepDown = BST_UNCHECKED;
+
+            if (!g_pplayer->IsPlaying(false))
+            {
+                PauseDown = BST_CHECKED;
+            }
+            else if (g_pplayer->m_pauseTimeTarget > 0)
+            {
+                StepDown = BST_CHECKED;
+            }
+            else
+            {
+                PlayDown = BST_CHECKED;
+            }
+
+            SendDlgItemMessage(IDC_PLAY, BM_SETCHECK, PlayDown, 0);
+            SendDlgItemMessage(IDC_PAUSE, BM_SETCHECK, PauseDown, 0);
+            SendDlgItemMessage(IDC_STEP, BM_SETCHECK, StepDown, 0);
+            SendMessage(TB_CHECKBUTTON, IDC_PLAY, PlayDown);
+            SendMessage(TB_CHECKBUTTON, IDC_PAUSE, PauseDown);
+            SendMessage(TB_CHECKBUTTON, IDC_STEP, StepDown);
+            return TRUE;
+        }
+
+        case WM_SIZE:
+        {
+            const CRect rc = m_notesEdit.GetClientRect();
+            ::SetWindowPos(g_pplayer->m_hwndDebugOutput, nullptr,
+                0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+        }
+    }
+    return DialogProcDefault(uMsg, wParam, lParam);
+}

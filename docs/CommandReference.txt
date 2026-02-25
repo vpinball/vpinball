@@ -11,6 +11,7 @@ Changelog:
 10.8.1:
 - add PreciseGameTime (same as GameTime but using seconds and more precise for better emulation syncronization) to the globals
 - add VPXActionKey to the globals
+- add SoundDone event to Table
 
 10.8.0:
 - add LoadTexture to the globals
@@ -349,7 +350,8 @@ Callback
 
 OnBallBallCollision(ball1, ball2, velocity)
 OptionEvent(ByVal eventId) - Called when an event regarding table option happens: 0 = initialize options (after Init event), 1 = an option has changed, 2 = options have been resetted, 3 = player just exited the Tweak UI
-
+MusicDone - Called when the music has ended
+SoundDone(ByVal soundName) - Called when a sound has ended
 
 BUMPER
 ==============================================================================================================================================

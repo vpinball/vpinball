@@ -6,7 +6,6 @@ class SettingsModel: ObservableObject {
 
     @Published var haptics: Bool = false
     @Published var renderingModeOverride: Bool = false
-    @Published var viewMode: VPinballViewMode = .desktopFSS
     @Published var resetLogOnPlay: Bool = false
 
     // External DMD
@@ -40,7 +39,7 @@ class SettingsModel: ObservableObject {
         } else {
             haptics = vpinballManager.loadValue(.standalone, "Haptics", true)
         }
-        renderingModeOverride = (vpinballManager.loadValue(.standalone, "RenderingModeOverride", 2) == 2)
+        renderingModeOverride = (vpinballManager.loadValue(.standalone, "RenderingModeOverride", -1) == 2)
 
         // External DMD
 
@@ -55,10 +54,6 @@ class SettingsModel: ObservableObject {
         dmdServerAddr = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerPort", 6789)
         zedmdWiFiAddr = vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFiAddr", "zedmd-wifi.local")
-
-        // Display
-
-        viewMode = VPinballViewMode(rawValue: vpinballManager.loadValue(.player, "BGSet", VPinballViewMode.desktopFSS.rawValue)) ?? .desktopFSS
 
         // Performance
 
@@ -87,10 +82,6 @@ class SettingsModel: ObservableObject {
 
     func handleRenderingModeOverride() {
         vpinballManager.saveValue(.standalone, "RenderingModeOverride", renderingModeOverride ? 2 : -1)
-    }
-
-    func handleViewMode() {
-        vpinballManager.saveValue(.player, "BGSet", viewMode.rawValue)
     }
 
     func handleResetLogOnPlay() {

@@ -105,6 +105,7 @@ public class IDLParserToCpp {
 		FileOutputStream outputStream = new FileOutputStream(out);
 
 		outputStream.write("#include \"core/stdafx.h\"\n".getBytes());
+		outputStream.write("#include \"core/ScriptGlobalTable.h\"\n".getBytes());
 		outputStream.write("#include \"olectl.h\"\n".getBytes());
 		
 		if (includes != null && includes.size() > 0) {
@@ -425,6 +426,7 @@ public class IDLParserToCpp {
 		eventDispIdMap.put("DISPID_GameEvents_Paused", 1005);
 		eventDispIdMap.put("DISPID_GameEvents_UnPaused", 1006);
 		eventDispIdMap.put("DISPID_GameEvents_OptionEvent", 1007);
+		eventDispIdMap.put("DISPID_GameEvents_SoundDone", 1008);
 		eventDispIdMap.put("DISPID_SurfaceEvents_Slingshot", 1101);
 		eventDispIdMap.put("DISPID_FlipperEvents_Collide", 1200);
 		eventDispIdMap.put("DISPID_TimerEvents_Timer", 1300);

@@ -22,7 +22,7 @@ public:
    void Update();
    void Close();
 
-   void AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory);
+   void AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory);
    void Navigate(const string &path, bool isBack = false);
    void NavigateBack();
 

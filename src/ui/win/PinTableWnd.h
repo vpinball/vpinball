@@ -4,7 +4,6 @@
 
 #include "parts/pintable.h"
 
-
 class PinTableWnd : public CWnd
 {
 public:
@@ -45,14 +44,20 @@ public:
    void EndAutoSaveCounter();
    void AutoSave();
 
+   void ShowSearchSelectDlg();
+
+   void OnPartChanged(IEditable *part);
+
    CComObject<PinTable> *const m_table;
    
+   std::unique_ptr<CodeViewer> m_pcv;
+
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd
-   void OnInitialUpdate() override final;
-   BOOL OnEraseBkgnd(CDC &dc) override final;
-   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override final;
+   void OnInitialUpdate() final;
+   BOOL OnEraseBkgnd(CDC &dc) final;
+   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
 #endif
 
 private:
@@ -77,6 +82,8 @@ private:
    WinEditor *const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
 
+   std::unique_ptr<class SearchSelectDialog> m_searchSelectDlg;
+
    bool m_moving = false;
    short2 m_oldMousePos;
 
@@ -84,4 +91,8 @@ private:
 
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
+
+private:
+   POINT m_ptLast {}; // Last point when dragging
+
 };

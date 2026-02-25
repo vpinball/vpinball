@@ -84,7 +84,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
 #if defined(ENABLE_VR) || defined(ENABLE_XR)
    // Check for a directb2s and try to use its backglass data
    std::filesystem::path b2sFileName = g_pplayer->m_ptable->m_filename;
-   b2sFileName.replace_extension("directb2s");
+   b2sFileName.replace_extension(".directb2s");
    m_backglass_dmd = int2(0,0);
    m_backglass_dmd_width = 0;
    m_backglass_dmd_height = 0;

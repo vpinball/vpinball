@@ -24,14 +24,14 @@ public:
    ScriptInterpreter();
    virtual ~ScriptInterpreter();
 
-   void Init(PinTable *table);
+   void Start(PinTable *table);
+   void Stop(PinTable *table, bool interruptDirectly = false);
    void AddItem(IScriptable *scriptable, const bool global) { AddItem(scriptable->get_Name(), scriptable->GetDispatch(), global); }
    void AddItem(const WCHAR *name, IDispatch *dispatch, const bool global);
-   void RemoveItem(const IScriptable *const piscript);
+   void RemoveItem(IScriptable *const piscript);
    void Evaluate(const string &script, bool isDebugStatement);
    bool HasError() const { return m_hasError || (m_pScript == nullptr); }
    void GetScriptDispatch(IDispatch **ppdisp) const;
-   void Stop(bool interruptDirectly = false);
 
    enum class ErrorType
    {
@@ -107,7 +107,7 @@ private:
     * 
     * For example, wine 6.9 says ...
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
-    * ... if I try to create CLSID_PrrocessDebugManager
+    * ... if I try to create CLSID_ProcessDebugManager
     */
 #ifndef __STANDALONE__
    IProcessDebugManager *m_pProcessDebugManager = nullptr;

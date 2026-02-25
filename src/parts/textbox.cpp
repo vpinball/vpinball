@@ -39,7 +39,7 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
    m_d.m_v2.y = y + height;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Textbox::SetDefaults(const bool fromMouseClick)
@@ -732,7 +732,8 @@ STDMETHODIMP Textbox::put_Height(float newVal)
 STDMETHODIMP Textbox::get_X(float *pVal)
 {
    *pVal = m_d.m_v1.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

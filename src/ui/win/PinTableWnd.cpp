@@ -4,28 +4,33 @@
 
 #include "PinTableWnd.h"
 
-#include "ui/paintsur.h"
-
-#include "ui/worker.h"
+#include "ui/win/paintsur.h"
+#include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
-#include "ui/dialogs/VPXLoadFileProgressBar.h"
-#include "ui/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/VPXLoadFileProgressBar.h"
+#include "ui/win/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/SearchSelectDialog.h"
 #include "FreeImage.h"
+#else
+class SearchSelectDialog { };
 #endif
 
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    : m_table(table) 
+   , m_pcv(std::make_unique<CodeViewer>(table))
    , m_vpxEditor(vpxEditor)
 {
    m_table->AddRef();
    m_table->m_tableEditor = this;
+   m_pcv->Create(nullptr);
    SetDefaultView();
 }
 
 PinTableWnd::~PinTableWnd()
 {
+   m_table->m_tableEditor = nullptr;
    m_table->Release();
 #ifndef __STANDALONE__
    if (m_hbmOffScreen)
@@ -38,7 +43,7 @@ void PinTableWnd::SetCaption(const string &szCaption)
 #ifndef __STANDALONE__
    if (m_mdiTable != nullptr && m_mdiTable->IsWindow())
       m_mdiTable->SetWindowText(szCaption.c_str());
-   m_table->m_pcv->SetCaption(szCaption);
+   m_pcv->SetCaption(szCaption);
 #endif
 }
 
@@ -55,7 +60,8 @@ void PinTableWnd::Redraw()
 {
 #ifndef __STANDALONE__
    m_dirtyDraw = true;
-   InvalidateRect(false);
+   if (IsWindow())
+      InvalidateRect(false);
 #endif
 }
 
@@ -231,7 +237,7 @@ void PinTableWnd::ExportBlueprint()
       if (m_vpxEditor->m_backglassView)
          Render3DProjection(&psur);
 
-      for (const auto &ptr : m_table->m_vedit)
+      for (const auto &ptr : m_table->GetParts())
       {
          if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpxEditor->m_backglassView)
             ptr->RenderBlueprint(&psur, solid);
@@ -299,7 +305,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       Render3DProjection(psur);
    }
 
-   for (const auto &ptr : m_table->m_vedit)
+   for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
          ptr->UIRenderPass1(psur);
@@ -337,7 +343,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       }
    }
 
-   for (const auto &ptr : m_table->m_vedit)
+   for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
          ptr->UIRenderPass2(psur);
@@ -378,7 +384,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
 // draws the backdrop content
 void PinTableWnd::Render3DProjection(Sur *const psur)
 {
-   if (m_table->m_vedit.empty())
+   if (m_table->GetParts().empty())
       return;
 
    // dummy coordinate system for backdrop view
@@ -689,9 +695,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    UIRenderPass2(&phs);
 
-   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   for (IEditable *const ptr : m_table->GetParts())
    {
-      IEditable *const ptr = m_table->m_vedit[i];
       if (ptr->m_backglass == m_vpxEditor->m_backglassView)
       {
          ptr->UIRenderPass1(&phs2);
@@ -783,6 +788,9 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    // (this fixes the problem of selecting a element on the properties dialog, clicking on a table
    // object and not being able to use the cursor keys/wheely mouse)
    m_vpxEditor->SetFocus();
+
+   m_ptLast.x = x;
+   m_ptLast.y = y;
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
@@ -941,8 +949,6 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
 
 void PinTableWnd::OnRightButtonUp(int x, int y)
 {
-   m_table->GetSelectedItem()->OnRButtonUp(x, y);
-
    const int ks = GetKeyState(VK_CONTROL);
 
    // Only bring up context menu if we weren't in magnify mode
@@ -967,45 +973,50 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
 {
    if (const bool middleMouseButtonPressed = ((GetKeyState(VK_MBUTTON) & 0x100) != 0); middleMouseButtonPressed)
    {
-      // panning feature starts here...if the user holds the middle mouse button and moves the mouse
-      // everything is moved in the direction of the mouse was moved
-      const int dx = abs(m_oldMousePos.x - x);
-      const int dy = abs(m_oldMousePos.y - y);
-      if (m_oldMousePos.x > x)
-         m_table->m_winEditorViewOffset.x += (float)dx;
-      if (m_oldMousePos.x < x)
-         m_table->m_winEditorViewOffset.x -= (float)dx;
-      if (m_oldMousePos.y > y)
-         m_table->m_winEditorViewOffset.y += (float)dy;
-      if (m_oldMousePos.y < y)
-         m_table->m_winEditorViewOffset.y -= (float)dy;
-
-      m_table->SetDirtyDraw();
-      SetMyScrollInfo();
-
-      m_oldMousePos.x = x;
-      m_oldMousePos.y = y;
-      return;
-   }
-
-   const Vertex2D v = m_table->TransformPoint(x, y);
-
-   m_vpxEditor->SetPosCur(v.x, v.y);
-
-   if (!m_table->m_dragging) // Not doing band select
-   {
-      for (int i = 0; i < m_table->m_vmultisel.size(); i++)
-         m_table->m_vmultisel[i].OnMouseMove(x, y);
+      // If the user holds the middle mouse button and moves the mouse everything is moved in the direction of the mouse was moved
+      const float inv_zoom = 1.0f / GetZoom();
+      m_table->m_winEditorViewOffset.x += static_cast<float>(m_oldMousePos.x - x) * inv_zoom;
+      m_table->m_winEditorViewOffset.y += static_cast<float>(m_oldMousePos.y - y) * inv_zoom;
+      //SetMyScrollInfo();
+      Redraw();
    }
    else
    {
       const Vertex2D v = m_table->TransformPoint(x, y);
+      m_vpxEditor->SetPosCur(v.x, v.y);
 
-      m_table->m_rcDragRect.right = v.x;
-      m_table->m_rcDragRect.bottom = v.y;
+      if (!m_table->m_dragging) // Not doing band select
+      {
+         if ((x != m_ptLast.x) || (y != m_ptLast.y))
+         {
+            for (int i = 0; i < m_table->m_vmultisel.size(); i++)
+            {
+               if (m_table->m_vmultisel[i].m_dragging && !m_table->m_vmultisel[i].GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
+               {
+                  if (!m_table->m_vmultisel[i].m_markedForUndo)
+                  {
+                     m_table->m_vmultisel[i].m_markedForUndo = true;
+                     m_table->m_vmultisel[i].GetIEditable()->BeginUndo();
+                     m_table->m_vmultisel[i].GetIEditable()->MarkForUndo();
+                  }
 
-      if (m_table->m_dragging)
-         m_table->SetDirtyDraw();
+                  const float inv_zoom = 1.0f / GetZoom();
+                  m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
+                  m_table->m_vmultisel[i].SetObjectPos();
+                  Redraw();
+               }
+            }
+            m_ptLast.x = x;
+            m_ptLast.y = y;
+         }
+      }
+      else
+      {
+         const Vertex2D vec = m_table->TransformPoint(x, y);
+         m_table->m_rcDragRect.right = vec.x;
+         m_table->m_rcDragRect.bottom = vec.y;
+         Redraw();
+      }
    }
 
    m_oldMousePos.x = x;
@@ -1087,7 +1098,7 @@ void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISe
 #ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), LocalString(IDS_ASSIGN_TO_LAYER2).m_szbuffer);
    int i = 0;
-   for (IEditable *edit : m_table->m_vedit)
+   for (IEditable *edit : m_table->GetParts())
    {
       if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
       {
@@ -1239,7 +1250,7 @@ void PinTableWnd::AutoSave()
    const HRESULT hr = m_table->SaveToStorage(pstgroot);
 
    m_table->m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
-   m_table->m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
+   m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));
    m_table->SetNonUndoableDirty((SaveDirtyState)min((int)m_table->m_sdsNonUndoableDirty, (int)eSaveAutosaved));
 
    AutoSavePackage *const pasp = new AutoSavePackage();
@@ -1278,5 +1289,38 @@ void PinTableWnd::FVerifySaveToClose()
 
       m_vpxEditor->SetActionCur(string());
    }
+#endif
+}
+
+void PinTableWnd::OnPartChanged(IEditable *part)
+{
+#ifndef __STANDALONE__
+   switch (part->GetItemType())
+   {
+   case eItemTable:
+      Redraw();
+      SetMyScrollInfo();
+      m_vpxEditor->GetLayersListDialog()->Update();
+      if (m_searchSelectDlg)
+         m_searchSelectDlg->Update();
+      break;
+
+   default:
+      // Not yet implemented
+      assert(false);
+   }
+#endif
+}
+
+void PinTableWnd::ShowSearchSelectDlg()
+{
+#ifndef __STANDALONE__
+   if (m_searchSelectDlg == nullptr)
+   {
+      m_searchSelectDlg = std::make_unique<SearchSelectDialog>(this);
+      m_searchSelectDlg->Create(GetHwnd());
+   }
+   m_searchSelectDlg->ShowWindow();
+   m_searchSelectDlg->SetForegroundWindow();
 #endif
 }

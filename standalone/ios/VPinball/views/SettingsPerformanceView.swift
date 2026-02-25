@@ -2,9 +2,6 @@ import SwiftUI
 
 struct SettingsPerformanceView: View {
     @ObservedObject var settingsModel: SettingsModel
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
-
-    let vpinballManager = VPinballManager.shared
 
     var body: some View {
         Section("Performance") {

@@ -35,7 +35,7 @@ HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
    EnsureSize();
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 void Decal::SetDefaults(const bool fromMouseClick)
@@ -843,7 +843,8 @@ STDMETHODIMP Decal::put_Height(float newVal)
 STDMETHODIMP Decal::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-   m_vpinball->SetStatusBarUnitInfo(string(), true);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), true);
 
    return S_OK;
 }

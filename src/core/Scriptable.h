@@ -12,5 +12,8 @@ public:
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
 
+   vector<wstring> GetMethodNames();
+   vector<wstring> GetEventNames();
+
    WCHAR m_wzName[MAXNAMEBUFFER];
 };

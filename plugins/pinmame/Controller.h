@@ -148,7 +148,7 @@ public:
 
    const string& GetVpmPath() const { return m_vpmPath; }
 
-   void SetCheat(int cheat) { m_cheat = cheat; }
+   void SetCheat(bool cheat) { m_cheat = cheat; }
 
 private:
    string m_vpmPath;
@@ -175,7 +175,7 @@ private:
    void (*m_onGameStartHandler)(Controller*) = nullptr;
    void (*m_onGameEndHandler)(Controller*) = nullptr;
 
-   int m_cheat = 0;
+   bool m_cheat = false;
 };
 
 }

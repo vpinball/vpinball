@@ -28,7 +28,7 @@ namespace PUP {
 
 static const std::filesystem::path emptyPath;
 
-PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
+PUPPlaylist::PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
 {
    m_szFolder = szFolder;
    m_szDescription = szDescription;
@@ -38,13 +38,13 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const stri
    m_priority = priority;
    m_lastIndex = 0;
 
-   if (StrCompareNoCase(szFolder, "PUPOverlays"s))
+   if (StrCompareNoCase(szFolder.string(), "PUPOverlays"s))
       m_function = PUPPlaylist::Function::Overlays;
-   else if (StrCompareNoCase(szFolder, "PUPFrames"s))
+   else if (StrCompareNoCase(szFolder.string(), "PUPFrames"s))
       m_function = PUPPlaylist::Function::Frames;
-   else if (StrCompareNoCase(szFolder, "PUPAlphas"s))
+   else if (StrCompareNoCase(szFolder.string(), "PUPAlphas"s))
       m_function = PUPPlaylist::Function::Alphas;
-   else if (StrCompareNoCase(szFolder, "PuPShapes"s))
+   else if (StrCompareNoCase(szFolder.string(), "PuPShapes"s))
       m_function = PUPPlaylist::Function::Shapes;
    else
       m_function = PUPPlaylist::Function::Default;
@@ -104,7 +104,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 
    PUPPlaylist* pPlaylist = new PUPPlaylist(
       manager, //
-      szFolderPath.filename().string(), // Subfolder
+      szFolderPath.filename(), // Subfolder
       parts[2], // Description
       (string_to_int(parts[3], 0) == 1), // Randomize
       string_to_int(parts[4], 0), // Rest seconds
@@ -148,7 +148,7 @@ std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& 
 }
 
 string PUPPlaylist::ToString() const {
-   return "folder=" + m_szFolder +
+   return "folder=" + m_szFolder.string() +
       ", description=" + m_szDescription +
       ", randomize=" + (m_randomize ? "true" : "false") +
       ", restSeconds=" + std::to_string(m_restSeconds) +

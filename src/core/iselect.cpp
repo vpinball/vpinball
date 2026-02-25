@@ -16,8 +16,6 @@ void ISelect::OnLButtonDown(int x, int y)
 {
    m_dragging = true;
    m_markedForUndo = false; // So we will be marked when and if we are dragged
-   m_ptLast.x = x;
-   m_ptLast.y = y;
 
    GetPTable()->SetMouseCapture();
 
@@ -36,31 +34,6 @@ void ISelect::OnLButtonUp(int x, int y)
    {
       m_markedForUndo = false;
       STOPUNDOSELECT
-   }
-}
-
-void ISelect::OnMouseMove(int x, int y)
-{
-   if ((x == m_ptLast.x) && (y == m_ptLast.y))
-      return;
-
-   if (m_dragging && !GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
-   {
-      PinTable * const ptable = GetPTable();
-      const float inv_zoom = 1.0f / ptable->m_tableEditor->GetZoom();
-
-      if (!m_markedForUndo)
-      {
-         m_markedForUndo = true;
-         STARTUNDOSELECT
-      }
-      MoveOffset((float)(x - m_ptLast.x)*inv_zoom, (float)(y - m_ptLast.y)*inv_zoom);
-
-      ptable->SetDirtyDraw();
-
-      m_ptLast.x = x;
-      m_ptLast.y = y;
-      SetObjectPos();
    }
 }
 
@@ -109,21 +82,11 @@ void ISelect::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_DRAWINFRONT:
-   {
-      PinTable * const ptable = GetPTable();
-      RemoveFromVectorSingle(ptable->m_vedit, piedit);
-      ptable->m_vedit.push_back(piedit);
-      ptable->SetDirtyDraw();
+      GetPTable()->MovePartToFront(piedit);
       break;
-   }
    case ID_DRAWINBACK:
-   {
-      PinTable * const ptable = GetPTable();
-      RemoveFromVectorSingle(ptable->m_vedit, piedit);
-      ptable->m_vedit.insert(ptable->m_vedit.begin(), piedit);
-      ptable->SetDirtyDraw();
+      GetPTable()->MovePartToBack(piedit);
       break;
-   }
    case ID_SETASDEFAULT:
       piedit->WriteRegDefaults();
       break;
@@ -256,32 +219,20 @@ static void SetPartGroup(ISelect* const me, string layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
-      // Not needed as part group are cleaned up after loading
-      /* if (me->GetIEditable()->GetPartGroup())
-      {
-         PartGroup* legacyPartGroup = me->GetIEditable()->GetPartGroup();
-         me->GetIEditable()->SetPartGroup(nullptr);
-         auto users = std::ranges::find_if(me->GetPTable()->m_vedit, [legacyPartGroup](IEditable *editable) { return editable->GetPartGroup() == legacyPartGroup; });
-         if (users == me->GetPTable()->m_vedit.end())
-         {
-            legacyPartGroup->GetISelect()->Uncreate();
-            legacyPartGroup->Release();
-         }
-      }*/
       if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
          layerName.erase(std::size(me->GetPTable()->m_wzName) - 1);
       const wstring newName = MakeWString(layerName);
-      const auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [&newName](const IEditable *editable) {
+      const auto partGroupF = std::ranges::find_if(me->GetPTable()->GetParts(),
+         [&newName](const IEditable *editable) {
          return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName);
       });
-      if (partGroupF == me->GetPTable()->m_vedit.end())
+      if (partGroupF == me->GetPTable()->GetParts().end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
          if (newGroup)
          {
-            me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
-            wcsncpy_s(newGroup->GetScriptable()->m_wzName, std::size(newGroup->GetScriptable()->m_wzName), newName.c_str());
-            me->GetPTable()->m_vedit.push_back(newGroup);
+            wcsncpy_s(newGroup->m_wzName, std::size(newGroup->m_wzName), newName.c_str());
+            me->GetPTable()->AddPart(newGroup);
             me->GetIEditable()->SetPartGroup(newGroup);
          }
       }
@@ -339,7 +290,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       while (layer->GetPartGroup() != nullptr)
          layer = layer->GetPartGroup();
       int index = 0;
-      for (const auto edit : GetPTable()->m_vedit)
+      for (const auto edit : GetPTable()->GetParts())
       {
          if (edit == layer)
             break;
@@ -357,7 +308,8 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
 
 void ISelect::UpdateStatusBarInfo()
 {
-   m_vpinball->SetStatusBarUnitInfo(string(), false);
+   if (m_vpinball)
+      m_vpinball->SetStatusBarUnitInfo(string(), false);
 }
 
 bool ISelect::IsVisible(IEditable *editable) const

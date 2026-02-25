@@ -27,27 +27,6 @@ enum VPinballSettingsSection: String {
     case pluginDMDUtil = "Plugin.DMDUtil"
 }
 
-enum VPinballViewMode: CInt {
-    case desktopFSS
-    case cabinet
-    case desktopNoFSS
-
-    static let all: [VPinballViewMode] = [.desktopFSS,
-                                          .cabinet,
-                                          .desktopNoFSS]
-
-    var name: String {
-        switch self {
-        case .desktopFSS:
-            return "Desktop & FSS"
-        case .cabinet:
-            return "Cabinet"
-        case .desktopNoFSS:
-            return "Desktop (no FSS)"
-        }
-    }
-}
-
 enum VPinballMaxTexDimension: CInt {
     case unlimited = 0
     case max256 = 256
@@ -105,6 +84,7 @@ enum VPinballExternalDMD: CInt {
 
 enum VPinballEvent: CInt {
     case initComplete
+    case extractScript
     case loadingItems
     case loadingSounds
     case loadingImages
@@ -119,6 +99,8 @@ enum VPinballEvent: CInt {
 
     var name: String? {
         switch self {
+        case .extractScript:
+            return "Extracting Script"
         case .loadingItems:
             return "Loading Items"
         case .loadingSounds:
@@ -213,7 +195,7 @@ func VPinballGetPath(_ pathType: CInt) -> UnsafePointer<CChar>
 func VPinballLoadTable(_ pPath: UnsafePointer<CChar>) -> CInt
 
 @_silgen_name("VPinballExtractTableScript")
-func VPinballExtractTableScript() -> CInt
+func VPinballExtractTableScript(_ pPath: UnsafePointer<CChar>) -> CInt
 
 @_silgen_name("VPinballPlay")
 func VPinballPlay() -> CInt

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "renderer/RenderDevice.h"
 
 enum ShadowMode : int // has to be int for loading

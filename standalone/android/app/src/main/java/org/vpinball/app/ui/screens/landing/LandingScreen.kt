@@ -29,10 +29,14 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,6 +55,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -64,19 +69,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.vpinball.app.Link
 import org.vpinball.app.R
 import org.vpinball.app.SAFFileSystem
 import org.vpinball.app.Table
 import org.vpinball.app.TableManager
 import org.vpinball.app.TableViewMode
-import org.vpinball.app.VPinballManager
-import org.vpinball.app.VPinballViewModel
+import org.vpinball.app.VPinballModel
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.screens.settings.SettingsBottomSheet
 import org.vpinball.app.ui.theme.DarkBlack
 import org.vpinball.app.ui.theme.LightBlack
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxDarkYellow
+import org.vpinball.app.ui.theme.VpxRed
 import org.vpinball.app.ui.util.koinActivityViewModel
 import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.hasScriptFile
@@ -86,12 +92,14 @@ import org.vpinball.app.util.hasScriptFile
 fun LandingScreen(
     onViewFile: (file: File) -> Unit,
     modifier: Modifier = Modifier,
-    vpinballViewModel: VPinballViewModel = koinActivityViewModel(),
+    vpinballModel: VPinballModel = koinActivityViewModel(),
     viewModel: LandingScreenViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    val vpinballState by vpinballViewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { viewModel.initialize(vpinballModel) }
+
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     val progress = remember { mutableIntStateOf(0) }
     val status = remember { mutableStateOf("") }
@@ -115,7 +123,7 @@ fun LandingScreen(
     val searchTextFieldState = rememberTextFieldState(searchText)
 
     val filteredTables by viewModel.filteredTables.collectAsStateWithLifecycle()
-    val unfilteredTables by viewModel.unfilteredTables.collectAsStateWithLifecycle()
+    val tables = vpinballModel.tables
 
     val isFetchingTables by viewModel.isFetchingTables.collectAsStateWithLifecycle()
     val fetchProgress by viewModel.fetchProgress.collectAsStateWithLifecycle()
@@ -174,22 +182,23 @@ fun LandingScreen(
                         importUri = uri
                         showConfirmDialog = true
                     } else {
-                        VPinballManager.showError("Unable to import table.")
+                        viewModel.setError("Unable to import table.")
                     }
                 }
             }
         }
 
-    LaunchedEffect(vpinballState.importUri) {
-        val uri = vpinballState.importUri ?: return@LaunchedEffect
-        vpinballViewModel.clearImportUri()
+    val openUri by viewModel.importUri.collectAsStateWithLifecycle()
+    LaunchedEffect(openUri) {
+        val uri = openUri ?: return@LaunchedEffect
+        viewModel.clearImportUri()
         FileUtils.filenameFromUri(context, uri)?.let { filename ->
             if (FileUtils.hasValidExtension(filename, arrayOf(".vpx", ".zip", ".vpxz"))) {
                 importFilename = filename
                 importUri = uri
                 showConfirmDialog = true
             } else {
-                VPinballManager.showError("Unable to import table.")
+                viewModel.setError("Unable to import table.")
             }
         }
     }
@@ -198,10 +207,10 @@ fun LandingScreen(
 
     LaunchedEffect(Unit) { LandingScreenViewModel.scrollToTableTrigger.collect { table -> scrollToTable = table } }
 
-    LaunchedEffect(scrollToTable, unfilteredTables) {
+    LaunchedEffect(scrollToTable, tables) {
         val table = scrollToTable
         if (table != null) {
-            val idx = unfilteredTables.indexOfFirst { it.uuid == table.uuid }
+            val idx = tables.indexOfFirst { it.uuid == table.uuid }
             if (idx >= 0) {
                 if (tableViewMode == TableViewMode.LIST) {
                     lazyListState.animateScrollToItem(idx)
@@ -283,7 +292,7 @@ fun LandingScreen(
                                             importFilename = "blankTable.vpx"
                                             showConfirmDialog = true
                                         } catch (e: Exception) {
-                                            VPinballManager.showError("Failed to load blank table: ${e.message}")
+                                            viewModel.setError("Failed to load blank table: ${e.message}")
                                         }
                                     },
                                     onExampleTable = {
@@ -298,7 +307,7 @@ fun LandingScreen(
                                             importFilename = "exampleTable.vpx"
                                             showConfirmDialog = true
                                         } catch (e: Exception) {
-                                            VPinballManager.showError("Failed to load example table: ${e.message}")
+                                            viewModel.setError("Failed to load example table: ${e.message}")
                                         }
                                     },
                                 )
@@ -342,7 +351,7 @@ fun LandingScreen(
                     onFocusChanged = { searchIsFocused = it },
                 )
 
-                if (unfilteredTables.isEmpty()) {
+                if (tables.isEmpty()) {
                     EmptyTablesList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent))
                 } else if (filteredTables.isEmpty()) {
                     NoResultsTableList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent).imePadding())
@@ -352,12 +361,12 @@ fun LandingScreen(
                         viewMode = tableViewMode,
                         gridSize = tableGridSize,
                         onPlay = { table ->
+                            if (vpinballModel.activeTable != null) return@TablesList
                             focusManager.clearFocus()
-                            vpinballViewModel.loading(true, table)
+                            vpinballModel.activeTable = table
+                            vpinballModel.showHUD(table.name, "Launching")
                         },
-                        onRename = { table, name ->
-                            vpinballViewModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) }
-                        },
+                        onRename = { table, name -> vpinballModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
                         onViewScript = { table ->
                             val viewScriptFile: () -> Unit = {
                                 val file =
@@ -494,8 +503,41 @@ fun LandingScreen(
         ProgressOverlay(title = displayTitle, progress = displayProgress, status = displayStatus, hazeState = hazeState)
     }
 
+    errorMessage?.let { message ->
+        AlertDialog(
+            title = { Text(text = "TILT!", style = MaterialTheme.typography.titleMedium) },
+            text = { Text(message) },
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearError() }) {
+                    Text(
+                        text = "OK",
+                        color = Color.VpxRed,
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearError()
+                        Link.TROUBLESHOOTING.open(context = context)
+                    }
+                ) {
+                    Text(
+                        text = "Learn More",
+                        color = Color.VpxRed,
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            },
+        )
+    }
+
     SettingsBottomSheet(
-        webServerURL = vpinballViewModel.webServerURL,
+        webServerURL = vpinballModel.webServerURL ?: "",
         show = showSettingsDialog,
         onDismissRequest = { showSettingsDialog = false },
         onViewFile = onViewFile,

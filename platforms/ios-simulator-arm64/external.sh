@@ -27,7 +27,7 @@ cd "external/ios-simulator-arm64/${BUILD_TYPE}"
 #
 # build SDL3, SDL3_image, SDL3_ttf#
 
-SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}"
+SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}_001"
 SDL3_FOUND_SHA="$([ -f SDL3/cache.txt ] && cat SDL3/cache.txt || echo "")"
 
 if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
@@ -41,6 +41,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    tar xzf SDL-${SDL_SHA}.tar.gz
    mv SDL-${SDL_SHA} SDL
    cd SDL
+   cp ../../../../../platforms/ios-simulator-arm64/SDL/SDL_uikitappdelegate.m src/video/uikit/SDL_uikitappdelegate.m
    cmake \
       -DSDL_SHARED=OFF \
       -DSDL_STATIC=ON \

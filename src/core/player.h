@@ -6,7 +6,7 @@
 #include "renderer/Renderer.h"
 #include "renderer/Window.h"
 #include "physics/PhysicsEngine.h"
-#include "ui/Debugger.h"
+#include "ui/win/Debugger.h"
 #include "ui/live/LiveUI.h"
 #include "input/InputManager.h"
 #include "plugins/ControllerPlugin.h"
@@ -266,7 +266,6 @@ public:
    bool m_PlaySound;
    int m_MusicVolume; // -100..100
    int m_SoundVolume; // -100..100
-   bool m_musicPlaying = false;
 
    std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
 

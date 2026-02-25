@@ -240,9 +240,7 @@ private:
          SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, &crc16);
          if (product)
          {
-            std::stringstream ss;
-            ss << SDL_GetJoystickName(joystick) << " #" << std::hex << std::setw(4) << std::setfill('0') << product;
-            joyName = ss.str();
+            joyName = std::format("{} #{:#06X}", SDL_GetJoystickName(joystick), product);
          }
          else
          {
@@ -347,7 +345,7 @@ private:
                      success &= mapButton(ButtonMapping::Create(deviceId, northButton), m_pininput.GetAddCreditActionId(0));
                      success &= mapButton(ButtonMapping::Create(deviceId, eastButton), m_pininput.GetStartActionId());
                      success &= mapButton(ButtonMapping::Create(deviceId, southButton), m_pininput.GetLaunchBallActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, backButton), m_pininput.GetExitInteractiveActionId());
+                     success &= mapButton(ButtonMapping::Create(deviceId, backButton), m_pininput.GetOpenInGameUIActionId());
                      // success &= mapButton(ButtonMapping::Create(deviceId, startButton), m_pininput.()); // In Game UI
                      if (dpadLeftButton != 0xFFFF && dpadRightButton != 0xFFFF && dpadUpButton != 0xFFFF && dpadDownButton != 0xFFFF)
                      {

@@ -11,7 +11,7 @@ AsyncDynamicQuadTree::AsyncDynamicQuadTree(PhysicsEngine* const physics, PinTabl
    , m_quadTree(new HitQuadtree())
 {
    vector<HitObject*>* hitObjects = &m_quadTree->BeginReset();
-   for (IEditable* const pe : table->m_vedit)
+   for (IEditable* const pe : table->GetParts())
       physics->CollectColliders(pe, hitObjects, m_isUI);
    m_quadTree->EndReset();
 }

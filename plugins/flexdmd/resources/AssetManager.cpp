@@ -86,7 +86,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       else if (pBaseSrc->GetSrcType() == AssetSrcType_VPXResource)
          parts[0] = "VPX." + parts[0];
       else if (pBaseSrc->GetSrcType() == AssetSrcType_File) {
-         std::filesystem::path path(pBaseSrc->GetPath() + PATH_SEPARATOR_CHAR + ".." + PATH_SEPARATOR_CHAR + parts[0]);
+         std::filesystem::path path = std::filesystem::path(pBaseSrc->GetPath()).parent_path() / parts[0];
          parts[0] = path.lexically_normal().string();
       }
    }

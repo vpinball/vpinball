@@ -27,7 +27,7 @@ namespace VPX
  * @note The function uses raw file handling (`fopen_s`, `fseek`, `fread_s`, and `fclose`), and expects
  *       the sound file to be in a valid format.
  */
-Sound* Sound::CreateFromFile(const string& filename)
+Sound* Sound::CreateFromFile(const std::filesystem::path& filename)
 {
    vector<uint8_t> file = read_file(filename);
    return file.empty() ? nullptr : new Sound(TitleFromFilename(filename), filename, file);
@@ -102,7 +102,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       const size_t waveFileSize = sizeof(WaveHeader) + cdata;
       data.resize(waveFileSize);
       // [Master RIFF chunk]
-      auto const waveHeader = reinterpret_cast<WaveHeader*>(data.data());
+      const auto waveHeader = reinterpret_cast<WaveHeader*>(data.data());
       waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
       waveHeader->dwSize = static_cast<uint32_t>(waveFileSize - 8); // File size - 8
       waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
@@ -168,16 +168,16 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    return pps;
 }
 
-void Sound::SetFromFileData(string filename, vector<uint8_t> filedata)
+void Sound::SetFromFileData(const std::filesystem::path& filename, vector<uint8_t> filedata)
 {
-   m_path = std::move(filename);
+   m_path = filename;
    m_data = std::move(filedata);
 }
 
-bool Sound::SaveToFile(const string& filename) const
+bool Sound::SaveToFile(const std::filesystem::path& filename) const
 {
    FILE* f;
-   if ((fopen_s(&f, filename.c_str(), "wb") == 0) && f)
+   if ((fopen_s(&f, filename.string().c_str(), "wb") == 0) && f)
    {
       fwrite(m_data.data(), 1, m_data.size(), f);
       fclose(f);
@@ -190,18 +190,18 @@ void Sound::SaveToStream(IStream* pstm) const
 {
    ULONG writ = 0;
    const int32_t nameLen = static_cast<int32_t>(m_name.length());
-   const int32_t pathLen = static_cast<int32_t>(m_path.length());
+   const int32_t pathLen = static_cast<int32_t>(m_path.string().length());
    constexpr int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
    pstm->Write(&nameLen, sizeof(int32_t), &writ);
    pstm->Write(m_name.c_str(), nameLen, &writ);
    pstm->Write(&pathLen, sizeof(int32_t), &writ);
-   pstm->Write(m_path.c_str(), pathLen, &writ);
+   pstm->Write(m_path.string().c_str(), pathLen, &writ);
    pstm->Write(&dummyLen, sizeof(int32_t), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen, &writ);
    if (isWav(m_path))
    {
-      auto const waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
+      const auto waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
       WAVEFORMATEX wfx;
       wfx.wFormatTag = waveHeader->wFormatTag;
       wfx.nChannels = waveHeader->wNChannels;

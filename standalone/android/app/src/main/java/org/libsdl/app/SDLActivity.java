@@ -61,7 +61,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 3;
     private static final int SDL_MINOR_VERSION = 4;
-    private static final int SDL_MICRO_VERSION = 0;
+    private static final int SDL_MICRO_VERSION = 2;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
@@ -1270,10 +1270,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (Build.MANUFACTURER.equals("MINIX") && Build.MODEL.equals("NEO-U1")) {
             return true;
         }
-        if (Build.MANUFACTURER.equals("Amlogic") && Build.MODEL.equals("X96-W")) {
-            return true;
-        }
-        if (Build.MANUFACTURER.equals("Amlogic") && Build.MODEL.startsWith("TV")) {
+        if (Build.MANUFACTURER.equals("Amlogic") &&
+            (Build.MODEL.startsWith("TV") ||
+             Build.MODEL.equals("X96-W") ||
+             Build.MODEL.equals("A95X-R1"))) {
             return true;
         }
         return false;

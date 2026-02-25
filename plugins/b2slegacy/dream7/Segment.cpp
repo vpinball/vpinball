@@ -116,7 +116,7 @@ void Segment::DrawLight(VPXGraphics* pRenderer)
 void Segment::InitSegmentDot(float x, float y, float radius)
 {
    m_szName = "."s;
-   m_points.push_back({ radius, radius });
+   m_points.emplace_back(radius, radius);
    m_radius = radius;
 
    CreateLightData();
@@ -138,12 +138,12 @@ void Segment::InitSegment(const string& szName, float x, float y, float width, f
    LeftRightFromCap(topcap, width, capangle, topleft, topright, topdelta);
    LeftRightFromCap(bottomcap, width, capangle, bottomleft, bottomright, bottomdelta);
 
-   m_points.push_back({ nBounds.x + topdelta, nBounds.y });
-   m_points.push_back({ nBounds.x + nBounds.w, nBounds.y + (topcap == SegmentCap_Flat ? 0 : topright) });
-   m_points.push_back({ nBounds.x + nBounds.w, nBounds.y + nBounds.h - (bottomcap == SegmentCap_Flat ? 0 : bottomright) });
-   m_points.push_back({ nBounds.x + bottomdelta, nBounds.y + nBounds.h });
-   m_points.push_back({ nBounds.x, nBounds.y + nBounds.h - (bottomcap == SegmentCap_Flat ? 0 : bottomleft) });
-   m_points.push_back({ nBounds.x, nBounds.y + (topcap == SegmentCap_Flat ? 0 : topleft) });
+   m_points.emplace_back(nBounds.x + topdelta, nBounds.y);
+   m_points.emplace_back(nBounds.x + nBounds.w, nBounds.y + (topcap == SegmentCap_Flat ? 0 : topright));
+   m_points.emplace_back(nBounds.x + nBounds.w, nBounds.y + nBounds.h - (bottomcap == SegmentCap_Flat ? 0 : bottomright));
+   m_points.emplace_back(nBounds.x + bottomdelta, nBounds.y + nBounds.h);
+   m_points.emplace_back(nBounds.x, nBounds.y + nBounds.h - (bottomcap == SegmentCap_Flat ? 0 : bottomleft));
+   m_points.emplace_back(nBounds.x, nBounds.y + (topcap == SegmentCap_Flat ? 0 : topleft));
 
    m_angle = angle;
    CreateLightData();
@@ -163,12 +163,12 @@ void Segment::CreateLightData()
       m_lightDot = { m_points[0].x - m_glow, m_points[0].y - m_glow, m_radius + m_glow * 2, m_radius + m_glow * 2 };
    }
    else {
-      m_lights.push_back({ m_points[0].x, m_points[0].y - m_glow });
-      m_lights.push_back({ m_points[1].x + m_glow, m_points[1].y });
-      m_lights.push_back({ m_points[2].x + m_glow, m_points[2].y });
-      m_lights.push_back({ m_points[3].x, m_points[3].y + m_glow });
-      m_lights.push_back({ m_points[4].x - m_glow, m_points[4].y });
-      m_lights.push_back({ m_points[5].x - m_glow, m_points[5].y });
+      m_lights.emplace_back(m_points[0].x, m_points[0].y - m_glow);
+      m_lights.emplace_back(m_points[1].x + m_glow, m_points[1].y);
+      m_lights.emplace_back(m_points[2].x + m_glow, m_points[2].y);
+      m_lights.emplace_back(m_points[3].x, m_points[3].y + m_glow);
+      m_lights.emplace_back(m_points[4].x - m_glow, m_points[4].y);
+      m_lights.emplace_back(m_points[5].x - m_glow, m_points[5].y);
    }
 }
 

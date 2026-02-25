@@ -21,6 +21,8 @@ Spinner *Spinner::CopyForPlay(PinTable *live_table) const
 
 void Spinner::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("Length: {:.3f} | Height: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_length), m_vpinball->ConvertToUnit(m_d.m_height));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
@@ -86,7 +88,7 @@ HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, cons
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 

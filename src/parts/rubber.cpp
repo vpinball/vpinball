@@ -20,6 +20,8 @@ Rubber *Rubber::CopyForPlay(PinTable *live_table) const
 
 void Rubber::UpdateStatusBarInfo()
 {
+   if (!m_vpinball)
+      return;
    const string tbuf = std::format("Height: {:.3f} | Thickness: {:.3f}", m_vpinball->ConvertToUnit(m_d.m_height), m_vpinball->ConvertToUnit((float)m_d.m_thickness));
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
@@ -45,7 +47,7 @@ HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const
       }
    }
 
-   return forPlay ? S_OK : InitVBA(true, nullptr);
+   return S_OK;
 }
 
 #define LinkProp(field, prop) field = fromMouseClick ? g_app->m_settings.GetDefaultPropsRubber_##prop() : Settings::GetDefaultPropsRubber_##prop##_Default()

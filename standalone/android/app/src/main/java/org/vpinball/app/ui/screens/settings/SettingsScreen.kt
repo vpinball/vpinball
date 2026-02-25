@@ -83,7 +83,6 @@ import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballStorageMode
-import org.vpinball.app.jni.VPinballViewMode
 import org.vpinball.app.ui.screens.common.RoundedCard
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxRed
@@ -126,34 +125,23 @@ fun SettingsScreen(
                     SectionHeader(title = "General")
 
                     RoundedCard {
-                        SwitchRow(
-                            label = "Haptics",
-                            isChecked = viewModel.haptics,
-                            onCheckedChange = { viewModel.handleHaptics(value = it) },
-                            description = "Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.",
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Force VR Rendering Mode",
-                            isChecked = viewModel.renderingModeOverride,
-                            onCheckedChange = { viewModel.handleRenderingModeOverride(value = it) },
-                            description =
-                                "Provide table scripts with `RenderingMode=2` " +
-                                    "so backbox and cabinet are rendered. Useful for tables that do not provide FSS support.",
-                        )
-
                         if (!BuildConfig.IS_QUEST) {
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                             EnumMenuRow(
                                 label = "Graphics Backend",
                                 options = VPinballGfxBackend.entries.toList(),
                                 option = viewModel.gfxBackend,
                                 onOptionChanged = { viewModel.handleGfxBackend(value = it) },
                             )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         }
+
+                        SwitchRow(
+                            label = "Haptics",
+                            isChecked = viewModel.haptics,
+                            onCheckedChange = { viewModel.handleHaptics(value = it) },
+                            description = "Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.",
+                        )
                     }
                 }
 
@@ -189,17 +177,6 @@ fun SettingsScreen(
                                 )
                             }
                         }
-                    }
-                }
-
-                item {
-                    RoundedCard {
-                        EnumMenuRow(
-                            label = "Display",
-                            options = VPinballViewMode.entries.toList(),
-                            option = viewModel.bgSet,
-                            onOptionChanged = { viewModel.handleBGSet(value = it) },
-                        )
                     }
                 }
 
@@ -311,6 +288,21 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                        )
+                    }
+                }
+
+                item {
+                    SectionHeader(title = "Miscellaneous")
+
+                    RoundedCard {
+                        SwitchRow(
+                            label = "Force VR Rendering Mode",
+                            isChecked = viewModel.renderingModeOverride,
+                            onCheckedChange = { viewModel.handleRenderingModeOverride(value = it) },
+                            description =
+                                "Provide table scripts with `RenderingMode=2` " +
+                                    "so backbox and cabinet are rendered. Useful for tables that do not provide FSS support.",
                         )
                     }
                 }

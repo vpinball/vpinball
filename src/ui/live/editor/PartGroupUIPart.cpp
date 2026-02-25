@@ -16,7 +16,7 @@ PartGroupUIPart::PartGroupUIPart(PartGroup* partGroup)
    else
    {
       partGroup->m_isVisible = false;
-      for (const auto edit : partGroup->GetPTable()->m_vedit)
+      for (const auto edit : partGroup->GetPTable()->GetParts())
       {
          if (edit->GetISelect() && edit->GetISelect()->m_isVisible && edit->IsChild(partGroup))
          {

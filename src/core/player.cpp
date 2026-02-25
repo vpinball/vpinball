@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 
-#include "ui/worker.h"
+#include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
@@ -97,6 +97,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
    g_pplayer = this;
+   m_ptable->AddRef();
 
    // Prepare table for playing
 
@@ -104,42 +105,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // make sure the load directory is the active directory
    SetCurrentDirectory(table->m_filename.parent_path().string().c_str());
-
-#ifdef __STANDALONE__
-   Textbox *const implicitDMD = (Textbox *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, table, 0, 0);
-   table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
-   wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
-   implicitDMD->m_d.m_visible = false;
-   implicitDMD->m_d.m_isDMD = true;
-   implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
-   table->m_vedit.push_back(implicitDMD);
-   table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
-   PLOGI << "Implicit Textbox DMD added: name=" << MakeString(implicitDMD->m_wzName);
-
-   Flasher *const implicitDMD2 = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, table, 0, 0);
-   table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
-   wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
-   int dmdWidth = 128 * 4; // (658)
-   int dmdHeight = 38 * 4; // (189)
-   int x = ((table->m_right - table->m_left) - dmdWidth) / 2;
-   int y = ((table->m_bottom - table->m_top) - dmdHeight) / 2;
-   implicitDMD2->UpdatePoint(0, x, y);
-   implicitDMD2->UpdatePoint(1, x, y + dmdHeight);
-   implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
-   implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
-   implicitDMD2->m_d.m_isVisible = false;
-   implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
-   implicitDMD2->m_d.m_color = RGB(255, 255, 255);
-   implicitDMD2->m_d.m_filter = Filter_Overlay;
-   implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
-   implicitDMD2->m_d.m_alpha = 150;
-   implicitDMD2->m_d.m_intensity_scale = 1;
-   implicitDMD2->m_d.m_modulate_vs_add = 1;
-   implicitDMD2->m_d.m_addBlend = true;
-   table->m_vedit.push_back(implicitDMD2);
-   table->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
-   PLOGI << "Implicit Flasher DMD added: name=" << MakeString(implicitDMD2->m_wzName);
-#endif
    
    table->SetupLookUpTables(true);
 
@@ -155,6 +120,12 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       table->m_fOverrideMaxSlope = table->m_settings.GetPlayer_TablePhysicsMaxSlope(table->m_overridePhysics - 1);
       const float fOverrideContactScatterAngle = table->m_settings.GetPlayer_TablePhysicsContactScatterAngle(table->m_overridePhysics - 1);
       c_hardScatter = ANGTORAD(table->m_overridePhysics ? fOverrideContactScatterAngle : table->m_defaultScatter);
+   }
+
+   if (!IsEditorMode())
+   {
+      for (int i = 0; i < 3; i++)
+         table->mViewSetups[i].ApplyTableOverrideSettings(table->m_settings, (ViewSetupID)i);
    }
 
    m_logicProfiler.NewFrame(0);
@@ -338,9 +309,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    catch (HRESULT hr)
    {
-      char szFoo[64];
-      sprintf_s(szFoo, sizeof(szFoo), "Renderer initialization error code: %x", hr);
-      ShowError(szFoo);
+      ShowError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
       throw hr;
    }
 
@@ -371,9 +340,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Add a playfield primitive if it is missing
    bool hasExplicitPlayfield = false;
-   for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
+   for (const IEditable *const pedit : m_ptable->GetParts())
    {
-      const IEditable *const pedit = m_ptable->m_vedit[i];
       if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((const Primitive *)pedit)->IsPlayfield())
       {
          hasExplicitPlayfield = true;
@@ -417,8 +385,9 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_implicitPlayfieldMesh->m_mesh.m_indices[4] = 1;
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
          m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
-         m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
+         m_ptable->AddPart(m_implicitPlayfieldMesh);
          m_ptable->m_undo.Undo(true);
+         m_implicitPlayfieldMesh->Release();
       }
    }
 
@@ -638,7 +607,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
-   for (auto editable : m_ptable->m_vedit)
+   for (auto editable : m_ptable->GetParts())
       if (editable->GetIHitable())
          m_vhitables.push_back(editable);
    for (IEditable *hitable : m_vhitables)
@@ -669,8 +638,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_scriptInterpreter->AddRef();
       m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
          { OnScriptError(type, line, column, description, stackDump); });
-      m_scriptInterpreter->Init(m_ptable);
-      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_pcv->GetScript()), false);
+      m_scriptInterpreter->Start(m_ptable);
+      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_script_text), false);
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
@@ -687,6 +656,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
+
+#ifndef __STANDALONE__
+      if (m_detectScriptHang && g_pvp)
+         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
+#endif
    }
 
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
@@ -720,7 +694,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == PlayMode::EditPOV)
-      m_liveUI->OpenInGameUI();
+      m_liveUI->OpenInGameUI("settings/pov"s);
    else if ((playMode == PlayMode::LiveEdit || playMode == PlayMode::FullEdit))
    {
       assert(m_renderer->m_stereo3D != STEREO_VR);
@@ -729,7 +703,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
-   PLOGI << "Prerendering static parts"; // For profiling
    wintimer_init();
    m_physics->StartPhysics();
    m_renderer->RenderFrame();
@@ -749,8 +722,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 #endif
 
 #ifndef __STANDALONE__
-   if (m_detectScriptHang && g_pvp)
-      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
    m_progressDialog.Destroy();
    LockForegroundWindow(true);
 #endif
@@ -798,10 +769,14 @@ Player::~Player()
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
    }
 
+   delete m_liveUI;
+   m_liveUI = nullptr;
+
    if (m_scriptInterpreter)
    {
-      m_scriptInterpreter->Stop();
-      m_scriptInterpreter->Release();
+      m_scriptInterpreter->Stop(m_ptable);
+      ULONG refCount = m_scriptInterpreter->Release();
+      assert(refCount == 0);
    }
 
    // Release plugin message Ids
@@ -885,7 +860,7 @@ Player::~Player()
          vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
          for (ITexManCacheable *memtex : textures)
          {
-            auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
+            const auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
             if (tex != m_ptable->m_vimage.end())
             {
                tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
@@ -928,8 +903,6 @@ Player::~Player()
    g_DXGIRegistry.ReleaseAll();
 #endif
 
-   delete m_liveUI;
-   m_liveUI = nullptr;
    delete m_physics;
    m_physics = nullptr;
 
@@ -951,11 +924,9 @@ Player::~Player()
    assert(m_vballDelete.empty());
    m_vball.clear();
 
-   if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh) != -1)
+   if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->GetParts(), (IEditable *)m_implicitPlayfieldMesh) != -1)
    {
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
-      m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      m_implicitPlayfieldMesh->Release();
+      m_ptable->RemovePart(m_implicitPlayfieldMesh);
       m_implicitPlayfieldMesh = nullptr;
    }
 
@@ -1014,6 +985,8 @@ Player::~Player()
    g_pplayer = nullptr;
 
    restore_win_timer_resolution();
+
+   m_ptable->Release();
 
    while (ShowCursor(FALSE) >= 0);
    while (ShowCursor(TRUE) < 0);
@@ -1082,13 +1055,18 @@ void Player::OnFocusChanged()
    // A lost focus event happens during player destruction when the main window is destroyed
    if (m_closing == CS_CLOSED)
       return;
-   if (m_playfieldWnd->IsFocused())
+   const bool wasPlaying = IsPlaying();
+   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
+   if (wasPlaying != willPlay)
    {
-      PLOGI << "Playfield window gained focus";
-   }
-   else
-   {
-      #ifdef _MSC_VER
+      ApplyPlayingState(willPlay);
+      if (m_playfieldWnd->IsFocused())
+      {
+         PLOGI << "Playfield window gained focus";
+      }
+      else
+      {
+#ifdef _MSC_VER
          HWND foregroundWnd = GetForegroundWindow();
          if (foregroundWnd)
          {
@@ -1113,14 +1091,11 @@ void Player::OnFocusChanged()
             PLOGI << "Playfield window lost focus.";
          }
 
-      #else
+#else
          PLOGI << "Playfield window lost focus.";
-      #endif
+#endif
+      }
    }
-   const bool wasPlaying = IsPlaying();
-   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
-   if (wasPlaying != willPlay)
-      ApplyPlayingState(willPlay);
 }
 
 void Player::ApplyPlayingState(const bool play)
@@ -1162,22 +1137,26 @@ void Player::UpdateCursorState() const
 
 void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
 {
-   // Cancel capture if in capture attract mode
    if (m_playMode == Player::PlayMode::CaptureAttract)
       SetCloseState(Player::CloseState::CS_STOP_PLAY);
 
-#ifdef __STANDALONE__
-   PLOGE << (type == ScriptInterpreter::ErrorType::Runtime ? "Runtime" : "Compile") << " error on line " << line << ", col " << column << ": " << description;
-#endif
+   const string errorType = (type == ScriptInterpreter::ErrorType::Runtime) ? "Runtime" : "Compile";
+   const string desc = string_from_utf8_or_iso8859_1(description.data(), description.size());
+   PLOGE << errorType << " error on line " << line << ", col " << column << ": " << desc;
+   if (g_pplayer && g_pplayer->m_liveUI)
+      g_pplayer->m_liveUI->PushNotification(errorType + " error: " + desc, 5000);
 
-   m_ptable->m_pcv->OnScriptError(type, line ,column, description, stackDump);
+   if (m_ptable->m_tableEditor)
+      m_ptable->m_tableEditor->m_pcv->OnScriptError(type, line ,column, description, stackDump);
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
    CComObject<Ball> *pBall;
    CComObject<Ball>::CreateInstance(&pBall);
+   pBall->AddRef();
    pBall->Init(m_ptable, x, y, false, true);
+   m_ptable->AddPart(pBall);
    pBall->m_hitBall.m_d.m_pos.z = z + radius;
    pBall->m_hitBall.m_d.m_mass = mass;
    pBall->m_hitBall.m_d.m_radius = radius;
@@ -1185,13 +1164,13 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_hitBall.m_d.m_vel.y = vy;
    pBall->m_hitBall.m_d.m_vel.z = vz;
    pBall->m_d.m_useTableRenderSettings = true;
-   pBall->AddRef(); // Add a reference for the table (the ball is owned by the table, not the player)
-   m_ptable->m_vedit.push_back(pBall);
    m_vhitables.push_back(pBall);
    pBall->TimerSetup(m_vht);
    pBall->RenderSetup(m_renderer->m_renderDevice);
    pBall->PhysicSetup(m_physics, false);
    m_vball.push_back(pBall);
+   pBall->Release(); // The ball is owned by the table, not by the player
+   assert(GetRefCount(pBall) == 1);
    if (!m_pactiveballDebug)
       m_pactiveballDebug = pBall;
    if (m_scriptInterpreter)
@@ -1413,7 +1392,10 @@ void Player::ProcessOSMessages()
    {
       switch (e.type)
       {
-      case SDL_EVENT_QUIT: SetCloseState(Player::CloseState::CS_STOP_PLAY); break;
+      case SDL_EVENT_QUIT:
+         SetCloseState(Player::CloseState::CS_STOP_PLAY);
+         break;
+
       case SDL_EVENT_WINDOW_FOCUS_GAINED:
       case SDL_EVENT_WINDOW_FOCUS_LOST:
          isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();
@@ -1523,7 +1505,7 @@ public:
       , m_lightStates(player->m_nFrameToCapture)
    {
       m_nLights = 0;
-      for (const auto &edit : m_player->m_ptable->m_vedit)
+      for (const auto &edit : m_player->m_ptable->GetParts())
          if (edit->GetItemType() == eItemLight)
             m_nLights++;
 
@@ -1550,8 +1532,8 @@ public:
          m_player->m_overall_frames++;
          const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
          m_player->m_last_frame_time_msec = m_player->m_time_msec;
-         for (size_t i = 0; i < m_player->m_ptable->m_vedit.size(); ++i)
-            if (Hitable *const ph = m_player->m_ptable->m_vedit[i]->GetIHitable(); ph)
+         for (IEditable *editable : m_player->m_ptable->GetParts())
+            if (Hitable *const ph = editable->GetIHitable(); ph)
                ph->UpdateAnimation(diff_time_msec);
          m_player->FireTimers(-1);
          m_player->FireTimers(-2);
@@ -1605,7 +1587,7 @@ private:
 
       // Store and log light state
       std::stringstream ss;
-      for (const auto& edit : m_player->m_ptable->m_vedit)
+      for (const auto &edit : m_player->m_ptable->GetParts())
       {
          if (edit->GetItemType() == eItemLight)
          {
@@ -1631,7 +1613,7 @@ private:
             // distance favor longer loops with lowest difference between light states
             float distance = 1.f;
             for (int k = 0; k < m_nLights; k++)
-               distance += powf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k], 2.f);
+               distance += sqrf(m_lightStates[m_captureFrameNumber - 1][k] - m_lightStates[j][k]);
             distance = distance * 100.f / static_cast<float>(m_nLights); // Normalize against a 'standard' number of lights
             distance = distance / static_cast<float>(m_captureFrameNumber - j); // Take loop length in account
             if (distance < lowestDistance)
@@ -1696,19 +1678,18 @@ private:
       }
    }
 
-   string GetFilename(VPXWindowId id, int index, bool isTmp) const
+   std::filesystem::path GetFilename(VPXWindowId id, int index, bool isTmp) const
    {
       // The critical path is disk access and memory management:
       // - png is well compressed but far too slow
       // - bmp is fast to save but huge on disk (multiple times faster than png, but huge)
       // - qoi is both faster to save and small enough on disk (twice faster than bmp)
       // So we use qoi as it offers a good balance and is lossless and supported by all major video tools (ffmpeg, vlc,...)
-      std::stringstream ss;
-      ss << m_player->m_ptable->m_filename.parent_path().string() << "Capture" << PATH_SEPARATOR_CHAR
-         << (id == VPXWindowId::VPXWINDOW_Playfield ? "Playfield_" : 
-             id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass_" : "") 
-         << std::setw(5) << std::setfill('0') << index << (isTmp ? "_tmp.qoi" : ".qoi");
-      return ss.str();
+      return m_player->m_ptable->m_filename.parent_path() / "Capture"
+         / std::format("{}_{:05}{}.qoi",
+            (id == VPXWindowId::VPXWINDOW_Playfield        ? "Playfield"
+                  : id == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"
+                                                           : "Unknown"), index, (isTmp ? "_tmp" : ""));
    };
 
    Player *const m_player;
@@ -2035,12 +2016,9 @@ void Player::PrepareFrame()
       const float diff_time_msec = (float)(m_time_msec - m_last_frame_time_msec);
       m_last_frame_time_msec = m_time_msec;
       if (diff_time_msec > 0.f)
-         for (size_t i = 0; i < m_ptable->m_vedit.size(); ++i)
-         {
-            Hitable *const ph = m_ptable->m_vedit[i]->GetIHitable();
-            if (ph)
+         for (IEditable* editable : m_ptable->GetParts())
+            if (Hitable *const ph = editable->GetIHitable(); ph)
                ph->UpdateAnimation(diff_time_msec);
-         }
    }
 
    // New Frame event
@@ -2123,15 +2101,6 @@ void Player::FinishFrame()
          m_pininput.ProcessInput(); // trigger input events mainly for VPM<->VP roundtrip
    #endif
 
-   // Detect & fire end of music events
-   if (IsPlaying())
-   {
-      bool musicPlaying = m_audioPlayer->IsMusicPlaying();
-      if (m_musicPlaying && !musicPlaying)
-         m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
-      m_musicPlaying = musicPlaying;
-   }
-
    // Pause after performing a simulation step
    if ((m_pauseTimeTarget > 0) && (m_pauseTimeTarget <= m_time_msec))
       SetPlayState(false);
@@ -2139,11 +2108,10 @@ void Player::FinishFrame()
    // Remove ball from table (but they may outlive as they may be in use for rendering) for balls that may have been destroyed from scripts
    for (Ball *const pBall : m_vballDelete)
    {
-      RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
       RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
       if (m_scriptInterpreter)
          m_scriptInterpreter->RemoveItem(pBall);
-      pBall->Release();
+      m_ptable->RemovePart(pBall);
    }
    m_vballDelete.clear();
 
@@ -2154,7 +2122,7 @@ void Player::FinishFrame()
       if (g_pvp && g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else
-         m_liveUI->OpenMainSplash();
+         m_liveUI->OpenInGameUI();
    }
 
    // Brute force stop: blast into space

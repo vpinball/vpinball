@@ -13,8 +13,8 @@ static CComObject<PinTable>* CreatePinTable()
 }
 
 PinTableMDI::PinTableMDI(WinEditor* vpinball)
-   : m_vpxEditor(vpinball)
-   , m_tableWnd(std::make_unique<PinTableWnd>(vpinball, CreatePinTable()))
+   : m_tableWnd(std::make_unique<PinTableWnd>(vpinball, CreatePinTable()))
+   , m_vpxEditor(vpinball)
 {
    m_tableWnd->SetMDITable(this);
 #ifndef __STANDALONE__
@@ -27,14 +27,7 @@ PinTableMDI::PinTableMDI(WinEditor* vpinball)
 PinTableMDI::~PinTableMDI()
 {
    m_vpxEditor->CloseAllDialogs();
-
-#ifndef __STANDALONE__
-   if (m_tableWnd->m_table->m_searchSelectDlg.IsWindow())
-      m_tableWnd->m_table->m_searchSelectDlg.Destroy();
-#endif
-
    m_tableWnd->FVerifySaveToClose();
-
    RemoveFromVectorSingle(m_vpxEditor->m_vtable, m_tableWnd.get());
 }
 
@@ -49,7 +42,7 @@ bool PinTableMDI::CanClose() const
         if (result == IDCANCEL)
             return false;
 
-        if ((result == IDYES) && (m_tableWnd->m_table->TableSave() != S_OK))
+        if ((result == IDYES) && (m_tableWnd->m_table->Save() != S_OK))
             MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
 #endif
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HUDOverlayView: View {
-    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
+    @ObservedObject var vpinballModel = VPinballModel.shared
 
     var body: some View {
         ZStack {
@@ -12,20 +12,20 @@ struct HUDOverlayView: View {
                 Spacer()
 
                 VStack(spacing: 20) {
-                    Text(vpinballViewModel.hudTitle ?? " ")
+                    Text(vpinballModel.hudTitle ?? " ")
                         .multilineTextAlignment(.center)
                         .font(.headline)
                         .bold()
                         .foregroundStyle(Color.white)
 
-                    ProgressView(value: Double(vpinballViewModel.hudProgress),
+                    ProgressView(value: Double(vpinballModel.hudProgress),
                                  total: 100)
                         .progressViewStyle(.linear)
                         .tint(Color.vpxDarkYellow)
                         .background(Color.black)
                         .cornerRadius(2)
 
-                    Text(vpinballViewModel.hudStatus ?? " ")
+                    Text(vpinballModel.hudStatus ?? " ")
                         .font(.caption)
                         .bold()
                         .foregroundStyle(Color.white)

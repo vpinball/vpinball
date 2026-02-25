@@ -28,20 +28,13 @@ public:
 
    void write(const plog::Record &record) PLOG_OVERRIDE
    {
-      if (g_pvp == nullptr || g_pplayer == nullptr)
-         return;
-      if (std::this_thread::get_id() != m_uiThreadId)
-         return;
-      auto table = g_pvp->GetActiveTable();
-      if (table == nullptr)
+      if ((std::this_thread::get_id() != m_uiThreadId) || (g_pvp == nullptr) || (g_pvp->GetActiveTableEditor() == nullptr))
          return;
       #ifdef _WIN32
       // Convert from wchar* to char* on Win32
-      auto msg = record.getMessage();
-      const string szT = MakeString(msg);
-      table->m_pcv->AddToDebugOutput(szT);
+      g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(MakeString(record.getMessage()));
       #else
-      table->m_pcv->AddToDebugOutput(record.getMessage());
+      g_pvp->GetActiveTableEditor()->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
    }
 
@@ -170,8 +163,12 @@ void Logger::SetupLogger(const bool enable)
       if (!initialized)
       {
          initialized = true;
-         const string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
-         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
+         const std::filesystem::path logPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
+#if PLOG_CHAR_IS_UTF8
+         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.string().c_str(), 1024 * 1024 * 5, 1);
+#else
+         static plog::RollingFileAppender<ThreadAwareTxtFormatter<false>> fileAppender(logPath.wstring().c_str(), 1024 * 1024 * 5, 1);
+#endif
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
@@ -212,7 +209,7 @@ void Logger::Init()
 
 void Logger::Truncate()
 {
-   std::string szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log").string();
+   std::filesystem::path szLogPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "vpinball.log");
    std::ofstream ofs(szLogPath, std::ofstream::out | std::ofstream::trunc);
    ofs.close();
 }

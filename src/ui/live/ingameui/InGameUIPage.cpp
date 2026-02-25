@@ -5,6 +5,7 @@
 #include "InGameUIPage.h"
 
 #include "imgui/imgui_internal.h"
+#include "imgui/imgui_stdlib.h"
 
 #include "SensorSetupPage.h"
 #include "fonts/IconsForkAwesome.h"
@@ -837,6 +838,29 @@ void InGameUIPage::Render(float elapsedS)
             }
             else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
                id.has_value() && g_app->m_settings.GetBool(id.value()) != m_player->m_ptable->m_settings.GetBool(id.value()))
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+            }
+            item->SetValue(v);
+            break;
+         }
+
+         case VPX::Properties::PropertyDef::Type::String:
+         {
+            auto prop = dynamic_cast<VPX::Properties::StringPropertyDef*>(item->m_property.get());
+            ImGui::Text("%s", prop->m_label.c_str());
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            string v = item->GetStringValue();
+            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+            ImGui::InputText(("##" + prop->m_label).c_str(), &v);
+            if (item->IsModified())
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_PENCIL);
+            }
+            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+               id.has_value() && g_app->m_settings.GetString(id.value()) != m_player->m_ptable->m_settings.GetString(id.value()))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);

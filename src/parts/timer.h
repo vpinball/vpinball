@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/resource.h"
+#include "ui/win/resource.h"
 #include "physics/hittimer.h"
 #include "physics/hitable.h"
 
