@@ -178,6 +178,8 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    case 2:
    {
       std::lock_guard lock(m_mutex);
+      const bool hasXPos = json["xpos"s].exists();
+      const bool hasYPos = json["ypos"s].exists();
       for (auto& [key, value] : json.as_object())
       {
          if (key == "mt")
@@ -230,11 +232,15 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "xalign")
          {
             m_xAlign = (PUP_LABEL_XALIGN)value.as<int>();
+            if (!hasXPos)
+               m_xPos = 0.f;
             m_dirty = true;
          }
          else if (key == "yalign")
          {
             m_yAlign = (PUP_LABEL_YALIGN)value.as<int>();
+            if (!hasYPos)
+               m_yPos = 0.f;
             m_dirty = true;
          }
          else if (key == "pagenum")
@@ -440,6 +446,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    float xposPercent = m_xPos / 100.0f;
    if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_CENTER)
       xposPercent = 0.5f;
+   else if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_RIGHT)
+      xposPercent = 1.0f;
 
    dest.x += static_cast<float>(rect.w) * xposPercent;
 
@@ -471,7 +479,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
    ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f,
       0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 
-      0.f, 0.f, -m_angle, // FIXME compute center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
+      static_cast<float>(texInfo->width) / 2.f, static_cast<float>(texInfo->height) / 2.f, -m_angle,
       dest.x, dest.y, dest.w, dest.h);
 }
 

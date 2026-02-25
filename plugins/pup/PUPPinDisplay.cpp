@@ -446,8 +446,8 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
       return;
    }
 
-   pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color, 
-      static_cast<float>(Angle), (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, 
+   pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color,
+      static_cast<float>(Angle) / 10.f, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign,
       static_cast<float>(xMargin), static_cast<float>(yMargin), PageNum, Visible));
 
    return;
