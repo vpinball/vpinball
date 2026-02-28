@@ -192,6 +192,8 @@ void Win32EditCommand::Execute()
    else if (g_app->m_settings.GetEditor_SelectTableOnStart())
    {
       vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
+      if (vpxEditor.m_table_played_via_SelectTableOnStart)
+         vpxEditor.DoPlay(0);
    }
    g_app->m_winApp.Run();
    g_pvp = nullptr;
