@@ -134,6 +134,7 @@ void HomePage::BuildPage()
 void HomePage::Render(float elapsedMs)
 {
    // Display table name, author, version, blurb and description => Move to a dedicated page ?
+   if (m_player->m_vrDevice == nullptr)
    {
       std::ostringstream info;
 
