@@ -180,9 +180,9 @@ void main()
 			unlitLum4 = max(light, unlitLum4); // Max gives slightly better results than additive, especially for corners between segs that are overlit otherwise
 			litLum4 = max(light * alphaSegState[i], litLum4);
 		}
-		//vec3 litLum = dot(litLum4, vec4_splat(1.0)) * lit;
+		//vec3 litLum = dot(litLum4, vec4_splat(1.0));
 		//float unlitLum = dot(unlitLum4, vec4_splat(1.0));
-		vec3 litLum = max(max(litLum4.x, litLum4.y), max(litLum4.z, litLum4.w)) * lit;
+		vec3 litLum = vec3_splat(max(max(litLum4.x, litLum4.y), max(litLum4.z, litLum4.w)));
 		float unlitLum = max(max(unlitLum4.x, unlitLum4.y), max(unlitLum4.z, unlitLum4.w));
 
 	#elif defined(DMD)
@@ -194,6 +194,7 @@ void main()
 		float thr = 0.15 * (abs(dFdx(dmdUv.x)) + abs(dFdx(dmdUv.y))); // Magic formula to adjust antialiasing to actual gradient
 		float minThr = 0.5 - thr, maxThr = dotThreshold + thr;
 		for (int y = -N_SAMPLES; y <= N_SAMPLES; y++)
+		{
 			for (int x = -N_SAMPLES; x <= N_SAMPLES; x++)
 			{
 				ivec2 dotUv = dotPos + ivec2(x,y);
@@ -206,11 +207,16 @@ void main()
 					float light = mix(sharp, diffuse, roughness);
 					unlitLum += light;
 					if (coloredDMD) // RGB data (maybe sRGB, but this is handled by the hardware sampler)
-						litLum += light * texFetch(displayTex, dotUv, dmdSize).rgb * lit;
+					{
+						litLum += light * texFetch(displayTex, dotUv, dmdSize).rgb;
+					}
 					else // linear brightness data
-						litLum += light * texFetch(displayTex, dotUv, dmdSize).r * lit;
+					{
+						litLum += light * texFetch(displayTex, dotUv, dmdSize).rrr;
+					}
 				}
 			}
+		}
 
 	#elif defined(CRT)
 		float unlitLum = 0.0;
@@ -239,15 +245,14 @@ void main()
 			  0.5, // Shadow mask effect (same as last of CrtsTone below)
 			  CrtsTone(1.0,0.0,0.7,0.5));
 		}
-		litLum *= lit;
 
 	#endif
 
 	// Shading is a mix of basic shading (just tinted texture ambient if any) and transmitted (tinted emitter ambient + light)
-	vec3 lum = (unlitLum * unlit + litLum);
+	vec3 lum = unlitLum * unlit + litLum * lit;
 	if (hasGlass)
 		lum = mix(lum, glassAmbient, 0.5 * glass.a);
-	lum *=  glass.rgb;
+	lum *= glass.rgb;
 
 	// Convert to output color space
 	if (displayOutputMode == 0.0) // No tonemap, linear Color space

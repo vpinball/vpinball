@@ -697,6 +697,9 @@ void Shader::Begin()
          const int v = *(int*)src;
          const int pos = v & 0x0FF;
          std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
+         assert(RenderTarget::GetCurrentRenderTarget()->IsBackBuffer()
+            || (RenderTarget::GetCurrentRenderTarget()->GetColorSampler().get() != texel.get()
+               && (!RenderTarget::GetCurrentRenderTarget()->HasDepth() || RenderTarget::GetCurrentRenderTarget()->GetDepthSampler().get() != texel.get())));
          //const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
          //const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
          const SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE : (SamplerFilter)((v >> 20) & 0x0F);
@@ -1343,13 +1346,11 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    }
    (isClipVariant ? m_clipPlaneTechniques[technique] : m_techniques[technique]) = ph;
 
-   // Create uniforms from informations gathered by BGFX
-   if (bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGL || bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGLES)
-   {
-      // BGFX uses glsl optimizer to parse GLSL but it does not support recent GLSL language versions, in turn not gathering uniform informations for OpenGL...
-      m_uniforms[technique] = shaderTechniqueNames[technique].uniforms;
-   }
-   else
+   // BGFX is not reliable regarding the list of uniforms it produces, so we only use it in debug build to validate what we can:
+   // - BGFX uses glsl optimizer to parse GLSL but it does not support recent GLSL language versions, in turn not gathering uniform informations for OpenGL
+   // - Direct3D 11 & 12 have issues with SMAA and DMD display shaders
+   #ifdef _DEBUG
+   if (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL && bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES)
    {
       m_uniforms[technique].clear();
       for (int j = 0; j < 2; j++)
@@ -1374,7 +1375,6 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             }
          }
       }
-      #ifdef _DEBUG
       vector<ShaderUniforms> uniforms = shaderTechniqueNames[technique].uniforms;
       assert(!isClipVariant || FindIndexOf(uniforms, SHADER_clip_plane) != -1);
       for (ShaderUniforms uniform : m_uniforms[technique])
@@ -1393,8 +1393,15 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       RemoveFromVectorSingle(uniforms, SHADER_clip_plane);
       RemoveFromVectorSingle(uniforms, SHADER_layer);
       if (!(bgfx::getRendererType() == bgfx::RendererType::Enum::Vulkan
-             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap || technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
-                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter)))
+             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter 
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter))
+         && !(technique == SHADER_TECHNIQUE_display_DMD
+                || technique == SHADER_TECHNIQUE_display_DMD_world
+                || technique == SHADER_TECHNIQUE_SMAA_ColorEdgeDetection
+                || technique == SHADER_TECHNIQUE_SMAA_BlendWeightCalculation
+                || technique == SHADER_TECHNIQUE_SMAA_NeighborhoodBlending)
+         )
       {
          for (const auto uniform : uniforms)
          {
@@ -1402,7 +1409,6 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          }
          assert(uniforms.empty()); // Uniforms are declared in the code, but not in the shader
       }
-      #endif
       /* Can be used to update the list of used uniforms for OpenGL / OpenGL ES backends
       std::sort(m_uniforms[technique].begin(), m_uniforms[technique].end());
       std::stringstream ss;
@@ -1413,6 +1419,8 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       PLOGD << ss.str();
       */
    }
+   #endif
+   m_uniforms[technique] = shaderTechniqueNames[technique].uniforms;
 
    // Put sampler uniforms at the beginning to speed up binding (see ApplyUniform)
    std::ranges::stable_sort(m_uniforms[technique].begin(), m_uniforms[technique].end(),

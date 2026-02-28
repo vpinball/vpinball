@@ -93,7 +93,7 @@ void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _li
    #endif
 }
 
-void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip)
+void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip)
 {
    // Note that BGFX has a few bugs regarding screenshots:
    // - DX11 applies an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
@@ -109,35 +109,50 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
       }
    m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
    bool success = false;
-   auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA);
-   if (tex)
+   if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
    {
-#ifndef __ANDROID__
-      if (_pitch == _width * 4)
-         copy_bgra_rgba<false>(static_cast<uint32_t*>(tex->data()), static_cast<const uint32_t*>(_data), (size_t)_width * _height);
-      else
+      switch (_format)
       {
-      for (unsigned int i = 0; i < _height; i++)
+      case bgfx::TextureFormat::RGBA8:
+         if (_pitch == _width * 4)
+            memcpy(tex->data(), _data, _size);
+         else
+         {
+            for (unsigned int i = 0; i < _height; i++)
+               bx::memCopy(static_cast<uint8_t*>(tex->data()) + i * _width * 4, static_cast<const uint8_t*>(_data) + i * _pitch, _width * 4);
+         }
+         success = true;
+         break;
+
+      case bgfx::TextureFormat::BGRA8:
+         if (_pitch == _width * 4)
+            copy_bgra_rgba<false>(static_cast<uint32_t*>(tex->data()), static_cast<const uint32_t*>(_data), (size_t)_width * _height);
+         else
+         {
+            for (unsigned int i = 0; i < _height; i++)
+            {
+               const uint8_t* src = static_cast<const uint8_t*>(_data) + i * _pitch;
+               uint8_t* dst = static_cast<uint8_t*>(tex->data()) + i * _width * 4;
+               bx::memCopy(dst, src, _width * 4);
+            }
+            uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
+            for (uint32_t i = 0; i < _width * _height; i++)
+               std::swap(pixels[i * 4], pixels[i * 4 + 2]);
+         }
+         success = true;
+         break;
+
+      case bgfx::TextureFormat::RGB8: // Unsupported yet
+      default: // HDR, ... are not supported either
+         break;
+      }
+
+      if (success)
       {
-         const uint8_t* src = static_cast<const uint8_t*>(_data) + i * _pitch;
-         uint8_t* dst = static_cast<uint8_t*>(tex->data()) + i * _width * 4;
-         bx::memCopy(dst, src, _width * 4);
+         if (_yflip)
+            tex->FlipY();
+         success = tex->Save(_filePath);
       }
-      uint8_t* const pixels = static_cast<uint8_t*>(tex->data());
-      for (uint32_t i = 0; i < _width * _height; i++)
-         std::swap(pixels[i * 4], pixels[i * 4 + 2]);
-      }
-#else
-      // FIX ME: BGFX on Android is already returning RGBA for GLES and Vulkan
-      if (_pitch == _width * 4)
-         memcpy(tex->data(), _data, _size);
-      else
-         for (unsigned int i = 0; i < _height; i++)
-            bx::memCopy(static_cast<uint8_t*>(tex->data()) + i * _width * 4, static_cast<const uint8_t*>(_data) + i * _pitch, _width * 4);
-#endif
-      if (_yflip)
-         tex->FlipY();
-      success = tex->Save(_filePath);
    }
    m_rd.m_screenshotSuccess &= success;
    if (m_rd.m_screenshotFilename.empty())
@@ -502,6 +517,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; isWcg = true; break;
    case bgfx::TextureFormat::R5G6B5: back_buffer_format = colorFormat::RGB5; break;
    case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
+   case bgfx::TextureFormat::BGRA8: back_buffer_format = colorFormat::RGBA8; break; // FIXME the exposed format will be wrong
+   case bgfx::TextureFormat::RGB8: back_buffer_format = colorFormat::RGB8; break;
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
    assert(rd->m_outputWnd.size() == 1);
@@ -851,12 +868,6 @@ RenderDevice::RenderDevice(
 
    init.resolution.width = wnd->GetPixelWidth();
    init.resolution.height = wnd->GetPixelHeight();
-   switch (wnd->GetBitDepth())
-   {
-   case 32: init.resolution.formatColor = bgfx::TextureFormat::RGBA8; break;
-   case 30: init.resolution.formatColor = bgfx::TextureFormat::RGB10A2; break;
-   default: init.resolution.formatColor = bgfx::TextureFormat::R5G6B5; break;
-   }
 
    init.platformData.context = nullptr;
    init.platformData.backBuffer = nullptr;

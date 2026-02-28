@@ -296,6 +296,10 @@ void Ball::Render(const unsigned int renderMask)
     || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
+   // Do not render on first frame as we need the previous frame for computing reflections
+   if (g_pplayer->m_overall_frames == 0)
+      return;
+
    // Adapt z position of ball
    const float zheight = m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z;
    Vertex3Ds pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);

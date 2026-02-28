@@ -11,7 +11,6 @@
 #endif
 #include "bx/readerwriter.h"
 #define BGFX_PLATFORM_SUPPORTS_WGSL 0
-#define BGFX_PLATFORM_SUPPORTS_DXIL 0
 #include "bgfx/embedded_shader.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
