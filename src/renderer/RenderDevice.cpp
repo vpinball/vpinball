@@ -211,23 +211,28 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
 
 void RenderDevice::CaptureGLScreenshot()
 {
+   assert(m_screenshotFilename.size() == 1);
+   const std::filesystem::path screenshotFilename = m_screenshotFilename[0];
+   m_screenshotFilename.clear();
    m_screenshotFrameDelay = 0;
    bool success = false;
-   // OpenGL ES does not have GL_BGRA
-   #ifndef __OPENGLES__
-      int width = m_outputWnd[0]->GetWidth();
-      int height = m_outputWnd[0]->GetHeight();
-      auto tex = BaseTexture::Create(width, height, BaseTexture::SRGBA);
-      if (tex)
-      {
-         m_outputWnd[0]->GetBackBuffer()->Activate();
-         glPixelStorei(GL_PACK_ALIGNMENT, 1);
-         glReadBuffer(GL_BACK);
+   int width = m_outputWnd[0]->GetWidth();
+   int height = m_outputWnd[0]->GetHeight();
+   if (auto tex = BaseTexture::Create(width, height, BaseTexture::SRGBA); tex)
+   {
+      m_outputWnd[0]->GetBackBuffer()->Activate();
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glReadBuffer(GL_BACK);
+      #ifdef __OPENGLES__
+         // OpenGL ES does not have GL_BGRA
+         glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tex->data());
+         tex = tex->ToBGRA();
+      #else
          glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
-         tex->FlipY();
-         success = tex->Save(m_screenshotFilename[0]);
-      }
-   #endif
+      #endif
+      tex->FlipY();
+      success = tex->Save(screenshotFilename);
+   }
    m_screenshotCallback(success);
 }
 
@@ -250,6 +255,9 @@ static constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
 
 void RenderDevice::CaptureDX9Screenshot()
 {
+   assert(m_screenshotFilename.size() == 1);
+   const std::filesystem::path screenshotFilename = m_screenshotFilename[0];
+   m_screenshotFilename.clear();
    bool success = false;
    m_screenshotFrameDelay = 0;
    IDirect3DDevice9* pd3dDevice = GetCoreDevice();
@@ -292,7 +300,7 @@ void RenderDevice::CaptureDX9Screenshot()
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
             bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
-      success = tex->Save(m_screenshotFilename[0]);
+      success = tex->Save(screenshotFilename);
    }
    pSurface->Release();
    pBackBuffer->Release();

@@ -1497,11 +1497,8 @@ void Player::ProcessOSMessages()
 class AttractCapture
 {
 public:
-   AttractCapture(Player* player)
+   explicit AttractCapture(Player* player)
       : m_player(player)
-      , m_captureTime(usec())
-      , m_captureStartupEndTime(usec())
-      , m_captureStartupEndPhysicsTime(usec())
       , m_lightStates(player->m_nFrameToCapture)
    {
       m_nLights = 0;
@@ -1510,9 +1507,9 @@ public:
             m_nLights++;
 
       m_captureRequestMask = 1;
-      if (m_player->m_backglassOutput.GetMode() == RenderOutput::OutputMode::OM_WINDOW)
-         m_captureRequestMask |= 2;
       #if defined(ENABLE_BGFX)
+         if (m_player->m_backglassOutput.GetMode() == RenderOutput::OutputMode::OM_WINDOW)
+            m_captureRequestMask |= 2;
          if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal) // Metal backend does not support screenshot from other framebuffers
             m_captureRequestMask &= 1;
       #endif
@@ -1573,7 +1570,10 @@ public:
 private:
    void OnCapture(bool success)
    {
+      #ifdef ENABLE_BGFX
+      // OpenGL & DirectX are single threaded and this lock would fail
       std::lock_guard lock(m_captureMutex);
+      #endif
 
       if (!success)
       {
@@ -1603,8 +1603,7 @@ private:
       }
       
       // Evaluate best loop against previous frames
-      int minLoopLength = max(5, m_player->m_nFrameToCapture / 4);
-      if (m_captureFrameNumber > minLoopLength)
+      if (int minLoopLength = max(5, m_player->m_nFrameToCapture / 4); m_captureFrameNumber > minLoopLength)
       {
          float lowestDistance = FLT_MAX;
          int bestStart = -1;
@@ -1700,9 +1699,9 @@ private:
    int m_captureFrameNumber = 1;
    bool m_captureRequested = false;
    
-   uint64_t m_captureTime;
-   uint64_t m_captureStartupEndTime;
-   uint64_t m_captureStartupEndPhysicsTime;
+   uint64_t m_captureTime = usec();
+   uint64_t m_captureStartupEndTime = usec();
+   uint64_t m_captureStartupEndPhysicsTime = usec();
    
    int m_nLights;
    vector<vector<float>> m_lightStates;
