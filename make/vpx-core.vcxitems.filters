@@ -540,6 +540,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1428,6 +1431,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h">

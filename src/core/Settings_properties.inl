@@ -878,7 +878,7 @@ PropEnum(Controller, DOFShaker, "DOF Shaker"s, "Hints the table script on how to
 PropEnum(Controller, DOFFlippers, "DOF Flippers"s, "Hints the table script on how to handle flipper events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
 PropEnum(Controller, DOFTargets, "DOF Targets"s, "Hints the table script on how to handle target events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
 PropEnum(Controller, DOFDropTargets, "DOF Drop Targets"s, "Hints the table script on how to handle drop target events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
-PropBool(Controller, ForceDisableB2S, "Disable B2S"s, "Legacy 'Disable B2S' hints script to avoid using B2S controller."s, false);
+PropBool(Controller, ForceDisableB2S, "Disable B2S"s, "Legacy 'Disable B2S' hints script to avoid using B2S controller. Only works with tables using 'controller.vbs' and not using plugins for backglass rendering"s, false);
 
 // Parts Defaults: Balls
 PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
