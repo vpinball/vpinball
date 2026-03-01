@@ -39,6 +39,8 @@ void HomePage::BuildPage()
    else
       AddItem(std::make_unique<InGameUIItem>("Point Of View"s, ""s, "settings/pov"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Generic Options"s, ""s, "table/general"s));
+
    if (m_player->m_ptable->TournamentModePossible())
       AddItem(std::make_unique<InGameUIItem>("Generate Tournament File"s, ""s,
          [this]()
@@ -99,6 +101,8 @@ void HomePage::BuildPage()
    ////////////////////////////////////////////////////////////////////////////////////////////////
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Settings"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
+
    AddItem(std::make_unique<InGameUIItem>("Sound Settings"s, ""s, "settings/audio"s));
 
    AddItem(std::make_unique<InGameUIItem>("Graphic Settings"s, ""s, "settings/graphic"s));
@@ -120,9 +124,7 @@ void HomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Alpha/DMD Profile Settings"s, ""s, "settings/display_profiles"s));
 
-   AddItem(std::make_unique<InGameUIItem>("Miscellaneous Settings"s, ""s, "settings/misc"s));
-
-   AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
+   AddItem(std::make_unique<InGameUIItem>("Legacy DOF & B2S Settings"s, ""s, "settings/misc"s));
 
    // FIXME remove unsupported Win32 only legacy BAM headtracking
 #ifdef WIN32

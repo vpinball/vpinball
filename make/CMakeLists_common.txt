@@ -339,6 +339,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/SensorSetupPage.cpp
    src/ui/live/ingameui/StereoSettingsPage.h
    src/ui/live/ingameui/StereoSettingsPage.cpp
+   src/ui/live/ingameui/TableMiscPage.h
+   src/ui/live/ingameui/TableMiscPage.cpp
    src/ui/live/ingameui/TableOptionsPage.h
    src/ui/live/ingameui/TableOptionsPage.cpp
    src/ui/live/ingameui/TableRulesPage.h
