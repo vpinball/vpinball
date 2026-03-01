@@ -33,17 +33,10 @@ BOOL PlayerOptionsDialog::OnInitDialog()
 
       AttachItem(IDC_HEADTRACKING, m_bamHeadtracking);
       AddToolTip(m_bamHeadtracking, "Enables BAM Headtracking. See https://www.ravarcade.pl for details.");
-      AttachItem(IDC_OVERWRITE_BALL_IMAGE_CHECK, m_ballOverrideImages);
-      AddToolTip(m_ballOverrideImages, "When checked, it overwrites the ball image/decal image(s) for every table.");
-      AttachItem(IDC_BALL_IMAGE_EDIT, m_ballImage);
-      AttachItem(IDC_BALL_DECAL_EDIT, m_ballDecal);
 
       m_bamHeadtracking.SetCheck(settings.GetPlayer_BAMHeadTracking() ? BST_CHECKED : BST_UNCHECKED);
 
       const bool overwiteBallImage = settings.GetPlayer_OverwriteBallImage();
-      m_ballOverrideImages.SetCheck(overwiteBallImage ? BST_CHECKED : BST_UNCHECKED);
-      m_ballImage.SetWindowText(settings.GetPlayer_BallImage().c_str());
-      m_ballDecal.SetWindowText(settings.GetPlayer_DecalImage().c_str());
    }
 
    // VR section
@@ -115,7 +108,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
    }
 
-   OnCommand(IDC_OVERWRITE_BALL_IMAGE_CHECK, 0);
    return TRUE;
 }
 
@@ -132,11 +124,6 @@ void PlayerOptionsDialog::OnOK()
       settings.SetPlayer_RumbleMode(rumble, false);
 
       settings.SetPlayer_BAMHeadTracking(m_bamHeadtracking.GetCheck() == BST_CHECKED, false);
-
-      const bool overwriteEnabled = m_ballOverrideImages.GetCheck() == BST_CHECKED;
-      settings.SetPlayer_OverwriteBallImage(overwriteEnabled, false);
-      settings.SetPlayer_BallImage(overwriteEnabled ? m_ballImage.GetWindowText().GetString() : ""s, false);
-      settings.SetPlayer_DecalImage(overwriteEnabled ? m_ballDecal.GetWindowText().GetString() : ""s, false);
    }
 
    // VR section
@@ -196,41 +183,6 @@ BOOL PlayerOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          oldScaleValue = isScaleToLockbarWidth;
       }
 #endif
-      return TRUE;
-   }
-
-   case IDC_OVERWRITE_BALL_IMAGE_CHECK:
-   {
-      const bool overwiteBallImage = m_ballOverrideImages.GetCheck() == BST_CHECKED;
-      GetDlgItem(IDC_BROWSE_BALL_IMAGE).EnableWindow(overwiteBallImage ? TRUE : FALSE);
-      GetDlgItem(IDC_BROWSE_BALL_DECAL).EnableWindow(overwiteBallImage ? TRUE : FALSE);
-      m_ballImage.EnableWindow(overwiteBallImage ? TRUE : FALSE);
-      m_ballDecal.EnableWindow(overwiteBallImage ? TRUE : FALSE);
-      return TRUE;
-   }
-
-   case IDC_BROWSE_BALL_IMAGE:
-   case IDC_BROWSE_BALL_DECAL:
-   {
-      char szFileName[MAXSTRING];
-      szFileName[0] = '\0';
-      OPENFILENAME ofn = {};
-      ofn.lStructSize = sizeof(OPENFILENAME);
-      ofn.hInstance = g_app->GetInstanceHandle();
-      ofn.hwndOwner = g_pvp->GetHwnd();
-      ofn.lpstrFilter = "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0";
-      ofn.lpstrFile = szFileName;
-      ofn.nMaxFile = sizeof(szFileName);
-      ofn.lpstrDefExt = "png";
-      ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-      if (GetOpenFileName(&ofn))
-      {
-         if (LOWORD(wParam) == IDC_BALL_IMAGE_EDIT)
-            m_ballImage.SetWindowText(szFileName);
-         if (LOWORD(wParam) == IDC_BALL_DECAL_EDIT)
-            m_ballDecal.SetWindowText(szFileName);
-      }
-      SetFocus();
       return TRUE;
    }
 
