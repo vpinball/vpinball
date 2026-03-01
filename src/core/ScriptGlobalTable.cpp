@@ -404,7 +404,8 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
       path = path / MakeString(V_BSTR(&pSubDir));
    if (!DirExists(path))
       return E_FAIL;
-   *pVal = SysAllocStringLen(path.wstring().data(), static_cast<UINT>(path.wstring().length()));
+   path /= "";
+   *pVal = MakeWideBSTR(path.string());
    return S_OK;
 }
 
