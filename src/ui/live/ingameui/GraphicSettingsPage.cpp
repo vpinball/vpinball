@@ -449,6 +449,42 @@ void GraphicSettingsPage::BuildPage()
       Settings::m_propPlayer_BallTrailStrength, 1.f, "%4.2f"s, //
       [this]() { return m_player->m_renderer->m_ballTrailStrength; }, //
       [this](float, float v) { m_player->m_renderer->m_ballTrailStrength = v; }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_OverwriteBallImage, //
+      [this]() { return m_player->m_renderer->m_overwriteBallImages; }, //
+      [this](bool v) { 
+         m_player->m_renderer->m_overwriteBallImages = v;
+         if (m_player->m_renderer->m_overwriteBallImages)
+         {
+            m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_BallImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
+            m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_DecalImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
+         }
+         BuildPage();
+      }));
+
+   if (m_player->m_renderer->m_overwriteBallImages)
+   {
+      // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_BallImage, //
+         [this]() { return m_player->m_ptable->m_settings.GetPlayer_BallImage(); }, //
+         [this](const string&, const string& v)
+         {
+            m_player->m_ptable->m_settings.SetPlayer_BallImage(v, false);
+            m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         }));
+
+      // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_DecalImage, //
+         [this]() { return m_player->m_ptable->m_settings.GetPlayer_DecalImage(); }, //
+         [this](const string&, const string& v)
+         {
+            m_player->m_ptable->m_settings.SetPlayer_DecalImage(v, false);
+            m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         }));
+   }
 }
 
 }

@@ -18,9 +18,6 @@ private:
    CToolTip m_tooltip;
 
    CButton m_bamHeadtracking; // TODO move to plugin
-   CButton m_ballOverrideImages;
-   CEdit m_ballImage;
-   CEdit m_ballDecal;
 
    bool oldScaleValue = false;
    float scaleRelative = 1.0f;
