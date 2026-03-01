@@ -12,24 +12,6 @@ PlayerOptionsDialog::PlayerOptionsDialog()
 
 void PlayerOptionsDialog::AddToolTip(const CWnd& wnd, const char* const tip) const { m_tooltip.AddTool(wnd, tip); }
 
-void PlayerOptionsDialog::AddStringDOF(const string& name, const int idc) const
-{
-   const int selected = g_app->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("Controller"s, name).value());
-   const HWND hwnd = GetDlgItem(idc).GetHwnd();
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Sound FX");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "DOF");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both");
-   ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-}
-
-void PlayerOptionsDialog::SetDOFValue(int nID, const string& name) const
-{
-   LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
-   if (selected == LB_ERR)
-      selected = 2; // assume both as standard
-   g_app->m_settings.Set(Settings::GetRegistry().GetPropertyId("Controller"s, name).value(), (int)selected, false);
-}
-
 BOOL PlayerOptionsDialog::OnInitDialog()
 {
    m_tooltip.Create(GetHwnd());
@@ -41,8 +23,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
    {
       bool on = g_app->m_settings.GetPlayer_EnableCameraModeFlyAround();
       SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-      on = g_app->m_settings.GetController_ForceDisableB2S();
-      SendDlgItemMessage(IDC_DOF_FORCEDISABLE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
       const int rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
       const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
       ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Off");
@@ -135,19 +115,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
    }
 
-   // Direct Output Framework
-   {
-      AddStringDOF("DOFContactors"s, IDC_DOF_CONTACTORS);
-      AddStringDOF("DOFKnocker"s, IDC_DOF_KNOCKER);
-      AddStringDOF("DOFChimes"s, IDC_DOF_CHIMES);
-      AddStringDOF("DOFBell"s, IDC_DOF_BELL);
-      AddStringDOF("DOFGear"s, IDC_DOF_GEAR);
-      AddStringDOF("DOFShaker"s, IDC_DOF_SHAKER);
-      AddStringDOF("DOFFlippers"s, IDC_DOF_FLIPPERS);
-      AddStringDOF("DOFTargets"s, IDC_DOF_TARGETS);
-      AddStringDOF("DOFDropTargets"s, IDC_DOF_DROPTARGETS);
-   }
-
    OnCommand(IDC_OVERWRITE_BALL_IMAGE_CHECK, 0);
    return TRUE;
 }
@@ -160,9 +127,6 @@ void PlayerOptionsDialog::OnOK()
    {
       size_t selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
       settings.SetPlayer_EnableCameraModeFlyAround(selected != 0, false);
-
-      selected = IsDlgButtonChecked(IDC_DOF_FORCEDISABLE);
-      settings.SetController_ForceDisableB2S(selected != 0, false);
 
       const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
       settings.SetPlayer_RumbleMode(rumble, false);
@@ -201,19 +165,6 @@ void PlayerOptionsDialog::OnOK()
 
       selected = IsDlgButtonChecked(IDC_CAP_PUP) != 0;
       settings.SetPlayer_CapturePUP(selected, false);
-   }
-
-   // Direct Output Framework
-   {
-      SetDOFValue(IDC_DOF_CONTACTORS, "DOFContactors"s);
-      SetDOFValue(IDC_DOF_KNOCKER, "DOFKnocker"s);
-      SetDOFValue(IDC_DOF_CHIMES, "DOFChimes"s);
-      SetDOFValue(IDC_DOF_BELL, "DOFBell"s);
-      SetDOFValue(IDC_DOF_GEAR, "DOFGear"s);
-      SetDOFValue(IDC_DOF_SHAKER, "DOFShaker"s);
-      SetDOFValue(IDC_DOF_FLIPPERS, "DOFFlippers"s);
-      SetDOFValue(IDC_DOF_TARGETS, "DOFTargets"s);
-      SetDOFValue(IDC_DOF_DROPTARGETS, "DOFDropTargets"s);
    }
 
    settings.Save();

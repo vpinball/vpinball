@@ -901,16 +901,6 @@
 #define IDC_MATERIAL_COMBO4             734
 #define IDC_RING_VISIBLE                735
 #define IDC_SKIRT_VISIBLE               736
-#define IDC_DOF_CONTACTORS              737
-#define IDC_DOF_KNOCKER                 738
-#define IDC_DOF_CHIMES                  739
-#define IDC_DOF_BELL                    740
-#define IDC_DOF_GEAR                    741
-#define IDC_DOF_SHAKER                  742
-#define IDC_DOF_FLIPPERS                743
-#define IDC_DOF_TARGETS                 744
-#define IDC_DOF_DROPTARGETS             745
-#define IDC_DOF_FORCEDISABLE            746
 #define IDC_ASPECT_RATIO_GROUP          756
 #define IDC_MATERIALCOMBO               757
 #define IDC_BUTTON2                     765
