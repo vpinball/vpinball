@@ -44,14 +44,11 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    case FID(NAME):
-   {
       //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
-      WCHAR tmp[MAXNAMEBUFFER+1];
-      pbr->GetWideString(tmp, MAXNAMEBUFFER+1);
-      memcpy(m_wzName, tmp, (MAXNAMEBUFFER-1)*sizeof(WCHAR));
-      m_wzName[MAXNAMEBUFFER-1] = L'\0';
+      pbr->GetWideString(m_wzName);
+      if (m_wzName.length() >= MAXNAMEBUFFER)
+         m_wzName.erase(MAXNAMEBUFFER - 1);
       break;
-   }
    case FID(EVNT): pbr->GetBool(m_fireEvents); break;
    case FID(SSNG): pbr->GetBool(m_stopSingleEvents); break;
    case FID(GREL): pbr->GetBool(m_groupElements); break;

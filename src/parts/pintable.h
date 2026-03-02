@@ -193,7 +193,7 @@ public:
 
    STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
 
-   const WCHAR *get_Name() const final;
+   const wstring& get_Name() const final;
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ UserDefaultOnOff *pVal);
@@ -464,9 +464,10 @@ public:
    void RemoveCollection(Collection *collection);
    void RenameCollection(Collection *collection, const wstring &newName);
    bool IsNameUnique(const wstring &wzName) const;
-   void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
-   void GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
-   void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
+   void GetUniqueName(const ItemTypeEnum type, wstring& wzUniqueName) const;
+   void GetUniqueNamePasting(const int type, wstring &wzUniqueName) const;
+   wstring GetUniqueName(const wstring &wzRoot) const;
+
 private:
    ankerl::unordered_dense::map<wstring, IEditable *> m_scriptableNames;
    vector<IEditable *> m_vedit;
@@ -791,7 +792,7 @@ public:
    float GetPlayfieldSlope() const;
    float GetPlayfieldOverridenSlope() const;
 
-   const WCHAR *GetCollectionNameByElement(const ISelect *const element) const;
+   const wstring& GetCollectionNameByElement(const ISelect *const element) const;
    void RefreshProperties();
 
    void SetNotesText(const string &text)

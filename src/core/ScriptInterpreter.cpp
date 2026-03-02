@@ -167,7 +167,7 @@ void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
          RemoveItem(editable->GetScriptable());
 }
 
-void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bool global)
+void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const bool global)
 {
    if (auto it = m_vcvd.find(name); it != m_vcvd.end())
    {
@@ -190,7 +190,7 @@ void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bo
    if (global)
       flags |= SCRIPTITEM_GLOBALMEMBERS;
    if (m_pScript != nullptr)
-      m_pScript->AddNamedItem(name, flags);
+      m_pScript->AddNamedItem(name.c_str(), flags);
 }
 
 void ScriptInterpreter::RemoveItem(IScriptable *const piscript)

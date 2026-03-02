@@ -17,14 +17,13 @@
 #include "serial.h"
 static serial Serial;
 
-
 ScriptGlobalTable::~ScriptGlobalTable()
 {
 }
 
 void ScriptGlobalTable::Init(PinTable *pt)
 {
-   m_pt = pt;
+   m_pt = pt;   
 }
 
 STDMETHODIMP ScriptGlobalTable::BeginModal()
@@ -151,14 +150,14 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
    return S_OK;
 }
 
-const WCHAR *ScriptGlobalTable::get_Name() const
+const wstring& ScriptGlobalTable::get_Name() const
 {
-   return L"Global";
+   return m_wzName;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocString(L"Global");
+   *pVal = SysAllocString(m_wzName.c_str());
    return S_OK;
 }
 
@@ -1031,7 +1030,7 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 
    for (IEditable *const pie : m_pt->GetParts())
    {
-      if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
+      if (wcscmp(name, pie->GetScriptable()->m_wzName.c_str()) == 0)
       {
          IDispatch * const id = pie->GetISelect()->GetDispatch();
          id->AddRef();

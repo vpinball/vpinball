@@ -907,7 +907,7 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(RTHK): //!! deprecated, remove
    {
       int rt;

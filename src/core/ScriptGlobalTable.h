@@ -99,7 +99,7 @@ public:
    STDMETHOD(NudgeSensorStatus)(VARIANT *XNudge, VARIANT *YNudge);
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
-   const WCHAR *get_Name() const final;
+   const wstring& get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
@@ -137,6 +137,7 @@ public:
 
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
+   ScriptGlobalTable() { m_wzName = L"Global"; }
    void Init(PinTable *pt);
    ~ScriptGlobalTable();
 

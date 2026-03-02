@@ -3,10 +3,10 @@
 class IScriptable
 {
 public:
-   IScriptable() { m_wzName[0] = '\0'; }
+   IScriptable() { }
 
-   STDMETHOD(get_Name)(BSTR *pVal) = 0; // fails for Decals, returns m_wzName or something custom for everything else
-   virtual const WCHAR *get_Name() const = 0; // dto (and returns "Decal" for Decals, so always non-nullptr returned), but without going through BSTR conversion (necessary for COM)
+   STDMETHOD(get_Name)(BSTR *pVal) = 0; // returns m_wzName
+   virtual const wstring& get_Name() const = 0; // dto (always non-nullptr returned), but without going through BSTR conversion (necessary for COM)
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;
    virtual ISelect *GetISelect() = 0;
@@ -15,5 +15,5 @@ public:
    vector<wstring> GetMethodNames();
    vector<wstring> GetEventNames();
 
-   WCHAR m_wzName[MAXNAMEBUFFER];
+   wstring m_wzName;
 };

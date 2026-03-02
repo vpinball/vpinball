@@ -132,11 +132,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 Collection * const pcol = (Collection *)lvitem.lParam;
                 wstring newName = MakeWString(pinfo->item.pszText);
                 if (!pt->m_table->IsNameUnique(newName))
-                {
-                   WCHAR uniqueName[std::size(pcol->m_wzName)];
-                   pt->m_table->GetUniqueName(newName, uniqueName, std::size(pcol->m_wzName));
-                   newName = uniqueName;
-                }
+                   newName = pt->m_table->GetUniqueName(newName);
                 pt->m_table->RenameCollection(pcol, newName);
                 if (hListHwnd)
                    ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, MakeString(pcol->m_wzName).c_str());
@@ -317,7 +313,7 @@ CollectionDialog::CollectionDialog(CollectionDialogStruct &pcds) : CDialog(IDD_C
 BOOL CollectionDialog::OnInitDialog()
 {
     Collection * const pcol = pCurCollection.pcol;
-    SetWindowTextW(GetDlgItem(IDC_NAME), pcol->m_wzName);
+    SetWindowTextW(GetDlgItem(IDC_NAME), pcol->m_wzName.c_str());
 
     SendDlgItemMessage(IDC_FIRE, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
     SendDlgItemMessage(IDC_SUPPRESS, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -333,7 +329,7 @@ BOOL CollectionDialog::OnInitDialog()
         IScriptable * const piscript = piedit->GetScriptable();
         if (piscript)
         {
-            char * const szT = MakeChar(piscript->m_wzName);
+            char * const szT = MakeChar(piscript->m_wzName.c_str());
             const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
             delete [] szT;
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
@@ -358,7 +354,7 @@ BOOL CollectionDialog::OnInitDialog()
         if ((l == pcol->m_visel.size()) && piscript)
         //if (!piedit->m_pcollection)
         {
-            char * const szT = MakeChar(piscript->m_wzName);
+            char * const szT = MakeChar(piscript->m_wzName.c_str());
             const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
             delete [] szT;
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
@@ -491,11 +487,7 @@ void CollectionDialog::OnOK()
 
     wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString());
     if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
-    {
-       WCHAR uniqueName[std::size(pCurCollection.pcol->m_wzName)];
-       pCurCollection.ppt->m_table->GetUniqueName(newName, uniqueName, std::size(pCurCollection.pcol->m_wzName));
-       newName = uniqueName;
-    }
+       newName = pCurCollection.ppt->m_table->GetUniqueName(newName);
 
     pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
 

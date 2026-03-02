@@ -18,7 +18,7 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 
 Ball::Ball() : m_id(GetNextBallID())
 {
-   wcsncpy_s(m_wzName, std::size(m_wzName), (L"LiveBall" + std::to_wstring(m_id)).c_str()); // Default name
+   m_wzName = L"LiveBall" + std::to_wstring(m_id); // Default name
    m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
    m_hitBall.m_d.m_radius = 25.f;
    m_hitBall.m_d.m_mass = 1.f;
@@ -168,7 +168,7 @@ bool Ball::LoadToken(const int id, BiffReader *const pbr)
    case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

@@ -85,7 +85,7 @@ void SearchSelectDialog::Update()
    for (int i = 0; i < m_curTable->m_table->m_vcollection.size(); i++)
    {
       CComObject<Collection> *const pcol = m_curTable->m_table->m_vcollection.ElementAt(i);
-      char * const szT = MakeChar(pcol->m_wzName);
+      char *const szT = MakeChar(pcol->m_wzName.c_str());
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;
