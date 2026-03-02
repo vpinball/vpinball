@@ -361,8 +361,7 @@ void PinTable::AddPart(IEditable *const part)
    m_vedit.push_back(part);
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
-      //assert(!scriptable->m_wzName.empty());
-      assert(scriptable->m_wzName[0] != '\0');
+      assert(!scriptable->m_wzName.empty());
       assert(m_scriptableNames.find(scriptable->m_wzName) == m_scriptableNames.end());
       m_scriptableNames[scriptable->m_wzName] = part;
       if (m_tableEditor)
@@ -399,7 +398,7 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
    m_scriptableNames.erase(it);
    assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
    m_scriptableNames[newName] = part;
-   wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
+   scriptable->m_wzName = newName;
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(scriptable, newName);
 }
@@ -483,7 +482,7 @@ void PinTable::RenameCollection(Collection *collection, const wstring &newName)
    m_scriptableNames.erase(it);
    assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
    m_scriptableNames[newName] = nullptr;
-   wcsncpy_s(collection->m_wzName, std::size(collection->m_wzName), newName.c_str());
+   collection->m_wzName = newName;
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(collection, newName);
 }
@@ -493,29 +492,29 @@ bool PinTable::IsNameUnique(const wstring &name) const
    return m_scriptableNames.find(name) == m_scriptableNames.end();
 }
 
-void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
+void PinTable::GetUniqueName(const ItemTypeEnum type, wstring &wzUniqueName) const
 {
    WCHAR wzRoot[256];
    GetTypeNameForType(type, wzRoot);
-   GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
+   wzUniqueName = GetUniqueName(wzRoot);
 }
 
-void PinTable::GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
+wstring PinTable::GetUniqueName(const wstring &wzRoot) const
 {
    int suffix = 1;
    wstring wzName;
    do
    {
-      wzName = (wzRoot.length() > wzUniqueName_maxlength - 3 ? wzRoot.substr(0, wzUniqueName_maxlength - 3) : wzRoot)
+      wzName = (wzRoot.length() > MAXNAMEBUFFER - 3 ? wzRoot.substr(0, MAXNAMEBUFFER - 3) : wzRoot)
          + ((suffix <  10) ? (L"00" + std::to_wstring(suffix))
          :  (suffix < 100) ? (L"0"  + std::to_wstring(suffix))
          :                            std::to_wstring(suffix));
       suffix++;
    } while (!IsNameUnique(wzName) && suffix < 1000);
-   wcsncpy_s(wzUniqueName, wzUniqueName_maxlength, wzName.c_str());
+   return wzName;
 }
 
-void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const size_t wzUniqueName_maxlength) const
+void PinTable::GetUniqueNamePasting(const int type, wstring& wzUniqueName) const
 {
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
    //otherwise add/increase the suffix until we find a name that's not used yet
@@ -526,7 +525,7 @@ void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, 
       size_t lastNonDigit = input.length();
       while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
          --lastNonDigit;
-      GetUniqueName(input.substr(0, lastNonDigit), wzUniqueName, wzUniqueName_maxlength);
+      wzUniqueName = GetUniqueName(input.substr(0, lastNonDigit));
    }
 }
 
@@ -621,7 +620,7 @@ PinTable* PinTable::CopyForPlay()
    dst->m_toneMapper = src->m_toneMapper;
    dst->m_exposure = src->m_exposure;
    dst->m_bloom_strength = src->m_bloom_strength;
-   memcpy(dst->m_wzName, src->m_wzName, sizeof(src->m_wzName));
+   dst->m_wzName = src->m_wzName;
 
    dst->m_Light[0].emission = src->m_Light[0].emission;
 
@@ -701,7 +700,7 @@ PinTable* PinTable::CopyForPlay()
       CComObject<Collection> *pcol;
       CComObject<Collection>::CreateInstance(&pcol);
       pcol->AddRef();
-      memcpy(pcol->m_wzName, m_vcollection[i].m_wzName, sizeof(pcol->m_wzName));
+      pcol->m_wzName = m_vcollection[i].m_wzName;
       pcol->m_fireEvents = m_vcollection[i].m_fireEvents;
       pcol->m_stopSingleEvents = m_vcollection[i].m_stopSingleEvents;
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
@@ -1609,9 +1608,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      if (piedit->GetScriptable() && !IsNameUnique(piedit->GetScriptable()->m_wzName))
                      {
                         PLOGE << "Invalid file: parts do not have unique names.";
-                        WCHAR uniqueName[MAXNAMEBUFFER];
-                        GetUniqueName(piedit->GetScriptable()->m_wzName, uniqueName, std::size(piedit->GetScriptable()->m_wzName));
-                        piedit->SetName(MakeString(uniqueName));
+                        piedit->SetName(MakeString(GetUniqueName(piedit->GetScriptable()->m_wzName)));
                      }
                      
                      AddPart(piedit);
@@ -2209,7 +2206,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIMG): pbr->GetInt(m_loadTemp[2]); break;
    case FID(SFNT): pbr->GetInt(m_loadTemp[3]); break;
    case FID(SCOL): pbr->GetInt(m_loadTemp[4]); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
@@ -2667,7 +2664,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
    CComObject<Collection>::CreateInstance(&pcol);
    pcol->AddRef();
 
-   GetUniqueName(LocalStringW(IDS_COLLECTION).m_szbuffer, pcol->m_wzName, std::size(pcol->m_wzName));
+   pcol->m_wzName = GetUniqueName(LocalStringW(IDS_COLLECTION).m_szbuffer);
 
    if (fromSelection && !MultiSelIsEmpty())
    {
@@ -2679,12 +2676,9 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
          {
             if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
             {
-               if (piedit->GetScriptable()) // check for scriptable because can't add decals to a collection - they have no name
-               {
-                  piedit->m_vCollection.push_back(pcol);
-                  piedit->m_viCollection.push_back(pcol->m_visel.size());
-                  pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
-               }
+               piedit->m_vCollection.push_back(pcol);
+               piedit->m_viCollection.push_back(pcol->m_visel.size());
+               pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
             }
          }
       }
@@ -2703,7 +2697,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 {
 #ifndef __STANDALONE__
-   char * const szT = MakeChar(pcol->m_wzName);
+   char *const szT = MakeChar(pcol->m_wzName.c_str());
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -2983,14 +2977,14 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
    return false;
 }
 
-const WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element) const
+const wstring& PinTable::GetCollectionNameByElement(const ISelect * const element) const
 {
     for (int i = 0; i < m_vcollection.size(); i++)
         for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
             if (element == m_vcollection[i].m_visel.ElementAt(t))
                 return m_vcollection[i].m_wzName;
-
-    return nullptr;
+    static wstring emptyString;
+    return emptyString;
 }
 
 Vertex2D PinTable::EvaluateGlassHeight() const
@@ -4037,7 +4031,7 @@ void PinTable::UseTool(int x, int y, int tool)
    if (pie)
    {
       if (auto scriptable = pie->GetScriptable(); scriptable)
-         GetUniqueName(type, scriptable->m_wzName, std::size(scriptable->m_wzName));
+         GetUniqueName(type, scriptable->m_wzName);
       pie->m_backglass = m_vpinball->m_backglassView;
       AddPart(pie);
       pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
@@ -4101,14 +4095,14 @@ STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
    return S_OK;
 }
 
-const WCHAR *PinTable::get_Name() const
+const wstring& PinTable::get_Name() const
 {
    return m_wzName;
 }
 
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocString(m_wzName);
+   *pVal = SysAllocString(m_wzName.c_str());
    return S_OK;
 }
 
@@ -4910,7 +4904,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
          else
          {
             memset(rgstr[ivar + 1], 0, cwch);
-            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName, sizeof(m_vcollection[(int)ivar].m_wzName));
+            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName.c_str(), sizeof(m_vcollection[(int)ivar].m_wzName));
          }
          rgdw[ivar + 1] = (uint32_t)ivar;
       }
@@ -5093,7 +5087,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          if (wzDst == nullptr)
             ShowError("DISPID_Collection alloc failed (2)");
          else
-            memcpy(wzDst, m_vcollection[dwCookie].m_wzName, cwch - sizeof(DWORD)); //!! see above
+            memcpy(wzDst, m_vcollection[dwCookie].m_wzName.c_str(), cwch - sizeof(DWORD)); //!! see above
       }
    }
    break;

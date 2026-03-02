@@ -48,23 +48,14 @@ public:
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-// declare and implement some methods for an IEditable which does not support scripting (only used for legacy, deprecated Decal editable)
-#define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
-	virtual EventProxyBase *GetEventProxyBase() {return nullptr;} \
-	inline IFireEvents *GetIFireEvents() {return nullptr;} \
-	virtual IScriptable *GetScriptable() {return nullptr;} \
-	virtual const IScriptable *GetScriptable() const {return nullptr;}
-
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
-	virtual const WCHAR *get_Name() const { return m_wzName; } \
+	virtual const wstring& get_Name() const { return m_wzName; } \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 	{ \
-		*pVal = SysAllocString(m_wzName); \
+		*pVal = SysAllocString(m_wzName.c_str()); \
 		return S_OK; \
 	} \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(MakeString(newVal)); return S_OK; } \
@@ -158,7 +149,7 @@ public:
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
    type *dst = type::COMCreate(); \
    dst->Init(table, 0.f, 0.f, false, true); \
-   memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
+   dst->m_wzName = m_wzName; \
    dst->m_isVisible = m_isVisible; \
    dst->m_backglass = m_backglass; \
    dst->m_locked = m_locked; \

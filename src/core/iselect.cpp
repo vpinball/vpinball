@@ -219,8 +219,8 @@ static void SetPartGroup(ISelect* const me, string layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
-      if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
-         layerName.erase(std::size(me->GetPTable()->m_wzName) - 1);
+      if (layerName.length() >= MAXNAMEBUFFER)
+         layerName.erase(MAXNAMEBUFFER - 1);
       const wstring newName = MakeWString(layerName);
       const auto partGroupF = std::ranges::find_if(me->GetPTable()->GetParts(),
          [&newName](const IEditable *editable) {
@@ -231,7 +231,7 @@ static void SetPartGroup(ISelect* const me, string layerName)
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
          if (newGroup)
          {
-            wcsncpy_s(newGroup->m_wzName, std::size(newGroup->m_wzName), newName.c_str());
+            newGroup->m_wzName = newName;
             me->GetPTable()->AddPart(newGroup);
             me->GetIEditable()->SetPartGroup(newGroup);
          }

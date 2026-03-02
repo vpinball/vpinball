@@ -501,7 +501,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
 void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
-   const WCHAR* name = piscript->get_Name();
+   const wstring& name = piscript->get_Name();
 
    const int idx = m_vcvd.GetSortedIndex(name);
 
@@ -516,7 +516,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
    // Remove item from dropdown
 #ifndef __STANDALONE__
-   char * const szT = MakeChar(name);
+   char* const szT = MakeChar(name.c_str());
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
    delete [] szT;
@@ -528,7 +528,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
 #ifndef __STANDALONE__
-   char * const szT = MakeChar(piscript->get_Name());
+   char* const szT = MakeChar(piscript->get_Name().c_str());
 
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    if (index != CB_ERR)
@@ -547,7 +547,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
-   const WCHAR* name = piscript->get_Name();
+   const wstring& name = piscript->get_Name();
 
    const int idx = m_vcvd.GetSortedIndex(name);
    if (idx == -1)
@@ -565,7 +565,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
 
    // Remove old name from dropdown and replace it with the new
 #ifndef __STANDALONE__
-   char * szT = MakeChar(name);
+   char* szT = MakeChar(name.c_str());
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
    delete [] szT;

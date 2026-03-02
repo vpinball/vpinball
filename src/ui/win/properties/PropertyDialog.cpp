@@ -532,7 +532,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         combo.AddString(_T("<None>"));
         for (int i = 0; i < ptable->m_vcollection.size(); i++)
         {
-            char * const szT = MakeChar(ptable->m_vcollection[i].m_wzName);
+            char *const szT = MakeChar(ptable->m_vcollection[i].m_wzName.c_str());
             combo.AddString(szT);
             delete [] szT;
         }
@@ -625,8 +625,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
-        const string collection = (wzName != nullptr) ? MakeString(wzName) : string();
+        const wstring& wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
+        const string collection = MakeString(wzName);
 
         BSTR bstr;
         psel->GetTypeName(&bstr);

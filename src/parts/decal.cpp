@@ -31,6 +31,8 @@ Decal *Decal::CopyForPlay(PinTable *live_table) const
 HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
+   m_wzName = L"Decal"s;
+   m_ptable->GetUniqueName(eItemDecal, m_wzName);
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -313,6 +315,11 @@ HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH
    m_ptable = ptable;
 
    br.Load();
+   if (m_wzName.empty())
+   {
+      m_wzName = L"Decal"s;
+      m_ptable->GetUniqueName(eItemDecal, m_wzName);
+   }
    return S_OK;
 }
 
@@ -327,7 +334,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(TEXT): pbr->GetString(m_d.m_text); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;

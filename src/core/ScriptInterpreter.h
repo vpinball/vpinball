@@ -27,7 +27,7 @@ public:
    void Start(PinTable *table);
    void Stop(PinTable *table, bool interruptDirectly = false);
    void AddItem(IScriptable *scriptable, const bool global) { AddItem(scriptable->get_Name(), scriptable->GetDispatch(), global); }
-   void AddItem(const WCHAR *name, IDispatch *dispatch, const bool global);
+   void AddItem(const wstring& name, IDispatch *dispatch, const bool global);
    void RemoveItem(IScriptable *const piscript);
    void Evaluate(const string &script, bool isDebugStatement);
    bool HasError() const { return m_hasError || (m_pScript == nullptr); }
@@ -116,7 +116,10 @@ private:
    const DWORD m_compileContextCookie = 1000;
    const DWORD m_debugContextCookie = 1001;
 
-   class DebuggerModule : public CComObjectRootEx<CComSingleThreadModel>, public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>, public IScriptable
+   class DebuggerModule :
+      public CComObjectRootEx<CComSingleThreadModel>,
+      public IDispatchImpl<IVPDebug, &IID_IVPDebug, &LIBID_VPinballLib>,
+      public IScriptable
    {
 #ifdef __STANDALONE__
    public:
@@ -132,16 +135,17 @@ private:
       STDMETHOD(Print)(VARIANT *pvar) override;
 
    public:
+      DebuggerModule() { m_wzName = L"Debug"; }
       IDispatch *GetDispatch() final { return (IDispatch *)this; }
       const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
       ISelect *GetISelect() final { return nullptr; }
       const ISelect *GetISelect() const final { return nullptr; }
 
-      const WCHAR *get_Name() const final { return L"Debug"; }
+      const wstring& get_Name() const final { return m_wzName; }
       STDMETHOD(get_Name)(BSTR *pVal) override
       {
-         *pVal = SysAllocString(L"Debug");
+         *pVal = SysAllocString(m_wzName.c_str());
          return S_OK;
       }
    };

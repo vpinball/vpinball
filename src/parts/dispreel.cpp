@@ -495,7 +495,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
+   case FID(NAME): pbr->GetWideString(m_wzName); break;
    case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(RCNT):

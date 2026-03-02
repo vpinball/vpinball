@@ -24,10 +24,15 @@ public:
 class Decal :
    public IDispatchImpl<IDecal, &IID_IDecal, &LIBID_VPinballLib>,
    public CComObjectRoot,
+   public CComCoClass<Decal, &CLSID_Decal>,
+   public EventProxy<Decal, &DIID_IDecalEvents>,
+   public IConnectionPointContainerImpl<Decal>,
+   public IProvideClassInfo2Impl<&CLSID_Decal, &DIID_IDecalEvents, &LIBID_VPinballLib>,
    public ISelect,
    public IEditable,
    public Hitable,
    public IScriptable,
+   public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
@@ -35,17 +40,25 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS *const pdispparams) final;
 #endif
-   Decal() { }
+   Decal() { m_wzName = L"Decal"s; }
    virtual ~Decal();
 
    BEGIN_COM_MAP(Decal)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IDecal)
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
       COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
    END_COM_MAP()
 
-   STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+   STANDARD_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | VIEW_BACKGLASS)
+
+   BEGIN_CONNECTION_POINT_MAP(Decal)
+      CONNECTION_POINT_ENTRY(DIID_IDecalEvents)
+   END_CONNECTION_POINT_MAP()
 
    void MoveOffset(const float dx, const float dy) final { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
    void SetObjectPos() final;
@@ -55,8 +68,6 @@ public:
    float GetDepth(const Vertex3Ds &viewDir) const final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
 
-   STDMETHOD(get_Name)(BSTR *pVal) final { return E_FAIL; }
-   const WCHAR *get_Name() const final { return L"Decal"; }
    string GetFontName();
    HFONT GetFont();
 

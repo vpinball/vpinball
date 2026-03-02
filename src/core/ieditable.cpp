@@ -185,23 +185,19 @@ void IEditable::SetName(const string& name)
       return;
 
    wstring newName = MakeWString(name);
-   if (newName.length() >= std::size(scriptable->m_wzName))
-      newName.erase(std::size(scriptable->m_wzName) - 1);
+   if (newName.length() >= MAXNAMEBUFFER)
+      newName.erase(MAXNAMEBUFFER - 1);
 
    if (newName == scriptable->m_wzName)
       return;
    
    if (!pt->IsNameUnique(newName))
-   {
-      WCHAR uniqueName[std::size(scriptable->m_wzName)];
-      pt->GetUniqueName(newName, uniqueName, std::size(scriptable->m_wzName));
-      newName = uniqueName;
-   }
+      newName = pt->GetUniqueName(newName);
 
    STARTUNDO
    if (pt->HasPart(this))
       pt->RenamePart(this, newName);
    else
-      wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
+      scriptable->m_wzName = newName;
    STOPUNDO
 }
