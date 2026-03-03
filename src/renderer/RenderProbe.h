@@ -49,7 +49,7 @@ public:
    // Load/Save
    int GetSaveSize() const;
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT LoadData(IObjectReader& reader);
 
    // Rendering
    void RenderSetup(class Renderer* renderer);

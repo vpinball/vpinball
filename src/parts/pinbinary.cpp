@@ -32,28 +32,28 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
 HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
 {
    BiffReader reader(pstream, version, 0, 0);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(NAME): pbr->GetString(m_name); break;
+         case FID(NAME): m_name = reader.AsString(); break;
          case FID(PATH):
          {
             string path;
-            pbr->GetString(path);
+            path = reader.AsString();
             m_path = path;
             break;
          }
          case FID(SIZE):
          {
             int size;
-            pbr->GetInt(size);
+            size = reader.AsInt();
             m_buffer.resize(size);
             break;
          }
          // Size must come before data, otherwise our structure won't be allocated
-         case FID(DATA): pbr->GetStruct(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
+         case FID(DATA): reader.AsRaw(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
          }
          return true;
       });

@@ -221,32 +221,31 @@ public:
       return S_OK;
    }
 
-   HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+   HRESULT LoadData(IObjectReader& reader)
    {
-      BiffReader reader(pstm, version, hcrypthash, hcryptkey);
-      reader.Load(
-         [this](int tag, BiffReader* const pbr)
+      reader.AsObject(
+         [this](int tag, IObjectReader& reader)
          {
             switch (tag)
             {
-            case FID(TYPE): pbr->GetInt(&m_type); break;
-            case FID(NAME): pbr->GetString(m_name); break;
-            case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
-            case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
-            case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;
-            case FID(THCK): pbr->GetFloat(m_fThickness); break;
-            case FID(EDGE): pbr->GetFloat(m_fEdge); break;
-            case FID(EALP): pbr->GetFloat(m_fEdgeAlpha); break;
-            case FID(OPAC): pbr->GetFloat(m_fOpacity); break;
-            case FID(BASE): pbr->GetInt(m_cBase); break;
-            case FID(GLOS): pbr->GetInt(m_cGlossy); break;
-            case FID(COAT): pbr->GetInt(m_cClearcoat); break;
-            case FID(RTNT): pbr->GetInt(m_cRefractionTint); break;
-            case FID(EOPA): pbr->GetBool(m_bOpacityActive); break;
-            case FID(ELAS): pbr->GetFloat(m_fElasticity); break;
-            case FID(ELFO): pbr->GetFloat(m_fElasticityFalloff); break;
-            case FID(FRIC): pbr->GetFloat(m_fFriction); break;
-            case FID(SCAT): pbr->GetFloat(m_fScatterAngle); break;
+            case FID(TYPE): m_type = static_cast<MaterialType>(reader.AsInt()); break;
+            case FID(NAME): m_name = reader.AsString(); break;
+            case FID(WLIG): m_fWrapLighting = reader.AsFloat(); break;
+            case FID(ROUG): m_fRoughness = reader.AsFloat(); break;
+            case FID(GIML): m_fGlossyImageLerp = reader.AsFloat(); break;
+            case FID(THCK): m_fThickness = reader.AsFloat(); break;
+            case FID(EDGE): m_fEdge = reader.AsFloat(); break;
+            case FID(EALP): m_fEdgeAlpha = reader.AsFloat(); break;
+            case FID(OPAC): m_fOpacity = reader.AsFloat(); break;
+            case FID(BASE): m_cBase = reader.AsInt(); break;
+            case FID(GLOS): m_cGlossy = reader.AsInt(); break;
+            case FID(COAT): m_cClearcoat = reader.AsInt(); break;
+            case FID(RTNT): m_cRefractionTint = reader.AsInt(); break;
+            case FID(EOPA): m_bOpacityActive = reader.AsBool(); break;
+            case FID(ELAS): m_fElasticity = reader.AsFloat(); break;
+            case FID(ELFO): m_fElasticityFalloff = reader.AsFloat(); break;
+            case FID(FRIC): m_fFriction = reader.AsFloat(); break;
+            case FID(SCAT): m_fScatterAngle = reader.AsFloat(); break;
             }
             return true;
          });

@@ -1170,66 +1170,56 @@ void Surface::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Surface::Load(BiffReader &reader)
+HRESULT Surface::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-         case FID(DROP): pbr->GetBool(m_d.m_droppable); break;
-         case FID(FLIP): pbr->GetBool(m_d.m_flipbook); break;
-         case FID(ISBS): pbr->GetBool(m_d.m_isBottomSolid); break;
-         case FID(CLDW): pbr->GetBool(m_d.m_collidable); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
-         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-         case FID(SIMG): pbr->GetString(m_d.m_szSideImage); break;
-         case FID(SIMA): pbr->GetString(m_d.m_szSideMaterial); break;
-         case FID(TOMA): pbr->GetString(m_d.m_szTopMaterial); break;
-         case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-         case FID(SLMA): pbr->GetString(m_d.m_szSlingShotMaterial); break;
-         case FID(HTBT): pbr->GetFloat(m_d.m_heightbottom); break;
-         case FID(HTTP): pbr->GetFloat(m_d.m_heighttop); break;
-         case FID(INNR): pbr->GetBool(m_d.m_inner); break; //!! Deprecated, do not use anymore
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
-         case FID(SLGF): pbr->GetFloat(m_d.m_slingshotforce); break;
-         case FID(SLTH): pbr->GetFloat(m_d.m_slingshot_threshold); break;
-         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-         case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-         case FID(WFCT): pbr->GetFloat(m_d.m_friction); break;
-         case FID(WSCT): pbr->GetFloat(m_d.m_scatter); break;
-         case FID(VSBL): pbr->GetBool(m_d.m_topBottomVisible); break;
-         case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-         case FID(SLGA): pbr->GetBool(m_d.m_slingshotAnimation); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(HTEV): m_d.m_hitEvent = reader.AsBool(); break;
+         case FID(DROP): m_d.m_droppable = reader.AsBool(); break;
+         case FID(FLIP): m_d.m_flipbook = reader.AsBool(); break;
+         case FID(ISBS): m_d.m_isBottomSolid = reader.AsBool(); break;
+         case FID(CLDW): m_d.m_collidable = reader.AsBool(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(THRS): m_d.m_threshold = reader.AsFloat(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(SIMG): m_d.m_szSideImage = reader.AsString(); break;
+         case FID(SIMA): m_d.m_szSideMaterial = reader.AsString(); break;
+         case FID(TOMA): m_d.m_szTopMaterial = reader.AsString(); break;
+         case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
+         case FID(SLMA): m_d.m_szSlingShotMaterial = reader.AsString(); break;
+         case FID(HTBT): m_d.m_heightbottom = reader.AsFloat(); break;
+         case FID(HTTP): m_d.m_heighttop = reader.AsFloat(); break;
+         case FID(INNR): m_d.m_inner = reader.AsBool(); break; //!! Deprecated, do not use anymore
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(DSPT): m_d.m_displayTexture = reader.AsBool(); break;
+         case FID(SLGF): m_d.m_slingshotforce = reader.AsFloat(); break;
+         case FID(SLTH): m_d.m_slingshot_threshold = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(WFCT): m_d.m_friction = reader.AsFloat(); break;
+         case FID(WSCT): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(VSBL): m_d.m_topBottomVisible = reader.AsBool(); break;
+         case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         case FID(SLGA): m_d.m_slingshotAnimation = reader.AsBool(); break;
          case FID(DILI):
          {
             int tmp;
-            pbr->GetInt(tmp);
+            tmp = reader.AsInt();
             m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp);
             break;
          } // Pre 10.8 compatible hacky loading!
-         case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
-         case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
-         case FID(SVBL): pbr->GetBool(m_d.m_sideVisible); break;
-         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-         default:
-         {
-            if (tag == FID(DPNT))
-               LoadPointToken(pbr);
-            ISelect::LoadToken(tag, pbr);
-            break;
-         }
+         case FID(DILT): m_d.m_disableLightingTop = reader.AsFloat(); break;
+         case FID(DILB): m_d.m_disableLightingBelow = reader.AsFloat(); break;
+         case FID(SVBL): m_d.m_sideVisible = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(DPNT): LoadPointToken(reader); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

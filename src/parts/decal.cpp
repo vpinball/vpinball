@@ -304,70 +304,40 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    return S_OK;
 }
 
-HRESULT Decal::Load(BiffReader &reader)
+HRESULT Decal::Load(IObjectReader& reader)
 {
+   SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-         case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
-         case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
-         case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(TEXT): pbr->GetString(m_d.m_text); break;
-         case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
-         case FID(COLR): pbr->GetInt(m_d.m_color); break;
-         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-         case FID(SIZE): pbr->GetInt(&m_d.m_sizingtype); break;
-         case FID(VERT): pbr->GetBool(m_d.m_verticalText); break;
-         case FID(BGLS): pbr->GetBool(m_backglass); break;
+         case FID(VCEN): m_d.m_vCenter = reader.AsVector2(); break;
+         case FID(WDTH): m_d.m_width = reader.AsFloat(); break;
+         case FID(HIGH): m_d.m_height = reader.AsFloat(); break;
+         case FID(ROTA): m_d.m_rotation = reader.AsFloat(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(TEXT): m_d.m_text = reader.AsString(); break;
+         case FID(TYPE): m_d.m_decaltype = static_cast<DecalType>(reader.AsInt()); break;
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(SIZE): m_d.m_sizingtype = static_cast<SizingType>(reader.AsInt()); break;
+         case FID(VERT): m_d.m_verticalText = reader.AsBool(); break;
+         case FID(BGLS): m_backglass = reader.AsBool(); break;
          case FID(FONT):
          {
-#ifndef __STANDALONE__
-            if (!m_pIFont)
-            {
-               FONTDESC fd;
-               fd.cbSizeofstruct = sizeof(FONTDESC);
-               fd.lpstrName = (LPOLESTR)(L"Arial");
-               fd.cySize.int64 = 142500;
-               fd.sWeight = FW_NORMAL;
-               fd.sCharset = 0;
-               fd.fItalic = 0;
-               fd.fUnderline = 0;
-               fd.fStrikethrough = 0;
-               OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-            }
-
-            IPersistStream *ips;
-            m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-            ips->Load(pbr->m_pistream);
-            SAFE_RELEASE_NO_RCC(ips);
-
-#else
-            // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
-
-            unsigned char data[255];
-            pbr->ReadBytes(data, 3);
-            pbr->ReadBytes(data, 1); // Italic
-            pbr->ReadBytes(data, 2); // Weight
-            pbr->ReadBytes(data, 4); // Size
-            pbr->ReadBytes(data, 1); // nameLen
-            pbr->ReadBytes(data, data[0]); // name
-#endif
+            IObjectReader::FontDesc fd = reader.AsFontDescriptor();
+            #ifndef __STANDALONE__
+            FONTDESC oleFD = fd.ToOLEFontDesc();
+            OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
+            delete[] oleFD.lpstrName;
+            #endif
             break;
          }
-         default: ISelect::LoadToken(tag, pbr); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

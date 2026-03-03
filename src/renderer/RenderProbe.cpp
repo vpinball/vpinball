@@ -39,20 +39,19 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool s
    return S_OK;
 }
 
-HRESULT RenderProbe::LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT RenderProbe::LoadData(IObjectReader& reader)
 {
-   BiffReader reader(pstm, version, hcrypthash, hcryptkey);
-   reader.Load(
-      [this](int tag, BiffReader* const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(TYPE): pbr->GetInt(&m_type); break;
-         case FID(NAME): pbr->GetString(m_name); break;
-         case FID(RBAS): pbr->GetInt(m_roughness); break;
-         case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
-         case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
-         case FID(RLMP): pbr->GetBool(m_disableLightReflection); break;
+         case FID(TYPE): m_type = static_cast<ProbeType>(reader.AsInt()); break;
+         case FID(NAME): m_name = reader.AsString(); break;
+         case FID(RBAS): m_roughness = reader.AsInt(); break;
+         case FID(RPLA): reader.AsRaw(&m_reflection_plane, sizeof(vec4)); break;
+         case FID(RMOD): m_reflection_mode = static_cast<ReflectionMode>(reader.AsInt()); break;
+         case FID(RLMP): m_disableLightReflection = reader.AsBool(); break;
          }
          return true;
       });

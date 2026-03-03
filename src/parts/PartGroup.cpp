@@ -155,30 +155,23 @@ HRESULT PartGroup::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT PartGroup::Load(BiffReader &reader)
+HRESULT PartGroup::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader* const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         // Default properties
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(BGLS): pbr->GetBool(m_backglass); break;
-         // PartGroup properties
-         case FID(PMSK): pbr->GetInt(&m_d.m_playerModeVisibilityMask); break;
-         case FID(SPRF): pbr->GetInt(&m_d.m_spaceReference); break;
-         default: ISelect::LoadToken(tag, pbr); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_v = reader.AsVector2(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(BGLS): m_backglass = reader.AsBool(); break;
+         case FID(PMSK): m_d.m_playerModeVisibilityMask = reader.AsUInt(); break;
+         case FID(SPRF): m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt()); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

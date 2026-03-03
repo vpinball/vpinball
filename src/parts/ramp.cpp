@@ -1368,57 +1368,47 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Ramp::Load(BiffReader &reader)
+HRESULT Ramp::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(HTBT): pbr->GetFloat(m_d.m_heightbottom); break;
-         case FID(HTTP): pbr->GetFloat(m_d.m_heighttop); break;
-         case FID(WDBT): pbr->GetFloat(m_d.m_widthbottom); break;
-         case FID(WDTP): pbr->GetFloat(m_d.m_widthtop); break;
-         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
-         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-         case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
-         case FID(IMGW): pbr->GetBool(m_d.m_imageWalls); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(WLHL): pbr->GetFloat(m_d.m_leftwallheight); break;
-         case FID(WLHR): pbr->GetFloat(m_d.m_rightwallheight); break;
-         case FID(WVHL): pbr->GetFloat(m_d.m_leftwallheightvisible); break;
-         case FID(WVHR): pbr->GetFloat(m_d.m_rightwallheightvisible); break;
-         case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-         case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
-         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-         case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
-         case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
-         case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-         case FID(RVIS): pbr->GetBool(m_d.m_visible); break;
-         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-         case FID(RADB): pbr->GetFloat(m_d.m_depthBias); break;
-         case FID(RADI): pbr->GetFloat(m_d.m_wireDiameter); break;
-         case FID(RADX): pbr->GetFloat(m_d.m_wireDistanceX); break;
-         case FID(RADY): pbr->GetFloat(m_d.m_wireDistanceY); break;
-         case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-         case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-         default:
-         {
-            if (tag == FID(DPNT))
-               LoadPointToken(pbr);
-            ISelect::LoadToken(tag, pbr);
-            break;
-         }
+         case FID(PIID): reader.AsInt(); break;
+         case FID(HTBT): m_d.m_heightbottom = reader.AsFloat(); break;
+         case FID(HTTP): m_d.m_heighttop = reader.AsFloat(); break;
+         case FID(WDBT): m_d.m_widthbottom = reader.AsFloat(); break;
+         case FID(WDTP): m_d.m_widthtop = reader.AsFloat(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(TYPE): m_d.m_type = static_cast<RampType>(reader.AsInt()); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(ALGN): m_d.m_imagealignment = static_cast<RampImageAlignment>(reader.AsInt()); break;
+         case FID(IMGW): m_d.m_imageWalls = reader.AsBool(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(WLHL): m_d.m_leftwallheight = reader.AsFloat(); break;
+         case FID(WLHR): m_d.m_rightwallheight = reader.AsFloat(); break;
+         case FID(WVHL): m_d.m_leftwallheightvisible = reader.AsFloat(); break;
+         case FID(WVHR): m_d.m_rightwallheightvisible = reader.AsFloat(); break;
+         case FID(HTEV): m_d.m_hitEvent = reader.AsBool(); break;
+         case FID(THRS): m_d.m_threshold = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(RFCT): m_d.m_friction = reader.AsFloat(); break;
+         case FID(RSCT): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(CLDR): m_d.m_collidable = reader.AsBool(); break;
+         case FID(RVIS): m_d.m_visible = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(RADB): m_d.m_depthBias = reader.AsFloat(); break;
+         case FID(RADI): m_d.m_wireDiameter = reader.AsFloat(); break;
+         case FID(RADX): m_d.m_wireDistanceX = reader.AsFloat(); break;
+         case FID(RADY): m_d.m_wireDistanceY = reader.AsFloat(); break;
+         case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
+         case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         case FID(DPNT): LoadPointToken(reader); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

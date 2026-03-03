@@ -34,29 +34,21 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sa
 HRESULT Collection::LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    BiffReader reader(pstm, version, hcrypthash, hcryptkey);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
          case FID(NAME):
             //!! workaround: due to a bug in earlier versions, it can happen that the string written was one char too long
-            pbr->GetWideString(m_wzName);
+            m_wzName = reader.AsWideString();
             if (m_wzName.length() >= MAXNAMEBUFFER)
                m_wzName.erase(MAXNAMEBUFFER - 1);
             break;
-         case FID(EVNT): pbr->GetBool(m_fireEvents); break;
-         case FID(SSNG): pbr->GetBool(m_stopSingleEvents); break;
-         case FID(GREL): pbr->GetBool(m_groupElements); break;
-         case FID(ITEM):
-         {
-            //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
-            WCHAR wzT[MAXNAMEBUFFER * 2];
-            pbr->GetWideString(wzT, MAXNAMEBUFFER * 2); //!! rather truncate for these special cases for the comparison in InitPostLoad?
-
-            m_tmp_isel_name.push_back(wzT);
-            break;
-         }
+         case FID(EVNT): m_fireEvents = reader.AsBool(); break;
+         case FID(SSNG): m_stopSingleEvents = reader.AsBool(); break;
+         case FID(GREL): m_groupElements = reader.AsBool(); break;
+         case FID(ITEM): m_tmp_isel_name.push_back(reader.AsWideString()); break;
          }
          return true;
       });

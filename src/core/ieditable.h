@@ -98,7 +98,7 @@ public:
 	virtual void Uncreate() {IEditable::Uncreate();} \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
-	virtual HRESULT Load(BiffReader& partReader); \
+	virtual HRESULT Load(IObjectReader& partReader); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
 	virtual const IDispatch *GetDispatch() const {return static_cast<const IDispatch *>(this);} \
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
@@ -214,7 +214,7 @@ public:
 
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite() { }
-   virtual HRESULT Load(BiffReader& partReader) = 0;
+   virtual HRESULT Load(IObjectReader& partReader) = 0;
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
    virtual void SetDefaults(const bool fromMouseClick) = 0;

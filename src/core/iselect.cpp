@@ -215,23 +215,23 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #endif
 }
 
-bool ISelect::LoadToken(const int id, BiffReader * const pbr)
+bool ISelect::LoadToken(const int id, IObjectReader& reader)
 {
    switch(id)
    {
-      case FID(LOCK): pbr->GetBool(m_locked); break;
-      case FID(LVIS): pbr->GetBool(m_isVisible); break;
+      case FID(LOCK): m_locked = reader.AsBool(); break;
+      case FID(LVIS): m_isVisible = reader.AsBool(); break;
       case FID(LAYR): // Old layer style (limited number of unnamed layers)
       {
          int layerIndex;
-         pbr->GetInt(layerIndex);
+         layerIndex = reader.AsInt();
          m_onLoadExpectedPartGroup = (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1);
          break;
       }
       case FID(LANR): // 10.7 layers (limited number of named layers)
       {
          string layerName;
-         pbr->GetString(layerName);
+         layerName = reader.AsString();
          std::ranges::transform(
             layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
                return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
@@ -242,7 +242,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
       case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
       {
          string partGroupName;
-         pbr->GetString(partGroupName);
+         partGroupName = reader.AsString();
          m_onLoadExpectedPartGroup = partGroupName;
          break;
       }

@@ -874,75 +874,70 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Flipper::Load(BiffReader &reader)
+HRESULT Flipper::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector2(m_d.m_Center); break;
-         case FID(BASR): pbr->GetFloat(m_d.m_BaseRadius); break;
-         case FID(ENDR): pbr->GetFloat(m_d.m_EndRadius); break;
-         case FID(FLPR): pbr->GetFloat(m_d.m_FlipperRadiusMax); break;
-         //case FID(FAEO): pbr->GetFloat(m_d.m_angleEOS); break;
-         case FID(FRTN): pbr->GetFloat(m_d.m_return); break;
-         case FID(ANGS): pbr->GetFloat(m_d.m_StartAngle); break;
-         case FID(ANGE): pbr->GetFloat(m_d.m_EndAngle); break;
-         case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
-         case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-         case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_Center = reader.AsVector2(); break;
+         case FID(BASR): m_d.m_BaseRadius = reader.AsFloat(); break;
+         case FID(ENDR): m_d.m_EndRadius = reader.AsFloat(); break;
+         case FID(FLPR): m_d.m_FlipperRadiusMax = reader.AsFloat(); break;
+         //case FID(FAEO): m_d.m_angleEOS = reader.AsFloat(); break;
+         case FID(FRTN): m_d.m_return = reader.AsFloat(); break;
+         case FID(ANGS): m_d.m_StartAngle = reader.AsFloat(); break;
+         case FID(ANGE): m_d.m_EndAngle = reader.AsFloat(); break;
+         case FID(OVRP): m_d.m_OverridePhysics = reader.AsInt(); break;
+         case FID(FORC): m_d.m_mass = reader.AsFloat(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(RUMA): m_d.m_szRubberMaterial = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(RTHK): //!! deprecated, remove
          {
             int rt;
-            pbr->GetInt(rt);
+            rt = reader.AsInt();
             m_d.m_rubberthickness = (float)rt;
             break;
          }
-         case FID(RTHF): pbr->GetFloat(m_d.m_rubberthickness); break;
+         case FID(RTHF): m_d.m_rubberthickness = reader.AsFloat(); break;
          case FID(RHGT): //!! deprecated, remove
          {
             int rh;
-            pbr->GetInt(rh);
+            rh = reader.AsInt();
             m_d.m_rubberheight = (float)rh;
             break;
          }
-         case FID(RHGF): pbr->GetFloat(m_d.m_rubberheight); break;
+         case FID(RHGF): m_d.m_rubberheight = reader.AsFloat(); break;
          case FID(RWDT): //!! deprecated, remove
          {
             int rw;
-            pbr->GetInt(rw);
+            rw = reader.AsInt();
             m_d.m_rubberwidth = (float)rw;
             break;
          }
-         case FID(RWDF): pbr->GetFloat(m_d.m_rubberwidth); break;
-         case FID(FHGT): pbr->GetFloat(m_d.m_height); break;
-         case FID(STRG): pbr->GetFloat(m_d.m_strength); break;
-         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-         case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-         case FID(FRIC): pbr->GetFloat(m_d.m_friction); break;
-         case FID(RPUP): pbr->GetFloat(m_d.m_rampUp); break;
-         case FID(SCTR): pbr->GetFloat(m_d.m_scatter); break;
-         case FID(TODA): pbr->GetFloat(m_d.m_torqueDamping); break;
-         case FID(TDAA): pbr->GetFloat(m_d.m_torqueDampingAngle); break;
-         case FID(FRMN): pbr->GetFloat(m_d.m_FlipperRadiusMin); break;
-         case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-         case FID(ENBL): pbr->GetBool(m_d.m_enabled); break;
-         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-         default: ISelect::LoadToken(tag, pbr); break;
+         case FID(RWDF): m_d.m_rubberwidth = reader.AsFloat(); break;
+         case FID(FHGT): m_d.m_height = reader.AsFloat(); break;
+         case FID(STRG): m_d.m_strength = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(FRIC): m_d.m_friction = reader.AsFloat(); break;
+         case FID(RPUP): m_d.m_rampUp = reader.AsFloat(); break;
+         case FID(SCTR): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(TODA): m_d.m_torqueDamping = reader.AsFloat(); break;
+         case FID(TDAA): m_d.m_torqueDampingAngle = reader.AsFloat(); break;
+         case FID(FRMN): m_d.m_FlipperRadiusMin = reader.AsFloat(); break;
+         case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
+         case FID(ENBL): m_d.m_enabled = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

@@ -1192,12 +1192,9 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       STATSTG ss;
       pstm->Stat(&ss, STATFLAG_NONAME);
       m_pbTempScreenshot = new PinBinary();
-
       m_pbTempScreenshot->m_buffer.resize(ss.cbSize.LowPart);
-
-      BiffReader br(pstm, 0, hcrypthash, NULL);
+      BiffReader br(pstm, 0, hcrypthash, 0);
       br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
-
       pstm->Release();
    }
 
@@ -1208,14 +1205,14 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 {
    m_vCustomInfoTag.clear();
    m_vCustomInfoContent.clear();
-   BiffReader reader(pstmTags, version, hcrypthash, NULL);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   BiffReader reader(pstmTags, version, hcrypthash, 0);
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
-         if (tag== FID(CUST))
+         if (tag == FID(CUST))
          {
             string tmp;
-            pbr->GetString(tmp);
+            tmp = reader.AsString();
             m_vCustomInfoTag.push_back(std::move(tmp));
          }
          return true;
@@ -2208,140 +2205,135 @@ void PinTable::SetLoadDefaults()
    m_overridePhysicsFlipper = false;
 }
 
-HRESULT PinTable::Load(BiffReader &reader)
+HRESULT PinTable::Load(IObjectReader& reader)
 {
    SetLoadDefaults();
    memset(m_loadTemp, 0, sizeof(m_loadTemp));
    const std::filesystem::path INIFilename = GetSettingsFileName();
    const bool hasIni = !INIFilename.empty() && FileExists(INIFilename);
-   reader.Load(
-      [this, hasIni](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this, hasIni](int tag, IObjectReader &reader)
       {
-      switch (tag)
-      {
-         case FID(PIID):
+         switch (tag)
          {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(LEFT): pbr->GetFloat(m_left); break;
-         case FID(TOPX): pbr->GetFloat(m_top); break;
-         case FID(RGHT): pbr->GetFloat(m_right); break;
-         case FID(BOTM): pbr->GetFloat(m_bottom); break;
-         case FID(VSM0): pbr->GetInt(&mViewSetups[BG_DESKTOP].mMode); break;
-         case FID(ROTA): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportRotation); break;
-         case FID(LAYB): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLayback); break;
-         case FID(INCL): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLookAt); break;
-         case FID(FOVX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mFOV); break;
-         case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleX); break;
-         case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleY); break;
-         case FID(SCLZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleZ); break;
-         case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
-         case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
-         case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
-         case FID(HOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewHOfs); break;
-         case FID(VOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewVOfs); break;
-         case FID(WTZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopZOfs); break;
-         case FID(WBZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomZOfs); break;
-         case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
-         case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
-         case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
-         case FID(INCF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLookAt); break;
-         case FID(FOVF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mFOV); break;
-         case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleX); break;
-         case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleY); break;
-         case FID(SCFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleZ); break;
-         case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
-         case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
-         case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
-         case FID(HOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewHOfs); break;
-         case FID(VOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewVOfs); break;
-         case FID(WTZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopZOfs); break;
-         case FID(WBZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs); break;
-         case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
-         case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
-         case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
-         case FID(INFS): pbr->GetFloat(mViewSetups[BG_FSS].mLookAt); break;
-         case FID(FOFS): pbr->GetFloat(mViewSetups[BG_FSS].mFOV); break;
-         case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleX); break;
-         case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleY); break;
-         case FID(SCZS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleZ); break;
-         case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
-         case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
-         case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
-         case FID(HOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewHOfs); break;
-         case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
-         case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
-         case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(LEFT): m_left = reader.AsFloat(); break;
+         case FID(TOPX): m_top = reader.AsFloat(); break;
+         case FID(RGHT): m_right = reader.AsFloat(); break;
+         case FID(BOTM): m_bottom = reader.AsFloat(); break;
+         case FID(VSM0): mViewSetups[BG_DESKTOP].mMode = static_cast<ViewLayoutMode>(reader.AsInt()); break;
+         case FID(ROTA): mViewSetups[BG_DESKTOP].mViewportRotation = reader.AsFloat(); break;
+         case FID(LAYB): mViewSetups[BG_DESKTOP].mLayback = reader.AsFloat(); break;
+         case FID(INCL): mViewSetups[BG_DESKTOP].mLookAt = reader.AsFloat(); break;
+         case FID(FOVX): mViewSetups[BG_DESKTOP].mFOV = reader.AsFloat(); break;
+         case FID(SCLX): mViewSetups[BG_DESKTOP].mSceneScaleX = reader.AsFloat(); break;
+         case FID(SCLY): mViewSetups[BG_DESKTOP].mSceneScaleY = reader.AsFloat(); break;
+         case FID(SCLZ): mViewSetups[BG_DESKTOP].mSceneScaleZ = reader.AsFloat(); break;
+         case FID(XLTX): mViewSetups[BG_DESKTOP].mViewX = reader.AsFloat(); break;
+         case FID(XLTY): mViewSetups[BG_DESKTOP].mViewY = reader.AsFloat(); break;
+         case FID(XLTZ): mViewSetups[BG_DESKTOP].mViewZ = reader.AsFloat(); break;
+         case FID(HOF0): mViewSetups[BG_DESKTOP].mViewHOfs = reader.AsFloat(); break;
+         case FID(VOF0): mViewSetups[BG_DESKTOP].mViewVOfs = reader.AsFloat(); break;
+         case FID(WTZ0): mViewSetups[BG_DESKTOP].mWindowTopZOfs = reader.AsFloat(); break;
+         case FID(WBZ0): mViewSetups[BG_DESKTOP].mWindowBottomZOfs = reader.AsFloat(); break;
+         case FID(VSM1): mViewSetups[BG_FULLSCREEN].mMode = static_cast<ViewLayoutMode>(reader.AsInt()); break;
+         case FID(ROTF): mViewSetups[BG_FULLSCREEN].mViewportRotation = reader.AsFloat(); break;
+         case FID(LAYF): mViewSetups[BG_FULLSCREEN].mLayback = reader.AsFloat(); break;
+         case FID(INCF): mViewSetups[BG_FULLSCREEN].mLookAt = reader.AsFloat(); break;
+         case FID(FOVF): mViewSetups[BG_FULLSCREEN].mFOV = reader.AsFloat(); break;
+         case FID(SCFX): mViewSetups[BG_FULLSCREEN].mSceneScaleX = reader.AsFloat(); break;
+         case FID(SCFY): mViewSetups[BG_FULLSCREEN].mSceneScaleY = reader.AsFloat(); break;
+         case FID(SCFZ): mViewSetups[BG_FULLSCREEN].mSceneScaleZ = reader.AsFloat(); break;
+         case FID(XLFX): mViewSetups[BG_FULLSCREEN].mViewX = reader.AsFloat(); break;
+         case FID(XLFY): mViewSetups[BG_FULLSCREEN].mViewY = reader.AsFloat(); break;
+         case FID(XLFZ): mViewSetups[BG_FULLSCREEN].mViewZ = reader.AsFloat(); break;
+         case FID(HOF1): mViewSetups[BG_FULLSCREEN].mViewHOfs = reader.AsFloat(); break;
+         case FID(VOF1): mViewSetups[BG_FULLSCREEN].mViewVOfs = reader.AsFloat(); break;
+         case FID(WTZ1): mViewSetups[BG_FULLSCREEN].mWindowTopZOfs = reader.AsFloat(); break;
+         case FID(WBZ1): mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs = reader.AsFloat(); break;
+         case FID(VSM2): mViewSetups[BG_FSS].mMode = static_cast<ViewLayoutMode>(reader.AsInt()); break;
+         case FID(ROFS): mViewSetups[BG_FSS].mViewportRotation = reader.AsFloat(); break;
+         case FID(LAFS): mViewSetups[BG_FSS].mLayback = reader.AsFloat(); break;
+         case FID(INFS): mViewSetups[BG_FSS].mLookAt = reader.AsFloat(); break;
+         case FID(FOFS): mViewSetups[BG_FSS].mFOV = reader.AsFloat(); break;
+         case FID(SCXS): mViewSetups[BG_FSS].mSceneScaleX = reader.AsFloat(); break;
+         case FID(SCYS): mViewSetups[BG_FSS].mSceneScaleY = reader.AsFloat(); break;
+         case FID(SCZS): mViewSetups[BG_FSS].mSceneScaleZ = reader.AsFloat(); break;
+         case FID(XLXS): mViewSetups[BG_FSS].mViewX = reader.AsFloat(); break;
+         case FID(XLYS): mViewSetups[BG_FSS].mViewY = reader.AsFloat(); break;
+         case FID(XLZS): mViewSetups[BG_FSS].mViewZ = reader.AsFloat(); break;
+         case FID(HOF2): mViewSetups[BG_FSS].mViewHOfs = reader.AsFloat(); break;
+         case FID(VOF2): mViewSetups[BG_FSS].mViewVOfs = reader.AsFloat(); break;
+         case FID(WTZ2): mViewSetups[BG_FSS].mWindowTopZOfs = reader.AsFloat(); break;
+         case FID(WBZ2): mViewSetups[BG_FSS].mWindowBottomZOfs = reader.AsFloat(); break;
          case FID(EFSS):
          {
-            pbr->GetBool(m_isFSSViewModeEnabled);
+            m_isFSSViewModeEnabled = reader.AsBool();
             UpdateCurrentBGSet();
             break;
          }
-         //case FID(VERS): pbr->GetString(szVersion); break;
-         case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
-         case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
-         case FID(GAVT): pbr->GetFloat(m_Gravity); break;
-         case FID(FRCT): pbr->GetFloat(m_friction); break;
-         case FID(ELAS): pbr->GetFloat(m_elasticity); break;
-         case FID(ELFA): pbr->GetFloat(m_elasticityFalloff); break;
-         case FID(PFSC): pbr->GetFloat(m_scatter); break;
-         case FID(SCAT): pbr->GetFloat(m_defaultScatter); break;
-         case FID(NDGT): pbr->GetFloat(m_nudgeTime); break;
+         //case FID(VERS): szVersion = reader.AsString(); break;
+         case FID(ORRP): m_overridePhysics = reader.AsInt(); break;
+         case FID(ORPF): m_overridePhysicsFlipper = reader.AsBool(); break;
+         case FID(GAVT): m_Gravity = reader.AsFloat(); break;
+         case FID(FRCT): m_friction = reader.AsFloat(); break;
+         case FID(ELAS): m_elasticity = reader.AsFloat(); break;
+         case FID(ELFA): m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(PFSC): m_scatter = reader.AsFloat(); break;
+         case FID(SCAT): m_defaultScatter = reader.AsFloat(); break;
+         case FID(NDGT): m_nudgeTime = reader.AsFloat(); break;
          case FID(PHML):
          {
-            pbr->GetInt(m_PhysicsMaxLoops);
+            m_PhysicsMaxLoops = reader.AsInt();
             if (m_PhysicsMaxLoops == 0xFFFFFFFF)
                m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
             break;
          }
-         case FID(DECL): pbr->GetBool(m_renderDecals); break;
-         case FID(REEL): pbr->GetBool(m_renderEMReels); break;
-         case FID(OFFX): pbr->GetFloat(m_winEditorViewOffset.x); break;
-         case FID(OFFY): pbr->GetFloat(m_winEditorViewOffset.y); break;
-         case FID(ZOOM): pbr->GetFloat(m_winEditorZoom); break;
-         case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
-         case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
-         case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
-         case FID(GLAB): pbr->GetFloat(m_glassBottomHeight); break;
-         case FID(IMAG): pbr->GetString(m_image); break;
-         case FID(BLIM): pbr->GetString(m_ballImage); break;
-         case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
-         case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
-         case FID(SSHT): pbr->GetString(m_screenShot); break;
-         case FID(FBCK): pbr->GetBool(m_winEditorBackdrop); break;
-         case FID(SEDT): pbr->GetInt(m_loadTemp[0]); break;
-         case FID(SSND): pbr->GetInt(m_loadTemp[1]); break;
-         case FID(SIMG): pbr->GetInt(m_loadTemp[2]); break;
-         case FID(SFNT): pbr->GetInt(m_loadTemp[3]); break;
-         case FID(SCOL): pbr->GetInt(m_loadTemp[4]); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
-         case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
-         case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
-         case FID(BIMN): pbr->GetBool(m_ImageBackdropNightDay); break;
-         case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
-         case FID(EIMG): pbr->GetString(m_envImage); break;
-         case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
-         case FID(NOTX): pbr->GetString(m_notesText); break;
-         case FID(LZAM): pbr->GetInt(m_lightAmbient); break;
-         case FID(LZDI): pbr->GetInt(m_Light[0].emission); break;
-         case FID(LZHI): pbr->GetFloat(m_lightHeight); break;
-         case FID(LZRA): pbr->GetFloat(m_lightRange); break;
-         case FID(LIES): pbr->GetFloat(m_lightEmissionScale); break;
-         case FID(ENES): pbr->GetFloat(m_envEmissionScale); break;
-         case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
-         case FID(AOSC): pbr->GetFloat(m_AOScale); break;
-         case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
-         case FID(CLBH): pbr->GetFloat(m_groundToLockbarHeight); break;
+         case FID(DECL): m_renderDecals = reader.AsBool(); break;
+         case FID(REEL): m_renderEMReels = reader.AsBool(); break;
+         case FID(OFFX): m_winEditorViewOffset.x = reader.AsFloat(); break;
+         case FID(OFFY): m_winEditorViewOffset.y = reader.AsFloat(); break;
+         case FID(ZOOM): m_winEditorZoom = reader.AsFloat(); break;
+         case FID(SLPX): m_angletiltMax = reader.AsFloat(); break;
+         case FID(SLOP): m_angletiltMin = reader.AsFloat(); break;
+         case FID(GLAS): m_glassTopHeight = reader.AsFloat(); break;
+         case FID(GLAB): m_glassBottomHeight = reader.AsFloat(); break;
+         case FID(IMAG): m_image = reader.AsString(); break;
+         case FID(BLIM): m_ballImage = reader.AsString(); break;
+         case FID(BLSM): m_ballSphericalMapping = reader.AsBool(); break;
+         case FID(BLIF): m_ballImageDecal = reader.AsString(); break;
+         case FID(SSHT): m_screenShot = reader.AsString(); break;
+         case FID(FBCK): m_winEditorBackdrop = reader.AsBool(); break;
+         case FID(SEDT): m_loadTemp[0] = reader.AsInt(); break;
+         case FID(SSND): m_loadTemp[1] = reader.AsInt(); break;
+         case FID(SIMG): m_loadTemp[2] = reader.AsInt(); break;
+         case FID(SFNT): m_loadTemp[3] = reader.AsInt(); break;
+         case FID(SCOL): m_loadTemp[4] = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(BIMG): m_BG_image[0] = reader.AsString(); break;
+         case FID(BIMF): m_BG_image[1] = reader.AsString(); break;
+         case FID(BIMS): m_BG_image[2] = reader.AsString(); break;
+         case FID(BIMN): m_ImageBackdropNightDay = reader.AsBool(); break;
+         case FID(IMCG): m_imageColorGrade = reader.AsString(); break;
+         case FID(EIMG): m_envImage = reader.AsString(); break;
+         case FID(PLMA): m_playfieldMaterial = reader.AsString(); break;
+         case FID(NOTX): m_notesText = reader.AsString(); break;
+         case FID(LZAM): m_lightAmbient = reader.AsInt(); break;
+         case FID(LZDI): m_Light[0].emission = reader.AsInt(); break;
+         case FID(LZHI): m_lightHeight = reader.AsFloat(); break;
+         case FID(LZRA): m_lightRange = reader.AsFloat(); break;
+         case FID(LIES): m_lightEmissionScale = reader.AsFloat(); break;
+         case FID(ENES): m_envEmissionScale = reader.AsFloat(); break;
+         case FID(GLES): m_globalEmissionScale = reader.AsFloat(); break;
+         case FID(AOSC): m_AOScale = reader.AsFloat(); break;
+         case FID(SSSC): m_SSRScale = reader.AsFloat(); break;
+         case FID(CLBH): m_groundToLockbarHeight = reader.AsFloat(); break;
          // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-         //case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
+         //case FID(BREF): m_useReflectionForBalls = reader.AsInt(); break;
          case FID(PLST):
          {
             int tmp;
-            pbr->GetInt(tmp);
+            tmp = reader.AsInt();
             m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
             break;
          }
@@ -2349,7 +2341,7 @@ HRESULT PinTable::Load(BiffReader &reader)
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int useTrailForBalls;
-               pbr->GetInt(useTrailForBalls);
+               useTrailForBalls = reader.AsInt();
                if (useTrailForBalls != -1)
                   m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
             }
@@ -2358,17 +2350,17 @@ HRESULT PinTable::Load(BiffReader &reader)
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int ballTrailStrength;
-               pbr->GetInt(ballTrailStrength);
+               ballTrailStrength = reader.AsInt();
                m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
             }
             break;
-         case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
-         case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
+         case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
+         case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
          case FID(UAAL):
             if (hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int useAA;
-               pbr->GetInt(useAA);
+               useAA = reader.AsInt();
                if (useAA != -1)
                   m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
             }
@@ -2377,7 +2369,7 @@ HRESULT PinTable::Load(BiffReader &reader)
          {
             // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
             int useAO;
-            pbr->GetInt(useAO);
+            useAO = reader.AsInt();
             m_enableAO = useAO != 0;
          }
          break;
@@ -2385,23 +2377,23 @@ HRESULT PinTable::Load(BiffReader &reader)
          {
             // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
             int useSSR;
-            pbr->GetInt(useSSR);
+            useSSR = reader.AsInt();
             m_enableSSR = useSSR != 0;
          }
          break;
-         case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
-         case FID(EXPO): pbr->GetFloat(m_exposure); break;
+         case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
+         case FID(EXPO): m_exposure = reader.AsFloat(); break;
          case FID(UFXA):
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int fxaa;
-               pbr->GetInt(fxaa);
+               fxaa = reader.AsInt();
                if (fxaa != -1)
                   m_settings.SetPlayer_FXAA(fxaa, false);
             }
             break;
-         case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
-         case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
+         case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
+         case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
          case FID(SECB): // old protection/encryption data
          {
             struct ProtectionData
@@ -2414,67 +2406,24 @@ HRESULT PinTable::Load(BiffReader &reader)
                int32_t spare1;
                int32_t spare2;
             } protectionData;
-
-            pbr->GetStruct(&protectionData, sizeof(ProtectionData));
+            reader.AsRaw(&protectionData, sizeof(ProtectionData));
             m_script_protected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
             break;
          }
-         case FID(CODE): // if the script is protected then we pass in the proper cryptokey into the code loadstream
-         {
-            ULONG read = 0;
-            int cchar;
-            pbr->m_pistream->Read(&cchar, sizeof(int), &read);
-
-            char *szText = new char[cchar + 1];
-
-            pbr->m_pistream->Read(szText, cchar * (int)sizeof(char), &read);
-
-#ifndef __STANDALONE__
-            if (pbr->m_hcrypthash)
-               CryptHashData(pbr->m_hcrypthash, (BYTE *)szText, cchar, 0);
-
-            // if there is a valid key, then decrypt the script text (now in szText)
-            //(must be done after the hash is updated)
-            if (m_script_protected && (pbr->m_hcryptkey != 0))
-            {
-               // get the size of the data to decrypt
-               DWORD cryptlen = cchar * (int)sizeof(char);
-
-               // decrypt the script
-               CryptDecrypt(pbr->m_hcryptkey, // key to use
-                  0, // not hashing data at the same time
-                  TRUE, // last block (or only block)
-                  0, // no flags
-                  (BYTE *)szText, // buffer to decrypt
-                  &cryptlen); // size of data to decrypt
-
-               /*const int foo =*/GetLastError(); // purge any errors
-
-               // update the size of the buffer
-               cchar = cryptlen / (DWORD)sizeof(char);
-            }
-#endif
-
-            // ensure that the script is null terminated
-            szText[cchar] = '\0';
-
-            // save original script, in case an external vbs is loaded
-            m_original_table_script.resize(cchar);
-            memcpy(m_original_table_script.data(), szText, cchar);
-            m_script_text = string_from_utf8_or_iso8859_1(szText, cchar);
-            delete[] szText;
+         case FID(CODE):
+            m_original_table_script = reader.AsScript(m_script_protected); // save original script, in case an external vbs is loaded
+            m_script_text = string_from_utf8_or_iso8859_1(m_original_table_script.c_str(), m_original_table_script.size());
             break;
-         }
-         case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
-         case FID(TDFT): pbr->GetFloat(m_difficulty); break;
-         case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
-         case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
-         case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
+         case FID(CCUS): reader.AsRaw(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
+         case FID(TDFT): m_difficulty = reader.AsFloat(); break;
+         case FID(SVOL): m_TableSoundVolume = reader.AsFloat(); break;
+         case FID(BDMO): m_BallDecalMode = reader.AsBool(); break;
+         case FID(MVOL): m_TableMusicVolume = reader.AsFloat(); break;
          case FID(AVSY):
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int tableAdaptiveVSync;
-               pbr->GetInt(tableAdaptiveVSync);
+               tableAdaptiveVSync = reader.AsInt();
                if (tableAdaptiveVSync != -1)
                {
                   switch (tableAdaptiveVSync)
@@ -2503,7 +2452,7 @@ HRESULT PinTable::Load(BiffReader &reader)
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                bool overwriteGlobalDetailLevel;
-               pbr->GetBool(overwriteGlobalDetailLevel);
+               overwriteGlobalDetailLevel = reader.AsBool();
                if (!overwriteGlobalDetailLevel)
                   m_settings.ResetPlayer_AlphaRampAccuracy();
             }
@@ -2519,30 +2468,30 @@ HRESULT PinTable::Load(BiffReader &reader)
                // Now the logic is the same as all other settings:
                // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
                bool overwriteGlobalDayNight;
-               pbr->GetBool(overwriteGlobalDayNight);
+               overwriteGlobalDayNight = reader.AsBool();
                if (overwriteGlobalDayNight)
                   m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
             }
             break;
-         case FID(GDAC): pbr->GetBool(m_winEditorGrid); break;
+         case FID(GDAC): m_winEditorGrid = reader.AsBool(); break;
          // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-         // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
+         // case FID(REOP): m_reflectElementsOnPlayfield = reader.AsBool(); break;
          case FID(ARAC):
             if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
                int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
-               pbr->GetInt(userDetailLevel);
+               userDetailLevel = reader.AsInt();
                m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
             }
             break;
-         case FID(MASI): pbr->GetInt(m_numMaterials); break;
+         case FID(MASI): m_numMaterials = reader.AsInt(); break;
          case FID(MATE):
          {
             vector<SaveMaterial> mats(m_numMaterials);
-            pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial) * m_numMaterials);
-            if (pbr->m_version < 1080
-               || m_materials
-                  .empty()) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            reader.AsRaw(mats.data(), (int)sizeof(SaveMaterial) * m_numMaterials);
+            // Also loads materials for 10.8+ tables if these were saved before the new material format was added.
+            // // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            if (reader.GetVersion() < 1080 || m_materials.empty())
             {
                m_materials.reserve(m_numMaterials + m_materials.size());
                for (int i = 0; i < m_numMaterials; i++)
@@ -2569,10 +2518,9 @@ HRESULT PinTable::Load(BiffReader &reader)
          case FID(PHMA):
          {
             vector<SavePhysicsMaterial> mats(m_numMaterials);
-            pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial) * m_numMaterials);
-            if (pbr->m_version < 1080
-               || m_materials.size()
-                  == m_numMaterials) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            reader.AsRaw(mats.data(), (int)sizeof(SavePhysicsMaterial) * m_numMaterials);
+            // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            if (reader.GetVersion() < 1080 || m_materials.size() == m_numMaterials)
             {
                for (int i = 0; i < m_numMaterials; i++)
                {
@@ -2597,70 +2545,52 @@ HRESULT PinTable::Load(BiffReader &reader)
          }
          case FID(MATR):
          {
-            // Replace legacy materials with the new ones. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
-            if (pbr->m_version >= 1080 && m_materials.size() == m_numMaterials)
+            // Replace legacy materials with the new ones.
+            // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            if (reader.GetVersion() >= 1080 && m_materials.size() == m_numMaterials)
             {
                for (int i = 0; i < m_numMaterials; i++)
                   delete m_materials[i];
                m_materials.clear();
             }
-            const int record_size = pbr->GetBytesInRecordRemaining();
-            HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-            LPVOID pData = ::GlobalLock(hMem);
-            pbr->GetStruct(pData, record_size);
-            ::GlobalUnlock(hMem);
-            Material *mat = new Material();
-            CComPtr<IStream> spStream;
-#ifndef __STANDALONE__
-            const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-#else
+
+            const int record_size = reader.GetBytesInRecordRemaining();
             FastIStream fastStream;
             fastStream.m_rg = (char *)malloc(record_size);
-            memcpy(fastStream.m_rg, (char *)hMem, record_size);
+            reader.AsRaw(fastStream.m_rg, record_size);
             fastStream.m_cSize = record_size;
-            spStream.Attach(&fastStream);
-#endif
-            if (mat->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
+
+            Material *mat = new Material();
+            BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
+            if (mat->LoadData(reader) != S_OK)
             {
                assert(!"Invalid binary image file");
                delete mat;
                return false;
             }
             m_materials.push_back(mat);
-            ::GlobalFree(hMem);
-            spStream.Detach();
             break;
          }
          case FID(RPRB):
          {
-            const int record_size = pbr->GetBytesInRecordRemaining();
-            HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-            LPVOID pData = ::GlobalLock(hMem);
-            pbr->GetStruct(pData, record_size);
-            ::GlobalUnlock(hMem);
-            RenderProbe *rpb = new RenderProbe();
-            CComPtr<IStream> spStream;
-#ifndef __STANDALONE__
-            const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-#else
+            const int record_size = reader.GetBytesInRecordRemaining();
             FastIStream fastStream;
             fastStream.m_rg = (char *)malloc(record_size);
-            memcpy(fastStream.m_rg, (char *)hMem, record_size);
+            reader.AsRaw(fastStream.m_rg, record_size);
             fastStream.m_cSize = record_size;
-            spStream.Attach(&fastStream);
-#endif
-            if (rpb->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
+
+            RenderProbe *rpb = new RenderProbe();
+            BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
+            if (rpb->LoadData(reader) != S_OK)
             {
                assert(!"Invalid binary image file");
                delete rpb;
                return false;
             }
             m_vrenderprobe.push_back(rpb);
-            ::GlobalFree(hMem);
-            spStream.Detach();
             break;
          }
-         case FID(TLCK): pbr->GetInt(m_tablelocked); break;
+         case FID(TLCK): m_tablelocked = reader.AsInt(); break;
          }
          return true;
       });
