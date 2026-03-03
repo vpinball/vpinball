@@ -145,7 +145,7 @@ public:
 
    // Name of the part group, this object expects to be added to. Defined when loading a part
    // TODO move to the loading context (rename InitLoad, pass an abstract 'IPartReader' not tied to BIFF file format, set this on the PartReader to be processed by the caller
-   string m_onLoadExpectedPartGroup;
+   wstring m_onLoadExpectedPartGroup;
 
    bool m_markedForUndo = false; // Flag set when dragged to enable undo
 
