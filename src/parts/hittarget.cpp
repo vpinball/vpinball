@@ -866,12 +866,6 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT HitTarget::InitPostLoad()
-{
-   UpdateStatusBarInfo();
-   return S_OK;
-}
-
 //////////////////////////////
 // Standard methods
 //////////////////////////////

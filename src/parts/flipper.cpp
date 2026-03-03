@@ -884,6 +884,16 @@ HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHA
    m_ptable = ptable;
 
    br.Load();
+
+   if (m_d.m_height > 1000.0f)
+      m_d.m_height = 50.0f;
+   if (m_d.m_rubberheight > 1000.f)
+      m_d.m_rubberheight = 8.f;
+   if (m_d.m_rubberthickness > 0.f && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0.f)
+      m_d.m_rubberwidth = m_d.m_height - 16.0f;
+   if (m_d.m_rubberwidth > 1000.f)
+      m_d.m_rubberwidth = m_d.m_height - 16.0f;
+
    return S_OK;
 }
 
@@ -949,20 +959,6 @@ bool Flipper::LoadToken(const int id, BiffReader * const pbr)
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
-}
-
-HRESULT Flipper::InitPostLoad()
-{
-   if (m_d.m_height > 1000.0f)
-      m_d.m_height = 50.0f;
-   if (m_d.m_rubberheight > 1000.f)
-      m_d.m_rubberheight = 8.f;
-   if (m_d.m_rubberthickness > 0.f && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0.f)
-      m_d.m_rubberwidth = m_d.m_height - 16.0f;
-   if (m_d.m_rubberwidth > 1000.f)
-      m_d.m_rubberwidth = m_d.m_height - 16.0f;
-
-   return S_OK;
 }
 
 

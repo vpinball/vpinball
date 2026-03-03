@@ -493,6 +493,7 @@ HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHA
    br.Load();
 
    m_inPlayState = m_d.m_isVisible;
+   UpdateCenter();
 
    return S_OK;
 }
@@ -552,12 +553,6 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    }
    }
    return true;
-}
-
-HRESULT Flasher::InitPostLoad()
-{
-   UpdateCenter();
-   return S_OK;
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)

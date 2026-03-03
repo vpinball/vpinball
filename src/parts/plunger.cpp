@@ -936,11 +936,6 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Plunger::InitPostLoad()
-{
-   return S_OK;
-}
-
 STDMETHODIMP Plunger::PullBack()
 {
    // initiate a pull; the speed is set by our pull speed property

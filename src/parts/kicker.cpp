@@ -599,6 +599,9 @@ HRESULT Kicker::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHAS
    m_ptable = ptable;
 
    br.Load();
+
+   m_phitkickercircle = nullptr;
+
    return S_OK;
 }
 
@@ -633,13 +636,6 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
    }
    return true;
 }
-
-HRESULT Kicker::InitPostLoad()
-{
-   m_phitkickercircle = nullptr;
-   return S_OK;
-}
-
 
 STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)
 {

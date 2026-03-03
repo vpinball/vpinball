@@ -159,6 +159,8 @@ HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHA
    m_ptable = ptable;
 
    br.Load();
+
+   m_texture = nullptr;
    return S_OK;
 }
 
@@ -231,12 +233,6 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
-}
-
-HRESULT Textbox::InitPostLoad()
-{
-   m_texture = nullptr;
-   return S_OK;
 }
 
 string Textbox::GetFontName()

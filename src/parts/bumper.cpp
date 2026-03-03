@@ -826,11 +826,6 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Bumper::InitPostLoad()
-{
-   return S_OK;
-}
-
 STDMETHODIMP Bumper::get_Radius(float *pVal)
 {
    *pVal = m_d.m_radius;

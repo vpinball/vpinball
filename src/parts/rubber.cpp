@@ -813,6 +813,10 @@ HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHAS
    m_ptable = ptable;
 
    br.Load();
+
+   if (m_d.m_hitHeight == -1.0f)
+      m_d.m_hitHeight = m_d.m_height;
+
    return S_OK;
 }
 
@@ -853,14 +857,6 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
    }
    }
    return true;
-}
-
-HRESULT Rubber::InitPostLoad()
-{
-   if (m_d.m_hitHeight == -1.0f)
-      m_d.m_hitHeight = m_d.m_height;
-
-   return S_OK;
 }
 
 #ifndef __STANDALONE__

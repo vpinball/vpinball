@@ -986,12 +986,6 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Trigger::InitPostLoad()
-{
-   UpdateStatusBarInfo();
-   return S_OK;
-}
-
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
 {
    static const IID* arr[] =

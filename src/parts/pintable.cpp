@@ -1583,107 +1583,166 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             
             PLOGI << "LoadData loaded"; // For profiling
 
-            const int ctotalitems = csubobj + csounds + ctextures + cfonts;
-            feedback.AboutToProcessTable(ctotalitems);
+            feedback.AboutToProcessTable(csubobj + csounds + ctextures + cfonts);
 
+            ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+            vector<IEditable *> parts;
+            parts.resize(csubobj);
+            int nLoadedParts = 0;
             for (int i = 0; i < csubobj; i++)
             {
-               const wstring wStmName = L"GameItem" + std::to_wstring(i);
-
-               IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  ULONG read;
-                  ItemTypeEnum type;
-                  pstmItem->Read(&type, sizeof(int), &read);
-
-                  IEditable* const piedit = EditableRegistry::Create(type);
-                  if (piedit)
+               pool.enqueue(
+                  [i, &feedback, &parts, loadfileversion, pstgData, hch, hkey, this, &nLoadedParts, csubobj]
                   {
-                     hr = piedit->InitLoad(pstmItem, this, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                     const wstring wStmName = L"GameItem" + std::to_wstring(i);
+
+                     IStream *pstmItem;
+                     HRESULT hr;
+                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                        return hr;
+
+                     ULONG read;
+                     ItemTypeEnum type;
+                     pstmItem->Read(&type, sizeof(int), &read);
+
+                     IEditable *const piedit = EditableRegistry::Create(type);
+                     if (piedit == nullptr)
+                        return E_FAIL;
+
+                     piedit->GetISelect()->m_onLoadExpectedPartGroup = string();
+                     hr = piedit->InitLoad(pstmItem, this, loadfileversion, (loadfileversion < 1000) ? hch : NULL,
+                        (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
                      pstmItem->Release();
                      pstmItem = nullptr;
-                     if (FAILED(hr)) break;
+                     if (FAILED(hr))
+                        return hr;
 
-                     if (piedit->GetScriptable() && !IsNameUnique(piedit->GetScriptable()->m_wzName))
-                     {
-                        PLOGE << "Invalid file: parts do not have unique names.";
-                        piedit->SetName(MakeString(GetUniqueName(piedit->GetScriptable()->m_wzName)));
-                     }
-                     
-                     AddPart(piedit);
-
-                     //hr = piedit->InitPostLoad();
-                  }
-               }
-               feedback.ItemHasBeenProcessed(i + 1, csubobj);
+                     parts[i] = piedit;
+                     nLoadedParts++;
+                     return hr;
+                  });
             }
 
-            PLOGI << "GameItem loaded"; // For profiling
-
+            assert(m_vsound.empty());
+            m_vsound.resize(csounds);
+            int nLoadedSounds = 0;
             for (int i = 0; i < csounds; i++)
             {
-               const wstring wStmName = L"Sound" + std::to_wstring(i);
-
-               IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  VPX::Sound *pps = VPX::Sound::CreateFromStream(pstmItem, loadfileversion);
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-                  if (pps)
+               pool.enqueue(
+                  [i, &feedback, loadfileversion, pstgData, this, &nLoadedSounds, csounds]
                   {
-                     // search for duplicate names, do not load dupes
-                     for (size_t i2 = 0; i2 < m_vsound.size(); ++i2)
-                        if (m_vsound[i2]->GetName() == pps->GetName())
-                        {
-                           PLOGE << "Duplicate sound name found: " << pps->GetName() << ", not loading it!";
-                           delete pps;
-                           pps = nullptr;
-                           break;
-                        }
-                     if (pps)
-                        m_vsound.push_back(pps);
-                  }
-               }
-               feedback.SoundHasBeenProcessed(i + 1, csounds);
+                     const wstring wStmName = L"Sound" + std::to_wstring(i);
+
+                     IStream *pstmItem;
+                     HRESULT hr;
+                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                        return hr;
+
+                     VPX::Sound *pps = VPX::Sound::CreateFromStream(pstmItem, loadfileversion);
+                     pstmItem->Release();
+                     pstmItem = nullptr;
+                     m_vsound[i] = pps;
+                     nLoadedSounds++;
+                     return hr;
+                  });
             }
 
             assert(m_vimage.empty());
-            m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
+            m_vimage.resize(ctextures);
+            int nLoadedImages = 0;
+            for (int i = 0; i < ctextures; i++)
             {
-               ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
-               int count = 0;
-               for (int i = 0; i < ctextures; i++)
-               {
-                  pool.enqueue([i, &feedback, loadfileversion, pstgData, this, &count, ctextures] {
+               pool.enqueue(
+                  [i, loadfileversion, pstgData, this, &nLoadedImages, ctextures]
+                  {
                      const wstring wStmName = L"Image" + std::to_wstring(i);
 
-                     IStream* pstmItem;
+                     IStream *pstmItem;
                      HRESULT hr;
                      if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                         return hr;
 
                      m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this);
-                     feedback.ImageHasBeenProcessed(++count, ctextures);
                      pstmItem->Release();
                      pstmItem = nullptr;
+                     nLoadedImages++;
                      return hr;
                   });
-               }
-               pool.wait_until_empty();
-               pool.wait_until_nothing_in_flight();
             }
 
-            // search for duplicate names, delete dupes
+            // Wait for dispatched tasks, updating the progress bar on UI thread
+            while (pool.has_work_in_flight())
+            {
+               SDL_Delay(10);
+               feedback.ImageHasBeenProcessed(nLoadedImages, ctextures);
+               feedback.ItemHasBeenProcessed(nLoadedParts, csubobj);
+               feedback.SoundHasBeenProcessed(nLoadedSounds, csounds);
+            };
+
+            // Handle failed loading & duplicates
+            if (!parts.empty())
+               for (size_t i = 0; i < parts.size(); ++i)
+               {
+                  IEditable *part = parts[i];
+                  if (part == nullptr)
+                  {
+                     PLOGE << "Failed to load one of the table parts";
+                     parts.erase(parts.begin() + i);
+                  }
+                  else if (i < parts.size() - 1)
+                  {
+                     for (size_t i2 = i + 1; i2 < parts.size(); ++i2)
+                        if (part->GetName() == parts[i2]->GetName())
+                        {
+                           PLOGE << "Duplicate part name found: " << part->GetName() << ", dropping it!";
+                           parts.erase(parts.begin() + i2);
+                           part->Release();
+                           --i2;
+                        }
+                  }
+               }
+            if (!m_vsound.empty())
+               for (size_t i = 0; i < m_vsound.size(); ++i)
+               {
+                  const VPX::Sound *sound = m_vsound[i];
+                  if (sound == nullptr)
+                  {
+                     PLOGE << "Failed to load one of the table sounds";
+                     m_vsound.erase(m_vsound.begin() + i);
+                  }
+                  else if (i < m_vsound.size() - 1)
+                  {
+                     for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
+                        if (sound->GetName() == m_vsound[i2]->GetName())
+                        {
+                           PLOGE << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
+                           m_vsound.erase(m_vsound.begin() + i2);
+                           --i2;
+                        }
+                  }
+               }
             if (!m_vimage.empty())
-               for (size_t i = 0; i < m_vimage.size() - 1; ++i)
-                  for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
-                     if (m_vimage[i]->m_name == m_vimage[i2]->m_name && m_vimage[i]->GetFilePath() == m_vimage[i2]->GetFilePath())
-                     {
-                        m_vimage.erase(m_vimage.begin()+i2);
-                        --i2;
-                     }
+               for (size_t i = 0; i < m_vimage.size(); ++i)
+               {
+                  const Texture * image = m_vimage[i];
+                  if (image == nullptr)
+                  {
+                     PLOGE << "Failed to load one of the table images";
+                     m_vimage.erase(m_vimage.begin() + i);
+                  }
+                  else if (i < m_vimage.size() - 1)
+                  {
+                     for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
+                        if (image->m_name == m_vimage[i2]->m_name)
+                        {
+                           PLOGE << "Duplicate image name found: " << image->GetName() << ", dropping it!";
+                           m_vimage.erase(m_vimage.begin() + i2);
+                           --i2;
+                        }
+                  }
+               }
+
+            PLOGI << "Images, Sounds and Items loaded"; // For profiling
 
             for (int i = 0; i < cfonts; i++)
             {
@@ -1721,9 +1780,63 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                feedback.CollectionHasBeenProcessed(i + 1, ccollection);
             }
 
-            for (size_t i = 0; i < m_vedit.size(); i++)
-               m_vedit[i]->InitPostLoad();
+            // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
+            for (auto part : parts)
+            {
+               if (part == nullptr) // Failed to load a part
+                  continue;
+               if (const string layerName = part->GetISelect()->m_onLoadExpectedPartGroup; !layerName.empty())
+               {
+                  wstring newName = MakeWString(layerName);
+                  bool isUnique = false;
+                  while (!isUnique)
+                  {
+                     isUnique = true;
+                     for (auto p : parts)
+                        isUnique &= p->GetItemType() == eItemPartGroup || p->GetScriptable()->m_wzName != newName;
+                     for (int i = 0; i < m_vcollection.size(); i++)
+                        isUnique &= m_vcollection[i].m_wzName != newName;
+                     if (!isUnique)
+                        newName = L"Layer_"s + newName;
+                  }
 
+                  const auto partGroupF = std::ranges::find_if(m_vedit,
+                     [&newName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName); });
+                  if (partGroupF == m_vedit.end())
+                  {
+                     PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0));
+                     if (newGroup)
+                     {
+                        newGroup->m_wzName = newName;
+                        AddPart(newGroup);
+                        part->SetPartGroup(newGroup);
+                     }
+                  }
+                  else
+                  {
+                     part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
+                  }
+               }
+
+               // Decals used to not have a name, so we may have to procide an autogenerated one
+               if (part->GetScriptable()->m_wzName.empty() && part->GetItemType() == eItemDecal)
+               {
+                  part->GetScriptable()->m_wzName = L"Decal"s;
+                  GetUniqueName(eItemDecal, part->GetScriptable()->m_wzName);
+               }
+
+               if (part->GetScriptable()->m_wzName.empty() || !IsNameUnique(part->GetScriptable()->m_wzName))
+               {
+                  PLOGE << "Invalid part '" << part->GetName() << "', dropping it";
+                  part->Release();
+               }
+               else
+               {
+                  AddPart(part);
+               }
+            }
+
+            // Resolve collection parts
             for (int i = 0; i < m_vcollection.size(); i++)
                m_vcollection[i].InitPostLoad(this);
          }
@@ -1846,25 +1959,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      light->m_d.m_showBulbMesh = false;
                }
             }
-         }
-
-         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading, and keep partgroups at the beginning of the list.
-         std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
-         auto removeLegacyLayers = std::stable_partition(m_vedit.begin(), m_vedit.end(),
-            [&](IEditable *editable)
-            {
-               if (editable->GetItemType() != eItemPartGroup)
-                  return true;
-               if (!editable->GetName().starts_with("Layer_"))
-                  return true;
-               auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
-               return v != m_vedit.end();
-            });
-         vector<IEditable *> toRemove(removeLegacyLayers, m_vedit.end());
-         for (IEditable* e : toRemove)
-         {
-            RemovePart(e);
-            e->Release();
          }
 
          if (loadfileversion < 1081)
@@ -3765,8 +3859,6 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          if (peditNew)
          {
             peditNew->InitLoad(pstm, this, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
-
-            peditNew->InitPostLoad();
             peditNew->m_backglass = m_vpinball->m_backglassView;
 
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());

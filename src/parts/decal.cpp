@@ -315,11 +315,7 @@ HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH
    m_ptable = ptable;
 
    br.Load();
-   if (m_wzName.empty())
-   {
-      m_wzName = L"Decal"s;
-      m_ptable->GetUniqueName(eItemDecal, m_wzName);
-   }
+   EnsureSize();
    return S_OK;
 }
 
@@ -380,13 +376,6 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
-}
-
-HRESULT Decal::InitPostLoad()
-{
-   EnsureSize();
-
-   return S_OK;
 }
 
 void Decal::EnsureSize()

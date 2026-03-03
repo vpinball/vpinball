@@ -412,11 +412,6 @@ bool LightSeq::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT LightSeq::InitPostLoad()
-{
-   return S_OK;
-}
-
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
    *pVal = SysAllocString(m_d.m_wzCollection.c_str());

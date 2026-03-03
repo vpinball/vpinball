@@ -188,8 +188,3 @@ bool Timer::LoadToken(const int id, BiffReader * const pbr)
    }
    return true;
 }
-
-HRESULT Timer::InitPostLoad()
-{
-   return S_OK;
-}

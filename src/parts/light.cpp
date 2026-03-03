@@ -940,6 +940,16 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH
    m_inPlayState = clampLightState(m_d.m_state);
 
    br.Load();
+
+   // workaround for the old round light object
+   // after loading m_roundLight is true if an pre-VPX table was loaded
+   // init the round light to the new custom one
+   if (m_roundLight)
+   {
+      InitShape();
+      m_roundLight = false;
+   }
+
    return S_OK;
 }
 
@@ -1003,20 +1013,6 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    }
    }
    return true;
-}
-
-HRESULT Light::InitPostLoad()
-{
-   // workaround for the old round light object
-   // after loading m_roundLight is true if an pre-VPX table was loaded
-   // init the round light to the new custom one
-   if (m_roundLight)
-   {
-      InitShape();
-      m_roundLight = false;
-   }
-
-   return S_OK;
 }
 
 Vertex2D Light::GetPointCenter() const
