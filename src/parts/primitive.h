@@ -330,7 +330,6 @@ public:
 private:
    RenderDevice *m_rd = nullptr;
 
-   PinTable *m_ptable = nullptr;
    Light * m_lightmap = nullptr;
 
    bool m_useAsPlayfield = false;

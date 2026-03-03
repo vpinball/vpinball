@@ -158,8 +158,6 @@ public:
 
    FlipperData m_d;
 
-   PinTable *m_ptable = nullptr;
-
 private:
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;

@@ -2,15 +2,14 @@
 
 #include "core/stdafx.h"
 
-LightSeq *LightSeq::CopyForPlay(PinTable *live_table) const
+LightSeq *LightSeq::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq)
    return dst;
 }
 
-HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT LightSeq::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
@@ -377,15 +376,10 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT LightSeq::Load(BiffReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

@@ -322,8 +322,8 @@ void IHaveDragPoints::LoadPointToken(BiffReader *pbr)
       pdp->AddRef();
       pdp->Init(this, 0.f, 0.f, 0.f, false);
       m_vdpoint.push_back(pdp);
-      BiffReader br(pbr->m_pistream, pdp, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
-      br.Load();
+      BiffReader br(pbr->m_pistream, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
+      br.Load(pdp);
    }
 }
 

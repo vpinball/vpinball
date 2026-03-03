@@ -129,8 +129,6 @@ public:
    RampData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
 
    int m_rampVertex;

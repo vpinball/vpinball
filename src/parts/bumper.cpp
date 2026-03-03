@@ -15,15 +15,14 @@ Bumper::~Bumper()
    assert(m_rd == nullptr);
 }
 
-Bumper *Bumper::CopyForPlay(PinTable *live_table) const
+Bumper *Bumper::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Bumper, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Bumper)
    return dst;
 }
 
-HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Bumper::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -762,15 +761,10 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
 }
 
 
-HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Bumper::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

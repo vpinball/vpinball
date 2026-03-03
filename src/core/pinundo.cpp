@@ -115,7 +115,8 @@ void PinUndo::Undo(bool discard)
          pie->ClearForOverwrite();
 
          // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support unoding reparenting (yet)
-         pie->InitLoad(pstm, m_table, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+         BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+         pie->Load(reader);
          if (g_pplayer)
          {
             if (pie->GetIHitable())

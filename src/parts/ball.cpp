@@ -36,18 +36,17 @@ Ball::~Ball()
 
 #pragma region Init
 
-Ball *Ball::CopyForPlay(PinTable *live_table) const
+Ball *Ball::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Ball, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Ball)
    dst->m_hitBall.m_d.m_pos = m_hitBall.m_d.m_pos;
    dst->m_hitBall.m_d.m_mass = m_hitBall.m_d.m_mass;
    dst->m_hitBall.m_d.m_radius = m_hitBall.m_d.m_radius;
    return dst;
 }
 
-HRESULT Ball::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Ball::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_hitBall.m_d.m_pos.x = x;
    m_hitBall.m_d.m_pos.y = y;
@@ -138,15 +137,10 @@ HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Ball::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Ball::Load(BiffReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

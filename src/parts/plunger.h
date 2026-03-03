@@ -156,8 +156,6 @@ public:
    PlungerData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
 

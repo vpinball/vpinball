@@ -69,7 +69,7 @@ void ExportVBSCommand::Execute()
             IStream* pstmGame;
             if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
             {
-               BiffReader reader(pstmGame, nullptr, loadfileversion, 0, 0);
+               BiffReader reader(pstmGame, loadfileversion, 0, 0);
                reader.Load(
                   [&script](int id, BiffReader* pbr)
                   {

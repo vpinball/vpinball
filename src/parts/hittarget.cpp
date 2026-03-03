@@ -22,9 +22,9 @@ HitTarget::~HitTarget()
    assert(m_rd == nullptr);
 }
 
-HitTarget *HitTarget::CopyForPlay(PinTable *live_table) const
+HitTarget *HitTarget::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(HitTarget, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(HitTarget)
    dst->m_hitEvent = m_hitEvent;
    return dst;
 }
@@ -106,9 +106,8 @@ void HitTarget::SetMeshType(const TargetType type)
     }
 }
 
-HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT HitTarget::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(false);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
@@ -814,16 +813,10 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT HitTarget::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
+   reader.Load(this);
    UpdateStatusBarInfo();
    return S_OK;
 }

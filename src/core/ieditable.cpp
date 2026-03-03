@@ -41,10 +41,7 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
    if (m_partGroup != partGroup)
    {
       if (partGroup)
-      {
-         assert(GetPTable()->HasPart(partGroup));
          partGroup->AddRef();
-      }
       if (m_partGroup)
          m_partGroup->Release();
       m_partGroup = partGroup;
@@ -177,11 +174,7 @@ string IEditable::GetName() const
 void IEditable::SetName(const string& name)
 {
    IScriptable* scriptable = GetScriptable();
-   if (name.empty() || scriptable == nullptr || GetItemType() == eItemDecal)
-      return;
-
-   PinTable* const pt = GetPTable();
-   if (pt == nullptr)
+   if (name.empty() || scriptable == nullptr)
       return;
 
    wstring newName = MakeWString(name);
@@ -191,13 +184,20 @@ void IEditable::SetName(const string& name)
    if (newName == scriptable->m_wzName)
       return;
    
-   if (!pt->IsNameUnique(newName))
-      newName = pt->GetUniqueName(newName);
+   if (PinTable* const pt = GetPTable(); pt)
+   {
+      if (!pt->IsNameUnique(newName))
+         newName = pt->GetUniqueName(newName);
 
-   STARTUNDO
-   if (pt->HasPart(this))
-      pt->RenamePart(this, newName);
+      STARTUNDO
+      if (pt->HasPart(this))
+         pt->RenamePart(this, newName);
+      else
+         scriptable->m_wzName = newName;
+      STOPUNDO
+   }
    else
+   {
       scriptable->m_wzName = newName;
-   STOPUNDO
+   }
 }

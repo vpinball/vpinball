@@ -153,8 +153,6 @@ private:
    float   getBoxWidth() const;
    float   getBoxHeight() const;
 
-   PinTable    *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 

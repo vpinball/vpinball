@@ -112,8 +112,6 @@ private:
    void InitShape(float x, float y);
    void GenerateMesh();
 
-   PinTable *m_ptable = nullptr;
-
    TriggerHitCircle *m_ptriggerhitcircle = nullptr;
    Hit3DPoly *m_ptriggerhitpoly = nullptr;
 

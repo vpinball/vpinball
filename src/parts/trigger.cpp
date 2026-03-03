@@ -16,9 +16,9 @@ Trigger::~Trigger()
    assert(m_rd == nullptr);
 }
 
-Trigger *Trigger::CopyForPlay(PinTable *live_table) const
+Trigger *Trigger::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, m_vdpoint)
    return dst;
 }
 
@@ -142,9 +142,8 @@ void Trigger::InitShape(float x, float y)
    }
 }
 
-HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Trigger::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -941,15 +940,10 @@ void Trigger::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Trigger::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

@@ -357,7 +357,9 @@ void PinTable::RemoveInvalidReferences()
 void PinTable::AddPart(IEditable *const part)
 {
    assert(std::ranges::find(m_vedit, part) == m_vedit.end());
+   assert(part->m_ptable == nullptr);
    part->AddRef();
+   part->m_ptable = this;
    m_vedit.push_back(part);
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
@@ -373,6 +375,7 @@ void PinTable::RemovePart(IEditable *const part)
 {
    auto it2 = std::ranges::find(m_vedit, part);
    assert(it2 != m_vedit.end());
+   assert(part->m_ptable == this);
    m_vedit.erase(it2);
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
@@ -384,6 +387,7 @@ void PinTable::RemovePart(IEditable *const part)
       if (m_tableEditor)
          m_tableEditor->m_pcv->RemoveItem(scriptable);
    }
+   part->m_ptable = nullptr;
    part->Release();
 }
 
@@ -659,27 +663,27 @@ PinTable* PinTable::CopyForPlay()
       IEditable* edit_dst = nullptr;
       switch (editable->GetItemType())
       {
-      case eItemBall:      edit_dst = static_cast<Ball*>(editable)->CopyForPlay(live_table); break;
-      case eItemBumper:    edit_dst = static_cast<Bumper*>(editable)->CopyForPlay(live_table); break;
-      case eItemDecal:     edit_dst = static_cast<Decal*>(editable)->CopyForPlay(live_table); break;
-      case eItemDispReel:  edit_dst = static_cast<DispReel*>(editable)->CopyForPlay(live_table); break;
-      case eItemFlasher:   edit_dst = static_cast<Flasher*>(editable)->CopyForPlay(live_table); break;
-      case eItemFlipper:   edit_dst = static_cast<Flipper*>(editable)->CopyForPlay(live_table); break;
-      case eItemGate:      edit_dst = static_cast<Gate*>(editable)->CopyForPlay(live_table); break;
-      case eItemHitTarget: edit_dst = static_cast<HitTarget*>(editable)->CopyForPlay(live_table); break;
-      case eItemKicker:    edit_dst = static_cast<Kicker*>(editable)->CopyForPlay(live_table); break;
-      case eItemLight:     edit_dst = static_cast<Light*>(editable)->CopyForPlay(live_table); break;
-      case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(editable)->CopyForPlay(live_table); break;
-      case eItemPartGroup: edit_dst = static_cast<PartGroup*>(editable)->CopyForPlay(live_table); break;
-      case eItemPlunger:   edit_dst = static_cast<Plunger*>(editable)->CopyForPlay(live_table); break;
-      case eItemPrimitive: edit_dst = static_cast<Primitive*>(editable)->CopyForPlay(live_table); break;
-      case eItemRamp:      edit_dst = static_cast<Ramp*>(editable)->CopyForPlay(live_table); break;
-      case eItemRubber:    edit_dst = static_cast<Rubber*>(editable)->CopyForPlay(live_table); break;
-      case eItemSpinner:   edit_dst = static_cast<Spinner*>(editable)->CopyForPlay(live_table); break;
-      case eItemSurface:   edit_dst = static_cast<Surface*>(editable)->CopyForPlay(live_table); break;
-      case eItemTextbox:   edit_dst = static_cast<Textbox*>(editable)->CopyForPlay(live_table); break;
-      case eItemTimer:     edit_dst = static_cast<Timer*>(editable)->CopyForPlay(live_table); break;
-      case eItemTrigger:   edit_dst = static_cast<Trigger*>(editable)->CopyForPlay(live_table); break;
+      case eItemBall:      edit_dst = static_cast<Ball*>(editable)->CopyForPlay(); break;
+      case eItemBumper:    edit_dst = static_cast<Bumper*>(editable)->CopyForPlay(); break;
+      case eItemDecal:     edit_dst = static_cast<Decal*>(editable)->CopyForPlay(); break;
+      case eItemDispReel:  edit_dst = static_cast<DispReel*>(editable)->CopyForPlay(); break;
+      case eItemFlasher:   edit_dst = static_cast<Flasher*>(editable)->CopyForPlay(); break;
+      case eItemFlipper:   edit_dst = static_cast<Flipper*>(editable)->CopyForPlay(); break;
+      case eItemGate:      edit_dst = static_cast<Gate*>(editable)->CopyForPlay(); break;
+      case eItemHitTarget: edit_dst = static_cast<HitTarget*>(editable)->CopyForPlay(); break;
+      case eItemKicker:    edit_dst = static_cast<Kicker*>(editable)->CopyForPlay(); break;
+      case eItemLight:     edit_dst = static_cast<Light*>(editable)->CopyForPlay(); break;
+      case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(editable)->CopyForPlay(); break;
+      case eItemPartGroup: edit_dst = static_cast<PartGroup*>(editable)->CopyForPlay(); break;
+      case eItemPlunger:   edit_dst = static_cast<Plunger*>(editable)->CopyForPlay(); break;
+      case eItemPrimitive: edit_dst = static_cast<Primitive*>(editable)->CopyForPlay(); break;
+      case eItemRamp:      edit_dst = static_cast<Ramp*>(editable)->CopyForPlay(); break;
+      case eItemRubber:    edit_dst = static_cast<Rubber*>(editable)->CopyForPlay(); break;
+      case eItemSpinner:   edit_dst = static_cast<Spinner*>(editable)->CopyForPlay(); break;
+      case eItemSurface:   edit_dst = static_cast<Surface*>(editable)->CopyForPlay(); break;
+      case eItemTextbox:   edit_dst = static_cast<Textbox*>(editable)->CopyForPlay(); break;
+      case eItemTimer:     edit_dst = static_cast<Timer*>(editable)->CopyForPlay(); break;
+      case eItemTrigger:   edit_dst = static_cast<Trigger*>(editable)->CopyForPlay(); break;
       default: assert(false); // Unexpected table part
       }
       if (editable->GetPartGroup())
@@ -1131,7 +1135,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &o
       WCHAR * const wzT = new WCHAR[len + 1];
       memset(wzT, 0, sizeof(WCHAR) * (len + 1));
 
-      BiffReader br(pstm, nullptr, 0, hcrypthash, NULL);
+      BiffReader br(pstm, 0, hcrypthash, NULL);
 #ifndef __STANDALONE__
       br.ReadBytes(wzT, ss.cbSize.LowPart);
 #else
@@ -1191,7 +1195,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 
       m_pbTempScreenshot->m_buffer.resize(ss.cbSize.LowPart);
 
-      BiffReader br(pstm, nullptr, 0, hcrypthash, NULL);
+      BiffReader br(pstm, 0, hcrypthash, NULL);
       br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
 
       pstm->Release();
@@ -1202,8 +1206,8 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 
 HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version)
 {
-   BiffReader br(pstmTags, this, version, hcrypthash, NULL);
-   const HRESULT hr = br.Load();
+   BiffReader br(pstmTags, version, hcrypthash, NULL);
+   const HRESULT hr = br.Load(this);
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
@@ -1573,7 +1577,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = LoadData(pstmGame, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL)))
+         BiffReader tableReader(pstmGame, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
+         if (SUCCEEDED(hr = Load(tableReader)))
          {
             const int csubobj = m_loadTemp[0];
             const int csounds = m_loadTemp[1];
@@ -1581,7 +1586,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             const int cfonts = m_loadTemp[3];
             const int ccollection = m_loadTemp[4];
             
-            PLOGI << "LoadData loaded"; // For profiling
+            PLOGI << "PinTable Data loaded"; // For profiling
 
             feedback.AboutToProcessTable(csubobj + csounds + ctextures + cfonts);
 
@@ -1610,8 +1615,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                         return E_FAIL;
 
                      piedit->GetISelect()->m_onLoadExpectedPartGroup = string();
-                     hr = piedit->InitLoad(pstmItem, this, loadfileversion, (loadfileversion < 1000) ? hch : NULL,
-                        (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                     BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                     hr = piedit->Load(reader); 
                      pstmItem->Release();
                      pstmItem = nullptr;
                      if (FAILED(hr))
@@ -1692,11 +1697,12 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   else if (i < parts.size() - 1)
                   {
                      for (size_t i2 = i + 1; i2 < parts.size(); ++i2)
-                        if (part->GetName() == parts[i2]->GetName())
+                        if (part->GetScriptable()->get_Name() == parts[i2]->GetScriptable()->get_Name())
                         {
                            PLOGE << "Duplicate part name found: " << part->GetName() << ", dropping it!";
+                           IEditable *toRelease = parts[i2];
                            parts.erase(parts.begin() + i2);
-                           part->Release();
+                           toRelease->Release();
                            --i2;
                         }
                   }
@@ -2194,15 +2200,11 @@ void PinTable::SetLoadDefaults()
    m_overridePhysicsFlipper = false;
 }
 
-HRESULT PinTable::LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT PinTable::Load(BiffReader &reader)
 {
    SetLoadDefaults();
-
    memset(m_loadTemp, 0, sizeof(m_loadTemp));
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-   const HRESULT hr = br.Load();
-
+   const HRESULT hr = reader.Load(this);
    return hr;
 }
 
@@ -3858,7 +3860,8 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          IEditable* const peditNew = EditableRegistry::Create(type);
          if (peditNew)
          {
-            peditNew->InitLoad(pstm, this, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
+            peditNew->Load(reader);
             peditNew->m_backglass = m_vpinball->m_backglassView;
 
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
@@ -3881,17 +3884,6 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
    if (error)
       ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
 #endif
-}
-
-HRESULT PinTable::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-{
-   SetDefaults(false);
-
-   memset(m_loadTemp, 0, sizeof(m_loadTemp));
-
-   LoadData(pstm, version, hcrypthash, hcryptkey);
-
-   return S_OK;
 }
 
 void PinTable::SetDefaultPhysics(const bool fromMouseClick)

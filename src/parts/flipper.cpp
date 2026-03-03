@@ -88,16 +88,15 @@ Flipper::~Flipper()
    assert(m_phitflipper == nullptr);
 }
 
-Flipper *Flipper::CopyForPlay(PinTable *live_table) const
+Flipper *Flipper::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Flipper, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Flipper)
    return dst;
 }
 
-HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Flipper::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    assert(m_phitflipper == nullptr);
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_Center.x = x;
    m_d.m_Center.y = y;
@@ -875,16 +874,10 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Flipper::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
+   reader.Load(this);
    if (m_d.m_height > 1000.0f)
       m_d.m_height = 50.0f;
    if (m_d.m_rubberheight > 1000.f)
@@ -893,7 +886,6 @@ HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHA
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
    if (m_d.m_rubberwidth > 1000.f)
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
-
    return S_OK;
 }
 

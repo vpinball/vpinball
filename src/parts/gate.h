@@ -104,8 +104,6 @@ private:
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf) const;
    void GenerateWireMesh(Vertex3D_NoTex2 *buf) const;
 
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
 
    LineSeg *m_plineseg = nullptr;

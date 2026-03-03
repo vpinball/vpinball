@@ -8,16 +8,15 @@ DispReel::~DispReel()
    assert(m_rd == nullptr);
 }
 
-DispReel *DispReel::CopyForPlay(PinTable *live_table) const
+DispReel *DispReel::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel)
    return dst;
 }
 
 // called whenever a new instance of this object is created along with the constructor
-HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT DispReel::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
@@ -471,15 +470,10 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT DispReel::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

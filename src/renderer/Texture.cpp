@@ -930,7 +930,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
    uint8_t md5Hash[16] = {};
    bool isOpaqueDirty = true;
    bool isOpaque = true;
-   BiffReader br(pstream, nullptr, version, 0, 0);
+   BiffReader br(pstream, version, 0, 0);
    br.Load([&](const int id, BiffReader* const pbr)
    {
       switch(id)

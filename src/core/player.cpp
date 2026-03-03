@@ -1155,7 +1155,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    CComObject<Ball> *pBall;
    CComObject<Ball>::CreateInstance(&pBall);
    pBall->AddRef();
-   pBall->Init(m_ptable, x, y, false, true);
+   pBall->Init(x, y, false, true);
    m_ptable->AddPart(pBall);
    pBall->m_hitBall.m_d.m_pos.z = z + radius;
    pBall->m_hitBall.m_d.m_mass = mass;

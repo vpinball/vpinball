@@ -16,9 +16,9 @@ Gate::~Gate()
    assert(m_rd == nullptr);
 }
 
-Gate *Gate::CopyForPlay(PinTable *live_table) const
+Gate *Gate::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Gate, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Gate)
    return dst;
 }
 
@@ -72,9 +72,8 @@ void Gate::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Gate::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Gate::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -580,17 +579,11 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Gate::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Gate::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
    m_d.m_twoWay = false; // to keep old VP8/9 behavior when loading .vpt files
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

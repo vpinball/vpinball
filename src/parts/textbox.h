@@ -97,8 +97,6 @@ public:
    TextboxData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-   
    RenderDevice *m_rd = nullptr;
    bool m_textureDirty = true;
    std::shared_ptr<BaseTexture> m_texture = nullptr;

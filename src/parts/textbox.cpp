@@ -13,9 +13,9 @@ Textbox::~Textbox()
    SAFE_RELEASE(m_pIFont);
 }
 
-Textbox *Textbox::CopyForPlay(PinTable *live_table) const
+Textbox *Textbox::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox)
    if (m_pIFont)
       m_pIFont->Clone(&dst->m_pIFont);
 #ifdef __STANDALONE__
@@ -29,9 +29,8 @@ Textbox *Textbox::CopyForPlay(PinTable *live_table) const
    return dst;
 }
 
-HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Textbox::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    const float width  = g_app->m_settings.GetDefaultPropsTextbox_Width();
    const float height = g_app->m_settings.GetDefaultPropsTextbox_Height();
@@ -150,16 +149,10 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Textbox::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
+   reader.Load(this);
    m_texture = nullptr;
    return S_OK;
 }

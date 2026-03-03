@@ -30,9 +30,9 @@ Light::~Light()
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Light *Light::CopyForPlay(PinTable *live_table) const
+Light *Light::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, m_vdpoint)
    // Light specific copy and live data (not really needed)
    dst->m_currentIntensity = m_currentIntensity;
    dst->m_currentFilamentTemperature = m_currentFilamentTemperature;
@@ -50,9 +50,8 @@ Light *Light::CopyForPlay(PinTable *live_table) const
    return dst;
 }
 
-HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Light::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -912,7 +911,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    return S_OK;
 }
 
-HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Light::Load(BiffReader &reader)
 {
    SetDefaults(false);
 
@@ -932,14 +931,10 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);
 
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
 
-   br.Load();
+   reader.Load(this);
 
    // workaround for the old round light object
    // after loading m_roundLight is true if an pre-VPX table was loaded

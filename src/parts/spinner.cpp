@@ -13,9 +13,9 @@ Spinner::~Spinner()
    assert(m_rd == nullptr);
 }
 
-Spinner *Spinner::CopyForPlay(PinTable *live_table) const
+Spinner *Spinner::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Spinner, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Spinner)
    return dst;
 }
 
@@ -82,9 +82,8 @@ void Spinner::SetAngleMin(const float angle)
         m_d.m_angleMin = newVal;
 }
 
-HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Spinner::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -482,15 +481,10 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Spinner::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Spinner::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

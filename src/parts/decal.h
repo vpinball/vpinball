@@ -83,8 +83,6 @@ public:
 private:
    void GetTextSize(int * const px, int * const py);
 
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<BaseTexture> m_textImg = nullptr;

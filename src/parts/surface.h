@@ -160,8 +160,6 @@ private:
 
    void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
 
-   PinTable *m_ptable = nullptr;
-
    vector<LineSegSlingshot*> m_vlinesling;
 
    vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
