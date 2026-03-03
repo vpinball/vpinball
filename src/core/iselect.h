@@ -71,7 +71,7 @@ public:
 // ISelect is the subclass for anything that can be manipulated with the mouse.
 // and that has a property sheet.
 
-class ISelect : public ILoadable
+class ISelect
 {
 public:
    ISelect();
@@ -127,7 +127,7 @@ public:
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;
 
-   bool LoadToken(const int id, BiffReader * const pbr) override;
+   bool LoadToken(const int id, BiffReader * const pbr);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
 
    virtual int GetSelectLevel() const { return 1; }

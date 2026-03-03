@@ -322,8 +322,22 @@ void IHaveDragPoints::LoadPointToken(BiffReader *pbr)
       pdp->AddRef();
       pdp->Init(this, 0.f, 0.f, 0.f, false);
       m_vdpoint.push_back(pdp);
-      BiffReader br(pbr->m_pistream, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
-      br.Load(pdp);
+      BiffReader reader(pbr->m_pistream, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
+      reader.Load(
+         [pdp](int tag, BiffReader *const pbr)
+         {
+            switch (tag)
+            {
+            case FID(VCEN): pbr->GetStruct(&pdp->m_v, sizeof(Vertex2D)); break;
+            case FID(POSZ): pbr->GetFloat(pdp->m_v.z); break;
+            case FID(SMTH): pbr->GetBool(pdp->m_smooth); break;
+            case FID(SLNG): pbr->GetBool(pdp->m_slingshot); break;
+            case FID(ATEX): pbr->GetBool(pdp->m_autoTexture); break;
+            case FID(TEXC): pbr->GetFloat(pdp->m_texturecoord); break;
+            default: pdp->ISelect::LoadToken(tag, pbr); break;
+            }
+            return true;
+         });
    }
 }
 
@@ -484,21 +498,6 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
          return S_OK;
 
    return S_FALSE;
-}
-
-bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch (id)
-   {
-   case FID(VCEN): pbr->GetStruct(&m_v, sizeof(Vertex2D)); break;
-   case FID(POSZ): pbr->GetFloat(m_v.z); break;
-   case FID(SMTH): pbr->GetBool(m_smooth); break;
-   case FID(SLNG): pbr->GetBool(m_slingshot); break;
-   case FID(ATEX): pbr->GetBool(m_autoTexture); break;
-   case FID(TEXC): pbr->GetFloat(m_texturecoord); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 void DragPoint::Copy()

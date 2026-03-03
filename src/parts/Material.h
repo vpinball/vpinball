@@ -34,7 +34,7 @@ struct SavePhysicsMaterial
 
 #define MATERIAL_VERSION 1 // for im/export
 
-class Material final : ILoadable
+class Material final
 {
 public:
 
@@ -223,34 +223,33 @@ public:
 
    HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
    {
-      BiffReader br(pstm, version, hcrypthash, hcryptkey);
-      br.Load(this);
+      BiffReader reader(pstm, version, hcrypthash, hcryptkey);
+      reader.Load(
+         [this](int tag, BiffReader* const pbr)
+         {
+            switch (tag)
+            {
+            case FID(TYPE): pbr->GetInt(&m_type); break;
+            case FID(NAME): pbr->GetString(m_name); break;
+            case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
+            case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
+            case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;
+            case FID(THCK): pbr->GetFloat(m_fThickness); break;
+            case FID(EDGE): pbr->GetFloat(m_fEdge); break;
+            case FID(EALP): pbr->GetFloat(m_fEdgeAlpha); break;
+            case FID(OPAC): pbr->GetFloat(m_fOpacity); break;
+            case FID(BASE): pbr->GetInt(m_cBase); break;
+            case FID(GLOS): pbr->GetInt(m_cGlossy); break;
+            case FID(COAT): pbr->GetInt(m_cClearcoat); break;
+            case FID(RTNT): pbr->GetInt(m_cRefractionTint); break;
+            case FID(EOPA): pbr->GetBool(m_bOpacityActive); break;
+            case FID(ELAS): pbr->GetFloat(m_fElasticity); break;
+            case FID(ELFO): pbr->GetFloat(m_fElasticityFalloff); break;
+            case FID(FRIC): pbr->GetFloat(m_fFriction); break;
+            case FID(SCAT): pbr->GetFloat(m_fScatterAngle); break;
+            }
+            return true;
+         });
       return S_OK;
-   }
-
-   bool LoadToken(const int id, BiffReader* const pbr) override
-   {
-      switch (id)
-      {
-      case FID(TYPE): pbr->GetInt(&m_type); break;
-      case FID(NAME): pbr->GetString(m_name); break;
-      case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
-      case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
-      case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;
-      case FID(THCK): pbr->GetFloat(m_fThickness); break;
-      case FID(EDGE): pbr->GetFloat(m_fEdge); break;
-      case FID(EALP): pbr->GetFloat(m_fEdgeAlpha); break;
-      case FID(OPAC): pbr->GetFloat(m_fOpacity); break;
-      case FID(BASE): pbr->GetInt(m_cBase); break;
-      case FID(GLOS): pbr->GetInt(m_cGlossy); break;
-      case FID(COAT): pbr->GetInt(m_cClearcoat); break;
-      case FID(RTNT): pbr->GetInt(m_cRefractionTint); break;
-      case FID(EOPA): pbr->GetBool(m_bOpacityActive); break;
-      case FID(ELAS): pbr->GetFloat(m_fElasticity); break;
-      case FID(ELFO): pbr->GetFloat(m_fElasticityFalloff); break;
-      case FID(FRIC): pbr->GetFloat(m_fFriction); break;
-      case FID(SCAT): pbr->GetFloat(m_fScatterAngle); break;
-      }
-      return true;
    }
 };

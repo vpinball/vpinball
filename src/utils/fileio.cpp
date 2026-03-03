@@ -386,11 +386,6 @@ HRESULT BiffReader::GetVector3Padded(Vertex3Ds& vec)
    return hr;
 }
 
-HRESULT BiffReader::Load(ILoadable *piloadable)
-{
-   return Load([piloadable](const int id, BiffReader *const pbr) { return piloadable->LoadToken(id, pbr); });
-}
-
 HRESULT BiffReader::Load(const std::function<bool(const int id, BiffReader *const pbr)>& processToken)
 {
    int tag = 0;

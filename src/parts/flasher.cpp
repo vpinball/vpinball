@@ -484,67 +484,78 @@ void Flasher::ClearForOverwrite()
 HRESULT Flasher::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(FHEI): pbr->GetFloat(m_d.m_height); break;
+         case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
+         case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
+         case FID(FROX): pbr->GetFloat(m_d.m_rotX); break;
+         case FID(FROY): pbr->GetFloat(m_d.m_rotY); break;
+         case FID(FROZ): pbr->GetFloat(m_d.m_rotZ); break;
+         case FID(COLR): pbr->GetInt(m_d.m_color); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImageA); break;
+         case FID(IMAB): pbr->GetString(m_d.m_szImageB); break;
+         case FID(FALP):
+         {
+            int iTmp;
+            pbr->GetInt(iTmp);
+            //if (iTmp>100) iTmp=100;
+            if (iTmp < 0)
+               iTmp = 0;
+            m_d.m_alpha = iTmp;
+            break;
+         }
+         case FID(MOVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(FVIS): pbr->GetBool(m_d.m_isVisible); break;
+         case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
+         case FID(IDMD):
+         {
+            bool m;
+            pbr->GetBool(m);
+            m_d.m_renderMode = m ? FlasherData::DMD : FlasherData::FLASHER;
+         }
+         break; // Backward compatibility for table 10.8 and before
+         case FID(RDMD): pbr->GetInt(&m_d.m_renderMode); break;
+         case FID(RSTL): pbr->GetInt(&m_d.m_renderStyle); break;
+         case FID(LINK): pbr->GetString(m_d.m_imageSrcLink); break;
+         case FID(GRGH): pbr->GetFloat(m_d.m_glassRoughness); break;
+         case FID(GAMB): pbr->GetInt(m_d.m_glassAmbient); break;
+         case FID(GTOP): pbr->GetFloat(m_d.m_glassPadTop); break;
+         case FID(GBOT): pbr->GetFloat(m_d.m_glassPadBottom); break;
+         case FID(GLFT): pbr->GetFloat(m_d.m_glassPadLeft); break;
+         case FID(GRHT): pbr->GetFloat(m_d.m_glassPadRight); break;
+         case FID(BGLS): pbr->GetBool(m_backglass); break;
+         case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
+         case FID(FLDB): pbr->GetFloat(m_d.m_depthBias); break;
+         case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
+         case FID(FILT): pbr->GetInt(&m_d.m_filter); break;
+         case FID(FIAM): pbr->GetInt(m_d.m_filterAmount); break;
+         case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
+         default:
+         {
+            if (tag == FID(DPNT))
+               LoadPointToken(pbr);
+            ISelect::LoadToken(tag, pbr);
+            break;
+         }
+         }
+         return true;
+      });
    m_inPlayState = m_d.m_isVisible;
    UpdateCenter();
    return S_OK;
-}
-
-bool Flasher::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(FHEI): pbr->GetFloat(m_d.m_height); break;
-   case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
-   case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break; // Just for information, as it is computed from dragpoints (it will be overwritten)
-   case FID(FROX): pbr->GetFloat(m_d.m_rotX); break;
-   case FID(FROY): pbr->GetFloat(m_d.m_rotY); break;
-   case FID(FROZ): pbr->GetFloat(m_d.m_rotZ); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImageA); break;
-   case FID(IMAB): pbr->GetString(m_d.m_szImageB); break;
-   case FID(FALP):
-   {
-      int iTmp;
-      pbr->GetInt(iTmp);
-      //if (iTmp>100) iTmp=100;
-      if (iTmp < 0) iTmp = 0;
-      m_d.m_alpha = iTmp;
-      break;
-   }
-   case FID(MOVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(FVIS): pbr->GetBool(m_d.m_isVisible); break;
-   case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
-   case FID(IDMD): { bool m; pbr->GetBool(m); m_d.m_renderMode = m ? FlasherData::DMD : FlasherData::FLASHER; } break; // Backward compatibility for table 10.8 and before
-   case FID(RDMD): pbr->GetInt(&m_d.m_renderMode); break;
-   case FID(RSTL): pbr->GetInt(&m_d.m_renderStyle); break;
-   case FID(LINK): pbr->GetString(m_d.m_imageSrcLink); break;
-   case FID(GRGH): pbr->GetFloat(m_d.m_glassRoughness); break;
-   case FID(GAMB): pbr->GetInt(m_d.m_glassAmbient); break;
-   case FID(GTOP): pbr->GetFloat(m_d.m_glassPadTop); break;
-   case FID(GBOT): pbr->GetFloat(m_d.m_glassPadBottom); break;
-   case FID(GLFT): pbr->GetFloat(m_d.m_glassPadLeft); break;
-   case FID(GRHT): pbr->GetFloat(m_d.m_glassPadRight); break;
-   case FID(BGLS): pbr->GetBool(m_backglass); break;
-   case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
-   case FID(FLDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
-   case FID(FILT): pbr->GetInt(&m_d.m_filter); break;
-   case FID(FIAM): pbr->GetInt(m_d.m_filterAmount); break;
-   case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)

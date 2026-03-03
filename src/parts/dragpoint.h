@@ -71,7 +71,7 @@ public:
    void Delete() final;
    void Uncreate() final;
 
-   bool LoadToken(const int id, BiffReader *const pbr) final;
+   bool LoadToken(const int id, BiffReader *const pbr);
 
    // IControlPoint
 public:

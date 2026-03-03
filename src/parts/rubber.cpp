@@ -806,49 +806,53 @@ HRESULT Rubber::Load(BiffReader &reader)
 {
    SetDefaults(false);
    m_d.m_hitHeight = -1.0f;
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(HTTP): pbr->GetFloat(m_d.m_height); break;
+         case FID(HTHI): pbr->GetFloat(m_d.m_hitHeight); break;
+         case FID(WDTP): pbr->GetInt(m_d.m_thickness); break;
+         case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+         case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+         case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
+         case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
+         case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
+         case FID(RVIS): pbr->GetBool(m_d.m_visible); break;
+         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+         case FID(ESTR): pbr->GetBool(m_d.m_staticRendering); break;
+         case FID(ESIE): pbr->GetBool(m_d.m_showInEditor); break;
+         case FID(ROTX): pbr->GetFloat(m_d.m_rotX); break;
+         case FID(ROTY): pbr->GetFloat(m_d.m_rotY); break;
+         case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;
+         case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+         case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
+         default:
+         {
+            if (tag == FID(DPNT))
+               LoadPointToken(pbr);
+            ISelect::LoadToken(tag, pbr);
+            break;
+         }
+         }
+         return true;
+      });
    if (m_d.m_hitHeight == -1.0f)
       m_d.m_hitHeight = m_d.m_height;
    return S_OK;
-}
-
-bool Rubber::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(HTTP): pbr->GetFloat(m_d.m_height); break;
-   case FID(HTHI): pbr->GetFloat(m_d.m_hitHeight); break;
-   case FID(WDTP): pbr->GetInt(m_d.m_thickness); break;
-   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-   case FID(RVIS): pbr->GetBool(m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(ESTR): pbr->GetBool(m_d.m_staticRendering); break;
-   case FID(ESIE): pbr->GetBool(m_d.m_showInEditor); break;
-   case FID(ROTX): pbr->GetFloat(m_d.m_rotX); break;
-   case FID(ROTY): pbr->GetFloat(m_d.m_rotY); break;
-   case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;
-   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
 }
 
 #ifndef __STANDALONE__

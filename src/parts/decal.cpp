@@ -307,68 +307,72 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
 HRESULT Decal::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
-   EnsureSize();
-   return S_OK;
-}
-
-bool Decal::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch (id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
-   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
-   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(TEXT): pbr->GetString(m_d.m_text); break;
-   case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(SIZE): pbr->GetInt(&m_d.m_sizingtype); break;
-   case FID(VERT): pbr->GetBool(m_d.m_verticalText); break;
-   case FID(BGLS): pbr->GetBool(m_backglass); break;
-   case FID(FONT):
-   {
-#ifndef __STANDALONE__
-      if (!m_pIFont)
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
       {
-         FONTDESC fd;
-         fd.cbSizeofstruct = sizeof(FONTDESC);
-         fd.lpstrName = (LPOLESTR)(L"Arial");
-         fd.cySize.int64 = 142500;
-         fd.sWeight = FW_NORMAL;
-         fd.sCharset = 0;
-         fd.fItalic = 0;
-         fd.fUnderline = 0;
-         fd.fStrikethrough = 0;
-         OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-      }
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+         case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
+         case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+         case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(TEXT): pbr->GetString(m_d.m_text); break;
+         case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
+         case FID(COLR): pbr->GetInt(m_d.m_color); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(SIZE): pbr->GetInt(&m_d.m_sizingtype); break;
+         case FID(VERT): pbr->GetBool(m_d.m_verticalText); break;
+         case FID(BGLS): pbr->GetBool(m_backglass); break;
+         case FID(FONT):
+         {
+#ifndef __STANDALONE__
+            if (!m_pIFont)
+            {
+               FONTDESC fd;
+               fd.cbSizeofstruct = sizeof(FONTDESC);
+               fd.lpstrName = (LPOLESTR)(L"Arial");
+               fd.cySize.int64 = 142500;
+               fd.sWeight = FW_NORMAL;
+               fd.sCharset = 0;
+               fd.fItalic = 0;
+               fd.fUnderline = 0;
+               fd.fStrikethrough = 0;
+               OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+            }
 
-      IPersistStream * ips;
-      m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-      ips->Load(pbr->m_pistream);
-      SAFE_RELEASE_NO_RCC(ips);
+            IPersistStream *ips;
+            m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
+            ips->Load(pbr->m_pistream);
+            SAFE_RELEASE_NO_RCC(ips);
 
 #else
-      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+            // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
 
-      unsigned char data[255];
-      pbr->ReadBytes(data, 3);
-      pbr->ReadBytes(data, 1); // Italic
-      pbr->ReadBytes(data, 2); // Weight
-      pbr->ReadBytes(data, 4); // Size
-      pbr->ReadBytes(data, 1); // nameLen
-      pbr->ReadBytes(data, data[0]); // name
+            unsigned char data[255];
+            pbr->ReadBytes(data, 3);
+            pbr->ReadBytes(data, 1); // Italic
+            pbr->ReadBytes(data, 2); // Weight
+            pbr->ReadBytes(data, 4); // Size
+            pbr->ReadBytes(data, 1); // nameLen
+            pbr->ReadBytes(data, data[0]); // name
 #endif
-      break;
-   }
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
+            break;
+         }
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
+   EnsureSize();
+   return S_OK;
 }
 
 void Decal::EnsureSize()
