@@ -225,25 +225,23 @@ bool ISelect::LoadToken(const int id, IObjectReader& reader)
       {
          int layerIndex;
          layerIndex = reader.AsInt();
-         m_onLoadExpectedPartGroup = (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1);
+         m_onLoadExpectedPartGroup = MakeWString((layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
          break;
       }
       case FID(LANR): // 10.7 layers (limited number of named layers)
       {
-         string layerName;
-         layerName = reader.AsString();
+         string layerName = reader.AsString();
          std::ranges::transform(
             layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
                return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
             });
-         m_onLoadExpectedPartGroup = layerName;
+         m_onLoadExpectedPartGroup = MakeWString(layerName);
          break;
       }
       case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
       {
-         string partGroupName;
-         partGroupName = reader.AsString();
-         m_onLoadExpectedPartGroup = partGroupName;
+         string layerName = reader.AsString();
+         m_onLoadExpectedPartGroup = MakeWString(layerName);
          break;
       }
    }
