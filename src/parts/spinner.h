@@ -94,8 +94,6 @@ public:
 private:
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
 
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_plateMeshBuffer;

@@ -3,15 +3,14 @@
 #include "core/stdafx.h"
 
 
-PartGroup *PartGroup::CopyForPlay(PinTable *live_table) const
+PartGroup *PartGroup::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(PartGroup, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(PartGroup)
    return dst;
 }
 
-HRESULT PartGroup::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT PartGroup::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
@@ -156,15 +155,10 @@ HRESULT PartGroup::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT PartGroup::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT PartGroup::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

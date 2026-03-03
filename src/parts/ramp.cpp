@@ -13,9 +13,9 @@ Ramp::~Ramp()
    delete[] m_rgheightInit;
 }
 
-Ramp *Ramp::CopyForPlay(PinTable *live_table) const
+Ramp *Ramp::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Ramp, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Ramp, m_vdpoint)
    return dst;
 }
 
@@ -30,9 +30,8 @@ void Ramp::UpdateStatusBarInfo()
 }
 
 
-HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Ramp::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
@@ -1369,15 +1368,10 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Ramp::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Ramp::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

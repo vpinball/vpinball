@@ -18,9 +18,9 @@ Decal::~Decal()
    SAFE_RELEASE(m_pIFont);
 }
 
-Decal *Decal::CopyForPlay(PinTable *live_table) const
+Decal *Decal::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal)
 #ifndef __STANDALONE__
    m_pIFont->Clone(&dst->m_pIFont);
 #endif
@@ -28,11 +28,9 @@ Decal *Decal::CopyForPlay(PinTable *live_table) const
    return dst;
 }
 
-HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Decal::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    m_wzName = L"Decal"s;
-   m_ptable->GetUniqueName(eItemDecal, m_wzName);
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -306,15 +304,10 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    return S_OK;
 }
 
-HRESULT Decal::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Decal::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    EnsureSize();
    return S_OK;
 }

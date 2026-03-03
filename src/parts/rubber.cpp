@@ -12,9 +12,9 @@ Rubber::~Rubber()
    assert(m_rd == nullptr);
 }
 
-Rubber *Rubber::CopyForPlay(PinTable *live_table) const
+Rubber *Rubber::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Rubber, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Rubber, m_vdpoint)
    return dst;
 }
 
@@ -26,9 +26,8 @@ void Rubber::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Rubber::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
@@ -803,20 +802,13 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
    return S_OK;
 }
 
-HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Rubber::Load(BiffReader &reader)
 {
    SetDefaults(false);
    m_d.m_hitHeight = -1.0f;
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
+   reader.Load(this);
    if (m_d.m_hitHeight == -1.0f)
       m_d.m_hitHeight = m_d.m_height;
-
    return S_OK;
 }
 

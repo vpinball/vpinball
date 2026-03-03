@@ -153,8 +153,6 @@ private:
    void GenerateRingMesh(Vertex3D_NoTex2 *buf) const;
    void GenerateCapMesh(Vertex3D_NoTex2 *buf) const;
 
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_baseMeshBuffer;
    std::shared_ptr<MeshBuffer> m_socketMeshBuffer;

@@ -172,8 +172,6 @@ private:
    void InitShape();
    void UpdateCenter();
 
-   PinTable *m_ptable = nullptr;
-
    unsigned int m_numVertices = 0;
    int m_numPolys = 0;
    bool m_centerClean = false;

@@ -16,9 +16,9 @@ Flasher::~Flasher()
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Flasher *Flasher::CopyForPlay(PinTable *live_table) const
+Flasher *Flasher::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Flasher, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Flasher, m_vdpoint)
    return dst;
 }
 
@@ -92,9 +92,8 @@ void Flasher::UpdateCenter()
    m_d.m_vCenter.y = 0.5f * (m_miny + m_maxy);
 }
 
-HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Flasher::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_isVisible = true;
    m_d.m_vCenter.x = x;
@@ -482,19 +481,12 @@ void Flasher::ClearForOverwrite()
 }
 
 
-HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Flasher::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
+   reader.Load(this);
    m_inPlayState = m_d.m_isVisible;
    UpdateCenter();
-
    return S_OK;
 }
 

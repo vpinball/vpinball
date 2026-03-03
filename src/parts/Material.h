@@ -223,8 +223,8 @@ public:
 
    HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
    {
-      BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-      br.Load();
+      BiffReader br(pstm, version, hcrypthash, hcryptkey);
+      br.Load(this);
       return S_OK;
    }
 

@@ -205,10 +205,9 @@ HRESULT BiffWriter::WriteTag(const int id)
    return hr;
 }
 
-BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+BiffReader::BiffReader(IStream *pistream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_pistream = pistream;
-   m_piloadable = piloadable;
    m_version = version;
 
    m_bytesinrecordremaining = 0;
@@ -387,33 +386,32 @@ HRESULT BiffReader::GetVector3Padded(Vertex3Ds& vec)
    return hr;
 }
 
+HRESULT BiffReader::Load(ILoadable *piloadable)
+{
+   return Load([piloadable](const int id, BiffReader *const pbr) { return piloadable->LoadToken(id, pbr); });
+}
+
 HRESULT BiffReader::Load(const std::function<bool(const int id, BiffReader *const pbr)>& processToken)
 {
    int tag = 0;
    while (tag != FID(ENDB))
    {
       if (m_version > 30)
-      {
-         /*const HRESULT hr =*/ GetIntNoHash(m_bytesinrecordremaining);
-      }
+         GetIntNoHash(m_bytesinrecordremaining);
 
-      const HRESULT hr = GetInt(tag);
+      if (const HRESULT hr = GetInt(tag); FAILED(hr))
+         return hr;
 
-      bool cont = false;
-      if (hr == S_OK)
-         cont = processToken ? processToken(tag, this) : m_piloadable->LoadToken(tag, this);
-
-      if (!cont)
+      if (const bool cont = processToken(tag, this); !cont)
          return E_FAIL;
 
       if (m_version > 30)
       {
          assert(m_bytesinrecordremaining >= 0);
-
          if (m_bytesinrecordremaining > 0)
          {
             BYTE * const szT = new BYTE[m_bytesinrecordremaining];
-            /*const HRESULT hr =*/ GetStruct(szT, m_bytesinrecordremaining);
+            GetStruct(szT, m_bytesinrecordremaining);
             delete[] szT;
          }
       }

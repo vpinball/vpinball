@@ -198,9 +198,6 @@ private:
       Light *m_plight;
    };
 
-
-   PinTable *m_ptable = nullptr;
-
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
 

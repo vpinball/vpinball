@@ -14,9 +14,9 @@ Surface::~Surface()
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Surface *Surface::CopyForPlay(PinTable *live_table) const
+Surface *Surface::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Surface, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Surface, m_vdpoint)
    dst->m_isWall = m_isWall;
    dst->m_isDropped = m_isDropped;
    return dst;
@@ -25,9 +25,8 @@ Surface *Surface::CopyForPlay(PinTable *live_table) const
 #define LinkProp(field, prop)                                                                                                                                                                \
    field = m_isWall ? (fromMouseClick ? g_app->m_settings.GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()) \
                     : (fromMouseClick ? g_app->m_settings.GetDefaultPropsTarget_##prop() : Settings::GetDefaultPropsTarget_##prop##_Default())
-HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    m_isWall = true;
    SetDefaults(fromMouseClick);
 
@@ -69,9 +68,8 @@ HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, cons
 }
 
 #if 0
-HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
+HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseClick)
 {
-   m_ptable = ptable;
    m_isWall = false;
 
    float width, length;
@@ -1172,15 +1170,10 @@ void Surface::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Surface::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
 
    // Pure backwards-compatibility code:
    // On some tables, the outer wall is still modelled/copy-pasted 'inside-out',

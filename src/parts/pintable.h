@@ -384,7 +384,7 @@ public:
    // IEditable (mostly bogus for now)
    void UIRenderPass1(Sur *const psur) final { }
    ItemTypeEnum GetItemType() const final { return eItemTable; }
-   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
+   HRESULT Load(BiffReader &reader) final;
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
@@ -424,7 +424,6 @@ public:
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
-   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    IEditable *GetIEditable() final { return (IEditable *)this; }
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
    void Delete() final { } // Can't delete table itself

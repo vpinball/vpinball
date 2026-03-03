@@ -8,15 +8,14 @@ Plunger::~Plunger()
    assert(m_rd == nullptr);
 }
 
-Plunger *Plunger::CopyForPlay(PinTable *live_table) const
+Plunger *Plunger::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Plunger, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Plunger)
    return dst;
 }
 
-HRESULT Plunger::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Plunger::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
@@ -881,16 +880,11 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Plunger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Plunger::Load(BiffReader &reader)
 {
    m_d.m_color = RGB(76, 76, 76); //initialize color for new plunger
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
+   reader.Load(this);
    return S_OK;
 }
 

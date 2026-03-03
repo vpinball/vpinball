@@ -193,16 +193,15 @@ Primitive::~Primitive()
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Primitive *Primitive::CopyForPlay(PinTable *live_table) const
+Primitive *Primitive::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive)
    dst->m_mesh = m_mesh;
    return dst;
 }
 
-HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Primitive::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
@@ -1662,18 +1661,12 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Primitive::Load(BiffReader &reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
    m_mesh.m_validBounds = false;
-
-   br.Load();
-
-   if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
+   reader.Load(this);
+   if (reader.m_version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
       unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
       if (tmp != nullptr)
@@ -1682,11 +1675,8 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPT
          delete[] tmp;
       }
    }
-
    m_inPlayState = m_d.m_visible;
-
    CalculateBuiltinOriginal(); 
-
    return S_OK;
 }
 
