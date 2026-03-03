@@ -1665,10 +1665,186 @@ HRESULT Primitive::Load(BiffReader &reader)
 {
    SetDefaults(false);
    m_mesh.m_validBounds = false;
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
+         case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
+         case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;
+         case FID(RTV1): pbr->GetFloat(m_d.m_aRotAndTra[1]); break;
+         case FID(RTV2): pbr->GetFloat(m_d.m_aRotAndTra[2]); break;
+         case FID(RTV3): pbr->GetFloat(m_d.m_aRotAndTra[3]); break;
+         case FID(RTV4): pbr->GetFloat(m_d.m_aRotAndTra[4]); break;
+         case FID(RTV5): pbr->GetFloat(m_d.m_aRotAndTra[5]); break;
+         case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
+         case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
+         case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
+         case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(SCOL): pbr->GetInt(m_d.m_SideColor); break;
+         case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
+         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+         case FID(DTXI): pbr->GetBool(m_d.m_drawTexturesInside); break;
+         case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
+         case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
+         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+         case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+         case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
+         case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
+         case FID(EFUI): pbr->GetFloat(m_d.m_edgeFactorUI); break;
+         case FID(CORF): pbr->GetFloat(m_d.m_collision_reductionFactor); break;
+         case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
+         case FID(ISTO): pbr->GetBool(m_d.m_toy); break;
+         case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
+         case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
+         case FID(STRE): pbr->GetBool(m_d.m_staticRendering); break;
+         case FID(DILI):
+         {
+            int tmp;
+            pbr->GetInt(tmp);
+            m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp);
+            break;
+         } // Pre 10.8 compatible hacky loading!
+         case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
+         case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
+         case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
+         case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
+         case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
+         case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
+         case FID(M3VN):
+         {
+            pbr->GetInt(m_numVertices);
+            if (!m_mesh.m_animationFrames.empty())
+            {
+               for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
+                  m_mesh.m_animationFrames[i].m_frameVerts.clear();
+               m_mesh.m_animationFrames.clear();
+            }
+            break;
+         }
+         case FID(M3DX):
+         {
+            m_mesh.m_vertices.clear();
+            m_mesh.m_vertices.resize(m_numVertices);
+            pbr->GetStruct(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2) * m_numVertices);
+            break;
+         }
+#ifdef COMPRESS_MESHES
+         case FID(M3AY): pbr->GetInt(m_compressedAnimationVertices); break;
+         case FID(M3AX):
+         {
+            Mesh::FrameData frameData;
+            frameData.m_frameVerts.clear();
+            frameData.m_frameVerts.resize(m_numVertices);
+
+            mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData) * m_mesh.NumVertices());
+            mz_uint8 *const c = new mz_uint8[m_compressedAnimationVertices];
+            pbr->GetStruct(c, m_compressedAnimationVertices);
+            const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
+            if (error != Z_OK)
+               ShowError("Could not uncompress primitive animation vertex data, error " + std::to_string(error));
+            delete[] c;
+            m_mesh.m_animationFrames.push_back(frameData);
+            break;
+         }
+         case FID(M3CY): pbr->GetInt(m_compressedVertices); break;
+         case FID(M3CX):
+         {
+            m_mesh.m_vertices.clear();
+            m_mesh.m_vertices.resize(m_numVertices);
+            const mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2) * m_mesh.NumVertices());
+            mz_uint8 *const c = new mz_uint8[m_compressedVertices];
+            pbr->GetStruct(c, m_compressedVertices);
+            mz_ulong uclen2 = uclen;
+            const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
+            if (error != Z_OK)
+               ShowError("Could not uncompress primitive vertex data, error " + std::to_string(error));
+            delete[] c;
+            break;
+         }
+#endif
+         case FID(M3FN): pbr->GetInt(m_numIndices); break;
+         case FID(M3DI):
+         {
+            m_mesh.m_indices.resize(m_numIndices);
+            if (m_numVertices > 65535)
+               pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int) * m_numIndices);
+            else
+            {
+               vector<WORD> tmp(m_numIndices);
+               pbr->GetStruct(tmp.data(), (int)sizeof(WORD) * m_numIndices);
+               for (int i = 0; i < m_numIndices; ++i)
+                  m_mesh.m_indices[i] = tmp[i];
+            }
+            break;
+         }
+#ifdef COMPRESS_MESHES
+         case FID(M3CJ): pbr->GetInt(m_compressedIndices); break;
+         case FID(M3CI):
+         {
+            m_mesh.m_indices.resize(m_numIndices);
+            if (m_numVertices > 65535)
+            {
+               const mz_ulong uclen = (mz_ulong)(sizeof(unsigned int) * m_mesh.NumIndices());
+               mz_uint8 *const c = new mz_uint8[m_compressedIndices];
+               pbr->GetStruct(c, m_compressedIndices);
+               mz_ulong uclen2 = uclen;
+               const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
+               if (error != Z_OK)
+                  ShowError("Could not uncompress (large) primitive index data, error " + std::to_string(error));
+               delete[] c;
+            }
+            else
+            {
+               const mz_ulong uclen = (mz_ulong)(sizeof(WORD) * m_mesh.NumIndices());
+               mz_uint8 *const c = new mz_uint8[m_compressedIndices];
+               pbr->GetStruct(c, m_compressedIndices);
+               vector<WORD> tmp(m_numIndices);
+
+               mz_ulong uclen2 = uclen;
+               const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
+               if (error != Z_OK)
+                  ShowError("Could not uncompress (small) primitive index data, error " + std::to_string(error));
+               delete[] c;
+               for (int i = 0; i < m_numIndices; ++i)
+                  m_mesh.m_indices[i] = tmp[i];
+            }
+            break;
+         }
+#endif
+         case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
+         case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
+         case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
+         case FID(ZMSK): pbr->GetBool(m_d.m_useDepthMask); break;
+         case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
+         case FID(COLR): pbr->GetInt(m_d.m_color); break;
+
+         case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
+
+         case FID(REFL): pbr->GetString(m_d.m_szReflectionProbe); break;
+         case FID(RSTR): pbr->GetFloat(m_d.m_reflectionStrength); break;
+         case FID(REFR): pbr->GetString(m_d.m_szRefractionProbe); break;
+         case FID(RTHI): pbr->GetFloat(m_d.m_refractionThickness); break;
+
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
+
    if (reader.m_version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
-      unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
+      unsigned int *const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
       if (tmp != nullptr)
       {
          memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
@@ -1676,173 +1852,8 @@ HRESULT Primitive::Load(BiffReader &reader)
       }
    }
    m_inPlayState = m_d.m_visible;
-   CalculateBuiltinOriginal(); 
+   CalculateBuiltinOriginal();
    return S_OK;
-}
-
-bool Primitive::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
-   case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
-   case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;
-   case FID(RTV1): pbr->GetFloat(m_d.m_aRotAndTra[1]); break;
-   case FID(RTV2): pbr->GetFloat(m_d.m_aRotAndTra[2]); break;
-   case FID(RTV3): pbr->GetFloat(m_d.m_aRotAndTra[3]); break;
-   case FID(RTV4): pbr->GetFloat(m_d.m_aRotAndTra[4]); break;
-   case FID(RTV5): pbr->GetFloat(m_d.m_aRotAndTra[5]); break;
-   case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
-   case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
-   case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
-   case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(SCOL): pbr->GetInt(m_d.m_SideColor); break;
-   case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(DTXI): pbr->GetBool(m_d.m_drawTexturesInside); break;
-   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(EFUI): pbr->GetFloat(m_d.m_edgeFactorUI); break;
-   case FID(CORF): pbr->GetFloat(m_d.m_collision_reductionFactor); break;
-   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-   case FID(ISTO): pbr->GetBool(m_d.m_toy); break;
-   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-   case FID(STRE): pbr->GetBool(m_d.m_staticRendering); break;
-   case FID(DILI): { int tmp; pbr->GetInt(tmp); m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); break; } // Pre 10.8 compatible hacky loading!
-   case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
-   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
-   case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
-   case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
-   case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
-   case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
-   case FID(M3VN):
-   {
-      pbr->GetInt(m_numVertices);
-      if (!m_mesh.m_animationFrames.empty())
-      {
-         for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
-            m_mesh.m_animationFrames[i].m_frameVerts.clear();
-         m_mesh.m_animationFrames.clear();
-      }
-      break;
-   }
-   case FID(M3DX):
-   {
-      m_mesh.m_vertices.clear();
-      m_mesh.m_vertices.resize(m_numVertices);
-      pbr->GetStruct(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2)*m_numVertices);
-      break;
-   }
-#ifdef COMPRESS_MESHES
-   case FID(M3AY): pbr->GetInt(m_compressedAnimationVertices); break;
-   case FID(M3AX):
-   {
-      Mesh::FrameData frameData;
-      frameData.m_frameVerts.clear();
-      frameData.m_frameVerts.resize(m_numVertices);
-
-      mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
-      mz_uint8 * const c = new mz_uint8[m_compressedAnimationVertices];
-      pbr->GetStruct(c, m_compressedAnimationVertices);
-      const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
-      if (error != Z_OK)
-         ShowError("Could not uncompress primitive animation vertex data, error "+std::to_string(error));
-      delete [] c;
-      m_mesh.m_animationFrames.push_back(frameData);
-      break;
-   }
-   case FID(M3CY): pbr->GetInt(m_compressedVertices); break;
-   case FID(M3CX):
-   {
-      m_mesh.m_vertices.clear();
-      m_mesh.m_vertices.resize(m_numVertices);
-      const mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
-      mz_uint8 * const c = new mz_uint8[m_compressedVertices];
-      pbr->GetStruct(c, m_compressedVertices);
-		mz_ulong uclen2 = uclen;
-		const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
-		if (error != Z_OK)
-			ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
-      delete [] c;
-      break;
-   }
-#endif
-   case FID(M3FN): pbr->GetInt(m_numIndices); break;
-   case FID(M3DI):
-   {
-      m_mesh.m_indices.resize(m_numIndices);
-      if (m_numVertices > 65535)
-         pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int)*m_numIndices);
-      else
-      {
-         vector<WORD> tmp(m_numIndices);
-         pbr->GetStruct(tmp.data(), (int)sizeof(WORD)*m_numIndices);
-         for (int i = 0; i < m_numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
-      }
-      break;
-   }
-#ifdef COMPRESS_MESHES
-   case FID(M3CJ): pbr->GetInt(m_compressedIndices); break;
-   case FID(M3CI):
-   {
-      m_mesh.m_indices.resize(m_numIndices);
-      if (m_numVertices > 65535)
-      {
-         const mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
-         mz_uint8 * const c = new mz_uint8[m_compressedIndices];
-         pbr->GetStruct(c, m_compressedIndices);
-			mz_ulong uclen2 = uclen;
-			const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
-			if (error != Z_OK)
-				ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
-			delete [] c;
-      }
-      else
-      {
-         const mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
-         mz_uint8 * const c = new mz_uint8[m_compressedIndices];
-         pbr->GetStruct(c, m_compressedIndices);
-         vector<WORD> tmp(m_numIndices);
-
-         mz_ulong uclen2 = uclen;
-         const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
-         if (error != Z_OK)
-            ShowError("Could not uncompress (small) primitive index data, error "+std::to_string(error));
-         delete [] c;
-         for (int i = 0; i < m_numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
-      }
-      break;
-   }
-#endif
-   case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
-   case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
-   case FID(ZMSK): pbr->GetBool(m_d.m_useDepthMask); break;
-   case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-
-   case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
-
-   case FID(REFL): pbr->GetString(m_d.m_szReflectionProbe); break;
-   case FID(RSTR): pbr->GetFloat(m_d.m_reflectionStrength); break;
-   case FID(REFR): pbr->GetString(m_d.m_szRefractionProbe); break;
-   case FID(RTHI): pbr->GetFloat(m_d.m_refractionThickness); break;
-
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

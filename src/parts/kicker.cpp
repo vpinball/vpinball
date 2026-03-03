@@ -592,41 +592,45 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
 HRESULT Kicker::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
+         case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
+         case FID(KSCT): pbr->GetFloat(m_d.m_scatter); break;
+         case FID(KHAC): pbr->GetFloat(m_d.m_hitAccuracy); break;
+         case FID(KHHI): pbr->GetFloat(m_d.m_hit_height); break;
+         case FID(KORI): pbr->GetFloat(m_d.m_orientation); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(TYPE):
+         {
+            pbr->GetInt(&m_d.m_kickertype);
+            // legacy handling:
+            if (m_d.m_kickertype > KickerCup2)
+               m_d.m_kickertype = KickerInvisible;
+            break;
+         }
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(FATH): pbr->GetBool(m_d.m_fallThrough); break;
+         case FID(LEMO): pbr->GetBool(m_d.m_legacyMode); break;
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
    m_phitkickercircle = nullptr;
    return S_OK;
-}
-
-bool Kicker::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
-   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
-   case FID(KSCT): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(KHAC): pbr->GetFloat(m_d.m_hitAccuracy); break;
-   case FID(KHHI): pbr->GetFloat(m_d.m_hit_height); break;
-   case FID(KORI): pbr->GetFloat(m_d.m_orientation); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(TYPE):
-   {
-      pbr->GetInt(&m_d.m_kickertype);
-      // legacy handling:
-      if (m_d.m_kickertype > KickerCup2)
-          m_d.m_kickertype = KickerInvisible;
-      break;
-   }
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(FATH): pbr->GetBool(m_d.m_fallThrough); break;
-   case FID(LEMO): pbr->GetBool(m_d.m_legacyMode); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)

@@ -10,12 +10,6 @@ std::filesystem::path PathFromFilename(const std::filesystem::path& filename);
 
 class BiffReader;
 
-class ILoadable
-{
-public:
-   virtual bool LoadToken(const int id, BiffReader * const pbr) = 0;
-};
-
 class BiffWriter final
 {
 public:
@@ -87,7 +81,6 @@ public:
 
    HRESULT ReadBytes(void * const pv, const uint32_t count);
 
-   HRESULT Load(ILoadable *piloadable);
    HRESULT Load(const std::function<bool(const int id, BiffReader *const pbr)> &processToken);
 
    IStream *m_pistream;
@@ -97,7 +90,6 @@ public:
    HCRYPTKEY m_hcryptkey;
 
 private:
-   ILoadable *m_piloadable;
    int m_bytesinrecordremaining;
 };
 

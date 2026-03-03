@@ -484,35 +484,39 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
 HRESULT Spinner::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+         case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(SSUP): pbr->GetBool(m_d.m_showBracket); break;
+         case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+         case FID(LGTH): pbr->GetFloat(m_d.m_length); break;
+         case FID(AFRC): pbr->GetFloat(m_d.m_damping); break;
+         case FID(SMAX): pbr->GetFloat(m_d.m_angleMax); break;
+         case FID(SMIN): pbr->GetFloat(m_d.m_angleMin); break;
+         case FID(SELA): pbr->GetFloat(m_d.m_elasticity); break;
+         case FID(SVIS): pbr->GetBool(m_d.m_visible); break;
+         case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
    return S_OK;
-}
-
-bool Spinner::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SSUP): pbr->GetBool(m_d.m_showBracket); break;
-   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
-   case FID(LGTH): pbr->GetFloat(m_d.m_length); break;
-   case FID(AFRC): pbr->GetFloat(m_d.m_damping); break;
-   case FID(SMAX): pbr->GetFloat(m_d.m_angleMax); break;
-   case FID(SMIN): pbr->GetFloat(m_d.m_angleMin); break;
-   case FID(SELA): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(SVIS): pbr->GetBool(m_d.m_visible); break;
-   case FID(IMGF): pbr->GetString(m_d.m_szImage); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)

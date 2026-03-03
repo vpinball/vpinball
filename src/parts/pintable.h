@@ -428,7 +428,6 @@ public:
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
    void Delete() final { } // Can't delete table itself
    void Uncreate() final { }
-   bool LoadToken(const int id, BiffReader *const pbr) final;
 
    virtual IDispatch *GetPrimary() { return GetDispatch(); }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }

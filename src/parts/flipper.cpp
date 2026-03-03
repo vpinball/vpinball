@@ -877,7 +877,75 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
 HRESULT Flipper::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector2(m_d.m_Center); break;
+         case FID(BASR): pbr->GetFloat(m_d.m_BaseRadius); break;
+         case FID(ENDR): pbr->GetFloat(m_d.m_EndRadius); break;
+         case FID(FLPR): pbr->GetFloat(m_d.m_FlipperRadiusMax); break;
+         //case FID(FAEO): pbr->GetFloat(m_d.m_angleEOS); break;
+         case FID(FRTN): pbr->GetFloat(m_d.m_return); break;
+         case FID(ANGS): pbr->GetFloat(m_d.m_StartAngle); break;
+         case FID(ANGE): pbr->GetFloat(m_d.m_EndAngle); break;
+         case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
+         case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(RTHK): //!! deprecated, remove
+         {
+            int rt;
+            pbr->GetInt(rt);
+            m_d.m_rubberthickness = (float)rt;
+            break;
+         }
+         case FID(RTHF): pbr->GetFloat(m_d.m_rubberthickness); break;
+         case FID(RHGT): //!! deprecated, remove
+         {
+            int rh;
+            pbr->GetInt(rh);
+            m_d.m_rubberheight = (float)rh;
+            break;
+         }
+         case FID(RHGF): pbr->GetFloat(m_d.m_rubberheight); break;
+         case FID(RWDT): //!! deprecated, remove
+         {
+            int rw;
+            pbr->GetInt(rw);
+            m_d.m_rubberwidth = (float)rw;
+            break;
+         }
+         case FID(RWDF): pbr->GetFloat(m_d.m_rubberwidth); break;
+         case FID(FHGT): pbr->GetFloat(m_d.m_height); break;
+         case FID(STRG): pbr->GetFloat(m_d.m_strength); break;
+         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
+         case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
+         case FID(FRIC): pbr->GetFloat(m_d.m_friction); break;
+         case FID(RPUP): pbr->GetFloat(m_d.m_rampUp); break;
+         case FID(SCTR): pbr->GetFloat(m_d.m_scatter); break;
+         case FID(TODA): pbr->GetFloat(m_d.m_torqueDamping); break;
+         case FID(TDAA): pbr->GetFloat(m_d.m_torqueDampingAngle); break;
+         case FID(FRMN): pbr->GetFloat(m_d.m_FlipperRadiusMin); break;
+         case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+         case FID(ENBL): pbr->GetBool(m_d.m_enabled); break;
+         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
    if (m_d.m_height > 1000.0f)
       m_d.m_height = 50.0f;
    if (m_d.m_rubberheight > 1000.f)
@@ -888,71 +956,6 @@ HRESULT Flipper::Load(BiffReader &reader)
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
    return S_OK;
 }
-
-bool Flipper::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_Center); break;
-   case FID(BASR): pbr->GetFloat(m_d.m_BaseRadius); break;
-   case FID(ENDR): pbr->GetFloat(m_d.m_EndRadius); break;
-   case FID(FLPR): pbr->GetFloat(m_d.m_FlipperRadiusMax); break;
-   //case FID(FAEO): pbr->GetFloat(m_d.m_angleEOS); break;
-   case FID(FRTN): pbr->GetFloat(m_d.m_return); break;
-   case FID(ANGS): pbr->GetFloat(m_d.m_StartAngle); break;
-   case FID(ANGE): pbr->GetFloat(m_d.m_EndAngle); break;
-   case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
-   case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(RTHK): //!! deprecated, remove
-   {
-      int rt;
-      pbr->GetInt(rt);
-      m_d.m_rubberthickness = (float)rt;
-      break;
-   }
-   case FID(RTHF): pbr->GetFloat(m_d.m_rubberthickness); break;
-   case FID(RHGT): //!! deprecated, remove
-   {
-      int rh;
-      pbr->GetInt(rh);
-      m_d.m_rubberheight = (float)rh;
-      break;
-   }
-   case FID(RHGF): pbr->GetFloat(m_d.m_rubberheight); break;
-   case FID(RWDT): //!! deprecated, remove
-   {
-      int rw;
-      pbr->GetInt(rw);
-      m_d.m_rubberwidth = (float)rw;
-      break;
-   }
-   case FID(RWDF): pbr->GetFloat(m_d.m_rubberwidth); break;
-   case FID(FHGT): pbr->GetFloat(m_d.m_height); break;
-   case FID(STRG): pbr->GetFloat(m_d.m_strength); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(FRIC): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RPUP): pbr->GetFloat(m_d.m_rampUp); break;
-   case FID(SCTR): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(TODA): pbr->GetFloat(m_d.m_torqueDamping); break;
-   case FID(TDAA): pbr->GetFloat(m_d.m_torqueDampingAngle); break;
-   case FID(FRMN): pbr->GetFloat(m_d.m_FlipperRadiusMin); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   case FID(ENBL): pbr->GetBool(m_d.m_enabled); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
 
 #pragma region ScriptProxy
 

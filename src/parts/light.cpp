@@ -934,8 +934,73 @@ HRESULT Light::Load(BiffReader &reader)
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
 
-   reader.Load(this);
-
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+         case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
+         case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
+         case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
+         case FID(STAT): // Pre-10.8 tables only had 0 (off), 1 (on), 2 (blinking)
+         {
+            int state;
+            pbr->GetInt(state);
+            m_inPlayState = m_d.m_state = clampLightState((float)state);
+            break;
+         }
+         case FID(STTF):
+         {
+            pbr->GetFloat(m_d.m_state);
+            m_d.m_state = clampLightState(m_d.m_state);
+            m_inPlayState = m_d.m_state;
+            break;
+         }
+         case FID(COLR): pbr->GetInt(m_d.m_color); break;
+         case FID(COL2): pbr->GetInt(m_d.m_color2); break;
+         case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(SHAP): m_roundLight = true; break;
+         case FID(BPAT): pbr->GetString(m_d.m_rgblinkpattern); break;
+         case FID(BINT): pbr->GetInt(m_d.m_blinkinterval); break;
+         //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
+         case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
+         case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(BGLS): pbr->GetBool(m_backglass); break;
+         case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
+         case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;
+         case FID(FASD): pbr->GetFloat(m_d.m_fadeSpeedDown); break;
+         case FID(BULT): pbr->GetBool(m_d.m_BulbLight); break;
+         case FID(IMMO): pbr->GetBool(m_d.m_imageMode); break;
+         case FID(SHBM): pbr->GetBool(m_d.m_showBulbMesh); break;
+         case FID(STBM): pbr->GetBool(m_d.m_staticBulbMesh); break;
+         case FID(SHRB): pbr->GetBool(m_d.m_showReflectionOnBall); break;
+         case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
+         case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
+         case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
+         case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
+         case FID(FADE): pbr->GetInt(&m_d.m_fader); break;
+         case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+         default:
+         {
+            if (tag == FID(DPNT))
+               LoadPointToken(pbr);
+            ISelect::LoadToken(tag, pbr);
+            break;
+         }
+         }
+         return true;
+      });
    // workaround for the old round light object
    // after loading m_roundLight is true if an pre-VPX table was loaded
    // init the round light to the new custom one
@@ -946,68 +1011,6 @@ HRESULT Light::Load(BiffReader &reader)
    }
 
    return S_OK;
-}
-
-bool Light::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
-   case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
-   case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
-   case FID(STAT): // Pre-10.8 tables only had 0 (off), 1 (on), 2 (blinking)
-   {
-      int state;
-      pbr->GetInt(state);
-      m_inPlayState = m_d.m_state = clampLightState((float)state);
-      break;
-   }
-   case FID(STTF):
-   {
-      pbr->GetFloat(m_d.m_state);
-      m_d.m_state = clampLightState(m_d.m_state);
-      m_inPlayState = m_d.m_state;
-      break;
-   }
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(COL2): pbr->GetInt(m_d.m_color2); break;
-   case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SHAP): m_roundLight = true; break;
-   case FID(BPAT): pbr->GetString(m_d.m_rgblinkpattern); break;
-   case FID(BINT): pbr->GetInt(m_d.m_blinkinterval); break;
-   //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
-   case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
-   case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(BGLS): pbr->GetBool(m_backglass); break;
-   case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;
-   case FID(FASD): pbr->GetFloat(m_d.m_fadeSpeedDown); break;
-   case FID(BULT): pbr->GetBool(m_d.m_BulbLight); break;
-   case FID(IMMO): pbr->GetBool(m_d.m_imageMode); break;
-   case FID(SHBM): pbr->GetBool(m_d.m_showBulbMesh); break;
-   case FID(STBM): pbr->GetBool(m_d.m_staticBulbMesh); break;
-   case FID(SHRB): pbr->GetBool(m_d.m_showReflectionOnBall); break;
-   case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
-   case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
-   case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
-   case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
-   case FID(FADE): pbr->GetInt(&m_d.m_fader); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
 }
 
 Vertex2D Light::GetPointCenter() const

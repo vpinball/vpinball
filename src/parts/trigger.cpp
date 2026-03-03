@@ -943,41 +943,45 @@ void Trigger::ClearForOverwrite()
 HRESULT Trigger::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
+         case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
+         case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
+         case FID(WITI): pbr->GetFloat(m_d.m_wireThickness); break;
+         case FID(SCAX): pbr->GetFloat(m_d.m_scaleX); break;
+         case FID(SCAY): pbr->GetFloat(m_d.m_scaleY); break;
+         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
+         case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
+         case FID(THOT): pbr->GetFloat(m_d.m_hit_height); break;
+         case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
+         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
+         case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
+         case FID(ANSP): pbr->GetFloat(m_d.m_animSpeed); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         default:
+         {
+            if (tag == FID(DPNT))
+               LoadPointToken(pbr);
+            ISelect::LoadToken(tag, pbr);
+            break;
+         }
+         }
+         return true;
+      });
    return S_OK;
-}
-
-bool Trigger::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
-   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-   case FID(WITI): pbr->GetFloat(m_d.m_wireThickness); break;
-   case FID(SCAX): pbr->GetFloat(m_d.m_scaleX); break;
-   case FID(SCAY): pbr->GetFloat(m_d.m_scaleY); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
-   case FID(THOT): pbr->GetFloat(m_d.m_hit_height); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
-   case FID(ANSP): pbr->GetFloat(m_d.m_animSpeed); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
 }
 
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)

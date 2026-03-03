@@ -99,7 +99,6 @@ public:
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
 	virtual HRESULT Load(BiffReader& partReader); \
-	virtual bool LoadToken(const int id, BiffReader * const pbr); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
 	virtual const IDispatch *GetDispatch() const {return static_cast<const IDispatch *>(this);} \
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \

@@ -41,23 +41,22 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool s
 
 HRESULT RenderProbe::LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-   BiffReader br(pstm, version, hcrypthash, hcryptkey);
-   br.Load(this);
+   BiffReader reader(pstm, version, hcrypthash, hcryptkey);
+   reader.Load(
+      [this](int tag, BiffReader* const pbr)
+      {
+         switch (tag)
+         {
+         case FID(TYPE): pbr->GetInt(&m_type); break;
+         case FID(NAME): pbr->GetString(m_name); break;
+         case FID(RBAS): pbr->GetInt(m_roughness); break;
+         case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
+         case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
+         case FID(RLMP): pbr->GetBool(m_disableLightReflection); break;
+         }
+         return true;
+      });
    return S_OK;
-}
-
-bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
-{
-   switch (id)
-   {
-   case FID(TYPE): pbr->GetInt(&m_type); break;
-   case FID(NAME): pbr->GetString(m_name); break;
-   case FID(RBAS): pbr->GetInt(m_roughness); break;
-   case FID(RPLA): pbr->GetStruct(&m_reflection_plane, sizeof(vec4)); break;
-   case FID(RMOD): pbr->GetInt(&m_reflection_mode); break;
-   case FID(RLMP): pbr->GetBool(m_disableLightReflection); break;
-   }
-   return true;
 }
 
 void RenderProbe::SetName(const string& name)

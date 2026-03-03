@@ -473,90 +473,94 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
 HRESULT DispReel::Load(BiffReader &reader)
 {
    SetDefaults(false);
-   reader.Load(this);
-   return S_OK;
-}
-
-bool DispReel::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch (id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
-   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
-   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
-   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
-   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(RCNT):
-   {
-      float reel;
-      pbr->GetFloat(reel);
-      m_d.m_reelcount = (int)reel;
-      break;
-   }
-   case FID(RSPC): pbr->GetFloat(m_d.m_reelspacing); break;
-   case FID(MSTP):
-   {
-      float motorsteps;
-      pbr->GetFloat(motorsteps);
-      m_d.m_motorsteps = (int)motorsteps;
-      break;
-   }
-   case FID(SOUN): pbr->GetString(m_d.m_szSound); break;
-   case FID(UGRD): pbr->GetBool(m_d.m_useImageGrid); break;
-   case FID(VISI): pbr->GetBool(m_d.m_visible); break;
-   case FID(GIPR): pbr->GetInt(m_d.m_imagesPerGridRow); break;
-   case FID(RANG):
-   {
-      float dig;
-      pbr->GetFloat(dig);
-      m_d.m_digitrange = (int)dig;
-      break;
-   }
-   case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
-   case FID(FONT): //!! deprecated, only here to support loading of old tables
-   {
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
+         case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
+         case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
+         case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
+         case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         case FID(RCNT):
+         {
+            float reel;
+            pbr->GetFloat(reel);
+            m_d.m_reelcount = (int)reel;
+            break;
+         }
+         case FID(RSPC): pbr->GetFloat(m_d.m_reelspacing); break;
+         case FID(MSTP):
+         {
+            float motorsteps;
+            pbr->GetFloat(motorsteps);
+            m_d.m_motorsteps = (int)motorsteps;
+            break;
+         }
+         case FID(SOUN): pbr->GetString(m_d.m_szSound); break;
+         case FID(UGRD): pbr->GetBool(m_d.m_useImageGrid); break;
+         case FID(VISI): pbr->GetBool(m_d.m_visible); break;
+         case FID(GIPR): pbr->GetInt(m_d.m_imagesPerGridRow); break;
+         case FID(RANG):
+         {
+            float dig;
+            pbr->GetFloat(dig);
+            m_d.m_digitrange = (int)dig;
+            break;
+         }
+         case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
+         case FID(FONT): //!! deprecated, only here to support loading of old tables
+         {
 #ifndef __STANDALONE__
-      IFont *pIFont;
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-      fd.lpstrName = (LPOLESTR)(L"Times New Roman");
-      fd.cySize.int64 = 260000;
-      //fd.cySize.Lo = 0;
-      fd.sWeight = FW_BOLD;
-      fd.sCharset = 0;
-      fd.fItalic = 0;
-      fd.fUnderline = 0;
-      fd.fStrikethrough = 0;
-      OleCreateFontIndirect(&fd, IID_IFont, (void **)&pIFont);
+            IFont *pIFont;
+            FONTDESC fd;
+            fd.cbSizeofstruct = sizeof(FONTDESC);
+            fd.lpstrName = (LPOLESTR)(L"Times New Roman");
+            fd.cySize.int64 = 260000;
+            //fd.cySize.Lo = 0;
+            fd.sWeight = FW_BOLD;
+            fd.sCharset = 0;
+            fd.fItalic = 0;
+            fd.fUnderline = 0;
+            fd.fStrikethrough = 0;
+            OleCreateFontIndirect(&fd, IID_IFont, (void **)&pIFont);
 
-      IPersistStream * ips;
-      pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
+            IPersistStream *ips;
+            pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
-      ips->Load(pbr->m_pistream);
+            ips->Load(pbr->m_pistream);
 
-      pIFont->Release();
+            pIFont->Release();
 #else
-      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+            // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
 
-      unsigned char data[255];
-      pbr->ReadBytes(data, 3);
-      pbr->ReadBytes(data, 1); // Italic
-      pbr->ReadBytes(data, 2); // Weight
-      pbr->ReadBytes(data, 4); // Size
-      pbr->ReadBytes(data, 1); // nameLen
-      pbr->ReadBytes(data, data[0]); // name
+            unsigned char data[255];
+            pbr->ReadBytes(data, 3);
+            pbr->ReadBytes(data, 1); // Italic
+            pbr->ReadBytes(data, 2); // Weight
+            pbr->ReadBytes(data, 4); // Size
+            pbr->ReadBytes(data, 1); // nameLen
+            pbr->ReadBytes(data, data[0]); // name
 #endif
-      break;
-   }
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
+            break;
+         }
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
+   return S_OK;
 }
 
 // The following methods provide the interface to the object through both the editor

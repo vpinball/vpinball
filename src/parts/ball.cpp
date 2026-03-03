@@ -140,32 +140,36 @@ HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
 HRESULT Ball::Load(BiffReader& reader)
 {
    SetDefaults(false);
-   reader.Load(this);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         switch (tag)
+         {
+         case FID(PIID):
+         {
+            int pid;
+            pbr->GetInt(&pid);
+         }
+         break;
+         case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
+         case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
+         case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;
+         case FID(FREF): pbr->GetBool(m_d.m_forceReflection); break;
+         case FID(DCMD): pbr->GetBool(m_d.m_decalMode); break;
+         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
+         case FID(DIMG): pbr->GetString(m_d.m_imageDecal); break;
+         case FID(BISC): pbr->GetFloat(m_d.m_bulb_intensity_scale); break;
+         case FID(PFRF): pbr->GetFloat(m_d.m_playfieldReflectionStrength); break;
+         case FID(COLR): pbr->GetInt(m_d.m_color); break;
+         case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
+         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
+         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         default: ISelect::LoadToken(tag, pbr); break;
+         }
+         return true;
+      });
    return S_OK;
-}
-
-bool Ball::LoadToken(const int id, BiffReader *const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
-   case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
-   case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;
-   case FID(FREF): pbr->GetBool(m_d.m_forceReflection); break;
-   case FID(DCMD): pbr->GetBool(m_d.m_decalMode); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(DIMG): pbr->GetString(m_d.m_imageDecal); break;
-   case FID(BISC): pbr->GetFloat(m_d.m_bulb_intensity_scale); break;
-   case FID(PFRF): pbr->GetFloat(m_d.m_playfieldReflectionStrength); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 #pragma endregion

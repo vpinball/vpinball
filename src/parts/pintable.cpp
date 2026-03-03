@@ -1206,19 +1206,27 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 
 HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version)
 {
-   BiffReader br(pstmTags, version, hcrypthash, NULL);
-   const HRESULT hr = br.Load(this);
-
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
+   m_vCustomInfoTag.clear();
+   m_vCustomInfoContent.clear();
+   BiffReader reader(pstmTags, version, hcrypthash, NULL);
+   reader.Load(
+      [this](int tag, BiffReader *const pbr)
+      {
+         if (tag== FID(CUST))
+         {
+            string tmp;
+            pbr->GetString(tmp);
+            m_vCustomInfoTag.push_back(std::move(tmp));
+         }
+         return true;
+      });
+   for (const string& tag : m_vCustomInfoTag)
    {
-      const wstring wzName = MakeWString(m_vCustomInfoTag[i]);
-
       string customInfo;
-      ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
+      ReadInfoValue(pstg, MakeWString(tag), customInfo, hcrypthash);
       m_vCustomInfoContent.push_back(std::move(customInfo));
    }
-
-   return hr;
+   return S_OK;
 }
 
 HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -2204,455 +2212,460 @@ HRESULT PinTable::Load(BiffReader &reader)
 {
    SetLoadDefaults();
    memset(m_loadTemp, 0, sizeof(m_loadTemp));
-   const HRESULT hr = reader.Load(this);
-   return hr;
-}
-
-bool PinTable::LoadToken(const int id, BiffReader * const pbr)
-{
    const std::filesystem::path INIFilename = GetSettingsFileName();
    const bool hasIni = !INIFilename.empty() && FileExists(INIFilename);
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(LEFT): pbr->GetFloat(m_left); break;
-   case FID(TOPX): pbr->GetFloat(m_top); break;
-   case FID(RGHT): pbr->GetFloat(m_right); break;
-   case FID(BOTM): pbr->GetFloat(m_bottom); break;
-   case FID(VSM0): pbr->GetInt(&mViewSetups[BG_DESKTOP].mMode); break;
-   case FID(ROTA): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportRotation); break;
-   case FID(LAYB): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLayback); break;
-   case FID(INCL): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLookAt); break;
-   case FID(FOVX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mFOV); break;
-   case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleX); break;
-   case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleY); break;
-   case FID(SCLZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleZ); break;
-   case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
-   case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
-   case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
-   case FID(HOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewHOfs); break;
-   case FID(VOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewVOfs); break;
-   case FID(WTZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopZOfs); break;
-   case FID(WBZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomZOfs); break;
-   case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
-   case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
-   case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
-   case FID(INCF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLookAt); break;
-   case FID(FOVF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mFOV); break;
-   case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleX); break;
-   case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleY); break;
-   case FID(SCFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleZ); break;
-   case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
-   case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
-   case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
-   case FID(HOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewHOfs); break;
-   case FID(VOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewVOfs); break;
-   case FID(WTZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopZOfs); break;
-   case FID(WBZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs); break;
-   case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
-   case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
-   case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
-   case FID(INFS): pbr->GetFloat(mViewSetups[BG_FSS].mLookAt); break;
-   case FID(FOFS): pbr->GetFloat(mViewSetups[BG_FSS].mFOV); break;
-   case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleX); break;
-   case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleY); break;
-   case FID(SCZS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleZ); break;
-   case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
-   case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
-   case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
-   case FID(HOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewHOfs); break;
-   case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
-   case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
-   case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
-   case FID(EFSS): { pbr->GetBool(m_isFSSViewModeEnabled); UpdateCurrentBGSet(); break; }
-   //case FID(VERS): pbr->GetString(szVersion); break;
-   case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
-   case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
-   case FID(GAVT): pbr->GetFloat(m_Gravity); break;
-   case FID(FRCT): pbr->GetFloat(m_friction); break;
-   case FID(ELAS): pbr->GetFloat(m_elasticity); break;
-   case FID(ELFA): pbr->GetFloat(m_elasticityFalloff); break;
-   case FID(PFSC): pbr->GetFloat(m_scatter); break;
-   case FID(SCAT): pbr->GetFloat(m_defaultScatter); break;
-   case FID(NDGT): pbr->GetFloat(m_nudgeTime); break;
-   case FID(PHML):
-   {
-      pbr->GetInt(m_PhysicsMaxLoops);
-      if (m_PhysicsMaxLoops == 0xFFFFFFFF)
-         m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
-      break;
-   }
-   case FID(DECL): pbr->GetBool(m_renderDecals); break;
-   case FID(REEL): pbr->GetBool(m_renderEMReels); break;
-   case FID(OFFX): pbr->GetFloat(m_winEditorViewOffset.x); break;
-   case FID(OFFY): pbr->GetFloat(m_winEditorViewOffset.y); break;
-   case FID(ZOOM): pbr->GetFloat(m_winEditorZoom); break;
-   case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
-   case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
-   case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
-   case FID(GLAB): pbr->GetFloat(m_glassBottomHeight); break;
-   case FID(IMAG): pbr->GetString(m_image); break;
-   case FID(BLIM): pbr->GetString(m_ballImage); break;
-   case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
-   case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
-   case FID(SSHT): pbr->GetString(m_screenShot); break;
-   case FID(FBCK): pbr->GetBool(m_winEditorBackdrop); break;
-   case FID(SEDT): pbr->GetInt(m_loadTemp[0]); break;
-   case FID(SSND): pbr->GetInt(m_loadTemp[1]); break;
-   case FID(SIMG): pbr->GetInt(m_loadTemp[2]); break;
-   case FID(SFNT): pbr->GetInt(m_loadTemp[3]); break;
-   case FID(SCOL): pbr->GetInt(m_loadTemp[4]); break;
-   case FID(NAME): pbr->GetWideString(m_wzName); break;
-   case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
-   case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
-   case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
-   case FID(BIMN): pbr->GetBool(m_ImageBackdropNightDay); break;
-   case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
-   case FID(EIMG): pbr->GetString(m_envImage); break;
-   case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
-   case FID(NOTX): pbr->GetString(m_notesText); break;
-   case FID(LZAM): pbr->GetInt(m_lightAmbient); break;
-   case FID(LZDI): pbr->GetInt(m_Light[0].emission); break;
-   case FID(LZHI): pbr->GetFloat(m_lightHeight); break;
-   case FID(LZRA): pbr->GetFloat(m_lightRange); break;
-   case FID(LIES): pbr->GetFloat(m_lightEmissionScale); break;
-   case FID(ENES): pbr->GetFloat(m_envEmissionScale); break;
-   case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
-   case FID(AOSC): pbr->GetFloat(m_AOScale); break;
-   case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
-   case FID(CLBH): pbr->GetFloat(m_groundToLockbarHeight); break;
-   // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-   //case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
-   case FID(PLST):
-   {
-      int tmp;
-      pbr->GetInt(tmp);
-      m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
-      break;
-   }
-   case FID(BTRA):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+   reader.Load(
+      [this, hasIni](int tag, BiffReader *const pbr)
       {
-         int useTrailForBalls;
-         pbr->GetInt(useTrailForBalls);
-         if (useTrailForBalls != -1)
-             m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
-      }
-      break;
-   case FID(BTST):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+      switch (tag)
       {
-         int ballTrailStrength;
-         pbr->GetInt(ballTrailStrength);
-         m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
-      }
-      break;
-   case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
-   case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
-   case FID(UAAL):
-      if (hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         int useAA;
-         pbr->GetInt(useAA);
-         if (useAA != -1)
-             m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
-      }
-      break;
-   case FID(UAOC):
-      {
-         // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-         int useAO;
-         pbr->GetInt(useAO);
-         m_enableAO = useAO != 0;
-      }
-      break;
-   case FID(USSR):
-      {
-         // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-         int useSSR;
-         pbr->GetInt(useSSR);
-         m_enableSSR = useSSR != 0;
-      }
-      break;
-   case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
-   case FID(EXPO): pbr->GetFloat(m_exposure); break;
-   case FID(UFXA):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         int fxaa;
-         pbr->GetInt(fxaa);
-         if (fxaa != -1)
-            m_settings.SetPlayer_FXAA(fxaa, false);
-      }
-      break;
-   case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
-   case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
-   case FID(SECB): // old protection/encryption data
-   {
-      struct ProtectionData
-      {
-         int32_t fileversion;
-         int32_t size;
-         uint8_t paraphrase[16 + 8];
-         uint32_t flags;
-         int32_t keyversion;
-         int32_t spare1;
-         int32_t spare2;
-      } protectionData;
-
-      pbr->GetStruct(&protectionData, sizeof(ProtectionData));
-      m_script_protected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
-      break;
-   }
-   case FID(CODE): // if the script is protected then we pass in the proper cryptokey into the code loadstream
-   {
-      ULONG read = 0;
-      int cchar;
-      pbr->m_pistream->Read(&cchar, sizeof(int), &read);
-
-      char * szText = new char[cchar + 1];
-
-      pbr->m_pistream->Read(szText, cchar*(int)sizeof(char), &read);
-
-      #ifndef __STANDALONE__
-         if (pbr->m_hcrypthash)
-            CryptHashData(pbr->m_hcrypthash, (BYTE *)szText, cchar, 0);
-
-         // if there is a valid key, then decrypt the script text (now in szText)
-         //(must be done after the hash is updated)
-         if (m_script_protected && (pbr->m_hcryptkey != 0))
+         case FID(PIID):
          {
-            // get the size of the data to decrypt
-            DWORD cryptlen = cchar*(int)sizeof(char);
-
-            // decrypt the script
-            CryptDecrypt(pbr->m_hcryptkey, // key to use
-               0,                          // not hashing data at the same time
-               TRUE,                       // last block (or only block)
-               0,                          // no flags
-               (BYTE *)szText,             // buffer to decrypt
-               &cryptlen);                 // size of data to decrypt
-
-            /*const int foo =*/ GetLastError();	// purge any errors
-
-            // update the size of the buffer
-            cchar = cryptlen/(DWORD)sizeof(char);
+            int pid;
+            pbr->GetInt(&pid);
          }
-      #endif
-
-      // ensure that the script is null terminated
-      szText[cchar] = '\0';
-
-      // save original script, in case an external vbs is loaded
-      m_original_table_script.resize(cchar);
-      memcpy(m_original_table_script.data(), szText, cchar);
-      m_script_text = string_from_utf8_or_iso8859_1(szText, cchar);
-      delete[] szText;
-      break;
-   }
-   case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
-   case FID(TDFT): pbr->GetFloat(m_difficulty); break;
-   case FID(CUST):
-   {
-      string tmp;
-      pbr->GetString(tmp);
-      m_vCustomInfoTag.push_back(std::move(tmp));
-      break;
-   }
-   case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
-   case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
-   case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
-   case FID(AVSY):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         int tableAdaptiveVSync;
-         pbr->GetInt(tableAdaptiveVSync);
-         if (tableAdaptiveVSync != -1)
+         break;
+         case FID(LEFT): pbr->GetFloat(m_left); break;
+         case FID(TOPX): pbr->GetFloat(m_top); break;
+         case FID(RGHT): pbr->GetFloat(m_right); break;
+         case FID(BOTM): pbr->GetFloat(m_bottom); break;
+         case FID(VSM0): pbr->GetInt(&mViewSetups[BG_DESKTOP].mMode); break;
+         case FID(ROTA): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewportRotation); break;
+         case FID(LAYB): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLayback); break;
+         case FID(INCL): pbr->GetFloat(mViewSetups[BG_DESKTOP].mLookAt); break;
+         case FID(FOVX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mFOV); break;
+         case FID(SCLX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleX); break;
+         case FID(SCLY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleY); break;
+         case FID(SCLZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mSceneScaleZ); break;
+         case FID(XLTX): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewX); break;
+         case FID(XLTY): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewY); break;
+         case FID(XLTZ): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewZ); break;
+         case FID(HOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewHOfs); break;
+         case FID(VOF0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mViewVOfs); break;
+         case FID(WTZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowTopZOfs); break;
+         case FID(WBZ0): pbr->GetFloat(mViewSetups[BG_DESKTOP].mWindowBottomZOfs); break;
+         case FID(VSM1): pbr->GetInt(&mViewSetups[BG_FULLSCREEN].mMode); break;
+         case FID(ROTF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewportRotation); break;
+         case FID(LAYF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLayback); break;
+         case FID(INCF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mLookAt); break;
+         case FID(FOVF): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mFOV); break;
+         case FID(SCFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleX); break;
+         case FID(SCFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleY); break;
+         case FID(SCFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mSceneScaleZ); break;
+         case FID(XLFX): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewX); break;
+         case FID(XLFY): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewY); break;
+         case FID(XLFZ): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewZ); break;
+         case FID(HOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewHOfs); break;
+         case FID(VOF1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mViewVOfs); break;
+         case FID(WTZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowTopZOfs); break;
+         case FID(WBZ1): pbr->GetFloat(mViewSetups[BG_FULLSCREEN].mWindowBottomZOfs); break;
+         case FID(VSM2): pbr->GetInt(&mViewSetups[BG_FSS].mMode); break;
+         case FID(ROFS): pbr->GetFloat(mViewSetups[BG_FSS].mViewportRotation); break;
+         case FID(LAFS): pbr->GetFloat(mViewSetups[BG_FSS].mLayback); break;
+         case FID(INFS): pbr->GetFloat(mViewSetups[BG_FSS].mLookAt); break;
+         case FID(FOFS): pbr->GetFloat(mViewSetups[BG_FSS].mFOV); break;
+         case FID(SCXS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleX); break;
+         case FID(SCYS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleY); break;
+         case FID(SCZS): pbr->GetFloat(mViewSetups[BG_FSS].mSceneScaleZ); break;
+         case FID(XLXS): pbr->GetFloat(mViewSetups[BG_FSS].mViewX); break;
+         case FID(XLYS): pbr->GetFloat(mViewSetups[BG_FSS].mViewY); break;
+         case FID(XLZS): pbr->GetFloat(mViewSetups[BG_FSS].mViewZ); break;
+         case FID(HOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewHOfs); break;
+         case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
+         case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
+         case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
+         case FID(EFSS):
          {
-            switch (tableAdaptiveVSync)
+            pbr->GetBool(m_isFSSViewModeEnabled);
+            UpdateCurrentBGSet();
+            break;
+         }
+         //case FID(VERS): pbr->GetString(szVersion); break;
+         case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
+         case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
+         case FID(GAVT): pbr->GetFloat(m_Gravity); break;
+         case FID(FRCT): pbr->GetFloat(m_friction); break;
+         case FID(ELAS): pbr->GetFloat(m_elasticity); break;
+         case FID(ELFA): pbr->GetFloat(m_elasticityFalloff); break;
+         case FID(PFSC): pbr->GetFloat(m_scatter); break;
+         case FID(SCAT): pbr->GetFloat(m_defaultScatter); break;
+         case FID(NDGT): pbr->GetFloat(m_nudgeTime); break;
+         case FID(PHML):
+         {
+            pbr->GetInt(m_PhysicsMaxLoops);
+            if (m_PhysicsMaxLoops == 0xFFFFFFFF)
+               m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
+            break;
+         }
+         case FID(DECL): pbr->GetBool(m_renderDecals); break;
+         case FID(REEL): pbr->GetBool(m_renderEMReels); break;
+         case FID(OFFX): pbr->GetFloat(m_winEditorViewOffset.x); break;
+         case FID(OFFY): pbr->GetFloat(m_winEditorViewOffset.y); break;
+         case FID(ZOOM): pbr->GetFloat(m_winEditorZoom); break;
+         case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
+         case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
+         case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
+         case FID(GLAB): pbr->GetFloat(m_glassBottomHeight); break;
+         case FID(IMAG): pbr->GetString(m_image); break;
+         case FID(BLIM): pbr->GetString(m_ballImage); break;
+         case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
+         case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
+         case FID(SSHT): pbr->GetString(m_screenShot); break;
+         case FID(FBCK): pbr->GetBool(m_winEditorBackdrop); break;
+         case FID(SEDT): pbr->GetInt(m_loadTemp[0]); break;
+         case FID(SSND): pbr->GetInt(m_loadTemp[1]); break;
+         case FID(SIMG): pbr->GetInt(m_loadTemp[2]); break;
+         case FID(SFNT): pbr->GetInt(m_loadTemp[3]); break;
+         case FID(SCOL): pbr->GetInt(m_loadTemp[4]); break;
+         case FID(NAME): pbr->GetWideString(m_wzName); break;
+         case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
+         case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
+         case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
+         case FID(BIMN): pbr->GetBool(m_ImageBackdropNightDay); break;
+         case FID(IMCG): pbr->GetString(m_imageColorGrade); break;
+         case FID(EIMG): pbr->GetString(m_envImage); break;
+         case FID(PLMA): pbr->GetString(m_playfieldMaterial); break;
+         case FID(NOTX): pbr->GetString(m_notesText); break;
+         case FID(LZAM): pbr->GetInt(m_lightAmbient); break;
+         case FID(LZDI): pbr->GetInt(m_Light[0].emission); break;
+         case FID(LZHI): pbr->GetFloat(m_lightHeight); break;
+         case FID(LZRA): pbr->GetFloat(m_lightRange); break;
+         case FID(LIES): pbr->GetFloat(m_lightEmissionScale); break;
+         case FID(ENES): pbr->GetFloat(m_envEmissionScale); break;
+         case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
+         case FID(AOSC): pbr->GetFloat(m_AOScale); break;
+         case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
+         case FID(CLBH): pbr->GetFloat(m_groundToLockbarHeight); break;
+         // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
+         //case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
+         case FID(PLST):
+         {
+            int tmp;
+            pbr->GetInt(tmp);
+            m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
+            break;
+         }
+         case FID(BTRA):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             {
-            case 0:
-               m_settings.SetPlayer_MaxFramerate(0, true);
-               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
-               break;
-            case 1:
-               m_settings.SetPlayer_MaxFramerate(-1, true);
-               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
-               break;
-            case 2:
-               m_settings.SetPlayer_MaxFramerate(-1, true);
-               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-               break;
-            default:
-               m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
-               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-               break;
+               int useTrailForBalls;
+               pbr->GetInt(useTrailForBalls);
+               if (useTrailForBalls != -1)
+                  m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
             }
-         }
-      }
-      break;
-   case FID(OGAC):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         bool overwriteGlobalDetailLevel;
-         pbr->GetBool(overwriteGlobalDetailLevel);
-         if (!overwriteGlobalDetailLevel)
-            m_settings.ResetPlayer_AlphaRampAccuracy();
-      }
-      break;
-   case FID(OGDN):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         // Global Day/Night was fairly convoluted:
-         // - table would define the value
-         // - user could select in video options to override this value by an automatic value
-         // - table could then define to reject this user settings
-         // - user could define in commandline to finally override the value
-         // Now the logic is the same as all other settings:
-         // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
-         bool overwriteGlobalDayNight;
-         pbr->GetBool(overwriteGlobalDayNight);
-         if (overwriteGlobalDayNight)
-            m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
-      }
-      break;
-   case FID(GDAC): pbr->GetBool(m_winEditorGrid); break;
-   // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-   // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
-   case FID(ARAC):
-      if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-      {
-         int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
-         pbr->GetInt(userDetailLevel);
-         m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
-      }
-      break;
-   case FID(MASI): pbr->GetInt(m_numMaterials); break;
-   case FID(MATE):
-   {
-      vector<SaveMaterial> mats(m_numMaterials);
-      pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial)*m_numMaterials);
-      if (pbr->m_version < 1080
-         || m_materials.empty()) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
-      {
-         m_materials.reserve(m_numMaterials + m_materials.size());
-         for (int i = 0; i < m_numMaterials; i++)
+            break;
+         case FID(BTST):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               int ballTrailStrength;
+               pbr->GetInt(ballTrailStrength);
+               m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
+            }
+            break;
+         case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
+         case FID(DBIS): pbr->GetFloat(m_defaultBulbIntensityScaleOnBall); break;
+         case FID(UAAL):
+            if (hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               int useAA;
+               pbr->GetInt(useAA);
+               if (useAA != -1)
+                  m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
+            }
+            break;
+         case FID(UAOC):
          {
-            Material * const pmat = new Material();
-            pmat->m_cBase = mats[i].cBase;
-            pmat->m_cGlossy = mats[i].cGlossy;
-            pmat->m_cClearcoat = mats[i].cClearcoat;
-            pmat->m_fWrapLighting = mats[i].fWrapLighting;
-            pmat->m_fRoughness = mats[i].fRoughness;
-            pmat->m_fGlossyImageLerp = 1.0f - dequantizeUnsigned<8>(mats[i].fGlossyImageLerp); //!! '1.0f -' to be compatible with previous table versions
-            pmat->m_fThickness = (mats[i].fThickness == 0) ? 0.05f : dequantizeUnsigned<8>(mats[i].fThickness); //!! 0 -> 0.05f to be compatible with previous table versions
-            pmat->m_fEdge = mats[i].fEdge;
-            pmat->m_fOpacity = mats[i].fOpacity;
-            pmat->m_type = mats[i].bIsMetal ? Material::MaterialType::METAL : Material::MaterialType::BASIC;
-            pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
-            pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
-            pmat->m_name = mats[i].szName;
-            m_materials.push_back(pmat);
+            // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
+            int useAO;
+            pbr->GetInt(useAO);
+            m_enableAO = useAO != 0;
          }
-      }
-      break;
-   }
-   case FID(PHMA):
-   {
-       vector<SavePhysicsMaterial> mats(m_numMaterials);
-       pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial)*m_numMaterials);
-       if (pbr->m_version < 1080
-          || m_materials.size() == m_numMaterials) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
-       {
-          for (int i = 0; i < m_numMaterials; i++)
-          {
-              bool found = true;
-              Material * pmat = GetMaterial(mats[i].szName);
-              if (pmat == m_dummyMaterial.get())
-              {
-                  assert(!"SaveMaterial not found");
-                  pmat = new Material();
+         break;
+         case FID(USSR):
+         {
+            // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
+            int useSSR;
+            pbr->GetInt(useSSR);
+            m_enableSSR = useSSR != 0;
+         }
+         break;
+         case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
+         case FID(EXPO): pbr->GetFloat(m_exposure); break;
+         case FID(UFXA):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               int fxaa;
+               pbr->GetInt(fxaa);
+               if (fxaa != -1)
+                  m_settings.SetPlayer_FXAA(fxaa, false);
+            }
+            break;
+         case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
+         case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
+         case FID(SECB): // old protection/encryption data
+         {
+            struct ProtectionData
+            {
+               int32_t fileversion;
+               int32_t size;
+               uint8_t paraphrase[16 + 8];
+               uint32_t flags;
+               int32_t keyversion;
+               int32_t spare1;
+               int32_t spare2;
+            } protectionData;
+
+            pbr->GetStruct(&protectionData, sizeof(ProtectionData));
+            m_script_protected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
+            break;
+         }
+         case FID(CODE): // if the script is protected then we pass in the proper cryptokey into the code loadstream
+         {
+            ULONG read = 0;
+            int cchar;
+            pbr->m_pistream->Read(&cchar, sizeof(int), &read);
+
+            char *szText = new char[cchar + 1];
+
+            pbr->m_pistream->Read(szText, cchar * (int)sizeof(char), &read);
+
+#ifndef __STANDALONE__
+            if (pbr->m_hcrypthash)
+               CryptHashData(pbr->m_hcrypthash, (BYTE *)szText, cchar, 0);
+
+            // if there is a valid key, then decrypt the script text (now in szText)
+            //(must be done after the hash is updated)
+            if (m_script_protected && (pbr->m_hcryptkey != 0))
+            {
+               // get the size of the data to decrypt
+               DWORD cryptlen = cchar * (int)sizeof(char);
+
+               // decrypt the script
+               CryptDecrypt(pbr->m_hcryptkey, // key to use
+                  0, // not hashing data at the same time
+                  TRUE, // last block (or only block)
+                  0, // no flags
+                  (BYTE *)szText, // buffer to decrypt
+                  &cryptlen); // size of data to decrypt
+
+               /*const int foo =*/GetLastError(); // purge any errors
+
+               // update the size of the buffer
+               cchar = cryptlen / (DWORD)sizeof(char);
+            }
+#endif
+
+            // ensure that the script is null terminated
+            szText[cchar] = '\0';
+
+            // save original script, in case an external vbs is loaded
+            m_original_table_script.resize(cchar);
+            memcpy(m_original_table_script.data(), szText, cchar);
+            m_script_text = string_from_utf8_or_iso8859_1(szText, cchar);
+            delete[] szText;
+            break;
+         }
+         case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
+         case FID(TDFT): pbr->GetFloat(m_difficulty); break;
+         case FID(SVOL): pbr->GetFloat(m_TableSoundVolume); break;
+         case FID(BDMO): pbr->GetBool(m_BallDecalMode); break;
+         case FID(MVOL): pbr->GetFloat(m_TableMusicVolume); break;
+         case FID(AVSY):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               int tableAdaptiveVSync;
+               pbr->GetInt(tableAdaptiveVSync);
+               if (tableAdaptiveVSync != -1)
+               {
+                  switch (tableAdaptiveVSync)
+                  {
+                  case 0:
+                     m_settings.SetPlayer_MaxFramerate(0, true);
+                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
+                     break;
+                  case 1:
+                     m_settings.SetPlayer_MaxFramerate(-1, true);
+                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
+                     break;
+                  case 2:
+                     m_settings.SetPlayer_MaxFramerate(-1, true);
+                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
+                     break;
+                  default:
+                     m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
+                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
+                     break;
+                  }
+               }
+            }
+            break;
+         case FID(OGAC):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               bool overwriteGlobalDetailLevel;
+               pbr->GetBool(overwriteGlobalDetailLevel);
+               if (!overwriteGlobalDetailLevel)
+                  m_settings.ResetPlayer_AlphaRampAccuracy();
+            }
+            break;
+         case FID(OGDN):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               // Global Day/Night was fairly convoluted:
+               // - table would define the value
+               // - user could select in video options to override this value by an automatic value
+               // - table could then define to reject this user settings
+               // - user could define in commandline to finally override the value
+               // Now the logic is the same as all other settings:
+               // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
+               bool overwriteGlobalDayNight;
+               pbr->GetBool(overwriteGlobalDayNight);
+               if (overwriteGlobalDayNight)
+                  m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
+            }
+            break;
+         case FID(GDAC): pbr->GetBool(m_winEditorGrid); break;
+         // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
+         // case FID(REOP): pbr->GetBool(m_reflectElementsOnPlayfield); break;
+         case FID(ARAC):
+            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            {
+               int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
+               pbr->GetInt(userDetailLevel);
+               m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
+            }
+            break;
+         case FID(MASI): pbr->GetInt(m_numMaterials); break;
+         case FID(MATE):
+         {
+            vector<SaveMaterial> mats(m_numMaterials);
+            pbr->GetStruct(mats.data(), (int)sizeof(SaveMaterial) * m_numMaterials);
+            if (pbr->m_version < 1080
+               || m_materials
+                  .empty()) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            {
+               m_materials.reserve(m_numMaterials + m_materials.size());
+               for (int i = 0; i < m_numMaterials; i++)
+               {
+                  Material *const pmat = new Material();
+                  pmat->m_cBase = mats[i].cBase;
+                  pmat->m_cGlossy = mats[i].cGlossy;
+                  pmat->m_cClearcoat = mats[i].cClearcoat;
+                  pmat->m_fWrapLighting = mats[i].fWrapLighting;
+                  pmat->m_fRoughness = mats[i].fRoughness;
+                  pmat->m_fGlossyImageLerp = 1.0f - dequantizeUnsigned<8>(mats[i].fGlossyImageLerp); //!! '1.0f -' to be compatible with previous table versions
+                  pmat->m_fThickness = (mats[i].fThickness == 0) ? 0.05f : dequantizeUnsigned<8>(mats[i].fThickness); //!! 0 -> 0.05f to be compatible with previous table versions
+                  pmat->m_fEdge = mats[i].fEdge;
+                  pmat->m_fOpacity = mats[i].fOpacity;
+                  pmat->m_type = mats[i].bIsMetal ? Material::MaterialType::METAL : Material::MaterialType::BASIC;
+                  pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
+                  pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
                   pmat->m_name = mats[i].szName;
-                  found = false;
-              }
-              pmat->m_fElasticity = mats[i].fElasticity;
-              pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
-              pmat->m_fFriction = mats[i].fFriction;
-              pmat->m_fScatterAngle = mats[i].fScatterAngle;
-              if (!found)
-                 m_materials.push_back(pmat);
-          }
-       }
-       break;
-   }
-   case FID(MATR):
-   {
-      // Replace legacy materials with the new ones. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
-      if (pbr->m_version >= 1080 && m_materials.size() == m_numMaterials)
-      {
-         for (int i = 0; i < m_numMaterials; i++)
-            delete m_materials[i];
-         m_materials.clear();
-      }
-      const int record_size = pbr->GetBytesInRecordRemaining();
-      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-      LPVOID pData = ::GlobalLock(hMem);
-      pbr->GetStruct(pData, record_size);
-      ::GlobalUnlock(hMem);
-      Material *mat = new Material();
-      CComPtr<IStream> spStream;
+                  m_materials.push_back(pmat);
+               }
+            }
+            break;
+         }
+         case FID(PHMA):
+         {
+            vector<SavePhysicsMaterial> mats(m_numMaterials);
+            pbr->GetStruct(mats.data(), (int)sizeof(SavePhysicsMaterial) * m_numMaterials);
+            if (pbr->m_version < 1080
+               || m_materials.size()
+                  == m_numMaterials) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            {
+               for (int i = 0; i < m_numMaterials; i++)
+               {
+                  bool found = true;
+                  Material *pmat = GetMaterial(mats[i].szName);
+                  if (pmat == m_dummyMaterial.get())
+                  {
+                     assert(!"SaveMaterial not found");
+                     pmat = new Material();
+                     pmat->m_name = mats[i].szName;
+                     found = false;
+                  }
+                  pmat->m_fElasticity = mats[i].fElasticity;
+                  pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
+                  pmat->m_fFriction = mats[i].fFriction;
+                  pmat->m_fScatterAngle = mats[i].fScatterAngle;
+                  if (!found)
+                     m_materials.push_back(pmat);
+               }
+            }
+            break;
+         }
+         case FID(MATR):
+         {
+            // Replace legacy materials with the new ones. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            if (pbr->m_version >= 1080 && m_materials.size() == m_numMaterials)
+            {
+               for (int i = 0; i < m_numMaterials; i++)
+                  delete m_materials[i];
+               m_materials.clear();
+            }
+            const int record_size = pbr->GetBytesInRecordRemaining();
+            HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+            LPVOID pData = ::GlobalLock(hMem);
+            pbr->GetStruct(pData, record_size);
+            ::GlobalUnlock(hMem);
+            Material *mat = new Material();
+            CComPtr<IStream> spStream;
 #ifndef __STANDALONE__
-      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+            const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
 #else
-      FastIStream fastStream;
-      fastStream.m_rg = (char*)malloc(record_size);
-      memcpy(fastStream.m_rg, (char*)hMem, record_size);
-      fastStream.m_cSize = record_size;
-      spStream.Attach(&fastStream);
+            FastIStream fastStream;
+            fastStream.m_rg = (char *)malloc(record_size);
+            memcpy(fastStream.m_rg, (char *)hMem, record_size);
+            fastStream.m_cSize = record_size;
+            spStream.Attach(&fastStream);
 #endif
-      if (mat->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
-      {
-         assert(!"Invalid binary image file");
-         delete mat;
-         return false;
-      }
-      m_materials.push_back(mat);
-      ::GlobalFree(hMem);
-      spStream.Detach();
-      break;
-   }
-   case FID(RPRB):
-   {
-      const int record_size = pbr->GetBytesInRecordRemaining();
-      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-      LPVOID pData = ::GlobalLock(hMem);
-      pbr->GetStruct(pData, record_size);
-      ::GlobalUnlock(hMem);
-      RenderProbe *rpb = new RenderProbe();
-      CComPtr<IStream> spStream;
+            if (mat->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
+            {
+               assert(!"Invalid binary image file");
+               delete mat;
+               return false;
+            }
+            m_materials.push_back(mat);
+            ::GlobalFree(hMem);
+            spStream.Detach();
+            break;
+         }
+         case FID(RPRB):
+         {
+            const int record_size = pbr->GetBytesInRecordRemaining();
+            HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
+            LPVOID pData = ::GlobalLock(hMem);
+            pbr->GetStruct(pData, record_size);
+            ::GlobalUnlock(hMem);
+            RenderProbe *rpb = new RenderProbe();
+            CComPtr<IStream> spStream;
 #ifndef __STANDALONE__
-      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
+            const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
 #else
-      FastIStream fastStream;
-      fastStream.m_rg = (char*)malloc(record_size);
-      memcpy(fastStream.m_rg, (char*)hMem, record_size);
-      fastStream.m_cSize = record_size;
-      spStream.Attach(&fastStream);
+            FastIStream fastStream;
+            fastStream.m_rg = (char *)malloc(record_size);
+            memcpy(fastStream.m_rg, (char *)hMem, record_size);
+            fastStream.m_cSize = record_size;
+            spStream.Attach(&fastStream);
 #endif
-      if (rpb->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
-      {
-         assert(!"Invalid binary image file");
-         delete rpb;
-         return false;
-      }
-      m_vrenderprobe.push_back(rpb);
-      ::GlobalFree(hMem);
-      spStream.Detach();
-      break;
-   }
-   case FID(TLCK): pbr->GetInt(m_tablelocked); break;
-   }
-   return true;
+            if (rpb->LoadData(spStream, pbr->m_version, NULL, NULL) != S_OK)
+            {
+               assert(!"Invalid binary image file");
+               delete rpb;
+               return false;
+            }
+            m_vrenderprobe.push_back(rpb);
+            ::GlobalFree(hMem);
+            spStream.Detach();
+            break;
+         }
+         case FID(TLCK): pbr->GetInt(m_tablelocked); break;
+         }
+         return true;
+      });
+
+   return S_OK;
 }
 
 bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
