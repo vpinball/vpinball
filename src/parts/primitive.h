@@ -361,7 +361,6 @@ private:
       const Vertex3Ds &vj, const bool isUI);
 
    void CalculateBuiltinOriginal();
-   static void WaitForMeshDecompression();
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 

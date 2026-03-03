@@ -53,6 +53,7 @@ public:
     >;
     void wait_until_empty();
     void wait_until_nothing_in_flight();
+    bool has_work_in_flight();
     void set_queue_size_limit(std::size_t limit);
     void set_pool_size(std::size_t limit);
     ~ThreadPool();
@@ -186,6 +187,12 @@ inline void ThreadPool::wait_until_nothing_in_flight()
     std::unique_lock<std::mutex> lock(this->in_flight_mutex);
     this->in_flight_condition.wait(lock,
         [this]{ return this->in_flight == 0; });
+}
+
+inline bool ThreadPool::has_work_in_flight()
+{
+   std::lock_guard guard(in_flight_mutex);
+   return in_flight > 0;
 }
 
 inline void ThreadPool::set_queue_size_limit(std::size_t limit)

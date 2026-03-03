@@ -1427,11 +1427,6 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Ramp::InitPostLoad()
-{
-   return S_OK;
-}
-
 void Ramp::AddPoint(int x, int y, const bool smooth)
 {
    STARTUNDO

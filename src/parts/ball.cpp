@@ -174,11 +174,6 @@ bool Ball::LoadToken(const int id, BiffReader *const pbr)
    return true;
 }
 
-HRESULT Ball::InitPostLoad()
-{
-   return S_OK;
-}
-
 #pragma endregion
 
 

@@ -187,9 +187,4 @@ bool PartGroup::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT PartGroup::InitPostLoad()
-{
-   return S_OK;
-}
-
 #pragma endregion

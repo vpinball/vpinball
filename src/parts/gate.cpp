@@ -631,11 +631,6 @@ bool Gate::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Gate::InitPostLoad()
-{
-   return S_OK;
-}
-
 STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)
 {
    static const IID* arr[] =

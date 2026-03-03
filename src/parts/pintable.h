@@ -385,7 +385,6 @@ public:
    void UIRenderPass1(Sur *const psur) final { }
    ItemTypeEnum GetItemType() const final { return eItemTable; }
    HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
-   HRESULT InitPostLoad() final { return S_OK; }
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }

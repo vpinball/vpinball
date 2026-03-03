@@ -215,34 +215,6 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #endif
 }
 
-static void SetPartGroup(ISelect* const me, string layerName)
-{
-   if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
-   {
-      if (layerName.length() >= MAXNAMEBUFFER)
-         layerName.erase(MAXNAMEBUFFER - 1);
-      const wstring newName = MakeWString(layerName);
-      const auto partGroupF = std::ranges::find_if(me->GetPTable()->GetParts(),
-         [&newName](const IEditable *editable) {
-         return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName);
-      });
-      if (partGroupF == me->GetPTable()->GetParts().end())
-      {
-         PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
-         if (newGroup)
-         {
-            newGroup->m_wzName = newName;
-            me->GetPTable()->AddPart(newGroup);
-            me->GetIEditable()->SetPartGroup(newGroup);
-         }
-      }
-      else
-      {
-         me->GetIEditable()->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
-      }
-   }
-}
-
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
@@ -253,7 +225,7 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
       {
          int layerIndex;
          pbr->GetInt(layerIndex);
-         SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
+         m_onLoadExpectedPartGroup = (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1);
          break;
       }
       case FID(LANR): // 10.7 layers (limited number of named layers)
@@ -264,14 +236,14 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
             layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
                return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
             });
-         SetPartGroup(this, "Layer_" + layerName);
+         m_onLoadExpectedPartGroup = layerName;
          break;
       }
       case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
       {
          string partGroupName;
          pbr->GetString(partGroupName);
-         SetPartGroup(this, partGroupName);
+         m_onLoadExpectedPartGroup = partGroupName;
          break;
       }
    }

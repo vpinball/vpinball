@@ -10,8 +10,6 @@
 #include "ThreadPool.h"
 #include "renderer/Shader.h"
 
-ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;
-
 void Mesh::Clear()
 {
    m_vertices.clear();
@@ -192,7 +190,6 @@ void Mesh::UpdateBounds()
 
 Primitive::~Primitive()
 {
-   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
@@ -1678,8 +1675,6 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPT
 
    if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
-      WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-
       unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
       if (tmp != nullptr)
       {
@@ -1689,6 +1684,8 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPT
    }
 
    m_inPlayState = m_d.m_visible;
+
+   CalculateBuiltinOriginal(); 
 
    return S_OK;
 }
@@ -1782,16 +1779,11 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       const mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_uint8 * const c = new mz_uint8[m_compressedVertices];
       pbr->GetStruct(c, m_compressedVertices);
-      if (g_pPrimitiveDecompressThreadPool == nullptr)
-		  g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-
-      g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-		  mz_ulong uclen2 = uclen;
-		  const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
-		  if (error != Z_OK)
-			  ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
-        delete [] c;
-      });
+		mz_ulong uclen2 = uclen;
+		const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
+		if (error != Z_OK)
+			ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
+      delete [] c;
       break;
    }
 #endif
@@ -1820,36 +1812,26 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
          const mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_uint8 * const c = new mz_uint8[m_compressedIndices];
          pbr->GetStruct(c, m_compressedIndices);
-         if (g_pPrimitiveDecompressThreadPool == nullptr)
-			 g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-
-         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-			 mz_ulong uclen2 = uclen;
-			 const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
-			 if (error != Z_OK)
-				 ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
-			 delete [] c;
-         });
+			mz_ulong uclen2 = uclen;
+			const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
+			if (error != Z_OK)
+				ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
+			delete [] c;
       }
       else
       {
          const mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_uint8 * const c = new mz_uint8[m_compressedIndices];
          pbr->GetStruct(c, m_compressedIndices);
-         if (g_pPrimitiveDecompressThreadPool == nullptr)
-            g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
+         vector<WORD> tmp(m_numIndices);
 
-         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-            vector<WORD> tmp(m_numIndices);
-
-            mz_ulong uclen2 = uclen;
-            const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
-            if (error != Z_OK)
-               ShowError("Could not uncompress (small) primitive index data, error "+std::to_string(error));
-            delete [] c;
-            for (int i = 0; i < m_numIndices; ++i)
-               m_mesh.m_indices[i] = tmp[i];
-         });
+         mz_ulong uclen2 = uclen;
+         const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
+         if (error != Z_OK)
+            ShowError("Could not uncompress (small) primitive index data, error "+std::to_string(error));
+         delete [] c;
+         for (int i = 0; i < m_numIndices; ++i)
+            m_mesh.m_indices[i] = tmp[i];
       }
       break;
    }
@@ -1871,26 +1853,6 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;
-}
-
-void Primitive::WaitForMeshDecompression()
-{
-   if (g_pPrimitiveDecompressThreadPool)
-   {
-      // This will wait for the threads to finish decompressing meshes.
-      g_pPrimitiveDecompressThreadPool->wait_until_empty();
-      g_pPrimitiveDecompressThreadPool->wait_until_nothing_in_flight();
-      delete g_pPrimitiveDecompressThreadPool;
-      g_pPrimitiveDecompressThreadPool = nullptr;
-   }
-}
-
-HRESULT Primitive::InitPostLoad()
-{
-   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-   CalculateBuiltinOriginal();
-   UpdateStatusBarInfo();
-   return S_OK;
 }
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

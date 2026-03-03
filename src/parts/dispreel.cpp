@@ -565,11 +565,6 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT DispReel::InitPostLoad()
-{
-   return S_OK;
-}
-
 // The following methods provide the interface to the object through both the editor
 // and the script for all of the object properties
 

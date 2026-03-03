@@ -1309,11 +1309,6 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-HRESULT Surface::InitPostLoad()
-{
-   return S_OK;
-}
-
 void Surface::UpdateStatusBarInfo()
 {
    if (!m_vpinball)

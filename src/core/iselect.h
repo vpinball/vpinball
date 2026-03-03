@@ -143,6 +143,10 @@ public:
    bool m_isVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
    bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
 
+   // Name of the part group, this object expects to be added to. Defined when loading a part
+   // TODO move to the loading context (rename InitLoad, pass an abstract 'IPartReader' not tied to BIFF file format, set this on the PartReader to be processed by the caller
+   string m_onLoadExpectedPartGroup;
+
    bool m_markedForUndo = false; // Flag set when dragged to enable undo
 
 protected:
