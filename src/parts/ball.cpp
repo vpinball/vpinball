@@ -137,35 +137,30 @@ HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Ball::Load(BiffReader& reader)
+HRESULT Ball::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
-         case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
-         case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;
-         case FID(FREF): pbr->GetBool(m_d.m_forceReflection); break;
-         case FID(DCMD): pbr->GetBool(m_d.m_decalMode); break;
-         case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-         case FID(DIMG): pbr->GetString(m_d.m_imageDecal); break;
-         case FID(BISC): pbr->GetFloat(m_d.m_bulb_intensity_scale); break;
-         case FID(PFRF): pbr->GetFloat(m_d.m_playfieldReflectionStrength); break;
-         case FID(COLR): pbr->GetInt(m_d.m_color); break;
-         case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         default: ISelect::LoadToken(tag, pbr); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_hitBall.m_d.m_pos = reader.AsVector3(); break;
+         case FID(RADI): m_hitBall.m_d.m_radius = reader.AsFloat(); break;
+         case FID(MASS): m_hitBall.m_d.m_mass = reader.AsFloat(); break;
+         case FID(FREF): m_d.m_forceReflection = reader.AsBool(); break;
+         case FID(DCMD): m_d.m_decalMode = reader.AsBool(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(DIMG): m_d.m_imageDecal = reader.AsString(); break;
+         case FID(BISC): m_d.m_bulb_intensity_scale = reader.AsFloat(); break;
+         case FID(PFRF): m_d.m_playfieldReflectionStrength = reader.AsFloat(); break;
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+         case FID(SPHR): m_d.m_pinballEnvSphericalMapping = reader.AsBool(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

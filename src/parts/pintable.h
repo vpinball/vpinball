@@ -384,7 +384,7 @@ public:
    // IEditable (mostly bogus for now)
    void UIRenderPass1(Sur *const psur) final { }
    ItemTypeEnum GetItemType() const final { return eItemTable; }
-   HRESULT Load(BiffReader &reader) final;
+   HRESULT Load(IObjectReader& reader) final;
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
@@ -711,7 +711,7 @@ public:
 
    PinUndo m_undo;
 
-   vector<char> m_original_table_script; // Script defined in the loaded file
+   string m_original_table_script; // Script defined in the loaded file
    std::filesystem::path m_external_script_name; // if defined, file that override internal script
    string m_script_text; // Actual script (either a copy of the original or the one loaded from the override file)
 

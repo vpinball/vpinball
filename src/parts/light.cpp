@@ -911,7 +911,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    return S_OK;
 }
 
-HRESULT Light::Load(BiffReader &reader)
+HRESULT Light::Load(IObjectReader& reader)
 {
    SetDefaults(false);
 
@@ -934,70 +934,60 @@ HRESULT Light::Load(BiffReader &reader)
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
 
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-         case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
-         case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
-         case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_vCenter = reader.AsVector2(); break;
+         case FID(HGHT): m_d.m_height = reader.AsFloat(); break;
+         case FID(RADI): m_d.m_falloff = reader.AsFloat(); break;
+         case FID(FAPO): m_d.m_falloff_power = reader.AsFloat(); break;
          case FID(STAT): // Pre-10.8 tables only had 0 (off), 1 (on), 2 (blinking)
          {
             int state;
-            pbr->GetInt(state);
+            state = reader.AsInt();
             m_inPlayState = m_d.m_state = clampLightState((float)state);
             break;
          }
          case FID(STTF):
          {
-            pbr->GetFloat(m_d.m_state);
+            m_d.m_state = reader.AsFloat();
             m_d.m_state = clampLightState(m_d.m_state);
             m_inPlayState = m_d.m_state;
             break;
          }
-         case FID(COLR): pbr->GetInt(m_d.m_color); break;
-         case FID(COL2): pbr->GetInt(m_d.m_color2); break;
-         case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+         case FID(COL2): m_d.m_color2 = reader.AsInt(); break;
+         case FID(IMG1): m_d.m_szImage = reader.AsString(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
          case FID(SHAP): m_roundLight = true; break;
-         case FID(BPAT): pbr->GetString(m_d.m_rgblinkpattern); break;
-         case FID(BINT): pbr->GetInt(m_d.m_blinkinterval); break;
-         //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
-         case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
-         case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
-         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(BGLS): pbr->GetBool(m_backglass); break;
-         case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
-         case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;
-         case FID(FASD): pbr->GetFloat(m_d.m_fadeSpeedDown); break;
-         case FID(BULT): pbr->GetBool(m_d.m_BulbLight); break;
-         case FID(IMMO): pbr->GetBool(m_d.m_imageMode); break;
-         case FID(SHBM): pbr->GetBool(m_d.m_showBulbMesh); break;
-         case FID(STBM): pbr->GetBool(m_d.m_staticBulbMesh); break;
-         case FID(SHRB): pbr->GetBool(m_d.m_showReflectionOnBall); break;
-         case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
-         case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
-         case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
-         case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
-         case FID(FADE): pbr->GetInt(&m_d.m_fader); break;
-         case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-         default:
-         {
-            if (tag == FID(DPNT))
-               LoadPointToken(pbr);
-            ISelect::LoadToken(tag, pbr);
-            break;
-         }
+         case FID(BPAT): m_d.m_rgblinkpattern = reader.AsString(); break;
+         case FID(BINT): m_d.m_blinkinterval = reader.AsInt(); break;
+         //case FID(BCOL): m_d.m_bordercolor = reader.AsInt(); break;
+         case FID(BWTH): m_d.m_intensity = reader.AsFloat(); break;
+         case FID(TRMS): m_d.m_transmissionScale = reader.AsFloat(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(BGLS): m_backglass = reader.AsBool(); break;
+         case FID(LIDB): m_d.m_depthBias = reader.AsFloat(); break;
+         case FID(FASP): m_d.m_fadeSpeedUp = reader.AsFloat(); break;
+         case FID(FASD): m_d.m_fadeSpeedDown = reader.AsFloat(); break;
+         case FID(BULT): m_d.m_BulbLight = reader.AsBool(); break;
+         case FID(IMMO): m_d.m_imageMode = reader.AsBool(); break;
+         case FID(SHBM): m_d.m_showBulbMesh = reader.AsBool(); break;
+         case FID(STBM): m_d.m_staticBulbMesh = reader.AsBool(); break;
+         case FID(SHRB): m_d.m_showReflectionOnBall = reader.AsBool(); break;
+         case FID(BMSC): m_d.m_meshRadius = reader.AsFloat(); break;
+         case FID(BMVA): m_d.m_modulate_vs_add = reader.AsFloat(); break;
+         case FID(BHHI): m_d.m_bulbHaloHeight = reader.AsFloat(); break;
+         case FID(SHDW): m_d.m_shadows = static_cast<ShadowMode>(reader.AsInt()); break;
+         case FID(FADE): m_d.m_fader = static_cast<Fader>(reader.AsInt()); break;
+         case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
+         case FID(DPNT): LoadPointToken(reader); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

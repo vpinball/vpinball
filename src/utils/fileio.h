@@ -8,8 +8,6 @@ bool FileExists(const std::filesystem::path& filePath);
 string TitleFromFilename(const std::filesystem::path& filename);
 std::filesystem::path PathFromFilename(const std::filesystem::path& filename);
 
-class BiffReader;
-
 class BiffWriter final
 {
 public:
@@ -36,62 +34,95 @@ public:
    HCRYPTHASH m_hcrypthash;
 };
 
-class BiffReader final
+
+class IObjectReader
+{
+public:
+   virtual ~IObjectReader() = default;
+   virtual int GetVersion() const = 0;
+   virtual bool HasError() const = 0;
+
+   virtual bool AsBool() = 0;
+   virtual int AsInt() = 0;
+   virtual unsigned int AsUInt() = 0;
+   virtual float AsFloat() = 0;
+   virtual string AsString() = 0;
+   virtual wstring AsWideString() = 0;
+   virtual Vertex2D AsVector2() = 0;
+   virtual Vertex3Ds AsVector3(bool isPadded = false) = 0;
+   virtual string AsScript(bool isScriptProtected) = 0;
+   struct FontDesc
+   {
+      uint8_t version;
+      uint16_t charset;
+      uint8_t attributes;
+      uint16_t weight;
+      uint32_t size;
+      string name;
+      #ifndef __STANDALONE__
+      FONTDESC ToOLEFontDesc()
+      {
+         FONTDESC fd;
+         fd.cbSizeofstruct = sizeof(FONTDESC);
+         fd.lpstrName = MakeWide(name);
+         fd.cySize.Hi = 0;
+         fd.cySize.Lo = size;
+         fd.sWeight = weight;
+         fd.sCharset = charset;
+         fd.fItalic = (attributes & 0x02) ? TRUE : FALSE;
+         fd.fUnderline = (attributes & 0x04) ? TRUE : FALSE;
+         fd.fStrikethrough = (attributes & 0x08) ? TRUE : FALSE;
+         return fd;
+      }
+      #endif
+   };
+   virtual FontDesc AsFontDescriptor() = 0;
+   virtual void AsRaw(void *pvalue, const int size) = 0;
+   virtual void AsObject(const std::function<bool(const int fieldTag, IObjectReader &fieldReader)> &processField = nullptr) = 0;
+
+   // TODO remove these methods as they do not conform to the object reading design (direct byte acces instead of typed fields)
+   virtual int GetBytesInRecordRemaining() const = 0;
+};
+
+
+class BiffReader final :
+   public IObjectReader
 {
 public:
    BiffReader(IStream *pistream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
+   int GetVersion() const override { return m_version; }
+   bool HasError() const override { return m_hasError; }
 
-   int GetBytesInRecordRemaining() const { return m_bytesinrecordremaining; }
+   bool AsBool() override;
+   int AsInt() override;
+   unsigned int AsUInt() override;
+   float AsFloat() override;
+   string AsString() override;
+   wstring AsWideString() override;
+   Vertex2D AsVector2() override;
+   Vertex3Ds AsVector3(bool isPadded = false) override;
+   string AsScript(bool isScriptProtected) override;
+   FontDesc AsFontDescriptor() override;
+   void AsRaw(void *pvalue, const int size) override;
+   void AsObject(const std::function<bool(const int tag, IObjectReader &reader)> &processToken) override;
 
-   HRESULT GetIntNoHash(int &value);
-   HRESULT GetInt(void * const value);
-   HRESULT GetInt(int &value);
-   HRESULT GetInt(uint32_t &value)
-   {
-      int val;
-      const HRESULT hr = GetInt(val);
-      value = val;
-      return hr;
-   }
-#ifndef __STANDALONE__
-   HRESULT GetInt(COLORREF &value)
-   {
-      int val;
-      const HRESULT hr = GetInt(val);
-      value = val;
-      return hr;
-   }
-#endif
-   HRESULT GetString(string& szvalue);
-   HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
-   HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
-   HRESULT GetFloat(float &value);
-   HRESULT GetBool(BOOL &value);
-   HRESULT GetBool(bool &value)
-   {
-      BOOL val;
-      const HRESULT hr = GetBool(val);
-      value = !!val;
-      return hr;
-   }
-   HRESULT GetStruct(void *pvalue, const int size);
-   HRESULT GetVector2(Vertex2D& vec);
-   HRESULT GetVector3(Vertex3Ds& vec);
-   HRESULT GetVector3Padded(Vertex3Ds& vec);
+   int GetBytesInRecordRemaining() const override { return m_bytesinrecordremaining; }
 
-   HRESULT ReadBytes(void * const pv, const uint32_t count);
-
-   HRESULT Load(const std::function<bool(const int id, BiffReader *const pbr)> &processToken);
+   void ReadBytes(void *const pv, const uint32_t count);
 
    IStream *m_pistream;
-   int m_version;
-
    HCRYPTHASH m_hcrypthash;
    HCRYPTKEY m_hcryptkey;
 
 private:
-   int m_bytesinrecordremaining;
+   int GetIntNoHash();
+
+   const int m_version;
+   int m_bytesinrecordremaining = 0;
+   bool m_hasError = false;
 };
+
+
 
 class FastIStream;
 

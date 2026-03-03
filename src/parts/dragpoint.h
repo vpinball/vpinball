@@ -71,7 +71,7 @@ public:
    void Delete() final;
    void Uncreate() final;
 
-   bool LoadToken(const int id, BiffReader *const pbr);
+   bool LoadToken(const int id, IObjectReader& reader);
 
    // IControlPoint
 public:
@@ -123,8 +123,7 @@ public:
    virtual int GetMinimumPoints() const { return 3; }
 
    virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash);
-   //virtual HRESULT InitPointLoad(IStream *pstm, HCRYPTHASH hcrypthash);
-   void LoadPointToken(BiffReader *pbr);
+   void LoadPointToken(IObjectReader& reader);
 
    virtual void ClearPointsForOverwrite();
 

@@ -149,83 +149,46 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Textbox::Load(BiffReader &reader)
+HRESULT Textbox::Load(IObjectReader& reader)
 {
+   SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
-         case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
-         case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
-         case FID(CLRF): pbr->GetInt(m_d.m_fontcolor); break;
-         case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(TEXT): pbr->GetString(m_d.m_text); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
-         case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
-         case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VER1): m_d.m_v1 = reader.AsVector2(); break;
+         case FID(VER2): m_d.m_v2 = reader.AsVector2(); break;
+         case FID(CLRB): m_d.m_backcolor = reader.AsInt(); break;
+         case FID(CLRF): m_d.m_fontcolor = reader.AsInt(); break;
+         case FID(INSC): m_d.m_intensity_scale = reader.AsFloat(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(TEXT): m_d.m_text = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(ALGN): m_d.m_talign = static_cast<TextAlignment>(reader.AsInt()); break;
+         case FID(TRNS): m_d.m_transparent = reader.AsBool(); break;
+         case FID(IDMD): m_d.m_isDMD = reader.AsBool(); break;
          case FID(FONT):
          {
+            IObjectReader::FontDesc fd = reader.AsFontDescriptor();
 #ifndef __STANDALONE__
-            if (!m_pIFont)
-            {
-               FONTDESC fd;
-               fd.cbSizeofstruct = sizeof(FONTDESC);
-               fd.lpstrName = (LPOLESTR)(L"Arial");
-               fd.cySize.int64 = 142500;
-               //fd.cySize.Lo = 0;
-               fd.sWeight = FW_NORMAL;
-               fd.sCharset = 0;
-               fd.fItalic = 0;
-               fd.fUnderline = 0;
-               fd.fStrikethrough = 0;
-               OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-            }
-            IPersistStream *ips;
-            m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-            ips->Load(pbr->m_pistream);
-            SAFE_RELEASE_NO_RCC(ips);
+            FONTDESC oleFD = fd.ToOLEFontDesc();
+            OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
+            delete[] oleFD.lpstrName;
 #else
-            BYTE buffer[255];
-            BYTE attributes;
-            short weight;
-            int size;
-            int len;
-
-            pbr->ReadBytes(buffer, 1); // version
-            pbr->ReadBytes(buffer, 2); // charset
-            pbr->ReadBytes(&attributes, 1); // attributes
-            m_fontItalic = (attributes & 0x02) > 0;
-            m_fontUnderline = (attributes & 0x04) > 0;
-            m_fontStrikeThrough = (attributes & 0x08) > 0;
-            pbr->ReadBytes(&weight, 2); // weight
-            m_fontBold = weight > 550;
-            pbr->ReadBytes(&size, 4); // size
-            m_fontSize = (float)size / 10000.f;
-            pbr->ReadBytes(buffer, 1); // name length
-            len = (int)buffer[0];
-            if (len > 0)
-            {
-               pbr->ReadBytes(buffer, len); // name
-               m_fontName = string(reinterpret_cast<char *>(buffer), len);
-            }
-            else
-               m_fontName.clear();
+            m_fontItalic = (fd.attributes & 0x02) != 0;
+            m_fontUnderline = (fd.attributes & 0x04) != 0;
+            m_fontStrikeThrough = (fd.attributes & 0x08) != 0;
+            m_fontBold = fd.weight > 550;
+            m_fontSize = (float)fd.size / 10000.f;
+            m_fontName = fd.name;
 #endif
             break;
          }
-         default: ISelect::LoadToken(tag, pbr); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

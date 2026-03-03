@@ -579,49 +579,44 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Gate::Load(BiffReader &reader)
+HRESULT Gate::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    m_d.m_twoWay = false; // to keep old VP8/9 behavior when loading .vpt files
-   reader.Load(
-      [this](int tag, BiffReader *const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
+         case FID(PIID): reader.AsInt(); break;
          case FID(GATY):
          {
-            pbr->GetInt(&m_d.m_type);
+            m_d.m_type = static_cast<GateType>(reader.AsInt());
             if (m_d.m_type < GateWireW || m_d.m_type > GateLongPlate) // for tables that were saved in the phase where m_type could've been undefined
                m_d.m_type = GateWireW;
             break;
          }
-         case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-         case FID(LGTH): pbr->GetFloat(m_d.m_length); break;
-         case FID(HGTH): pbr->GetFloat(m_d.m_height); break;
-         case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-         case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(GSUP): pbr->GetBool(m_d.m_showBracket); break;
-         case FID(GCOL): pbr->GetBool(m_d.m_collidable); break;
-         case FID(TWWA): pbr->GetBool(m_d.m_twoWay); break;
-         case FID(GVSB): pbr->GetBool(m_d.m_visible); break;
-         case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-         case FID(GAMA): pbr->GetFloat(m_d.m_angleMax); break;
-         case FID(GAMI): pbr->GetFloat(m_d.m_angleMin); break;
-         case FID(GFRC): pbr->GetFloat(m_d.m_friction); break;
-         case FID(AFRC): pbr->GetFloat(m_d.m_damping); break;
-         case FID(GGFC): pbr->GetFloat(m_d.m_gravityfactor); break;
-         default: ISelect::LoadToken(tag, pbr); break;
+         case FID(VCEN): m_d.m_vCenter = reader.AsVector2(); break;
+         case FID(LGTH): m_d.m_length = reader.AsFloat(); break;
+         case FID(HGTH): m_d.m_height = reader.AsFloat(); break;
+         case FID(ROTA): m_d.m_rotation = reader.AsFloat(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(GSUP): m_d.m_showBracket = reader.AsBool(); break;
+         case FID(GCOL): m_d.m_collidable = reader.AsBool(); break;
+         case FID(TWWA): m_d.m_twoWay = reader.AsBool(); break;
+         case FID(GVSB): m_d.m_visible = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(GAMA): m_d.m_angleMax = reader.AsFloat(); break;
+         case FID(GAMI): m_d.m_angleMin = reader.AsFloat(); break;
+         case FID(GFRC): m_d.m_friction = reader.AsFloat(); break;
+         case FID(AFRC): m_d.m_damping = reader.AsFloat(); break;
+         case FID(GGFC): m_d.m_gravityfactor = reader.AsFloat(); break;
+         default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });

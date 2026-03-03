@@ -313,32 +313,37 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
 }
 
 
-void IHaveDragPoints::LoadPointToken(BiffReader *pbr)
+void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
 {
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(this, 0.f, 0.f, 0.f, false);
-      m_vdpoint.push_back(pdp);
-      BiffReader reader(pbr->m_pistream, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
-      reader.Load(
-         [pdp](int tag, BiffReader *const pbr)
+   if (pdp == nullptr)
+      return;
+
+   pdp->AddRef();
+   pdp->Init(this, 0.f, 0.f, 0.f, false);
+   reader.AsObject(
+      [pdp](int tag, IObjectReader &reader)
+      {
+         switch (tag)
          {
-            switch (tag)
-            {
-            case FID(VCEN): pbr->GetStruct(&pdp->m_v, sizeof(Vertex2D)); break;
-            case FID(POSZ): pbr->GetFloat(pdp->m_v.z); break;
-            case FID(SMTH): pbr->GetBool(pdp->m_smooth); break;
-            case FID(SLNG): pbr->GetBool(pdp->m_slingshot); break;
-            case FID(ATEX): pbr->GetBool(pdp->m_autoTexture); break;
-            case FID(TEXC): pbr->GetFloat(pdp->m_texturecoord); break;
-            default: pdp->ISelect::LoadToken(tag, pbr); break;
-            }
-            return true;
-         });
-   }
+         case FID(VCEN):
+         {
+            auto v = reader.AsVector2();
+            pdp->m_v.x = v.x;
+            pdp->m_v.y = v.y; 
+            break;
+         }
+         case FID(POSZ): pdp->m_v.z = reader.AsFloat(); break;
+         case FID(SMTH): pdp->m_smooth = reader.AsBool(); break;
+         case FID(SLNG): pdp->m_slingshot = reader.AsBool(); break;
+         case FID(ATEX): pdp->m_autoTexture = reader.AsBool(); break;
+         case FID(TEXC): pdp->m_texturecoord = reader.AsFloat(); break;
+         default: pdp->ISelect::LoadToken(tag, reader); break;
+         }
+         return true;
+      });
+   m_vdpoint.push_back(pdp);
 }
 
 void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth)

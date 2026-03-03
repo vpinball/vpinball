@@ -69,20 +69,31 @@ void ExportVBSCommand::Execute()
             IStream* pstmGame;
             if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
             {
+               bool isProtected = false;
                BiffReader reader(pstmGame, loadfileversion, 0, 0);
-               reader.Load(
-                  [&script](int id, BiffReader* pbr)
+               reader.AsObject(
+                  [&script, &isProtected](int tag, IObjectReader& reader)
                   {
-                     if (id != FID(CODE))
-                        return true;
-                     ULONG read = 0;
-                     int cchar;
-                     pbr->m_pistream->Read(&cchar, sizeof(int), &read);
-                     char* szText = new char[cchar + 1];
-                     pbr->m_pistream->Read(szText, cchar * (int)sizeof(char), &read);
-                     szText[cchar] = '\0';
-                     script = string_from_utf8_or_iso8859_1(szText, cchar);
-                     delete[] szText;
+                     switch (tag)
+                     {
+                     case FID(SECB): // old protection/encryption data
+                     {
+                        struct ProtectionData
+                        {
+                           int32_t fileversion;
+                           int32_t size;
+                           uint8_t paraphrase[16 + 8];
+                           uint32_t flags;
+                           int32_t keyversion;
+                           int32_t spare1;
+                           int32_t spare2;
+                        } protectionData;
+                        reader.AsRaw(&protectionData, sizeof(ProtectionData));
+                        isProtected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
+                        break;
+                     }
+                     case FID(CODE): script = reader.AsScript(isProtected); break;
+                     }
                      return true;
                   });
                pstmGame->Release();

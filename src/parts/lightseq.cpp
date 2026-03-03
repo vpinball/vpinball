@@ -376,32 +376,27 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT LightSeq::Load(BiffReader& reader)
+HRESULT LightSeq::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-   reader.Load(
-      [this](int tag, BiffReader* const pbr)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID):
-         {
-            int pid;
-            pbr->GetInt(&pid);
-         }
-         break;
-         case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
-         case FID(COLC): pbr->GetWideString(m_d.m_wzCollection); break;
-         case FID(CTRX): pbr->GetFloat(m_d.m_vCenter.x); break;
-         case FID(CTRY): pbr->GetFloat(m_d.m_vCenter.y); break;
-         case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
-         case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-         case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-         case FID(NAME): pbr->GetWideString(m_wzName); break;
-         case FID(BGLS): pbr->GetBool(m_backglass); break;
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_v = reader.AsVector2(); break;
+         case FID(COLC): m_d.m_wzCollection = reader.AsWideString(); break;
+         case FID(CTRX): m_d.m_vCenter.x = reader.AsFloat(); break;
+         case FID(CTRY): m_d.m_vCenter.y = reader.AsFloat(); break;
+         case FID(UPTM): m_d.m_updateinterval = reader.AsInt(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(BGLS): m_backglass = reader.AsBool(); break;
          default:
          {
-            ISelect::LoadToken(tag, pbr);
+            ISelect::LoadToken(tag, reader);
             break;
          }
          }
