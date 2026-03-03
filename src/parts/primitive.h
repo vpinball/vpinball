@@ -295,7 +295,7 @@ public:
 #if (GET_PLATFORM_OS_ENUM==0) // Windows
    bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
 #else // Linux and variants (POSIX.1-2008)
-   bool IsPlayfield() const { return wcscasecmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return wcscasecmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
 #endif
    bool IsBackglass() const { return StrCompareNoCase(m_d.m_szImage, "backglassimage"s); }
 
