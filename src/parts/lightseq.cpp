@@ -407,7 +407,7 @@ HRESULT LightSeq::Load(IObjectReader& reader)
 
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
-   *pVal = SysAllocString(m_d.m_wzCollection.c_str());
+   *pVal = SysAllocStringLen(m_d.m_wzCollection.c_str(), static_cast<UINT>(m_d.m_wzCollection.length()));
    return S_OK;
 }
 

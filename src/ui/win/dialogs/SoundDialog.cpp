@@ -479,17 +479,17 @@ void SoundDialog::Export()
                const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
                if (pos != string::npos)
                   filename2 = filename2.substr(pos + 1);
-               strncpy_s(filename, sizeof(filename), filename2.c_str());
+               strncpy_s(filename, std::size(filename), filename2.c_str());
             }
             else
             {
                string filename2 = pps->GetName();
                const size_t pos = pps->GetImportPath().string().find_last_of('.');
                filename2 += pos != string::npos ? pps->GetImportPath().string().substr(pos) : ".ogg"s;
-               strncpy_s(filename, sizeof(filename), filename2.c_str());
+               strncpy_s(filename, std::size(filename), filename2.c_str());
             }
             ofn.lpstrFile = filename;
-            ofn.nMaxFile = sizeof(filename);
+            ofn.nMaxFile = std::size(filename);
             ofn.lpstrDefExt = "ogg";
 
             string initDir = g_app->m_settings.GetRecentDir_SoundDir();

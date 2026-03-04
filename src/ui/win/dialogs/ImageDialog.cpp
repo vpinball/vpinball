@@ -521,12 +521,12 @@ void ImageDialog::Export()
             }
             else
             {
-               strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               strncat_s(g_filename, ppi->m_name.c_str(), std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
                const size_t idx = ppi->GetFilePath().string().find_last_of('.');
-               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
-            ofn.nMaxFile = sizeof(g_filename);
+            ofn.nMaxFile = std::size(g_filename);
 
             const string defExt = extension_from_path(g_filename);
             ofn.lpstrDefExt = defExt.c_str();

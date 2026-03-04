@@ -55,7 +55,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_format(format)
    , m_width(w)
    , m_height(h)
-   , m_liveHash(((uint64_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
+   , m_liveHash(((size_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
    , m_data(reinterpret_cast<uint8_t*>(SDL_aligned_alloc(16, w * h * GetPixelSize(format))))
 {
 }
@@ -911,7 +911,7 @@ Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int h
    , m_width(width)
    , m_height(height)
    , m_ppb(ppb)
-   , m_liveHash(((uint64_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
+   , m_liveHash(((size_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
 {
    assert(m_ppb != nullptr);
    assert(m_width > 0);

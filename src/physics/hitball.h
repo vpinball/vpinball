@@ -86,5 +86,5 @@ public:
    const Vertex3Ds& GetOldPosition(uint64_t physicsTimeUs) const;
 
 private:
-   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin and for ball trails
+   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin (see C_BALL_SPIN_HACK) and for ball trails
 };

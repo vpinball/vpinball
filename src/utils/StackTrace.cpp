@@ -206,8 +206,8 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	if (SymGetModuleInfo64(hCurrentProcess, address64, &moduleInfo))
 	{
 		char moduleName[MAXSTRING + 1];
-		GetFileFromPath(moduleInfo.ImageName, moduleName, MAXSTRING);
-		const int moduleLen = (int)strnlen_s(moduleName,sizeof(moduleName));
+		GetFileFromPath(moduleInfo.ImageName, moduleName, std::size(moduleName)-1);
+		const int moduleLen = (int)strnlen_s(moduleName,std::size(moduleName));
 		strncpy_s(symbol, maxSymbolLen, moduleName);
 		symbol += moduleLen;
 		charsAdded += moduleLen;

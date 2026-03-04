@@ -76,10 +76,10 @@ void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _li
    char* out = temp;
    va_list argListCopy;
    va_copy(argListCopy, _argList);
-   int32_t len = bx::snprintf(out, sizeof(temp), "%s (%d): ", _filePath, _line);
-   int32_t total = len + bx::vsnprintf(out + len, sizeof(temp) - len, _format, argListCopy);
+   int32_t len = bx::snprintf(out, std::size(temp), "%s (%d): ", _filePath, _line);
+   int32_t total = len + bx::vsnprintf(out + len, std::size(temp) - len, _format, argListCopy);
    va_end(argListCopy);
-   if ((int32_t)sizeof(temp) < total)
+   if ((int32_t)std::size(temp) < total)
    {
       out = (char*)alloca(total + 1);
       bx::memCopy(out, temp, len);

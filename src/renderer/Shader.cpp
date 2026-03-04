@@ -2057,7 +2057,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          GLenum type;
          GLint size;
          GLsizei length;
-         glGetActiveUniform(shader->program, (GLuint)i, sizeof(uniformName), &length, &size, &type, uniformName);
+         glGetActiveUniform(shader->program, (GLuint)i, std::size(uniformName), &length, &size, &type, uniformName);
          GLint location = glGetUniformLocation(shader->program, uniformName);
          if (location >= 0 && size > 0) {
             // hack for packedLights, but works for all arrays

@@ -171,14 +171,14 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             /*CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
             if (pt)
             {
-               strncpy_s(szFileName, sizeof(szFileName), pt->m_filename.c_str());
+               strncpy_s(szFileName, std::size(szFileName), pt->m_filename.c_str());
                const size_t idx = pt->m_filename.find_last_of('.');
-               if (idx != string::npos && idx < MAXSTRING)
+               if (idx != string::npos && idx < std::size(szFileName))
                   szFileName[idx] = '\0';
             }
             else
                szFileName[0] = '\0';*/
-            strncpy_s(szFileName, sizeof(szFileName), "Physics.vpp");
+            strncpy_s(szFileName, std::size(szFileName), "Physics.vpp");
 
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
@@ -187,7 +187,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             // TEXT
             ofn.lpstrFilter = "Visual Pinball Physics (*.vpp)\0*.vpp\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = sizeof(szFileName);
+            ofn.nMaxFile = std::size(szFileName);
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

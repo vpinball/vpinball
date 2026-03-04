@@ -453,7 +453,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                break;
 
             char szFileName[MAXSTRING];
-            strncpy_s(szFileName, sizeof(szFileName), "Materials.mat");
+            strncpy_s(szFileName, std::size(szFileName), "Materials.mat");
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_app->GetInstanceHandle();
@@ -461,7 +461,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrFile = szFileName;
             //TEXT
             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
-            ofn.nMaxFile = sizeof(szFileName);
+            ofn.nMaxFile = std::size(szFileName);
             ofn.lpstrDefExt = "mat";
 
             string szInitialDir = g_app->m_settings.GetRecentDir_MaterialDir();
@@ -498,7 +498,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-                  strncpy_s(mat.szName, sizeof(mat.szName), pmat->m_name.c_str());
+                  strncpy_s(mat.szName, std::size(mat.szName), pmat->m_name.c_str());
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);

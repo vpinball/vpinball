@@ -50,7 +50,7 @@ void CVPreference::GetPrefsFromReg()
    m_rgb = g_app->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
    m_pointSize = g_app->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
    string tmp = g_app->m_settings.GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());
-   strncpy_s(m_logFont.lfFaceName, sizeof(m_logFont.lfFaceName), tmp.c_str());
+   strncpy_s(m_logFont.lfFaceName, std::size(m_logFont.lfFaceName), tmp.c_str());
    m_logFont.lfWeight = g_app->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value());
    m_logFont.lfItalic = g_app->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value());
    m_logFont.lfUnderline = g_app->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value());

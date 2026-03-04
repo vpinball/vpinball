@@ -157,103 +157,103 @@ const wstring& ScriptGlobalTable::get_Name() const
 
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocString(m_wzName.c_str());
+   *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length()));
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightFlipperActionId() :  g_pplayer->m_pininput.GetLeftFlipperActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightFlipperActionId() :  g_pplayer->m_pininput.GetLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftFlipperActionId() : g_pplayer->m_pininput.GetRightFlipperActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftFlipperActionId() : g_pplayer->m_pininput.GetRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedRightFlipperActionId() : g_pplayer->m_pininput.GetStagedLeftFlipperActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedRightFlipperActionId() : g_pplayer->m_pininput.GetStagedLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedLeftFlipperActionId() : g_pplayer->m_pininput.GetStagedRightFlipperActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedLeftFlipperActionId() : g_pplayer->m_pininput.GetStagedRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightNudgeActionId() : g_pplayer->m_pininput.GetLeftNudgeActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightNudgeActionId() : g_pplayer->m_pininput.GetLeftNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftNudgeActionId() : g_pplayer->m_pininput.GetRightNudgeActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftNudgeActionId() : g_pplayer->m_pininput.GetRightNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetStartActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetStartActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0);
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1);
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetTiltActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetTiltActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightMagnaActionId() : g_pplayer->m_pininput.GetLeftMagnaActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightMagnaActionId() : g_pplayer->m_pininput.GetLeftMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(LONG *pVal)
 {
-   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftMagnaActionId() : g_pplayer->m_pininput.GetRightMagnaActionId());
+   *pVal = (LONG)0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftMagnaActionId() : g_pplayer->m_pininput.GetRightMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetExitGameActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetExitGameActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LockbarKey(LONG *pVal)
 {
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetLockbarActionId();
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLockbarActionId();
    return S_OK;
 }
 
@@ -261,7 +261,7 @@ STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
 {
    if (index < 1 || index > 4)
       return E_FAIL;
-   *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(index - 1);
+   *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(index - 1);
    return S_OK;
 }
 
@@ -269,44 +269,44 @@ STDMETHODIMP ScriptGlobalTable::get_VPXActionKey(LONG index, LONG *pVal)
 {
    switch (index)
    {
-   case 0: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftFlipperActionId(); break;
-   case 1: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightFlipperActionId(); break;
-   case 2: *pVal = 0x10000 | g_pplayer->m_pininput.GetStagedLeftFlipperActionId(); break;
-   case 3: *pVal = 0x10000 | g_pplayer->m_pininput.GetStagedRightFlipperActionId(); break;
-   case 4: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftNudgeActionId(); break;
-   case 5: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightNudgeActionId(); break;
-   case 6: *pVal = 0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId(); break;
-   case 7: *pVal = 0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId(); break;
-   case 8: *pVal = 0x10000 | g_pplayer->m_pininput.GetStartActionId(); break;
-   case 9: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0); break;
-   case 10: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1); break;
-   case 11: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(2); break;
-   case 12: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(3); break;
-   case 13: *pVal = 0x10000 | g_pplayer->m_pininput.GetTiltActionId(); break;
-   case 14: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftMagnaActionId(); break;
-   case 15: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightMagnaActionId(); break;
-   case 16: *pVal = 0x10000 | g_pplayer->m_pininput.GetExitGameActionId(); break;
-   case 17: *pVal = 0x10000 | g_pplayer->m_pininput.GetOpenInGameUIActionId(); break;
-   case 18: *pVal = 0x10000 | g_pplayer->m_pininput.GetLockbarActionId(); break;
-   case 19: *pVal = 0x10000 | g_pplayer->m_pininput.GetResetActionId(); break;
-   case 20: *pVal = 0x10000 | g_pplayer->m_pininput.GetVolumeDownActionId(); break;
-   case 21: *pVal = 0x10000 | g_pplayer->m_pininput.GetVolumeUpActionId(); break;
-   case 22: *pVal = 0x10000 | g_pplayer->m_pininput.GetExtraBallActionId(); break;
-   case 23: *pVal = 0x10000 | g_pplayer->m_pininput.GetSlamTiltActionId(); break;
-   case 24: *pVal = 0x10000 | g_pplayer->m_pininput.GetCoinDoorActionId(); break;
-   case 25: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(0); break;
-   case 26: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(1); break;
-   case 27: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(2); break;
-   case 28: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(3); break;
-   case 29: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(4); break;
-   case 30: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(5); break;
-   case 31: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(6); break;
-   case 32: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(7); break;
+   case 0: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLeftFlipperActionId(); break;
+   case 1: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetRightFlipperActionId(); break;
+   case 2: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetStagedLeftFlipperActionId(); break;
+   case 3: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetStagedRightFlipperActionId(); break;
+   case 4: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLeftNudgeActionId(); break;
+   case 5: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetRightNudgeActionId(); break;
+   case 6: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId(); break;
+   case 7: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId(); break;
+   case 8: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetStartActionId(); break;
+   case 9: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0); break;
+   case 10: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1); break;
+   case 11: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(2); break;
+   case 12: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(3); break;
+   case 13: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetTiltActionId(); break;
+   case 14: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLeftMagnaActionId(); break;
+   case 15: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetRightMagnaActionId(); break;
+   case 16: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetExitGameActionId(); break;
+   case 17: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetOpenInGameUIActionId(); break;
+   case 18: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLockbarActionId(); break;
+   case 19: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetResetActionId(); break;
+   case 20: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetVolumeDownActionId(); break;
+   case 21: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetVolumeUpActionId(); break;
+   case 22: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetExtraBallActionId(); break;
+   case 23: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetSlamTiltActionId(); break;
+   case 24: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetCoinDoorActionId(); break;
+   case 25: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(0); break;
+   case 26: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(1); break;
+   case 27: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(2); break;
+   case 28: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(3); break;
+   case 29: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(4); break;
+   case 30: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(5); break;
+   case 31: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(6); break;
+   case 32: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetServiceActionId(7); break;
    // 33-63 reserved for future use
-   case 64: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(0); break;
-   case 65: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(1); break;
-   case 66: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(2); break;
-   case 67: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(3); break;
+   case 64: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(0); break;
+   case 65: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(1); break;
+   case 66: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(2); break;
+   case 67: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(3); break;
    default: return E_FAIL;
    }
    return S_OK;
@@ -317,7 +317,7 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
       return E_FAIL;
 
-   *param = SysAllocString(g_app->m_customParameters[index - 1].c_str());
+   *param = SysAllocStringLen(g_app->m_customParameters[index - 1].c_str(), static_cast<UINT>(g_app->m_customParameters[index - 1].length()));
    return S_OK;
 }
 
@@ -1030,7 +1030,7 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 
    for (IEditable *const pie : m_pt->GetParts())
    {
-      if (wcscmp(name, pie->GetScriptable()->m_wzName.c_str()) == 0)
+      if (name == pie->GetScriptable()->m_wzName)
       {
          IDispatch * const id = pie->GetISelect()->GetDispatch();
          id->AddRef();

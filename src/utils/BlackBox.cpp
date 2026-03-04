@@ -131,7 +131,7 @@ namespace rde
          va_list args;
          va_start(args, fmt);
          char buff[sizeof(BlackBoxMessage)] = {};
-         _vsnprintf_s(buff, sizeof(buff) - 1, fmt, args);
+         _vsnprintf_s(buff, std::size(buff) - 1, fmt, args);
          va_end(args);
          AddMessage(buff);
       }

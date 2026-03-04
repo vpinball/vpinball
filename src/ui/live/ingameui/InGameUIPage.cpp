@@ -31,7 +31,7 @@ void InGameUIPage::Open(bool isBackwardAnimation)
       m_openAnimPos = isBackwardAnimation ? -1.f : 1.f;
    m_openAnimStart = m_openAnimPos;
    m_selectedItem = 0;
-   m_pressedItemLabel = ""s;
+   m_pressedItemLabel.clear();
 }
 
 void InGameUIPage::Close(bool isBackwardAnimation)
@@ -418,7 +418,7 @@ void InGameUIPage::Render(float elapsedS)
    }
 #endif
    ImGui::SetNextWindowSize(winSize);
-   ImGui::Begin(std::to_string(reinterpret_cast<uint64_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
+   ImGui::Begin(std::to_string(reinterpret_cast<size_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
 
    ImGui::PushStyleColor(ImGuiCol_Separator, style.Colors[ImGuiCol_Text]);
 

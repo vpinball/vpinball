@@ -81,7 +81,7 @@ public:
       #endif
 
       char timeBuffer[32];
-      snprintf(timeBuffer, sizeof(timeBuffer), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
+      snprintf(timeBuffer, std::size(timeBuffer), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
                timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday,
                timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec,
                static_cast<int>(record.getTime().millitm));

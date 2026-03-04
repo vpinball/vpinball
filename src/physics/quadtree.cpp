@@ -656,8 +656,8 @@ void HitQuadtreeNode::DumpTree(const int indentLevel)
       for (int i = 0; i <= indentLevel; ++i)
          indent[i] = (i == indentLevel) ? '\0' : ' ';
       char msg[256];
-      sprintf_s(msg, sizeof(msg), "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
-      strncat_s(indent, msg, sizeof(indent)-strnlen_s(indent, sizeof(indent))-1);
+      sprintf_s(msg, std::size(msg), "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
+      strncat_s(indent, msg, std::size(indent)-strnlen_s(indent, std::size(indent))-1);
       OutputDebugString(indent);
       if (m_children != nullptr)
       {

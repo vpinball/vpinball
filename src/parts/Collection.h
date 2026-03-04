@@ -21,7 +21,7 @@ public:
 
    // IScriptable
    const wstring& get_Name() const final { return m_wzName; }
-   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(m_wzName.c_str()); return S_OK; }
+   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); return S_OK; }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 

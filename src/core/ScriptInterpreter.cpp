@@ -371,9 +371,8 @@ STDMETHODIMP ScriptInterpreter::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMa
 
 STDMETHODIMP ScriptInterpreter::GetDocVersionString(BSTR *pbstrVersion)
 {
-   WCHAR *version = MakeWide(VP_VERSION_STRING_POINTS);
-   *pbstrVersion = SysAllocString(version);
-   delete[] version;
+   static const wstring version = MakeWString(VP_VERSION_STRING_POINTS);
+   *pbstrVersion = SysAllocStringLen(version.c_str(), static_cast<UINT>(version.length()));
    return S_OK;
 }
 

@@ -51,12 +51,12 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
    if (pDeviceID == nullptr)
    {
       pDeviceInfo->id.custom.i = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-      ma_strncpy_s(pDeviceInfo->name, sizeof(pDeviceInfo->name), MA_DEFAULT_PLAYBACK_DEVICE_NAME, (size_t)-1);
+      ma_strncpy_s(pDeviceInfo->name, std::size(pDeviceInfo->name), MA_DEFAULT_PLAYBACK_DEVICE_NAME, (size_t)-1);
    }
    else
    {
       pDeviceInfo->id.custom.i = pDeviceID->custom.i;
-      ma_strncpy_s(pDeviceInfo->name, sizeof(pDeviceInfo->name), SDL_GetAudioDeviceName(pDeviceID->custom.i), (size_t)-1);
+      ma_strncpy_s(pDeviceInfo->name, std::size(pDeviceInfo->name), SDL_GetAudioDeviceName(pDeviceID->custom.i), (size_t)-1);
    }
    if (pDeviceInfo->id.custom.i == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
       pDeviceInfo->isDefault = MA_TRUE;
