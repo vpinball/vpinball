@@ -68,10 +68,7 @@ public:
    virtual string AsScript(bool isScriptProtected) = 0;
    virtual FontDesc AsFontDescriptor() = 0;
    virtual void AsRaw(void *pvalue, const int size) = 0;
-   virtual void AsObject(const std::function<bool(const int fieldTag, IObjectReader &fieldReader)> &processField = nullptr) = 0;
-
-   // TODO remove this method (only used by PinTable to serialize materials). It does not conform to the object reading design (direct byte acces instead of typed fields)
-   virtual int GetBytesInRecordRemaining() const = 0;
+   virtual void AsObject(const std::function<bool(const int fieldTag, IObjectReader &fieldReader)> &processField, bool isSkippable = false) = 0;
 };
 
 class IObjectWriter
@@ -80,7 +77,7 @@ public:
    virtual ~IObjectWriter() = default;
    virtual bool HasError() const = 0;
 
-   virtual void BeginObject(int objectId, bool isArray) = 0;
+   virtual void BeginObject(int objectId, bool isArray, bool isSkippable) = 0;
    virtual void WriteBool(int fieldId, bool value) = 0;
    virtual void WriteInt(int fieldId, int value) = 0;
    virtual void WriteUInt(int fieldId, unsigned int value) = 0;

@@ -294,7 +294,7 @@ void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
 {
    for (const auto pdp : m_vdpoint)
    {
-      writer.BeginObject(FID(DPNT), true);
+      writer.BeginObject(FID(DPNT), true, false);
       writer.WriteVector2(FID(VCEN), Vertex2D(pdp->m_v.x, pdp->m_v.y));
       writer.WriteFloat(FID(POSZ), pdp->m_v.z);
       writer.WriteBool(FID(SMTH), pdp->m_smooth);

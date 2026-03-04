@@ -1375,34 +1375,12 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
    }
    // 10.8+ material saving (this format supports new properties, can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
-   {
-      const size_t record_size = m_materials[i]->GetSaveSize();
-      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-      CComPtr<IStream> spStream;
-      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-      BiffWriter subWriter(spStream, 0);
-      m_materials[i]->Save(subWriter, false);
-      LPVOID pData = ::GlobalLock(hMem);
-      writer.WriteRaw(FID(MATR), pData, (int)record_size);
-      ::GlobalUnlock(hMem);
-   }
+      m_materials[i]->Save(writer, saveForUndo);
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
-   {
-      // Save each render probe as a data blob inside the main gamedata.
-      // This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
-      const int record_size = m_vrenderprobe[i]->GetSaveSize();
-      HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
-      CComPtr<IStream> spStream;
-      const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-      BiffWriter subWriter(spStream, 0);
-      m_vrenderprobe[i]->Save(subWriter, false);
-      LPVOID pData = ::GlobalLock(hMem);
-      writer.WriteRaw(FID(RPRB), pData, record_size);
-      ::GlobalUnlock(hMem);
-   }
+      m_vrenderprobe[i]->Save(writer, saveForUndo);
 
-   // Don't save special values when copying for undo.  For instance, don't reset the code.
+   // Don't save special values when copying for undo. For instance, don't reset the code.
    if (!saveForUndo)
    {
       writer.WriteInt(FID(SEDT), (int)m_vedit.size());
@@ -2528,14 +2506,7 @@ void PinTable::Load(IObjectReader& reader)
                m_materials.clear();
             }
 
-            const int record_size = reader.GetBytesInRecordRemaining();
-            FastIStream fastStream;
-            fastStream.m_rg = (char *)malloc(record_size);
-            reader.AsRaw(fastStream.m_rg, record_size);
-            fastStream.m_cSize = record_size;
-
             Material *mat = new Material();
-            BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
             mat->Load(reader);
             if (reader.HasError())
             {
@@ -2548,14 +2519,7 @@ void PinTable::Load(IObjectReader& reader)
          }
          case FID(RPRB):
          {
-            const int record_size = reader.GetBytesInRecordRemaining();
-            FastIStream fastStream;
-            fastStream.m_rg = (char *)malloc(record_size);
-            reader.AsRaw(fastStream.m_rg, record_size);
-            fastStream.m_cSize = record_size;
-
             RenderProbe *rpb = new RenderProbe();
-            BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
             rpb->Load(reader);
             if (reader.HasError())
             {

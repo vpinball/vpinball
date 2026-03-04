@@ -171,33 +171,10 @@ public:
    float m_fScatterAngle;
    COLORREF m_cRefractionTint; // 10.8+ only
    
-   size_t GetSaveSize() const
-   {
-      size_t size = 0;
-      size += 2 * sizeof(int) + sizeof(int); // TYPE
-      size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
-      size += 2 * sizeof(int) + sizeof(float); // WLIG
-      size += 2 * sizeof(int) + sizeof(float); // ROUG
-      size += 2 * sizeof(int) + sizeof(float); // GIML
-      size += 2 * sizeof(int) + sizeof(float); // THCK
-      size += 2 * sizeof(int) + sizeof(float); // EDGE
-      size += 2 * sizeof(int) + sizeof(float); // EALP
-      size += 2 * sizeof(int) + sizeof(float); // OPAC
-      size += 2 * sizeof(int) + sizeof(int); // BASE
-      size += 2 * sizeof(int) + sizeof(int); // GLOS
-      size += 2 * sizeof(int) + sizeof(int); // COAT
-      size += 2 * sizeof(int) + sizeof(int); // RTNT
-      size += 2 * sizeof(int) + sizeof(int); // EOPA
-      size += 2 * sizeof(int) + sizeof(float); // ELAS
-      size += 2 * sizeof(int) + sizeof(float); // ELFO
-      size += 2 * sizeof(int) + sizeof(float); // FRIC
-      size += 2 * sizeof(int) + sizeof(float); // SCAT
-      size += 2 * sizeof(int); // ENDB
-      return size;
-   }
-
    void Save(IObjectWriter& writer, const bool saveForUndo)
    {
+      // Save as a data blob inside the main gamedata. This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
+      writer.BeginObject(FID(MATR), true, true);
       writer.WriteInt(FID(TYPE), m_type);
       writer.WriteString(FID(NAME), m_name);
       writer.WriteFloat(FID(WLIG), m_fWrapLighting);
@@ -246,6 +223,7 @@ public:
             case FID(SCAT): m_fScatterAngle = reader.AsFloat(); break;
             }
             return true;
-         });
+         },
+         true);
    }
 };

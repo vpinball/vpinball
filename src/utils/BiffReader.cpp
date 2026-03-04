@@ -200,12 +200,12 @@ void BiffReader::AsRaw(void *pvalue, const int size)
    ReadBytes(pvalue, size);
 }
 
-void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> &processField)
+void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> &processField, bool isSkippable)
 {
    while (true)
    {
       if (m_version > 30)
-         m_bytesinrecordremaining = GetIntNoHash();
+         m_bytesinrecordremaining = isSkippable ? AsInt() : GetIntNoHash();
 
       const int tag = AsInt();
       if (m_hasError || tag == FID(ENDB))
