@@ -853,13 +853,13 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/light.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/lightseq.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/pintable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/plunger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/primitive.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ramp.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/spinner.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/surface.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/textbox.cpp" />
@@ -1021,6 +1021,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/TriggerVisualsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/WallPhysicsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/WallVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffReader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffWriter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/bulb.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp" />
@@ -1825,6 +1827,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/TriggerVisualsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/WallPhysicsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/WallVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffReader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffWriter.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/bulb.h" />

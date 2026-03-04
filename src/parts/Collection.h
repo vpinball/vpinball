@@ -28,8 +28,8 @@ public:
    ISelect *GetISelect() final { return nullptr; }
    const ISelect *GetISelect() const final { return nullptr; }
 
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   void Save(IObjectWriter& writer, const bool saveForUndo);
+   void Load(IObjectReader &reader);
    HRESULT InitPostLoad(const PinTable * const pt);
 
    STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;

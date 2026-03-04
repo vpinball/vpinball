@@ -140,7 +140,6 @@ HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseCl
 
 void Surface::SetDefaults(const bool fromMouseClick)
 {
-   m_d.m_inner = true; //!! Deprecated, do not use anymore
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);
@@ -1116,53 +1115,43 @@ void Surface::Translate(const Vertex2D &pvOffset)
    IHaveDragPoints::TranslatePoints(pvOffset);
 }
 
-HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteBool(FID(DROP), m_d.m_droppable);
-   bw.WriteBool(FID(FLIP), m_d.m_flipbook);
-   bw.WriteBool(FID(ISBS), m_d.m_isBottomSolid);
-   bw.WriteBool(FID(CLDW), m_d.m_collidable);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(SIMG), m_d.m_szSideImage);
-   bw.WriteString(FID(SIMA), m_d.m_szSideMaterial);
-   bw.WriteString(FID(TOMA), m_d.m_szTopMaterial);
-   bw.WriteString(FID(SLMA), m_d.m_szSlingShotMaterial);
-   bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
-   bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
-   //bw.WriteBool(FID(INNR), m_d.m_inner); //!! Deprecated
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(DSPT), m_d.m_displayTexture);
-   bw.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
-   bw.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(WFCT), m_d.m_friction);
-   bw.WriteFloat(FID(WSCT), m_d.m_scatter);
-   bw.WriteBool(FID(VSBL), m_d.m_topBottomVisible);
-   bw.WriteBool(FID(SLGA), m_d.m_slingshotAnimation);
-   bw.WriteBool(FID(SVBL), m_d.m_sideVisible);
-   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
-   bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(PNTS));
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteBool(FID(DROP), m_d.m_droppable);
+   writer.WriteBool(FID(FLIP), m_d.m_flipbook);
+   writer.WriteBool(FID(ISBS), m_d.m_isBottomSolid);
+   writer.WriteBool(FID(CLDW), m_d.m_collidable);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(SIMG), m_d.m_szSideImage);
+   writer.WriteString(FID(SIMA), m_d.m_szSideMaterial);
+   writer.WriteString(FID(TOMA), m_d.m_szTopMaterial);
+   writer.WriteString(FID(SLMA), m_d.m_szSlingShotMaterial);
+   writer.WriteFloat(FID(HTBT), m_d.m_heightbottom);
+   writer.WriteFloat(FID(HTTP), m_d.m_heighttop);
+   //writer.WriteBool(FID(INNR), m_d.m_inner); //!! Deprecated
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(DSPT), m_d.m_displayTexture);
+   writer.WriteFloat(FID(SLGF), m_d.m_slingshotforce);
+   writer.WriteFloat(FID(SLTH), m_d.m_slingshot_threshold);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(WFCT), m_d.m_friction);
+   writer.WriteFloat(FID(WSCT), m_d.m_scatter);
+   writer.WriteBool(FID(VSBL), m_d.m_topBottomVisible);
+   writer.WriteBool(FID(SLGA), m_d.m_slingshotAnimation);
+   writer.WriteBool(FID(SVBL), m_d.m_sideVisible);
+   writer.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
+   writer.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
 void Surface::ClearForOverwrite()
@@ -1170,11 +1159,12 @@ void Surface::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Surface::Load(IObjectReader& reader)
+void Surface::Load(IObjectReader& reader)
 {
+   bool inner = true;
    SetDefaults(false);
    reader.AsObject(
-      [this](int tag, IObjectReader& reader)
+      [this, &inner](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
@@ -1195,7 +1185,7 @@ HRESULT Surface::Load(IObjectReader& reader)
          case FID(SLMA): m_d.m_szSlingShotMaterial = reader.AsString(); break;
          case FID(HTBT): m_d.m_heightbottom = reader.AsFloat(); break;
          case FID(HTTP): m_d.m_heighttop = reader.AsFloat(); break;
-         case FID(INNR): m_d.m_inner = reader.AsBool(); break; //!! Deprecated, do not use anymore
+         case FID(INNR): inner = reader.AsBool(); break; //!! Deprecated, do not use anymore
          case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(DSPT): m_d.m_displayTexture = reader.AsBool(); break;
          case FID(SLGF): m_d.m_slingshotforce = reader.AsFloat(); break;
@@ -1218,6 +1208,7 @@ HRESULT Surface::Load(IObjectReader& reader)
          case FID(DILB): m_d.m_disableLightingBelow = reader.AsFloat(); break;
          case FID(SVBL): m_d.m_sideVisible = reader.AsBool(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(PNTS): break; // Empty tag placed before drag point data (unused)
          case FID(DPNT): LoadPointToken(reader); break;
          default: ISelect::LoadToken(tag, reader); break;
          }
@@ -1227,7 +1218,7 @@ HRESULT Surface::Load(IObjectReader& reader)
    // Pure backwards-compatibility code:
    // On some tables, the outer wall is still modelled/copy-pasted 'inside-out',
    // this tries to compensate for that
-   if (!m_d.m_inner) {
+   if (!inner) {
       const size_t cvertex = m_vdpoint.size();
 
       float miny = FLT_MAX;
@@ -1295,11 +1286,7 @@ HRESULT Surface::Load(IObjectReader& reader)
          pdp->Init(this, tmpx, tmpy, 0.f, false);
          m_vdpoint.insert(m_vdpoint.begin() + (cvertex - minyindex - 1), pdp);
       }
-
-      m_d.m_inner = true;
    }
-
-   return S_OK;
 }
 
 void Surface::UpdateStatusBarInfo()

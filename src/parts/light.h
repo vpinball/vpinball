@@ -213,8 +213,6 @@ private:
    bool  m_lightmapMeshBufferDirty = false;
    void UpdateMeshBuffer();
 
-   bool  m_roundLight = false; // pre-VPX compatibility
-
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
    void UpdateBounds();

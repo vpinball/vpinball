@@ -783,6 +783,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffReader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffWriter.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1672,6 +1678,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/TableLightsProperty.h">
       <Filter>ui\win\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffReader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffWriter.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h">
       <Filter>utils</Filter>

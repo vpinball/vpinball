@@ -355,28 +355,22 @@ STDMETHODIMP LightSeq::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void LightSeq::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_v);
-   bw.WriteWideString(FID(COLC), m_d.m_wzCollection);
-   bw.WriteFloat(FID(CTRX), m_d.m_vCenter.x);
-   bw.WriteFloat(FID(CTRY), m_d.m_vCenter.y);
-   bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(BGLS), m_backglass);
-   
-   ISelect::SaveData(pstm, hcrypthash);
-   
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_v);
+   writer.WriteWideString(FID(COLC), m_d.m_wzCollection);
+   writer.WriteFloat(FID(CTRX), m_d.m_vCenter.x);
+   writer.WriteFloat(FID(CTRY), m_d.m_vCenter.y);
+   writer.WriteInt(FID(UPTM), m_d.m_updateinterval);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT LightSeq::Load(IObjectReader& reader)
+void LightSeq::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -402,7 +396,6 @@ HRESULT LightSeq::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)

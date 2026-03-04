@@ -118,38 +118,31 @@ void Textbox::WriteRegDefaults()
 #undef LinkProp
 }
 
-
-HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Textbox::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VER1), m_d.m_v1);
-   bw.WriteVector2(FID(VER2), m_d.m_v2);
-   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
-   bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
-   bw.WriteString(FID(TEXT), m_d.m_text);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(ALGN), m_d.m_talign);
-   bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(FONT));
-   IPersistStream * ips;
-   m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-   const HRESULT hr = ips->Save(pstm, TRUE);
-   SAFE_RELEASE_NO_RCC(ips);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VER1), m_d.m_v1);
+   writer.WriteVector2(FID(VER2), m_d.m_v2);
+   writer.WriteInt(FID(CLRB), m_d.m_backcolor);
+   writer.WriteInt(FID(CLRF), m_d.m_fontcolor);
+   writer.WriteFloat(FID(INSC), m_d.m_intensity_scale);
+   writer.WriteString(FID(TEXT), m_d.m_text);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteInt(FID(ALGN), m_d.m_talign);
+   writer.WriteBool(FID(TRNS), m_d.m_transparent);
+   writer.WriteBool(FID(IDMD), m_d.m_isDMD);
+   ISelect::SaveData(writer);
+   FontDesc fd;
+   #ifndef __STANDALONE__
+   if (m_pIFont)
+      fd.FromOLEFont(m_pIFont);
+   #endif
+   writer.WriteFontDescriptor(FID(FONT), fd);
+   writer.EndObject();
 }
 
-HRESULT Textbox::Load(IObjectReader& reader)
+void Textbox::Load(IObjectReader& reader)
 {
    SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
@@ -173,7 +166,7 @@ HRESULT Textbox::Load(IObjectReader& reader)
          case FID(IDMD): m_d.m_isDMD = reader.AsBool(); break;
          case FID(FONT):
          {
-            IObjectReader::FontDesc fd = reader.AsFontDescriptor();
+            FontDesc fd = reader.AsFontDescriptor();
 #ifndef __STANDALONE__
             FONTDESC oleFD = fd.ToOLEFontDesc();
             OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
@@ -193,7 +186,6 @@ HRESULT Textbox::Load(IObjectReader& reader)
          return true;
       });
    m_texture = nullptr;
-   return S_OK;
 }
 
 string Textbox::GetFontName()

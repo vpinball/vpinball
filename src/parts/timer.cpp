@@ -143,25 +143,18 @@ STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Timer::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_v);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-
-   bw.WriteBool(FID(BGLS), m_backglass);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_v);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT Timer::Load(IObjectReader& reader)
+void Timer::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -179,5 +172,4 @@ HRESULT Timer::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }

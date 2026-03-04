@@ -809,6 +809,10 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
+inline bool DirExists(const std::filesystem::path& dirPath) { return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath); }
+inline bool FileExists(const std::filesystem::path& filePath) { return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath); }
+inline string TitleFromFilename(const std::filesystem::path& filename) { return filename.stem().string(); }
+inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
 std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);

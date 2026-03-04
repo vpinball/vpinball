@@ -1321,54 +1321,44 @@ void Ramp::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Ramp::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteFloat(FID(HTBT), m_d.m_heightbottom);
-   bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
-   bw.WriteFloat(FID(WDBT), m_d.m_widthbottom);
-   bw.WriteFloat(FID(WDTP), m_d.m_widthtop);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteInt(FID(TYPE), m_d.m_type);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
-   bw.WriteBool(FID(IMGW), m_d.m_imageWalls);
-   bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
-   bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
-   bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
-   bw.WriteFloat(FID(WVHR), m_d.m_rightwallheightvisible);
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(RFCT), m_d.m_friction);
-   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   bw.WriteBool(FID(RVIS), m_d.m_visible);
-   bw.WriteFloat(FID(RADB), m_d.m_depthBias);
-   bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
-   bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
-   bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(PNTS));
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteFloat(FID(HTBT), m_d.m_heightbottom);
+   writer.WriteFloat(FID(HTTP), m_d.m_heighttop);
+   writer.WriteFloat(FID(WDBT), m_d.m_widthbottom);
+   writer.WriteFloat(FID(WDTP), m_d.m_widthtop);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteInt(FID(TYPE), m_d.m_type);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteInt(FID(ALGN), m_d.m_imagealignment);
+   writer.WriteBool(FID(IMGW), m_d.m_imageWalls);
+   writer.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
+   writer.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
+   writer.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
+   writer.WriteFloat(FID(WVHR), m_d.m_rightwallheightvisible);
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(RFCT), m_d.m_friction);
+   writer.WriteFloat(FID(RSCT), m_d.m_scatter);
+   writer.WriteBool(FID(CLDR), m_d.m_collidable);
+   writer.WriteBool(FID(RVIS), m_d.m_visible);
+   writer.WriteFloat(FID(RADB), m_d.m_depthBias);
+   writer.WriteFloat(FID(RADI), m_d.m_wireDiameter);
+   writer.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
+   writer.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
-HRESULT Ramp::Load(IObjectReader& reader)
+void Ramp::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -1407,12 +1397,12 @@ HRESULT Ramp::Load(IObjectReader& reader)
          case FID(RADY): m_d.m_wireDistanceY = reader.AsFloat(); break;
          case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
          case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         case FID(PNTS): break; // Empty tag placed before drag point data (unused)
          case FID(DPNT): LoadPointToken(reader); break;
          default: ISelect::LoadToken(tag, reader); break;
          }
          return true;
       });
-   return S_OK;
 }
 
 void Ramp::AddPoint(int x, int y, const bool smooth)

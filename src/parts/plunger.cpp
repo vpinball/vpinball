@@ -832,55 +832,49 @@ STDMETHODIMP Plunger::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Plunger::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
+   writer.WriteVector2(FID(VCEN), m_d.m_v);
+   writer.WriteFloat(FID(WDTH), m_d.m_width);
+   writer.WriteFloat(FID(HIGH), m_d.m_height);
+   writer.WriteFloat(FID(ZADJ), m_d.m_zAdjust);
+   writer.WriteFloat(FID(HPSL), m_d.m_stroke);
+   writer.WriteFloat(FID(SPDP), m_d.m_speedPull);
+   writer.WriteFloat(FID(SPDF), m_d.m_speedFire);
+   writer.WriteInt(FID(TYPE), m_d.m_type);
+   writer.WriteInt(FID(ANFR), m_d.m_animFrames);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
 
-   bw.WriteVector2(FID(VCEN), m_d.m_v);
-   bw.WriteFloat(FID(WDTH), m_d.m_width);
-   bw.WriteFloat(FID(HIGH), m_d.m_height);
-   bw.WriteFloat(FID(ZADJ), m_d.m_zAdjust);
-   bw.WriteFloat(FID(HPSL), m_d.m_stroke);
-   bw.WriteFloat(FID(SPDP), m_d.m_speedPull);
-   bw.WriteFloat(FID(SPDF), m_d.m_speedFire);
-   bw.WriteInt(FID(TYPE), m_d.m_type);
-   bw.WriteInt(FID(ANFR), m_d.m_animFrames);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteFloat(FID(MEST), m_d.m_mechStrength);
+   writer.WriteBool(FID(MECH), m_d.m_mechPlunger);
+   writer.WriteBool(FID(APLG), m_d.m_autoPlunger);
 
-   bw.WriteFloat(FID(MEST), m_d.m_mechStrength);
-   bw.WriteBool(FID(MECH), m_d.m_mechPlunger);
-   bw.WriteBool(FID(APLG), m_d.m_autoPlunger);
+   writer.WriteFloat(FID(MPRK), m_d.m_parkPosition);
+   writer.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);
+   writer.WriteFloat(FID(MOMX), m_d.m_momentumXfer);
 
-   bw.WriteFloat(FID(MPRK), m_d.m_parkPosition);
-   bw.WriteFloat(FID(PSCV), m_d.m_scatterVelocity);
-   bw.WriteFloat(FID(MOMX), m_d.m_momentumXfer);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
 
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
-
-   bw.WriteString(FID(TIPS), m_d.m_szTipShape);
-   bw.WriteFloat(FID(RODD), m_d.m_rodDiam);
-   bw.WriteFloat(FID(RNGG), m_d.m_ringGap);
-   bw.WriteFloat(FID(RNGD), m_d.m_ringDiam);
-   bw.WriteFloat(FID(RNGW), m_d.m_ringWidth);
-   bw.WriteFloat(FID(SPRD), m_d.m_springDiam);
-   bw.WriteFloat(FID(SPRG), m_d.m_springGauge);
-   bw.WriteFloat(FID(SPRL), m_d.m_springLoops);
-   bw.WriteFloat(FID(SPRE), m_d.m_springEndLoops);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteString(FID(TIPS), m_d.m_szTipShape);
+   writer.WriteFloat(FID(RODD), m_d.m_rodDiam);
+   writer.WriteFloat(FID(RNGG), m_d.m_ringGap);
+   writer.WriteFloat(FID(RNGD), m_d.m_ringDiam);
+   writer.WriteFloat(FID(RNGW), m_d.m_ringWidth);
+   writer.WriteFloat(FID(SPRD), m_d.m_springDiam);
+   writer.WriteFloat(FID(SPRG), m_d.m_springGauge);
+   writer.WriteFloat(FID(SPRL), m_d.m_springLoops);
+   writer.WriteFloat(FID(SPRE), m_d.m_springEndLoops);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT Plunger::Load(IObjectReader& reader)
+void Plunger::Load(IObjectReader& reader)
 {
    m_d.m_color = RGB(76, 76, 76); //initialize color for new plunger
    SetDefaults(false);
@@ -926,7 +920,6 @@ HRESULT Plunger::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP Plunger::PullBack()

@@ -138,24 +138,20 @@ void PartGroup::RenderRelease()
 
 #pragma region Serialization
 
-HRESULT PartGroup::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void PartGroup::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-   // Default properties
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteVector2(FID(VCEN), m_d.m_v);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(BGLS), m_backglass);
-   // PartGroup properties
-   bw.WriteInt(FID(PMSK), static_cast<int>(m_d.m_playerModeVisibilityMask));
-   bw.WriteInt(FID(SPRF), static_cast<int>(m_d.m_spaceReference));
-   ISelect::SaveData(pstm, hcrypthash);
-   bw.WriteTag(FID(ENDB));
-   return S_OK;
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteVector2(FID(VCEN), m_d.m_v);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   writer.WriteUInt(FID(PMSK), static_cast<int>(m_d.m_playerModeVisibilityMask));
+   writer.WriteInt(FID(SPRF), static_cast<int>(m_d.m_spaceReference));
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT PartGroup::Load(IObjectReader& reader)
+void PartGroup::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -175,7 +171,6 @@ HRESULT PartGroup::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 #pragma endregion

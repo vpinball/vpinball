@@ -48,8 +48,8 @@ public:
 
    // Load/Save
    int GetSaveSize() const;
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IObjectReader& reader);
+   void Save(IObjectWriter& writer, bool saveForUndo);
+   void Load(IObjectReader& reader);
 
    // Rendering
    void RenderSetup(class Renderer* renderer);

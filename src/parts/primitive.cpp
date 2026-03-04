@@ -1520,63 +1520,56 @@ void Primitive::PutCenter(const Vertex2D& pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Primitive::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   /*
-    * Someone decided that it was a good idea to write these vectors including
-    * the fourth padding float that they used to have, so now we have to write
-    * them padded to 4 floats to maintain compatibility.
-    */
-   bw.WriteVector3Padded(FID(VPOS), m_d.m_vPosition);
-   bw.WriteVector3Padded(FID(VSIZ), m_d.m_vSize);
-   bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
-   bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
-   bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
-   bw.WriteFloat(FID(RTV3), m_d.m_aRotAndTra[3]);
-   bw.WriteFloat(FID(RTV4), m_d.m_aRotAndTra[4]);
-   bw.WriteFloat(FID(RTV5), m_d.m_aRotAndTra[5]);
-   bw.WriteFloat(FID(RTV6), m_d.m_aRotAndTra[6]);
-   bw.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
-   bw.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(NRMA), m_d.m_szNormalMap);
-   bw.WriteInt(FID(SIDS), m_d.m_Sides);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteInt(FID(SCOL), m_d.m_SideColor);
-   bw.WriteBool(FID(TVIS), m_d.m_visible);
-   bw.WriteBool(FID(DTXI), m_d.m_drawTexturesInside);
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(RFCT), m_d.m_friction);
-   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
-   bw.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
-   bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   bw.WriteBool(FID(ISTO), m_d.m_toy);
-   bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
-   bw.WriteBool(FID(STRE), m_d.m_staticRendering);
-   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
-   bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-   bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
-   bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
+   writer.WriteVector4(FID(VPOS), vec4(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z, 0.f));
+   writer.WriteVector4(FID(VSIZ), vec4(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z, 0.f));
+   writer.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
+   writer.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
+   writer.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
+   writer.WriteFloat(FID(RTV3), m_d.m_aRotAndTra[3]);
+   writer.WriteFloat(FID(RTV4), m_d.m_aRotAndTra[4]);
+   writer.WriteFloat(FID(RTV5), m_d.m_aRotAndTra[5]);
+   writer.WriteFloat(FID(RTV6), m_d.m_aRotAndTra[6]);
+   writer.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
+   writer.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(NRMA), m_d.m_szNormalMap);
+   writer.WriteInt(FID(SIDS), m_d.m_Sides);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteInt(FID(SCOL), m_d.m_SideColor);
+   writer.WriteBool(FID(TVIS), m_d.m_visible);
+   writer.WriteBool(FID(DTXI), m_d.m_drawTexturesInside);
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(RFCT), m_d.m_friction);
+   writer.WriteFloat(FID(RSCT), m_d.m_scatter);
+   writer.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
+   writer.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
+   writer.WriteBool(FID(CLDR), m_d.m_collidable);
+   writer.WriteBool(FID(ISTO), m_d.m_toy);
+   writer.WriteBool(FID(U3DM), m_d.m_use3DMesh);
+   writer.WriteBool(FID(STRE), m_d.m_staticRendering);
+   writer.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
+   writer.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   writer.WriteBool(FID(DIPT), m_d.m_displayTexture);
+   writer.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
    // Don't save the meshes for undo/redo
    if (m_d.m_use3DMesh && !saveForUndo)
    {
-      bw.WriteString(FID(M3DN), m_d.m_meshFileName);
-      bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
+      writer.WriteString(FID(M3DN), m_d.m_meshFileName);
+      writer.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
 
 #ifndef COMPRESS_MESHES
-      bw.WriteStruct(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
+      writer.WriteRaw(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
 #else
       {
       const mz_ulong slen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
@@ -1584,25 +1577,25 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
       mz_uint8 * const c = new mz_uint8[clen];
       if (compress2(c, &clen, (const unsigned char *)m_mesh.m_vertices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
          ShowError("Could not compress primitive vertex data");
-      bw.WriteInt(FID(M3CY), (int)clen);
-      bw.WriteStruct(FID(M3CX), c, clen);
+      writer.WriteInt(FID(M3CY), (int)clen);
+      writer.WriteRaw(FID(M3CX), c, clen);
       delete [] c;
       }
 #endif
 
-      bw.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());
+      writer.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());
       if (m_mesh.NumVertices() > 65535)
       {
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
+         writer.WriteRaw(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
 #else
          const mz_ulong slen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * const c = new mz_uint8[clen];
          if (compress2(c, &clen, (const unsigned char *)m_mesh.m_indices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
-         bw.WriteInt(FID(M3CJ), (int)clen);
-         bw.WriteStruct(FID(M3CI), c, clen);
+         writer.WriteInt(FID(M3CJ), (int)clen);
+         writer.WriteRaw(FID(M3CI), c, clen);
          delete [] c;
 #endif
       }
@@ -1612,15 +1605,15 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
          for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
+         writer.WriteRaw(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
 #else
          const mz_ulong slen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * const c = new mz_uint8[clen];
          if (compress2(c, &clen, (const unsigned char *)tmp.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
-         bw.WriteInt(FID(M3CJ), (int)clen);
-         bw.WriteStruct(FID(M3CI), c, clen);
+         writer.WriteInt(FID(M3CJ), (int)clen);
+         writer.WriteRaw(FID(M3CI), c, clen);
          delete [] c;
 #endif
       }
@@ -1634,34 +1627,32 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
             mz_uint8 * const c = new mz_uint8[clen];
             if (compress2(c, &clen, (const unsigned char *)m_mesh.m_animationFrames[i].m_frameVerts.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
                ShowError("Could not compress primitive animation vertex data");
-            bw.WriteInt(FID(M3AY), (int)clen);
-            bw.WriteStruct(FID(M3AX), c, clen);
+            writer.WriteInt(FID(M3AY), (int)clen);
+            writer.WriteRaw(FID(M3AX), c, clen);
             delete [] c;
          }
 
       }
    }
-   bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
-   bw.WriteBool(FID(ADDB), m_d.m_addBlend);
-   bw.WriteBool(FID(ZMSK), m_d.m_useDepthMask);
-   bw.WriteFloat(FID(FALP), m_d.m_alpha);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteFloat(FID(PIDB), m_d.m_depthBias);
+   writer.WriteBool(FID(ADDB), m_d.m_addBlend);
+   writer.WriteBool(FID(ZMSK), m_d.m_useDepthMask);
+   writer.WriteFloat(FID(FALP), m_d.m_alpha);
+   writer.WriteInt(FID(COLR), m_d.m_color);
 
-   bw.WriteString(FID(LMAP), m_d.m_szLightmap);
+   writer.WriteString(FID(LMAP), m_d.m_szLightmap);
 
-   bw.WriteString(FID(REFL), m_d.m_szReflectionProbe);
-   bw.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
-   bw.WriteString(FID(REFR), m_d.m_szRefractionProbe);
-   bw.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
+   writer.WriteString(FID(REFL), m_d.m_szReflectionProbe);
+   writer.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
+   writer.WriteString(FID(REFR), m_d.m_szRefractionProbe);
+   writer.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
 
-   ISelect::SaveData(pstm, hcrypthash);
+   ISelect::SaveData(writer);
 
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.EndObject();
 }
 
-HRESULT Primitive::Load(IObjectReader& reader)
+void Primitive::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    m_mesh.m_validBounds = false;
@@ -1671,8 +1662,8 @@ HRESULT Primitive::Load(IObjectReader& reader)
          switch (tag)
          {
          case FID(PIID): reader.AsInt(); break;
-         case FID(VPOS): m_d.m_vPosition = reader.AsVector3(true); break;
-         case FID(VSIZ): m_d.m_vSize = reader.AsVector3(true); break;
+         case FID(VPOS): m_d.m_vPosition = reader.AsVector4().xyz(); break;
+         case FID(VSIZ): m_d.m_vSize = reader.AsVector4().xyz(); break;
          case FID(RTV0): m_d.m_aRotAndTra[0] = reader.AsFloat(); break;
          case FID(RTV1): m_d.m_aRotAndTra[1] = reader.AsFloat(); break;
          case FID(RTV2): m_d.m_aRotAndTra[2] = reader.AsFloat(); break;
@@ -1848,7 +1839,6 @@ HRESULT Primitive::Load(IObjectReader& reader)
    }
    m_inPlayState = m_d.m_visible;
    CalculateBuiltinOriginal();
-   return S_OK;
 }
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

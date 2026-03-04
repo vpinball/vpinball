@@ -216,9 +216,9 @@ wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
    return buf;
 }
 
-bool ISelect::LoadToken(const int id, IObjectReader& reader)
+bool ISelect::LoadToken(const int tag, IObjectReader& reader)
 {
-   switch(id)
+   switch (tag)
    {
       case FID(LOCK): m_locked = reader.AsBool(); break;
       case FID(LVIS): m_isVisible = reader.AsBool(); break;
@@ -245,15 +245,17 @@ bool ISelect::LoadToken(const int id, IObjectReader& reader)
          m_onLoadExpectedPartGroup = MakeWString(layerName);
          break;
       }
+      default:
+      {
+         PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
+      }
    }
    return true;
 }
 
-HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
+void ISelect::SaveData(IObjectWriter& writer)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteBool(FID(LOCK), m_locked);
+   writer.WriteBool(FID(LOCK), m_locked);
    if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
    {
       // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
@@ -268,13 +270,11 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
          if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
             index++;
       }
-      bw.WriteInt(FID(LAYR), min(index, 11));
-      bw.WriteString(FID(LANR), layer->GetName());
-      bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
+      writer.WriteInt(FID(LAYR), min(index, 11));
+      writer.WriteString(FID(LANR), layer->GetName());
+      writer.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
    }
-   bw.WriteBool(FID(LVIS), m_isVisible);
-   
-   return S_OK;
+   writer.WriteBool(FID(LVIS), m_isVisible);
 }
 
 void ISelect::UpdateStatusBarInfo()

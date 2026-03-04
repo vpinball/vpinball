@@ -439,38 +439,32 @@ void DispReel::PutCenter(const Vertex2D& pv)
    m_d.m_v2.y = pv.y + getBoxHeight();
 }
 
-HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void DispReel::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VER1), m_d.m_v1);
-   bw.WriteVector2(FID(VER2), m_d.m_v2);
-   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(SOUN), m_d.m_szSound);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteFloat(FID(WDTH), m_d.m_width);
-   bw.WriteFloat(FID(HIGH), m_d.m_height);
-   bw.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
-   bw.WriteFloat(FID(RSPC), m_d.m_reelspacing);
-   bw.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
-   bw.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
-   bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
-   bw.WriteBool(FID(UGRD), m_d.m_useImageGrid);
-   bw.WriteBool(FID(VISI), m_d.m_visible);
-   bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VER1), m_d.m_v1);
+   writer.WriteVector2(FID(VER2), m_d.m_v2);
+   writer.WriteInt(FID(CLRB), m_d.m_backcolor);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteBool(FID(TRNS), m_d.m_transparent);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(SOUN), m_d.m_szSound);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteFloat(FID(WDTH), m_d.m_width);
+   writer.WriteFloat(FID(HIGH), m_d.m_height);
+   writer.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
+   writer.WriteFloat(FID(RSPC), m_d.m_reelspacing);
+   writer.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
+   writer.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
+   writer.WriteInt(FID(UPTM), m_d.m_updateinterval);
+   writer.WriteBool(FID(UGRD), m_d.m_useImageGrid);
+   writer.WriteBool(FID(VISI), m_d.m_visible);
+   writer.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT DispReel::Load(IObjectReader& reader)
+void DispReel::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -521,7 +515,6 @@ HRESULT DispReel::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 // The following methods provide the interface to the object through both the editor

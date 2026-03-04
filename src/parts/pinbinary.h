@@ -10,10 +10,11 @@ public:
    PinBinary() = default;
    virtual ~PinBinary() = default;
 
+   void Save(IObjectWriter& writer) const;
+   void Load(IObjectReader& reader);
+
    bool ReadFromFile(const std::filesystem::path& filename);
-   bool WriteToFile(const string& filename);
-   HRESULT SaveToStream(IStream *pstream);
-   HRESULT LoadFromStream(IStream *pstream, int version);
+   bool WriteToFile(const string& filename) const;
 
    string m_name;
    std::filesystem::path m_path;

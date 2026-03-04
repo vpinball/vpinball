@@ -902,37 +902,28 @@ void Trigger::Translate(const Vertex2D &pvOffset)
    }
 }
 
-HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(RADI), m_d.m_radius);
-   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteFloat(FID(WITI), m_d.m_wireThickness);
-   bw.WriteFloat(FID(SCAX), m_d.m_scaleX);
-   bw.WriteFloat(FID(SCAY), m_d.m_scaleY);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(EBLD), m_d.m_enabled);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-   bw.WriteFloat(FID(THOT), m_d.m_hit_height);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(SHAP), m_d.m_shape);
-   bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(RADI), m_d.m_radius);
+   writer.WriteFloat(FID(ROTA), m_d.m_rotation);
+   writer.WriteFloat(FID(WITI), m_d.m_wireThickness);
+   writer.WriteFloat(FID(SCAX), m_d.m_scaleX);
+   writer.WriteFloat(FID(SCAY), m_d.m_scaleY);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(EBLD), m_d.m_enabled);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   writer.WriteFloat(FID(THOT), m_d.m_hit_height);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteInt(FID(SHAP), m_d.m_shape);
+   writer.WriteFloat(FID(ANSP), m_d.m_animSpeed);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
 void Trigger::ClearForOverwrite()
@@ -940,7 +931,7 @@ void Trigger::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Trigger::Load(IObjectReader& reader)
+void Trigger::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -971,7 +962,6 @@ HRESULT Trigger::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)

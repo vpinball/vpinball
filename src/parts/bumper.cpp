@@ -723,45 +723,41 @@ void Bumper::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Bumper::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(RADI), m_d.m_radius);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteFloat(FID(FORC), m_d.m_force);
+   writer.WriteFloat(FID(BSCT), m_d.m_scatter);
+   writer.WriteFloat(FID(HISC), m_d.m_heightScale);
+   writer.WriteFloat(FID(RISP), m_d.m_ringSpeed);
+   writer.WriteFloat(FID(ORIN), m_d.m_orientation);
+   writer.WriteFloat(FID(RDLI), m_d.m_ringDropOffset);
+   writer.WriteString(FID(MATR), m_d.m_szCapMaterial);
+   writer.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
+   writer.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
+   writer.WriteString(FID(RIMA), m_d.m_szRingMaterial);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
 
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(RADI), m_d.m_radius);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteFloat(FID(FORC), m_d.m_force);
-   bw.WriteFloat(FID(BSCT), m_d.m_scatter);
-   bw.WriteFloat(FID(HISC), m_d.m_heightScale);
-   bw.WriteFloat(FID(RISP), m_d.m_ringSpeed);
-   bw.WriteFloat(FID(ORIN), m_d.m_orientation);
-   bw.WriteFloat(FID(RDLI), m_d.m_ringDropOffset);
-   bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
-   bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
-   bw.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
-   bw.WriteString(FID(RIMA), m_d.m_szRingMaterial);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(CAVI), m_d.m_capVisible);
+   writer.WriteBool(FID(BSVS), m_d.m_baseVisible);
+   writer.WriteBool(FID(RIVS), m_d.m_ringVisible);
+   writer.WriteBool(FID(SKVS), m_d.m_skirtVisible);
+   writer.WriteBool(FID(HAHE), m_d.m_hitEvent);
+   writer.WriteBool(FID(COLI), m_d.m_collidable);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
-   bw.WriteBool(FID(CAVI), m_d.m_capVisible);
-   bw.WriteBool(FID(BSVS), m_d.m_baseVisible);
-   bw.WriteBool(FID(RIVS), m_d.m_ringVisible);
-   bw.WriteBool(FID(SKVS), m_d.m_skirtVisible);
-   bw.WriteBool(FID(HAHE), m_d.m_hitEvent);
-   bw.WriteBool(FID(COLI), m_d.m_collidable);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   ISelect::SaveData(writer);
 
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.EndObject();
 }
 
 
-HRESULT Bumper::Load(IObjectReader& reader)
+void Bumper::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -816,7 +812,6 @@ HRESULT Bumper::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Radius(float *pVal)

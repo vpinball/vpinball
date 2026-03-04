@@ -26,20 +26,18 @@ int RenderProbe::GetSaveSize() const
    return (int)size;
 }
 
-HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void RenderProbe::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-   bw.WriteInt(FID(TYPE), (int)m_type);
-   bw.WriteString(FID(NAME), m_name);
-   bw.WriteInt(FID(RBAS), m_roughness);
-   bw.WriteStruct(FID(RPLA), (void*)&m_reflection_plane, sizeof(vec4));
-   bw.WriteInt(FID(RMOD), (int)m_reflection_mode);
-   bw.WriteBool(FID(RLMP), m_disableLightReflection);
-   bw.WriteTag(FID(ENDB));
-   return S_OK;
+   writer.WriteInt(FID(TYPE), (int)m_type);
+   writer.WriteString(FID(NAME), m_name);
+   writer.WriteInt(FID(RBAS), m_roughness);
+   writer.WriteRaw(FID(RPLA), (void*)&m_reflection_plane, sizeof(vec4));
+   writer.WriteInt(FID(RMOD), (int)m_reflection_mode);
+   writer.WriteBool(FID(RLMP), m_disableLightReflection);
+   writer.EndObject();
 }
 
-HRESULT RenderProbe::LoadData(IObjectReader& reader)
+void RenderProbe::Load(IObjectReader& reader)
 {
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
@@ -55,7 +53,6 @@ HRESULT RenderProbe::LoadData(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 void RenderProbe::SetName(const string& name)
