@@ -11,7 +11,7 @@ public:
    BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash);
    bool HasError() const override { return m_hasError; }
 
-   void BeginObject(int objectId, bool isArray) override;
+   void BeginObject(int objectId, bool isArray, bool isSkippable) override;
    void WriteBool(int id, bool value) override;
    void WriteInt(int id, int value) override;
    void WriteUInt(int id, unsigned int value) override;
@@ -34,4 +34,5 @@ public:
 
 private:
    bool m_hasError = false;
+   vector<LARGE_INTEGER> m_subObjectRecordSizePos;
 };

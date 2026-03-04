@@ -47,7 +47,6 @@ public:
    void ApplyAreaOfInterest(RenderPass* pass = nullptr);
 
    // Load/Save
-   int GetSaveSize() const;
    void Save(IObjectWriter& writer, bool saveForUndo);
    void Load(IObjectReader& reader);
 

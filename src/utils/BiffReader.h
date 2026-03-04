@@ -24,9 +24,7 @@ public:
    string AsScript(bool isScriptProtected) override;
    FontDesc AsFontDescriptor() override;
    void AsRaw(void *pvalue, const int size) override;
-   void AsObject(const std::function<bool(const int tag, IObjectReader &reader)> &processToken) override;
-
-   int GetBytesInRecordRemaining() const override { return m_bytesinrecordremaining; }
+   void AsObject(const std::function<bool(const int tag, IObjectReader &reader)> &processToken, bool isSkippable = false) override;
 
    void ReadBytes(void *const pv, const uint32_t count);
 

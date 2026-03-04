@@ -1091,7 +1091,7 @@ void Texture::Save(IObjectWriter& writer, PinTable* pt) const
       writer.WriteInt(FID(LINK), 1);
    else
    {
-      writer.BeginObject(FID(JPEG), false);
+      writer.BeginObject(FID(JPEG), false, false);
       m_ppb->Save(writer);
    }
    writer.WriteFloat(FID(ALTV), m_alphaTestValue * 255.0f);

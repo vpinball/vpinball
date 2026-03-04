@@ -13,21 +13,10 @@ RenderProbe::~RenderProbe()
    assert(m_prerenderRT == nullptr && m_dynamicRT == nullptr); // RenderRelease must be call before destructor
 }
 
-int RenderProbe::GetSaveSize() const
-{
-   size_t size = 0;
-   size += 2 * sizeof(int) + sizeof(int); // TYPE
-   size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
-   size += 2 * sizeof(int) + sizeof(int); // RBAS
-   size += 2 * sizeof(int) + sizeof(vec4); // RPLA
-   size += 2 * sizeof(int) + sizeof(int); // RMOD
-   size += 2 * sizeof(int) + sizeof(int); // RLMP
-   size += 2 * sizeof(int); // ENDB
-   return (int)size;
-}
-
 void RenderProbe::Save(IObjectWriter& writer, const bool saveForUndo)
 {
+   // Save as a data blob inside the main gamedata. This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
+   writer.BeginObject(FID(RPRB), true, true);
    writer.WriteInt(FID(TYPE), (int)m_type);
    writer.WriteString(FID(NAME), m_name);
    writer.WriteInt(FID(RBAS), m_roughness);
@@ -52,7 +41,8 @@ void RenderProbe::Load(IObjectReader& reader)
          case FID(RLMP): m_disableLightReflection = reader.AsBool(); break;
          }
          return true;
-      });
+      },
+      true);
 }
 
 void RenderProbe::SetName(const string& name)
