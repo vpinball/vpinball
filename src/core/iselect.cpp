@@ -226,7 +226,7 @@ bool ISelect::LoadToken(const int id, IObjectReader& reader)
       {
          int layerIndex;
          layerIndex = reader.AsInt();
-         m_onLoadExpectedPartGroup = MakeWString((layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
+         m_onLoadExpectedPartGroup = (layerIndex < 9 ? L"Layer_0" : L"Layer_") + std::to_wstring(layerIndex + 1);
          break;
       }
       case FID(LANR): // 10.7 layers (limited number of named layers)

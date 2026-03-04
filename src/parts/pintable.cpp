@@ -1615,7 +1615,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      if (piedit == nullptr)
                         return E_FAIL;
 
-                     piedit->GetISelect()->m_onLoadExpectedPartGroup = wstring();
+                     piedit->GetISelect()->m_onLoadExpectedPartGroup.clear();
                      BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
                      hr = piedit->Load(reader); 
                      pstmItem->Release();

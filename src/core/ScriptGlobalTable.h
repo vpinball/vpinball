@@ -3,9 +3,9 @@
 #pragma once
 
 // Object to expose global methods and properties to table scripts
-class ScriptGlobalTable : 
-   public CComObjectRootEx<CComSingleThreadModel>, 
-   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>, 
+class ScriptGlobalTable :
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
    public IScriptable
 {
 public:

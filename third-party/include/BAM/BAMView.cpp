@@ -207,8 +207,7 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
 
 std::wstring GetFileNameForSettingsXML()
 {
-   const string path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "BAMViewSettings.xml").string();
-   return MakeWString(path);
+   return g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "BAMViewSettings.xml").wstring();
 }
 
 std::string GetTableName()

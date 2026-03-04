@@ -54,18 +54,18 @@ enum SelectState
 class BaseProperty // not everything in here is used in all of the derived classes, but it simplifies the UI code!
 {
 public:
-    string m_szImage;
-    string m_szMaterial;
-    string m_szPhysicsMaterial;
-    float m_elasticity;
-    float m_friction;
-    float m_scatter;
-    float m_threshold;
-    bool  m_collidable;
-    bool  m_hitEvent = false;
-    bool  m_overwritePhysics = true;
-    bool  m_reflectionEnabled = true;
-    bool  m_visible = true;
+   string m_szImage;
+   string m_szMaterial;
+   string m_szPhysicsMaterial;
+   float m_elasticity;
+   float m_friction;
+   float m_scatter;
+   float m_threshold;
+   bool  m_collidable;
+   bool  m_hitEvent = false;
+   bool  m_overwritePhysics = true;
+   bool  m_reflectionEnabled = true;
+   bool  m_visible = true;
 };
 
 // ISelect is the subclass for anything that can be manipulated with the mouse.
