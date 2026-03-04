@@ -14,7 +14,7 @@ WMPCore::WMPCore(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudio
 
    m_pAudioPlayer->UpdateVolume(m_volume, m_mute);
 
-   LOGI("WMP Core created");
+   LOGI("WMP Core created"s);
 }
 
 WMPCore::~WMPCore()
@@ -23,7 +23,7 @@ WMPCore::~WMPCore()
 
    delete m_pAudioPlayer;
 
-   LOGI("WMP Core destroyed");
+   LOGI("WMP Core destroyed"s);
 }
 
 WMPControls* WMPCore::GetControls()
@@ -38,7 +38,7 @@ WMPSettings* WMPCore::GetSettings()
 
 void WMPCore::Close()
 {
-   LOGI("WMP Core close");
+   LOGI("WMP Core close"s);
    UnloadAudio();
    m_url.clear();
    m_playState = wmppsUndefined;
@@ -72,7 +72,7 @@ bool WMPCore::LoadAudio(const string& url)
 
 void WMPCore::UnloadAudio()
 {
-   LOGI("Unloading current audio");
+   LOGI("Unloading current audio"s);
    m_pAudioPlayer->UnloadFile();
 }
 

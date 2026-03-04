@@ -130,7 +130,7 @@ static void OnPluginLoaded(const unsigned int, void*, void* msgData)
          Server_SCD->CreateObject = []()
          {
             if (nServer > 0)
-               LOGE("Invalid script: multiple B2S server are created.");
+               LOGE("Invalid script: multiple B2S server are created."s);
             nServer++;
             Server* server = new Server(msgApi, endpointId, vpxApi, pinmameClassDef, pinmameMemberStartIndex);
             server->SetOnDestroyHandler([](Server*) { nServer--; });

@@ -17,7 +17,7 @@ PinMAMEAPI::PinMAMEAPI(Server* server, ScriptClassDef* pinmameClassDef)
 {
 
    if (!m_pinmameClassDef) {
-      LOGE("No PinMAME Class Definition");
+      LOGE("No PinMAME Class Definition"s);
       return;
    }
 
@@ -37,7 +37,7 @@ PinMAMEAPI::PinMAMEAPI(Server* server, ScriptClassDef* pinmameClassDef)
          m_setSwitchIndex = i;
    }
 
-   LOGI("PinMAMEAPI: Creating PinMAME Controller instance");
+   LOGI("PinMAMEAPI: Creating PinMAME Controller instance"s);
    m_pinmameInstance = m_pinmameClassDef->CreateObject();
 }
 

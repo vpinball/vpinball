@@ -360,11 +360,11 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
                   {
                      if (client.hasTimedOut())
                      {
-                        LOGE("RemoteControl failed to send input state over network (timed out), retrying");
+                        LOGE("RemoteControl failed to send input state over network (timed out), retrying"s);
                      }
                      else
                      {
-                        LOGE("RemoteControl failed to send input state over network, stopping");
+                        LOGE("RemoteControl failed to send input state over network, stopping"s);
                         runMode = RunMode::RunModeNone;
                      }
                      break;
@@ -411,11 +411,11 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
                      // Just ignore failed request and continue to wait for messages
                      /* if (server.hasTimedOut())
                      {
-                        LOGE("RemoteControl failed to receive controller state (timed out), retrying");
+                        LOGE("RemoteControl failed to receive controller state (timed out), retrying"s);
                      }
                      else
                      {
-                        LOGE("RemoteControl failed to receive controller state, stopping");
+                        LOGE("RemoteControl failed to receive controller state, stopping"s);
                         runMode = RunMode::RunModeNone;
                      } */
                      break;
@@ -426,7 +426,7 @@ static void onGameStart(const unsigned int eventId, void* userData, void* eventD
                {
                   if (stateMsg.version != 0)
                   {
-                     LOGE("RemoteControl plugin versions do not match");
+                     LOGE("RemoteControl plugin versions do not match"s);
                      runMode = RunMode::RunModeNone;
                      break;
                   }

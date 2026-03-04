@@ -145,7 +145,7 @@ void MSGPIAPI B2SServer::RegisterStateChangeCallback(unsigned int deviceIndex, i
 {
    if (B2SServer::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
    {
-      LOGE("Invalid state listener registration requested");
+      LOGE("Invalid state listener registration requested"s);
       assert(false);
       return;
    }
@@ -158,7 +158,7 @@ void MSGPIAPI B2SServer::RegisterStateChangeCallback(unsigned int deviceIndex, i
    {
       if (it != callbacks.end())
       {
-         LOGE("Requested to register an already registered state change listener");
+         LOGE("Requested to register an already registered state change listener"s);
          assert(false);
       }
       else
@@ -174,7 +174,7 @@ void MSGPIAPI B2SServer::RegisterStateChangeCallback(unsigned int deviceIndex, i
       }
       else
       {
-         LOGE("Requested to unregister an unknown state change listener");
+         LOGE("Requested to unregister an unknown state change listener"s);
          assert(false);
       }
    }

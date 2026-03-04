@@ -342,12 +342,12 @@ eLEDTypes FormBackglass::GetLEDType() const
 
 void FormBackglass::PlaySound(const string& szSoundName)
 {
-   LOGW("Not implemented");
+   LOGW("Not implemented"s);
 }
 
 void FormBackglass::StopSound(const string& szSoundName)
 {
-   LOGW("Not implemented");
+   LOGW("Not implemented"s);
 }
 
 const SDL_FRect& FormBackglass::GetScaleFactor() const
@@ -360,7 +360,7 @@ void FormBackglass::LoadB2SData()
    const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
    const std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
    if (b2sFilename.empty()) {
-      LOGD("No directb2s file found");
+      LOGD("No directb2s file found"s);
       throw std::exception();
    }
 
@@ -1690,7 +1690,7 @@ VPXTexture FormBackglass::Base64ToImage(const char* image)
    const size_t image_len = strlen(image);
    vector<uint8_t> decoded = base64_decode(image, image_len);
    if (decoded.empty()) {
-      LOGE("Base64ToImage: Failed to decode Base64 data");
+      LOGE("Base64ToImage: Failed to decode Base64 data"s);
       return nullptr;
    }
 

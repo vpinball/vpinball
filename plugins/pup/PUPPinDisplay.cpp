@@ -221,7 +221,7 @@ void PUPPinDisplay::SetScreenEx(int screenNum, int xpos, int ypos, int swidth, i
 
 int PUPPinDisplay::GetSN() const
 {
-   NOT_IMPLEMENTED("Not implemented");
+   NOT_IMPLEMENTED("Not implemented"s);
    return 0;
 }
 
@@ -242,7 +242,7 @@ void PUPPinDisplay::B2SData(const string& tIndex, int Value)
 
 const string& PUPPinDisplay::GetB2SFilter() const
 {
-   NOT_IMPLEMENTED("Not implemented");
+   NOT_IMPLEMENTED("Not implemented"s);
    return emptystring;
 }
 
@@ -490,7 +490,7 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
 
 void PUPPinDisplay::LabelSetEx()
 {
-   NOT_IMPLEMENTED("Not implemented");
+   NOT_IMPLEMENTED("Not implemented"s);
 }
 
 /*
@@ -519,7 +519,7 @@ void PUPPinDisplay::LabelInit(int screenNum)
 
 const string& PUPPinDisplay::GetGetGame() const
 {
-   NOT_IMPLEMENTED("Not implemented");
+   NOT_IMPLEMENTED("Not implemented"s);
    return emptystring;
 }
 
@@ -564,7 +564,7 @@ void PUPPinDisplay::InitPuPMenu(int Param1)
 
 const string& PUPPinDisplay::GetB2SDisplays() const
 {
-   NOT_IMPLEMENTED("Not implemented");
+   NOT_IMPLEMENTED("Not implemented"s);
    return emptystring;
 }
 

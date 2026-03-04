@@ -71,7 +71,7 @@ PUPManager::~PUPManager()
 
 void PUPManager::Start()
 {
-   LOGI("PUP Manager start");
+   LOGI("PUP Manager start"s);
    assert(!IsRunning());
    m_dofEventStream = std::make_unique<DOFEventStream>(m_msgApi, m_endpointId, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
    m_dofEventStream->SetDMDHandler(
@@ -94,7 +94,7 @@ void PUPManager::Start()
 
 void PUPManager::Stop()
 {
-   LOGI("PUP Manager stop");
+   LOGI("PUP Manager stop"s);
    assert(IsRunning());
    m_dofEventStream = nullptr;
 }
@@ -168,7 +168,7 @@ void PUPManager::LoadConfig(const string& szRomName)
       }
    }
    else {
-      LOGI("No screens.pup file found");
+      LOGI("No screens.pup file found"s);
    }
 
    Start();
@@ -232,7 +232,7 @@ void PUPManager::LoadFonts()
    }
    else
    {
-      LOGI("No FONTS folder found");
+      LOGI("No FONTS folder found"s);
    }
 }
 

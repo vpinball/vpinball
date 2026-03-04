@@ -257,37 +257,37 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "zoom")
          {
             // 120 for 120% of current height, 80% etc...
-            NOT_IMPLEMENTED("zoom not implemented");
+            NOT_IMPLEMENTED("zoom not implemented"s);
             m_dirty = true;
          }
          else if (key == "alpha")
          {
             // '0-255  255=full, 0=blank
-            NOT_IMPLEMENTED("alpha not implemented");
+            NOT_IMPLEMENTED("alpha not implemented"s);
             m_dirty = true;
          }
          else if (key == "gradstate")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
-            NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
+            NOT_IMPLEMENTED("gradstate/gradcolor not implemented"s);
             m_dirty = true;
          }
          else if (key == "gradcolor")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
-            NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
+            NOT_IMPLEMENTED("gradstate/gradcolor not implemented"s);
             m_dirty = true;
          }
          else if (key == "grayscale")
          {
             // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
-            NOT_IMPLEMENTED("filter not implemented");
+            NOT_IMPLEMENTED("filter not implemented"s);
             m_dirty = true;
          }
          else if (key == "filter")
          {
             // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
-            NOT_IMPLEMENTED("filter not implemented");
+            NOT_IMPLEMENTED("filter not implemented"s);
             m_dirty = true;
          }
          else if (key == "shadowstate")
@@ -303,7 +303,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "shadowtype")
          {
             // ST = 1 (Shadow), ST = 2 (Border)
-            NOT_IMPLEMENTED("shadowtype not implemented");
+            NOT_IMPLEMENTED("shadowtype not implemented"s);
             m_dirty = true;
          }
          else if (key == "xoffset")
@@ -333,12 +333,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "autow")
          {
-            NOT_IMPLEMENTED("autow not implemented");
+            NOT_IMPLEMENTED("autow not implemented"s);
             m_dirty = true;
          }
          else if (key == "autoh")
          {
-            NOT_IMPLEMENTED("autoh not implemented");
+            NOT_IMPLEMENTED("autoh not implemented"s);
             m_dirty = true;
          }
          else if (key == "outline")

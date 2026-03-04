@@ -168,7 +168,7 @@ static void RegisterServerObject()
    B2SServer_SCD->CreateObject = []()
    {
       if (nServer > 0)
-         LOGE("Invalid script: multiple B2S server are created.");
+         LOGE("Invalid script: multiple B2S server are created."s);
       nServer++;
       B2SServer* server = new B2SServer(msgApi, endpointId, vpxApi, pinmameClassDef);
       server->SetOnDestroyHandler([](B2SServer*) { nServer--; });

@@ -374,13 +374,13 @@ void PUPMediaPlayer::Run()
 {
    AVPacket* pPacket = m_libAv._av_packet_alloc();
    if (!pPacket) {
-      LOGE("Unable to allocate packet");
+      LOGE("Unable to allocate packet"s);
       return;
    }
 
    AVFrame* pFrame = m_libAv._av_frame_alloc();
    if (!pFrame) {
-      LOGE("Unable to allocate frame");
+      LOGE("Unable to allocate frame"s);
       m_libAv._av_packet_free(&pPacket);
       return;
    }
@@ -428,7 +428,7 @@ void PUPMediaPlayer::Run()
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_videoStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek video stream. Aborting loop");
+               LOGE("Unable to seek video stream. Aborting loop"s);
                break;
             }
             m_libAv._avcodec_flush_buffers(m_pVideoContext);
@@ -437,7 +437,7 @@ void PUPMediaPlayer::Run()
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_audioStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek audio stream. Aborting loop");
+               LOGE("Unable to seek audio stream. Aborting loop"s);
             }
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
@@ -448,7 +448,7 @@ void PUPMediaPlayer::Run()
       else if (rfRet < 0)
       {
          // Error reading file, stop playing
-         LOGE("Error while reading video frame");
+         LOGE("Error while reading video frame"s);
          break;
       }
 
@@ -457,14 +457,14 @@ void PUPMediaPlayer::Run()
       {
          if (m_libAv._avcodec_send_packet(m_pAudioContext, pPacket) != 0)
          {
-            LOGE("Unable to send audio packet");
+            LOGE("Unable to send audio packet"s);
          }
       }
       else if (pPacket->stream_index == m_videoStream)
       {
          if (m_libAv._avcodec_send_packet(m_pVideoContext, pPacket) != 0)
          {
-            LOGE("Unable to send video packet");
+            LOGE("Unable to send video packet"s);
          }
       }
       m_libAv._av_packet_unref(pPacket);
@@ -541,7 +541,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
       rgbFrame = m_libAv._av_frame_alloc();
       if (rgbFrame == nullptr)
       {
-         LOGE("Failed to create RGB buffer frame");
+         LOGE("Failed to create RGB buffer frame"s);
          m_running = false;
          return;
       }
@@ -551,7 +551,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
       uint8_t* frameBuffer = static_cast<uint8_t*>(GetTextureInfo(m_videoTextures[nextFrame])->data);
       if (frameBuffer == nullptr)
       {
-         LOGE("Failed to allocate RGB buffer");
+         LOGE("Failed to allocate RGB buffer"s);
          m_running = false;
          return;
       }
@@ -681,7 +681,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
       m_libAv._swr_alloc_set_opts2(&m_pAudioConversionContext, &destChLayout, destFmt, destFreq, &pFrame->ch_layout, frameFormat, pFrame->sample_rate, 0, NULL);
       if (!m_pAudioConversionContext || m_libAv._swr_init(m_pAudioConversionContext) < 0)
       {
-         LOGE("Failed to initialize the resampling context");
+         LOGE("Failed to initialize the resampling context"s);
          m_libAv._swr_free(&m_pAudioConversionContext);
          m_pAudioConversionContext = nullptr;
          return;
@@ -693,11 +693,11 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
    int outSize = m_libAv._av_samples_get_buffer_size(NULL, destChLayout.nb_channels, pFrame->nb_samples, destFmt, 0);
    if (outSize < 0)
    {
-      LOGE("av_samples_get_buffer_size() failed");
+      LOGE("av_samples_get_buffer_size() failed"s);
       return;
    }
 
-   uint8_t* pBuffer = NULL;
+   uint8_t* pBuffer = nullptr;
    unsigned int bufSize = 0;
    m_libAv._av_fast_malloc(&pBuffer, &bufSize, outSize);
    if (!pBuffer)
@@ -706,7 +706,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
    int nConverted = m_libAv._swr_convert(m_pAudioConversionContext, &pBuffer, pFrame->nb_samples, pFrame->data, pFrame->nb_samples);
    if (nConverted < 0)
    {
-      LOGE("swr_convert() failed");
+      LOGE("swr_convert() failed"s);
       m_libAv._av_free(pBuffer);
       return;
    }

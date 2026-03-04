@@ -188,7 +188,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 
    if (pollThread.joinable())
    {
-      LOGE("DOFPlugin: Invalid state, game start happened while already running");
+      LOGE("DOFPlugin: Invalid state, game start happened while already running"s);
       isRunning = false;
       pollThread.join();
    }
@@ -205,7 +205,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    if (pDOF) {
-      LOGI("DOFPlugin: OnControllerGameEnd");
+      LOGI("DOFPlugin: OnControllerGameEnd"s);
       isRunning = false;
       if (pollThread.joinable())
          pollThread.join();
@@ -232,7 +232,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    msgApi->BroadcastMsg(endpointId, getDevSrcId, &getSrcMsg);
    if (getSrcMsg.count == 0)
    {
-      LOGI("DOFPlugin: OnDevSrcChanged - No source");
+      LOGI("DOFPlugin: OnDevSrcChanged - No source"s);
       return;
    }
 

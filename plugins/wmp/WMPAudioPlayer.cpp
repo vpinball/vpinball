@@ -55,7 +55,7 @@ bool WMPAudioPlayer::LoadFile(const string& filepath)
    ma_uint32 sampleRate;
    result = wmp_ma_decoder_get_data_format(&m_decoder, &format, &channels, &sampleRate, nullptr, 0);
    if (result != MA_SUCCESS) {
-      LOGE("Failed to get decoder format info");
+      LOGE("Failed to get decoder format info"s);
       wmp_ma_decoder_uninit(&m_decoder);
       return false;
    }
@@ -77,7 +77,7 @@ void WMPAudioPlayer::UnloadFile()
       wmp_ma_decoder_uninit(&m_decoder);
       m_isLoaded = false;
       m_loadedFile.clear();
-      LOGI("Audio file unloaded");
+      LOGI("Audio file unloaded"s);
    }
 }
 
@@ -89,7 +89,7 @@ void WMPAudioPlayer::Play()
    if (m_isPlaying && !m_isPaused)
       return;
 
-   LOGI("Starting playback");
+   LOGI("Starting playback"s);
 
    m_isPaused = false;
    m_isPlaying = true;
@@ -102,7 +102,7 @@ void WMPAudioPlayer::Pause()
    if (!m_isPlaying)
       return;
 
-   LOGI("Pausing playback");
+   LOGI("Pausing playback"s);
 
    m_isPaused = true;
    StopStreaming();
@@ -113,7 +113,7 @@ void WMPAudioPlayer::Stop()
    if (!m_isPlaying)
       return;
 
-   LOGI("Stopping playback");
+   LOGI("Stopping playback"s);
 
    m_isPlaying = false;
    m_isPaused = false;
@@ -132,7 +132,7 @@ double WMPAudioPlayer::GetPosition()
    const ma_result result = wmp_ma_decoder_get_cursor_in_pcm_frames(&m_decoder, &currentFrame);
 
    if (result != MA_SUCCESS) {
-      LOGE("Failed to get decoder cursor position");
+      LOGE("Failed to get decoder cursor position"s);
       return 0.0;
    }
 
@@ -191,7 +191,7 @@ void WMPAudioPlayer::StartStreaming()
          const ma_result result = wmp_ma_decoder_read_pcm_frames(&m_decoder, audioBuffer, bufferSizeFrames, &framesRead);
 
          if (result != MA_SUCCESS || framesRead == 0) {
-            LOGI("End of audio stream reached");
+            LOGI("End of audio stream reached"s);
             break;
          }
 
@@ -227,7 +227,7 @@ void WMPAudioPlayer::StartStreaming()
 
       if (m_isPlaying && !m_shouldStopStreaming) {
          m_isPlaying = false;
-         LOGI("Playback completed");
+         LOGI("Playback completed"s);
       }
    });
 }

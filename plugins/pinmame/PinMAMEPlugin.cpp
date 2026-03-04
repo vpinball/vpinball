@@ -455,7 +455,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
       // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
       if (pinmamePath.empty())
-         LOGE("PinMAME path is not defined.");
+         LOGE("PinMAME path is not defined."s);
       else
          strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, (pinmamePath / "").string().c_str());
 

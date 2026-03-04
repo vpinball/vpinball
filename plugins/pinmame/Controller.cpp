@@ -120,7 +120,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
          vpxApi->PushNotification(("Failed to start emulation of rom '"s + m_pPinmameGame->name + '\'').c_str(), 10000);
    }
    if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING) {
-      LOGE("Game already running.");
+      LOGE("Game already running."s);
    }
 }
 
