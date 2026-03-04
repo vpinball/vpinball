@@ -122,7 +122,7 @@ public:
 
    virtual int GetMinimumPoints() const { return 3; }
 
-   virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash);
+   void SavePoints(IObjectWriter& writer) const;
    void LoadPointToken(IObjectReader& reader);
 
    virtual void ClearPointsForOverwrite();

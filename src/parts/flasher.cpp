@@ -428,51 +428,43 @@ void Flasher::UpdatePoint(int index, float x, float y)
      pdp->m_v.y = y;
 }
 
-HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteFloat(FID(FHEI), m_d.m_height);
-   bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x); // Just for information, as it is computed from dragpoints
-   bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y); // Just for information, as it is computed from dragpoints
-   bw.WriteFloat(FID(FROX), m_d.m_rotX);
-   bw.WriteFloat(FID(FROY), m_d.m_rotY);
-   bw.WriteFloat(FID(FROZ), m_d.m_rotZ);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(IMAG), m_d.m_szImageA);
-   bw.WriteString(FID(IMAB), m_d.m_szImageB);
-   bw.WriteInt(FID(FALP), m_d.m_alpha);
-   bw.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
-   bw.WriteBool(FID(FVIS), m_d.m_isVisible);
-   bw.WriteBool(FID(DSPT), m_d.m_displayTexture);
-   bw.WriteBool(FID(ADDB), m_d.m_addBlend);
-   bw.WriteInt(FID(RDMD), m_d.m_renderMode);
-   bw.WriteInt(FID(RSTL), m_d.m_renderStyle);
-   bw.WriteFloat(FID(GRGH), m_d.m_glassRoughness);
-   bw.WriteInt(FID(GAMB), m_d.m_glassAmbient);
-   bw.WriteFloat(FID(GTOP), m_d.m_glassPadTop);
-   bw.WriteFloat(FID(GBOT), m_d.m_glassPadBottom);
-   bw.WriteFloat(FID(GLFT), m_d.m_glassPadLeft);
-   bw.WriteFloat(FID(GRHT), m_d.m_glassPadRight);
-   bw.WriteString(FID(LINK), m_d.m_imageSrcLink);
-   bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
-   bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
-   bw.WriteInt(FID(FILT), m_d.m_filter);
-   bw.WriteInt(FID(FIAM), m_d.m_filterAmount);
-   bw.WriteString(FID(LMAP), m_d.m_szLightmap);
-   bw.WriteBool(FID(BGLS), m_backglass);
-   ISelect::SaveData(pstm, hcrypthash);
-
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteFloat(FID(FHEI), m_d.m_height);
+   writer.WriteFloat(FID(FLAX), m_d.m_vCenter.x); // Just for information, as it is computed from dragpoints
+   writer.WriteFloat(FID(FLAY), m_d.m_vCenter.y); // Just for information, as it is computed from dragpoints
+   writer.WriteFloat(FID(FROX), m_d.m_rotX);
+   writer.WriteFloat(FID(FROY), m_d.m_rotY);
+   writer.WriteFloat(FID(FROZ), m_d.m_rotZ);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(IMAG), m_d.m_szImageA);
+   writer.WriteString(FID(IMAB), m_d.m_szImageB);
+   writer.WriteInt(FID(FALP), m_d.m_alpha);
+   writer.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
+   writer.WriteBool(FID(FVIS), m_d.m_isVisible);
+   writer.WriteBool(FID(DSPT), m_d.m_displayTexture);
+   writer.WriteBool(FID(ADDB), m_d.m_addBlend);
+   writer.WriteInt(FID(RDMD), m_d.m_renderMode);
+   writer.WriteInt(FID(RSTL), m_d.m_renderStyle);
+   writer.WriteFloat(FID(GRGH), m_d.m_glassRoughness);
+   writer.WriteInt(FID(GAMB), m_d.m_glassAmbient);
+   writer.WriteFloat(FID(GTOP), m_d.m_glassPadTop);
+   writer.WriteFloat(FID(GBOT), m_d.m_glassPadBottom);
+   writer.WriteFloat(FID(GLFT), m_d.m_glassPadLeft);
+   writer.WriteFloat(FID(GRHT), m_d.m_glassPadRight);
+   writer.WriteString(FID(LINK), m_d.m_imageSrcLink);
+   writer.WriteFloat(FID(FLDB), m_d.m_depthBias);
+   writer.WriteInt(FID(ALGN), m_d.m_imagealignment);
+   writer.WriteInt(FID(FILT), m_d.m_filter);
+   writer.WriteInt(FID(FIAM), m_d.m_filterAmount);
+   writer.WriteString(FID(LMAP), m_d.m_szLightmap);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
 void Flasher::ClearForOverwrite()
@@ -481,7 +473,7 @@ void Flasher::ClearForOverwrite()
 }
 
 
-HRESULT Flasher::Load(IObjectReader& reader)
+void Flasher::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -535,7 +527,6 @@ HRESULT Flasher::Load(IObjectReader& reader)
       });
    m_inPlayState = m_d.m_isVisible;
    UpdateCenter();
-   return S_OK;
 }
 
 STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)

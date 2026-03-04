@@ -29,7 +29,6 @@ public:
    bool m_isBottomSolid;         // is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_slingshotAnimation;
    bool m_topBottomVisible;
-   bool m_inner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
 class Surface :
@@ -61,7 +60,6 @@ public:
       m_menuid = IDR_SURFACEMENU;
       m_d.m_collidable = true;
       m_d.m_slingshotAnimation = true;
-      m_d.m_inner = true;
       m_d.m_isBottomSolid = false;
    }
    virtual ~Surface();

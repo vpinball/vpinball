@@ -762,47 +762,37 @@ void Rubber::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Rubber::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteFloat(FID(HTTP), m_d.m_height);
-   bw.WriteFloat(FID(HTHI), m_d.m_hitHeight);
-   bw.WriteInt(FID(WDTP), m_d.m_thickness);
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(RFCT), m_d.m_friction);
-   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   bw.WriteBool(FID(RVIS), m_d.m_visible);
-   bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
-   bw.WriteBool(FID(ESIE), m_d.m_showInEditor);
-   bw.WriteFloat(FID(ROTX), m_d.m_rotX);
-   bw.WriteFloat(FID(ROTY), m_d.m_rotY);
-   bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(PNTS));
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteFloat(FID(HTTP), m_d.m_height);
+   writer.WriteFloat(FID(HTHI), m_d.m_hitHeight);
+   writer.WriteInt(FID(WDTP), m_d.m_thickness);
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(RFCT), m_d.m_friction);
+   writer.WriteFloat(FID(RSCT), m_d.m_scatter);
+   writer.WriteBool(FID(CLDR), m_d.m_collidable);
+   writer.WriteBool(FID(RVIS), m_d.m_visible);
+   writer.WriteBool(FID(ESTR), m_d.m_staticRendering);
+   writer.WriteBool(FID(ESIE), m_d.m_showInEditor);
+   writer.WriteFloat(FID(ROTX), m_d.m_rotX);
+   writer.WriteFloat(FID(ROTY), m_d.m_rotY);
+   writer.WriteFloat(FID(ROTZ), m_d.m_rotZ);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
-HRESULT Rubber::Load(IObjectReader& reader)
+void Rubber::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    m_d.m_hitHeight = -1.0f;
@@ -835,6 +825,7 @@ HRESULT Rubber::Load(IObjectReader& reader)
          case FID(ROTZ): m_d.m_rotZ = reader.AsFloat(); break;
          case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
          case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         case FID(PNTS): break; // Empty tag placed before drag point data (unused)
          case FID(DPNT): LoadPointToken(reader); break;
          default: ISelect::LoadToken(tag, reader); break;
          }
@@ -842,7 +833,6 @@ HRESULT Rubber::Load(IObjectReader& reader)
       });
    if (m_d.m_hitHeight == -1.0f)
       m_d.m_hitHeight = m_d.m_height;
-   return S_OK;
 }
 
 #ifndef __STANDALONE__

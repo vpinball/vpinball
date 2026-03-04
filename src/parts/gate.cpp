@@ -546,40 +546,36 @@ void Gate::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Gate::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(LGTH), m_d.m_length);
+   writer.WriteFloat(FID(HGTH), m_d.m_height);
+   writer.WriteFloat(FID(ROTA), m_d.m_rotation);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteBool(FID(GSUP), m_d.m_showBracket);
+   writer.WriteBool(FID(GCOL), m_d.m_collidable);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(GAMA), m_d.m_angleMax);
+   writer.WriteFloat(FID(GAMI), m_d.m_angleMin);
+   writer.WriteFloat(FID(GFRC), m_d.m_friction);
+   writer.WriteFloat(FID(AFRC), m_d.m_damping);
+   writer.WriteFloat(FID(GGFC), m_d.m_gravityfactor);
+   writer.WriteBool(FID(GVSB), m_d.m_visible);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(TWWA), m_d.m_twoWay);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteInt(FID(GATY), m_d.m_type);
 
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(LGTH), m_d.m_length);
-   bw.WriteFloat(FID(HGTH), m_d.m_height);
-   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteBool(FID(GSUP), m_d.m_showBracket);
-   bw.WriteBool(FID(GCOL), m_d.m_collidable);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(GAMA), m_d.m_angleMax);
-   bw.WriteFloat(FID(GAMI), m_d.m_angleMin);
-   bw.WriteFloat(FID(GFRC), m_d.m_friction);
-   bw.WriteFloat(FID(AFRC), m_d.m_damping);
-   bw.WriteFloat(FID(GGFC), m_d.m_gravityfactor);
-   bw.WriteBool(FID(GVSB), m_d.m_visible);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(TWWA), m_d.m_twoWay);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteInt(FID(GATY), m_d.m_type);
+   ISelect::SaveData(writer);
 
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.EndObject();
 }
 
-HRESULT Gate::Load(IObjectReader& reader)
+void Gate::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    m_d.m_twoWay = false; // to keep old VP8/9 behavior when loading .vpt files
@@ -620,7 +616,6 @@ HRESULT Gate::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP Gate::InterfaceSupportsErrorInfo(REFIID riid)

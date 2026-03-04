@@ -22,6 +22,8 @@
 #include "core/ScriptGlobalTable.h"
 #include "ui/win/DragPointDialogs.h"
 
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
 #include "utils/ushock_output.h"
 
 #include "ui/live/ingameui/InGameUIItem.h"
@@ -889,7 +891,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             pstgInfo->Release();
          }
 
-         if (SUCCEEDED(hr = SaveData(pstmGame, hch, false)))
+         BiffWriter writer(pstmGame, hch);
+         Save(writer, false);
+         if (!writer.HasError())
          {
             // Move PartGroup ahead of objects they contain, so that they are saved first
             std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
@@ -903,7 +907,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                   IEditable *const piedit = m_vedit[i];
                   const ItemTypeEnum type = piedit->GetItemType();
                   pstmItem->Write(&type, sizeof(int), &writ);
-                  hr = piedit->SaveData(pstmItem, NULL, false);
+                  BiffWriter writer(pstmItem, 0);
+                  piedit->Save(writer, false);
                   pstmItem->Release();
                   pstmItem = nullptr;
                   //if (FAILED(hr)) goto Error;
@@ -934,7 +939,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vimage[i]->SaveToStream(pstmItem, this);
+                  BiffWriter imageWriter(pstmItem, 0);
+                  m_vimage[i]->Save(imageWriter, this);
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
@@ -949,7 +955,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vfont[i]->SaveToStream(pstmItem);
+                  BiffWriter writer(pstmItem, 0);
+                  m_vfont[i]->Save(writer);
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
@@ -964,7 +971,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vcollection[i].SaveData(pstmItem, hch, false);
+                  BiffWriter writer(pstmItem, hch);
+                  m_vcollection[i].Save(writer, false);
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
@@ -1031,10 +1039,9 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const st
    if (FAILED(hr))
       return hr;
 
-   ULONG writ;
-   BiffWriter bw(pstm, hcrypthash);
+   BiffWriter writer(pstm, hcrypthash);
    const wstring wzT = MakeWString(szValue);
-   bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)), &writ);
+   writer.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)));
    pstm->Release();
    pstm = nullptr;
    return S_OK;
@@ -1075,9 +1082,8 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 
       if (SUCCEEDED(hr = pstg->CreateStream(L"Screenshot", STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
       {
-         BiffWriter bw(pstm, hcrypthash);
-         ULONG writ;
-         bw.WriteBytes(pin->GetFileRaw(), static_cast<ULONG>(pin->GetFileSize()), &writ);
+         BiffWriter writer(pstm, hcrypthash);
+         writer.WriteBytes(pin->GetFileRaw(), static_cast<ULONG>(pin->GetFileSize()));
          pstm->Release();
          pstm = nullptr;
       }
@@ -1093,12 +1099,10 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   BiffWriter bw(pstmTags, hcrypthash);
-
+   BiffWriter writer(pstmTags, hcrypthash);
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      bw.WriteString(FID(CUST), m_vCustomInfoTag[i]);
-
-   bw.WriteTag(FID(ENDB));
+      writer.WriteString(FID(CUST), m_vCustomInfoTag[i]);
+   writer.EndObject();
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
@@ -1222,17 +1226,15 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    return S_OK;
 }
 
-HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
 {
 #ifndef __STANDALONE__
-   BiffWriter bw(pstm, hcrypthash);
+   writer.WriteFloat(FID(LEFT), m_left);
+   writer.WriteFloat(FID(TOPX), m_top);
+   writer.WriteFloat(FID(RGHT), m_right);
+   writer.WriteFloat(FID(BOTM), m_bottom);
 
-   bw.WriteFloat(FID(LEFT), m_left);
-   bw.WriteFloat(FID(TOPX), m_top);
-   bw.WriteFloat(FID(RGHT), m_right);
-   bw.WriteFloat(FID(BOTM), m_bottom);
-
-   bw.WriteBool(FID(EFSS), m_isFSSViewModeEnabled);
+   writer.WriteBool(FID(EFSS), m_isFSSViewModeEnabled);
    static constexpr int vsFields[NUM_BG_SETS][19] = { 
       { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ), FID(HOF0), FID(VOF0), FID(WTX0), FID(WTY0), FID(WTZ0), FID(WBX0), FID(WBY0), FID(WBZ0) },
       { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ), FID(HOF1), FID(VOF1), FID(WTX1), FID(WTY1), FID(WTZ1), FID(WBX1), FID(WBY1), FID(WBZ1) },
@@ -1240,99 +1242,99 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    };
    for (int i = 0; i < 3; i++)
    {
-      bw.WriteInt(vsFields[i][0], mViewSetups[i].mMode);
-      bw.WriteFloat(vsFields[i][1], mViewSetups[i].mViewportRotation);
-      bw.WriteFloat(vsFields[i][2], mViewSetups[i].mLookAt);
-      bw.WriteFloat(vsFields[i][3], mViewSetups[i].mLayback);
-      bw.WriteFloat(vsFields[i][4], mViewSetups[i].mFOV);
-      bw.WriteFloat(vsFields[i][5], mViewSetups[i].mViewX);
-      bw.WriteFloat(vsFields[i][6], mViewSetups[i].mViewY);
-      bw.WriteFloat(vsFields[i][7], mViewSetups[i].mViewZ);
-      bw.WriteFloat(vsFields[i][8], mViewSetups[i].mSceneScaleX);
-      bw.WriteFloat(vsFields[i][9], mViewSetups[i].mSceneScaleY);
-      bw.WriteFloat(vsFields[i][10], mViewSetups[i].mSceneScaleZ);
-      bw.WriteFloat(vsFields[i][11], mViewSetups[i].mViewHOfs);
-      bw.WriteFloat(vsFields[i][12], mViewSetups[i].mViewVOfs);
-      bw.WriteFloat(vsFields[i][15], mViewSetups[i].mWindowTopZOfs);
-      bw.WriteFloat(vsFields[i][18], mViewSetups[i].mWindowBottomZOfs);
+      writer.WriteInt(vsFields[i][0], mViewSetups[i].mMode);
+      writer.WriteFloat(vsFields[i][1], mViewSetups[i].mViewportRotation);
+      writer.WriteFloat(vsFields[i][2], mViewSetups[i].mLookAt);
+      writer.WriteFloat(vsFields[i][3], mViewSetups[i].mLayback);
+      writer.WriteFloat(vsFields[i][4], mViewSetups[i].mFOV);
+      writer.WriteFloat(vsFields[i][5], mViewSetups[i].mViewX);
+      writer.WriteFloat(vsFields[i][6], mViewSetups[i].mViewY);
+      writer.WriteFloat(vsFields[i][7], mViewSetups[i].mViewZ);
+      writer.WriteFloat(vsFields[i][8], mViewSetups[i].mSceneScaleX);
+      writer.WriteFloat(vsFields[i][9], mViewSetups[i].mSceneScaleY);
+      writer.WriteFloat(vsFields[i][10], mViewSetups[i].mSceneScaleZ);
+      writer.WriteFloat(vsFields[i][11], mViewSetups[i].mViewHOfs);
+      writer.WriteFloat(vsFields[i][12], mViewSetups[i].mViewVOfs);
+      writer.WriteFloat(vsFields[i][15], mViewSetups[i].mWindowTopZOfs);
+      writer.WriteFloat(vsFields[i][18], mViewSetups[i].mWindowBottomZOfs);
    }
 
-   bw.WriteInt(FID(ORRP), m_overridePhysics);
-   bw.WriteBool(FID(ORPF), m_overridePhysicsFlipper);
-   bw.WriteFloat(FID(GAVT), m_Gravity);
-   bw.WriteFloat(FID(FRCT), m_friction);
-   bw.WriteFloat(FID(ELAS), m_elasticity);
-   bw.WriteFloat(FID(ELFA), m_elasticityFalloff);
-   bw.WriteFloat(FID(PFSC), m_scatter);
-   bw.WriteFloat(FID(SCAT), m_defaultScatter);
-   bw.WriteFloat(FID(NDGT), m_nudgeTime);
-   bw.WriteInt(FID(PHML), m_PhysicsMaxLoops);
+   writer.WriteInt(FID(ORRP), m_overridePhysics);
+   writer.WriteBool(FID(ORPF), m_overridePhysicsFlipper);
+   writer.WriteFloat(FID(GAVT), m_Gravity);
+   writer.WriteFloat(FID(FRCT), m_friction);
+   writer.WriteFloat(FID(ELAS), m_elasticity);
+   writer.WriteFloat(FID(ELFA), m_elasticityFalloff);
+   writer.WriteFloat(FID(PFSC), m_scatter);
+   writer.WriteFloat(FID(SCAT), m_defaultScatter);
+   writer.WriteFloat(FID(NDGT), m_nudgeTime);
+   writer.WriteInt(FID(PHML), m_PhysicsMaxLoops);
 
-   //bw.WriteFloat(FID(IMTCOL), m_transcolor);
+   //writer.WriteFloat(FID(IMTCOL), m_transcolor);
 
-   bw.WriteBool(FID(REEL), m_renderEMReels);
-   bw.WriteBool(FID(DECL), m_renderDecals);
+   writer.WriteBool(FID(REEL), m_renderEMReels);
+   writer.WriteBool(FID(DECL), m_renderDecals);
 
-   bw.WriteFloat(FID(OFFX), m_winEditorViewOffset.x);
-   bw.WriteFloat(FID(OFFY), m_winEditorViewOffset.y);
+   writer.WriteFloat(FID(OFFX), m_winEditorViewOffset.x);
+   writer.WriteFloat(FID(OFFY), m_winEditorViewOffset.y);
 
-   bw.WriteFloat(FID(ZOOM), m_winEditorZoom);
+   writer.WriteFloat(FID(ZOOM), m_winEditorZoom);
 
-   bw.WriteFloat(FID(SLPX), m_angletiltMax);
-   bw.WriteFloat(FID(SLOP), m_angletiltMin);
+   writer.WriteFloat(FID(SLPX), m_angletiltMax);
+   writer.WriteFloat(FID(SLOP), m_angletiltMin);
 
-   bw.WriteString(FID(IMAG), m_image);
-   bw.WriteString(FID(BIMG), m_BG_image[0]);
-   bw.WriteString(FID(BIMF), m_BG_image[1]);
-   bw.WriteString(FID(BIMS), m_BG_image[2]);
-   bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
-   bw.WriteString(FID(IMCG), m_imageColorGrade);
-   bw.WriteString(FID(BLIM), m_ballImage);
-   bw.WriteBool(FID(BLSM), m_ballSphericalMapping);
-   bw.WriteString(FID(BLIF), m_ballImageDecal);
-   bw.WriteString(FID(EIMG), m_envImage);
-   bw.WriteString(FID(NOTX), m_notesText);
+   writer.WriteString(FID(IMAG), m_image);
+   writer.WriteString(FID(BIMG), m_BG_image[0]);
+   writer.WriteString(FID(BIMF), m_BG_image[1]);
+   writer.WriteString(FID(BIMS), m_BG_image[2]);
+   writer.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
+   writer.WriteString(FID(IMCG), m_imageColorGrade);
+   writer.WriteString(FID(BLIM), m_ballImage);
+   writer.WriteBool(FID(BLSM), m_ballSphericalMapping);
+   writer.WriteString(FID(BLIF), m_ballImageDecal);
+   writer.WriteString(FID(EIMG), m_envImage);
+   writer.WriteString(FID(NOTX), m_notesText);
 
-   bw.WriteString(FID(SSHT), m_screenShot);
+   writer.WriteString(FID(SSHT), m_screenShot);
 
-   bw.WriteBool(FID(FBCK), m_winEditorBackdrop);
+   writer.WriteBool(FID(FBCK), m_winEditorBackdrop);
 
-   bw.WriteFloat(FID(GLAS), m_glassTopHeight);
-   bw.WriteFloat(FID(GLAB), m_glassBottomHeight);
+   writer.WriteFloat(FID(GLAS), m_glassTopHeight);
+   writer.WriteFloat(FID(GLAB), m_glassBottomHeight);
 
-   bw.WriteString(FID(PLMA), m_playfieldMaterial);
-   bw.WriteInt(FID(BCLR), m_colorbackdrop);
+   writer.WriteString(FID(PLMA), m_playfieldMaterial);
+   writer.WriteInt(FID(BCLR), m_colorbackdrop);
 
-   bw.WriteFloat(FID(TDFT), m_difficulty);
+   writer.WriteFloat(FID(TDFT), m_difficulty);
 
-   bw.WriteInt(FID(LZAM), m_lightAmbient);
-   bw.WriteInt(FID(LZDI), m_Light[0].emission);
-   bw.WriteFloat(FID(LZHI), m_lightHeight);
-   bw.WriteFloat(FID(LZRA), m_lightRange);
-   bw.WriteFloat(FID(LIES), m_lightEmissionScale);
-   bw.WriteFloat(FID(ENES), m_envEmissionScale);
-   bw.WriteFloat(FID(GLES), m_globalEmissionScale);
-   bw.WriteFloat(FID(AOSC), m_AOScale);
-   bw.WriteFloat(FID(SSSC), m_SSRScale);
-   bw.WriteFloat(FID(CLBH), m_groundToLockbarHeight);
+   writer.WriteInt(FID(LZAM), m_lightAmbient);
+   writer.WriteInt(FID(LZDI), m_Light[0].emission);
+   writer.WriteFloat(FID(LZHI), m_lightHeight);
+   writer.WriteFloat(FID(LZRA), m_lightRange);
+   writer.WriteFloat(FID(LIES), m_lightEmissionScale);
+   writer.WriteFloat(FID(ENES), m_envEmissionScale);
+   writer.WriteFloat(FID(GLES), m_globalEmissionScale);
+   writer.WriteFloat(FID(AOSC), m_AOScale);
+   writer.WriteFloat(FID(SSSC), m_SSRScale);
+   writer.WriteFloat(FID(CLBH), m_groundToLockbarHeight);
 
-   bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
-   bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
+   writer.WriteFloat(FID(SVOL), m_TableSoundVolume);
+   writer.WriteFloat(FID(MVOL), m_TableMusicVolume);
 
-   bw.WriteInt(FID(PLST), quantizeUnsigned<8>(m_playfieldReflectionStrength));
-   bw.WriteBool(FID(BDMO), m_BallDecalMode);
-   bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
-   bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
-   bw.WriteBool(FID(GDAC), m_winEditorGrid);
+   writer.WriteInt(FID(PLST), quantizeUnsigned<8>(m_playfieldReflectionStrength));
+   writer.WriteBool(FID(BDMO), m_BallDecalMode);
+   writer.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
+   writer.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
+   writer.WriteBool(FID(GDAC), m_winEditorGrid);
 
-   bw.WriteInt(FID(UAOC), m_enableAO);
-   bw.WriteInt(FID(USSR), m_enableSSR);
-   bw.WriteInt(FID(TMAP), m_toneMapper);
-   bw.WriteFloat(FID(EXPO), m_exposure);
-   bw.WriteFloat(FID(BLST), m_bloom_strength);
+   writer.WriteInt(FID(UAOC), m_enableAO);
+   writer.WriteInt(FID(USSR), m_enableSSR);
+   writer.WriteInt(FID(TMAP), m_toneMapper);
+   writer.WriteFloat(FID(EXPO), m_exposure);
+   writer.WriteFloat(FID(BLST), m_bloom_strength);
 
    // Legacy material saving for backward compatibility
-   bw.WriteInt(FID(MASI), (int)m_materials.size());
+   writer.WriteInt(FID(MASI), (int)m_materials.size());
    if (!m_materials.empty())
    {
       vector<SaveMaterial> mats(m_materials.size());
@@ -1355,7 +1357,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
          for (size_t c = strnlen_s(mats[i].szName, std::size(mats[i].szName)); c < std::size(mats[i].szName); ++c) // to avoid garbage after 0
              mats[i].szName[c] = '\0';
       }
-      bw.WriteStruct(FID(MATE), mats.data(), (int)(sizeof(SaveMaterial)*m_materials.size()));
+      writer.WriteRaw(FID(MATE), mats.data(), (int)(sizeof(SaveMaterial)*m_materials.size()));
 
       vector<SavePhysicsMaterial> phymats(m_materials.size());
       for (size_t i = 0; i < m_materials.size(); i++)
@@ -1369,7 +1371,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
           phymats[i].fFriction = m->m_fFriction;
           phymats[i].fScatterAngle = m->m_fScatterAngle;
       }
-      bw.WriteStruct(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
+      writer.WriteRaw(FID(PHMA), phymats.data(), (int)(sizeof(SavePhysicsMaterial)*m_materials.size()));
    }
    // 10.8+ material saving (this format supports new properties, can be extended in future versions, and does not perform quantizations)
    for (size_t i = 0; i < m_materials.size(); i++)
@@ -1378,9 +1380,10 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-      m_materials[i]->SaveData(spStream, NULL, false);
+      BiffWriter subWriter(spStream, 0);
+      m_materials[i]->Save(subWriter, false);
       LPVOID pData = ::GlobalLock(hMem);
-      bw.WriteStruct(FID(MATR), pData, (int)record_size);
+      writer.WriteRaw(FID(MATR), pData, (int)record_size);
       ::GlobalUnlock(hMem);
    }
 
@@ -1392,52 +1395,43 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, record_size);
       CComPtr<IStream> spStream;
       const HRESULT hr = ::CreateStreamOnHGlobal(hMem, FALSE, &spStream);
-      m_vrenderprobe[i]->SaveData(spStream, NULL, false);
+      BiffWriter subWriter(spStream, 0);
+      m_vrenderprobe[i]->Save(subWriter, false);
       LPVOID pData = ::GlobalLock(hMem);
-      bw.WriteStruct(FID(RPRB), pData, record_size);
+      writer.WriteRaw(FID(RPRB), pData, record_size);
       ::GlobalUnlock(hMem);
    }
 
-   // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
-   // Someday save these values into their own stream, used only when saving to file.
-
-   if (hcrypthash != 0)
+   // Don't save special values when copying for undo.  For instance, don't reset the code.
+   if (!saveForUndo)
    {
-      bw.WriteInt(FID(SEDT), (int)m_vedit.size());
-      bw.WriteInt(FID(SSND), (int)m_vsound.size());
-      bw.WriteInt(FID(SIMG), (int)m_vimage.size());
-      bw.WriteInt(FID(SFNT), (int)m_vfont.size());
-      bw.WriteInt(FID(SCOL), m_vcollection.size());
+      writer.WriteInt(FID(SEDT), (int)m_vedit.size());
+      writer.WriteInt(FID(SSND), (int)m_vsound.size());
+      writer.WriteInt(FID(SIMG), (int)m_vimage.size());
+      writer.WriteInt(FID(SFNT), (int)m_vfont.size());
+      writer.WriteInt(FID(SCOL), m_vcollection.size());
 
-      bw.WriteWideString(FID(NAME), m_wzName);
+      writer.WriteWideString(FID(NAME), m_wzName);
 
-      bw.WriteStruct(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF) * 16);
+      writer.WriteRaw(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF) * 16);
 
-      // save the script source code, incl. the computed hash to be able to check for file integrity on loading
-      bw.WriteTag(FID(CODE));
-      size_t nBytes = m_script_text.size();
-      const char * scriptBytes = m_script_text.c_str();
+      string script = m_script_text;
       if (!m_external_script_name.empty())
       {
          std::ofstream file(m_external_script_name);
          if (file)
          {
-            file.write(scriptBytes, nBytes);
+            file.write(script.data(), script.size());
             file.close();
          }
-         nBytes = m_original_table_script.size();
-         scriptBytes = m_original_table_script.data();
+         script = m_original_table_script;
       }
-      ULONG writ = 0;
-      pstm->Write(&nBytes, (ULONG)sizeof(int), &writ);
-      pstm->Write(scriptBytes, (ULONG)nBytes, &writ);
-      CryptHashData(hcrypthash, (BYTE *)scriptBytes, (DWORD)nBytes, 0);
+      writer.WriteScript(FID(CODE), script);
    }
 
-   bw.WriteInt(FID(TLCK), m_tablelocked);
-   bw.WriteTag(FID(ENDB));
+   writer.WriteInt(FID(TLCK), m_tablelocked);
+   writer.EndObject();
 #endif
-   return S_OK;
 }
 
 HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
@@ -1579,7 +1573,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          }
 
          BiffReader tableReader(pstmGame, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
-         if (SUCCEEDED(hr = Load(tableReader)))
+         Load(tableReader);
+         if (!tableReader.HasError())
          {
             const int csubobj = m_loadTemp[0];
             const int csounds = m_loadTemp[1];
@@ -1617,15 +1612,15 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
                      piedit->GetISelect()->m_onLoadExpectedPartGroup.clear();
                      BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
-                     hr = piedit->Load(reader); 
+                     piedit->Load(reader); 
                      pstmItem->Release();
                      pstmItem = nullptr;
-                     if (FAILED(hr))
-                        return hr;
+                     if (reader.HasError())
+                        return E_FAIL;
 
                      parts[i] = piedit;
                      nLoadedParts++;
-                     return hr;
+                     return S_OK;
                   });
             }
 
@@ -1668,7 +1663,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                         return hr;
 
-                     m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this);
+                     BiffReader reader(pstmItem, loadfileversion, 0, 0);
+                     m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
                      pstmItem->Release();
                      pstmItem = nullptr;
                      nLoadedImages++;
@@ -1707,7 +1703,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      {
                         const wstring oldName = part->GetScriptable()->m_wzName;
                         part->GetScriptable()->m_wzName = GetUniqueName(part->GetScriptable()->m_wzName);
-                        PLOGE << "Duplicate part name found: " << oldName << " renamed it to " << part->GetScriptable()->m_wzName;
+                        PLOGE << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetScriptable()->m_wzName);
                      }
                      AddPart(part);
                   }
@@ -1764,7 +1760,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   PinFont * const ppf = new PinFont();
-                  ppf->LoadFromStream(pstmItem, loadfileversion);
+                  BiffReader reader(pstmItem, loadfileversion, 0, 0);
+                  ppf->Load(reader);
                   m_vfont.push_back(ppf);
                   ppf->Register();
                   pstmItem->Release();
@@ -1783,7 +1780,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   CComObject<Collection> *pcol;
                   CComObject<Collection>::CreateInstance(&pcol);
                   pcol->AddRef();
-                  pcol->LoadData(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
+                  BiffReader reader(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
+                  pcol->Load(reader);
                   AddCollection(pcol);
                   pcol->Release();
                   pstmItem->Release();
@@ -1804,11 +1802,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   {
                      const wstring oldName = layerName;
                      layerName = L"Layer_"s + layerName;
-                     PLOGE << "Non unique layer name encountered: " << oldName << ", replaced by " << layerName;
+                     PLOGE << "Non unique layer name encountered: " << MakeString(oldName) << ", replaced by " << MakeString(layerName);
+                     partGroupF = std::ranges::find_if(m_vedit,
+                        [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == layerName); });
                   }
                   // Set or create implicit PartGroups (that is to say, PartGroups corresponding to legacy layers)
-                  partGroupF = std::ranges::find_if(m_vedit,
-                     [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == layerName); });
                   if (partGroupF != m_vedit.end())
                   {
                      part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
@@ -2181,7 +2179,7 @@ void PinTable::SetLoadDefaults()
    m_overridePhysicsFlipper = false;
 }
 
-HRESULT PinTable::Load(IObjectReader& reader)
+void PinTable::Load(IObjectReader& reader)
 {
    SetLoadDefaults();
    memset(m_loadTemp, 0, sizeof(m_loadTemp));
@@ -2538,7 +2536,8 @@ HRESULT PinTable::Load(IObjectReader& reader)
 
             Material *mat = new Material();
             BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
-            if (mat->LoadData(reader) != S_OK)
+            mat->Load(reader);
+            if (reader.HasError())
             {
                assert(!"Invalid binary image file");
                delete mat;
@@ -2557,7 +2556,8 @@ HRESULT PinTable::Load(IObjectReader& reader)
 
             RenderProbe *rpb = new RenderProbe();
             BiffReader reader(&fastStream, reader.GetVersion(), 0, 0);
-            if (rpb->LoadData(reader) != S_OK)
+            rpb->Load(reader);
+            if (reader.HasError())
             {
                assert(!"Invalid binary image file");
                delete rpb;
@@ -2570,8 +2570,6 @@ HRESULT PinTable::Load(IObjectReader& reader)
          }
          return true;
       });
-
-   return S_OK;
 }
 
 bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
@@ -3723,7 +3721,8 @@ void PinTable::Copy(int x, int y)
        ULONG writ = 0;
        pstm->Write(&type, sizeof(int), &writ);
 
-       pe->SaveData(pstm, NULL, false);
+       BiffWriter writer(pstm, 0);
+       pe->Save(writer, false);
 
        vstm.push_back(pstm);
    }
@@ -5178,7 +5177,7 @@ Material* PinTable::GetSurfaceMaterial(const wstring& name) const
          return GetMaterial(static_cast<const Ramp *>(item)->m_d.m_szMaterial);
    }
 
-   PLOGE << "Failed to find part '" << name << "' to set other part material";
+   PLOGE << "Failed to find part '" << MakeString(name) << "' to set other part material";
    return GetMaterial(m_playfieldMaterial);
 }
 
@@ -5195,7 +5194,7 @@ Texture* PinTable::GetSurfaceImage(const wstring& name) const
          return GetImage(static_cast<const Ramp *>(item)->m_d.m_szImage);
    }
 
-   PLOGE << "Failed to find part '" << name << "' to set other part image";
+   PLOGE << "Failed to find part '" << MakeString(name) << "' to set other part image";
    return GetImage(m_image);
 }
 

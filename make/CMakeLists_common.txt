@@ -122,6 +122,7 @@ set(VPX_SOURCES
 
    src/parts/dragpoint.h
    src/parts/Material.h
+   src/parts/pinbinary.cpp
    src/parts/pinbinary.h
    src/parts/ball.cpp
    src/parts/ball.h
@@ -150,7 +151,6 @@ set(VPX_SOURCES
    src/parts/lightseq.h
    src/parts/PartGroup.cpp
    src/parts/PartGroup.h
-   src/parts/pinbinary.cpp
    src/parts/pintable.cpp
    src/parts/pintable.h
    src/parts/plunger.cpp
@@ -363,6 +363,10 @@ set(VPX_SOURCES
    src/ui/win/WinEditor.cpp
    src/ui/win/WinEditor.h
 
+   src/utils/BiffReader.cpp
+   src/utils/BiffReader.h
+   src/utils/BiffWriter.cpp
+   src/utils/BiffWriter.h
    src/utils/bulb.cpp
    src/utils/bulb.h
    src/utils/eventproxy.h

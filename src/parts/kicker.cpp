@@ -562,34 +562,28 @@ void Kicker::PutCenter(const Vertex2D& pv)
 }
 
 
-HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Kicker::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(RADI), m_d.m_radius);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteBool(FID(EBLD), m_d.m_enabled);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(TYPE), m_d.m_kickertype);
-   bw.WriteFloat(FID(KSCT), m_d.m_scatter);
-   bw.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
-   bw.WriteFloat(FID(KHHI), m_d.m_hit_height);
-   bw.WriteFloat(FID(KORI), m_d.m_orientation);
-   bw.WriteBool(FID(FATH), m_d.m_fallThrough);
-   bw.WriteBool(FID(LEMO), m_d.m_legacyMode);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(RADI), m_d.m_radius);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteBool(FID(EBLD), m_d.m_enabled);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteInt(FID(TYPE), m_d.m_kickertype);
+   writer.WriteFloat(FID(KSCT), m_d.m_scatter);
+   writer.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
+   writer.WriteFloat(FID(KHHI), m_d.m_hit_height);
+   writer.WriteFloat(FID(KORI), m_d.m_orientation);
+   writer.WriteBool(FID(FATH), m_d.m_fallThrough);
+   writer.WriteBool(FID(LEMO), m_d.m_legacyMode);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT Kicker::Load(IObjectReader& reader)
+void Kicker::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -631,7 +625,6 @@ HRESULT Kicker::Load(IObjectReader& reader)
          return true;
       });
    m_phitkickercircle = nullptr;
-   return S_OK;
 }
 
 STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)

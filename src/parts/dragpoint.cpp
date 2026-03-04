@@ -290,28 +290,21 @@ void IHaveDragPoints::ClearPointsForOverwrite()
    m_vdpoint.clear();
 }
 
-HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
+void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   for (auto* pdp : m_vdpoint)
+   for (const auto pdp : m_vdpoint)
    {
-      bw.WriteTag(FID(DPNT));
-      bw.WriteStruct(FID(VCEN), &pdp->m_v, sizeof(Vertex2D));
-      bw.WriteFloat(FID(POSZ), pdp->m_v.z);
-      bw.WriteBool(FID(SMTH), pdp->m_smooth);
-      bw.WriteBool(FID(SLNG), pdp->m_slingshot);
-      bw.WriteBool(FID(ATEX), pdp->m_autoTexture);
-      bw.WriteFloat(FID(TEXC), pdp->m_texturecoord);
-
-      static_cast<ISelect*>(pdp)->SaveData(pstm, hcrypthash);
-
-      bw.WriteTag(FID(ENDB));
+      writer.BeginObject(FID(DPNT), true);
+      writer.WriteVector2(FID(VCEN), Vertex2D(pdp->m_v.x, pdp->m_v.y));
+      writer.WriteFloat(FID(POSZ), pdp->m_v.z);
+      writer.WriteBool(FID(SMTH), pdp->m_smooth);
+      writer.WriteBool(FID(SLNG), pdp->m_slingshot);
+      writer.WriteBool(FID(ATEX), pdp->m_autoTexture);
+      writer.WriteFloat(FID(TEXC), pdp->m_texturecoord);
+      pdp->ISelect::SaveData(writer);
+      writer.EndObject();
    }
-
-   return S_OK;
 }
-
 
 void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
 {

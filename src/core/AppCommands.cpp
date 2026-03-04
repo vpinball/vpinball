@@ -4,6 +4,7 @@
 #include "AppCommands.h"
 #include "extern.h"
 #include "core/TournamentFile.h"
+#include "utils/BiffReader.h"
 
 #include <iostream>
 

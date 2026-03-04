@@ -128,7 +128,7 @@ public:
    virtual const IEditable *GetIEditable() const = 0;
 
    bool LoadToken(const int id, IObjectReader& reader);
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash);
+   void SaveData(IObjectWriter &writer);
 
    virtual int GetSelectLevel() const { return 1; }
    virtual bool LoadMeshDialog() { return false; }

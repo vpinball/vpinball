@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 #include "vpversion.h"
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
 
 PinUndo::PinUndo(PinTable *table)
    : m_table(table)
@@ -190,7 +192,8 @@ void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
    DWORD write;
    pstm->Write(&pie, sizeof(IEditable *), &write);
 
-   pie->SaveData(pstm, 0, true);
+   BiffWriter writer(pstm, 0);
+   pie->Save(writer, true);
 
    m_vstm.push_back(pstm);
 #endif

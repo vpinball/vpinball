@@ -451,37 +451,33 @@ void Spinner::PutCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Spinner::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(ROTA), m_d.m_rotation);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteFloat(FID(HIGH), m_d.m_height);
+   writer.WriteFloat(FID(LGTH), m_d.m_length);
+   writer.WriteFloat(FID(AFRC), m_d.m_damping);
 
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteFloat(FID(HIGH), m_d.m_height);
-   bw.WriteFloat(FID(LGTH), m_d.m_length);
-   bw.WriteFloat(FID(AFRC), m_d.m_damping);
+   writer.WriteFloat(FID(SMAX), m_d.m_angleMax);
+   writer.WriteFloat(FID(SMIN), m_d.m_angleMin);
+   writer.WriteFloat(FID(SELA), m_d.m_elasticity);
+   writer.WriteBool(FID(SVIS), m_d.m_visible);
+   writer.WriteBool(FID(SSUP), m_d.m_showBracket);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteString(FID(IMGF), m_d.m_szImage);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
-   bw.WriteFloat(FID(SMAX), m_d.m_angleMax);
-   bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
-   bw.WriteFloat(FID(SELA), m_d.m_elasticity);
-   bw.WriteBool(FID(SVIS), m_d.m_visible);
-   bw.WriteBool(FID(SSUP), m_d.m_showBracket);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteString(FID(IMGF), m_d.m_szImage);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   ISelect::SaveData(writer);
 
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.EndObject();
 }
 
-HRESULT Spinner::Load(IObjectReader& reader)
+void Spinner::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -511,7 +507,6 @@ HRESULT Spinner::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)

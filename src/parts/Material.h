@@ -196,32 +196,30 @@ public:
       return size;
    }
 
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+   void Save(IObjectWriter& writer, const bool saveForUndo)
    {
-      BiffWriter bw(pstm, hcrypthash);
-      bw.WriteInt(FID(TYPE), m_type);
-      bw.WriteString(FID(NAME), m_name);
-      bw.WriteFloat(FID(WLIG), m_fWrapLighting);
-      bw.WriteFloat(FID(ROUG), m_fRoughness);
-      bw.WriteFloat(FID(GIML), m_fGlossyImageLerp);
-      bw.WriteFloat(FID(THCK), m_fThickness);
-      bw.WriteFloat(FID(EDGE), m_fEdge);
-      bw.WriteFloat(FID(EALP), m_fEdgeAlpha);
-      bw.WriteFloat(FID(OPAC), m_fOpacity);
-      bw.WriteInt(FID(BASE), m_cBase);
-      bw.WriteInt(FID(GLOS), m_cGlossy);
-      bw.WriteInt(FID(COAT), m_cClearcoat);
-      bw.WriteInt(FID(RTNT), m_cRefractionTint);
-      bw.WriteBool(FID(EOPA), m_bOpacityActive);
-      bw.WriteFloat(FID(ELAS), m_fElasticity);
-      bw.WriteFloat(FID(ELFO), m_fElasticityFalloff);
-      bw.WriteFloat(FID(FRIC), m_fFriction);
-      bw.WriteFloat(FID(SCAT), m_fScatterAngle);
-      bw.WriteTag(FID(ENDB));
-      return S_OK;
+      writer.WriteInt(FID(TYPE), m_type);
+      writer.WriteString(FID(NAME), m_name);
+      writer.WriteFloat(FID(WLIG), m_fWrapLighting);
+      writer.WriteFloat(FID(ROUG), m_fRoughness);
+      writer.WriteFloat(FID(GIML), m_fGlossyImageLerp);
+      writer.WriteFloat(FID(THCK), m_fThickness);
+      writer.WriteFloat(FID(EDGE), m_fEdge);
+      writer.WriteFloat(FID(EALP), m_fEdgeAlpha);
+      writer.WriteFloat(FID(OPAC), m_fOpacity);
+      writer.WriteInt(FID(BASE), m_cBase);
+      writer.WriteInt(FID(GLOS), m_cGlossy);
+      writer.WriteInt(FID(COAT), m_cClearcoat);
+      writer.WriteInt(FID(RTNT), m_cRefractionTint);
+      writer.WriteBool(FID(EOPA), m_bOpacityActive);
+      writer.WriteFloat(FID(ELAS), m_fElasticity);
+      writer.WriteFloat(FID(ELFO), m_fElasticityFalloff);
+      writer.WriteFloat(FID(FRIC), m_fFriction);
+      writer.WriteFloat(FID(SCAT), m_fScatterAngle);
+      writer.EndObject();
    }
 
-   HRESULT LoadData(IObjectReader& reader)
+   void Load(IObjectReader& reader)
    {
       reader.AsObject(
          [this](int tag, IObjectReader& reader)
@@ -249,6 +247,5 @@ public:
             }
             return true;
          });
-      return S_OK;
    }
 };

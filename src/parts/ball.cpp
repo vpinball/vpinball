@@ -114,30 +114,28 @@ void Ball::WriteRegDefaults()
 #undef LinkProp
 }
 
-HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Ball::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-   bw.WriteVector3(FID(VCEN), m_hitBall.m_d.m_pos);
-   bw.WriteFloat(FID(RADI), m_hitBall.m_d.m_radius);
-   bw.WriteFloat(FID(MASS), m_hitBall.m_d.m_mass);
-   bw.WriteBool(FID(FREF), m_d.m_forceReflection);
-   bw.WriteBool(FID(DCMD), m_d.m_decalMode);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(DIMG), m_d.m_imageDecal);
-   bw.WriteFloat(FID(BISC), m_d.m_bulb_intensity_scale);
-   bw.WriteFloat(FID(PFRF), m_d.m_playfieldReflectionStrength);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteBool(FID(SPHR), m_d.m_pinballEnvSphericalMapping);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   ISelect::SaveData(pstm, hcrypthash);
-   bw.WriteTag(FID(ENDB));
-   return S_OK;
+   writer.WriteVector3(FID(VCEN), m_hitBall.m_d.m_pos);
+   writer.WriteFloat(FID(RADI), m_hitBall.m_d.m_radius);
+   writer.WriteFloat(FID(MASS), m_hitBall.m_d.m_mass);
+   writer.WriteBool(FID(FREF), m_d.m_forceReflection);
+   writer.WriteBool(FID(DCMD), m_d.m_decalMode);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(DIMG), m_d.m_imageDecal);
+   writer.WriteFloat(FID(BISC), m_d.m_bulb_intensity_scale);
+   writer.WriteFloat(FID(PFRF), m_d.m_playfieldReflectionStrength);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteBool(FID(SPHR), m_d.m_pinballEnvSphericalMapping);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT Ball::Load(IObjectReader& reader)
+void Ball::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -164,7 +162,6 @@ HRESULT Ball::Load(IObjectReader& reader)
          }
          return true;
       });
-   return S_OK;
 }
 
 #pragma endregion

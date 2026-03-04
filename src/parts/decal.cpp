@@ -268,43 +268,33 @@ void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElem
    m_d.m_rotation += ang;
 }
 
-HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Decal::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(WDTH), m_d.m_width);
-   bw.WriteFloat(FID(HIGH), m_d.m_height);
-   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(TEXT), m_d.m_text);
-   bw.WriteInt(FID(TYPE), m_d.m_decaltype);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteInt(FID(SIZE), m_d.m_sizingtype);
-
-   bw.WriteBool(FID(VERT), m_d.m_verticalText);
-
-   bw.WriteBool(FID(BGLS), m_backglass);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(FONT));
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(WDTH), m_d.m_width);
+   writer.WriteFloat(FID(HIGH), m_d.m_height);
+   writer.WriteFloat(FID(ROTA), m_d.m_rotation);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(TEXT), m_d.m_text);
+   writer.WriteInt(FID(TYPE), m_d.m_decaltype);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteInt(FID(SIZE), m_d.m_sizingtype);
+   writer.WriteBool(FID(VERT), m_d.m_verticalText);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   ISelect::SaveData(writer);
+   FontDesc fd;
 #ifndef __STANDALONE__
-   IPersistStream * ips;
-   m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-   ips->Save(pstm, TRUE);
-   SAFE_RELEASE_NO_RCC(ips);
+   if (m_pIFont)
+      fd.FromOLEFont(m_pIFont);
 #endif
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteFontDescriptor(FID(FONT), fd);
+   writer.EndObject();
 }
 
-HRESULT Decal::Load(IObjectReader& reader)
+void Decal::Load(IObjectReader& reader)
 {
    SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
@@ -329,7 +319,7 @@ HRESULT Decal::Load(IObjectReader& reader)
          case FID(BGLS): m_backglass = reader.AsBool(); break;
          case FID(FONT):
          {
-            IObjectReader::FontDesc fd = reader.AsFontDescriptor();
+            FontDesc fd = reader.AsFontDescriptor();
             #ifndef __STANDALONE__
             FONTDESC oleFD = fd.ToOLEFontDesc();
             OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
@@ -342,7 +332,6 @@ HRESULT Decal::Load(IObjectReader& reader)
          return true;
       });
    EnsureSize();
-   return S_OK;
 }
 
 void Decal::EnsureSize()

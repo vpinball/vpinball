@@ -10,30 +10,22 @@ Collection::Collection()
    m_groupElements = g_app->m_settings.GetEditor_GroupElementsInCollection();
 }
 
-HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Collection::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteWideString(FID(NAME), m_wzName);
-
+   writer.WriteWideString(FID(NAME), m_wzName);
    for (int i = 0; i < m_visel.size(); ++i)
    {
       const IScriptable * const piscript = m_visel[i].GetIEditable()->GetScriptable();
-      bw.WriteWideString(FID(ITEM), piscript->m_wzName);
+      writer.WriteWideString(FID(ITEM), piscript->m_wzName);
    }
-
-   bw.WriteBool(FID(EVNT), m_fireEvents);
-   bw.WriteBool(FID(SSNG), m_stopSingleEvents);
-   bw.WriteBool(FID(GREL), m_groupElements);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteBool(FID(EVNT), m_fireEvents);
+   writer.WriteBool(FID(SSNG), m_stopSingleEvents);
+   writer.WriteBool(FID(GREL), m_groupElements);
+   writer.EndObject();
 }
 
-HRESULT Collection::LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Collection::Load(IObjectReader& reader)
 {
-   BiffReader reader(pstm, version, hcrypthash, hcryptkey);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
       {
@@ -52,7 +44,6 @@ HRESULT Collection::LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, 
          }
          return true;
       });
-   return S_OK;
 }
 
 HRESULT Collection::InitPostLoad(const PinTable *const pt)

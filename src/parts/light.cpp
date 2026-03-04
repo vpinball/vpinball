@@ -46,7 +46,6 @@ Light *Light::CopyForPlay() const
    dst->m_lightcenter = m_lightcenter;
    dst->m_initSurfaceHeight = m_initSurfaceHeight;
    dst->m_maxDist = m_maxDist;
-   dst->m_roundLight = m_roundLight;
    return dst;
 }
 
@@ -862,57 +861,47 @@ void Light::MoveOffset(const float dx, const float dy)
    }
 }
 
-HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Light::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(HGHT), m_d.m_height);
-   bw.WriteFloat(FID(RADI), m_d.m_falloff);
-   bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
-   bw.WriteInt(FID(STAT), m_d.m_state == 0.f ? 0 : (m_d.m_state == 2.f ? 2 : 1)); //!! deprecated, remove as soon as increasing file version to 10.9+
-   bw.WriteFloat(FID(STTF), m_d.m_state);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteInt(FID(COL2), m_d.m_color2);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
-   bw.WriteString(FID(IMG1), m_d.m_szImage);
-   bw.WriteInt(FID(BINT), m_d.m_blinkinterval);
-   //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
-   bw.WriteFloat(FID(BWTH), m_d.m_intensity);
-   bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(BGLS), m_backglass);
-   bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
-   bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
-   bw.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
-   bw.WriteBool(FID(BULT), m_d.m_BulbLight);
-   bw.WriteBool(FID(IMMO), m_d.m_imageMode);
-   bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
-   bw.WriteBool(FID(STBM), m_d.m_staticBulbMesh);
-   bw.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
-   bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
-   bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
-   bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
-   bw.WriteInt(FID(SHDW), m_d.m_shadows);
-   bw.WriteInt(FID(FADE), m_d.m_fader);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   //bw.WriteTag(FID(PNTS));
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(HGHT), m_d.m_height);
+   writer.WriteFloat(FID(RADI), m_d.m_falloff);
+   writer.WriteFloat(FID(FAPO), m_d.m_falloff_power);
+   writer.WriteInt(FID(STAT), m_d.m_state == 0.f ? 0 : (m_d.m_state == 2.f ? 2 : 1)); //!! deprecated, remove as soon as increasing file version to 10.9+
+   writer.WriteFloat(FID(STTF), m_d.m_state);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteInt(FID(COL2), m_d.m_color2);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
+   writer.WriteString(FID(IMG1), m_d.m_szImage);
+   writer.WriteInt(FID(BINT), m_d.m_blinkinterval);
+   //writer.WriteInt(FID(BCOL), m_d.m_bordercolor);
+   writer.WriteFloat(FID(BWTH), m_d.m_intensity);
+   writer.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(BGLS), m_backglass);
+   writer.WriteFloat(FID(LIDB), m_d.m_depthBias);
+   writer.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
+   writer.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
+   writer.WriteBool(FID(BULT), m_d.m_BulbLight);
+   writer.WriteBool(FID(IMMO), m_d.m_imageMode);
+   writer.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
+   writer.WriteBool(FID(STBM), m_d.m_staticBulbMesh);
+   writer.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
+   writer.WriteFloat(FID(BMSC), m_d.m_meshRadius);
+   writer.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
+   writer.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
+   writer.WriteInt(FID(SHDW), m_d.m_shadows);
+   writer.WriteInt(FID(FADE), m_d.m_fader);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   ISelect::SaveData(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
-HRESULT Light::Load(IObjectReader& reader)
+void Light::Load(IObjectReader& reader)
 {
    SetDefaults(false);
 
@@ -935,8 +924,9 @@ HRESULT Light::Load(IObjectReader& reader)
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
 
+   bool roundLight = false;
    reader.AsObject(
-      [this](int tag, IObjectReader& reader)
+      [this, &roundLight](int tag, IObjectReader& reader)
       {
          switch (tag)
          {
@@ -964,7 +954,7 @@ HRESULT Light::Load(IObjectReader& reader)
          case FID(IMG1): m_d.m_szImage = reader.AsString(); break;
          case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
-         case FID(SHAP): m_roundLight = true; break;
+         case FID(SHAP): roundLight = true; break;
          case FID(BPAT): m_d.m_rgblinkpattern = reader.AsString(); break;
          case FID(BINT): m_d.m_blinkinterval = reader.AsInt(); break;
          //case FID(BCOL): m_d.m_bordercolor = reader.AsInt(); break;
@@ -992,16 +982,9 @@ HRESULT Light::Load(IObjectReader& reader)
          }
          return true;
       });
-   // workaround for the old round light object
-   // after loading m_roundLight is true if an pre-VPX table was loaded
-   // init the round light to the new custom one
-   if (m_roundLight)
-   {
+   // workaround for the old round light object after loading m_roundLight is true if an pre-VPX table was loaded init the round light to the new custom one
+   if (roundLight)
       InitShape();
-      m_roundLight = false;
-   }
-
-   return S_OK;
 }
 
 Vertex2D Light::GetPointCenter() const

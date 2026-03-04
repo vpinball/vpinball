@@ -826,55 +826,49 @@ void Flipper::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Flipper::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_Center);
-   bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
-   bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
-   bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
-   //bw.WriteFloat(FID(FAEO), m_d.m_angleEOS);
-   bw.WriteFloat(FID(FRTN), m_d.m_return);
-   bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
-   bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
-   bw.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
-   bw.WriteFloat(FID(FORC), m_d.m_mass);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
-   bw.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
-   bw.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
-   bw.WriteInt(FID(RHGT), (int)m_d.m_rubberheight); //!! deprecated, remove
-   bw.WriteFloat(FID(RHGF), m_d.m_rubberheight);
-   bw.WriteInt(FID(RWDT), (int)m_d.m_rubberwidth); //!! deprecated, remove
-   bw.WriteFloat(FID(RWDF), m_d.m_rubberwidth);
-   bw.WriteFloat(FID(STRG), m_d.m_strength);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(FRIC), m_d.m_friction);
-   bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
-   bw.WriteFloat(FID(SCTR), m_d.m_scatter);
-   bw.WriteFloat(FID(TODA), m_d.m_torqueDamping);
-   bw.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-   bw.WriteBool(FID(ENBL), m_d.m_enabled);
-   bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
-   bw.WriteFloat(FID(FHGT), m_d.m_height);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_Center);
+   writer.WriteFloat(FID(BASR), m_d.m_BaseRadius);
+   writer.WriteFloat(FID(ENDR), m_d.m_EndRadius);
+   writer.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
+   //writer.WriteFloat(FID(FAEO), m_d.m_angleEOS);
+   writer.WriteFloat(FID(FRTN), m_d.m_return);
+   writer.WriteFloat(FID(ANGS), m_d.m_StartAngle);
+   writer.WriteFloat(FID(ANGE), m_d.m_EndAngle);
+   writer.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
+   writer.WriteFloat(FID(FORC), m_d.m_mass);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
+   writer.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
+   writer.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
+   writer.WriteInt(FID(RHGT), (int)m_d.m_rubberheight); //!! deprecated, remove
+   writer.WriteFloat(FID(RHGF), m_d.m_rubberheight);
+   writer.WriteInt(FID(RWDT), (int)m_d.m_rubberwidth); //!! deprecated, remove
+   writer.WriteFloat(FID(RWDF), m_d.m_rubberwidth);
+   writer.WriteFloat(FID(STRG), m_d.m_strength);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(FRIC), m_d.m_friction);
+   writer.WriteFloat(FID(RPUP), m_d.m_rampUp);
+   writer.WriteFloat(FID(SCTR), m_d.m_scatter);
+   writer.WriteFloat(FID(TODA), m_d.m_torqueDamping);
+   writer.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   writer.WriteBool(FID(ENBL), m_d.m_enabled);
+   writer.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
+   writer.WriteFloat(FID(FHGT), m_d.m_height);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   ISelect::SaveData(writer);
+   writer.EndObject();
 }
 
-HRESULT Flipper::Load(IObjectReader& reader)
+void Flipper::Load(IObjectReader& reader)
 {
    SetDefaults(false);
    reader.AsObject(
@@ -949,7 +943,6 @@ HRESULT Flipper::Load(IObjectReader& reader)
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
    if (m_d.m_rubberwidth > 1000.f)
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
-   return S_OK;
 }
 
 #pragma region ScriptProxy
