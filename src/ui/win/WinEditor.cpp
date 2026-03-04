@@ -406,7 +406,7 @@ void WinEditor::SetPosCur(float x, float y)
 #ifndef __STANDALONE__
    // display position 1st column in VP units
    char szT[256];
-   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
+   sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 
    // display converted position in separate status
@@ -415,10 +415,10 @@ void WinEditor::SetPosCur(float x, float y)
        switch (m_convertToUnit)
        {
            case 0:
-               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               sprintf_s(szT, std::size(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
                break;
            case 1:
-               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               sprintf_s(szT, std::size(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
                break;
            default:
                assert(!"wrong unit");
@@ -435,7 +435,7 @@ void WinEditor::SetPosCur(float x, float y)
 void WinEditor::SetObjectPosCur(float x, float y)
 {
    char szT[256];
-   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
+   sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
 #ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 #endif
@@ -475,7 +475,7 @@ void WinEditor::SetPropSel(VectorProtected<ISelect> &pvsel)
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
    const string oldName = MakeString(editable->GetScriptable()->m_wzName);
-   editable->SetName(name);
+   editable->SetName(MakeWString(name));
 
 #ifndef __STANDALONE__
    PinTable *const pt = editable->GetPTable();
@@ -2174,9 +2174,9 @@ void WinEditor::SaveTable(const bool saveAs)
       std::filesystem::path vpxPath = ptCur->m_filename;
       vpxPath.replace_extension(".vpx");
       char fileName[MAXSTRING];
-      strncpy_s(fileName, sizeof(fileName), vpxPath.string().c_str());
+      strncpy_s(fileName, std::size(fileName), vpxPath.string().c_str());
       ofn.lpstrFile = fileName;
-      ofn.nMaxFile = sizeof(fileName);
+      ofn.nMaxFile = std::size(fileName);
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 

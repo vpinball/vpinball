@@ -361,11 +361,12 @@ void Light::RenderSetup(RenderDevice *device)
    m_iblinkframe = 0;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
-   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
+   const wstring wSurface = MakeWString(m_d.m_szSurface); 
+   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(wSurface);
+   m_surfaceTexture = m_ptable->GetSurfaceImage(wSurface);
 
    m_surfaceHeight = m_initSurfaceHeight;
-   
+
    UpdateBounds();
 
    if (m_inPlayState == (float)LightStateBlinking)

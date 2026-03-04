@@ -55,10 +55,10 @@ public:
 	virtual const wstring& get_Name() const { return m_wzName; } \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 	{ \
-		*pVal = SysAllocString(m_wzName.c_str()); \
+		*pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); \
 		return S_OK; \
 	} \
-	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(MakeString(newVal)); return S_OK; } \
+	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(newVal); return S_OK; } \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_d.m_tdr.m_TimerInterval);} \
 	STDMETHOD(get_TimerEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) {*pVal = FTOVB(m_d.m_tdr.m_TimerEnabled); return S_OK;} \
@@ -234,7 +234,8 @@ public:
    void MarkForDelete();
    void Undelete();
    string GetName() const;
-   void SetName(const string& name);
+   const wstring& GetWName() const;
+   void SetName(const wstring& name);
    virtual void Delete();
    virtual void Uncreate();
 

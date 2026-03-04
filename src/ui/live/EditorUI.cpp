@@ -1318,7 +1318,7 @@ void EditorUI::UpdateRendererInspectionModal()
 void EditorUI::TableProperties(PropertyPane &props)
 {
    PinTable *table = props.GetEditedPart<PinTable>(m_table);
-   props.Header("Table"s, [table]() { return table->GetName(); }, [table](const string &v) { table->SetName(v); });
+   props.Header("Table"s, [table]() { return table->GetWName(); }, [table](const wstring &v) { table->SetName(v); });
 
    if (props.BeginSection("User Settings"s))
    {
@@ -1414,7 +1414,7 @@ void EditorUI::TableProperties(PropertyPane &props)
 void EditorUI::CameraProperties(PropertyPane &props, int bgSet)
 {
    ImGui::BeginDisabled(true);
-   props.Header("Camera", [bgSet]() { return bgSet == 0 ? "Desktop"s : bgSet == 1 ? "Cabinet"s : "Full Single Screen"s; }, [](const string &) {});
+   props.Header("Camera"s, [bgSet]() { return bgSet == 0 ? L"Desktop"s : bgSet == 1 ? L"Cabinet"s : L"Full Single Screen"s; }, [](const wstring &) {});
    ImGui::EndDisabled();
 
    {
@@ -1484,7 +1484,7 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
 {
    ImGui::BeginDisabled(m_table->m_liveBaseTable != nullptr); // Disable edition in inspection mode as images are shared between startup & inspected table
 
-   props.Header("Image"s, [texture]() { return texture->m_name; }, [texture](const string &v) { texture->m_name = v; });
+   props.Header("Image"s, [texture]() { return MakeWString(texture->m_name); }, [texture](const wstring &v) { texture->m_name = MakeString(v); });
 
    ImTextureID image = m_renderer->m_renderDevice->m_texMan.LoadTexture(texture, false);
    if (image)
@@ -1520,7 +1520,7 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
 void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
 {
    RenderProbe *editedProbe = props.GetEditedPart<RenderProbe>(probe);
-   props.Header("Render Probe"s, [editedProbe]() { return editedProbe->GetName(); }, [editedProbe](const string &v) { editedProbe->SetName(v); });
+   props.Header("Render Probe"s, [editedProbe]() { return MakeWString(editedProbe->GetName()); }, [editedProbe](const wstring &v) { editedProbe->SetName(MakeString(v)); });
 
    if (props.BeginSection("Visuals"s))
    {
@@ -1570,7 +1570,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
 void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
 {
    Material *editedMaterial = props.GetEditedPart<Material>(material);
-   props.Header("Material"s, [editedMaterial]() { return editedMaterial->m_name; }, [editedMaterial](const string &v) { editedMaterial->m_name = v; });
+   props.Header("Material"s, [editedMaterial]() { return MakeWString(editedMaterial->m_name); }, [editedMaterial](const wstring &v) { editedMaterial->m_name = MakeString(v); });
 
    if (props.BeginSection("Visuals"s))
    {

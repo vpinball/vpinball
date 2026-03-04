@@ -94,7 +94,7 @@ public:
 
    virtual HRESULT GetTypeName(BSTR *pVal) const;
    // buf must be at least 256 characters long
-   void GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const;
+   wstring GetTypeNameForType(const ItemTypeEnum type) const;
 
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;

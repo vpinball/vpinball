@@ -517,8 +517,8 @@ public:
 
    bool IsMaterialNameUnique(const string &name) const;
    Material *GetMaterial(const string &name) const;
-   Material *GetSurfaceMaterial(const string &name) const;
-   Texture *GetSurfaceImage(const string &name) const;
+   Material *GetSurfaceMaterial(const wstring &name) const;
+   Texture *GetSurfaceImage(const wstring &name) const;
 
    std::unique_ptr<Material> m_dummyMaterial;
 

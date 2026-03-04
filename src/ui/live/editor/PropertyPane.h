@@ -35,7 +35,7 @@ public:
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
-   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
+   void Header(const string& typeName, const std::function<wstring()>& getName, const std::function<void(const wstring&)>& setName);
    void EditableHeader(const string& typeName, IEditable* editable);
    void Separator(const string& label) const;
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);

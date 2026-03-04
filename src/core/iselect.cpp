@@ -187,13 +187,12 @@ void ISelect::Translate(const Vertex2D &pvOffset)
 
 HRESULT ISelect::GetTypeName(BSTR *pVal) const
 {
-   WCHAR buf[256];
-   GetTypeNameForType(GetItemType(), buf);
-   *pVal = SysAllocString(buf);
+   wstring buf = GetTypeNameForType(GetItemType());
+   *pVal = SysAllocStringLen(buf.c_str(), static_cast<UINT>(buf.length()));
    return S_OK;
 }
 
-void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const
+wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
 {
    UINT strID;
    switch (type)
@@ -206,13 +205,15 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
+   WCHAR buf[256]; //!!
 #ifndef __STANDALONE__
    buf[0] = L'\0';
-   /*const int len =*/LoadStringW(g_app->GetInstanceHandle(), strID, buf, 256);
-   buf[256-1] = L'\0'; // in case of truncation
+   /*const int len =*/LoadStringW(g_app->GetInstanceHandle(), strID, buf, std::size(buf));
+   buf[std::size(buf)-1] = L'\0'; // in case of truncation
  #else
-   wcsncpy_s(buf, 256, LocalStringW(strID).m_szbuffer);
+   wcsncpy_s(buf, std::size(buf), LocalStringW(strID).m_szbuffer);
 #endif
+   return buf;
 }
 
 bool ISelect::LoadToken(const int id, IObjectReader& reader)

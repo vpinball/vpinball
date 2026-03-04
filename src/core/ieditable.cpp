@@ -171,19 +171,28 @@ string IEditable::GetName() const
    return string();
 }
 
-void IEditable::SetName(const string& name)
+const wstring& IEditable::GetWName() const
+{
+   const IScriptable* const pscript = const_cast<IEditable*>(this)->GetScriptable();
+   if (pscript)
+      return pscript->get_Name();
+   static const wstring emptyString;
+   return emptyString;
+}
+
+void IEditable::SetName(const wstring& name)
 {
    IScriptable* scriptable = GetScriptable();
    if (name.empty() || scriptable == nullptr)
       return;
 
-   wstring newName = MakeWString(name);
+   wstring newName = name;
    if (newName.length() >= MAXNAMEBUFFER)
       newName.erase(MAXNAMEBUFFER - 1);
 
    if (newName == scriptable->m_wzName)
       return;
-   
+
    if (PinTable* const pt = GetPTable(); pt)
    {
       if (!pt->IsNameUnique(newName))
