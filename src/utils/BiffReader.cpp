@@ -106,8 +106,21 @@ wstring BiffReader::AsWideString()
    if (m_hasError)
       return value;
    m_bytesinrecordremaining -= len + (int)sizeof(int);
-   value.resize(len / 2, '\0');
-   ReadBytes(value.data(), len);
+   const int numChars = len / 2;
+   value.resize(numChars, '\0');
+   if constexpr (sizeof(wchar_t) == 2)
+   {
+      ReadBytes(value.data(), len);
+   }
+   else
+   {
+      for (int i = 0; i < numChars; i++)
+      {
+         uint16_t ch;
+         ReadBytes(&ch, 2);
+         value[i] = static_cast<wchar_t>(ch);
+      }
+   }
    return value;
 }
 
