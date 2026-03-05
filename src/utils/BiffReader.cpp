@@ -106,7 +106,7 @@ wstring BiffReader::AsWideString()
       return value;
    m_bytesinrecordremaining -= len + (int)sizeof(int);
    const int numChars = len / 2;
-#if (sizeof(wchar_t) == 2) // Windows
+#if (WCHAR_T_SIZE == 2) // Windows
    assert(sizeof(WCHAR) == 2);
    wstring value;
 #else // Linux, macOS
@@ -116,7 +116,7 @@ wstring BiffReader::AsWideString()
 #endif
    value.resize(numChars, '\0');
    ReadBytes(value.data(), len);
-#if (sizeof(wchar_t) == 2) // Windows
+#if (WCHAR_T_SIZE == 2) // Windows
    return value;
 #else // Linux, macOS
    return utf16_to_utf32(value);

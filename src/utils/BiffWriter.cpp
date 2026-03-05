@@ -108,7 +108,7 @@ void BiffWriter::WriteString(const int id, const string &szvalue)
 
 void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
 {
-#if (sizeof(wchar_t) == 4) // Linux, macOS
+#if (WCHAR_T_SIZE == 4) // Linux, macOS
    assert(sizeof(WCHAR) == 4);
    const std::u16string wzvalue_utf16 = utf32_to_utf16(wzvalue);
    const int len = (int)wzvalue_utf16.length() * 2;
@@ -120,7 +120,7 @@ void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
    WriteRecordSize((int)sizeof(int) * 2 + len);
    WriteBytes(&id, sizeof(int));
    WriteBytes(&len, sizeof(int));
-#if (sizeof(wchar_t) == 4) // Linux, macOS
+#if (WCHAR_T_SIZE == 4) // Linux, macOS
    WriteBytes(wzvalue_utf16.data(), len);
 #else // Windows
    WriteBytes(wzvalue.data(), len);
