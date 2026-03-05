@@ -690,7 +690,7 @@ static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes, otherwise change WCHAR
 #endif
 
 #if (WCHAR_T_SIZE == 4)
-std::u16string utf32_to_utf16(const std::wstring& input)
+inline std::u16string utf32_to_utf16(const std::wstring& input)
 {
    std::u16string result;
    for (wchar_t wc : input)
@@ -708,7 +708,7 @@ std::u16string utf32_to_utf16(const std::wstring& input)
    return result;
 }
 
-std::wstring utf16_to_utf32(const std::u16string& input)
+inline std::wstring utf16_to_utf32(const std::u16string& input)
 {
    std::wstring result;
    for (size_t i = 0; i < input.size(); ++i)
