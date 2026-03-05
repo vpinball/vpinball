@@ -87,12 +87,11 @@ float BiffReader::AsFloat()
 string BiffReader::AsString()
 {
    int len;
-   string value;
    ReadBytes(&len, sizeof(int));
    if (m_hasError)
-      return value;
+      return string();
    m_bytesinrecordremaining -= len + (int)sizeof(int);
-   value.resize(len, '\0');
+   string value(len, '\0');
    ReadBytes(value.data(), len);
    return value;
 }
@@ -103,18 +102,17 @@ wstring BiffReader::AsWideString()
    int len;
    ReadBytes(&len, sizeof(int));
    if (m_hasError)
-      return value;
+      return wstring();
    m_bytesinrecordremaining -= len + (int)sizeof(int);
    const int numChars = len / 2;
 #if (WCHAR_T_SIZE == 2) // Windows
    assert(sizeof(WCHAR) == 2);
-   wstring value;
+   wstring value(numChars, L'\0');
 #else // Linux, macOS
    assert(sizeof(wchar_t) == 4);
    assert(sizeof(WCHAR) == 4);
-   std::u16string value;
+   std::u16string value(numChars, L'\0');
 #endif
-   value.resize(numChars, '\0');
    ReadBytes(value.data(), len);
 #if (WCHAR_T_SIZE == 2) // Windows
    return value;
