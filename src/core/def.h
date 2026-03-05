@@ -681,13 +681,17 @@ inline int MultiByteToWideCharNull(
 
 //
 
+// determine what the byte-size of wchar_t is (and so what a wstring contains)
 #if defined(_MSC_VER)
 #define WCHAR_T_SIZE 2
 static_assert(sizeof(wchar_t) == 2, "wchar_t must be 2 bytes, otherwise change WCHAR_T_SIZE define");
-static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes, otherwise change WCHAR_T_SIZE define");
 #else
-#define WCHAR_T_SIZE __SIZEOF_WCHAR_T__
+#define WCHAR_T_SIZE __SIZEOF_WCHAR_T__ // should be 4 on gcc/clang/linux/macOS
+static_assert(__SIZEOF_WCHAR_T__ == 4, "__SIZEOF_WCHAR_T__ must be 4 bytes");
+static_assert(sizeof(wchar_t) == 4, "wchar_t must be 4 bytes, otherwise change WCHAR_T_SIZE define");
+static_assert(sizeof(char16_t) == 2, "char16_t must be 2 bytes, otherwise u16string<->wstring conversions must be adapted");
 #endif
+static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes"); // always 2 bytes on all platforms
 
 #if (WCHAR_T_SIZE == 4)
 inline std::u16string utf32_to_utf16(const std::wstring& input)

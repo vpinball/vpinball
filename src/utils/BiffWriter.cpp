@@ -109,12 +109,9 @@ void BiffWriter::WriteString(const int id, const string &szvalue)
 void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
 {
 #if (WCHAR_T_SIZE == 4) // Linux, macOS
-   assert(sizeof(WCHAR) == 4);
    const std::u16string wzvalue_utf16 = utf32_to_utf16(wzvalue);
    const int len = (int)wzvalue_utf16.length() * 2;
 #else // Windows
-   assert(sizeof(wchar_t) == 2);
-   assert(sizeof(WCHAR) == 2);
    const int len = (int)wzvalue.length() * sizeof(WCHAR);
 #endif
    WriteRecordSize((int)sizeof(int) * 2 + len);
@@ -138,7 +135,7 @@ void BiffWriter::WriteScript(int fieldId, const string &value)
    // Not really a valid BIFF format: the object tag is directly followed by data without a field id
    ULONG writ = 0;
    BeginObject(FID(CODE), false, false);
-   size_t nBytes = value.size();
+   const int nBytes = (int)value.size();
    m_hasError |= FAILED(m_pistream->Write(&nBytes, static_cast<ULONG>(sizeof(int)), &writ));
    m_hasError |= FAILED(m_pistream->Write(value.c_str(), static_cast<ULONG>(nBytes), &writ));
 #ifndef __STANDALONE__

@@ -106,12 +106,9 @@ wstring BiffReader::AsWideString()
    m_bytesinrecordremaining -= len + (int)sizeof(int);
    const int numChars = len / 2;
 #if (WCHAR_T_SIZE == 2) // Windows
-   assert(sizeof(WCHAR) == 2);
    wstring value(numChars, L'\0');
 #else // Linux, macOS
-   assert(sizeof(wchar_t) == 4);
-   assert(sizeof(WCHAR) == 4);
-   std::u16string value(numChars, L'\0');
+   std::u16string value(numChars, u'\0');
 #endif
    ReadBytes(value.data(), len);
 #if (WCHAR_T_SIZE == 2) // Windows
