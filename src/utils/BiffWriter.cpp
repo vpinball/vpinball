@@ -108,11 +108,23 @@ void BiffWriter::WriteString(const int id, const string &szvalue)
 
 void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
 {
-   const int len = (int)wzvalue.length() * (int)sizeof(WCHAR);
+#if (sizeof(wchar_t) == 4) // Linux, macOS
+   assert(sizeof(WCHAR) == 4);
+   const std::u16string wzvalue_utf16 = utf32_to_utf16(wzvalue);
+   const int len = (int)wzvalue_utf16.length() * 2;
+#else // Windows
+   assert(sizeof(wchar_t) == 2);
+   assert(sizeof(WCHAR) == 2);
+   const int len = (int)wzvalue.length() * sizeof(WCHAR);
+#endif
    WriteRecordSize((int)sizeof(int) * 2 + len);
    WriteBytes(&id, sizeof(int));
    WriteBytes(&len, sizeof(int));
+#if (sizeof(wchar_t) == 4) // Linux, macOS
+   WriteBytes(wzvalue_utf16.data(), len);
+#else // Windows
    WriteBytes(wzvalue.data(), len);
+#endif
 }
 
 void BiffWriter::WriteVector2(const int id, const Vertex2D &vec) { WriteRaw(id, &vec.x, 2 * sizeof(float)); }

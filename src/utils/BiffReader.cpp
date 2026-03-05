@@ -101,27 +101,26 @@ wstring BiffReader::AsWideString()
 {
    // TODO it seems there used to be a bug in collection that would save string twice as long as they should => do we need special processing (truncation ?)
    int len;
-   wstring value;
    ReadBytes(&len, sizeof(int));
    if (m_hasError)
       return value;
    m_bytesinrecordremaining -= len + (int)sizeof(int);
    const int numChars = len / 2;
+#if (sizeof(wchar_t) == 2) // Windows
+   assert(sizeof(WCHAR) == 2);
+   wstring value;
+#else // Linux, macOS
+   assert(sizeof(wchar_t) == 4);
+   assert(sizeof(WCHAR) == 4);
+   std::u16string value;
+#endif
    value.resize(numChars, '\0');
-   if constexpr (sizeof(wchar_t) == 2)
-   {
-      ReadBytes(value.data(), len);
-   }
-   else
-   {
-      for (int i = 0; i < numChars; i++)
-      {
-         uint16_t ch;
-         ReadBytes(&ch, 2);
-         value[i] = static_cast<wchar_t>(ch);
-      }
-   }
+   ReadBytes(value.data(), len);
+#if (sizeof(wchar_t) == 2) // Windows
    return value;
+#else // Linux, macOS
+   return utf16_to_utf32(value);
+#endif
 }
 
 Vertex2D BiffReader::AsVector2()

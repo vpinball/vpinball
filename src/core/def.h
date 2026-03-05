@@ -681,6 +681,49 @@ inline int MultiByteToWideCharNull(
 
 //
 
+#if (sizeof(wchar_t) == 4)
+std::u16string utf32_to_utf16(const std::wstring& input)
+{
+   std::u16string result;
+   for (wchar_t wc : input)
+   {
+      char32_t code = static_cast<char32_t>(wc);
+      if (code <= 0xFFFF)
+         result.push_back(static_cast<char16_t>(code));
+      else
+      {
+         code -= 0x10000;
+         result.push_back(static_cast<char16_t>((code >> 10) + 0xD800));
+         result.push_back(static_cast<char16_t>((code & 0x3FF) + 0xDC00));
+      }
+   }
+   return result;
+}
+
+std::wstring utf16_to_utf32(const std::u16string& input)
+{
+   std::wstring result;
+   for (size_t i = 0; i < input.size(); ++i)
+   {
+      const char16_t w1 = input[i];
+      if (w1 >= 0xD800 && w1 <= 0xDBFF) // high surrogate
+      {
+         if (i+1 < input.size())
+         {
+            const char16_t w2 = input[++i];
+            const char32_t code = ((static_cast<char32_t>(w1) - 0xD800) << 10) + (static_cast<char32_t>(w2) - 0xDC00) + 0x10000;
+            result.push_back(code);
+         }
+      }
+      else
+         result.push_back(static_cast<char32_t>(w1));
+   }
+   return result;
+}
+#endif
+
+//
+
 constexpr inline char cLower(char c)
 {
     if (c >= 'A' && c <= 'Z')
