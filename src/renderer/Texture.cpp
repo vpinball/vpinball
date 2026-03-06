@@ -951,7 +951,7 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             break;
          case FID(BITS):
          {
-            // The 'BITS' field is deperecated and only used in pre 10.8.1 files, which were all BIFF streams
+            // The 'BITS' field is deprecated and only used in pre 10.8.1 files which were all BIFF streams so we can safely cast here
             BiffReader& br = (BiffReader&)reader;
 
             // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format. Convert here to simplify the code
@@ -1129,15 +1129,15 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
       return buffer;
    //PLOGD << "Decoding image " << m_name;
    buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
-   if (buffer && m_width != buffer->width())
+   if (buffer && m_width != buffer->m_realWidth)
    {
-      PLOGE << "Invalid file: image '" << m_name << "' width does not match the width of the image datablock.";
-      const_cast<Texture*>(this)->m_width = buffer->width();
+      PLOGE << "Corrupted file: image '" << m_name << "' width (" << buffer->m_realWidth << ") does not match the width (" << m_width << ") of the image datablock.";
+      const_cast<Texture*>(this)->m_width = buffer->m_realWidth;
    }
-   if (buffer && m_height != buffer->height())
+   if (buffer && m_height != buffer->m_realHeight)
    {
-      PLOGE << "Invalid file: image '" << m_name << "' height does not match the height of the image datablock.";
-      const_cast<Texture*>(this)->m_height = buffer->height();
+      PLOGE << "Corrupted file: image '" << m_name << "' height (" << buffer->m_realHeight << ") does not match the height (" << m_height << ") of the image datablock.";
+      const_cast<Texture*>(this)->m_height = buffer->m_realHeight;
    }
    m_imageBuffer = buffer;
    UpdateOpaque();
