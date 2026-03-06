@@ -301,6 +301,10 @@ typedef struct {
     LCID lcid;
 
     int last_token;
+#ifdef __STANDALONE__
+    BOOL is_statement_ctx;
+    int paren_depth;
+#endif
     unsigned last_nl;
 
     statement_t *stats;

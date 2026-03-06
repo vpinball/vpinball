@@ -491,6 +491,7 @@ static int parse_next_token(void *lval, unsigned *loc, parser_ctx_t *ctx)
             return comment_line(ctx);
         ctx->ptr++;
         return '-';
+#ifndef __STANDALONE__
     case '(':
         /* NOTE:
          * We resolve empty brackets in lexer instead of parser to avoid complex conflicts
@@ -509,6 +510,55 @@ static int parse_next_token(void *lval, unsigned *loc, parser_ctx_t *ctx)
         if(ctx->last_token == tIdentifier || ctx->last_token == ')')
             return '(';
         return tEXPRLBRACKET;
+#else
+    case '(': {
+        const WCHAR *paren_pos = ctx->ptr;
+        /* NOTE:
+         * We resolve empty brackets in lexer instead of parser to avoid complex conflicts
+         * in call statement special case |f()| without 'call' keyword
+         */
+        ctx->ptr++;
+        skip_spaces(ctx);
+        if(*ctx->ptr == ')') {
+            ctx->ptr++;
+            return tEMPTYBRACKETS;
+        }
+        /*
+         * Parser can't predict if bracket is part of argument expression or an argument
+         * in call expression. We predict it here instead.
+         *
+         * In statement context, 'f (x) * 8, y' treats (x) as expression grouping,
+         * not call parens. Detect this when: identifier/')' precedes '(' with a space,
+         * and a binary-only operator (*, /, \, ^, &) follows the matching ')'.
+         */
+        if(ctx->last_token == tIdentifier || ctx->last_token == ')') {
+            if(paren_pos > ctx->code && (paren_pos[-1] == ' ' || paren_pos[-1] == '\t')
+               && ctx->is_statement_ctx) {
+                const WCHAR *p = ctx->ptr;
+                int depth = 1;
+
+                while(p < ctx->end && depth > 0) {
+                    if(*p == '(')
+                        depth++;
+                    else if(*p == ')')
+                        depth--;
+                    if(depth > 0)
+                        p++;
+                }
+
+                if(depth == 0) {
+                    p++;
+                    while(p < ctx->end && (*p == ' ' || *p == '\t'))
+                        p++;
+                    if(p < ctx->end && (*p == '*' || *p == '/' || *p == '\\' || *p == '^' || *p == '&'))
+                        return tEXPRLBRACKET;
+                }
+            }
+            return '(';
+        }
+        return tEXPRLBRACKET;
+    }
+#endif
     case '"':
         return parse_string_literal(ctx, lval);
     case '#':
@@ -587,5 +637,40 @@ int parser_lex(void *lval, unsigned *loc, parser_ctx_t *ctx)
         ctx->last_nl = ctx->ptr-ctx->code;
     }
 
+#ifdef __STANDALONE__
+    if(ret == '(' || ret == tEXPRLBRACKET)
+        ctx->paren_depth++;
+    else if(ret == ')' || ret == tEMPTYBRACKETS) {
+        if(ctx->paren_depth > 0)
+            ctx->paren_depth--;
+    }
+
+    if(ctx->paren_depth == 0) {
+        switch(ret) {
+        case tNL:
+        case ':':
+        case tTHEN:
+        case tELSE:
+        case tELSEIF:
+            ctx->is_statement_ctx = TRUE;
+            break;
+        case tDOT:
+        case '.':
+        case ')':
+        case tEMPTYBRACKETS:
+            break;
+        case tIdentifier:
+            if(ctx->last_token != '.' && ctx->last_token != tDOT
+               && ctx->last_token != tNL && ctx->last_token != ':'
+               && ctx->last_token != tTHEN && ctx->last_token != tELSE
+               && ctx->last_token != tELSEIF)
+                ctx->is_statement_ctx = FALSE;
+            break;
+        default:
+            ctx->is_statement_ctx = FALSE;
+            break;
+        }
+    }
+#endif
     return (ctx->last_token = ret);
 }
