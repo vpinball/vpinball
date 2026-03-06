@@ -463,357 +463,162 @@ public:
 
       PLOGI << "Initializing Vulkan OpenXR backend (creating Vulkan instance/device for OpenXR)";
 
-      uint32_t xrExtensionCount = 0;
-      xrEnumerateInstanceExtensionProperties(nullptr, 0, &xrExtensionCount, nullptr);
-      std::vector<XrExtensionProperties> xrExtensions(xrExtensionCount, { XR_TYPE_EXTENSION_PROPERTIES });
-      xrEnumerateInstanceExtensionProperties(nullptr, xrExtensionCount, &xrExtensionCount, xrExtensions.data());
-      const bool vulkanEnable2Supported = std::ranges::find_if(xrExtensions, [](auto& ext) { return strcmp(ext.extensionName, XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME) == 0; }) != xrExtensions.end();
-      
-      // According to https://github.khronos.org/OpenXR-Inventory/runtime_extension_support.html all runtimes do support XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME
-      if (vulkanEnable2Supported)
+      XrResult result;
+
+      std::vector<const char*> instanceExtensions;
+      instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+      // For the time being, we are not creating any additional swapchain when using the Vulkan backend (so no preview window)
+      if (false)
       {
-         XrResult result;
-
-         std::vector<const char*> instanceExtensions;
-         instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-         // For the time being, we are not creating any additional swapchain when using the Vulkan backend (so no preview window)
-         if (false)
-         {
-            instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if BX_PLATFORM_ANDROID
-            instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_LINUX
-            instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-            instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-            instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_WINDOWS
-            instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_OSX
-            instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_NX
-            instanceExtensions.push_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
 #endif
-         }
-         PLOGI << "Requested Vulkan instance extensions: ";
-         for (auto ext : instanceExtensions)
-            PLOGI << "\t" << ext;
+      }
+      PLOGI << "Requested Vulkan instance extensions: ";
+      for (auto ext : instanceExtensions)
+         PLOGI << "\t" << ext;
 
-         // Get Vulkan graphics requirements
-         XrGraphicsRequirementsVulkan2KHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR };
-         PFN_xrGetVulkanGraphicsRequirements2KHR xrGetVulkanGraphicsRequirements2KHR;
-         xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsRequirements2KHR);
-         result = xrGetVulkanGraphicsRequirements2KHR(m_xrInstance, m_systemID, &graphicsRequirements);
-         if (result != XR_SUCCESS)
+      // Get Vulkan graphics requirements
+      XrGraphicsRequirementsVulkan2KHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR };
+      PFN_xrGetVulkanGraphicsRequirements2KHR xrGetVulkanGraphicsRequirements2KHR;
+      xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsRequirements2KHR);
+      result = xrGetVulkanGraphicsRequirements2KHR(m_xrInstance, m_systemID, &graphicsRequirements);
+      if (result != XR_SUCCESS)
+      {
+         PLOGE << "Failed to get Vulkan version requirement for OpenXR: " << result;
+         return;
+      }
+      PLOGI << "Min Vulkan API version: " << XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported) << '.'
+            << XR_VERSION_PATCH(graphicsRequirements.minApiVersionSupported);
+      PLOGI << "Max Vulkan API version: " << XR_VERSION_MAJOR(graphicsRequirements.maxApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.maxApiVersionSupported) << '.'
+            << XR_VERSION_PATCH(graphicsRequirements.maxApiVersionSupported);
+
+      // Create Vulkan instance with the required version
+      VkApplicationInfo appInfo = {};
+      appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+      appInfo.pApplicationName = "VPinball";
+      appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.pEngineName = "bgfx";
+      appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.apiVersion = VK_MAKE_VERSION(XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported), XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported),
+         XR_VERSION_PATCH(graphicsRequirements.minApiVersionSupported));
+
+      VkInstanceCreateInfo instanceInfo { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
+      instanceInfo.pApplicationInfo = &appInfo;
+      instanceInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
+      instanceInfo.ppEnabledExtensionNames = instanceExtensions.data();
+
+      XrVulkanInstanceCreateInfoKHR vulkanInstanceCreateInfo { XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR };
+      vulkanInstanceCreateInfo.systemId = m_systemID;
+      vulkanInstanceCreateInfo.pfnGetInstanceProcAddr = m_vulkan._vkGetInstanceProcAddr;
+      vulkanInstanceCreateInfo.createFlags = 0;
+      vulkanInstanceCreateInfo.vulkanCreateInfo = &instanceInfo;
+
+      VkResult vulkanResult;
+      PFN_xrCreateVulkanInstanceKHR xrCreateVulkanInstanceKHR;
+      xrGetInstanceProcAddr(xrInstance, "xrCreateVulkanInstanceKHR", (PFN_xrVoidFunction*)&xrCreateVulkanInstanceKHR);
+      result = xrCreateVulkanInstanceKHR(m_xrInstance, &vulkanInstanceCreateInfo, &m_instance, &vulkanResult);
+      if (result != XR_SUCCESS)
+      {
+         PLOGE << "Failed to create Vulkan instance for OpenXR: " << result;
+         return;
+      }
+
+      // Get Vulkan physical device
+      XrVulkanGraphicsDeviceGetInfoKHR deviceGetInfo { XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR };
+      deviceGetInfo.systemId = m_systemID;
+      deviceGetInfo.vulkanInstance = m_instance;
+
+      PFN_xrGetVulkanGraphicsDevice2KHR xrGetVulkanGraphicsDevice2KHR;
+      xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsDevice2KHR);
+      xrGetVulkanGraphicsDevice2KHR(m_xrInstance, &deviceGetInfo, &m_physicalDevice);
+
+      // Create Vulkan device
+      uint32_t queueFamilyCount = 0;
+      m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
+      std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+      m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+      m_queueFamilyIndex = UINT32_MAX;
+      for (uint32_t i = 0; i < queueFamilyCount; i++)
+      {
+         if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
          {
-            PLOGE << "Failed to get Vulkan version requirement for OpenXR: " << result;
-            return;
-         }
-         PLOGI << "Min Vulkan API version: " << XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported) << '.'
-               << XR_VERSION_PATCH(graphicsRequirements.minApiVersionSupported);
-         PLOGI << "Max Vulkan API version: " << XR_VERSION_MAJOR(graphicsRequirements.maxApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.maxApiVersionSupported) << '.'
-               << XR_VERSION_PATCH(graphicsRequirements.maxApiVersionSupported);
-
-         // Create Vulkan instance with the required version
-         VkApplicationInfo appInfo = {};
-         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-         appInfo.pApplicationName = "VPinball";
-         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-         appInfo.pEngineName = "bgfx";
-         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-         appInfo.apiVersion = VK_MAKE_VERSION(XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported), XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported),
-            XR_VERSION_PATCH(graphicsRequirements.minApiVersionSupported));
-
-         VkInstanceCreateInfo instanceInfo { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
-         instanceInfo.pApplicationInfo = &appInfo;
-         instanceInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
-         instanceInfo.ppEnabledExtensionNames = instanceExtensions.data();
-
-         XrVulkanInstanceCreateInfoKHR vulkanInstanceCreateInfo { XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR };
-         vulkanInstanceCreateInfo.systemId = m_systemID;
-         vulkanInstanceCreateInfo.pfnGetInstanceProcAddr = m_vulkan._vkGetInstanceProcAddr;
-         vulkanInstanceCreateInfo.createFlags = 0;
-         vulkanInstanceCreateInfo.vulkanCreateInfo = &instanceInfo;
-
-         VkResult vulkanResult;
-         PFN_xrCreateVulkanInstanceKHR xrCreateVulkanInstanceKHR;
-         xrGetInstanceProcAddr(xrInstance, "xrCreateVulkanInstanceKHR", (PFN_xrVoidFunction*)&xrCreateVulkanInstanceKHR);
-         result = xrCreateVulkanInstanceKHR(m_xrInstance, &vulkanInstanceCreateInfo, &m_instance, &vulkanResult);
-         if (result != XR_SUCCESS)
-         {
-            PLOGE << "Failed to create Vulkan instance for OpenXR: " << result;
-            return;
-         }
-
-         // Get Vulkan physical device
-         XrVulkanGraphicsDeviceGetInfoKHR deviceGetInfo { XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR };
-         deviceGetInfo.systemId = m_systemID;
-         deviceGetInfo.vulkanInstance = m_instance;
-
-         PFN_xrGetVulkanGraphicsDevice2KHR xrGetVulkanGraphicsDevice2KHR;
-         xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsDevice2KHR);
-         xrGetVulkanGraphicsDevice2KHR(m_xrInstance, &deviceGetInfo, &m_physicalDevice);
-
-         // Create Vulkan device
-         uint32_t queueFamilyCount = 0;
-         m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
-         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-         m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-         m_queueFamilyIndex = UINT32_MAX;
-         for (uint32_t i = 0; i < queueFamilyCount; i++)
-         {
-            if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
-            {
-               m_queueFamilyIndex = i;
-               break;
-            }
-         }
-
-         float queuePriorities[1] = { 0.0f };
-         VkDeviceQueueCreateInfo dcqi;
-         dcqi.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-         dcqi.pNext = NULL;
-         dcqi.flags = 0;
-         dcqi.queueFamilyIndex = m_queueFamilyIndex;
-         dcqi.queueCount = 1;
-         dcqi.pQueuePriorities = queuePriorities;
-
-         VkPhysicalDeviceFeatures availableFeatures {};
-         m_vulkan._vkGetPhysicalDeviceFeatures(m_physicalDevice, &availableFeatures);
-
-         VkPhysicalDeviceFeatures deviceFeatures {};
-         if (availableFeatures.samplerAnisotropy)
-            deviceFeatures.samplerAnisotropy = VK_TRUE;
-         if (availableFeatures.textureCompressionETC2)
-            deviceFeatures.textureCompressionETC2 = VK_TRUE;
-         if (availableFeatures.textureCompressionASTC_LDR)
-            deviceFeatures.textureCompressionASTC_LDR = VK_TRUE;
-         if (availableFeatures.fillModeNonSolid)
-            deviceFeatures.fillModeNonSolid = VK_TRUE;
-         if (availableFeatures.independentBlend)
-            deviceFeatures.independentBlend = VK_TRUE;
-         if (availableFeatures.depthClamp)
-            deviceFeatures.depthClamp = VK_TRUE;
-         if (availableFeatures.depthBiasClamp)
-            deviceFeatures.depthBiasClamp = VK_TRUE;
-
-         std::vector<const char*> deviceExtensions;
-         deviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-         deviceExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
-         //deviceExtensions.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
-         //deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // For preview swapchain
-         PLOGI << "Requested device extensions: ";
-         for (auto ext : deviceExtensions)
-            PLOGI << "\t" << ext;
-
-         VkDeviceCreateInfo deviceInfo { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-         deviceInfo.queueCreateInfoCount = 1;
-         deviceInfo.pQueueCreateInfos = &dcqi;
-         deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-         deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
-         deviceInfo.pEnabledFeatures = &deviceFeatures;
-
-         XrVulkanDeviceCreateInfoKHR deviceCreateInfo { XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR };
-         deviceCreateInfo.systemId = m_systemID;
-         deviceCreateInfo.pfnGetInstanceProcAddr = m_vulkan._vkGetInstanceProcAddr;
-         deviceCreateInfo.vulkanPhysicalDevice = m_physicalDevice;
-         deviceCreateInfo.createFlags = 0;
-         deviceCreateInfo.vulkanCreateInfo = &deviceInfo;
-
-         PFN_xrCreateVulkanDeviceKHR xrCreateVulkanDeviceKHR;
-         xrGetInstanceProcAddr(xrInstance, "xrCreateVulkanDeviceKHR", (PFN_xrVoidFunction*)&xrCreateVulkanDeviceKHR);
-         result = xrCreateVulkanDeviceKHR(m_xrInstance, &deviceCreateInfo, &m_device, &vulkanResult);
-         if (result != XR_SUCCESS || vulkanResult != VK_SUCCESS)
-         {
-            PLOGE << "Failed to create Vulkan device: " << result << ", " << vulkanResult;
-            return;
+            m_queueFamilyIndex = i;
+            break;
          }
       }
-      // FIXME remove Legacy Vulkan instance creation
-      else
+
+      float queuePriorities[1] = { 0.0f };
+      VkDeviceQueueCreateInfo dcqi;
+      dcqi.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+      dcqi.pNext = NULL;
+      dcqi.flags = 0;
+      dcqi.queueFamilyIndex = m_queueFamilyIndex;
+      dcqi.queueCount = 1;
+      dcqi.pQueuePriorities = queuePriorities;
+
+      VkPhysicalDeviceFeatures availableFeatures {};
+      m_vulkan._vkGetPhysicalDeviceFeatures(m_physicalDevice, &availableFeatures);
+
+      VkPhysicalDeviceFeatures deviceFeatures {};
+      if (availableFeatures.samplerAnisotropy)
+         deviceFeatures.samplerAnisotropy = VK_TRUE;
+      if (availableFeatures.textureCompressionETC2)
+         deviceFeatures.textureCompressionETC2 = VK_TRUE;
+      if (availableFeatures.textureCompressionASTC_LDR)
+         deviceFeatures.textureCompressionASTC_LDR = VK_TRUE;
+      if (availableFeatures.fillModeNonSolid)
+         deviceFeatures.fillModeNonSolid = VK_TRUE;
+      if (availableFeatures.independentBlend)
+         deviceFeatures.independentBlend = VK_TRUE;
+      if (availableFeatures.depthClamp)
+         deviceFeatures.depthClamp = VK_TRUE;
+      if (availableFeatures.depthBiasClamp)
+         deviceFeatures.depthBiasClamp = VK_TRUE;
+
+      std::vector<const char*> deviceExtensions;
+      deviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+      deviceExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
+      //deviceExtensions.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+      //deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // For preview swapchain
+      PLOGI << "Requested device extensions: ";
+      for (auto ext : deviceExtensions)
+         PLOGI << "\t" << ext;
+
+      VkDeviceCreateInfo deviceInfo { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+      deviceInfo.queueCreateInfoCount = 1;
+      deviceInfo.pQueueCreateInfos = &dcqi;
+      deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+      deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
+      deviceInfo.pEnabledFeatures = &deviceFeatures;
+
+      XrVulkanDeviceCreateInfoKHR deviceCreateInfo { XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR };
+      deviceCreateInfo.systemId = m_systemID;
+      deviceCreateInfo.pfnGetInstanceProcAddr = m_vulkan._vkGetInstanceProcAddr;
+      deviceCreateInfo.vulkanPhysicalDevice = m_physicalDevice;
+      deviceCreateInfo.createFlags = 0;
+      deviceCreateInfo.vulkanCreateInfo = &deviceInfo;
+
+      PFN_xrCreateVulkanDeviceKHR xrCreateVulkanDeviceKHR;
+      xrGetInstanceProcAddr(xrInstance, "xrCreateVulkanDeviceKHR", (PFN_xrVoidFunction*)&xrCreateVulkanDeviceKHR);
+      result = xrCreateVulkanDeviceKHR(m_xrInstance, &deviceCreateInfo, &m_device, &vulkanResult);
+      if (result != XR_SUCCESS || vulkanResult != VK_SUCCESS)
       {
-         {
-            PFN_xrGetVulkanInstanceExtensionsKHR xrGetVulkanInstanceExtensionsKHR;
-            xrGetInstanceProcAddr(xrInstance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction*)&xrGetVulkanInstanceExtensionsKHR);
-            uint32_t instanceExtensionNamesSize = 0;
-            xrGetVulkanInstanceExtensionsKHR(xrInstance, systemID, 0, &instanceExtensionNamesSize, nullptr);
-            std::vector<char> instanceExtensionNames(instanceExtensionNamesSize);
-            xrGetVulkanInstanceExtensionsKHR(xrInstance, systemID, instanceExtensionNamesSize, &instanceExtensionNamesSize, instanceExtensionNames.data());
-
-            PLOGI << "OpenXR requires the following Vulkan instance extensions:";
-            std::vector<const char*> instanceExtensions;
-            size_t start = 0;
-            for (size_t i = 0; i < instanceExtensionNames.size(); i++)
-            {
-               if (instanceExtensionNames[i] == ' ' || instanceExtensionNames[i] == '\0')
-               {
-                  if (i > start)
-                  {
-                     instanceExtensionNames[i] = '\0';
-                     instanceExtensions.push_back(&instanceExtensionNames[start]);
-                     PLOGI << "\t" << instanceExtensions.back();
-                  }
-                  start = i + 1;
-               }
-            }
-            if (std::ranges::find(instanceExtensions, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            if (std::ranges::find(instanceExtensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-#if BX_PLATFORM_ANDROID
-            //We are not creating the swapchain on Android VR headset
-            //instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_LINUX
-            if (std::ranges::find(instanceExtensions, VK_KHR_SURFACE_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); // Required to create swap chain
-            instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-            instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-            instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_WINDOWS
-            if (std::ranges::find(instanceExtensions, VK_KHR_SURFACE_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); // Required to create swap chain
-            instanceExtensions.push_back("VK_KHR_win32_surface"); // VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#elif BX_PLATFORM_OSX
-            if (std::ranges::find(instanceExtensions, VK_KHR_SURFACE_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); // Required to create swap chain
-            instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_NX
-            if (std::ranges::find(instanceExtensions, VK_KHR_SURFACE_EXTENSION_NAME) == instanceExtensions.end())
-               instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); // Required to create swap chain
-            instanceExtensions.push_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
-#endif
-
-            PLOGI << "Enabled instance extensions: ";
-            for (auto ext : instanceExtensions)
-               PLOGI << "\t" << ext;
-
-            uint32_t apiVersion = VK_API_VERSION_1_0;
-            PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)m_vulkan._vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
-            if (vkEnumerateInstanceVersion)
-            {
-               vkEnumerateInstanceVersion(&apiVersion);
-               PLOGI << "Vulkan API version: " << VK_VERSION_MAJOR(apiVersion) << '.' << VK_VERSION_MINOR(apiVersion) << '.' << VK_VERSION_PATCH(apiVersion);
-            }
-            else
-            {
-               PLOGI << "Vulkan 1.0 loader detected (no vkEnumerateInstanceVersion)";
-            }
-
-            VkApplicationInfo appInfo { VK_STRUCTURE_TYPE_APPLICATION_INFO };
-            appInfo.pApplicationName = "VPinball";
-            appInfo.applicationVersion = 1;
-            appInfo.pEngineName = "bgfx";
-            appInfo.engineVersion = 1;
-            appInfo.apiVersion = apiVersion;
-
-            VkInstanceCreateInfo instanceInfo { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
-            instanceInfo.pApplicationInfo = &appInfo;
-            instanceInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
-            instanceInfo.ppEnabledExtensionNames = instanceExtensions.data();
-
-            VkResult result = m_vulkan._vkCreateInstance(&instanceInfo, nullptr, &m_instance);
-            if (result != VK_SUCCESS)
-            {
-               PLOGE << "Failed to create Vulkan instance for OpenXR: " << result;
-               return;
-            }
-         }
-
-         {
-            PFN_xrGetVulkanGraphicsDeviceKHR xrGetVulkanGraphicsDeviceKHR;
-            xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsDeviceKHR);
-            xrGetVulkanGraphicsDeviceKHR(xrInstance, systemID, m_instance, &m_physicalDevice);
-         }
-
-         // Logical device creation
-         {
-            PFN_xrGetVulkanDeviceExtensionsKHR xrGetVulkanDeviceExtensionsKHR;
-            xrGetInstanceProcAddr(xrInstance, "xrGetVulkanDeviceExtensionsKHR", (PFN_xrVoidFunction*)&xrGetVulkanDeviceExtensionsKHR);
-            uint32_t deviceExtensionNamesSize = 0;
-            xrGetVulkanDeviceExtensionsKHR(xrInstance, systemID, 0, &deviceExtensionNamesSize, nullptr);
-            std::vector<char> deviceExtensionNames(deviceExtensionNamesSize);
-            xrGetVulkanDeviceExtensionsKHR(xrInstance, systemID, deviceExtensionNamesSize, &deviceExtensionNamesSize, deviceExtensionNames.data());
-            std::vector<const char*> deviceExtensions;
-            size_t start = 0;
-            for (size_t i = 0; i < deviceExtensionNames.size(); i++)
-            {
-               if (deviceExtensionNames[i] == ' ' || deviceExtensionNames[i] == '\0')
-               {
-                  if (i > start)
-                  {
-                     deviceExtensionNames[i] = '\0';
-                     deviceExtensions.push_back(&deviceExtensionNames[start]);
-                  }
-                  start = i + 1;
-               }
-            }
-            deviceExtensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-            deviceExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
-            //deviceExtensions.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
-            //deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); // For preview swapchain
-            PLOGI << "Enabled device extensions: ";
-            for (auto ext : deviceExtensions)
-               PLOGI << "\t" << ext;
-
-            uint32_t queueFamilyCount = 0;
-            m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
-            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-            m_queueFamilyIndex = UINT32_MAX;
-            for (uint32_t i = 0; i < queueFamilyCount; i++)
-            {
-               if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
-               {
-                  m_queueFamilyIndex = i;
-                  break;
-               }
-            }
-
-            float queuePriorities[1] = { 0.0f };
-            VkDeviceQueueCreateInfo dcqi;
-            dcqi.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            dcqi.pNext = NULL;
-            dcqi.flags = 0;
-            dcqi.queueFamilyIndex = m_queueFamilyIndex;
-            dcqi.queueCount = 1;
-            dcqi.pQueuePriorities = queuePriorities;
-
-            VkPhysicalDeviceFeatures availableFeatures {};
-            m_vulkan._vkGetPhysicalDeviceFeatures(m_physicalDevice, &availableFeatures);
-
-            VkPhysicalDeviceFeatures deviceFeatures {};
-            if (availableFeatures.samplerAnisotropy)
-               deviceFeatures.samplerAnisotropy = VK_TRUE;
-            if (availableFeatures.textureCompressionETC2)
-               deviceFeatures.textureCompressionETC2 = VK_TRUE;
-            if (availableFeatures.textureCompressionASTC_LDR)
-               deviceFeatures.textureCompressionASTC_LDR = VK_TRUE;
-            if (availableFeatures.fillModeNonSolid)
-               deviceFeatures.fillModeNonSolid = VK_TRUE;
-            if (availableFeatures.independentBlend)
-               deviceFeatures.independentBlend = VK_TRUE;
-            if (availableFeatures.depthClamp)
-               deviceFeatures.depthClamp = VK_TRUE;
-            if (availableFeatures.depthBiasClamp)
-               deviceFeatures.depthBiasClamp = VK_TRUE;
-
-            VkDeviceCreateInfo deviceInfo { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-            deviceInfo.queueCreateInfoCount = 1;
-            deviceInfo.pQueueCreateInfos = &dcqi;
-            deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-            deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
-            deviceInfo.pEnabledFeatures = &deviceFeatures;
-
-            VkResult result = m_vulkan._vkCreateDevice(m_physicalDevice, &deviceInfo, nullptr, &m_device);
-            if (result != VK_SUCCESS)
-            {
-               PLOGE << "Failed to create Vulkan device for OpenXR: " << result;
-               m_vulkan._vkDestroyInstance(m_instance, nullptr);
-               return;
-            }
-         }
+         PLOGE << "Failed to create Vulkan device: " << result << ", " << vulkanResult;
+         return;
       }
 
       m_graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR };
@@ -1012,9 +817,8 @@ VRDevice::VRDevice(const Settings& settings)
       {
       #ifdef XR_USE_GRAPHICS_API_VULKAN
          case bgfx::RendererType::Enum::Vulkan:
+            // According to https://github.khronos.org/OpenXR-Inventory/runtime_extension_support.html all runtimes that support XR_KHR_VULKAN_ENABLE_EXTENSION_NAME do support XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME
             hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME);
-            if (!hasGraphicBackend)
-               hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
             assert(hasGraphicBackend);
             break;
       #endif
