@@ -647,36 +647,36 @@ wstring MakeWString(const char* const sz);
 // in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
 inline int WideCharToMultiByteNull(
-    const uint32_t CodePage,
-    const uint32_t dwFlags,
-    LPCWSTR        lpWideCharStr,
-    const int      cchWideChar,
-    char*          lpMultiByteStr,
-    const int      cbMultiByte,
-    const char*    lpDefaultChar,
-    BOOL*          lpUsedDefaultChar)
+   const uint32_t CodePage,
+   const uint32_t dwFlags,
+   LPCWSTR        lpWideCharStr,
+   const int      cchWideChar,
+   char*          lpMultiByteStr,
+   const int      cbMultiByte,
+   const char*    lpDefaultChar,
+   BOOL*          lpUsedDefaultChar)
 {
-    const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
-    if(cbMultiByte > 0 && lpMultiByteStr)
-        lpMultiByteStr[cbMultiByte-1] = '\0';
-    return res;
+   const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
+   if(cbMultiByte > 0 && lpMultiByteStr)
+      lpMultiByteStr[cbMultiByte-1] = '\0';
+   return res;
 }
 
 
 // in case the incoming string length is >= the maximum wchar length of the outgoing one, MultiByteToWideChar will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
 inline int MultiByteToWideCharNull(
-    const uint32_t CodePage,
-    const uint32_t dwFlags,
-    const char*    lpMultiByteStr,
-    const int      cbMultiByte,
-    LPWSTR         lpWideCharStr,
-    const int      cchWideChar)
+   const uint32_t CodePage,
+   const uint32_t dwFlags,
+   const char*    lpMultiByteStr,
+   const int      cbMultiByte,
+   LPWSTR         lpWideCharStr,
+   const int      cchWideChar)
 {
-    const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
-    if(cchWideChar > 0 && lpWideCharStr)
-        lpWideCharStr[cchWideChar-1] = L'\0';
-    return res;
+   const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
+   if(cchWideChar > 0 && lpWideCharStr)
+      lpWideCharStr[cchWideChar-1] = L'\0';
+   return res;
 }
 
 //
@@ -684,14 +684,15 @@ inline int MultiByteToWideCharNull(
 // determine what the byte-size of wchar_t is (and so what a wstring contains)
 #if defined(_MSC_VER)
 #define WCHAR_T_SIZE 2
+static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes, otherwise change WCHAR_T_SIZE define");
 static_assert(sizeof(wchar_t) == 2, "wchar_t must be 2 bytes, otherwise change WCHAR_T_SIZE define");
 #else
 #define WCHAR_T_SIZE __SIZEOF_WCHAR_T__ // should be 4 on gcc/clang/linux/macOS
 static_assert(__SIZEOF_WCHAR_T__ == 4, "__SIZEOF_WCHAR_T__ must be 4 bytes");
-static_assert(sizeof(wchar_t) == 4, "wchar_t must be 4 bytes, otherwise change WCHAR_T_SIZE define");
+static_assert(sizeof(WCHAR) == 4, "WCHAR must be 4 bytes");
+static_assert(sizeof(wchar_t) == 4, "wchar_t must be 4 bytes");
 static_assert(sizeof(char16_t) == 2, "char16_t must be 2 bytes, otherwise u16string<->wstring conversions must be adapted");
 #endif
-static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes"); // always 2 bytes on all platforms
 
 #if (WCHAR_T_SIZE == 4)
 inline std::u16string utf32_to_utf16(const std::wstring& input)
@@ -738,36 +739,36 @@ inline std::wstring utf16_to_utf32(const std::u16string& input)
 
 constexpr inline char cLower(char c)
 {
-    if (c >= 'A' && c <= 'Z')
-        c ^= 32; //ASCII convention
-    return c;
+   if (c >= 'A' && c <= 'Z')
+      c ^= 32; //ASCII convention
+   return c;
 }
 
 constexpr inline void szLower(char* pC)
 {
-    while (*pC)
-    {
-        if (*pC >= 'A' && *pC <= 'Z')
-            *pC ^= 32; //ASCII convention
-        pC++;
-    }
+   while (*pC)
+   {
+      if (*pC >= 'A' && *pC <= 'Z')
+         *pC ^= 32; //ASCII convention
+      pC++;
+   }
 }
 
 constexpr inline char cUpper(char c)
 {
-    if (c >= 'a' && c <= 'z')
-        c ^= 32; //ASCII convention
-    return c;
+   if (c >= 'a' && c <= 'z')
+      c ^= 32; //ASCII convention
+   return c;
 }
 
 constexpr inline void szUpper(char* pC)
 {
-    while (*pC)
-    {
-        if (*pC >= 'a' && *pC <= 'z')
-            *pC ^= 32; //ASCII convention
-        pC++;
-    }
+   while (*pC)
+   {
+      if (*pC >= 'a' && *pC <= 'z')
+         *pC ^= 32; //ASCII convention
+      pC++;
+   }
 }
 
 CONSTEXPR inline void StrToLower(string& str)
