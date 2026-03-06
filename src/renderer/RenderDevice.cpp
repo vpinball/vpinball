@@ -461,6 +461,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    {
       assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
+      // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
+      // Note that this is needed for native VR (running directly on the headset)
+      if (init.type == bgfx::RendererType::Vulkan)
+         init.platformData.nwh = nullptr;
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
       init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
       init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
@@ -838,7 +842,10 @@ RenderDevice::RenderDevice(
    if (init.type == bgfx::RendererType::Direct3D12)
       init.type = bgfx::RendererType::Count;
    #endif
-   PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
+   if (g_pplayer->m_vrDevice == nullptr)
+   {
+      PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
+   }
 
    #ifndef __LIBVPINBALL__
    m_useLowPrecision = init.type == bgfx::RendererType::OpenGLES;

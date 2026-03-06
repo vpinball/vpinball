@@ -1393,7 +1393,8 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       RemoveFromVectorSingle(uniforms, SHADER_clip_plane);
       RemoveFromVectorSingle(uniforms, SHADER_layer);
       if (!(bgfx::getRendererType() == bgfx::RendererType::Enum::Vulkan
-             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter 
+             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter 
                 || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
                 || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter))
          && !(technique == SHADER_TECHNIQUE_display_DMD
