@@ -17,6 +17,9 @@ using namespace std::string_literals;
    #ifndef WIN32_LEAN_AND_MEAN
       #define WIN32_LEAN_AND_MEAN
    #endif
+   #ifdef __STANDALONE__
+      #define __WINE_WINCON_H
+   #endif
    #include <windows.h>
 #endif
 
@@ -355,7 +358,7 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       return;
    }
    std::string libraryKey;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #if (INTPTR_MAX == INT32_MAX)
    libraryKey = "windows.x86"s;
 #else

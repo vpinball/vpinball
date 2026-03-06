@@ -457,9 +457,9 @@ void WinEditor::SetPosCur(float x, float y)
 
 void WinEditor::SetObjectPosCur(float x, float y)
 {
+#ifndef __STANDALONE__
    char szT[256];
    sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
-#ifndef __STANDALONE__
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 #endif
 }

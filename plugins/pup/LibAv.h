@@ -13,8 +13,12 @@ namespace LibAV
 
 #ifdef _WIN32
 // As LibAvCodec is fairly heavy, we only load it when used to limit startup time impact
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <tchar.h>
 #endif

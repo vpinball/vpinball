@@ -34,7 +34,7 @@ void PinBinary::Load(IObjectReader& reader)
          switch (tag)
          {
          case FID(NAME): m_name = reader.AsString(); break;
-         case FID(PATH): m_path = reader.AsString(); break;
+         case FID(PATH): m_path = PathFromString(reader.AsString()); break;
          case FID(SIZE): m_buffer.resize(reader.AsInt()); break;
          // Size must come before data, otherwise our structure won't be allocated
          case FID(DATA): reader.AsRaw(m_buffer.data(), static_cast<int>(m_buffer.size())); break;

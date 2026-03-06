@@ -3,7 +3,17 @@
 #include <sstream>
 
 namespace {
+#ifdef __MINGW32__
+#include <winnls.h>
+static const char point = []() -> char {
+   char buf[4];
+   if (GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, buf, sizeof(buf)) > 0)
+      return ((unsigned char)buf[0] == 0xA0u) ? ' ' : buf[0]; // NBSP grouping separator -> space
+   return ',';
+}();
+#else
 static const char point = ((unsigned char)std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep() == 0xA0u/*NBSP grouping separator*/) ? ' ' : std::use_facet<std::numpunct<char>>(std::locale("")).thousands_sep(); // gets the OS locale thousands separator (e.g. ',' or '.' or ''' or ' ')
+#endif
 
 string FormatScore(const int value)
 {

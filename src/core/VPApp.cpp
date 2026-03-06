@@ -34,6 +34,7 @@
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
 #include <filesystem>
+#include <libwinevbs/libwinevbs.h>
 #endif
 
 #include "parts/ball.h"
@@ -266,6 +267,8 @@ VPApp::~VPApp()
       m_module.RevokeClassObjects();
       m_module.Term();
       CoUninitialize();
+   #else
+      libwinevbs_shutdown();
    #endif
    g_pvp = nullptr;
    g_app = nullptr;
@@ -316,6 +319,28 @@ void VPApp::InitInstance()
    // - if we don't have anything, then we use the default ('Table' layout mode)
 
    Logger::Init();
+
+#ifdef __STANDALONE__
+   libwinevbs_callbacks_t callbacks = {};
+   callbacks.log = [](libwinevbs_log_level_t level, const char* format, va_list args) {
+      va_list args_copy;
+      va_copy(args_copy, args);
+      int size = vsnprintf(nullptr, 0, format, args_copy);
+      va_end(args_copy);
+      if (size > 0) {
+         char* const buffer = new char[size + 1];
+         vsnprintf(buffer, size + 1, format, args);
+         switch (level) {
+         case LIBWINEVBS_LOG_DEBUG: PLOGD << buffer; break;
+         case LIBWINEVBS_LOG_ERROR: PLOGE << buffer; break;
+         default: PLOGI << buffer; break;
+         }
+         delete[] buffer;
+      }
+   };
+   libwinevbs_init(&callbacks);
+#endif
+
    Logger::SetupLogger(m_settings.GetEditor_EnableLog());
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;

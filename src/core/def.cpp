@@ -17,7 +17,17 @@
 #include <pthread.h>
 #endif
 
-static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).decimal_point(); // gets the OS locale decimal point (e.g. ',' or '.')
+#ifdef __MINGW32__
+#include <winnls.h>
+static const char point = []() -> char {
+   char buf[4];
+   if (GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, buf, sizeof(buf)) > 0)
+      return buf[0];
+   return '.';
+}();
+#else
+static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).decimal_point();
+#endif
 
 uint64_t mwc64x_state = 4077358422479273989ull;
 
@@ -497,41 +507,6 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
    return result.empty() ? result : std::filesystem::absolute(result);
 }
 
-std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile)
-{
-   auto fn = [](const auto& self, std::filesystem::path path)
-   {
-      std::error_code ec;
-      path = path.lexically_normal();
-      if (std::filesystem::exists(path, ec) && std::filesystem::is_directory(path, ec))
-         return path;
-
-      const auto& parent = path.parent_path();
-      std::filesystem::path base = (parent.empty() || parent == path) ? std::filesystem::path("."s) : self(self, parent);
-      if (base.empty())
-         return base;
-
-      for (const auto& ent : std::filesystem::directory_iterator(base, ec))
-      {
-         if (ec || !ent.is_directory(ec))
-            continue;
-         if (ec || !StrCompareNoCase(ent.path().filename().string(), path.filename().string()))
-            continue;
-         const auto& found = ent.path();
-         if (found != path)
-         {
-            PLOGI << "case insensitive directory match: requested \"" << path << "\", actual \"" << found << '"';
-         }
-         return found;
-      }
-
-      return std::filesystem::path();
-   };
-
-   const std::filesystem::path result = fn(fn, searchedFile);
-   return result.empty() ? result : std::filesystem::absolute(result);
-}
-
 // returns file extension in lower case (e.g. "png" or "hdr")
 string extension_from_path(const string& path)
 {
@@ -555,100 +530,6 @@ bool try_parse_float(const string& str, float& value)
 #else
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 #endif
-}
-
-bool try_parse_color(const string& str, OLE_COLOR& value)
-{
-   const size_t start = (!str.empty() && str[0] == '#') ? 1 : 0;
-   string hexStr(str, start);
-
-   if (hexStr.size() == 6)
-      hexStr += "FF";
-   else
-      if (hexStr.size() != 8)
-         return false;
-
-   uint32_t rgba;
-   std::stringstream ss;
-   ss << std::hex << hexStr;
-   if (!(ss >> rgba))
-      return false;
-
-   const uint8_t r = (rgba >> 24) & 0xFF;
-   const uint8_t g = (rgba >> 16) & 0xFF;
-   const uint8_t b = (rgba >> 8) & 0xFF;
-
-   value = RGB(r, g, b);
-
-   return true;
-}
-
-bool is_string_numeric(const string& str)
-{
-   return !str.empty() && std::find_if(str.begin(), str.end(), [](char c) { return !std::isdigit(c); }) == str.end();
-}
-
-int string_to_int(const string& str, int default_value)
-{
-   int value;
-   return try_parse_int(str, value) ? value : default_value;
-}
-
-float string_to_float(const string& str, float default_value)
-{
-   float value;
-   return try_parse_float(str, value) ? value : default_value;
-}
-
-vector<string> parse_csv_line(const string& line)
-{
-   vector<string> parts;
-   string field;
-   enum State { Normal, Quoted };
-   State currentState = Normal;
-
-   for (char c : trim_string(line)) {
-      switch (currentState) {
-         case Normal:
-            if (c == '"') {
-               currentState = Quoted;
-            } else if (c == ',') {
-               parts.push_back(field);
-               field.clear();
-            } else {
-               field += c;
-            }
-            break;
-         case Quoted:
-            if (c == '"') {
-               currentState = Normal;
-            } else {
-               field += c;
-            }
-            break;
-      }
-   }
-
-   parts.push_back(std::move(field));
-
-   return parts;
-}
-
-string color_to_hex(OLE_COLOR color)
-{
-   const uint32_t rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
-   return std::format("{:08X}", rgba);
-}
-
-bool string_contains_case_insensitive(const string& str1, const string& str2)
-{
-   return lowerCase(str1).find(lowerCase(str2)) != string::npos;
-}
-
-bool string_starts_with_case_insensitive(const string& str, const string& prefix)
-{
-   if(prefix.size() > str.size()) return false;
-   return StrCompareNoCase(str.substr(0, prefix.size()), prefix);
 }
 
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs)
@@ -765,28 +646,6 @@ string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize)
 
 //
 
-string create_hex_dump(const uint8_t* buffer, size_t size)
-{
-   constexpr int bytesPerLine = 32;
-   std::stringstream ss;
-
-   for (size_t i = 0; i < size; i += bytesPerLine) {
-      for (size_t j = i; j < i + bytesPerLine && j < size; ++j)
-         ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(buffer[j]) << ' ';
-
-      for (size_t j = i; j < i + bytesPerLine && j < size; ++j) {
-         char ch = buffer[j];
-         if (ch < 32 || ch > 126)
-             ch = '.';
-         ss << ch;
-      }
-
-      ss << '\n';
-   }
-
-   return ss.str();
-}
-
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value)
 {
@@ -835,76 +694,13 @@ vector<string> add_line_numbers(const char* src)
 }
 
 #ifdef __STANDALONE__
-HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen)
+
+HRESULT WINAPI StgOpenStorage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen)
 {
    char szName[1024];
    WideCharToMultiByte(CP_ACP, 0, pwcsName, -1, szName, std::size(szName), nullptr, nullptr);
 
    return PoleStorage::Create(szName, "/", (IStorage**)ppstgOpen);
-}
-
-HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
-{
-   // External objects should now be handled using the DynamicScript overrides in 10.8.1.
-   // Keeping as a fallback, and to allow for syncing Wine updates to 10.8.0 Standalone.
-
-   IUnknown** ppObj = (IUnknown**)&obj;
-   *ppObj = NULL;
-
-   PLOGW << "Creating an object of type \"" << MakeString(progid) << "\" is not supported";
-
-   return CLASS_E_CLASSNOTAVAILABLE;
-}
-
-void external_log_info(const char* format, ...)
-{
-   va_list args;
-   va_start(args, format);
-   va_list args_copy;
-   va_copy(args_copy, args);
-   int size = vsnprintf(nullptr, 0, format, args_copy);
-   va_end(args_copy);
-   if (size > 0) {
-      char* const buffer = new char[size + 1];
-      vsnprintf(buffer, size + 1, format, args);
-      PLOGI << buffer;
-      delete [] buffer;
-   }
-   va_end(args);
-}
-
-void external_log_debug(const char* format, ...)
-{
-   va_list args;
-   va_start(args, format);
-   va_list args_copy;
-   va_copy(args_copy, args);
-   int size = vsnprintf(nullptr, 0, format, args_copy);
-   va_end(args_copy);
-   if (size > 0) {
-      char* const buffer = new char[size + 1];
-      vsnprintf(buffer, size + 1, format, args);
-      PLOGD << buffer;
-      delete [] buffer;
-   }
-   va_end(args);
-}
-
-void external_log_error(const char* format, ...)
-{
-   va_list args;
-   va_start(args, format);
-   va_list args_copy;
-   va_copy(args_copy, args);
-   int size = vsnprintf(nullptr, 0, format, args_copy);
-   va_end(args_copy);
-   if (size > 0) {
-      char* const buffer = new char[size + 1];
-      vsnprintf(buffer, size + 1, format, args);
-      PLOGE << buffer;
-      delete [] buffer;
-   }
-   va_end(args);
 }
 
 #endif

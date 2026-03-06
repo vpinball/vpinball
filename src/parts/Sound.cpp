@@ -86,7 +86,8 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs to the waveformatex.
    // This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format.
-   const bool wav = isWav(path);
+   const auto fsPath = PathFromString(path);
+   const bool wav = isWav(fsPath);
    WAVEFORMATEX wfx;
    if (wav && FAILED(pstm->Read(&wfx, sizeof(wfx), &read)))
       return nullptr;
@@ -161,7 +162,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
             : SNDOUT_TABLE;
    }
 
-   Sound* const pps = new Sound(name, path, data);
+   Sound* const pps = new Sound(name, fsPath, data);
    pps->SetOutputTarget(static_cast<SoundOutTypes>(outputTarget));
    pps->SetVolume(volume);
    pps->SetPan(pan);

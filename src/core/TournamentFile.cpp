@@ -106,7 +106,7 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
 
    //
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
    const string strpath = GetExecutablePath();
    const char *const path = strpath.c_str();
 #elif defined(__APPLE__) //!! ??

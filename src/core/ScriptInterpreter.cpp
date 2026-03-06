@@ -15,12 +15,14 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 //DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
 //DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
 
-
 ScriptInterpreter::ScriptInterpreter()
 {
    CComObject<DebuggerModule>::CreateInstance(&m_pdm);
    m_pdm->AddRef();
 
+   // Note: For standalone, CoCreateInstance resolves to libwinevbs's implementation via the
+   // filtered import library. Alternatively, VBScriptFactory_CreateInstance() from winevbs64.dll
+   // could be called directly here to avoid any dependency on import library symbol ordering.
    const HRESULT vbScriptResult = CoCreateInstance(
       CLSID_VBScript, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IActiveScriptParse, (LPVOID *)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
    if (vbScriptResult != S_OK)

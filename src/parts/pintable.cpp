@@ -1147,26 +1147,26 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &o
       STATSTG ss;
       pstm->Stat(&ss, STATFLAG_NONAME);
 
-#ifndef __STANDALONE__
-      const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
-#else
+#if (WCHAR_T_SIZE == 4)
       const int len = ss.cbSize.LowPart / 2;
+#else
+      const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
 #endif
       BiffReader br(pstm, 0, hcrypthash, NULL);
-#ifndef __STANDALONE__
-      WCHAR *const wzT = new WCHAR[len + 1];
-      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
-      br.ReadBytes(wzT, ss.cbSize.LowPart);
-      wzT[len] = L'\0';
-      output = MakeString(wzT);
-      delete[] wzT;
-#else
+#if (WCHAR_T_SIZE == 4)
       char16_t *const wzT_u16 = new char16_t[len + 1];
       memset(wzT_u16, 0, sizeof(char16_t) * (len + 1));
       br.ReadBytes(wzT_u16, ss.cbSize.LowPart);
       wzT_u16[len] = u'\0';
       output = MakeString(utf16_to_utf32(wzT_u16));
       delete[] wzT_u16;
+#else
+      WCHAR *const wzT = new WCHAR[len + 1];
+      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
+      br.ReadBytes(wzT, ss.cbSize.LowPart);
+      wzT[len] = L'\0';
+      output = MakeString(wzT);
+      delete[] wzT;
 #endif
 
       pstm->Release();

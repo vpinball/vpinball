@@ -4,6 +4,7 @@
 #include <Windows.h>
 
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <tchar.h>
 #include <string>

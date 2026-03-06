@@ -57,7 +57,7 @@ cp make/CMakeLists_[target]_[platform].txt CMakeLists.txt
 <summary>windows-x64</summary>
 
 ```
-pacman -S --noconfirm make diffutils yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv mingw-w64-x86_64-cmake
+pacman -S --noconfirm make diffutils yasm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
 platforms/windows-x64/external.sh
 cp make/CMakeLists_bgfx-windows-x64.txt CMakeLists.txt
 cmake -G "Visual Studio 17 2022" -A x64 -B build
@@ -182,6 +182,26 @@ cd standalone/android
 </details>
 
 #### Unsupported Platforms
+
+<details>
+<summary>windows-x64-mingw</summary>
+
+```
+pacman -S --noconfirm make diffutils yasm bison git autoconf automake libtool mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
+```
+
+Build (entire build runs inside the MSYS2 UCRT64 shell):
+
+```
+MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
+  cd \"$(pwd)\" &&
+  ./platforms/windows-mingw-x64/external.sh &&
+  cp make/CMakeLists_bgfx-windows-mingw-x64.txt CMakeLists.txt &&
+  cmake -DCMAKE_BUILD_TYPE=Release -B build &&
+  cmake --build build -- -j\$(nproc)
+"
+```
+</details>
 
 <details>
 <summary>linux-x64 (Fedora)</summary>

@@ -3,7 +3,6 @@ on:
   push:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
 
 defaults:
@@ -55,6 +54,7 @@ jobs:
           - { os: macos-15, type: BGFX, platform: macos, arch: arm64, config: Release }
           - { os: macos-15, type: BGFX, platform: macos, arch: x64, config: Release }
           - { os: ubuntu-24.04, type: BGFX, platform: linux, arch: x64, config: Release }
+          - { os: windows-2025, type: BGFX, platform: windows-mingw, arch: x64, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Debug }
@@ -63,13 +63,13 @@ jobs:
           - { os: macos-15, type: GL, platform: macos, arch: x64, config: Release }
           - { os: ubuntu-24.04, type: GL, platform: linux, arch: x64, config: Release }
     steps:
-      - if: (matrix.platform == 'windows')
-        uses: microsoft/setup-msbuild@v2
-      - if: (matrix.platform == 'windows')
+      - if: (matrix.platform == 'windows' || matrix.platform == 'windows-mingw')
+        uses: microsoft/setup-msbuild@v3
+      - if: (matrix.platform == 'windows' || matrix.platform == 'windows-mingw')
         run: |
-          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm"
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm bison git autoconf automake libtool"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
-            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv mingw-w64-x86_64-cmake"
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
           else
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv mingw-w64-i686-cmake"
           fi
@@ -94,18 +94,26 @@ jobs:
              ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
       - name: Build external cache
         run: |
-          BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+          if [[ "${{ matrix.platform }}" == "windows-mingw" ]]; then
+            CURRENT_DIR="$(pwd)"
+            MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
+              cd \"${CURRENT_DIR}\" &&
+              BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+            "
+          else
+            BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+          fi
       - if: ${{ !cancelled() }}
         name: Save external cache
         uses: actions/cache/save@v5
         with:
           path: external
           key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - if: (matrix.platform == 'windows' && matrix.type == 'BGFX')
+      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX')
         name: Package third-party artifacts
         run: |
           cd third-party && 7z a -r ../VPinballX-${{ needs.version.outputs.tag }}-dev-third-party-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.zip .
-      - if: (matrix.platform == 'windows' && matrix.type == 'BGFX')
+      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX')
         name: Save third-party artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -120,7 +128,14 @@ jobs:
         run: |
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
-          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+          if [[ "${{ matrix.platform }}" == "windows-mingw" ]]; then
+            CURRENT_DIR="$(pwd)"
+            MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
+              cd \"${CURRENT_DIR}\" &&
+              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }} &&
+              cmake --build build/${{ matrix.config }} -- -j\$(nproc)
+            "
+          elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             if [[ "${{ matrix.arch }}" == "x64" ]]; then
               cmake -G "Visual Studio 17 2022" -A x64 -B build
             else
@@ -170,7 +185,7 @@ jobs:
       - name: Stage artifacts
         run: |
           mkdir tmp
-          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+          if [[ "${{ matrix.platform }}" == "windows" || "${{ matrix.platform }}" == "windows-mingw" ]]; then
             mkdir stage
             if [[ "${{ matrix.arch }}" == "x64" ]]; then
               cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}64.exe stage
@@ -221,12 +236,12 @@ jobs:
           - { platform: windows, arch: x86, config: Release }
           - { platform: windows, arch: x86, config: Debug }
     steps:
-      - uses: microsoft/setup-msbuild@v2
+      - uses: microsoft/setup-msbuild@v3
       - if: (matrix.platform == 'windows')
         run: |
           /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
-            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv mingw-w64-x86_64-cmake"
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
           else
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv mingw-w64-i686-cmake"
           fi

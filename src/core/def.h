@@ -2,8 +2,12 @@
 
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <cstdint>
 #include <algorithm>
@@ -34,6 +38,20 @@ using std::wstring;
 #endif
 #ifdef max
 #undef max
+#endif
+
+// MinGW's filesystem::path validates UTF-8 and throws on invalid sequences.
+// VPX files may store paths as legacy ANSI. Try UTF-8 first, fall back to
+// Latin-1 (1:1 byte-to-wchar widening) which doesn't need codepage support.
+#ifdef __MINGW32__
+inline std::filesystem::path PathFromString(const std::string& s)
+{
+   int len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.c_str(), -1, nullptr, 0);
+   if (len > 0) { std::wstring ws(len - 1, L'\0'); MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, ws.data(), len); return ws; }
+   return std::wstring(s.begin(), s.end());
+}
+#else
+inline std::filesystem::path PathFromString(const std::string& s) { return s; }
 #endif
 
 #ifdef __STANDALONE__
@@ -315,7 +333,7 @@ static const string platform_cpu[2] = { "x86"s, "arm"s };
 #endif
 static const string platform_bits[2] = { "32"s, "64"s };
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
  #define GET_PLATFORM_OS_ENUM 0
  #define GET_PLATFORM_OS "windows"
 #elif defined(__ANDROID__) // leave here, as it also defines linux
@@ -675,7 +693,7 @@ inline int MultiByteToWideCharNull(
 //
 
 // determine what the byte-size of wchar_t is (and so what a wstring contains)
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #define WCHAR_T_SIZE 2
 static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes, otherwise change WCHAR_T_SIZE define");
 static_assert(sizeof(wchar_t) == 2, "wchar_t must be 2 bytes, otherwise change WCHAR_T_SIZE define");
@@ -870,7 +888,6 @@ inline string TitleFromFilename(const std::filesystem::path& filename) { return 
 inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
-std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
 string extension_from_path(const string& path);
 bool path_has_extension(const string& path, const string& extension);
 inline string trim_string(const string& str)
@@ -889,10 +906,6 @@ inline bool try_parse_int(const string& str, int& value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 bool try_parse_float(const string& str, float& value);
-bool is_string_numeric(const string& str);
-int string_to_int(const string& str, int default_value = 0);
-float string_to_float(const string& str, float default_value = 0.0f);
-vector<string> parse_csv_line(const string& line);
 // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
 inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const char* const __restrict src)
 {
@@ -921,27 +934,11 @@ inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, cons
    }
    dest[i] = L'\0';
 }
-bool string_contains_case_insensitive(const string& str1, const string& str2);
-bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
 string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize);
-string create_hex_dump(const uint8_t* buffer, size_t size);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
 #endif
 vector<string> add_line_numbers(const char* src);
-
-#ifndef MINIMAL_DEF_H
-bool try_parse_color(const string& str, OLE_COLOR& value);
-string color_to_hex(OLE_COLOR color);
-
-#ifdef __STANDALONE__
-extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen);
-extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
-extern "C" void external_log_info(const char* format, ...);
-extern "C" void external_log_debug(const char* format, ...);
-extern "C" void external_log_error(const char* format, ...);
-#endif
-#endif

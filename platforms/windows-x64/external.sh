@@ -8,6 +8,8 @@ if [ -z "${MSYS2_PATH}" ]; then
    MSYS2_PATH="/c/msys64"
 fi
 
+export MSYSTEM=UCRT64
+
 echo "MSYS2_PATH: ${MSYS2_PATH}"
 echo ""
 
@@ -135,7 +137,7 @@ fi
 # build bgfx
 #
 
-BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}"
+BGFX_EXPECTED_SHA="${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}-002"
 BGFX_FOUND_SHA="$([ -f bgfx/cache.txt ] && cat bgfx/cache.txt || echo "")"
 
 if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
@@ -440,14 +442,13 @@ cp freeimage/freeimage/build/${BUILD_TYPE}/freeimage64.lib ../../../third-party/
 cp freeimage/freeimage/build/${BUILD_TYPE}/freeimage64.dll ../../../third-party/runtime-libs/windows-x64
 cp freeimage/freeimage/Source/FreeImage.h ../../../third-party/include
 
-cp bgfx/bgfx.cmake/build/cmake/bgfx/${BUILD_TYPE}/bgfx64.lib ../../../third-party/build-libs/windows-x64
 cp -r bgfx/bgfx.cmake/bgfx/include/bgfx ../../../third-party/include/
+cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
+cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
+cp bgfx/bgfx.cmake/build/cmake/bgfx/${BUILD_TYPE}/bgfx64.lib ../../../third-party/build-libs/windows-x64
 cp bgfx/bgfx.cmake/build/cmake/bimg/${BUILD_TYPE}/bimg64.lib ../../../third-party/build-libs/windows-x64
 cp bgfx/bgfx.cmake/build/cmake/bimg/${BUILD_TYPE}/bimg_decode64.lib ../../../third-party/build-libs/windows-x64
-cp bgfx/bgfx.cmake/build/cmake/bimg/${BUILD_TYPE}/bimg_encode64.lib ../../../third-party/build-libs/windows-x64
-cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
 cp bgfx/bgfx.cmake/build/cmake/bx/${BUILD_TYPE}/bx64.lib ../../../third-party/build-libs/windows-x64
-cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.lib ../../../third-party/build-libs/windows-x64
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.dll ../../../third-party/runtime-libs/windows-x64
@@ -502,11 +503,13 @@ for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
 
-cp "${MSYS2_PATH}/mingw64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/mingw64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/mingw64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/mingw64/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/mingw64/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libgcc_s_seh-1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-x64
 
 cp libzip/libzip/build/lib/libzip64.dll ../../../third-party/runtime-libs/windows-x64
 cp libzip/libzip/build/zipconf.h ../../../third-party/include

@@ -35,7 +35,7 @@ set(PUP_PLUGIN_SOURCES
    plugins/pup/PUPTrigger.cpp
 )
 
-if(BUILD_SHARED)
+if(BUILD_SHARED AND NOT (PluginPlatform STREQUAL "windows" AND NOT MSVC))
    add_library(PUPPlugin MODULE ${PUP_PLUGIN_SOURCES})
 
    target_include_directories(PUPPlugin PUBLIC
@@ -44,58 +44,61 @@ if(BUILD_SHARED)
       plugins/pup
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      add_compile_options(
-         $<$<CONFIG:RELEASE>:/Ob2>
-         $<$<CONFIG:RELEASE>:/O2>
-         $<$<CONFIG:RELEASE>:/Oi>
-         $<$<CONFIG:RELEASE>:/arch:SSE2>
-         $<$<CONFIG:RELEASE>:/fp:fast>
-         $<$<CONFIG:RELEASE>:/fp:except->
-         $<$<CONFIG:RELEASE>:/Ot>
-         $<$<CONFIG:RELEASE>:/GF>
-         $<$<CONFIG:RELEASE>:/GS->
-         $<$<CONFIG:RELEASE>:/Gy>
-         $<$<CONFIG:RELEASE>:/GR>
-         $<$<CONFIG:RELEASE>:/Oy>
-         $<$<CONFIG:RELEASE>:/GT>
-         $<$<CONFIG:RELEASE>:/GL>
-      )
-      set_target_properties(PUPPlugin PROPERTIES
-         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-      )
-      target_compile_options(PUPPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-      )
-      target_link_options(PUPPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-         $<$<CONFIG:RELEASE>:/OPT:REF>
-         $<$<CONFIG:RELEASE>:/OPT:ICF>
-         $<$<CONFIG:RELEASE>:/LTCG>
-         /SAFESEH:NO
-      )
+   if(PluginPlatform STREQUAL "windows" OR PluginPlatform STREQUAL "windows-mingw")
+      if(MSVC)
+         add_compile_options(
+            $<$<CONFIG:RELEASE>:/Ob2>
+            $<$<CONFIG:RELEASE>:/O2>
+            $<$<CONFIG:RELEASE>:/Oi>
+            $<$<CONFIG:RELEASE>:/arch:SSE2>
+            $<$<CONFIG:RELEASE>:/fp:fast>
+            $<$<CONFIG:RELEASE>:/fp:except->
+            $<$<CONFIG:RELEASE>:/Ot>
+            $<$<CONFIG:RELEASE>:/GF>
+            $<$<CONFIG:RELEASE>:/GS->
+            $<$<CONFIG:RELEASE>:/Gy>
+            $<$<CONFIG:RELEASE>:/GR>
+            $<$<CONFIG:RELEASE>:/Oy>
+            $<$<CONFIG:RELEASE>:/GT>
+            $<$<CONFIG:RELEASE>:/GL>
+         )
+         set_target_properties(PUPPlugin PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+         )
+         target_compile_options(PUPPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+         )
+         target_link_options(PUPPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+            $<$<CONFIG:RELEASE>:/OPT:REF>
+            $<$<CONFIG:RELEASE>:/OPT:ICF>
+            $<$<CONFIG:RELEASE>:/LTCG>
+            /SAFESEH:NO
+         )
+      endif()
+      target_link_directories(PUPPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/${PluginPlatform}-${PluginArch} ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch})
       if (PluginArch STREQUAL "x64")
          set_target_properties(PUPPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-pup64"
          )
-         target_link_directories(PUPPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
          target_link_libraries(PUPPlugin
-            SDL364.lib
-            SDL3_image64.lib
-            SDL3_ttf64.lib
-            pupdmd64.lib
+            SDL364
+            SDL3_image64
+            SDL3_ttf64
+            pupdmd64
          )
       else()
          set_target_properties(PUPPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-pup"
          )
-         target_link_directories(PUPPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
          target_link_libraries(PUPPlugin
-            SDL3.lib
-            SDL3_image.lib
-            SDL3_ttf.lib
-            pupdmd.lib
+            SDL3
+            SDL3_image
+            SDL3_ttf
+            pupdmd
          )
       endif()
    else()
@@ -134,39 +137,58 @@ if(BUILD_SHARED)
       if(PluginPlatform STREQUAL "windows")
          if (PluginArch STREQUAL "x64")
             add_custom_command(TARGET PUPPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC64.dll" "${PLUGINS_DIR}/pup/AVCODEC64-61.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT64.dll" "${PLUGINS_DIR}/pup/AVFORMAT64-61.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL64.dll" "${PLUGINS_DIR}/pup/AVUTIL64-59.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWRESAMPLE64.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE64-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWSCALE64.dll" "${PLUGINS_DIR}/pup/SWSCALE64-8.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVCODEC64.dll" "${PLUGINS_DIR}/pup/AVCODEC64-61.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVFORMAT64.dll" "${PLUGINS_DIR}/pup/AVFORMAT64-61.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVUTIL64.dll" "${PLUGINS_DIR}/pup/AVUTIL64-59.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWRESAMPLE64.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE64-5.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWSCALE64.dll" "${PLUGINS_DIR}/pup/SWSCALE64-8.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
             )
          elseif (PluginArch STREQUAL "x86")
             add_custom_command(TARGET PUPPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3.dll" "${PLUGINS_DIR}/pup/SDL3.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image.dll" "${PLUGINS_DIR}/pup/SDL3_image.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_ttf.dll" "${PLUGINS_DIR}/pup/SDL3_ttf.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC.dll" "${PLUGINS_DIR}/pup/AVCODEC-61.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT.dll" "${PLUGINS_DIR}/pup/AVFORMAT-61.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL.dll" "${PLUGINS_DIR}/pup/AVUTIL-59.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWRESAMPLE.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWSCALE.dll" "${PLUGINS_DIR}/pup/SWSCALE-8.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/pupdmd.dll" "${PLUGINS_DIR}/pup/pupdmd.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3.dll" "${PLUGINS_DIR}/pup/SDL3.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_image.dll" "${PLUGINS_DIR}/pup/SDL3_image.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_ttf.dll" "${PLUGINS_DIR}/pup/SDL3_ttf.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVCODEC.dll" "${PLUGINS_DIR}/pup/AVCODEC-61.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVFORMAT.dll" "${PLUGINS_DIR}/pup/AVFORMAT-61.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVUTIL.dll" "${PLUGINS_DIR}/pup/AVUTIL-59.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWRESAMPLE.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE-5.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWSCALE.dll" "${PLUGINS_DIR}/pup/SWSCALE-8.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/pupdmd.dll" "${PLUGINS_DIR}/pup/pupdmd.dll"
             )
          endif()
+      elseif(PluginPlatform STREQUAL "windows-mingw")
+         add_custom_command(TARGET PUPPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVCODEC64.dll" "${PLUGINS_DIR}/pup/AVCODEC64-61.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVFORMAT64.dll" "${PLUGINS_DIR}/pup/AVFORMAT64-61.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/AVUTIL64.dll" "${PLUGINS_DIR}/pup/AVUTIL64-59.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWRESAMPLE64.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE64-5.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/SWSCALE64.dll" "${PLUGINS_DIR}/pup/SWSCALE64-8.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/pup/libgcc_s_seh-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libstdc++-6.dll" "${PLUGINS_DIR}/pup/libstdc++-6.dll"
+         )
       elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET PUPPlugin POST_BUILD
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so" "${PLUGINS_DIR}/pup/"

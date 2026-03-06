@@ -999,7 +999,7 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
                path.erase(path.length() - ext.length());
                path += "webp";
             }
-            ppb->m_path = path;
+            ppb->m_path = PathFromString(path);
             FreeImage_SeekMemory(memStream, 0, SEEK_SET);
             FreeImage_ReadMemory(ppb->m_buffer.data(), 1, static_cast<unsigned int>(ppb->m_buffer.size()), memStream);
             FreeImage_CloseMemory(memStream);

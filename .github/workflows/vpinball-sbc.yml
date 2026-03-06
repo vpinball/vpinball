@@ -3,7 +3,6 @@ on:
   push:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
 
 defaults:

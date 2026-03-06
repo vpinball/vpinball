@@ -14,6 +14,7 @@ enum Link {
     case libserum
     case libdof
     case libvni
+    case libwinevbs
     case thirdparty
 
     var url: URL {
@@ -44,6 +45,8 @@ enum Link {
             return URL(string: "https://github.com/jsm174/libdof")!
         case .libvni:
             return URL(string: "https://github.com/PPUC/libvni")!
+        case .libwinevbs:
+            return URL(string: "https://github.com/vpinball/libwinevbs")!
         case .thirdparty:
             return URL(string: "https://github.com/vpinball/vpinball/blob/master/third-party/README.md")!
         }
@@ -65,6 +68,7 @@ enum Credit {
     case libserum
     case libdof
     case libvni
+    case libwinevbs
     case other
     case artwork
 
@@ -76,6 +80,7 @@ enum Credit {
                                 .libserum,
                                 .libdof,
                                 .libvni,
+                                .libwinevbs,
                                 .other,
                                 .artwork]
 
@@ -97,6 +102,8 @@ enum Credit {
             return "libdof"
         case .libvni:
             return "libvni"
+        case .libwinevbs:
+            return "libwinevbs"
         case .other:
             return "Other third party libraries"
         case .artwork:
@@ -122,6 +129,8 @@ enum Credit {
             return "jsm174, dekay"
         case .libvni:
             return "mkalkbrenner, freezy, jsm174"
+        case .libwinevbs:
+            return "jsm174"
         case .artwork:
             return "smillard316 (Table placeholder), adam.co (App icon enhancements), twostraws (Shimmer metal shader)"
         default:
@@ -147,6 +156,8 @@ enum Credit {
             return .libdof
         case .libvni:
             return .libvni
+        case .libwinevbs:
+            return .libwinevbs
         case .other:
             return .thirdparty
         default:

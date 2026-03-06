@@ -8,6 +8,8 @@ if [ -z "${MSYS2_PATH}" ]; then
    MSYS2_PATH="/c/msys64"
 fi
 
+export MSYSTEM=MINGW32
+
 echo "MSYS2_PATH: ${MSYS2_PATH}"
 echo ""
 
@@ -362,7 +364,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
    mv FFmpeg-${FFMPEG_SHA} ffmpeg
    cd ffmpeg
    CURRENT_DIR="$(pwd)"
-   MSYSTEM=MINGW32 "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
+   "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
       cd \"${CURRENT_DIR}\" &&
       ./configure \
          --enable-shared \
@@ -400,7 +402,7 @@ if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
    mv libzip-${LIBZIP_SHA} libzip
    cd libzip
    CURRENT_DIR="$(pwd)"
-   MSYSTEM=MINGW32 "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
+   "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
       cd \"${CURRENT_DIR}\" &&
       cmake \
          -DBUILD_SHARED_LIBS=ON \

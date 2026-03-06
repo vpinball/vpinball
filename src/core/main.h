@@ -2,18 +2,31 @@
 
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 
 #ifdef __STANDALONE__
 #define __null 0
+#define __WINE_WINCON_H
 #endif
 
 #include <windows.h>
 
+#ifdef __STANDALONE__
+#ifdef GetClassInfo
+#undef GetClassInfo
+#endif
+#endif
+
+#ifndef __STANDALONE__
 #define RPC_NO_WINDOWS_H
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
+#endif
 
 #if defined(ENABLE_DX9)
  #ifdef _DEBUG
@@ -22,17 +35,13 @@
  #include "minid3d9.h"
 #endif
 
-#include <mmsystem.h>
-
 #ifndef __STANDALONE__
+#include <mmsystem.h>
+#endif
+
 #include <atlbase.h>
+#ifndef __STANDALONE__
 #include <atlctl.h>
-#else
-#undef PlaySound
-extern "C" {
-   #include <atlbase.h>
-}
-#undef strncpy
 #endif
 
 #ifdef _MSC_VER
@@ -45,7 +54,9 @@ extern "C" {
 
 #include <oleauto.h>
 
+#ifndef __STANDALONE__
 #include <wincrypt.h>
+#endif
 
 #ifndef __STANDALONE__
 #include <intrin.h>
@@ -66,9 +77,11 @@ extern "C" {
 #include <string>
 #include <format>
 #include <algorithm>
+#ifndef __STANDALONE__
 #include <commdlg.h>
 #include <dlgs.h>
 #include <cderr.h>
+#endif
 
 using namespace std::string_literals;
 using std::string;
@@ -125,22 +138,16 @@ using std::vector;
 
 #define sscanf_s sscanf
 
+#ifndef __MINGW32__
 #define localtime_s(x, y) localtime_r(y, x)
 #define gmtime_s(x, y) gmtime_r(y, x)
-
 #define _aligned_malloc(size, align) aligned_alloc(align, size)
 #define _aligned_free free
-
-#define strnlen_s strnlen
-#define sprintf_s snprintf
-#define _snprintf_s snprintf
+#endif
 
 #define _T(x) (x)
 #define AtoT(x) (x)
 #define _ASSERTE(expr) ((void)0)
-
-#undef GetCurrentDirectory
-#define GetCurrentDirectory GetCurrentDirectoryA
 
 #undef SetCurrentDirectory
 #define SetCurrentDirectory SetCurrentDirectoryA
@@ -148,19 +155,44 @@ using std::vector;
 #undef MessageBox
 #define MessageBox MessageBoxA
 
-#undef OutputDebugString
-#define OutputDebugString OutputDebugStringA
+typedef ULONG_PTR HCRYPTPROV;
+typedef ULONG_PTR HCRYPTHASH;
+typedef ULONG_PTR HCRYPTKEY;
+
+#pragma pack(push, 1)
+typedef struct {
+   WORD wFormatTag;
+   WORD nChannels;
+   DWORD nSamplesPerSec;
+   DWORD nAvgBytesPerSec;
+   WORD nBlockAlign;
+   WORD wBitsPerSample;
+   WORD cbSize;
+} WAVEFORMATEX, *LPWAVEFORMATEX;
+#pragma pack(pop)
+
+typedef struct {
+   DWORD lStructSize;
+   HWND hwndOwner;
+   HINSTANCE hInstance;
+   DWORD Flags;
+   LPSTR lpstrFindWhat;
+   LPSTR lpstrReplaceWith;
+   WORD wFindWhatLen;
+   WORD wReplaceWithLen;
+   LPARAM lCustData;
+   void* lpfnHook;
+   LPCSTR lpTemplateName;
+} FINDREPLACEA;
 
 #define FINDREPLACE FINDREPLACEA
 #define CREATESTRUCT CREATESTRUCTA
 #define WNDCLASS WNDCLASSA
 #define LOGFONT LOGFONTA
-#define MONITORINFOEX MONITORINFOEXA
 
 typedef LPSTR LPTSTR;
 typedef LPCSTR LPCTSTR;
 
-class LayersListDialog final { };
 class ImageDialog final { };
 class SoundDialog final { };
 class EditorOptionsDialog final { };
@@ -174,27 +206,23 @@ class AboutDialog final { };
 class ToolbarDialog final { };
 class NotesDialog final { };
 class PropertyDialog final { };
-class ColorButton final { };
 class SCNotification final { };
 #endif
 
 #include "utils/Logger.h"
 
 #ifdef __STANDALONE__
-#include "standalone/inc/atl/atldef.h"
-#include "standalone/inc/atl/atlbase.h"
-#include "standalone/inc/atl/atlcom.h"
-#include "standalone/inc/atl/atlcomcli.h"
-#include "standalone/inc/atl/atlsafe.h"
+#include <atldef.h>
+#include <atlcom.h>
+#include <atlcomcli.h>
+#include <atlsafe.h>
 
-#include "standalone/inc/atlmfc/afx.h"
-#include "standalone/inc/atlmfc/afxdlgs.h"
-#include "standalone/inc/atlmfc/afxwin.h"
-#include "standalone/inc/atlmfc/atltypes.h"
+#include <afx.h>
+#include <afxdlgs.h>
+#include <afxwin.h>
+#include <atltypes.h>
 
 #include "standalone/inc/win32xx/win32xx.h"
-
-#include <cstdint>
 #endif
 
 #include "def.h"

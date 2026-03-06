@@ -15,7 +15,9 @@
 #else
 #include <plog/Appenders/AndroidAppender.h>
 #endif
+#ifdef __LIBVPINBALL__
 #include "lib/src/WebServer.h"
+#endif
 #endif
 
 #include "ui/win/codeview.h"

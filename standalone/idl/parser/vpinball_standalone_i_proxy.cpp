@@ -1,26 +1,5 @@
 #include "core/stdafx.h"
 #include "core/ScriptGlobalTable.h"
-#include "parts/ball.h"
-#include "parts/plunger.h"
-#include "parts/flipper.h"
-#include "parts/timer.h"
-#include "parts/textbox.h"
-#include "parts/surface.h"
-#include "parts/dispreel.h"
-#include "parts/lightseq.h"
-#include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/light.h"
-#include "parts/kicker.h"
-#include "parts/decal.h"
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
-#include "parts/gate.h"
-#include "parts/spinner.h"
-#include "parts/ramp.h"
-#include "parts/flasher.h"
-#include "parts/rubber.h"
-#include "parts/PartGroup.h"
 #include "olectl.h"
 
 STDMETHODIMP Collection::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
@@ -33,7 +12,7 @@ STDMETHODIMP Collection::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UIN
 			{ L"Item", DISPID_VALUE }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -132,7 +111,7 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -257,7 +236,7 @@ STDMETHODIMP PinTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			{ L"ZPD", DISPID_Table_ZPD }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -1983,7 +1962,7 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"WriteSerial", 255 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -4223,7 +4202,7 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -4259,7 +4238,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::GetIDsOfNames(REFIID /*riid*/, L
 			{ L"Print", 10 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -4372,7 +4351,7 @@ STDMETHODIMP Surface::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Visible", 16 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -5024,7 +5003,7 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -5066,7 +5045,7 @@ STDMETHODIMP DragPoint::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			{ L"Z", 6 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -5272,7 +5251,7 @@ STDMETHODIMP Flipper::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Y", 14 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -5910,7 +5889,7 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -5949,7 +5928,7 @@ STDMETHODIMP Timer::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			{ L"UserValue", DISPID_UserValue }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -6080,7 +6059,7 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -6154,7 +6133,7 @@ STDMETHODIMP Plunger::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"ZAdjust", DISPID_ZAdjust }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -6796,7 +6775,7 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -6848,7 +6827,7 @@ STDMETHODIMP Textbox::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Y", 60001 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -7187,7 +7166,7 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -7253,7 +7232,7 @@ STDMETHODIMP Bumper::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			{ L"Y", DISPID_Y }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -7785,7 +7764,7 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -7840,7 +7819,7 @@ STDMETHODIMP Trigger::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Y", DISPID_Y }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -8206,7 +8185,7 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -8278,7 +8257,7 @@ STDMETHODIMP Light::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			{ L"Y", DISPID_Y }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -8909,7 +8888,7 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -8970,7 +8949,7 @@ STDMETHODIMP Kicker::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			{ L"Y", DISPID_Y }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -9445,7 +9424,7 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -9494,7 +9473,7 @@ STDMETHODIMP Decal::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			{ L"Y", 6 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -9784,7 +9763,7 @@ HRESULT Decal::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -9885,7 +9864,7 @@ STDMETHODIMP Primitive::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			{ L"Z", DISPID_POSITION_Z }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -10975,7 +10954,7 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -11045,7 +11024,7 @@ STDMETHODIMP HitTarget::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			{ L"Z", DISPID_POSITION_Z }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -11660,7 +11639,7 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -11721,7 +11700,7 @@ STDMETHODIMP Gate::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			{ L"Y", 6 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -12205,7 +12184,7 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -12260,7 +12239,7 @@ STDMETHODIMP Spinner::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Y", 12 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -12643,7 +12622,7 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -12709,7 +12688,7 @@ STDMETHODIMP Ramp::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			{ L"WireDistanceY", 425 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -13300,7 +13279,7 @@ STDMETHODIMP Flasher::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			{ L"Y", 6 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -13849,7 +13828,7 @@ STDMETHODIMP Rubber::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			{ L"Visible", 458 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14324,7 +14303,7 @@ STDMETHODIMP Ball::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			{ L"Z", 5 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -14815,7 +14794,7 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -14852,7 +14831,7 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -14890,7 +14869,7 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -14929,7 +14908,7 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -14988,7 +14967,7 @@ STDMETHODIMP DispReel::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			{ L"Y", 10 }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15420,7 +15399,7 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -15459,7 +15438,7 @@ STDMETHODIMP PartGroup::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			{ L"UserValue", DISPID_UserValue }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15590,7 +15569,7 @@ HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
@@ -15635,7 +15614,7 @@ STDMETHODIMP LightSeq::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			{ L"UserValue", DISPID_UserValue }
 	};
 
-	size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
 	int r;
 	while(min <= max) {
 		i = (min + max) / 2;
@@ -15864,7 +15843,7 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	};
 
 	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
 	#ifdef __STANDALONE__
 	if (!g_pplayer || !g_pplayer->m_scriptInterpreter) return DISP_E_MEMBERNOTFOUND;
