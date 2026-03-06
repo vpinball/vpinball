@@ -755,11 +755,22 @@ static call_expression_t *make_call_expression(parser_ctx_t *ctx, expression_t *
     if(!arguments)
         return call_expr;
 
+#ifndef __STANDALONE__
     if(arguments->type != EXPR_NOARG) {
         FIXME("Invalid syntax: missing comma\n");
         ctx->hres = E_FAIL;
         return NULL;
     }
+#else
+    if(arguments->type != EXPR_NOARG) {
+        expression_t *remaining = arguments->next;
+        call_expr->args = new_binary_expression(ctx, EXPR_ADD, call_expr->args, arguments);
+        if(!call_expr->args)
+            return NULL;
+        call_expr->args->next = remaining;
+        return call_expr;
+    }
+#endif
 
     call_expr->args->next = arguments->next;
     return call_expr;
@@ -1225,6 +1236,10 @@ HRESULT parse_script(parser_ctx_t *ctx, const WCHAR *code, const WCHAR *delimite
     ctx->hres = S_OK;
     ctx->error_loc = -1;
     ctx->last_token = tNL;
+#ifdef __STANDALONE__
+    ctx->is_statement_ctx = TRUE;
+    ctx->paren_depth = 0;
+#endif
     ctx->last_nl = 0;
     ctx->stats = ctx->stats_tail = NULL;
     ctx->class_decls = NULL;
