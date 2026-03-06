@@ -2442,7 +2442,7 @@ void PinTable::Load(IObjectReader& reader)
             vector<SaveMaterial> mats(m_numMaterials);
             reader.AsRaw(mats.data(), (int)sizeof(SaveMaterial) * m_numMaterials);
             // Also loads materials for 10.8+ tables if these were saved before the new material format was added.
-            // // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
             if (reader.GetVersion() < 1080 || m_materials.empty())
             {
                m_materials.reserve(m_numMaterials + m_materials.size());
@@ -2471,7 +2471,8 @@ void PinTable::Load(IObjectReader& reader)
          {
             vector<SavePhysicsMaterial> mats(m_numMaterials);
             reader.AsRaw(mats.data(), (int)sizeof(SavePhysicsMaterial) * m_numMaterials);
-            // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
+            // Also loads materials for 10.8+ tables if these were saved before the new material format was added.
+            // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
             if (reader.GetVersion() < 1080 || m_materials.size() == m_numMaterials)
             {
                for (int i = 0; i < m_numMaterials; i++)

@@ -209,14 +209,26 @@ void BiffReader::AsRaw(void *pvalue, const int size)
 
 void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> &processField, bool isSkippable)
 {
+   const int recordSize = m_bytesinrecordremaining;
+   ULARGE_INTEGER pos;
+   if (isSkippable && m_version > 30)
+   {
+      LARGE_INTEGER seek {};
+      m_pistream->Seek(seek, STREAM_SEEK_CUR, &pos);
+   }
    while (true)
    {
       if (m_version > 30)
          m_bytesinrecordremaining = isSkippable ? AsInt() : GetIntNoHash();
 
       const int tag = AsInt();
-      if (m_hasError || tag == FID(ENDB))
+      if (m_hasError)
          return;
+
+      // PLOGD << "FieldTag: " << (char)((tag) & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
+
+      if (tag == FID(ENDB))
+         break;
 
       if (const bool cont = processField(tag, *this); !cont)
       {
@@ -229,12 +241,24 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
          assert(m_bytesinrecordremaining >= 0);
          if (m_bytesinrecordremaining > 0)
          {
-            BYTE * const szT = new BYTE[m_bytesinrecordremaining];
-            ReadBytes(szT, m_bytesinrecordremaining);
-            delete[] szT;
+            vector<uint8_t> tmp(m_bytesinrecordremaining);
+            ReadBytes(tmp.data(), m_bytesinrecordremaining);
             if (m_hasError)
                return;
          }
+      }
+   }
+
+   if (isSkippable && m_version > 30)
+   {
+      LARGE_INTEGER seek {};
+      ULARGE_INTEGER newpos;
+      m_pistream->Seek(seek, STREAM_SEEK_CUR, &newpos);
+      const int sizeRead = static_cast<int>(newpos.QuadPart - pos.QuadPart);
+      if (const int toSkip = recordSize - sizeRead; toSkip > 0)
+      {
+         vector<uint8_t> tmp(toSkip);
+         ReadBytes(tmp.data(), toSkip);
       }
    }
 }
