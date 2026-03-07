@@ -227,6 +227,8 @@ public:
    bool m_headTracking = false;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
+   bool IsVR() const { return m_vrDevice != nullptr; }
+
    int GetCabinetAutoFitMode() const { return m_cabinetAutoFitMode; }
    void SetCabinetAutoFitMode(int mode);
    float GetCabinetAutoFitPos() const { return m_cabinetAutoFitPos; }

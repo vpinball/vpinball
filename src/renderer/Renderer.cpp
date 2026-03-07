@@ -2843,7 +2843,7 @@ void Renderer::RenderFrame()
       else
          m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
       #ifdef ENABLE_XR
-      if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
+      if (g_pplayer->IsVR())
       {
          if (std::shared_ptr<MeshBuffer> mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
          {
@@ -3099,7 +3099,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::Rend
    const string& hdrRTName = hdrRTNames[window - VPXWindowId::VPXWINDOW_Backglass];
 
    // TODO implement rendering for VR (on a flasher)
-   if (g_pplayer->m_vrDevice != nullptr)
+   if (g_pplayer->IsVR())
       return nullptr;
 
    // Stereo Postprocessing is not yet implemented for embedded window

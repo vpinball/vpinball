@@ -242,39 +242,44 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       #endif
       
       const Settings& settings = g_app->m_settings; // Always use main application settings (not overridable per table)
-      m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, stereo3D == STEREO_VR ? VPXWindowId::VPXWINDOW_VRPreview : VPXWindowId::VPXWINDOW_Playfield);
-
-      const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
-      m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
-      if(m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
-         m_maxFramerate = 24.f;
-      if (m_maxFramerate < 0.f) // Negative is display refresh rate
-         m_maxFramerate = pfRefreshRate;
-      if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
-         m_maxFramerate = 10000.f;
-      m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.GetPlayer_SyncMode());
-      if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
-      {
-         if (m_maxFramerate > pfRefreshRate)
-            // User requested a max framerate above display rate but using VSync => limit to display refresh rate
-            m_maxFramerate = pfRefreshRate;
-         else if (m_maxFramerate < pfRefreshRate)
-         {
-            // User requested a max framerate below display rate but using VSync => limit to an integral division of the display refresh rate (keeping the FPS above 24FPS)
-            float divider = 1.f;
-            while ((m_maxFramerate * divider > pfRefreshRate) && (24.f * divider <= pfRefreshRate))
-               divider += 1.f;
-            m_maxFramerate = pfRefreshRate / divider;
-         }
-      }
       if (stereo3D == STEREO_VR)
       {
+         m_playfieldWnd = new VPX::Window(g_pplayer->m_vrDevice->GetEyeWidth(), g_pplayer->m_vrDevice->GetEyeHeight());
+
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
          m_maxFramerate = 10000.f;
       }
-      assert(24.f <= m_maxFramerate && m_maxFramerate <= 10000.f); // We guarantee a target framerate from 24 FPS to unbound, expressed as 10000 FPS
-      PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
+      else
+      {
+         m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, VPXWindowId::VPXWINDOW_Playfield);
+
+         const float pfRefreshRate = m_playfieldWnd->GetRefreshRate();
+         m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
+         if (m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
+            m_maxFramerate = 24.f;
+         if (m_maxFramerate < 0.f) // Negative is display refresh rate
+            m_maxFramerate = pfRefreshRate;
+         if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
+            m_maxFramerate = 10000.f;
+         m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.GetPlayer_SyncMode());
+         if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
+         {
+            if (m_maxFramerate > pfRefreshRate)
+               // User requested a max framerate above display rate but using VSync => limit to display refresh rate
+               m_maxFramerate = pfRefreshRate;
+            else if (m_maxFramerate < pfRefreshRate)
+            {
+               // User requested a max framerate below display rate but using VSync => limit to an integral division of the display refresh rate (keeping the FPS above 24FPS)
+               float divider = 1.f;
+               while ((m_maxFramerate * divider > pfRefreshRate) && (24.f * divider <= pfRefreshRate))
+                  divider += 1.f;
+               m_maxFramerate = pfRefreshRate / divider;
+            }
+         }
+         assert(24.f <= m_maxFramerate && m_maxFramerate <= 10000.f); // We guarantee a target framerate from 24 FPS to unbound, expressed as 10000 FPS
+         PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
+      }
    }
 
    // FIXME remove or at least move legacy ushock to a plugin
@@ -733,7 +738,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
-   // Show the window (for VR, even without preview, we need to create a window).
+   // Show the window 
    m_playfieldWnd->Show();
    m_playfieldWnd->RaiseAndFocus();
 
@@ -1398,26 +1403,28 @@ void Player::ProcessOSMessages()
 
       case SDL_EVENT_WINDOW_FOCUS_GAINED:
       case SDL_EVENT_WINDOW_FOCUS_LOST:
-         isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();
+         isPFWnd = (SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore()) || IsVR();
          OnFocusChanged();
          break;
 
       case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-         isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();
+         isPFWnd = (SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore()) || IsVR();
          SetCloseState(Player::CloseState::CS_STOP_PLAY);
          break;
 
       case SDL_EVENT_KEY_UP:
       case SDL_EVENT_KEY_DOWN:
-         isPFWnd = SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore();
+         isPFWnd = (SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR();
          ShowMouseCursor(false);
          break;
 
-      case SDL_EVENT_TEXT_INPUT: isPFWnd = SDL_GetWindowFromID(e.text.windowID) == m_playfieldWnd->GetCore(); break;
-      case SDL_EVENT_MOUSE_WHEEL: isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == m_playfieldWnd->GetCore(); break;
+      case SDL_EVENT_TEXT_INPUT:
+         isPFWnd = (SDL_GetWindowFromID(e.text.windowID) == m_playfieldWnd->GetCore()) || IsVR();
+         break;
+      case SDL_EVENT_MOUSE_WHEEL: isPFWnd = (SDL_GetWindowFromID(e.wheel.windowID) == m_playfieldWnd->GetCore()) || IsVR(); break;
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
       case SDL_EVENT_MOUSE_BUTTON_UP:
-         isPFWnd = SDL_GetWindowFromID(e.button.windowID) == m_playfieldWnd->GetCore();
+         isPFWnd = (SDL_GetWindowFromID(e.button.windowID) == m_playfieldWnd->GetCore()) || IsVR();
          if (!isPFWnd)
          {
             if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
@@ -1428,7 +1435,7 @@ void Player::ProcessOSMessages()
          break;
 
       case SDL_EVENT_MOUSE_MOTION:
-         isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == m_playfieldWnd->GetCore();
+         isPFWnd = (SDL_GetWindowFromID(e.motion.windowID) == m_playfieldWnd->GetCore()) || IsVR();
          if (isPFWnd)
          {
             static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
