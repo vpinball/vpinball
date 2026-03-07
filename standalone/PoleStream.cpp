@@ -44,6 +44,11 @@ STDMETHODIMP PoleStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INT
       m_pPOLEStream->seek(dlibMove.QuadPart);
    else if (dwOrigin == STREAM_SEEK_CUR)
       m_pPOLEStream->seek(m_pPOLEStream->tell() + dlibMove.QuadPart);
+   else if (dwOrigin == STREAM_SEEK_END)
+      m_pPOLEStream->seek(m_pPOLEStream->size() + dlibMove.QuadPart);
+
+   if (plibNewPosition)
+      plibNewPosition->QuadPart = m_pPOLEStream->tell();
 
    return S_OK;
 }
@@ -57,7 +62,7 @@ STDMETHODIMP PoleStream::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER c
 
 STDMETHODIMP PoleStream::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 {
-   pstatstg->cbSize.LowPart = m_pPOLEStream->size();
+   pstatstg->cbSize.QuadPart = m_pPOLEStream->size();
    return S_OK;
 }
 
@@ -65,7 +70,9 @@ STDMETHODIMP PoleStream::Clone(IStream **ppstm) { return E_NOTIMPL; }
 
 STDMETHODIMP PoleStream::Read(void *pv, ULONG cb, ULONG *pcbRead)
 {
-   *pcbRead = m_pPOLEStream->read((unsigned char*)pv, cb);
+   ULONG bytesRead = m_pPOLEStream->read((unsigned char*)pv, cb);
+   if (pcbRead)
+      *pcbRead = bytesRead;
    return S_OK;
 }
 
