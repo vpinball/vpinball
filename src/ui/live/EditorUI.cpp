@@ -126,7 +126,7 @@ void EditorUI::Render3D()
    RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
    for (const auto &uiPart : m_editables)
    {
-      if ((m_camMode == ViewMode::DesktopBackdrop && !uiPart->GetEditable()->m_backglass) || (m_camMode != ViewMode::DesktopBackdrop && uiPart->GetEditable()->m_backglass))
+      if ((m_camMode == ViewMode::DesktopBackdrop && !uiPart->GetEditable()->m_desktopBackdrop) || (m_camMode != ViewMode::DesktopBackdrop && uiPart->GetEditable()->m_desktopBackdrop))
          continue;
       uiPart->Render(ctx);
    }
@@ -544,12 +544,12 @@ void EditorUI::RenderUI()
             if (editable)
             {
                const PartGroup *parent = editable->GetPartGroup();
-               bool visible = editable->GetISelect() ? editable->GetISelect()->m_isVisible : true;
+               bool visible = editable->m_uiVisible;
                while (parent && visible)
                {
                   if ((parent->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
                      visible = false;
-                  visible &= parent->m_isVisible;
+                  visible &= parent->m_uiVisible;
                   parent = parent->GetPartGroup();
                }
                if (!visible)
@@ -621,7 +621,7 @@ void EditorUI::RenderUI()
          { // Unhide all
             for (auto &part : m_editables)
                if (part->GetEditable()->GetItemType() != eItemPartGroup && part->GetEditable()->GetISelect())
-                  part->GetEditable()->GetISelect()->m_isVisible = true;
+                  part->GetEditable()->m_uiVisible = true;
          }
          else if (io.KeyShift)
          { // Hide unselected
@@ -629,18 +629,15 @@ void EditorUI::RenderUI()
             {
                for (auto &part : m_editables)
                   if (part->GetEditable()->GetItemType() != eItemPartGroup && part != m_selection.uiPart && part->GetEditable()->GetISelect())
-                     part->GetEditable()->GetISelect()->m_isVisible = false;
+                     part->GetEditable()->m_uiVisible = false;
             }
          }
          else
          { // Hide selected
             if (m_selection.type == Selection::S_EDITABLE)
             {
-               if (m_selection.uiPart->GetEditable()->GetISelect())
-               {
-                  m_selection.uiPart->GetEditable()->GetISelect()->m_isVisible = false;
-                  m_selection = Selection();
-               }
+               m_selection.uiPart->GetEditable()->m_uiVisible = false;
+               m_selection = Selection();
             }
          }
       }
@@ -891,8 +888,8 @@ void EditorUI::UpdateEditableList()
          case eItemTrigger: uiPart = std::make_shared<TriggerUIPart>(static_cast<Trigger *>(edit)); break;
          default: uiPart = std::make_shared<BaseUIPart>(edit); break;
          }
-         if (m_table->m_liveBaseTable && edit->GetISelect())
-            edit->GetISelect()->m_isVisible = true;
+         if (m_table->m_liveBaseTable)
+            edit->m_uiVisible = true;
          uiPart->SetOutlinerPath(edit->GetPathString(false));
          m_editables.push_back(std::move(uiPart));
          needSort = true;
@@ -1105,9 +1102,9 @@ void EditorUI::UpdateOutlinerUI()
             if (m_table->m_liveBaseTable == nullptr)
             {
                ImGui::SameLine(eyeX);
-               ImGui::PushStyleColor(ImGuiCol_Text, group->m_isVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
-               if (ImGui::SmallButton(((group->m_isVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
-                  group->m_isVisible = !group->m_isVisible;
+               ImGui::PushStyleColor(ImGuiCol_Text, group->m_uiVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
+               if (ImGui::SmallButton(((group->m_uiVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                  group->m_uiVisible = !group->m_uiVisible;
                ImGui::PopStyleColor();
             }
             stack.emplace_back(static_cast<PartGroup *>(edit->GetEditable()), (stack.empty() || stack.back().opened) ? opened : false);
@@ -1123,13 +1120,13 @@ void EditorUI::UpdateOutlinerUI()
                {
                   if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), m_selection == sel, ImGuiSelectableFlags_AllowItemOverlap))
                      m_selection = sel;
-                  ISelect *selectable = edit->GetEditable()->GetISelect();
-                  if (selectable && m_table->m_liveBaseTable == nullptr)
+                  IEditable* editable = edit->GetEditable();
+                  if (editable && m_table->m_liveBaseTable == nullptr)
                   {
                      ImGui::SameLine(eyeX);
-                     ImGui::PushStyleColor(ImGuiCol_Text, selectable->m_isVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
-                     if (ImGui::SmallButton(((selectable->m_isVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
-                        selectable->m_isVisible = !selectable->m_isVisible;
+                     ImGui::PushStyleColor(ImGuiCol_Text, editable->m_uiVisible ? IM_COL32_WHITE : IM_COL32(128, 128, 128, 255));
+                     if (ImGui::SmallButton(((editable->m_uiVisible ? ICON_FK_EYE : ICON_FK_EYE_SLASH) + "##Eye__"s + edit->GetEditable()->GetName()).c_str()))
+                        editable->m_uiVisible = !editable->m_uiVisible;
                      ImGui::PopStyleColor();
                   }
                }

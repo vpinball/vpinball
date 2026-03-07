@@ -323,7 +323,7 @@ void Kicker::UpdateAnimation(const float diff_time_msec)
 void Kicker::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -579,7 +579,7 @@ void Kicker::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(KORI), m_d.m_orientation);
    writer.WriteBool(FID(FATH), m_d.m_fallThrough);
    writer.WriteBool(FID(LEMO), m_d.m_legacyMode);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -620,7 +620,7 @@ void Kicker::Load(IObjectReader& reader)
          case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(FATH): m_d.m_fallThrough = reader.AsBool(); break;
          case FID(LEMO): m_d.m_legacyMode = reader.AsBool(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

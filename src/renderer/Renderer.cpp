@@ -1505,7 +1505,7 @@ void Renderer::DrawWireframe(IEditable* renderable, const vec4& fillColor, const
 
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
-   if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
+   if ((isNoBackdrop && renderable->m_desktopBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
       || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
       return;
 
@@ -2802,7 +2802,7 @@ void Renderer::RenderFrame()
    m_ballReflectedLights.clear();
    for (IEditable* const item : m_table->GetParts())
    {
-      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_backglass)
+      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_desktopBackdrop)
          m_ballReflectedLights.push_back(static_cast<Light*>(item));
    }
    // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame

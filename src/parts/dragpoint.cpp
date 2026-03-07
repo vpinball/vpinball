@@ -278,7 +278,7 @@ void IHaveDragPoints::ClearPointsForOverwrite()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      if (m_vdpoint[i]->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint[i]*/)
+      if (m_vdpoint[i]->m_selectstate != ISelect::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
       {
          //GetPTable()->SetSel(GetPTable());
          GetPTable()->AddMultiSel(GetPTable(), false, true, false);
@@ -301,7 +301,8 @@ void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
       writer.WriteBool(FID(SLNG), pdp->m_slingshot);
       writer.WriteBool(FID(ATEX), pdp->m_autoTexture);
       writer.WriteFloat(FID(TEXC), pdp->m_texturecoord);
-      pdp->ISelect::SaveData(writer);
+      writer.WriteBool(FID(LOCK), pdp->m_uiLocked);
+      writer.WriteBool(FID(LVIS), pdp->m_uiVisible);
       writer.EndObject();
    }
 }
@@ -332,7 +333,8 @@ void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
          case FID(SLNG): pdp->m_slingshot = reader.AsBool(); break;
          case FID(ATEX): pdp->m_autoTexture = reader.AsBool(); break;
          case FID(TEXC): pdp->m_texturecoord = reader.AsFloat(); break;
-         default: pdp->ISelect::LoadToken(tag, reader); break;
+         case FID(LOCK): pdp->m_uiLocked = reader.AsBool(); break;
+         case FID(LVIS): pdp->m_uiVisible = reader.AsBool(); break;
          }
          return true;
       });

@@ -341,7 +341,7 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
 void DispReel::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(m_backglass);
+   assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    TRACE_FUNCTION();
@@ -460,7 +460,7 @@ void DispReel::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(UGRD), m_d.m_useImageGrid);
    writer.WriteBool(FID(VISI), m_d.m_visible);
    writer.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -511,7 +511,7 @@ void DispReel::Load(IObjectReader& reader)
          }
          case FID(UPTM): m_d.m_updateinterval = reader.AsInt(); break;
          case FID(FONT): reader.AsFontDescriptor(); break; //!! deprecated, only here to support loading of old tables
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

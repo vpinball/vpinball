@@ -12,6 +12,8 @@ void ISelect::SetObjectPos()
    m_vpinball->ClearObjectPosCur();
 }
 
+void ISelect::RenderBlueprint(Sur *psur, const bool solid) { UIRenderPass2(psur); }
+
 void ISelect::OnLButtonDown(int x, int y)
 {
    m_dragging = true;
@@ -92,7 +94,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
       break;
    case ID_LOCK:
       STARTUNDOSELECT
-      m_locked = !m_locked;
+      SetUILock(!IsUILocked());
       STOPUNDOSELECT
       break;
    }
@@ -101,8 +103,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
 void ISelect::SetSelectFormat(Sur *psur)
 {
-   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor
-                                   : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor
+                                       : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 4);
    psur->SetLineColor(color, false, 4);
@@ -110,8 +112,8 @@ void ISelect::SetSelectFormat(Sur *psur)
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
 {
-   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor :
-                                     m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor :
+                                         m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 3);
    psur->SetLineColor(color, false, 3);
@@ -216,67 +218,6 @@ wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
 #endif
 }
 
-bool ISelect::LoadToken(const int tag, IObjectReader& reader)
-{
-   switch (tag)
-   {
-      case FID(LOCK): m_locked = reader.AsBool(); break;
-      case FID(LVIS): m_isVisible = reader.AsBool(); break;
-      case FID(LAYR): // Old layer style (limited number of unnamed layers)
-      {
-         int layerIndex;
-         layerIndex = reader.AsInt();
-         m_onLoadExpectedPartGroup = (layerIndex < 9 ? L"Layer_0" : L"Layer_") + std::to_wstring(layerIndex + 1);
-         break;
-      }
-      case FID(LANR): // 10.7 layers (limited number of named layers)
-      {
-         string layerName = reader.AsString();
-         std::ranges::transform(
-            layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
-               return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
-            });
-         m_onLoadExpectedPartGroup = MakeWString(layerName);
-         break;
-      }
-      case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
-      {
-         string layerName = reader.AsString();
-         m_onLoadExpectedPartGroup = MakeWString(layerName);
-         break;
-      }
-      default:
-      {
-         PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
-      }
-   }
-   return true;
-}
-
-void ISelect::SaveData(IObjectWriter& writer)
-{
-   writer.WriteBool(FID(LOCK), m_locked);
-   if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
-   {
-      // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
-      const PartGroup* layer = GetIEditable()->GetPartGroup();
-      while (layer->GetPartGroup() != nullptr)
-         layer = layer->GetPartGroup();
-      int index = 0;
-      for (const auto edit : GetPTable()->GetParts())
-      {
-         if (edit == layer)
-            break;
-         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
-            index++;
-      }
-      writer.WriteInt(FID(LAYR), min(index, 11));
-      writer.WriteString(FID(LANR), layer->GetName());
-      writer.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
-   }
-   writer.WriteBool(FID(LVIS), m_isVisible);
-}
-
 void ISelect::UpdateStatusBarInfo()
 {
    if (m_vpinball)
@@ -285,7 +226,7 @@ void ISelect::UpdateStatusBarInfo()
 
 bool ISelect::IsVisible(IEditable *editable) const
 {
-   return m_isVisible
+   return IsUIVisible()
       && (editable == nullptr || editable->GetPartGroup() == nullptr || editable->GetPartGroup()->GetISelect() == nullptr
          || editable->GetPartGroup()->GetISelect()->IsVisible(editable->GetPartGroup()));
 }

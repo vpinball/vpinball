@@ -1595,7 +1595,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      if (piedit == nullptr)
                         return E_FAIL;
 
-                     piedit->GetISelect()->m_onLoadExpectedPartGroup.clear();
+                     piedit->m_onLoadExpectedPartGroup.clear();
                      BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
                      piedit->Load(reader); 
                      pstmItem->Release();
@@ -1778,7 +1778,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
             for (auto part : parts)
             {
-               if (const wstring requestedLayerName = part->GetISelect()->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
+               if (const wstring requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
                {
                   wstring layerName = requestedLayerName;
                   auto partGroupF = std::ranges::find_if(m_vedit,
@@ -2006,7 +2006,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
                   dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
                   dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
-                  dmd->m_backglass = true;
+                  dmd->m_desktopBackdrop = true;
                   dmd->m_d.m_isVisible = textbox->m_d.m_visible;
                   dmd->m_d.m_renderMode = FlasherData::DMD;
                   dmd->m_d.m_renderStyle = 0; // Legacy rendering style
@@ -2802,10 +2802,10 @@ void PinTable::AssignSelectionToPartGroup(PartGroup* group)
       ISelect *const psel = m_vmultisel.ElementAt(t);
       IEditable *const pedit = psel->GetIEditable();
       pedit->SetPartGroup(group);
-      if (psel->m_isVisible && !group->m_isVisible)
-         psel->m_isVisible = false;
-      else if (!psel->m_isVisible && group->m_isVisible)
-         psel->m_isVisible = true;
+      if (psel->IsUIVisible() && !group->m_uiVisible)
+         psel->SetUIVisible(false);
+      else if (!psel->IsUIVisible() && group->m_uiVisible)
+         psel->SetUIVisible(true);
    }
    STOPUNDO
 #ifndef __STANDALONE__
@@ -2834,7 +2834,7 @@ IEditable *PinTable::GetElementByName(const char * const name) const
 bool PinTable::FMutilSelLocked()
 {
    for (int i = 0; i < m_vmultisel.size(); i++)
-      if (m_vmultisel[i].m_locked)
+      if (m_vmultisel[i].IsUILocked())
          return true;
 
    return false;
@@ -3113,7 +3113,7 @@ void PinTable::LockElements()
          if (pedit)
          {
             pedit->MarkForUndo();
-            psel->m_locked = lock;
+            pedit->m_uiLocked = lock;
          }
       }
    }
@@ -3276,7 +3276,7 @@ void PinTable::ExportTableMesh()
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const ptr = m_vedit[i];
-      if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpinball->m_backglassView)
+      if (ptr->m_uiVisible && ptr->m_desktopBackdrop == m_vpinball->m_desktopBackdropView)
          ptr->ExportMesh(loader);
    }
    loader.ExportEnd();
@@ -3637,7 +3637,7 @@ void PinTable::Undo()
 
 void PinTable::Uncreate(IEditable *pie)
 {
-   if (pie->GetISelect()->m_selectstate != eNotSelected)
+   if (pie->GetISelect()->m_selectstate != SelectState::NotSelected)
       AddMultiSel(pie->GetISelect(), true, true, false); // Remove the item from the multi-select list
 
    pie->GetISelect()->Uncreate();
@@ -3715,7 +3715,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
        }
    }
 
-   const unsigned viewflag = (m_vpinball->m_backglassView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
+   const unsigned viewflag = (m_vpinball->m_desktopBackdropView ? VIEW_BACKGLASS : VIEW_PLAYFIELD);
 
    // Do a backwards loop, so that the primary selection we had when
    // copying will again be the primary selection, since it will be
@@ -3745,7 +3745,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          {
             BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
             peditNew->Load(reader);
-            peditNew->m_backglass = m_vpinball->m_backglassView;
+            peditNew->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
 
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
 
@@ -3782,7 +3782,7 @@ void PinTable::SetDefaultPhysics(const bool fromMouseClick)
 void PinTable::ClearMultiSel(ISelect* newSel)
 {
    for (int i = 0; i < m_vmultisel.size(); i++)
-      m_vmultisel[i].m_selectstate = eNotSelected;
+      m_vmultisel[i].m_selectstate = SelectState::NotSelected;
 
    //remove the clone of the multi selection in the smart browser class
    //to sync the clone and the actual multi-selection 
@@ -3792,7 +3792,7 @@ void PinTable::ClearMultiSel(ISelect* newSel)
    if (newSel == nullptr)
       newSel = this;
    m_vmultisel.push_back(newSel);
-   newSel->m_selectstate = eSelected;
+   newSel->m_selectstate = SelectState::Selected;
 }
 
 bool PinTable::MultiSelIsEmpty() const
@@ -3815,7 +3815,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 
    if (index == -1) // If we aren't selected yet, do that
    {
-      _ASSERTE(psel->m_selectstate == eNotSelected);
+      _ASSERTE(psel->m_selectstate == SelectState::NotSelected);
       // If we non-shift click on an element outside the multi-select group, delete the old group
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
       if (!add || MultiSelIsEmpty())
@@ -3832,7 +3832,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
                {
                   for (int i = 0; i < col->m_visel.size(); i++)
                   {
-                     col->m_visel[i].m_selectstate = eMultiSelected;
+                     col->m_visel[i].m_selectstate = SelectState::MultiSelected;
                      // current element is already in m_vmultisel. (ClearMultiSel(psel) added it)
                      if (col->m_visel.ElementAt(i) != psel)
                         m_vmultisel.push_back(&col->m_visel[i]);
@@ -3846,20 +3846,20 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
          if (piSelect != nullptr)
-            piSelect->m_selectstate = eMultiSelected;
+            piSelect->m_selectstate = SelectState::MultiSelected;
          m_vmultisel.insert(psel, 0);
       }
 
-      psel->m_selectstate = eSelected;
+      psel->m_selectstate = SelectState::Selected;
 
       if (update)
          SetDirtyDraw();
    }
    else if (add) // Take the element off the list
    {
-      _ASSERTE(psel->m_selectstate != eNotSelected);
+      _ASSERTE(psel->m_selectstate != SelectState::NotSelected);
       m_vmultisel.erase(index);
-      psel->m_selectstate = eNotSelected;
+      psel->m_selectstate = SelectState::NotSelected;
       if (m_vmultisel.empty())
       {
          // Have to have something selected
@@ -3868,7 +3868,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       // The main element might have changed
       piSelect = m_vmultisel.ElementAt(0);
       if (piSelect != nullptr)
-         piSelect->m_selectstate = eSelected;
+         piSelect->m_selectstate = SelectState::Selected;
 
       if (update)
          SetDirtyDraw();
@@ -3879,16 +3879,16 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
       int elemIndex = -1;
       if (!GetCollectionIndex(psel, colIndex, elemIndex))
       {
-         _ASSERTE(psel->m_selectstate != eNotSelected);
+         _ASSERTE(psel->m_selectstate != SelectState::NotSelected);
 
          // Make this new selection the primary one for the group
          piSelect = m_vmultisel.ElementAt(0);
          if (piSelect != nullptr)
-            piSelect->m_selectstate = eMultiSelected;
+            piSelect->m_selectstate = SelectState::MultiSelected;
          m_vmultisel.erase(index);
          m_vmultisel.insert(psel, 0);
 
-         psel->m_selectstate = eSelected;
+         psel->m_selectstate = SelectState::Selected;
       }
       else
          ClearMultiSel(psel);
@@ -3999,7 +3999,7 @@ void PinTable::UseTool(int x, int y, int tool)
    {
       if (auto scriptable = pie->GetScriptable(); scriptable)
          GetUniqueName(type, scriptable->m_wzName);
-      pie->m_backglass = m_vpinball->m_backglassView;
+      pie->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
       AddPart(pie);
       pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
       m_vpinball->GetLayersListDialog()->Update();
@@ -4051,7 +4051,7 @@ void PinTable::OnLButtonDown(int x, int y)
 
 HRESULT PinTable::GetTypeName(BSTR *pVal) const
 {
-   const int stringid = (!m_vpinball->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
+   const int stringid = (!m_vpinball->m_desktopBackdropView) ? IDS_TABLE : IDS_TB_BACKGLASS;
    const LocalStringW lsw(stringid);
    *pVal = SysAllocStringLen(lsw.m_buffer.c_str(),static_cast<UINT>(lsw.m_buffer.length()));
    return S_OK;

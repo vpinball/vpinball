@@ -26,6 +26,8 @@ public:
    void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);
 
    // From ISelect
+   void UIRenderPass1(Sur *const psur) override { /* handled by owner */ }
+   void UIRenderPass2(Sur *const psur) override { /* handled by owner */ }
    void OnLButtonDown(int x, int y) final;
    void OnLButtonUp(int x, int y) final;
    void MoveOffset(const float dx, const float dy) final;
@@ -95,6 +97,14 @@ public:
    bool m_smooth;
    bool m_slingshot;
    bool m_autoTexture;
+   
+	bool IsUILocked() const override { return m_uiLocked; }
+   void SetUILock(bool lock) override { m_uiLocked = lock; }
+   bool IsUIVisible() const override { return m_uiVisible; }
+   void SetUIVisible(bool visible) override { m_uiVisible = visible; }
+
+   bool m_uiLocked = false; // Can not be dragged in the editor
+   bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 private:
 #if defined(_M_X64) || defined(_M_AMD64) || !defined(_MSC_VER)

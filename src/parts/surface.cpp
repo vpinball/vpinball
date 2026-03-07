@@ -231,7 +231,7 @@ void Surface::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_vpinball->m_alwaysDrawDragPoints);
 
    if (!drawDragpoints)
    {
@@ -239,7 +239,7 @@ void Surface::UIRenderPass2(Sur * const psur)
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != eNotSelected)
+         if (pdp->m_selectstate != SelectState::NotSelected)
          {
             drawDragpoints = true;
             break;
@@ -878,7 +878,7 @@ void Surface::RenderRelease()
 void Surface::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -1149,7 +1149,7 @@ void Surface::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    SavePoints(writer);
    writer.EndObject();
 }
@@ -1210,7 +1210,7 @@ void Surface::Load(IObjectReader& reader)
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          case FID(PNTS): break; // Empty tag placed before drag point data (unused)
          case FID(DPNT): LoadPointToken(reader); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

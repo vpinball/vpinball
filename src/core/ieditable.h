@@ -92,6 +92,10 @@ public:
 	HRESULT Init(const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
+	bool IsUILocked() const override { return m_uiLocked; } \
+	void SetUILock(bool lock) override { m_uiLocked = lock; } \
+	bool IsUIVisible() const override { return m_uiVisible; } \
+	void SetUIVisible(bool visible) override { m_uiVisible = visible; } \
 	virtual PinTable *GetPTable() { return m_ptable; } \
 	virtual const PinTable *GetPTable() const { return m_ptable; } \
 	virtual void Delete() {IEditable::Delete();} \
@@ -148,9 +152,9 @@ public:
    type *dst = type::COMCreate(); \
    dst->Init(0.f, 0.f, false, true); \
    dst->m_wzName = m_wzName; \
-   dst->m_isVisible = m_isVisible; \
-   dst->m_backglass = m_backglass; \
-   dst->m_locked = m_locked; \
+   dst->m_desktopBackdrop = m_desktopBackdrop; \
+   dst->m_uiLocked = m_uiLocked; \
+   dst->m_uiVisible = m_uiVisible; \
    dst->m_d = m_d;
 
 #define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, points) \
@@ -174,30 +178,33 @@ public:
       } \
    }
 
-// IEditable is the subclass for anything class which is a self-contained table element.
-// It knows how to draw itself, interact with event and properties,
-// And talk to the player
-// Example:  Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 
+// Each IEditable manage a data block named m_d. All data block derive from these BaseProperty
+// FIXME Not everything in here is used in all of the derived classes, it was made this way to simplify the Win32 UI code but this is fairly wrong and should be cleaned up
+class BaseProperty
+{
+public:
+   string m_szImage;
+   string m_szMaterial;
+   string m_szPhysicsMaterial;
+   float m_elasticity;
+   float m_friction;
+   float m_scatter;
+   float m_threshold;
+   bool m_collidable;
+   bool m_hitEvent = false;
+   bool m_overwritePhysics = true;
+   bool m_reflectionEnabled = true;
+   bool m_visible = true;
+};
+
+// IEditable is the interface for self-contained table element.
+// Example: Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 class IEditable
 {
 public:
    IEditable();
    virtual ~IEditable();
-
-   // this function draws the shape of the object with a solid fill
-   // only used in the UI/editor and not the game
-   //
-   // this is called before the grid lines are drawn on the map
-   virtual void UIRenderPass1(Sur * const psur) = 0;
-   // this function draws the shape of the object with a black outline (no solid fill)
-   // only used in the UI/editor and not the game
-   //
-   // this is called after the grid lines have been drawn on the map.
-   // draws a solid outline over the grid lines
-   virtual void UIRenderPass2(Sur * const psur) = 0;
-
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ExportMesh(class ObjLoader& loader) {}
 
@@ -207,7 +214,12 @@ public:
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
+   // Report a change that would need the Win32 UI to be redrawn
+   // FIXME move to ISelect
    virtual void SetDirtyDraw();
+
+   virtual ISelect *GetISelect() = 0;
+   virtual const ISelect *GetISelect() const = 0;
 
    virtual Hitable *GetIHitable() { return nullptr; }
    virtual const Hitable *GetIHitable() const { return nullptr; }
@@ -215,12 +227,19 @@ public:
    virtual void Save(IObjectWriter& writer, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite() { }
    virtual void Load(IObjectReader &partReader) = 0;
-   virtual ISelect *GetISelect() = 0;
-   virtual const ISelect *GetISelect() const = 0;
+   wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
+protected:
+   void LoadSharedEditableField(const int id, IObjectReader &reader);
+   void SaveSharedEditableFields(IObjectWriter &writer);
+
+public:
    virtual void SetDefaults(const bool fromMouseClick) = 0;
+
    virtual IScriptable *GetScriptable() = 0;
    virtual const IScriptable *GetScriptable() const = 0;
+
    virtual IFireEvents *GetIFireEvents() = 0;
+
    virtual ItemTypeEnum GetItemType() const = 0;
 
    // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
@@ -243,8 +262,6 @@ public:
    const wstring& GetWName() const;
    void SetName(const wstring& name);
 
-   bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
-
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; }
    string GetPathString(const bool isDirOnly) const;
@@ -260,6 +277,12 @@ public:
    HRESULT put_UserValue(VARIANT *newVal);
 
    PinTable *m_ptable = nullptr; // This may only be set by PinTable in AddPart/RemovePart (guarantee reverse reference with table's list of parts)
+
+   bool m_desktopBackdrop = false; // if true, the element is part of the desktop backdrop
+
+   bool m_uiLocked = false; // Can not be dragged in the editor
+
+   bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 private:
    VARIANT m_uservalue;

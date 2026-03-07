@@ -77,6 +77,62 @@ bool IEditable::IsChild(const PartGroup* group) const
    return parent == group;
 }
 
+void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
+{
+   switch (tag)
+   {
+   case FID(LOCK): m_uiLocked = reader.AsBool(); break;
+   case FID(LVIS): m_uiVisible = reader.AsBool(); break;
+   case FID(LAYR): // Old layer style (limited number of unnamed layers)
+   {
+      int layerIndex = reader.AsInt();
+      m_onLoadExpectedPartGroup = (layerIndex < 9 ? L"Layer_0" : L"Layer_") + std::to_wstring(layerIndex + 1);
+      break;
+   }
+   case FID(LANR): // 10.7 layers (limited number of named layers)
+   {
+      string layerName = reader.AsString();
+      std::ranges::transform(
+         layerName.begin(), layerName.end(), layerName.begin(), [](char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_'; });
+      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      break;
+   }
+   case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
+   {
+      string layerName = reader.AsString();
+      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      break;
+   }
+   default:
+   {
+      PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
+   }
+   }
+}
+
+void IEditable::SaveSharedEditableFields(IObjectWriter& writer)
+{
+   writer.WriteBool(FID(LOCK), m_uiLocked);
+   writer.WriteBool(FID(LVIS), m_uiVisible);
+   if (GetPartGroup())
+   {
+      // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
+      const PartGroup* layer = GetPartGroup();
+      while (layer->GetPartGroup() != nullptr)
+         layer = layer->GetPartGroup();
+      int index = 0;
+      for (const auto edit : GetPTable()->GetParts())
+      {
+         if (edit == layer)
+            break;
+         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
+            index++;
+      }
+      writer.WriteInt(FID(LAYR), min(index, 11));
+      writer.WriteString(FID(LANR), layer->GetName());
+      writer.WriteString(FID(GRUP), GetPartGroup()->GetName());
+   }
+}
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
@@ -125,11 +181,6 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
    STOPUNDO
 
    return hr;
-}
-
-void IEditable::RenderBlueprint(Sur *psur, const bool solid)
-{
-   UIRenderPass2(psur);
 }
 
 void IEditable::BeginUndo()

@@ -352,7 +352,7 @@ void Spinner::UpdateAnimation(const float diff_time_msec)
 void Spinner::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -472,7 +472,7 @@ void Spinner::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteWideString(FID(NAME), m_wzName);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
 
    writer.EndObject();
 }
@@ -503,7 +503,7 @@ void Spinner::Load(IObjectReader& reader)
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

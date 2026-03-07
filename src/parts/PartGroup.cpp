@@ -144,10 +144,9 @@ void PartGroup::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteVector2(FID(VCEN), m_d.m_v);
    writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   writer.WriteBool(FID(BGLS), m_backglass);
    writer.WriteUInt(FID(PMSK), static_cast<int>(m_d.m_playerModeVisibilityMask));
    writer.WriteInt(FID(SPRF), static_cast<int>(m_d.m_spaceReference));
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -164,10 +163,9 @@ void PartGroup::Load(IObjectReader& reader)
          case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
-         case FID(BGLS): m_backglass = reader.AsBool(); break;
          case FID(PMSK): m_d.m_playerModeVisibilityMask = reader.AsUInt(); break;
          case FID(SPRF): m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt()); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

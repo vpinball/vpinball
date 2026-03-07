@@ -794,7 +794,7 @@ void Plunger::UpdateAnimation(const float diff_time_msec)
 void Plunger::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -870,7 +870,7 @@ void Plunger::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(SPRG), m_d.m_springGauge);
    writer.WriteFloat(FID(SPRL), m_d.m_springLoops);
    writer.WriteFloat(FID(SPRE), m_d.m_springEndLoops);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -916,7 +916,7 @@ void Plunger::Load(IObjectReader& reader)
          case FID(SPRG): m_d.m_springGauge = reader.AsFloat(); break;
          case FID(SPRL): m_d.m_springLoops = reader.AsFloat(); break;
          case FID(SPRE): m_d.m_springEndLoops = reader.AsFloat(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

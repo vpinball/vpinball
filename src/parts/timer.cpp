@@ -149,8 +149,8 @@ void Timer::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    writer.WriteWideString(FID(NAME), m_wzName);
-   writer.WriteBool(FID(BGLS), m_backglass);
-   ISelect::SaveData(writer);
+   writer.WriteBool(FID(BGLS), m_desktopBackdrop);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -167,8 +167,8 @@ void Timer::Load(IObjectReader& reader)
          case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
-         case FID(BGLS): m_backglass = reader.AsBool(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

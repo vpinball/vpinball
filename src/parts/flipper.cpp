@@ -754,7 +754,7 @@ void Flipper::UpdateAnimation(const float diff_time_msec)
 void Flipper::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -864,7 +864,7 @@ void Flipper::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(FHGT), m_d.m_height);
    writer.WriteString(FID(IMAG), m_d.m_szImage);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -931,7 +931,7 @@ void Flipper::Load(IObjectReader& reader)
          case FID(ENBL): m_d.m_enabled = reader.AsBool(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
          case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

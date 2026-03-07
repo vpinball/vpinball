@@ -1115,7 +1115,7 @@ void WinEditor::SetEnableMenuItems()
    // Set menu item to the correct state
    const CMenu mainMenu = GetMenu();
 
-   mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
+   mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_desktopBackdropView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
    constexpr UINT grayed = MF_BYCOMMAND | MF_GRAYED, enabled = MF_BYCOMMAND | MF_ENABLED;
@@ -1970,8 +1970,8 @@ void WinEditor::CloseAllDialogs()
 
 void WinEditor::ToggleBackglassView()
 {
-   const bool show = !m_backglassView;
-   m_backglassView = show;
+   const bool show = !m_desktopBackdropView;
+   m_desktopBackdropView = show;
 
    for (const auto ptT : m_vtable)
    {
