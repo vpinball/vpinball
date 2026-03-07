@@ -381,9 +381,13 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &pvOffset) final;
 
+   // IFireEvents
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
+
    // IEditable (mostly bogus for now)
+   IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
    void UIRenderPass1(Sur *const psur) final { }
-   ItemTypeEnum GetItemType() const final { return eItemTable; }
    void Load(IObjectReader& reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
    ISelect *GetISelect() final { return (ISelect *)this; }
@@ -391,10 +395,23 @@ public:
    void SetDefaults(const bool fromMouseClick) final { }
    IScriptable *GetScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetScriptable() const final { return (const IScriptable *)this; }
-   void SetDefaultPhysics(const bool fromMouseClick) final;
+   void BeginUndo() final;
+   void EndUndo() final;
+   void Undo();
+   void Delete() final { } // Can't delete table itself
+   void Uncreate() final { }
 
+   // ISelect
+   void SetDefaultPhysics(const bool fromMouseClick) final;
+   IEditable *GetIEditable() final { return (IEditable *)this; }
+   const IEditable *GetIEditable() const final { return (const IEditable *)this; }
+
+   // FIXME both ISelect and IEditable
+   ItemTypeEnum GetItemType() const final { return eItemTable; }
    PinTable *GetPTable() final { return this; }
    const PinTable *GetPTable() const final { return this; }
+
+
    static string GetElementName(IEditable *pedit);
 
    IEditable *GetElementByName(const char *const name) const;
@@ -415,29 +432,19 @@ public:
    HRESULT Save();
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
-   HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
-   HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   static HRESULT WriteInfoValue(IStorage *pstg, const wstring& wzName, const string &szValue, HCRYPTHASH hcrypthash);
-   static HRESULT ReadInfoValue(IStorage *pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename);
    HRESULT LoadGameFromFilename(const std::filesystem::path &filename, VPXFileFeedback &feedback);
    void LoadScriptOverride(const std::filesystem::path& scriptPath);
+
+private:
+   HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
+   HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
+   static HRESULT WriteInfoValue(IStorage *pstg, const wstring &wzName, const string &szValue, HCRYPTHASH hcrypthash);
+   static HRESULT ReadInfoValue(IStorage *pstg, const wstring &wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
-   IEditable *GetIEditable() final { return (IEditable *)this; }
-   const IEditable *GetIEditable() const final { return (const IEditable *)this; }
-   void Delete() final { } // Can't delete table itself
-   void Uncreate() final { }
 
-   virtual IDispatch *GetPrimary() { return GetDispatch(); }
-   IDispatch *GetDispatch() final { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-   IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
-
-   void BeginUndo() final;
-   void EndUndo() final;
-   void Undo();
-
+public:
    void Uncreate(IEditable *pie);
    void Undelete(IEditable *pie);
 
