@@ -56,7 +56,7 @@ HRESULT Collection::InitPostLoad(const PinTable *const pt)
          {
             if (piscript->m_wzName == tmp_isel_name)
             {
-               auto iselect = piscript->GetISelect();
+               auto iselect = editable->GetISelect();
                iselect->GetIEditable()->m_vCollection.push_back(this);
                iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
                m_visel.push_back(iselect);

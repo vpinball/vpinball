@@ -466,14 +466,20 @@ void CollectionDialog::OnOK()
 
     for (size_t i = 0; i < count; i++)
     {
-        IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
-        ISelect * const pisel = piscript->GetISelect();
-        if (pisel) // Not sure how we could possibly get an iscript here that was never an iselect
-        {
-            pcol->m_visel.push_back(pisel);
-            pisel->GetIEditable()->m_vCollection.push_back(pcol);
-            pisel->GetIEditable()->m_viCollection.push_back((int)i);
-        }
+       IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
+       for (const auto &pedit : pCurCollection.ppt->m_table->GetParts())
+       {
+          if (piscript == pedit->GetScriptable())
+          {
+             if (ISelect *const pisel = pedit->GetISelect(); pisel) // Not sure how we could possibly get an iscript here that was never an iselect
+             {
+                pcol->m_visel.push_back(pisel);
+                pisel->GetIEditable()->m_vCollection.push_back(pcol);
+                pisel->GetIEditable()->m_viCollection.push_back((int)i);
+             }
+             break;
+          }
+       }
     }
 
     const size_t fireEvents = GetDlgItem(IDC_FIRE).SendMessage(BM_GETCHECK, 0, 0);

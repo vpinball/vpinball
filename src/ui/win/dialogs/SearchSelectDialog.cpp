@@ -175,9 +175,15 @@ void SearchSelectDialog::SelectElement()
            else
            {
               IScriptable * const pscript = (IScriptable*)lv.lParam;
-              ISelect *const pisel = pscript->GetISelect();
-              if (pisel)
-                 m_curTable->m_table->AddMultiSel(pisel, true, true, false);
+              for (const auto &pedit : m_curTable->m_table->GetParts())
+              {
+                 if (pscript == pedit->GetScriptable())
+                 {
+                    if (ISelect *const pisel = pedit->GetISelect(); pisel)
+                       m_curTable->m_table->AddMultiSel(pisel, true, true, false);
+                    break;
+                 }
+              }
            }
         }
     }

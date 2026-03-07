@@ -139,10 +139,6 @@ private:
       IDispatch *GetDispatch() final { return (IDispatch *)this; }
       const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
-      ISelect *GetISelect() final { return nullptr; }
-      const ISelect *GetISelect() const final { return nullptr; }
-
-      const wstring& get_Name() const final { return m_wzName; }
       STDMETHOD(get_Name)(BSTR *pVal) override
       {
          *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length()));

@@ -2822,12 +2822,9 @@ string PinTable::GetElementName(IEditable *pedit)
 
 IEditable *PinTable::GetElementByName(const char * const name) const
 {
-   for (size_t i = 0; i < m_vedit.size(); i++)
-   {
-      IEditable * const pedit = m_vedit[i];
+   for (const auto& pedit : m_vedit)
       if (name == GetElementName(pedit))
          return pedit;
-   }
    return nullptr;
 }
 
@@ -3569,9 +3566,15 @@ void PinTable::ExportBackdropPOV() const
 
 void PinTable::SelectItem(IScriptable *piscript)
 {
-   ISelect * const pisel = piscript->GetISelect();
-   if (pisel)
-      AddMultiSel(pisel, false, true, false);
+   for (const auto &pedit : m_vedit)
+   {
+      if (piscript == pedit->GetScriptable())
+      {
+         if (ISelect *const pisel = pedit->GetISelect(); pisel)
+            AddMultiSel(pisel, false, true, false);
+         break;
+      }
+   }
 }
 
 void PinTable::DoCodeViewCommand(int command)
@@ -4061,11 +4064,6 @@ STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 {
    *pVal = MakeWideBSTR(m_title);
    return S_OK;
-}
-
-const wstring& PinTable::get_Name() const
-{
-   return m_wzName;
 }
 
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)

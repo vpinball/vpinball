@@ -52,12 +52,7 @@ public:
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
-	virtual const wstring& get_Name() const { return m_wzName; } \
-	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
-	{ \
-		*pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); \
-		return S_OK; \
-	} \
+	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) { *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); return S_OK; } \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(newVal); return S_OK; } \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_d.m_tdr.m_TimerInterval);} \
