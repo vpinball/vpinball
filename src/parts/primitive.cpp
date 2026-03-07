@@ -1661,7 +1661,9 @@ void Primitive::Load(IObjectReader& reader)
       {
          switch (tag)
          {
-         case FID(PIID): reader.AsInt(); break;
+         case FID(PIID): reader.AsInt(); break; // Deprecated (unique part id, now the name is guaranteed to be unique)
+         case FID(BMIN): reader.AsVector3(); break; // Deprecated (bounding box min)
+         case FID(BMAX): reader.AsVector3(); break; // Deprecated (bounding box max)
          case FID(VPOS): m_d.m_vPosition = reader.AsVector4().xyz(); break;
          case FID(VSIZ): m_d.m_vSize = reader.AsVector4().xyz(); break;
          case FID(RTV0): m_d.m_aRotAndTra[0] = reader.AsFloat(); break;

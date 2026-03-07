@@ -38,15 +38,15 @@ void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 
 int BiffReader::GetIntNoHash()
 {
-   m_bytesinrecordremaining -= sizeof(int);
+   m_bytesinrecordremaining -= sizeof(int32_t);
 
    ULONG read = 0;
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
-   int value;
-   m_hasError |= FAILED(m_pistream->Read(&value, sizeof(int), &read));
-   m_hasError |= read != sizeof(int);
+   int32_t value;
+   m_hasError |= FAILED(m_pistream->Read(&value, sizeof(int32_t), &read));
+   m_hasError |= read != sizeof(int32_t);
    if (iow)
       mtx.unlock();
    return value;
@@ -54,25 +54,25 @@ int BiffReader::GetIntNoHash()
 
 bool BiffReader::AsBool()
 {
-   m_bytesinrecordremaining -= sizeof(int);
-   int value;
-   ReadBytes(&value, sizeof(int));
+   m_bytesinrecordremaining -= sizeof(int32_t);
+   int32_t value;
+   ReadBytes(&value, sizeof(int32_t));
    return !!value;
 }
 
 int BiffReader::AsInt()
 {
-   m_bytesinrecordremaining -= sizeof(int);
-   int value;
-   ReadBytes(&value, sizeof(int));
+   m_bytesinrecordremaining -= sizeof(int32_t);
+   int32_t value;
+   ReadBytes(&value, sizeof(int32_t));
    return value;
 }
 
 unsigned int BiffReader::AsUInt()
 {
-   m_bytesinrecordremaining -= sizeof(unsigned int);
-   unsigned int value;
-   ReadBytes(&value, sizeof(unsigned int));
+   m_bytesinrecordremaining -= sizeof(uint32_t);
+   uint32_t value;
+   ReadBytes(&value, sizeof(uint32_t));
    return value;
 }
 
@@ -86,11 +86,11 @@ float BiffReader::AsFloat()
 
 string BiffReader::AsString()
 {
-   int len;
-   ReadBytes(&len, sizeof(int));
+   int32_t len;
+   ReadBytes(&len, sizeof(int32_t));
    if (m_hasError)
       return string();
-   m_bytesinrecordremaining -= len + (int)sizeof(int);
+   m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
    string value(len, '\0');
    ReadBytes(value.data(), len);
    return value;
@@ -99,11 +99,11 @@ string BiffReader::AsString()
 wstring BiffReader::AsWideString()
 {
    // TODO it seems there used to be a bug in collection that would save string twice as long as they should => do we need special processing (truncation ?)
-   int len;
-   ReadBytes(&len, sizeof(int));
+   int32_t len;
+   ReadBytes(&len, sizeof(int32_t));
    if (m_hasError)
       return wstring();
-   m_bytesinrecordremaining -= len + (int)sizeof(int);
+   m_bytesinrecordremaining -= len + (int)sizeof(int32_t);
    const int numChars = len / 2;
 #if (WCHAR_T_SIZE == 2) // Windows
    wstring value(numChars, L'\0');
@@ -122,7 +122,7 @@ Vertex2D BiffReader::AsVector2()
 {
    Vertex2D value;
    static_assert(sizeof(Vertex2D) == 2 * sizeof(float)); // fields need to be contiguous
-   AsRaw(&value.x, sizeof(Vertex2D));
+   AsRaw(&value.x, 2 * sizeof(float));
    return value;
 }
 
@@ -130,7 +130,7 @@ vec3 BiffReader::AsVector3()
 {
    static_assert(sizeof(vec3) == 3 * sizeof(float)); // fields need to be contiguous
    vec3 value;
-   AsRaw(&value.x, sizeof(vec3));
+   AsRaw(&value.x, 3 * sizeof(float));
    return value;
 }
 
@@ -138,19 +138,21 @@ vec4 BiffReader::AsVector4()
 {
    static_assert(sizeof(vec4) == 4 * sizeof(float)); // fields need to be contiguous
    vec4 value;
-   AsRaw(&value.x, sizeof(vec4));
+   AsRaw(&value.x, 4 * sizeof(float));
    return value;
 }
 
 string BiffReader::AsScript(bool isScriptProtected)
 {
+   static_assert(sizeof(char) == 1);
    string script;
    ULONG read = 0;
-   int cchar;
-   m_hasError |= FAILED(m_pistream->Read(&cchar, sizeof(int), &read));
+   int32_t cchar;
+   m_hasError |= FAILED(m_pistream->Read(&cchar, sizeof(int32_t), &read));
 
    char *szText = new char[cchar + 1];
-   m_hasError |= FAILED(m_pistream->Read(szText, cchar * (int)sizeof(char), &read));
+   m_hasError |= FAILED(m_pistream->Read(szText, cchar, &read));
+   m_hasError |= read != cchar;
 
 #ifndef __STANDALONE__
    if (m_hcrypthash)
@@ -160,7 +162,7 @@ string BiffReader::AsScript(bool isScriptProtected)
    if (isScriptProtected && (m_hcryptkey != 0))
    {
       // get the size of the data to decrypt
-      DWORD cryptlen = cchar * (int)sizeof(char);
+      DWORD cryptlen = cchar;
 
       // decrypt the script
       CryptDecrypt(m_hcryptkey, // key to use
@@ -173,7 +175,7 @@ string BiffReader::AsScript(bool isScriptProtected)
       GetLastError(); // purge any errors
 
       // update the size of the buffer
-      cchar = cryptlen / (DWORD)sizeof(char);
+      cchar = cryptlen;
    }
 #endif
 
@@ -241,6 +243,8 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
          assert(m_bytesinrecordremaining >= 0);
          if (m_bytesinrecordremaining > 0)
          {
+            PLOGI << "While reading tag " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF) << " " << m_bytesinrecordremaining
+                  << " were not read and therefore skipped";
             vector<uint8_t> tmp(m_bytesinrecordremaining);
             ReadBytes(tmp.data(), m_bytesinrecordremaining);
             if (m_hasError)

@@ -1771,16 +1771,37 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
             for (auto part : parts)
             {
-               if (wstring layerName = part->GetISelect()->m_onLoadExpectedPartGroup; !layerName.empty())
+               if (const wstring requestedLayerName = part->GetISelect()->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
                {
+                  wstring layerName = requestedLayerName;
                   auto partGroupF = std::ranges::find_if(m_vedit,
                      [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == layerName); });
                   // Part group was not found and the name is in use: find a suitable one
                   while (partGroupF == m_vedit.end() && !IsNameUnique(layerName))
                   {
                      const wstring oldName = layerName;
-                     layerName = L"Layer_"s + layerName;
-                     PLOGE << "Non unique layer name encountered: " << MakeString(oldName) << ", replaced by " << MakeString(layerName);
+                     size_t lastNonDigit = layerName.length();
+                     while (lastNonDigit > 0 && iswdigit(layerName[lastNonDigit - 1]))
+                        lastNonDigit--;
+                     if (lastNonDigit < layerName.length())
+                     {
+                        // If it ends by a number, then inc the number
+                        std::wstring numberStr = layerName.substr(lastNonDigit);
+                        unsigned long number = std::stoul(numberStr);
+                        number++;
+                        std::wstring base = layerName.substr(0, lastNonDigit);
+                        layerName = base + std::to_wstring(number);
+                     }
+                     else if (oldName.ends_with(L"_Layer"s))
+                     {
+                        // If renaming with layer failed, add a number
+                        layerName = layerName + L"_001";
+                     }
+                     else
+                     {
+                        // Postpend "layer" to keep alphabetic order of layer
+                        layerName = layerName + L"_Layer";
+                     }
                      partGroupF = std::ranges::find_if(m_vedit,
                         [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == layerName); });
                   }
@@ -1791,6 +1812,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   }
                   else if (PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0)); newGroup)
                   {
+                     if (requestedLayerName != layerName)
+                     {
+                        PLOGI << "Layer name '" << MakeString(requestedLayerName) << "' was replaced by '" << MakeString(layerName)
+                              << "' as this name is already used by another table element";
+                     }
                      newGroup->m_wzName = layerName;
                      AddPart(newGroup);
                      part->SetPartGroup(newGroup);
@@ -2280,69 +2306,40 @@ void PinTable::Load(IObjectReader& reader)
          case FID(AOSC): m_AOScale = reader.AsFloat(); break;
          case FID(SSSC): m_SSRScale = reader.AsFloat(); break;
          case FID(CLBH): m_groundToLockbarHeight = reader.AsFloat(); break;
-         // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-         //case FID(BREF): m_useReflectionForBalls = reader.AsInt(); break;
          case FID(PLST):
-         {
-            int tmp;
-            tmp = reader.AsInt();
-            m_playfieldReflectionStrength = dequantizeUnsigned<8>(tmp);
+            m_playfieldReflectionStrength = dequantizeUnsigned<8>(reader.AsInt());
             break;
-         }
          case FID(BTRA):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               int useTrailForBalls;
-               useTrailForBalls = reader.AsInt();
-               if (useTrailForBalls != -1)
-                  m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
-            }
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const int useTrailForBalls = reader.AsInt(); useTrailForBalls != -1 && !hasIni)
+               m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
             break;
          case FID(BTST):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               int ballTrailStrength;
-               ballTrailStrength = reader.AsInt();
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const int ballTrailStrength = reader.AsInt(); !hasIni) 
                m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
-            }
             break;
          case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
          case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
          case FID(UAAL):
-            if (hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               int useAA;
-               useAA = reader.AsInt();
-               if (useAA != -1)
-                  m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
-            }
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const int useAA = reader.AsInt(); useAA != -1 && !hasIni)
+               m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
             break;
          case FID(UAOC):
-         {
             // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-            int useAO;
-            useAO = reader.AsInt();
-            m_enableAO = useAO != 0;
-         }
+            m_enableAO = reader.AsInt() != 0;
          break;
          case FID(USSR):
-         {
             // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-            int useSSR;
-            useSSR = reader.AsInt();
-            m_enableSSR = useSSR != 0;
-         }
+            m_enableSSR = reader.AsInt() != 0;
          break;
          case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
          case FID(EXPO): m_exposure = reader.AsFloat(); break;
          case FID(UFXA):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               int fxaa;
-               fxaa = reader.AsInt();
-               if (fxaa != -1)
-                  m_settings.SetPlayer_FXAA(fxaa, false);
-            }
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const int fxaa = reader.AsInt(); fxaa != -1 && !hasIni)
+               m_settings.SetPlayer_FXAA(fxaa, false);
             break;
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
@@ -2372,69 +2369,53 @@ void PinTable::Load(IObjectReader& reader)
          case FID(BDMO): m_BallDecalMode = reader.AsBool(); break;
          case FID(MVOL): m_TableMusicVolume = reader.AsFloat(); break;
          case FID(AVSY):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const int tableAdaptiveVSync = reader.AsInt(); tableAdaptiveVSync != -1 && !hasIni)
             {
-               int tableAdaptiveVSync;
-               tableAdaptiveVSync = reader.AsInt();
-               if (tableAdaptiveVSync != -1)
+               switch (tableAdaptiveVSync)
                {
-                  switch (tableAdaptiveVSync)
-                  {
-                  case 0:
-                     m_settings.SetPlayer_MaxFramerate(0, true);
-                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
-                     break;
-                  case 1:
-                     m_settings.SetPlayer_MaxFramerate(-1, true);
-                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
-                     break;
-                  case 2:
-                     m_settings.SetPlayer_MaxFramerate(-1, true);
-                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-                     break;
-                  default:
-                     m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
-                     m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-                     break;
-                  }
+               case 0:
+                  m_settings.SetPlayer_MaxFramerate(0, true);
+                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
+                  break;
+               case 1:
+                  m_settings.SetPlayer_MaxFramerate(-1, true);
+                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
+                  break;
+               case 2:
+                  m_settings.SetPlayer_MaxFramerate(-1, true);
+                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
+                  break;
+               default:
+                  m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
+                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
+                  break;
                }
             }
             break;
          case FID(OGAC):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               bool overwriteGlobalDetailLevel;
-               overwriteGlobalDetailLevel = reader.AsBool();
-               if (!overwriteGlobalDetailLevel)
-                  m_settings.ResetPlayer_AlphaRampAccuracy();
-            }
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            if (const bool overwriteGlobalDetailLevel = reader.AsBool(); !overwriteGlobalDetailLevel && !hasIni)
+               m_settings.ResetPlayer_AlphaRampAccuracy();
             break;
          case FID(OGDN):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               // Global Day/Night was fairly convoluted:
-               // - table would define the value
-               // - user could select in video options to override this value by an automatic value
-               // - table could then define to reject this user settings
-               // - user could define in commandline to finally override the value
-               // Now the logic is the same as all other settings:
-               // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
-               bool overwriteGlobalDayNight;
-               overwriteGlobalDayNight = reader.AsBool();
-               if (overwriteGlobalDayNight)
-                  m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
-            }
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            // Global Day/Night was fairly convoluted:
+            // - table would define the value
+            // - user could select in video options to override this value by an automatic value
+            // - table could then define to reject this user settings
+            // - user could define in commandline to finally override the value
+            // Now the logic is the same as all other settings:
+            // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
+            if (const bool overwriteGlobalDayNight = reader.AsBool(); overwriteGlobalDayNight && !hasIni)
+               m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
             break;
          case FID(GDAC): m_winEditorGrid = reader.AsBool(); break;
-         // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
-         // case FID(REOP): m_reflectElementsOnPlayfield = reader.AsBool(); break;
          case FID(ARAC):
-            if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            {
-               int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
-               userDetailLevel = reader.AsInt();
+            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
+            if (const int userDetailLevel = reader.AsInt(); !hasIni) 
                m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
-            }
             break;
          case FID(MASI): m_numMaterials = reader.AsInt(); break;
          case FID(MATE):
@@ -2532,6 +2513,17 @@ void PinTable::Load(IObjectReader& reader)
             break;
          }
          case FID(TLCK): m_tablelocked = reader.AsInt(); break;
+
+         // Deprecated fields (kept for reference and to avoid reusing the same FID in future evolutions)
+        /* case FID(REOP): reader.AsBool(); break; // Reflection on playfield (RenderProbes since 10.8)
+         case FID(BREF): reader.AsInt(); break; // Enable ball reflection
+         case FID(OGST): reader.AsBool(); break; // Overwrite global stereo
+         case FID(MAXS): reader.AsFloat(); break; // Fake stereo max eye separation
+         case FID(ZPD): reader.AsFloat(); break; // Fake stereo convergence distance
+         case FID(STO): reader.AsFloat(); break; // Fake stereo 3D offset
+         case FID(MPGC): reader.AsFloat(); break; // Plunger Normalize
+         case FID(MPDF): reader.AsFloat(); break; // Plunger Filter
+         case FID(TBLH): reader.AsFloat(); break; // Table Height*/
          }
          return true;
       });
