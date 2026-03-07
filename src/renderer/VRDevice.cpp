@@ -100,6 +100,9 @@ extern marker_series series;
 
    #ifdef XR_USE_GRAPHICS_API_VULKAN
    #include <vulkan/vulkan.h>
+   #ifdef XR_USE_PLATFORM_ANDROID
+   #include <vulkan/vulkan_android.h>
+   #endif  // XR_USE_PLATFORM_ANDROID
    #endif  // XR_USE_GRAPHICS_API_VULKAN
 
    #ifdef XR_USE_PLATFORM_WAYLAND
@@ -762,9 +765,9 @@ VRDevice::VRDevice(const Settings& settings)
 
       // Check the requested API layers against the ones from the OpenXR. If found add it to the Active API Layers.
       m_activeAPILayers.clear();
-      for (auto& requestLayer : m_apiLayers)
+      for (const auto& requestLayer : m_apiLayers)
       {
-         for (auto& layerProperty : apiLayerProperties)
+         for (const auto& layerProperty : apiLayerProperties)
          {
             if (requestLayer == layerProperty.layerName)
             {
@@ -800,8 +803,8 @@ VRDevice::VRDevice(const Settings& settings)
          }
          return false;
       };
-      // FIXME VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
-      // For now, renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
+      // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
+      // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
          const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
          m_rendererType = gfxBackend == "Direct3D11"s ? bgfx::RendererType::Enum::Direct3D11
@@ -819,13 +822,13 @@ VRDevice::VRDevice(const Settings& settings)
          case bgfx::RendererType::Enum::Vulkan:
             // According to https://github.khronos.org/OpenXR-Inventory/runtime_extension_support.html all runtimes that support XR_KHR_VULKAN_ENABLE_EXTENSION_NAME do support XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME
             hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME);
-            assert(hasGraphicBackend);
             break;
       #endif
       #ifdef XR_USE_GRAPHICS_API_D3D11
-         case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+         case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); break;
       #endif
       }
+      assert(hasGraphicBackend);
       if (!hasGraphicBackend)
          return;
 

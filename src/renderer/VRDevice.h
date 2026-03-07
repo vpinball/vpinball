@@ -167,7 +167,7 @@ private:
    static XrBool32 OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageType, const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
    bool m_visibilityMaskExtensionSupported = false;
-   PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
+   PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR = nullptr;
    bool m_visibilityMaskDirty = true;
    std::shared_ptr<MeshBuffer> m_visibilityMask;
 
