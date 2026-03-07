@@ -140,10 +140,9 @@ static inline const char* GetXRErrorString(XrInstance xrInstance, XrResult resul
 
 #define OPENXR_CHECK(x, y)                                                                                                                                                                   \
    {                                                                                                                                                                                         \
-      const XrResult res = (x);                                                                                                                                                           \
-      if (!XR_SUCCEEDED(res) && g_pplayer->m_vrDevice)                                                                                                                                    \
+      if (const XrResult res = (x); !XR_SUCCEEDED(res))                                                                                                                                      \
       {                                                                                                                                                                                      \
-         PLOGE << "ERROR: OPENXR: " << int(res) << " (" << (m_xrInstance ? GetXRErrorString(m_xrInstance, res) : "") << ") " << (y);        \
+         PLOGE << "ERROR: OPENXR: " << int(res) << " (" << (m_xrInstance ? GetXRErrorString(m_xrInstance, res) : "") << ") " << (y);                                                         \
       }                                                                                                                                                                                      \
    }
 

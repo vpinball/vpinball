@@ -599,6 +599,8 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
 
 void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t timestampNs, bool isPressed)
 {
+   if (g_pplayer->IsVR())
+      return;
    POINT point;
    point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * relativeX);
    point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * relativeY);
@@ -1176,6 +1178,7 @@ LRESULT CALLBACK InputManager::LowLevelKeyboardProc(int nCode, WPARAM wParam, LP
       && (wParam == WM_KEYDOWN || wParam == WM_KEYUP) //
       && (p->vkCode == VK_LWIN || p->vkCode == VK_RWIN) //
       && g_pplayer //
+      && !g_pplayer->IsVR() // Not yet implemented in VR
       && g_pplayer->m_playfieldWnd->IsFocused())
    {
       // Block further processing and directly send event to SDL for internal processing

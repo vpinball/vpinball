@@ -563,12 +563,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    case bgfx::TextureFormat::RGB8: back_buffer_format = colorFormat::RGB8; break;
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
-   assert(rd->m_outputWnd.size() == 1);
-   if (g_pplayer->m_vrDevice)
+   if (g_pplayer->IsVR())
    {
-      rd->m_outputWnd.push_back(rd->m_outputWnd[0]); // OS window is the preview window (first window is supposed to be main rendered window, as it is directly accessed by other objects, expecting a single render window)
-      rd->m_outputWnd[1]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, initReq.resolution.width, initReq.resolution.height, back_buffer_format), isWcg);
-      rd->m_outputWnd[0] = new VPX::Window(g_pplayer->m_vrDevice->GetEyeWidth(), g_pplayer->m_vrDevice->GetEyeHeight());
       rd->m_framePending = true; // Delay first frame preparation
    }
    else
@@ -668,9 +664,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          });
       }
       g_pplayer->m_vrDevice->ReleaseSession();
-      delete rd->m_outputWnd[0];
-      rd->m_outputWnd[0] = rd->m_outputWnd[1];
-      rd->m_outputWnd.pop_back();
    }
    else
    #endif
@@ -796,8 +789,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    
    // Wait until main thread has released all native resources
    rd->m_frameReadySem.wait();
-   delete rd->m_outputWnd[0]->GetBackBuffer();
-   rd->m_outputWnd[0]->SetBackBuffer(nullptr);
    bgfx::shutdown();
 }
 
@@ -829,7 +820,18 @@ RenderDevice::RenderDevice(
    , m_bgfxCallback(*this)
    #endif
 {
+   // Main render target (playfield window or VR target)
    m_outputWnd.push_back(wnd);
+
+   // Create preview in the render device as it holds the desktop swapchain (not really clean and should be refactored for all windows to be added/removed by the client)
+   if (isVR && !g_isAndroid)
+   {
+      VPX::Window* previewWnd = new VPX::Window("Visual Pinball VR Preview"s, g_pplayer->m_ptable->m_settings, VPXWindowId::VPXWINDOW_VRPreview);
+      previewWnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8), false);
+      previewWnd->Show();
+      previewWnd->RaiseAndFocus();
+      m_outputWnd.push_back(previewWnd);
+   }
 
    assert(!isVR || m_nEyes == 2);
 
@@ -1479,6 +1481,11 @@ RenderDevice::~RenderDevice()
       wnd->SetBackBuffer(nullptr);
    }
 
+   // Delete preview window we eventually created in constructor
+   if (g_pplayer->IsVR() && m_outputWnd.size() > 1)
+      delete m_outputWnd[1];
+
+
 #if defined(ENABLE_BGFX)
    delete m_pVertexTexelDeclaration;
    delete m_pVertexNormalTexelDeclaration;
@@ -1621,7 +1628,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #elif BX_PLATFORM_STEAMLINK
    nwh = wmInfo.info.vivante.window;
 #else
-   return nullptr;
+   return;
 #endif // BX_PLATFORM_
    bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), fbFmt);
    m_outputWnd.push_back(wnd);

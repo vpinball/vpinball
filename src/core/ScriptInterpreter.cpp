@@ -583,7 +583,7 @@ bool ScriptInterpreter::IsUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) con
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
    HWND parent = nullptr;
-   if (parent == nullptr && g_pplayer)
+   if (parent == nullptr && g_pplayer && !g_pplayer->IsVR())
       parent = g_pplayer->m_playfieldWnd->GetNativeHWND();
    if (parent == nullptr && g_pvp)
       parent = g_pvp->GetHwnd();
