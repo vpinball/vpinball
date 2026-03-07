@@ -281,7 +281,7 @@ class LocalStringW final
 public:
    LocalStringW(const int resid);
 
-   WCHAR m_szbuffer[256]; // max size would be 4096
+   wstring m_buffer;
 };
 
 #ifndef M_PI
@@ -798,6 +798,12 @@ inline bool StrCompareNoCase(const string& strA, const char* const strB)
 CONSTEXPR inline string lowerCase(string input)
 {
    StrToLower(input);
+   return input;
+}
+
+CONSTEXPR inline wstring lowerCase(wstring input)
+{
+   std::ranges::transform(input.begin(), input.end(), input.begin(), [](wchar_t c) -> wchar_t { return (c >= L'A' && c <= L'Z') ? (c ^ 32) : c; });
    return input;
 }
 

@@ -124,6 +124,7 @@ LocalString::LocalString(const int resid)
 #ifndef __STANDALONE__
    if (resid > 0)
    {
+      // Note that with the char version of LoadString one cannot get a pointer to the internal buffer directly
       /*const int cchar =*/LoadString(g_app->GetInstanceHandle(), resid, m_szbuffer, sizeof(m_szbuffer));
       m_szbuffer[std::size(m_szbuffer)-1] = '\0'; // in case of truncation
    }
@@ -158,39 +159,40 @@ LocalString::LocalString(const int resid)
 
 LocalStringW::LocalStringW(const int resid)
 {
-   m_szbuffer[0] = L'\0';
 #ifndef __STANDALONE__
    if (resid > 0)
    {
-      LoadStringW(g_app->GetInstanceHandle(), resid, m_szbuffer, static_cast<int>(std::size(m_szbuffer)));
-      m_szbuffer[std::size(m_szbuffer)-1] = L'\0'; // in case of truncation
+      LPWSTR strPtr = nullptr;
+      const int len = LoadStringW(g_app->GetInstanceHandle(), resid, reinterpret_cast<LPWSTR>(&strPtr), 0);
+      if (len > 0 && strPtr)
+         m_buffer = wstring(strPtr, len);
    }
 #else
-   static const ankerl::unordered_dense::map<int, const WCHAR*> ids_map = {
-     { IDS_SCRIPT, L"Script" },
-     { IDS_TB_BUMPER, L"Bumper" },
-     { IDS_TB_DECAL, L"Decal" },
-     { IDS_TB_DISPREEL, L"EMReel" },
-     { IDS_TB_FLASHER, L"Flasher" },
-     { IDS_TB_FLIPPER, L"Flipper" },
-     { IDS_TB_GATE, L"Gate" },
-     { IDS_TB_KICKER, L"Kicker" },
-     { IDS_TB_LIGHT, L"Light" },
-     { IDS_TB_LIGHTSEQ, L"LightSeq" },
-     { IDS_TB_PLUNGER, L"Plunger" },
-     { IDS_TB_PRIMITIVE, L"Primitive" },
-     { IDS_TB_WALL, L"Wall" },
-     { IDS_TB_RAMP, L"Ramp" },
-     { IDS_TB_RUBBER, L"Rubber" },
-     { IDS_TB_SPINNER, L"Spinner" },
-     { IDS_TB_TEXTBOX, L"TextBox" },
-     { IDS_TB_TIMER, L"Timer" },
-     { IDS_TB_TRIGGER, L"Trigger" },
-     { IDS_TB_TARGET, L"Target" }
+   static const ankerl::unordered_dense::map<int, const wstring> ids_map = {
+     { IDS_SCRIPT, L"Script"s },
+     { IDS_TB_BUMPER, L"Bumper"s },
+     { IDS_TB_DECAL, L"Decal"s },
+     { IDS_TB_DISPREEL, L"EMReel"s },
+     { IDS_TB_FLASHER, L"Flasher"s },
+     { IDS_TB_FLIPPER, L"Flipper"s },
+     { IDS_TB_GATE, L"Gate"s },
+     { IDS_TB_KICKER, L"Kicker"s },
+     { IDS_TB_LIGHT, L"Light"s },
+     { IDS_TB_LIGHTSEQ, L"LightSeq"s },
+     { IDS_TB_PLUNGER, L"Plunger"s },
+     { IDS_TB_PRIMITIVE, L"Primitive"s },
+     { IDS_TB_WALL, L"Wall"s },
+     { IDS_TB_RAMP, L"Ramp"s },
+     { IDS_TB_RUBBER, L"Rubber"s },
+     { IDS_TB_SPINNER, L"Spinner"s },
+     { IDS_TB_TEXTBOX, L"TextBox"s },
+     { IDS_TB_TIMER, L"Timer"s },
+     { IDS_TB_TRIGGER, L"Trigger"s },
+     { IDS_TB_TARGET, L"Target"s }
    };
-   const ankerl::unordered_dense::map<int, const WCHAR*>::const_iterator it = ids_map.find(resid);
+   const ankerl::unordered_dense::map<int, const wstring>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-      wcsncpy_s(m_szbuffer, std::size(m_szbuffer), it->second);
+      m_buffer = it->second);
 #endif
 }
 
@@ -849,9 +851,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
    IUnknown** ppObj = (IUnknown**)&obj;
    *ppObj = NULL;
 
-   const char* const szT = MakeChar(progid);
-   PLOGW << "Creating an object of type \"" << szT << "\" is not supported";
-   delete[] szT;
+   PLOGW << "Creating an object of type \"" << MakeString(progid) << "\" is not supported";
 
    return CLASS_E_CLASSNOTAVAILABLE;
 }

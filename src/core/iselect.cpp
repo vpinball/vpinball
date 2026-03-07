@@ -205,15 +205,15 @@ wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }
 
-   WCHAR buf[256]; //!!
 #ifndef __STANDALONE__
-   buf[0] = L'\0';
-   /*const int len =*/LoadStringW(g_app->GetInstanceHandle(), strID, buf, std::size(buf));
-   buf[std::size(buf)-1] = L'\0'; // in case of truncation
- #else
-   wcsncpy_s(buf, std::size(buf), LocalStringW(strID).m_szbuffer);
+   LPWSTR strPtr = nullptr;
+   const int len = LoadStringW(g_app->GetInstanceHandle(), strID, reinterpret_cast<LPWSTR>(&strPtr), 0);
+   if (len > 0 && strPtr)
+      return wstring(strPtr, len);
+   return wstring();
+#else
+   return LocalStringW(strID).m_buffer;
 #endif
-   return buf;
 }
 
 bool ISelect::LoadToken(const int tag, IObjectReader& reader)

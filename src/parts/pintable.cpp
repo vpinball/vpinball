@@ -1041,7 +1041,14 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const st
 
    BiffWriter writer(pstm, hcrypthash);
    const wstring wzT = MakeWString(szValue);
+
+#if (WCHAR_T_SIZE == 4) // Linux, macOS
+   const std::u16string wzT_utf16 = utf32_to_utf16(wzT);
+   writer.WriteBytes(wzT_utf16.c_str(), static_cast<ULONG>(wzT_utf16.length() * 2));
+#else // Windows
    writer.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)));
+#endif
+
    pstm->Release();
    pstm = nullptr;
    return S_OK;
@@ -1132,22 +1139,22 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &o
 #else
       const int len = ss.cbSize.LowPart / 2;
 #endif
-      WCHAR * const wzT = new WCHAR[len + 1];
-      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
-
       BiffReader br(pstm, 0, hcrypthash, NULL);
 #ifndef __STANDALONE__
+      WCHAR *const wzT = new WCHAR[len + 1];
+      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
       br.ReadBytes(wzT, ss.cbSize.LowPart);
-#else
-      char* ptr = (char*)wzT;
-      for (int index = 0; index < len; index++) {
-         br.ReadBytes(ptr, 2);
-         ptr += sizeof(WCHAR);
-      }
-#endif
       wzT[len] = L'\0';
       output = MakeString(wzT);
       delete[] wzT;
+#else
+      char16_t *const wzT_u16 = new char16_t[len + 1];
+      memset(wzT_u16, 0, sizeof(char16_t) * (len + 1));
+      br.ReadBytes(wzT_u16, ss.cbSize.LowPart);
+      wzT_u16[len] = u'\0';
+      output = MakeString(utf16_to_utf32(wzT_u16));
+      delete[] wzT_u16;
+#endif
 
       pstm->Release();
    }
@@ -1962,22 +1969,23 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                {
                   if (editable->GetItemType() != eItemPartGroup)
                      return;
-                  const string name(editable->GetName());
-                  if (!name.starts_with("Layer_"))
+                  const wstring& name = editable->GetWName();
+                  if (!name.starts_with(L"Layer_"))
                      return;
-                  const string shortName = name.substr(6);
-                  const string shortNameLCase = lowerCase(shortName);
-                  auto v = std::ranges::find_if(m_vedit, [&shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
+                  const wstring shortName = name.substr(6);
+                  const wstring shortNameLCase = lowerCase(shortName);
+                  const string shortNameLCaseS = MakeString(shortNameLCase);
+                  auto v = std::ranges::find_if(m_vedit, [&shortNameLCase](const IEditable *const e) { return lowerCase(e->GetWName()) == shortNameLCase; });
                   if (v != m_vedit.end())
                      return; // Conflict with another part name
-                  if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortNameLCase) != std::string::npos)
+                  if ((shortName.find_first_not_of(L"0123456789") != std::string::npos) && script.find(shortNameLCaseS) != std::string::npos) //!!
                      return; // (Potential) conflict with a script variable
                   for (int i = 0; i < m_vcollection.size(); i++)
                   {
-                     if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
+                     if (lowerCase(m_vcollection.ElementAt(i)->m_wzName) == shortNameLCase)
                         return; // Conflict with a collection name
                   }
-                  RenamePart(editable, MakeWString(shortName));
+                  RenamePart(editable, shortName);
                });
          }
          
@@ -2634,7 +2642,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
    CComObject<Collection>::CreateInstance(&pcol);
    pcol->AddRef();
 
-   pcol->m_wzName = GetUniqueName(LocalStringW(IDS_COLLECTION).m_szbuffer);
+   pcol->m_wzName = GetUniqueName(LocalStringW(IDS_COLLECTION).m_buffer);
 
    if (fromSelection && !MultiSelIsEmpty())
    {
@@ -4044,7 +4052,8 @@ void PinTable::OnLButtonDown(int x, int y)
 HRESULT PinTable::GetTypeName(BSTR *pVal) const
 {
    const int stringid = (!m_vpinball->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
-   *pVal = SysAllocString(LocalStringW(stringid).m_szbuffer);
+   const LocalStringW lsw(stringid);
+   *pVal = SysAllocStringLen(lsw.m_buffer.c_str(),static_cast<UINT>(lsw.m_buffer.length()));
    return S_OK;
 }
 
@@ -4860,12 +4869,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
          const size_t len = m_vcollection[(int)ivar].m_wzName.length();
-         rgstr[ivar + 1] = (WCHAR *)CoTaskMemAlloc((len + 1)*sizeof(WCHAR));
+         rgstr[ivar + 1] = (WCHAR *)CoTaskMemAlloc((len + 1) * sizeof(WCHAR));
          if (rgstr[ivar + 1] == nullptr)
             ShowError("DISPID_Collection alloc failed (1)");
          else
          {
-            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName.c_str(), len*sizeof(WCHAR));
+            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName.c_str(), len * sizeof(WCHAR));
             rgstr[ivar + 1][len] = L'\0';
          }
          rgdw[ivar + 1] = (uint32_t)ivar;
@@ -5050,7 +5059,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       else
       {
          const size_t len = m_vcollection[(int)dwCookie].m_wzName.length();
-         wzDst = (WCHAR *)malloc((len + 1)*sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc((len+1) * sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Collection alloc failed (2)");
          else
@@ -5088,7 +5097,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
             ShowError("DISPID_Surface alloc failed (2)");
          else
          {
-            memcpy(wzDst, sname.c_str(), len*sizeof(WCHAR));
+            memcpy(wzDst, sname.c_str(), len * sizeof(WCHAR));
             wzDst[len] = L'\0';
          }
       }

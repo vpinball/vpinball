@@ -1059,13 +1059,10 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    // the actual processing is done in ISelect::DoCommand()
    for (int i = maxItems; i >= 0; i--)
    {
-      char *const szT = MakeChar(m_table->m_vcollection[i].get_Name().c_str());
-
       UINT flags = MF_POPUP | MF_UNCHECKED;
       if ((maxItems - i) % 32 == 0) // add new column each 32 entries
          flags |= MF_MENUBREAK;
-      colSubMenu.AppendMenu(flags, 0x40000 + i, szT);
-      delete[] szT;
+      colSubMenu.AppendMenu(flags, 0x40000 + i, MakeString(m_table->m_vcollection[i].get_Name()).c_str());
    }
    if (m_table->m_vmultisel.size() == 1)
    {

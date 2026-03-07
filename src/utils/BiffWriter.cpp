@@ -52,7 +52,7 @@ void BiffWriter::BeginObject(const int objectId, bool isArray, bool isSkippable)
    // of the sub object. To solve this, later sub object have increased the record size of their 
    // initial tag, to cover the complete subobject data up to the end of the ENDB block.
    // Sub objects saved with isSkippable must be read with the reader that found them in order
-   // to actuaaly read the record bytes.
+   // to actually read the record bytes.
    WriteRecordSize(sizeof(int32_t));
    LARGE_INTEGER seek {};
    if (isSkippable)
@@ -110,7 +110,7 @@ void BiffWriter::WriteString(const int id, const string &szvalue)
    WriteRecordSize((int)sizeof(int32_t) * 2 + len);
    WriteBytes(&id, sizeof(int32_t));
    WriteBytes(&len, sizeof(int32_t));
-   WriteBytes(szvalue.data(), len);
+   WriteBytes(szvalue.c_str(), len);
 }
 
 void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
@@ -126,9 +126,9 @@ void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
    WriteBytes(&id, sizeof(int32_t));
    WriteBytes(&len, sizeof(int32_t));
 #if (WCHAR_T_SIZE == 4) // Linux, macOS
-   WriteBytes(wzvalue_utf16.data(), len);
+   WriteBytes(wzvalue_utf16.c_str(), len);
 #else // Windows
-   WriteBytes(wzvalue.data(), len);
+   WriteBytes(wzvalue.c_str(), len);
 #endif
 }
 
@@ -182,7 +182,7 @@ void BiffWriter::WriteFontDescriptor(int fieldId, const FontDesc &fontdesc)
    WriteBytes(&fontdesc.weight, 2);
    WriteBytes(&fontdesc.size, 4);
    WriteBytes(&nameLen, 1);
-   WriteBytes(fontdesc.name.data(), nameLen);
+   WriteBytes(fontdesc.name.c_str(), nameLen);
 }
 
 void BiffWriter::EndObject()

@@ -684,19 +684,18 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 
 STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 {
-   const WCHAR *wz;
-
+   wstring wz;
    switch (m_d.m_filter)
    {
-   case Filter_Additive: wz = L"Additive"; break;
-   case Filter_Multiply: wz = L"Multiply"; break;
-   case Filter_Overlay:  wz = L"Overlay"; break;
-   case Filter_Screen:   wz = L"Screen"; break;
+   case Filter_Additive: wz = L"Additive"s; break;
+   case Filter_Multiply: wz = L"Multiply"s; break;
+   case Filter_Overlay:  wz = L"Overlay"s; break;
+   case Filter_Screen:   wz = L"Screen"s; break;
    default:
       assert(!"Invalid Flasher Filter");
-   case Filter_None:     wz = L"None"; break;
+   case Filter_None:     wz = L"None"s; break;
    }
-   *pVal = SysAllocString(wz);
+   *pVal = SysAllocStringLen(wz.c_str(),static_cast<UINT>(wz.length()));
 
    return S_OK;
 }
@@ -908,9 +907,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     }
 
     if (m_isVideoCap == false) {  // VideoCap has not started because no sourcewin found
-        char * const szWinTitle = MakeChar(cWinTitle);
-        m_videoCapHwnd = ::FindWindow(nullptr, szWinTitle);
-        delete [] szWinTitle;
+        m_videoCapHwnd = ::FindWindow(nullptr, MakeString(cWinTitle).c_str());
         if (m_videoCapHwnd == nullptr)
             return S_FALSE;
 

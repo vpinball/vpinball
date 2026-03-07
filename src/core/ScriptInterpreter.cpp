@@ -205,11 +205,9 @@ void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
 {
    if (m_pScriptParse)
    {
-      WCHAR *const wzScript = MakeWide(script);
       EXCEPINFO exception {};
-      m_pScriptParse->ParseScriptText(wzScript, isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
+      m_pScriptParse->ParseScriptText(MakeWString(script).c_str(), isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
          isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
-      delete[] wzScript;
    }
    if (m_pScript)
       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
