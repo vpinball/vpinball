@@ -114,7 +114,7 @@ void Decal::WriteRegDefaults()
 
 void Decal::UIRenderPass1(Sur * const psur)
 {
-   if (!(m_backglass && !GetPTable()->GetDecalsEnabled()))
+   if (!(m_desktopBackdrop && !GetPTable()->GetDecalsEnabled()))
    {
       psur->SetBorderColor(-1, false, 0);
       psur->SetFillColor(m_ptable->RenderSolid() ? RGB(0, 0, 255) : -1);
@@ -146,7 +146,7 @@ void Decal::UIRenderPass1(Sur * const psur)
 
 void Decal::UIRenderPass2(Sur * const psur)
 {
-   if (!(m_backglass && !GetPTable()->GetDecalsEnabled()))
+   if (!(m_desktopBackdrop && !GetPTable()->GetDecalsEnabled()))
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->SetFillColor(-1);
@@ -242,12 +242,12 @@ void Decal::GetTextSize(int * const px, int * const py)
 float Decal::GetDepth(const Vertex3Ds& viewDir) const
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   return !m_backglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
+   return !m_desktopBackdrop ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * height) : 0.f;
 }
 
 void Decal::UpdateBounds()
 {
-   if (m_backglass)
+   if (m_desktopBackdrop)
       m_boundingSphereCenter.Set(0.f, 0.f, 0.f);
    else
    {
@@ -283,8 +283,8 @@ void Decal::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(COLR), m_d.m_color);
    writer.WriteInt(FID(SIZE), m_d.m_sizingtype);
    writer.WriteBool(FID(VERT), m_d.m_verticalText);
-   writer.WriteBool(FID(BGLS), m_backglass);
-   ISelect::SaveData(writer);
+   writer.WriteBool(FID(BGLS), m_desktopBackdrop);
+   SaveSharedEditableFields(writer);
    FontDesc fd;
 #ifndef __STANDALONE__
    if (m_pIFont)
@@ -316,7 +316,7 @@ void Decal::Load(IObjectReader& reader)
          case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
          case FID(SIZE): m_d.m_sizingtype = static_cast<SizingType>(reader.AsInt()); break;
          case FID(VERT): m_d.m_verticalText = reader.AsBool(); break;
-         case FID(BGLS): m_backglass = reader.AsBool(); break;
+         case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          case FID(FONT):
          {
             FontDesc fd = reader.AsFontDescriptor();
@@ -327,7 +327,7 @@ void Decal::Load(IObjectReader& reader)
             #endif
             break;
          }
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
@@ -595,12 +595,12 @@ void Decal::RenderSetup(RenderDevice *device)
    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, 4);
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->Lock(vertices);
-   const float z = m_backglass ? 0.f : (height + 0.2f);
+   const float z = m_desktopBackdrop ? 0.f : (height + 0.2f);
    int renderWidth, renderHeight;
    g_pplayer->m_renderer->GetRenderSize(renderWidth, renderHeight);
-   const float xmult = m_backglass ? ((float)renderWidth * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-   const float ymult = m_backglass ? ((float)renderHeight * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
-   const float offs = m_backglass ? 0.5f : 0.f;
+   const float xmult = m_desktopBackdrop ? ((float)renderWidth * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+   const float ymult = m_desktopBackdrop ? ((float)renderHeight * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+   const float offs = m_desktopBackdrop ? 0.5f : 0.f;
 
    vertices[0].x = (m_d.m_vCenter.x + sn*(halfheight + leading) - cs*halfwidth)*xmult-offs;
    vertices[0].y = (m_d.m_vCenter.y - cs*(halfheight + leading) - sn*halfwidth)*ymult-offs;
@@ -663,7 +663,7 @@ void Decal::Render(const unsigned int renderMask)
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    TRACE_FUNCTION();
 
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+   if (m_desktopBackdrop && !GetPTable()->GetDecalsEnabled())
       return;
 
    if (!m_d.m_visible)
@@ -671,8 +671,8 @@ void Decal::Render(const unsigned int renderMask)
 
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   if (!(   (!isDynamicOnly && (m_backglass || !mat->m_bOpacityActive)) // Static prerendering
-         || (!isStaticOnly && (!m_backglass && mat->m_bOpacityActive)))) // Not prerendered part pass
+   if (!(   (!isDynamicOnly && (m_desktopBackdrop || !mat->m_bOpacityActive)) // Static prerendering
+         || (!isStaticOnly && (!m_desktopBackdrop && mat->m_bOpacityActive)))) // Not prerendered part pass
       return;
 
    m_rd->ResetRenderState();
@@ -681,7 +681,7 @@ void Decal::Render(const unsigned int renderMask)
 
    if (m_d.m_decaltype != DecalImage)
    {
-      if (!m_backglass)
+      if (!m_desktopBackdrop)
          m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, false);
       else
          m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
@@ -692,7 +692,7 @@ void Decal::Render(const unsigned int renderMask)
       Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         if (!m_backglass)
+         if (!m_desktopBackdrop)
             m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
          else
             m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
@@ -702,7 +702,7 @@ void Decal::Render(const unsigned int renderMask)
       }
       else
       {
-         if (!m_backglass)
+         if (!m_desktopBackdrop)
             m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
          else
             m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
@@ -711,19 +711,19 @@ void Decal::Render(const unsigned int renderMask)
 
    m_rd->EnableAlphaBlend(false);
 
-   if (m_backglass)
+   if (m_desktopBackdrop)
    {
       m_rd->SetRenderStateDepthBias(0.0f);
       static constexpr vec4 staticColor { 1.0f, 1.0f, 1.0f, 1.0f };
       m_rd->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
       g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
-      m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+      m_rd->DrawMesh(m_rd->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
    }
    else
    {
       m_rd->SetRenderStateDepthBias(-5.f);
-      m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+      m_rd->DrawMesh(m_rd->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
    }
 }
 

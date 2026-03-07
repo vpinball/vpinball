@@ -298,7 +298,7 @@ void Bumper::RenderRelease()
 void Bumper::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -751,7 +751,7 @@ void Bumper::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(COLI), m_d.m_collidable);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
 
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
 
    writer.EndObject();
 }
@@ -808,7 +808,7 @@ void Bumper::Load(IObjectReader& reader)
          case FID(RIVS): m_d.m_ringVisible = reader.AsBool(); break;
          case FID(SKVS): m_d.m_skirtVisible = reader.AsBool(); break;
          case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

@@ -1201,7 +1201,7 @@ void Primitive::RenderRelease()
 void Primitive::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
 
    if (!m_d.m_visible || m_skipRendering)
       return;
@@ -1647,7 +1647,7 @@ void Primitive::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteString(FID(REFR), m_d.m_szRefractionProbe);
    writer.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
 
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
 
    writer.EndObject();
 }
@@ -1825,7 +1825,7 @@ void Primitive::Load(IObjectReader& reader)
          case FID(REFR): m_d.m_szRefractionProbe = reader.AsString(); break;
          case FID(RTHI): m_d.m_refractionThickness = reader.AsFloat(); break;
 
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

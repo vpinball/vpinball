@@ -359,7 +359,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       if (m_implicitPlayfieldMesh)
       {
          m_implicitPlayfieldMesh->SetName(L"playfield_mesh"s);
-         m_implicitPlayfieldMesh->m_backglass = false;
+         m_implicitPlayfieldMesh->m_desktopBackdrop = false;
          m_implicitPlayfieldMesh->m_d.m_staticRendering = true;
          m_implicitPlayfieldMesh->m_d.m_reflectionEnabled = true;
          m_implicitPlayfieldMesh->m_d.m_collidable = false;

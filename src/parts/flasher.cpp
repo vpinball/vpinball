@@ -231,13 +231,13 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || m_vpinball->m_alwaysDrawDragPoints);
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_vpinball->m_alwaysDrawDragPoints);
    if (!drawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
       for (const auto& pdp : m_vdpoint)
       {
-         if (pdp->m_selectstate != eNotSelected)
+         if (pdp->m_selectstate != SelectState::NotSelected)
          {
             drawDragpoints = true;
             break;
@@ -461,8 +461,8 @@ void Flasher::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(FILT), m_d.m_filter);
    writer.WriteInt(FID(FIAM), m_d.m_filterAmount);
    writer.WriteString(FID(LMAP), m_d.m_szLightmap);
-   writer.WriteBool(FID(BGLS), m_backglass);
-   ISelect::SaveData(writer);
+   writer.WriteBool(FID(BGLS), m_desktopBackdrop);
+   SaveSharedEditableFields(writer);
    SavePoints(writer);
    writer.EndObject();
 }
@@ -513,7 +513,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(GBOT): m_d.m_glassPadBottom = reader.AsFloat(); break;
          case FID(GLFT): m_d.m_glassPadLeft = reader.AsFloat(); break;
          case FID(GRHT): m_d.m_glassPadRight = reader.AsFloat(); break;
-         case FID(BGLS): m_backglass = reader.AsBool(); break;
+         case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          case FID(DSPT): m_d.m_displayTexture = reader.AsBool(); break;
          case FID(FLDB): m_d.m_depthBias = reader.AsFloat(); break;
          case FID(ALGN): m_d.m_imagealignment = static_cast<RampImageAlignment>(reader.AsInt()); break;
@@ -521,7 +521,7 @@ void Flasher::Load(IObjectReader& reader)
          case FID(FIAM): m_d.m_filterAmount = reader.AsInt(); break;
          case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
          case FID(DPNT): LoadPointToken(reader); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
@@ -1196,7 +1196,7 @@ void Flasher::Render(const unsigned int renderMask)
       {
          Vertex3D_NoTex2 vert = m_vertices[i];
          tempMatrix.MultiplyVector(vert);
-         if (m_backglass)
+         if (m_desktopBackdrop)
             vert.z = 1.f;
          m_transformedVertices[i] = vert;
          buf[i] = vert;
@@ -1206,7 +1206,7 @@ void Flasher::Render(const unsigned int renderMask)
 
    const Vertex3Ds pos(0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy), m_d.m_height);
 
-   if (m_backglass)
+   if (m_desktopBackdrop)
       g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(false, false, true);
 
    if (isUIPass)
@@ -1225,7 +1225,7 @@ void Flasher::Render(const unsigned int renderMask)
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
-      if (m_backglass)
+      if (m_desktopBackdrop)
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }
@@ -1331,7 +1331,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-            g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
+            g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
@@ -1359,7 +1359,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
-            g_pplayer->m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
+            g_pplayer->m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
@@ -1383,7 +1383,8 @@ void Flasher::Render(const unsigned int renderMask)
             const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
             const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
             g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
-               m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
+               m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(),
+               vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
                vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
@@ -1393,7 +1394,7 @@ void Flasher::Render(const unsigned int renderMask)
       }
    }
 
-   if (m_backglass)
+   if (m_desktopBackdrop)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
 }
 

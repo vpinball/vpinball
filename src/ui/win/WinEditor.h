@@ -191,7 +191,7 @@ public:
 
    int m_NextTableID; // counter to create next unique table name
 
-   bool m_backglassView = false; // whether viewing the playfield or screen layout
+   bool m_desktopBackdropView = false; // whether viewing the playfield or screen layout
 
    bool m_alwaysDrawDragPoints;
    bool m_alwaysDrawLightCenters;

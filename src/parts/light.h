@@ -133,7 +133,7 @@ public:
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
-   float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
+   float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
 protected:
    RenderDevice *m_rd = nullptr;
@@ -166,6 +166,15 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
+      void UIRenderPass1(Sur *const psur) override { /* Processed by light */ }
+      void UIRenderPass2(Sur *const psur) override { /* Processed by light */ }
+      void RenderBlueprint(Sur *psur, const bool solid) override { /* Processed by light */ }
+
+	   bool IsUILocked() const override { return m_uiLocked; }
+      void SetUILock(bool lock) override { m_uiLocked = lock; }
+      bool IsUIVisible() const override { return m_uiVisible; }
+      void SetUIVisible(bool visible) override { m_uiVisible = visible; }
+
       HRESULT GetTypeName(BSTR *pVal) const override { return m_plight->GetTypeName(pVal); }
 
       IDispatch *GetDispatch() override { return m_plight->GetDispatch(); }
@@ -194,6 +203,8 @@ private:
 
    private:
       Light *m_plight;
+      bool m_uiLocked = false; // Can not be dragged in the editor
+      bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
    };
 
    Material *m_surfaceMaterial;

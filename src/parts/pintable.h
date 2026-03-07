@@ -296,7 +296,6 @@ public:
 
    PinTable *CopyForPlay();
 
-   void ClearForOverwrite() final;
    void RemoveInvalidReferences();
 
    HRESULT GetTypeName(BSTR *pVal) const final;
@@ -307,6 +306,11 @@ public:
    void UIRenderPass2(Sur *const psur) final { }
 
    // ISelect
+   bool IsUILocked() const final { return false; }
+   void SetUILock(bool lock) final { }
+   bool IsUIVisible() const final { return true; }
+   void SetUIVisible(bool visible) final { }
+
    void OnLButtonDown(int x, int y) final;
    void OnLButtonUp(int x, int y) final { }
    void SetDirtyDraw() final;
@@ -388,7 +392,8 @@ public:
    // IEditable (mostly bogus for now)
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
    void UIRenderPass1(Sur *const psur) final { }
-   void Load(IObjectReader& reader) final;
+   void ClearForOverwrite() final;
+   void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }

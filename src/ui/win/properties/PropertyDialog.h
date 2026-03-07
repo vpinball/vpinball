@@ -340,7 +340,7 @@ private:
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
     ItemTypeEnum m_previousType;
     bool         m_isPlayfieldMesh;
-    bool         m_backglassView;
+    bool         m_desktopBackdropView;
 
     int      m_curTabIndex;
     CEdit    m_nameEdit;

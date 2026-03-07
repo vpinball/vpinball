@@ -397,7 +397,7 @@ void Gate::UpdateAnimation(const float diff_time_msec)
 void Gate::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -569,9 +569,7 @@ void Gate::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TWWA), m_d.m_twoWay);
    writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
    writer.WriteInt(FID(GATY), m_d.m_type);
-
-   ISelect::SaveData(writer);
-
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -612,7 +610,7 @@ void Gate::Load(IObjectReader& reader)
          case FID(GFRC): m_d.m_friction = reader.AsFloat(); break;
          case FID(AFRC): m_d.m_damping = reader.AsFloat(); break;
          case FID(GGFC): m_d.m_gravityfactor = reader.AsFloat(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

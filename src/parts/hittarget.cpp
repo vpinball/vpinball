@@ -480,7 +480,7 @@ void HitTarget::UIRenderPass2(Sur * const psur)
        psur->Line(C->x, C->y, A->x, A->y);
     }
 
-    if (m_selectstate == eNotSelected)
+    if (m_selectstate == SelectState::NotSelected)
        return;
 
     const float radangle = ANGTORAD(m_d.m_rotZ-180.0f);
@@ -658,7 +658,7 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
 void HitTarget::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -798,7 +798,7 @@ void HitTarget::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(RADE), m_d.m_raiseDelay);
    writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
    writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -845,7 +845,7 @@ void HitTarget::Load(IObjectReader& reader)
          case FID(RADE): m_d.m_raiseDelay = reader.AsInt(); break;
          case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
          case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });

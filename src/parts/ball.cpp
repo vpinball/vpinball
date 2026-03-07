@@ -131,7 +131,7 @@ void Ball::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    writer.WriteWideString(FID(NAME), m_wzName);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    writer.EndObject();
 }
 
@@ -158,7 +158,7 @@ void Ball::Load(IObjectReader& reader)
          case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
          case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
@@ -269,7 +269,7 @@ static inline float map_bulblight_to_emission(const Light* const l) // magic map
 void Ball::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;

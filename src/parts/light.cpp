@@ -147,7 +147,7 @@ void Light::UIRenderPass1(Sur * const psur)
 
 void Light::UIRenderPass2(Sur * const psur)
 {
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -156,7 +156,7 @@ void Light::UIRenderPass2(Sur * const psur)
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != eNotSelected)
+         if (pdp->m_selectstate != SelectState::NotSelected)
          {
             drawDragpoints = true;
             break;
@@ -275,7 +275,7 @@ void Light::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {
-   return !m_backglass ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
+   return !m_desktopBackdrop ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
 }
 
 void Light::UpdateBounds()
@@ -491,15 +491,15 @@ void Light::UpdateMeshBuffer()
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
 
       Vertex3D_NoTex2 *buf;
       m_lightmapMeshBuffer->m_vb->Lock(buf);
       for (unsigned int t = 0; t < m_vvertex.size(); t++)
       {
          const RenderVertex *const pv0 = &m_vvertex[t];
-         if (!m_backglass)
+         if (!m_desktopBackdrop)
          {
             buf[t].x = pv0->x;
             buf[t].y = pv0->y;
@@ -555,9 +555,9 @@ void Light::Render(const unsigned int renderMask)
 
       UpdateMeshBuffer();
 
-      if (m_backglass)
+      if (m_desktopBackdrop)
          g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
-      const vec3 pos = m_backglass ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
+      const vec3 pos = m_desktopBackdrop ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
       if (renderMask & Renderer::UI_FILL)
       {
          m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
@@ -578,12 +578,12 @@ void Light::Render(const unsigned int renderMask)
 
       // FIXME render bulb
 
-      if (m_backglass)
+      if (m_desktopBackdrop)
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }
 
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+   if (m_desktopBackdrop && !GetPTable()->GetDecalsEnabled())
       return;
 
    // FIXME BGFX DX12 will crash on this
@@ -594,7 +594,7 @@ void Light::Render(const unsigned int renderMask)
 
    if (isLightBuffer)
    {
-      if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_backglass)
+      if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_desktopBackdrop)
          return;
       // Compute projected bounds
       const float radius = m_d.m_falloff;
@@ -651,7 +651,7 @@ void Light::Render(const unsigned int renderMask)
       && m_d.m_visible
       && m_bulbLightMeshBuffer != nullptr 
       && !(isReflectionPass && !m_d.m_reflectionEnabled)
-      && !m_backglass
+      && !m_desktopBackdrop
       && !isLightBuffer)
    {
       Material mat;
@@ -699,7 +699,7 @@ void Light::Render(const unsigned int renderMask)
    // Lightmap
    if (!isStaticOnly
       && m_d.m_visible
-      && ((m_d.m_reflectionEnabled && !m_backglass) || !isReflectionPass)
+      && ((m_d.m_reflectionEnabled && !m_desktopBackdrop) || !isReflectionPass)
       && (m_lightmapMeshBuffer != nullptr)) // in case of degenerate light
    {
       Texture * const offTexel = m_d.m_BulbLight ? nullptr : m_ptable->GetImage(m_d.m_szImage);
@@ -708,7 +708,7 @@ void Light::Render(const unsigned int renderMask)
       vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
       vec4 lightColor_intensity = convertColor(m_d.m_color, 1.f);
       if (m_d.m_BulbLight ||
-         (!m_d.m_BulbLight && (m_surfaceTexture == offTexel) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+         (!m_d.m_BulbLight && (m_surfaceTexture == offTexel) && (offTexel != nullptr) && !m_desktopBackdrop && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
       {
          if (m_currentIntensity == 0.f)
             return;
@@ -732,7 +732,7 @@ void Light::Render(const unsigned int renderMask)
       }
 
       m_rd->ResetRenderState();
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          m_rd->SetRenderStateDepthBias(0.0f);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
@@ -744,10 +744,10 @@ void Light::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
 
-      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          centerHUD.x = centerHUD.x * xmult - 0.5f;
          centerHUD.y = centerHUD.y * ymult - 0.5f;
@@ -800,7 +800,7 @@ void Light::Render(const unsigned int renderMask)
 
       if (!m_d.m_BulbLight)
       {
-         shader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
+         shader->SetLightImageBackglassMode(m_d.m_imageMode, m_desktopBackdrop);
          shader->SetMaterial(m_surfaceMaterial);
          if (offTexel != nullptr)
          {
@@ -808,7 +808,7 @@ void Light::Render(const unsigned int renderMask)
             shader->SetTexture(SHADER_tex_light_color, offTexel, false, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
             // TOTAN and Flintstones inserts break if alpha blending is disabled here.
             // Also see below if changing again
-            if (!m_backglass)
+            if (!m_desktopBackdrop)
             {
                m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
                m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
@@ -830,15 +830,16 @@ void Light::Render(const unsigned int renderMask)
 
       Vertex3Ds pos0(0.f, 0.f, 0.f);
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(shader == m_rd->m_basicShader, shader == m_rd->m_lightShader, false);
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias,
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
             m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       }
       else
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
+            m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
    }
 }
 
@@ -881,7 +882,7 @@ void Light::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
    writer.WriteString(FID(SURF), m_d.m_szSurface);
    writer.WriteWideString(FID(NAME), m_wzName);
-   writer.WriteBool(FID(BGLS), m_backglass);
+   writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    writer.WriteFloat(FID(LIDB), m_d.m_depthBias);
    writer.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
    writer.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
@@ -896,7 +897,7 @@ void Light::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(SHDW), m_d.m_shadows);
    writer.WriteInt(FID(FADE), m_d.m_fader);
    writer.WriteBool(FID(VSBL), m_d.m_visible);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    SavePoints(writer);
    writer.EndObject();
 }
@@ -962,7 +963,7 @@ void Light::Load(IObjectReader& reader)
          case FID(TRMS): m_d.m_transmissionScale = reader.AsFloat(); break;
          case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
          case FID(NAME): m_wzName = reader.AsWideString(); break;
-         case FID(BGLS): m_backglass = reader.AsBool(); break;
+         case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
          case FID(LIDB): m_d.m_depthBias = reader.AsFloat(); break;
          case FID(FASP): m_d.m_fadeSpeedUp = reader.AsFloat(); break;
          case FID(FASD): m_d.m_fadeSpeedDown = reader.AsFloat(); break;
@@ -978,7 +979,7 @@ void Light::Load(IObjectReader& reader)
          case FID(FADE): m_d.m_fader = static_cast<Fader>(reader.AsInt()); break;
          case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
          case FID(DPNT): LoadPointToken(reader); break;
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
@@ -1518,7 +1519,7 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    if(m_d.m_bulbHaloHeight != newVal)
    {
       m_d.m_bulbHaloHeight = newVal;
-      m_lightmapMeshBufferDirty |= m_d.m_BulbLight && !m_backglass;
+      m_lightmapMeshBufferDirty |= m_d.m_BulbLight && !m_desktopBackdrop;
    }
 
    return S_OK;

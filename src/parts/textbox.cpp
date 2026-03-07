@@ -132,7 +132,7 @@ void Textbox::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteInt(FID(ALGN), m_d.m_talign);
    writer.WriteBool(FID(TRNS), m_d.m_transparent);
    writer.WriteBool(FID(IDMD), m_d.m_isDMD);
-   ISelect::SaveData(writer);
+   SaveSharedEditableFields(writer);
    FontDesc fd;
    #ifndef __STANDALONE__
    if (m_pIFont)
@@ -181,7 +181,7 @@ void Textbox::Load(IObjectReader& reader)
 #endif
             break;
          }
-         default: ISelect::LoadToken(tag, reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
       });
@@ -352,7 +352,7 @@ void Textbox::UpdateAnimation(const float diff_time_msec)
 void Textbox::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(m_backglass);
+   assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;

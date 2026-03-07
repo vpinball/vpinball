@@ -85,7 +85,7 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_backglassView(false), m_curTabIndex(0)
+PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_desktopBackdropView(false), m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
 }
@@ -97,7 +97,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         return;
 
     int activePage = m_tab.m_activePage;
-    m_backglassView = g_pvp->m_backglassView;
+    m_desktopBackdropView = g_pvp->m_desktopBackdropView;
     m_isPlayfieldMesh = false;
 
     while (m_tab.GetItemCount() > 0)
@@ -108,9 +108,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     {
     case eItemTable:
     {
-        if (g_pvp->m_backglassView)
+        if (g_pvp->m_desktopBackdropView)
         {
-            m_elementTypeName.SetWindowText("Backglass");
+            m_elementTypeName.SetWindowText("Desktop Backdrop");
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
             if (m_tab.m_activeTabText == "Visuals")
@@ -436,7 +436,7 @@ void PropertyDialog::DeleteAllTabs()
             m_tabs[i] = nullptr;
         }
     m_previousType = (ItemTypeEnum)0;
-    m_backglassView = false;
+    m_desktopBackdropView = false;
 }
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
@@ -584,7 +584,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
    m_tab.ShowWindow();
 
    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
-   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_backglassView != g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
+   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != g_pvp->m_desktopBackdropView || m_multipleElementsStatic.IsWindowVisible())
    {
       BasePropertyDialog::m_disableEvents = true;
       m_curTabIndex = m_tab.GetCurSel();
