@@ -36,6 +36,7 @@
 #include "bx/string.h"
 #include "bgfx/platform.h"
 #include "bgfx/bgfx.h"
+#include "bimg/bimg.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #endif
@@ -499,13 +500,50 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       g_pplayer->m_vrDevice->CreateSession();
    #endif
 
-   // Enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
-   if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_vrDevice == nullptr) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract))
+   // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
+   if (g_pplayer->m_vrDevice == nullptr)
    {
-      init.resolution.formatColor = bgfx::TextureFormat::RGB10A2;
-      //init.resolution.formatColor = bgfx::TextureFormat::RGBA16F; // Also supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
-      init.resolution.reset |= BGFX_RESET_HDR10;
-      bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
+      const uint32_t defaultFlags = init.resolution.reset;
+      const bgfx::TextureFormat::Enum defaultFormat = init.resolution.formatColor;
+      // Try to enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
+      if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract))
+         init.resolution.reset |= BGFX_RESET_HDR10;
+      int colorSelect = INT_MIN;
+      for (int i = 0; i < bgfx::TextureFormat::Count; i++)
+      {
+         if ((bgfx::getCaps()->formats[i] & BGFX_CAPS_FORMAT_TEXTURE_BACKBUFFER) != 0)
+         {
+            auto fmt = bimg::TextureFormat::Enum(i);
+            if (bimg::isColor(fmt))
+            {
+               int heuristic = 0;
+               // Search for a standard default 24 or 32 bit format (BGRA8 / RGBA8)
+               heuristic += bimg::getBitsPerPixel(fmt) == 24 ? 10 : 0;
+               heuristic += bimg::getBitsPerPixel(fmt) == 32 ? 100 : 0;
+               heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 1 : 0; // To avoid switching uselessly
+               heuristic += bimg::isCompressed(fmt) ? -1000 : 0;
+               heuristic += bimg::isFloat(fmt) ? -1000 : 0;
+               if (init.resolution.reset & BGFX_RESET_HDR10)
+               {
+                  // HDR: search for RGB10A2 or RGB16F if available
+                  heuristic += fmt == bimg::TextureFormat::RGB10A2 ? 50000 : 0;
+                  heuristic += fmt == bimg::TextureFormat::RGBA16F ? 10000 : 0; // Supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
+               }
+               if (heuristic > colorSelect)
+               {
+                  colorSelect = heuristic;
+                  init.resolution.formatColor = bgfx::TextureFormat::Enum(fmt);
+               }
+            }
+         }
+      }
+      if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
+         init.resolution.reset &= ~ BGFX_RESET_HDR10;
+      if (defaultFlags != init.resolution.reset || defaultFormat != init.resolution.formatColor)
+      {
+         PLOGD << "Switching backbuffer color format to " << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor));
+         bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
+      }
    }
    int backBufferWidth = static_cast<int>(init.resolution.width);
    int backBufferHeight = static_cast<int>(init.resolution.height);
