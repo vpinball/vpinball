@@ -2515,7 +2515,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(TLCK): m_tablelocked = reader.AsInt(); break;
 
          // Deprecated fields (kept for reference and to avoid reusing the same FID in future evolutions)
-        /* case FID(REOP): reader.AsBool(); break; // Reflection on playfield (RenderProbes since 10.8)
+         case FID(REOP): reader.AsBool(); break; // Reflection on playfield (RenderProbes since 10.8)
          case FID(BREF): reader.AsInt(); break; // Enable ball reflection
          case FID(OGST): reader.AsBool(); break; // Overwrite global stereo
          case FID(MAXS): reader.AsFloat(); break; // Fake stereo max eye separation
@@ -2523,7 +2523,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(STO): reader.AsFloat(); break; // Fake stereo 3D offset
          case FID(MPGC): reader.AsFloat(); break; // Plunger Normalize
          case FID(MPDF): reader.AsFloat(); break; // Plunger Filter
-         case FID(TBLH): reader.AsFloat(); break; // Table Height*/
+         case FID(TBLH): reader.AsFloat(); break; // Table Height
          }
          return true;
       });

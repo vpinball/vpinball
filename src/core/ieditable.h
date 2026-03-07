@@ -230,14 +230,18 @@ public:
 
    virtual void BeginUndo();
    virtual void EndUndo();
+   virtual void Delete();
+   virtual void Uncreate();
+
+   // Shared implementation
+
    void MarkForUndo();
    void MarkForDelete();
    void Undelete();
+
    string GetName() const;
    const wstring& GetWName() const;
    void SetName(const wstring& name);
-   virtual void Delete();
-   virtual void Uncreate();
 
    bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
 

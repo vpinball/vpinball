@@ -494,7 +494,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       PLOGE << "BGFX initialization failed";
       exit(-1);
    }
-   
+
+   PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.resolution.width << 'x' << init.resolution.height << " "
+         << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor)) << ')';
+
    #ifdef ENABLE_XR
    if (g_pplayer->m_vrDevice)
       g_pplayer->m_vrDevice->CreateSession();
@@ -952,7 +955,6 @@ RenderDevice::RenderDevice(
    m_renderThread = std::thread(&RenderThread, this, init);
    m_frameReadySem.wait();
    m_frameMutex.lock();
-   PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend";
 
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
