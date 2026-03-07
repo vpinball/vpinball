@@ -193,7 +193,6 @@ public:
 
    STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
 
-   const wstring& get_Name() const final;
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ UserDefaultOnOff *pVal);

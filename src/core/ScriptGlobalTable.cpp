@@ -150,11 +150,6 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
    return S_OK;
 }
 
-const wstring& ScriptGlobalTable::get_Name() const
-{
-   return m_wzName;
-}
-
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length()));

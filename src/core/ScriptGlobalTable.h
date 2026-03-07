@@ -99,7 +99,6 @@ public:
    STDMETHOD(NudgeSensorStatus)(VARIANT *XNudge, VARIANT *YNudge);
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
-   const wstring& get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
@@ -143,9 +142,6 @@ public:
 
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-
-   ISelect *GetISelect() final { return nullptr; }
-   const ISelect *GetISelect() const final { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
    COM_INTERFACE_ENTRY(ITableGlobal)
