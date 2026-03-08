@@ -42,6 +42,8 @@ public:
    void SetCleanPoint(const SaveDirtyState sds);
 
 private:
+   bool IsDisabled() const;
+
    PinTable *const m_table;
    vector<std::unique_ptr<UndoRecord>> m_undoRecords;
    int m_cUndoLayer = 0;
