@@ -1034,6 +1034,8 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             }
             break;
          }
+         // Legacy field, now unused
+         case FID(SIGN): reader.AsBool(); break; // Signed image
          }
          return true;
       });
