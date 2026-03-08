@@ -624,7 +624,6 @@ public:
    const ViewSetup& GetViewSetup() const { return mViewSetups[GetViewMode()]; }
    ViewSetup mViewSetups[NUM_BG_SETS];
    string m_BG_image[NUM_BG_SETS];
-   ViewSetupID m_currentBackglassMode; // POV shown in the UI (not persisted)
 private:
    void UpdateCurrentBGSet();
    bool m_isFSSViewModeEnabled = false; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)

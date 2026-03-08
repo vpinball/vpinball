@@ -52,6 +52,8 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
+         m_player->SetCabinetAutoFitMode(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
+         m_player->SetCabinetAutoFitPos(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
          OnStaticRenderDirty();
          BuildPage();
       },
