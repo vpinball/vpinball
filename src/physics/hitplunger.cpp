@@ -368,7 +368,7 @@ void PlungerMoverObject::Fire(float startPos)
    // starting distance.  Note that the release motion
    // is upwards, so the speed is negative.
    const float dx = startPos - m_restPos;
-   m_fireSpeed = -m_plunger->m_d.m_speedFire * dx * m_frameLen / m_mass / 13.0f ;
+   m_fireSpeed = -m_plunger->m_d.m_speedFire * dx * m_frameLen / (m_mass * 13.0f);
 
    // Figure the target stopping position for the
    // bounce off of the barrel spring.  Treat this
@@ -722,8 +722,8 @@ void PlungerMoverObject::UpdateVelocities()
       constexpr float plungerFriction = 0.95f;
       constexpr float dt = 0.1f; // 1ms
       m_speed *= plungerFriction;
-      m_speed += dt * m_plunger->m_d.m_mechStrength * dx * m_frameLen / m_mass / 13.0f;
-      
+      m_speed += dt * m_plunger->m_d.m_mechStrength * dx * m_frameLen / (m_mass * 13.0f);
+
       // add any reverse impulse to the result
       m_speed += m_reverseImpulse;
    }

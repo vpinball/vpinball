@@ -652,7 +652,7 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/ float radius, /*[in]*/ flo
       pball->AddRef();
       *pResult = pball;
 
-      pball->m_hitBall.m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
+      pball->m_hitBall.m_coll.m_hitflag = true; // HACK: avoid capture leaving kicker
       static constexpr Vertex3Ds hitnormal { FLT_MAX, FLT_MAX, FLT_MAX }; // unused due to newBall being true
       m_phitkickercircle->DoCollide(&(pball->m_hitBall), hitnormal, false, true);
    }
@@ -667,7 +667,7 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/ float radius, /*out, retval]*/ IBa
 
 STDMETHODIMP Kicker::CreateBall(IBall **pResult)
 {
-   return CreateSizedBallWithMass(25.f, 1.f, pResult);
+   return CreateSizedBallWithMass(DEFAULT_BALL_SIZE, 1.f, pResult);
 }
 
 
@@ -695,16 +695,16 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
       Ball* const draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
-	   if (draggedBall == nullptr)
-	   {
-		   // Ball control most recently kicked if none currently.
+      if (draggedBall == nullptr)
+      {
+         // Ball control most recently kicked if none currently.
          g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(m_phitkickercircle->m_pHitBall->m_pBall);
-	   }
-	   else if (draggedBall == m_phitkickercircle->m_pHitBall->m_pBall)
-	   {
-		   // Clear any existing ball control target to allow kickout to work correctly.
-		   g_pplayer->m_liveUI->m_ballControl.EndBallDrag();
-	   }
+      }
+      else if (draggedBall == m_phitkickercircle->m_pHitBall->m_pBall)
+      {
+         // Clear any existing ball control target to allow kickout to work correctly.
+         g_pplayer->m_liveUI->m_ballControl.EndBallDrag();
+      }
       float anglerad = ANGTORAD(angle);					// yaw angle, zero is along -Y axis
 
       if (fabsf(inclination) > (float)(M_PI / 2.0))		// radians or degrees?  if greater PI/2 assume degrees
@@ -716,7 +716,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (scatterAngle > 1.0e-5f)						// ignore near zero angles
       {
          float scatter = rand_mt_m11();					// -1.0f..1.0f
-         scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
+         scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle; // shape quadratic distribution and scale
          anglerad += scatter;
       }
 

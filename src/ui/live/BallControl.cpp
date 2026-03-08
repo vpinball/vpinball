@@ -73,7 +73,7 @@ void BallControl::HandleDragBall(const int width, const int height)
    // Note that ball control release is handled by pininput
    m_dragging = true;
    const ImVec2 mousePos = ImGui::GetMousePos();
-   m_dragTarget = m_renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), m_draggedBall ? m_draggedBall->GetPosition().z : 25.f);
+   m_dragTarget = m_renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), m_draggedBall ? m_draggedBall->GetPosition().z : DEFAULT_BALL_SIZE);
    m_dragTarget.x = clamp(m_dragTarget.x, 0.f, live_table->m_right);
    m_dragTarget.y = clamp(m_dragTarget.y, 0.f, live_table->m_bottom);
    
@@ -92,7 +92,7 @@ void BallControl::HandleDestroyBall(const int width, const int height) const
    Renderer * const renderer = player->m_renderer;
 
    const ImVec2 mousePos = ImGui::GetMousePos();
-   const Vertex3Ds vertex = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), 25.f);
+   const Vertex3Ds vertex = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), DEFAULT_BALL_SIZE);
    for (size_t i = 0; i < player->m_vball.size(); i++)
    {
       Ball *const pBall = player->m_vball[i];
@@ -154,8 +154,8 @@ void BallControl::HandleThrowBalls(const int width, const int height)
       assert(false);
       return;
    }
-   const Vertex3Ds throwCenter = renderer->Get3DPointFrom2D(width, height, Vertex2D(mouseInitalPos.x, mouseInitalPos.y), 25.f);
-   const Vertex3Ds throwTarget = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), 25.f);
+   const Vertex3Ds throwCenter = renderer->Get3DPointFrom2D(width, height, Vertex2D(mouseInitalPos.x, mouseInitalPos.y), DEFAULT_BALL_SIZE);
+   const Vertex3Ds throwTarget = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), DEFAULT_BALL_SIZE);
 
    const float vx = (throwTarget.x - throwCenter.x) * 0.25f;
    const float vy = (throwTarget.y - throwCenter.y) * 0.25f;

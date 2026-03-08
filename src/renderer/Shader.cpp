@@ -1807,7 +1807,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
       {
          linenumber++;
          if (line.starts_with("////")) {
-            string newMode = line.substr(4, line.length() - 4);
+            string newMode = line.substr(4);
             if (newMode == "DEFINES") {
                currentElement += "#define GLSL\n\n";
                currentElement += UseGeometryShader() ? "#define USE_GEOMETRY_SHADER 1\n" : "#define USE_GEOMETRY_SHADER 0\n";

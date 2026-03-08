@@ -19,8 +19,8 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 Ball::Ball() : m_id(GetNextBallID())
 {
    m_wzName = L"LiveBall" + std::to_wstring(m_id); // Default name
-   m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
-   m_hitBall.m_d.m_radius = 25.f;
+   m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, DEFAULT_BALL_SIZE);
+   m_hitBall.m_d.m_radius = DEFAULT_BALL_SIZE;
    m_hitBall.m_d.m_mass = 1.f;
    m_hitBall.m_pBall = this;
    m_hitBall.m_editable = this;

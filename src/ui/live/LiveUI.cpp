@@ -462,7 +462,7 @@ void LiveUI::RenderUI()
    m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
-   float depthSort = -10000.f;
+   int depthSort = -10000;
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
       const ImDrawList * const cmd_list = draw_data->CmdLists[n];

@@ -97,8 +97,8 @@ public:
    bool m_smooth;
    bool m_slingshot;
    bool m_autoTexture;
-   
-	bool IsUILocked() const override { return m_uiLocked; }
+
+   bool IsUILocked() const override { return m_uiLocked; }
    void SetUILock(bool lock) override { m_uiLocked = lock; }
    bool IsUIVisible() const override { return m_uiVisible; }
    void SetUIVisible(bool visible) override { m_uiVisible = visible; }

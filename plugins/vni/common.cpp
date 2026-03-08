@@ -36,7 +36,7 @@ void SetThreadName(const std::string& name)
 }
 #endif
 
-inline char cLower(char c)
+static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32;

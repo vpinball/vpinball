@@ -372,7 +372,7 @@ std::filesystem::path CommandLineProcessor::GetPathFromArg(const string& arg)
 
    // On Windows only, we used to remove leading - or /. This is removed as this is not cross platform and is a bug on the front end side
    //if (!pathString.empty() && ((pathString[0] == '-') || (pathString[0] == '/')))
-   //   pathString = pathString.substr(1, pathString.size() - 1);
+   //   pathString = pathString.substr(1);
 
    if (pathString.length() >= 2 && pathString[0] == '"') // Remove " "
       pathString = pathString.substr(1, pathString.size() - 2);
@@ -630,13 +630,13 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          {
             switch (opt)
             {
-            case OPTION_POVEDIT: commands.push_back(std ::make_unique<PovEditCommand>(tableFileName)); break;
-            case OPTION_PLAY: commands.push_back(std ::make_unique<PlayTableCommand>(tableFileName)); break;
-            case OPTION_AUDIT: commands.push_back(std ::make_unique<AuditTableCommand>(tableFileName)); break;
-            case OPTION_POV: commands.push_back(std ::make_unique<ExportPOVCommand>(tableFileName)); break;
-            case OPTION_EXTRACTVBS: commands.push_back(std ::make_unique<ExportVBSCommand>(tableFileName)); break;
+            case OPTION_POVEDIT: commands.push_back(std::make_unique<PovEditCommand>(tableFileName)); break;
+            case OPTION_PLAY: commands.push_back(std::make_unique<PlayTableCommand>(tableFileName)); break;
+            case OPTION_AUDIT: commands.push_back(std::make_unique<AuditTableCommand>(tableFileName)); break;
+            case OPTION_POV: commands.push_back(std::make_unique<ExportPOVCommand>(tableFileName)); break;
+            case OPTION_EXTRACTVBS: commands.push_back(std::make_unique<ExportVBSCommand>(tableFileName)); break;
             #ifndef __STANDALONE__
-            case OPTION_EDIT: commands.push_back(std ::make_unique<Win32EditCommand>(tableFileName)); break;
+            case OPTION_EDIT: commands.push_back(std::make_unique<Win32EditCommand>(tableFileName)); break;
             #endif
             }
          }

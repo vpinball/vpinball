@@ -170,7 +170,7 @@ private:
       void UIRenderPass2(Sur *const psur) override { /* Processed by light */ }
       void RenderBlueprint(Sur *psur, const bool solid) override { /* Processed by light */ }
 
-	   bool IsUILocked() const override { return m_uiLocked; }
+      bool IsUILocked() const override { return m_uiLocked; }
       void SetUILock(bool lock) override { m_uiLocked = lock; }
       bool IsUIVisible() const override { return m_uiVisible; }
       void SetUIVisible(bool visible) override { m_uiVisible = visible; }
