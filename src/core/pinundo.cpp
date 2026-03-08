@@ -18,9 +18,12 @@ void PinUndo::SetCleanPoint(const SaveDirtyState sds)
    m_table->SetDirty(sds);
 }
 
+// The default behavior is to undo everything, so we disable it when playing (Not great, would be better that editors actually request undo when they want it)
+bool PinUndo::IsDisabled() const { return g_pplayer && !g_pplayer->m_liveUI->IsEditorUIOpened(); }
+
 void PinUndo::BeginUndo()
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    m_cUndoLayer++;
@@ -37,7 +40,7 @@ void PinUndo::BeginUndo()
 
 void PinUndo::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -52,7 +55,7 @@ void PinUndo::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 
 void PinUndo::MarkForCreate(IEditable *const pie)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -67,7 +70,7 @@ void PinUndo::MarkForCreate(IEditable *const pie)
 
 void PinUndo::MarkForDelete(IEditable *const pie)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -82,7 +85,7 @@ void PinUndo::MarkForDelete(IEditable *const pie)
 
 void PinUndo::Undo(bool discard)
 {
-   if (m_undoRecords.empty())
+   if (IsDisabled())
       return;
 
    assert(m_cUndoLayer == 0);
@@ -151,7 +154,7 @@ void PinUndo::Undo(bool discard)
 
 void PinUndo::EndUndo()
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(m_cUndoLayer > 0);
