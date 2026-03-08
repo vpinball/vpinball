@@ -93,9 +93,9 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool logScript = g_app->m_settings.GetEditor_LogScriptOutput();
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
-    const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
-    const std::filesystem::path iniPath = g_app->m_settings.GetIniPath().parent_path();
+    const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
+    const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
+    const std::filesystem::path iniPath = g_app->m_settings.GetIniPath();
     if (iniPath == appPath)
        SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_CHECKED, 0);
     else if (iniPath == prefPath)
@@ -329,7 +329,7 @@ void EditorOptionsDialog::OnOK()
     const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
     const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
     const std::filesystem::path iniPath = g_app->m_settings.GetIniPath();
-    if (iniPath == prefPath || iniPath == appPath) // Not available when running from a custom ini speccified on the commandline
+    if (iniPath == prefPath || iniPath == appPath) // Not available when running from a custom ini specified on the commandline
     {
        // if needed, copy ini from one default location to the other, as this is the location of the ini file that defines the app behavior
        if (checked && FileExists(prefPath)) // moving to app folder
