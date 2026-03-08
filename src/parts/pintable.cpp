@@ -1776,7 +1776,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
             for (auto part : parts)
             {
-               if (const wstring requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
+               if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
                {
                   wstring layerName = requestedLayerName;
                   auto partGroupF = std::ranges::find_if(m_vedit,
@@ -6881,7 +6881,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// Deprecated properties exposed to scripting API
+// From here on, only deprecated properties exposed to scripting API
 
 STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 {
@@ -6899,13 +6899,9 @@ STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_YieldTime(LONG *pVal)
 {
    PLOGE << "YieldTime is deprecated";
+   *pVal = 0;
    if (!g_pplayer)
-   {
-      *pVal = NULL;
       return E_FAIL;
-   }
-   else
-      *pVal = 0;
    return S_OK;
 }
 
@@ -7034,9 +7030,23 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
+{
+   PLOGE << "PlungerNormalize is deprecated";
+   *pVal = 100;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
+{
+   PLOGE << "PlungerNormalize is deprecated";
+   return S_OK;
+}
+
 // Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
 STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
 {
+   PLOGE << "EnableAntialiasing is deprecated";
    *pVal = UserDefaultOnOff::Default;
    return S_OK;
 }
@@ -7044,12 +7054,14 @@ STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
 // Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
 STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
 {
+   PLOGE << "EnableAntialiasing is deprecated";
    return S_OK;
 }
 
 // Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
 STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
 {
+   PLOGE << "EnableFXAA is deprecated";
    *pVal = FXAASettings::Defaults;
    return S_OK;
 }
@@ -7057,42 +7069,36 @@ STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
 // Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
 STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
 {
+   PLOGE << "EnableFXAA is deprecated";
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
-{
-   *pVal = 100;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
-{
-   return S_OK;
-}
-
-// All the following are deprecated and will not work as expected as they never took in account static rendering (and meanwhile camera setup has changed)
+// All the following will not work as expected as they never took into account static rendering (and meanwhile camera setup has changed)
 
 STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 {
+   PLOGE << "BackglassMode is deprecated";
    *pVal = static_cast<BackglassIndex>(static_cast<int>(m_viewMode) + static_cast<int>(DESKTOP));
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
+   PLOGE << "BackglassMode is deprecated";
    m_viewMode = (ViewSetupID)(pVal - DESKTOP);
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 {
+   PLOGE << "FieldOfView is deprecated";
    *pVal = mViewSetups[m_viewMode].mFOV;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
+   PLOGE << "FieldOfView is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mFOV = newVal;
    STOPUNDO
@@ -7102,12 +7108,14 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 
 STDMETHODIMP PinTable::get_Inclination(float *pVal)
 {
+   PLOGE << "Inclination is deprecated";
    *pVal = mViewSetups[m_viewMode].mLookAt;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
+   PLOGE << "Inclination is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mLookAt = newVal;
    STOPUNDO
@@ -7117,12 +7125,14 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 
 STDMETHODIMP PinTable::get_Layback(float *pVal)
 {
+   PLOGE << "Layback is deprecated";
    *pVal = mViewSetups[m_viewMode].mLayback;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Layback(float newVal)
 {
+   PLOGE << "Layback is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mLayback = newVal;
    STOPUNDO
@@ -7132,12 +7142,14 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
 {
+   PLOGE << "Rotation is deprecated";
    *pVal = mViewSetups[m_viewMode].mViewportRotation;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
+   PLOGE << "Rotation is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mViewportRotation = newVal;
    STOPUNDO
@@ -7147,12 +7159,14 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
 {
+   PLOGE << "Scalex is deprecated";
    *pVal = mViewSetups[m_viewMode].mSceneScaleX;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
+   PLOGE << "Scalex is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mSceneScaleX = newVal;
    STOPUNDO
@@ -7162,12 +7176,14 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
 {
+   PLOGE << "Scaley is deprecated";
    *pVal = mViewSetups[m_viewMode].mSceneScaleY;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
+   PLOGE << "Scaley is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mSceneScaleY = newVal;
    STOPUNDO
@@ -7177,12 +7193,14 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 
 STDMETHODIMP PinTable::get_Scalez(float *pVal)
 {
+   PLOGE << "Scalez is deprecated";
    *pVal = mViewSetups[m_viewMode].mSceneScaleZ;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
+   PLOGE << "Scalez is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mSceneScaleZ = newVal;
    STOPUNDO
@@ -7192,12 +7210,14 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatex(float *pVal)
 {
+   PLOGE << "Xlatex is deprecated";
    *pVal = mViewSetups[m_viewMode].mViewX;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
+   PLOGE << "Xlatex is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mViewX = newVal;
    STOPUNDO
@@ -7207,12 +7227,14 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatey(float *pVal)
 {
+   PLOGE << "Xlatey is deprecated";
    *pVal = mViewSetups[m_viewMode].mViewY;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
+   PLOGE << "Xlatey is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mViewY = newVal;
    STOPUNDO
@@ -7222,12 +7244,14 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 
 STDMETHODIMP PinTable::get_Xlatez(float *pVal)
 {
+   PLOGE << "Xlatez is deprecated";
    *pVal = mViewSetups[m_viewMode].mViewZ;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Xlatez(float newVal)
 {
+   PLOGE << "Xlatez is deprecated";
    STARTUNDO
    mViewSetups[m_viewMode].mViewZ = newVal;
    STOPUNDO
