@@ -389,9 +389,9 @@ void PinTableWnd::Render3DProjection(Sur *const psur)
 
    // dummy coordinate system for backdrop view
    ModelViewProj mvp;
-   if (m_table->mViewSetups[m_table->m_currentBackglassMode].mMode == VLM_WINDOW)
-      m_table->mViewSetups[m_table->m_currentBackglassMode].SetWindowModeFromSettings(m_table);
-   m_table->mViewSetups[m_table->m_currentBackglassMode].ComputeMVP(m_table, (float)EDITOR_BG_WIDTH / (float)EDITOR_BG_HEIGHT, false, mvp);
+   if (m_table->mViewSetups[m_currentBackglassMode].mMode == VLM_WINDOW)
+      m_table->mViewSetups[m_currentBackglassMode].SetWindowModeFromSettings(m_table);
+   m_table->mViewSetups[m_currentBackglassMode].ComputeMVP(m_table, (float)EDITOR_BG_WIDTH / (float)EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_table->m_left;

@@ -70,7 +70,6 @@ PinTable::PinTable()
    m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
 
    UpdateCurrentBGSet();
-   m_currentBackglassMode = m_viewMode;
 
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
@@ -628,8 +627,7 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_isFSSViewModeEnabled = src->m_isFSSViewModeEnabled;
    dst->m_viewModeOverride = src->m_viewModeOverride;
-   dst->m_viewMode = src->m_viewMode;
-   dst->m_currentBackglassMode = src->m_currentBackglassMode;
+   dst->UpdateCurrentBGSet();
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
@@ -2069,10 +2067,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
-
-   m_currentBackglassMode = m_viewMode;
-   if (m_isFSSViewModeEnabled)
-      m_currentBackglassMode = BG_FSS;
 
    RemoveInvalidReferences();
 
@@ -5906,167 +5900,6 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
-{
-   *pVal = static_cast<BackglassIndex>(static_cast<int>(m_currentBackglassMode) + static_cast<int>(DESKTOP));
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
-{
-   m_currentBackglassMode = (ViewSetupID)(pVal - DESKTOP);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mFOV;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_FieldOfView(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mFOV = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Inclination(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mLookAt;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Inclination(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mLookAt = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Layback(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mLayback;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Layback(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mLayback = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Rotation(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mViewportRotation;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Rotation(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewportRotation = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Scalex(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleX;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Scalex(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mSceneScaleX = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Scaley(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleY;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Scaley(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mSceneScaleY = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Scalez(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleZ;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Scalez(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mSceneScaleZ = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatex(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mViewX;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatex(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewX = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatey(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mViewY;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatey(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewY = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatez(float *pVal)
-{
-   *pVal = mViewSetups[m_currentBackglassMode].mViewZ;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatez(float newVal)
-{
-   STARTUNDO
-   mViewSetups[m_currentBackglassMode].mViewZ = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
 
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
@@ -7235,5 +7068,169 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
+   return S_OK;
+}
+
+// All the following are deprecated and will not work as expected as they never took in account static rendering (and meanwhile camera setup has changed)
+
+STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
+{
+   *pVal = static_cast<BackglassIndex>(static_cast<int>(m_viewMode) + static_cast<int>(DESKTOP));
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
+{
+   m_viewMode = (ViewSetupID)(pVal - DESKTOP);
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mFOV;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_FieldOfView(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mFOV = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Inclination(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mLookAt;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Inclination(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mLookAt = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Layback(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mLayback;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Layback(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mLayback = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Rotation(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mViewportRotation;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Rotation(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mViewportRotation = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scalex(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mSceneScaleX;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scalex(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mSceneScaleX = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scaley(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mSceneScaleY;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scaley(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mSceneScaleY = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scalez(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mSceneScaleZ;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scalez(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mSceneScaleZ = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatex(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mViewX;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatex(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mViewX = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatey(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mViewY;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatey(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mViewY = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatez(float *pVal)
+{
+   *pVal = mViewSetups[m_viewMode].mViewZ;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatez(float newVal)
+{
+   STARTUNDO
+   mViewSetups[m_viewMode].mViewZ = newVal;
+   STOPUNDO
+
    return S_OK;
 }
