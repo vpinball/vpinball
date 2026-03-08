@@ -56,9 +56,21 @@
 #include "lib/src/VPinballLib.h"
 #endif
 
+// MSVC Concurrency Viewer support
+// This requires to add the MSVC Concurrency SDK to the project
+//#define MSVC_CONCURRENCY_VIEWER
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+marker_series series;
+#endif
+
 // Define to 1 to get full BGFX log in debug build
 #define LOG_BGFX 0
 
+
+
+////////////////////////////////////////////////////////////////////
 
 #if defined(ENABLE_BGFX)
 void RenderDevice::tBGFXCallback::fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str)
@@ -72,7 +84,7 @@ void RenderDevice::tBGFXCallback::fatal(const char* _filePath, uint16_t _line, b
 
 void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList)
 {
-   #if LOG_BGFX
+#if LOG_BGFX
    char temp[2048];
    char* out = temp;
    va_list argListCopy;
@@ -91,10 +103,11 @@ void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _li
    if (total > 0 && out[total - 1] == '\n')
       out[total - 1] = '\0';
    PLOGI << out;
-   #endif
+#endif
 }
 
-void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip)
+void RenderDevice::tBGFXCallback::screenShot(
+   const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip)
 {
    // Note that BGFX has a few bugs regarding screenshots:
    // - DX11 applies an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
@@ -160,6 +173,383 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
       m_rd.m_screenshotCallback(m_rd.m_screenshotSuccess);
 }
 
+bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(bgfx::TextureFormat::Enum defaultFormat, bool isWCG)
+{
+   bgfx::TextureFormat::Enum selectedFormat;
+   int colorSelect = INT_MIN;
+   for (int i = 0; i < bgfx::TextureFormat::Count; i++)
+   {
+      if ((bgfx::getCaps()->formats[i] & BGFX_CAPS_FORMAT_TEXTURE_BACKBUFFER) != 0)
+      {
+         auto fmt = bimg::TextureFormat::Enum(i);
+         if (bimg::isColor(fmt))
+         {
+            int heuristic = 0;
+            // Search for a standard default 24 or 32 bit format (BGRA8 / RGBA8)
+            heuristic += bimg::getBitsPerPixel(fmt) == 24 ? 10 : 0;
+            heuristic += bimg::getBitsPerPixel(fmt) == 32 ? 100 : 0;
+            heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 1 : 0; // To avoid switching uselessly
+            heuristic += bimg::isCompressed(fmt) ? -1000 : 0;
+            heuristic += bimg::isFloat(fmt) ? -1000 : 0;
+            if (isWCG)
+            {
+               // HDR: search for RGB10A2 or RGB16F if available
+               heuristic += fmt == bimg::TextureFormat::RGB10A2 ? 50000 : 0;
+               heuristic += fmt == bimg::TextureFormat::RGBA16F
+                  ? 10000
+                  : 0; // Supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
+            }
+            if (heuristic > colorSelect)
+            {
+               colorSelect = heuristic;
+               selectedFormat = bgfx::TextureFormat::Enum(fmt);
+            }
+         }
+      }
+   }
+   return selectedFormat;
+}
+
+colorFormat RenderDevice::BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format)
+{
+   colorFormat vpxFormat;
+   switch (format)
+   {
+   case bgfx::TextureFormat::R16F: vpxFormat = colorFormat::RED16F; break;
+   case bgfx::TextureFormat::RG16F: vpxFormat = colorFormat::RG16F; break;
+   case bgfx::TextureFormat::RGBA16F: vpxFormat = colorFormat::RGB16F; break;
+   case bgfx::TextureFormat::RGBA32F: vpxFormat = colorFormat::RGB32F; break;
+   case bgfx::TextureFormat::RGB5A1: vpxFormat = colorFormat::RGB5; break;
+   case bgfx::TextureFormat::RGB8: vpxFormat = colorFormat::RGB8; break;
+   case bgfx::TextureFormat::RGBA8: vpxFormat = colorFormat::RGBA8; break;
+   case bgfx::TextureFormat::BGRA8: vpxFormat = colorFormat::RGBA8; break; // FIXME incorrect format in VPX (should not have any effect but still...)
+   case bgfx::TextureFormat::RGB10A2: vpxFormat = colorFormat::RGB10; break;
+   case bgfx::TextureFormat::R8: vpxFormat = colorFormat::GREY8; break;
+   default:
+      PLOGE << "Unsupported format requested: " << bimg::getName(bimg::TextureFormat::Enum(format)) << " replacing by RGBA8";
+      vpxFormat = colorFormat::RGBA8;
+      break;
+   }
+   return vpxFormat;
+}
+
+
+void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
+{
+   SetThreadName("RenderThread"s);
+   g_pplayer->m_renderProfiler->SetThreadLock();
+#ifdef __LIBVPINBALL__
+#ifdef __APPLE__
+   // Set render thread to User-interactive QoS to match main thread and prevent priority inversion
+   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+#endif
+#endif
+
+   bgfx::Init init = initReq;
+
+   // If using OpenXR, we need to create a graphics layer adapted to OpenXR requirements
+   if (g_pplayer->IsVR())
+   {
+#ifdef ENABLE_XR
+      assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
+      init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
+      // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
+      // Note that this is needed for native VR (running directly on the headset)
+      if (init.type == bgfx::RendererType::Vulkan)
+         init.platformData.nwh = nullptr;
+      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
+      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
+      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
+      assert(init.platformData.context != nullptr);
+#endif
+   }
+
+   // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
+   //const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
+   //assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
+   init.resolution.reset &= ~BGFX_RESET_VSYNC;
+
+   // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
+   // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
+   // render queue from the CPU to the GPU.
+   // Since VPX already splits the logic/prepare frame thread (CPU only) from the submit/flip (CPU-GPU)
+   // we do not really need BGFX to create its additional thread. Calling bgfx::renderFrame allows
+   // to do so, ending up with this thread being the only BGFX thread.
+   // This is also required for OpenXR which needs all the GPU submission calls to be performed after WaitFrame (sync) and between Begin/EndFrame
+   bgfx::renderFrame();
+
+   if (!bgfx::init(init))
+   {
+      PLOGE << "BGFX initialization failed";
+      exit(-1);
+   }
+
+   PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.resolution.width << 'x' << init.resolution.height << " "
+         << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor)) << ')';
+
+   //bgfx::setDebug(BGFX_DEBUG_STATS);
+
+   if (g_pplayer->IsVR())
+   {
+#ifdef ENABLE_XR
+      g_pplayer->m_vrDevice->CreateSession();
+      rd->m_framePending = true; // Delay first frame preparation
+#endif
+      // TODO Select a backbuffer format for preview window and store it
+      rd->m_defaultBackBufferFormat = init.resolution.formatColor;
+   }
+   else
+   {
+      // Try to enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
+      if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract))
+         init.resolution.reset |= BGFX_RESET_HDR10;
+
+      // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
+      const uint32_t defaultFlags = init.resolution.reset;
+      const bgfx::TextureFormat::Enum defaultFormat = init.resolution.formatColor;
+      init.resolution.formatColor = SelectBackBufferFormat(defaultFormat, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
+      if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
+         init.resolution.reset &= ~BGFX_RESET_HDR10;
+      if (defaultFlags != init.resolution.reset || defaultFormat != init.resolution.formatColor)
+      {
+         PLOGD << "Switching backbuffer color format to " << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor));
+         bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
+      }
+
+      // Create the back buffer render target
+      const colorFormat backBufferFormat = BGFXtoVPXTextureFormat(init.resolution.formatColor);
+      const bool isWcg = init.resolution.reset & BGFX_RESET_HDR10;
+      rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, init.resolution.width, init.resolution.height, backBufferFormat), isWcg);
+      rd->m_framePending = false; // Request first frame to be prepared as soon as possible
+      rd->m_defaultBackBufferFormat = init.resolution.formatColor;
+   }
+
+   int backBufferWidth = static_cast<int>(init.resolution.width);
+   int backBufferHeight = static_cast<int>(init.resolution.height);
+
+   // Unlock requesting thread and start render loop
+   rd->m_frameReadySem.post();
+
+#ifdef __STANDALONE__
+   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+#endif
+
+#ifdef ENABLE_XR
+   if (g_pplayer->m_vrDevice)
+   {
+      // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
+      while (rd->m_renderDeviceAlive)
+      {
+         // Process OpenXR events (headset status, ...)
+         g_pplayer->m_vrDevice->PollEvents();
+
+         // Let OpenXR throttle rendering, preparing frame on demand when view positions are acquired and predicted display time is defined
+         g_pplayer->m_vrDevice->RenderFrame(rd,
+            [rd](RenderTarget* vrRenderTarget)
+            {
+               // FIXME No VR target, we should still render to the preview window
+               if (vrRenderTarget == nullptr)
+                  return;
+
+// Set acquired swapchain images as render target, request a new renderframe from GameLogic thread, and wait for it
+#ifdef MSVC_CONCURRENCY_VIEWER
+               span* tagSpanFF = new span(series, 1, _T("vpxWaitFrame"));
+#endif
+               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
+               rd->m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
+               rd->m_framePending = false;
+               rd->m_frameReadySem.wait();
+               rd->m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
+               g_pplayer->m_renderProfiler->ExitProfileSection();
+#ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpanFF;
+#endif
+               if (!rd->m_framePending)
+               {
+                  // Block rendering until we will acquire swapchain again
+                  rd->m_framePending = true;
+                  return;
+               }
+
+               // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
+               {
+#if defined(__ANDROID__)
+                  void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+                  if (nwh == nullptr)
+                  {
+                     rd->m_framePending = true;
+                     return;
+                  }
+#endif
+#ifdef MSVC_CONCURRENCY_VIEWER
+                  span* tagSpan = new span(series, 1, _T("VPX->BGFX"));
+#endif
+                  std::lock_guard lock(rd->m_frameMutex);
+                  g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+                  g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
+                  rd->SubmitRenderFrame();
+                  g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
+                  g_pplayer->m_renderProfiler->ExitProfileSection();
+#ifdef MSVC_CONCURRENCY_VIEWER
+                  delete tagSpan;
+#endif
+               }
+
+// Request BGFX to submit to GPU (calls bgfx::frame())
+#ifdef MSVC_CONCURRENCY_VIEWER
+               span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
+#endif
+               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
+               rd->Flip();
+               if (rd->m_screenshotFrameDelay > 0)
+               {
+                  rd->m_screenshotFrameDelay--;
+                  if (rd->m_screenshotFrameDelay == 0)
+                     for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
+                        bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
+               }
+               const bgfx::Stats* stats = bgfx::getStats();
+               const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
+               g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+               g_pplayer->m_renderProfiler->ExitProfileSection();
+               g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
+
+#ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpan;
+#endif
+            });
+      }
+      g_pplayer->m_vrDevice->ReleaseSession();
+   }
+   else
+#endif
+   {
+      uint64_t lastFlipTick = 0;
+      bool gpuVSync = false;
+
+      // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
+      while (rd->m_renderDeviceAlive)
+      {
+         // wait for a frame to be prepared by the logic thread
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
+         rd->m_frameReadySem.wait();
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+         if (!rd->m_framePending)
+            continue;
+         const bool useVSync = (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract);
+         const bool noSync = rd->m_frameNoSync;
+         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
+         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
+
+#if defined(__ANDROID__)
+         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+         static void* prevNwh = nwh;
+         if (nwh != prevNwh)
+         {
+            prevNwh = nwh;
+            if (nwh == nullptr)
+               continue;
+
+            bgfx::PlatformData pd = {};
+            pd.nwh = nwh;
+            bgfx::setPlatformData(pd);
+            gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
+         }
+         if (nwh == nullptr)
+            continue;
+#endif
+
+         // lock prepared frame and submit it
+         {
+#ifdef MSVC_CONCURRENCY_VIEWER
+            span* tagSpan = new span(series, 1, _T("VPX->BGFX"));
+#endif
+            std::lock_guard lock(rd->m_frameMutex);
+            g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
+            rd->m_framePending = false; // Request next frame to be prepared as soon as possible
+            rd->m_frameNoSync = false;
+            const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
+            const int windowHeight = rd->m_outputWnd[0]->GetPixelHeight();
+            if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
+            {
+               gpuVSync = needsVSync;
+               backBufferWidth = windowWidth;
+               backBufferHeight = windowHeight;
+               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
+               rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
+            }
+            rd->SubmitRenderFrame();
+#ifdef MSVC_CONCURRENCY_VIEWER
+            delete tagSpan;
+#endif
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+         }
+
+         if (!noSync && // This is a synced frame (not offline rendering)
+            ((!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f) // the user has disabled VSync without an unbound FPS limit
+               || (useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate()))) // the user has enabled VSync with a max FPS below the display FPS
+         {
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
+#ifdef MSVC_CONCURRENCY_VIEWER
+            span* tagSpan = new span(series, 1, _T("WaitSync"));
+#endif
+            uint64_t now = usec();
+            const int targetFrameLength = useVSync ? (static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate())
+                                                        - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+                                                   : static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+            if ((int64_t)(now - lastFlipTick) < (int64_t)targetFrameLength)
+            {
+               g_pplayer->m_curFrameSyncOnFPS = true;
+               uSleep(targetFrameLength - (now - lastFlipTick));
+               now = usec();
+            }
+            lastFlipTick = now;
+#ifdef MSVC_CONCURRENCY_VIEWER
+            delete tagSpan;
+#endif
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+         }
+
+         // Flip (eventually blocking until a VSYNC happens) then submit render commands to GPU
+         {
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
+#ifdef MSVC_CONCURRENCY_VIEWER
+            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
+#endif
+            rd->Flip();
+            if (!rd->m_screenshotWindow.empty())
+            {
+               rd->m_screenshotFrameDelay--;
+               if (rd->m_screenshotFrameDelay == 0)
+                  for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
+               else if (rd->m_screenshotFrameDelay < -60)
+               {
+                  // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
+                  PLOGE << "Screenshot capture timed out. Requesting it again";
+                  for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
+               }
+            }
+#ifdef MSVC_CONCURRENCY_VIEWER
+            delete tagSpan;
+#endif
+            const bgfx::Stats* const stats = bgfx::getStats();
+            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
+            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
+         }
+      }
+   }
+
+   // Wait until main thread has released all native resources
+   rd->m_frameReadySem.wait();
+   bgfx::shutdown();
+}
+
+
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
 static const char* glErrorToString(const int error)
@@ -220,11 +610,10 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
    //if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
    if (type != GL_DEBUG_TYPE_MARKER && type != GL_DEBUG_TYPE_PUSH_GROUP && type != GL_DEBUG_TYPE_POP_GROUP)
    {
-      PLOGE << "OpenGL Msg #" << id << " [" << _severity << '/' << _type << " from " << _source  << "]: " << msg;
+      PLOGE << "OpenGL Msg #" << id << " [" << _severity << '/' << _type << " from " << _source << "]: " << msg;
    }
 }
 #endif
-
 void RenderDevice::CaptureGLScreenshot()
 {
    assert(m_screenshotFilename.size() == 1);
@@ -239,13 +628,13 @@ void RenderDevice::CaptureGLScreenshot()
       m_outputWnd[0]->GetBackBuffer()->Activate();
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glReadBuffer(GL_BACK);
-      #ifdef __OPENGLES__
-         // OpenGL ES does not have GL_BGRA
-         glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tex->data());
-         tex = tex->ToBGRA();
-      #else
-         glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
-      #endif
+#ifdef __OPENGLES__
+      // OpenGL ES does not have GL_BGRA
+      glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tex->data());
+      tex = tex->ToBGRA();
+#else
+      glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
+#endif
       tex->FlipY();
       success = tex->Save(screenshotFilename);
    }
@@ -255,19 +644,13 @@ void RenderDevice::CaptureGLScreenshot()
 #elif defined(ENABLE_DX9)
 #include <DxErr.h>
 #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
-static constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   D3DDECL_END()
-};
-static constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
-{
-   { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
-   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
-   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
-   D3DDECL_END()
-};
+static constexpr D3DVERTEXELEMENT9 VertexTexelElement[] = { { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 }, // pos
+   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
+   D3DDECL_END() };
+static constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] = { { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 }, // pos
+   { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 }, // normal
+   { 0, 6 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 }, // tex0
+   D3DDECL_END() };
 
 void RenderDevice::CaptureDX9Screenshot()
 {
@@ -325,50 +708,6 @@ void RenderDevice::CaptureDX9Screenshot()
 
 #endif
 
-static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
-{
-   switch (type)
-   {
-   case RenderDevice::POINTLIST:
-      return vertexCount;
-   case RenderDevice::LINELIST:
-      return vertexCount / 2;
-   case RenderDevice::LINESTRIP:
-      return std::max(0, vertexCount - 1);
-   case RenderDevice::TRIANGLELIST:
-      return vertexCount / 3;
-   case RenderDevice::TRIANGLESTRIP:
-      return std::max(0, vertexCount - 2);
-   default:
-      return 0;
-   }
-}
-
-void ReportFatalError(const HRESULT hr, const char *file, const int line)
-{
-   #if defined(ENABLE_BGFX)
-   const string msg = std::format("Fatal Error {:#010X} in {}:{}", (unsigned int)hr, file, line);
-   #elif defined(ENABLE_OPENGL)
-   const string msg = std::format("Fatal Error {:#010X} {} in {}:{}", (unsigned int)hr, glErrorToString(hr), file, line);
-   #elif defined(ENABLE_DX9)
-   const string msg = std::format("Fatal Error {} ({:#010X}: {}) at {}:{}", DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
-   #endif
-   ShowError(msg);
-   assert(false);
-   exit(-1);
-}
-
-void ReportError(const string& errorText, const HRESULT hr, const char *file, const int line)
-{
-   #if defined(ENABLE_BGFX)
-   const string msg = std::format("Error {:#010X} in {}:{}\n{}", (unsigned int)hr, file, line, errorText);
-   #elif defined(ENABLE_OPENGL)
-   const string msg = std::format("Error {:#010X} {} in {}:{}\n{}", (unsigned int)hr, glErrorToString(hr), file, line, errorText);
-   #elif defined(ENABLE_DX9)
-   const string msg = std::format("{} {} ({:#010X}: {}) at {}:{}", errorText, DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
-   #endif
-   ShowError(msg);
-}
 
 ////////////////////////////////////////////////////////////////////
 
@@ -398,420 +737,6 @@ RenderDeviceState::~RenderDeviceState()
 }
 
 ////////////////////////////////////////////////////////////////////
-
-// MSVC Concurrency Viewer support
-// This requires to add the MSVC Concurrency SDK to the project
-//#define MSVC_CONCURRENCY_VIEWER
-#ifdef MSVC_CONCURRENCY_VIEWER
-#include <cvmarkersobj.h>
-using namespace Concurrency::diagnostic;
-marker_series series;
-#endif
-
-#if defined(ENABLE_BGFX)
-void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
-{
-   SetThreadName("RenderThread"s);
-
-#ifdef __LIBVPINBALL__
-#ifdef __APPLE__
-   // Set render thread to User-interactive QoS to match main thread and prevent priority inversion
-   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
-#endif
-#endif
-
-   bgfx::Init init = initReq;
-
-   // If using OpenGl on a WCG display, then create the OpenGL WCG context through SDL since BGFX does not support HDR10 under OpenGl
-   /* This won't work as is and needs more work as OpenGL is fairly wonky on this. The same approach could be used for Vulkan WCG but this is also not that well defined
-   if (rd->m_outputWnd[0]->IsWCGEnabled() && init.type == bgfx::RendererType::OpenGL)
-   {
-      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10); // HDR10
-      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
-      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
-      SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, false);
-      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16); // RGB16F
-      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
-      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
-      SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, true);
-      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-      #ifndef __OPENGLES__
-         #if defined(__APPLE__) && defined(TARGET_OS_MAC)
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-         #else
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug information,...)
-            //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-            //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-         #endif
-      #else
-         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-      #endif
-      init.platformData.context = SDL_GL_CreateContext(rd->m_outputWnd[0]->GetCore());
-      init.resolution.format = bgfx::TextureFormat::RGB10A2;
-   }*/
-
-   // If using OpenXR, we need to create a graphics layer adapted to OpenXR requirements
-   #ifdef ENABLE_XR
-   if (g_pplayer->m_vrDevice)
-   {
-      assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
-      init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
-      // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
-      // Note that this is needed for native VR (running directly on the headset)
-      if (init.type == bgfx::RendererType::Vulkan)
-         init.platformData.nwh = nullptr;
-      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
-      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
-      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
-      assert(init.platformData.context != nullptr);
-   }
-   #endif
-
-   // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
-   //const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-   //assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
-   init.resolution.reset &= ~BGFX_RESET_VSYNC;
-
-   g_pplayer->m_renderProfiler->SetThreadLock();
-
-   // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
-   // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
-   // render queue from the CPU to the GPU.
-   // Since VPX already splits the logic/prepare frame thread (CPU only) from the submit/flip (CPU-GPU)
-   // we do not really need BGFX to create its additional thread. Calling bgfx::renderFrame allows
-   // to do so, ending up with this thread being the only BGFX thread.
-   // This is also required for OpenXR which needs all the GPU submission calls to be performed after WaitFrame (sync) and between Begin/EndFrame
-   bgfx::renderFrame();
-
-   if (!bgfx::init(init))
-   {
-      PLOGE << "BGFX initialization failed";
-      exit(-1);
-   }
-
-   PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.resolution.width << 'x' << init.resolution.height << " "
-         << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor)) << ')';
-
-   #ifdef ENABLE_XR
-   if (g_pplayer->m_vrDevice)
-      g_pplayer->m_vrDevice->CreateSession();
-   #endif
-
-   // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
-   if (g_pplayer->m_vrDevice == nullptr)
-   {
-      const uint32_t defaultFlags = init.resolution.reset;
-      const bgfx::TextureFormat::Enum defaultFormat = init.resolution.formatColor;
-      // Try to enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
-      if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract))
-         init.resolution.reset |= BGFX_RESET_HDR10;
-      int colorSelect = INT_MIN;
-      for (int i = 0; i < bgfx::TextureFormat::Count; i++)
-      {
-         if ((bgfx::getCaps()->formats[i] & BGFX_CAPS_FORMAT_TEXTURE_BACKBUFFER) != 0)
-         {
-            auto fmt = bimg::TextureFormat::Enum(i);
-            if (bimg::isColor(fmt))
-            {
-               int heuristic = 0;
-               // Search for a standard default 24 or 32 bit format (BGRA8 / RGBA8)
-               heuristic += bimg::getBitsPerPixel(fmt) == 24 ? 10 : 0;
-               heuristic += bimg::getBitsPerPixel(fmt) == 32 ? 100 : 0;
-               heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 1 : 0; // To avoid switching uselessly
-               heuristic += bimg::isCompressed(fmt) ? -1000 : 0;
-               heuristic += bimg::isFloat(fmt) ? -1000 : 0;
-               if (init.resolution.reset & BGFX_RESET_HDR10)
-               {
-                  // HDR: search for RGB10A2 or RGB16F if available
-                  heuristic += fmt == bimg::TextureFormat::RGB10A2 ? 50000 : 0;
-                  heuristic += fmt == bimg::TextureFormat::RGBA16F ? 10000 : 0; // Supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
-               }
-               if (heuristic > colorSelect)
-               {
-                  colorSelect = heuristic;
-                  init.resolution.formatColor = bgfx::TextureFormat::Enum(fmt);
-               }
-            }
-         }
-      }
-      if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
-         init.resolution.reset &= ~ BGFX_RESET_HDR10;
-      if (defaultFlags != init.resolution.reset || defaultFormat != init.resolution.formatColor)
-      {
-         PLOGD << "Switching backbuffer color format to " << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor));
-         bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
-      }
-   }
-   int backBufferWidth = static_cast<int>(init.resolution.width);
-   int backBufferHeight = static_cast<int>(init.resolution.height);
-   
-   //bgfx::setDebug(BGFX_DEBUG_STATS);
-
-   // Create the back buffer render target
-   colorFormat back_buffer_format;
-   bool isWcg = false;
-   switch (init.resolution.formatColor)
-   {
-   case bgfx::TextureFormat::RGBA16F: back_buffer_format = colorFormat::RGBA16F; isWcg = true; break;
-   case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; isWcg = true; break;
-   case bgfx::TextureFormat::R5G6B5: back_buffer_format = colorFormat::RGB5; break;
-   case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
-   case bgfx::TextureFormat::BGRA8: back_buffer_format = colorFormat::RGBA8; break; // FIXME the exposed format will be wrong
-   case bgfx::TextureFormat::RGB8: back_buffer_format = colorFormat::RGB8; break;
-   default: assert(false); back_buffer_format = colorFormat::RGBA8;
-   }
-   if (g_pplayer->IsVR())
-   {
-      rd->m_framePending = true; // Delay first frame preparation
-   }
-   else
-   {
-      rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, init.resolution.width, init.resolution.height, back_buffer_format), isWcg);
-      rd->m_framePending = false; // Request first frame to be prepared as soon as possible
-   }
-
-   // Unlock requesting thread and start render loop
-   rd->m_frameReadySem.post();
-
-   #ifdef __STANDALONE__
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-   #endif
-
-   #ifdef ENABLE_XR
-   if (g_pplayer->m_vrDevice)
-   {
-      // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
-      while (rd->m_renderDeviceAlive)
-      {
-         // Process OpenXR events (headset status, ...)
-         g_pplayer->m_vrDevice->PollEvents();
-
-         // Let OpenXR throttle rendering, preparing frame on demand when view positions are acquired and predicted display time is defined
-         g_pplayer->m_vrDevice->RenderFrame(rd, [rd](RenderTarget * vrRenderTarget)
-         {
-            // FIXME No VR target, we should still render to the preview window
-            if (vrRenderTarget == nullptr)
-               return;
-
-            // Set acquired swapchain images as render target, request a new renderframe from GameLogic thread, and wait for it
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            span *tagSpanFF = new span(series, 1, _T("vpxWaitFrame"));
-            #endif
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-            rd->m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
-            rd->m_framePending = false;
-            rd->m_frameReadySem.wait();
-            rd->m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpanFF;
-            #endif
-            if (!rd->m_framePending)
-            {
-               // Block rendering until we will acquire swapchain again
-               rd->m_framePending = true;
-               return;
-            }
-
-            // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
-            {
-#if defined(__ANDROID__)
-               void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-               if (nwh == nullptr)
-               {
-                  rd->m_framePending = true;
-                  return;
-               }
-#endif
-               #ifdef MSVC_CONCURRENCY_VIEWER
-               span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
-               #endif
-               std::lock_guard lock(rd->m_frameMutex);
-               g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
-               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-               rd->SubmitRenderFrame();
-               g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
-               g_pplayer->m_renderProfiler->ExitProfileSection();
-               #ifdef MSVC_CONCURRENCY_VIEWER
-               delete tagSpan;
-               #endif
-            }
-            
-            // Request BGFX to submit to GPU (calls bgfx::frame())
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
-            #endif
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-            rd->Flip();
-            if (rd->m_screenshotFrameDelay > 0) {
-               rd->m_screenshotFrameDelay--;
-               if (rd->m_screenshotFrameDelay == 0)
-                  for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-            }
-            const bgfx::Stats* stats = bgfx::getStats();
-            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
-            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
-
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-            #endif
-         });
-      }
-      g_pplayer->m_vrDevice->ReleaseSession();
-   }
-   else
-   #endif
-   {
-      uint64_t lastFlipTick = 0;
-      bool gpuVSync = false;
-
-      // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
-      while (rd->m_renderDeviceAlive)
-      {
-         // wait for a frame to be prepared by the logic thread
-         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-         rd->m_frameReadySem.wait();
-         g_pplayer->m_renderProfiler->ExitProfileSection();
-         if (!rd->m_framePending)
-            continue;
-         const bool useVSync = (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract);
-         const bool noSync = rd->m_frameNoSync;
-         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
-         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
-
-#if defined(__ANDROID__)
-         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-         static void* prevNwh = nwh;
-         if (nwh != prevNwh)
-         {
-            prevNwh = nwh;
-            if (nwh == nullptr)
-               continue;
-
-            bgfx::PlatformData pd = {};
-            pd.nwh = nwh;
-            bgfx::setPlatformData(pd);
-            gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
-         }
-         if (nwh == nullptr)
-            continue;
-#endif
-
-         // lock prepared frame and submit it
-         {
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
-            #endif
-            std::lock_guard lock(rd->m_frameMutex);
-            g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-            rd->m_framePending = false; // Request next frame to be prepared as soon as possible
-            rd->m_frameNoSync = false;
-            const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
-            const int windowHeight = rd->m_outputWnd[0]->GetPixelHeight();
-            if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
-            {
-               gpuVSync = needsVSync;
-               backBufferWidth = windowWidth;
-               backBufferHeight = windowHeight;
-               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
-               rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
-            }
-            rd->SubmitRenderFrame();
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-            #endif
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-         }
-
-         if (!noSync && // This is a synced frame (not offline rendering)
-              ((!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f) // the user has disabled VSync without an unbound FPS limit
-            || ( useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate()))) // the user has enabled VSync with a max FPS below the display FPS
-         {
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("WaitSync"));
-            #endif
-            uint64_t now = usec();
-            const int targetFrameLength = useVSync ? (static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-                                                   :  static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            if ((int64_t)(now - lastFlipTick) < (int64_t)targetFrameLength)
-            {
-               g_pplayer->m_curFrameSyncOnFPS = true;
-               uSleep(targetFrameLength - (now - lastFlipTick));
-               now = usec();
-            }
-            lastFlipTick = now;
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-            #endif
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-         }
-
-         // Flip (eventually blocking until a VSYNC happens) then submit render commands to GPU
-         {
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
-            #endif
-            rd->Flip();
-            if (!rd->m_screenshotWindow.empty())
-            {
-               rd->m_screenshotFrameDelay--;
-               if (rd->m_screenshotFrameDelay == 0)
-                  for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-               else if (rd->m_screenshotFrameDelay < -60)
-               {
-                  // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
-                  PLOGE << "Screenshot capture timed out. Requesting it again";
-                  for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                     bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-               }
-            }
-            #ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-            #endif
-            const bgfx::Stats* const stats = bgfx::getStats();
-            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
-            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
-         }
-      }
-   }
-   
-   // Wait until main thread has released all native resources
-   rd->m_frameReadySem.wait();
-   bgfx::shutdown();
-}
-
-#endif
-
-void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay)
-{
-   assert(frameDelay >= 1);
-   if (!m_screenshotFilename.empty())
-   {
-      PLOGE << "Screenshot capture already in progress.";
-      callback(false);
-      return;
-   }
-   m_screenshotSuccess = true;
-   m_screenshotWindow = wnd;
-   m_screenshotFilename = filename;
-   m_screenshotCallback = callback;
-   m_screenshotFrameDelay = frameDelay;
-}
 
 RenderDevice::RenderDevice(
    VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
@@ -948,6 +873,8 @@ RenderDevice::RenderDevice(
    init.debug = true;
    //init.profile = true;
    #endif
+
+   m_defaultBackBufferFormat = init.resolution.formatColor;
 
    ResetActiveView();
 
@@ -1583,25 +1510,10 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #if defined(ENABLE_BGFX)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
       return;
-
-   colorFormat fmt;
-   bgfx::TextureFormat::Enum fbFmt;
-   switch (wnd->GetBitDepth())
-   {
-   case 32:
-      fmt = colorFormat::RGBA8;
-      fbFmt = bgfx::TextureFormat::RGBA8;
-      break;
-   case 30:
-      fmt = colorFormat::RGBA10;
-      fbFmt = bgfx::TextureFormat::RGB10A2;
-      break;
-   default:
-      fmt = colorFormat::RGB5;
-      fbFmt = bgfx::TextureFormat::R5G6B5;
-      break;
-   }
-   PLOGD << "Creating BGFX swap chain for window with bit depth " << wnd->GetBitDepth() << " / " << SDL_GetWindowTitle(wnd->GetCore());
+   bgfx::TextureFormat::Enum bgfxFormat = SelectBackBufferFormat(m_defaultBackBufferFormat, false);
+   colorFormat vpxFormat = BGFXtoVPXTextureFormat(bgfxFormat);
+   PLOGD << "Creating BGFX swap chain for window " << SDL_GetWindowTitle(wnd->GetCore()) << " (" << wnd->GetPixelWidth() << 'x' << wnd->GetPixelHeight() << " "
+         << bimg::getName(bimg::TextureFormat::Enum(bgfxFormat)) << ')';
    SDL_Window* sdlWnd = wnd->GetCore();
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -1632,10 +1544,10 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #else
    return;
 #endif // BX_PLATFORM_
-   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), fbFmt);
+   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), bgfxFormat);
    m_outputWnd.push_back(wnd);
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
-      "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
+      "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat));
 #endif
 }
 
@@ -1654,6 +1566,22 @@ bool RenderDevice::DepthBufferReadBackAvailable() const
    // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
    return NVAPIinit;
 #endif
+}
+
+void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay)
+{
+   assert(frameDelay >= 1);
+   if (!m_screenshotFilename.empty())
+   {
+      PLOGE << "Screenshot capture already in progress.";
+      callback(false);
+      return;
+   }
+   m_screenshotSuccess = true;
+   m_screenshotWindow = wnd;
+   m_screenshotFilename = filename;
+   m_screenshotCallback = callback;
+   m_screenshotFrameDelay = frameDelay;
 }
 
 float RenderDevice::GetPredictedDisplayDelayInS() const
@@ -2299,4 +2227,33 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    CopyRenderStates(false, initial_state);
    SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
    initial_rt->m_name += '-';
+}
+
+
+////////////////////////////////////////////////////////////////////
+
+void ReportFatalError(const HRESULT hr, const char* file, const int line)
+{
+#if defined(ENABLE_BGFX)
+   const string msg = std::format("Fatal Error {:#010X} in {}:{}", (unsigned int)hr, file, line);
+#elif defined(ENABLE_OPENGL)
+   const string msg = std::format("Fatal Error {:#010X} {} in {}:{}", (unsigned int)hr, glErrorToString(hr), file, line);
+#elif defined(ENABLE_DX9)
+   const string msg = std::format("Fatal Error {} ({:#010X}: {}) at {}:{}", DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
+#endif
+   ShowError(msg);
+   assert(false);
+   exit(-1);
+}
+
+void ReportError(const string& errorText, const HRESULT hr, const char* file, const int line)
+{
+#if defined(ENABLE_BGFX)
+   const string msg = std::format("Error {:#010X} in {}:{}\n{}", (unsigned int)hr, file, line, errorText);
+#elif defined(ENABLE_OPENGL)
+   const string msg = std::format("Error {:#010X} {} in {}:{}\n{}", (unsigned int)hr, glErrorToString(hr), file, line, errorText);
+#elif defined(ENABLE_DX9)
+   const string msg = std::format("{} {} ({:#010X}: {}) at {}:{}", errorText, DXGetErrorString(hr), (unsigned int)hr, DXGetErrorDescription(hr), file, line);
+#endif
+   ShowError(msg);
 }
