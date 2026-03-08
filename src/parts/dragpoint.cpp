@@ -335,6 +335,9 @@ void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
          case FID(TEXC): pdp->m_texturecoord = reader.AsFloat(); break;
          case FID(LOCK): pdp->m_uiLocked = reader.AsBool(); break;
          case FID(LVIS): pdp->m_uiVisible = reader.AsBool(); break;
+         // Old save would wrongly save these fields which do not apply to dragpoint
+         case FID(LAYR): reader.AsInt(); break;
+         case FID(LANR): reader.AsString(); break;
          }
          return true;
       });
