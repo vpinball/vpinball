@@ -173,8 +173,57 @@ void RenderDevice::tBGFXCallback::screenShot(
       m_rd.m_screenshotCallback(m_rd.m_screenshotSuccess);
 }
 
-bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(bgfx::TextureFormat::Enum defaultFormat, bool isWCG)
+bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool allowWCG) const
 {
+   // First, use the same format as any created window on the same display (as otherwise it seems to cause issues on Linux)
+   SDL_DisplayID displayId = SDL_GetDisplayForWindow(wnd->GetCore());
+   for (VPX::Window* existingWnd : m_outputWnd)
+   {
+      if (existingWnd == nullptr || existingWnd == wnd || existingWnd->GetBackBuffer() == nullptr)
+         continue;
+      if (SDL_DisplayID existingDisplayId = SDL_GetDisplayForWindow(existingWnd->GetCore()); existingDisplayId == displayId)
+      {
+         return existingWnd->GetBackBuffer()->GetCoreColorFormat();
+      }
+   }
+
+   // Identify a suitable default if non is already provided
+   if (defaultFormat == bgfx::TextureFormat::Count)
+   {
+      const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displayId);
+      if (displayMode)
+      {
+         switch (displayMode->format)
+         {
+         case SDL_PIXELFORMAT_RGB24: defaultFormat = bgfx::TextureFormat::RGB8; break;
+         case SDL_PIXELFORMAT_BGR24: defaultFormat = bgfx::TextureFormat::RGB8; break;
+         case SDL_PIXELFORMAT_XRGB8888: defaultFormat = bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_RGBX8888: defaultFormat = bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_XBGR8888: defaultFormat = bgfx::TextureFormat::BGRA8; break;
+         case SDL_PIXELFORMAT_BGRX8888: defaultFormat = bgfx::TextureFormat::BGRA8; break;
+         case SDL_PIXELFORMAT_ARGB8888: defaultFormat = bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_RGBA8888: defaultFormat = bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_ABGR8888: defaultFormat = bgfx::TextureFormat::BGRA8; break;
+         case SDL_PIXELFORMAT_BGRA8888: defaultFormat = bgfx::TextureFormat::BGRA8; break;
+         case SDL_PIXELFORMAT_RGB565: defaultFormat = bgfx::TextureFormat::R5G6B5; break;
+         case SDL_PIXELFORMAT_BGR565: defaultFormat = bgfx::TextureFormat::B5G6R5; break;
+         case SDL_PIXELFORMAT_ABGR1555: defaultFormat = bgfx::TextureFormat::BGR5A1; break;
+         case SDL_PIXELFORMAT_BGRA5551: defaultFormat = bgfx::TextureFormat::BGR5A1; break;
+         case SDL_PIXELFORMAT_ARGB1555: defaultFormat = bgfx::TextureFormat::RGB5A1; break;
+         case SDL_PIXELFORMAT_RGBA5551: defaultFormat = bgfx::TextureFormat::RGB5A1; break;
+         case SDL_PIXELFORMAT_XRGB2101010: defaultFormat = allowWCG ? bgfx::TextureFormat::RGB10A2 : bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_ARGB2101010: defaultFormat = allowWCG ? bgfx::TextureFormat::RGB10A2 : bgfx::TextureFormat::RGBA8; break;
+         case SDL_PIXELFORMAT_XBGR2101010: defaultFormat = allowWCG ? bgfx::TextureFormat::RGB10A2 : bgfx::TextureFormat::BGRA8; break;
+         case SDL_PIXELFORMAT_ABGR2101010: defaultFormat = allowWCG ? bgfx::TextureFormat::RGB10A2 : bgfx::TextureFormat::BGRA8; break;
+         default:
+            PLOGE << "Unsupported SDL pixel format encountered: " << SDL_GetPixelFormatName(displayMode->format);
+            defaultFormat = bgfx::TextureFormat::RGBA8;
+            break;
+         }
+      }
+   }
+
+   // Search through the list of texture format that can be used as a backbuffer target
    bgfx::TextureFormat::Enum selectedFormat;
    int colorSelect = INT_MIN;
    for (int i = 0; i < bgfx::TextureFormat::Count; i++)
@@ -188,16 +237,15 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(bgfx::TextureForm
             // Search for a standard default 24 or 32 bit format (BGRA8 / RGBA8)
             heuristic += bimg::getBitsPerPixel(fmt) == 24 ? 10 : 0;
             heuristic += bimg::getBitsPerPixel(fmt) == 32 ? 100 : 0;
-            heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 1 : 0; // To avoid switching uselessly
+            heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 200: 0; // To avoid switching uselessly
             heuristic += bimg::isCompressed(fmt) ? -1000 : 0;
             heuristic += bimg::isFloat(fmt) ? -1000 : 0;
-            if (isWCG)
+            if (allowWCG)
             {
                // HDR: search for RGB10A2 or RGB16F if available
                heuristic += fmt == bimg::TextureFormat::RGB10A2 ? 50000 : 0;
-               heuristic += fmt == bimg::TextureFormat::RGBA16F
-                  ? 10000
-                  : 0; // Supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
+               // Supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
+               // heuristic += fmt == bimg::TextureFormat::RGBA16F ? 10000 : 0; 
             }
             if (heuristic > colorSelect)
             {
@@ -295,8 +343,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       g_pplayer->m_vrDevice->CreateSession();
       rd->m_framePending = true; // Delay first frame preparation
 #endif
-      // TODO Select a backbuffer format for preview window and store it
-      rd->m_defaultBackBufferFormat = init.resolution.formatColor;
    }
    else
    {
@@ -307,7 +353,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
       const uint32_t defaultFlags = init.resolution.reset;
       const bgfx::TextureFormat::Enum defaultFormat = init.resolution.formatColor;
-      init.resolution.formatColor = SelectBackBufferFormat(defaultFormat, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
+      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], defaultFormat, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
       if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
          init.resolution.reset &= ~BGFX_RESET_HDR10;
       if (defaultFlags != init.resolution.reset || defaultFormat != init.resolution.formatColor)
@@ -319,9 +365,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       // Create the back buffer render target
       const colorFormat backBufferFormat = BGFXtoVPXTextureFormat(init.resolution.formatColor);
       const bool isWcg = init.resolution.reset & BGFX_RESET_HDR10;
-      rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, init.resolution.width, init.resolution.height, backBufferFormat), isWcg);
+      rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.resolution.formatColor, BGFX_INVALID_HANDLE,
+                                           init.resolution.formatDepthStencil, "BackBuffer", init.resolution.width, init.resolution.height, backBufferFormat),
+         isWcg);
+
       rd->m_framePending = false; // Request first frame to be prepared as soon as possible
-      rd->m_defaultBackBufferFormat = init.resolution.formatColor;
    }
 
    int backBufferWidth = static_cast<int>(init.resolution.width);
@@ -873,8 +921,6 @@ RenderDevice::RenderDevice(
    init.debug = true;
    //init.profile = true;
    #endif
-
-   m_defaultBackBufferFormat = init.resolution.formatColor;
 
    ResetActiveView();
 
@@ -1510,7 +1556,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #if defined(ENABLE_BGFX)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
       return;
-   bgfx::TextureFormat::Enum bgfxFormat = SelectBackBufferFormat(m_defaultBackBufferFormat, false);
+   bgfx::TextureFormat::Enum bgfxFormat = SelectBackBufferFormat(wnd, bgfx::TextureFormat::Count, false);
    colorFormat vpxFormat = BGFXtoVPXTextureFormat(bgfxFormat);
    PLOGD << "Creating BGFX swap chain for window " << SDL_GetWindowTitle(wnd->GetCore()) << " (" << wnd->GetPixelWidth() << 'x' << wnd->GetPixelHeight() << " "
          << bimg::getName(bimg::TextureFormat::Enum(bgfxFormat)) << ')';
@@ -1546,7 +1592,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #endif // BX_PLATFORM_
    bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), bgfxFormat);
    m_outputWnd.push_back(wnd);
-   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
+   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfxFormat, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
       "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), vpxFormat));
 #endif
 }

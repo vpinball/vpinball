@@ -291,8 +291,7 @@ public:
 private:
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
-   bgfx::TextureFormat::Enum m_defaultBackBufferFormat = bgfx::TextureFormat::BGRA8;
-   static bgfx::TextureFormat::Enum SelectBackBufferFormat(bgfx::TextureFormat::Enum defaultFormat, bool isWCG);
+   bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
    static colorFormat BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format);
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
