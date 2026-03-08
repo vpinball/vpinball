@@ -192,7 +192,7 @@ LocalStringW::LocalStringW(const int resid)
    };
    const ankerl::unordered_dense::map<int, const wstring>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-      m_buffer = it->second);
+      m_buffer = it->second;
 #endif
 }
 
