@@ -26,7 +26,7 @@ void IEditable::Delete()
 
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection * const pcollection = m_vCollection[i];
+      Collection *const pcollection = m_vCollection[i];
       pcollection->m_visel.find_erase(GetISelect());
    }
 }
@@ -116,7 +116,7 @@ void IEditable::SaveSharedEditableFields(IObjectWriter& writer)
    writer.WriteBool(FID(LVIS), m_uiVisible);
    if (GetPartGroup())
    {
-      // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
+      // Implement backwards 'readability' (file will open in previous versions, with unsupported content dropped)
       const PartGroup* layer = GetPartGroup();
       while (layer->GetPartGroup() != nullptr)
          layer = layer->GetPartGroup();
@@ -209,7 +209,7 @@ void IEditable::Undelete()
 {
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection * const pcollection = m_vCollection[i];
+      Collection *const pcollection = m_vCollection[i];
       pcollection->m_visel.push_back(GetISelect());
    }
 }
@@ -224,7 +224,7 @@ string IEditable::GetName() const
 
 const wstring& IEditable::GetWName() const
 {
-   const IScriptable* const pscript = const_cast<IEditable*>(this)->GetScriptable();
+   const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
    if (pscript)
       return pscript->get_Name();
    static const wstring emptyString;
@@ -233,7 +233,7 @@ const wstring& IEditable::GetWName() const
 
 void IEditable::SetName(const wstring& name)
 {
-   IScriptable* scriptable = GetScriptable();
+   IScriptable *const scriptable = GetScriptable();
    if (name.empty() || scriptable == nullptr)
       return;
 

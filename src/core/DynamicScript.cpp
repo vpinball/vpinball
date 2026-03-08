@@ -108,8 +108,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* aliasedTypeName)
 {
    const string classId(lowerCase(name));
-   const auto& existingType = m_typenames.find(classId);
-   if (existingType != m_typenames.end())
+   if (m_typenames.contains(classId))
    {
       // TODO Validate that both definitions are the same
       return;
@@ -126,8 +125,7 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
 void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
    const string classId(lowerCase(arrayDef->name.name));
-   const auto& existingType = m_typenames.find(classId);
-   if (existingType != m_typenames.end())
+   if (m_typenames.contains(classId))
    {
       // TODO Validate that both definitions are the same
       return;
