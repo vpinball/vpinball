@@ -190,7 +190,7 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
    // Identify a suitable default if non is already provided
    if (defaultFormat == bgfx::TextureFormat::Count)
    {
-      const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displayId);
+      const SDL_DisplayMode* displayMode = displayId == 0 ? nullptr : SDL_GetDesktopDisplayMode(displayId);
       if (displayMode)
       {
          switch (displayMode->format)
@@ -221,10 +221,14 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
             break;
          }
       }
+      else
+      {
+         defaultFormat = bgfx::TextureFormat::RGBA8;
+      }
    }
 
    // Search through the list of texture format that can be used as a backbuffer target
-   bgfx::TextureFormat::Enum selectedFormat;
+   bgfx::TextureFormat::Enum selectedFormat = bgfx::TextureFormat::RGBA8;
    int colorSelect = INT_MIN;
    for (int i = 0; i < bgfx::TextureFormat::Count; i++)
    {
