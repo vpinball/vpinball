@@ -1785,27 +1785,30 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   while (partGroupF == m_vedit.end() && !IsNameUnique(layerName))
                   {
                      const wstring oldName = layerName;
-                     size_t lastNonDigit = layerName.length();
-                     while (lastNonDigit > 0 && iswdigit(layerName[lastNonDigit - 1]))
-                        lastNonDigit--;
-                     if (lastNonDigit < layerName.length())
-                     {
-                        // If it ends by a number, then inc the number
-                        std::wstring numberStr = layerName.substr(lastNonDigit);
-                        unsigned long number = std::stoul(numberStr);
-                        number++;
-                        std::wstring base = layerName.substr(0, lastNonDigit);
-                        layerName = base + std::to_wstring(number);
-                     }
-                     else if (oldName.ends_with(L"_Layer"s))
-                     {
-                        // If renaming with layer failed, add a number
-                        layerName = layerName + L"_001";
-                     }
-                     else
+                     if (!oldName.ends_with(L"_Layer"s))
                      {
                         // Postpend "layer" to keep alphabetic order of layer
                         layerName = layerName + L"_Layer";
+                     }
+                     else
+                     {
+                        size_t lastNonDigit = layerName.length();
+                        while (lastNonDigit > 0 && iswdigit(layerName[lastNonDigit - 1]))
+                           lastNonDigit--;
+                        if (lastNonDigit < layerName.length())
+                        {
+                           // If it ends by a number, then inc the number
+                           std::wstring numberStr = layerName.substr(lastNonDigit);
+                           unsigned long number = std::stoul(numberStr);
+                           number++;
+                           std::wstring base = layerName.substr(0, lastNonDigit);
+                           layerName = base + std::to_wstring(number);
+                        }
+                        else
+                        {
+                           // If not, add it
+                           layerName = layerName + L"_001";
+                        }
                      }
                      partGroupF = std::ranges::find_if(m_vedit,
                         [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == layerName); });
