@@ -177,7 +177,7 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
 {
    // First, use the same format as any created window on the same display (as otherwise it seems to cause issues on Linux)
    SDL_DisplayID displayId = SDL_GetDisplayForWindow(wnd->GetCore());
-   for (VPX::Window* existingWnd : m_outputWnd)
+   for (const VPX::Window* existingWnd : m_outputWnd)
    {
       if (existingWnd == nullptr || existingWnd == wnd || existingWnd->GetBackBuffer() == nullptr)
          continue;
@@ -301,20 +301,20 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 #ifdef ENABLE_XR
       assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
+      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
+      assert(init.platformData.context != nullptr);
       // For the time being, we do not support having a desktop swapchain along the headset swapchain under Vulkan, so we run BGFX in headless mode
       // Note that this is needed for native VR (running directly on the headset)
       if (init.type == bgfx::RendererType::Vulkan)
          init.platformData.nwh = nullptr;
-      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
-      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
-      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
-      assert(init.platformData.context != nullptr);
+      // FIXME We need to set the backbuffer size to the eye size for bgfx::clear to work.
+      // This is not clean and should be fixed as this is also the size of the desktop swapchain
+      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth()));
+      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight()));
 #endif
    }
 
    // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
-   //const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-   //assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
    init.resolution.reset &= ~BGFX_RESET_VSYNC;
 
    // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
@@ -326,16 +326,50 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // This is also required for OpenXR which needs all the GPU submission calls to be performed after WaitFrame (sync) and between Begin/EndFrame
    bgfx::renderFrame();
 
+   // We first run in headless mode to initialize the underlying backend and gather information to select a supported backbuffer formats
+   if (init.platformData.nwh)
+   {
+      const uint32_t width = init.resolution.width;
+      const uint32_t height = init.resolution.height;
+      void* nativeWindow = init.platformData.nwh;
+      void* nativeDisplayType = init.platformData.ndt;
+      void* context = init.platformData.context;
+      init.resolution.width = 0;
+      init.resolution.height = 0;
+      init.platformData.nwh = nullptr;
+      init.platformData.ndt = nullptr;
+      init.platformData.context = nullptr;
+      if (!bgfx::init(init))
+      {
+         PLOGE << "Headless BGFX initialization for backbuffer selection failed";
+         exit(-1);
+      }
+
+      // Try to enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
+      if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract) && !g_pplayer->IsVR())
+         init.resolution.reset |= BGFX_RESET_HDR10;
+
+      // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
+      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], bgfx::TextureFormat::Count, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
+      if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
+         init.resolution.reset &= ~BGFX_RESET_HDR10;
+
+      // Then shutdown and reinit with the selected backbuffer format
+      bgfx::shutdown();
+      init.resolution.width = width;
+      init.resolution.height = height;
+      init.platformData.nwh = nativeWindow;
+      init.platformData.ndt = nativeDisplayType;
+      init.platformData.context = context;
+   }
+
    if (!bgfx::init(init))
    {
       PLOGE << "BGFX initialization failed";
       exit(-1);
    }
-
    PLOGI << "BGFX initialized using " << bgfx::getRendererName(bgfx::getRendererType()) << " backend (" << init.resolution.width << 'x' << init.resolution.height << " "
          << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor)) << ')';
-
-   //bgfx::setDebug(BGFX_DEBUG_STATS);
 
    if (g_pplayer->IsVR())
    {
@@ -346,29 +380,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    }
    else
    {
-      // Try to enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI), disabled for VR (not supported) and video capture (to avoid color space issues)
-      if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract))
-         init.resolution.reset |= BGFX_RESET_HDR10;
-
-      // Select the backbuffer color format (only possible after initialization to have access to the list of supported backbuffer formats)
-      const uint32_t defaultFlags = init.resolution.reset;
-      const bgfx::TextureFormat::Enum defaultFormat = init.resolution.formatColor;
-      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], defaultFormat, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
-      if ((init.resolution.formatColor != bgfx::TextureFormat::RGB10A2) && (init.resolution.formatColor != bgfx::TextureFormat::RGBA16F))
-         init.resolution.reset &= ~BGFX_RESET_HDR10;
-      if (defaultFlags != init.resolution.reset || defaultFormat != init.resolution.formatColor)
-      {
-         PLOGD << "Switching backbuffer color format to " << bimg::getName(bimg::TextureFormat::Enum(init.resolution.formatColor));
-         bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
-      }
-
-      // Create the back buffer render target
       const colorFormat backBufferFormat = BGFXtoVPXTextureFormat(init.resolution.formatColor);
       const bool isWcg = init.resolution.reset & BGFX_RESET_HDR10;
       rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.resolution.formatColor, BGFX_INVALID_HANDLE,
                                            init.resolution.formatDepthStencil, "BackBuffer", init.resolution.width, init.resolution.height, backBufferFormat),
          isWcg);
-
       rd->m_framePending = false; // Request first frame to be prepared as soon as possible
    }
 
