@@ -18,8 +18,9 @@ void PinUndo::SetCleanPoint(const SaveDirtyState sds)
    m_table->SetDirty(sds);
 }
 
-// The default behavior is to undo everything, so we disable it when playing (Not great, would be better that editors actually request undo when they want it)
-bool PinUndo::IsDisabled() const { return g_pplayer && !g_pplayer->m_liveUI->IsEditorUIOpened(); }
+// The default behavior is to undo everything, so we disable it when playing (which is evaluated here hackily ...)
+// FIXME this is really hacky. Undo should really only be performed on request by an editor.
+bool PinUndo::IsDisabled() const { return g_pplayer && (g_pplayer->m_liveUI  == nullptr || !g_pplayer->m_liveUI->IsEditorUIOpened()); }
 
 void PinUndo::BeginUndo()
 {
