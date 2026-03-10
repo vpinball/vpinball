@@ -263,7 +263,8 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
 
    if (colorSelect == INT_MIN)
    {
-      PLOGE << "Driver issue encountered while selecting backbuffer format for " << SDL_GetWindowTitle(wnd->GetCore()) << ": driver does not support any backbuffer format.";
+      PLOGE << "Driver issue encountered while selecting backbuffer format for " << SDL_GetWindowTitle(wnd->GetCore()) << ": driver does not report any supported backbuffer format. Defaulting to BGRA8";
+      selectedFormat = bgfx::TextureFormat::BGRA8;
    }
 
    return selectedFormat;
