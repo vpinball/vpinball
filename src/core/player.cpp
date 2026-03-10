@@ -2213,7 +2213,9 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
       getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_ancillaryWndRenderers[window].data() };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
       for (const auto& renderer : me->m_ancillaryWndRenderers[window])
-         Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), ""s, ""s, false, 0, 1000, 0));
+         Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), renderer.name,
+            "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the "s + section + " display. Higher values are priorized other lower ones."s,
+            false, 0, 100, 0));
       std::ranges::sort(me->m_ancillaryWndRenderers[window],
          [&](const AncillaryRendererDef &a, const AncillaryRendererDef &b)
          {
