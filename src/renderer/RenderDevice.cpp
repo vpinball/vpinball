@@ -187,7 +187,7 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
       }
    }
 
-   // Identify a suitable default if non is already provided
+   // Use the display format if no default is already provided
    if (defaultFormat == bgfx::TextureFormat::Count)
    {
       const SDL_DisplayMode* displayMode = displayId == 0 ? nullptr : SDL_GetDesktopDisplayMode(displayId);
@@ -223,6 +223,7 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
       }
       else
       {
+         PLOGE << "SDL failed to gather the screen back buffer format, defaulting to RGBA8 for " << SDL_GetWindowTitle(wnd->GetCore());
          defaultFormat = bgfx::TextureFormat::RGBA8;
       }
    }
@@ -259,6 +260,12 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
          }
       }
    }
+
+   if (colorSelect == INT_MIN)
+   {
+      PLOGE << "Driver issue encountered while selecting backbuffer format for " << SDL_GetWindowTitle(wnd->GetCore()) << ": driver does not support any backbuffer format.";
+   }
+
    return selectedFormat;
 }
 
