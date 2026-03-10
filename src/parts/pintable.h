@@ -473,7 +473,6 @@ public:
    void RenameCollection(Collection *collection, const wstring &newName);
    bool IsNameUnique(const wstring &wzName) const;
    void GetUniqueName(const ItemTypeEnum type, wstring& wzUniqueName) const;
-   void GetUniqueNamePasting(const int type, wstring &wzUniqueName) const;
    wstring GetUniqueName(const wstring &wzRoot) const;
 
 private:

@@ -17,15 +17,16 @@ public:
       FLASHER,    // Custom blended images
       DMD,        // Dot matrix display (Plasma, LED, ...)
       DISPLAY,    // Screen (CRT, LCD, ...)
-      ALPHASEG    // Alphanumeric segment display (VFD, Plasma, LED, ...)
+      ALPHASEG,   // Alphanumeric segment display (VFD, Plasma, LED, ...)
+      EXT_RENDER  // Render of one of the ancillary windows (backglass, topper, scoreview)
    };
    RenderMode m_renderMode = RenderMode::FLASHER;
 
-   // For DMD, Alphanum and Display rendering mode
-   int m_renderStyle = 0;                 // application defined style profile reference
+   // For DMD, Alphanum, Display and external rendering mode
+   int m_renderStyle = 0;                 // application defined style profile reference for displays, window for external render
    string m_imageSrcLink;                 // image source (default is script)
 
-   // For DMD, render the glass
+   // DMD, Alphanum and Display have a glass above the display
    // string m_szImageA;                  // glass image is store as image A
    float m_glassRoughness = 0.f;
    COLORREF m_glassAmbient = 0x000000;
@@ -34,7 +35,7 @@ public:
    float m_glassPadLeft = 0.f;
    float m_glassPadRight = 0.f;
 
-   // For flasher rendering mode
+   // 'Flasher' rendering mode
    int m_filterAmount;
    Filters m_filter;
    RampImageAlignment m_imagealignment;

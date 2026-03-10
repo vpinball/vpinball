@@ -55,6 +55,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Visuals"s))
    {
+      const FlasherData::RenderMode renderMode = props.GetEditedPart<Flasher>(m_flasher)->m_d.m_renderMode;
       props.Checkbox<Flasher>(
          m_flasher, "Visible"s, //
          [this](const Flasher* flasher) { return flasher == m_flasher ? m_visible : flasher->m_d.m_isVisible; }, //
@@ -64,19 +65,22 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             (flasher == m_flasher ? m_visible : flasher->m_d.m_isVisible) = v;
          });
       props.Combo<Flasher>(
-         m_flasher, "Render Mode"s, vector { "Flasher"s, "DMD"s, "Display"s, "Alpha.Seg."s }, //
+         m_flasher, "Render Mode"s, vector { "Flasher"s, "DMD"s, "Display"s, "Alpha.Seg."s, "Ext.Renderer."s }, //
          [](const Flasher* flasher) { return flasher->m_d.m_renderMode; }, //
          [](Flasher* flasher, int v) { flasher->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(v); });
-      props.InputRGB<Flasher>(
-         m_flasher, "Color"s, //
-         [](const Flasher* flasher) { return convertColor(flasher->m_d.m_color); }, //
-         [](Flasher* flasher, const vec3& v) { flasher->m_d.m_color = convertColorRGB(v); });
+      if (renderMode != FlasherData::EXT_RENDER)
+      {
+         props.InputRGB<Flasher>(
+            m_flasher, "Color"s, //
+            [](const Flasher* flasher) { return convertColor(flasher->m_d.m_color); }, //
+            [](Flasher* flasher, const vec3& v) { flasher->m_d.m_color = convertColorRGB(v); });
+      }
       props.InputFloat<Flasher>(
          m_flasher, "Depth bias"s, //
          [](const Flasher* flasher) { return flasher->m_d.m_depthBias; }, //
          [](Flasher* flasher, float v) { flasher->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
 
-      if (const FlasherData::RenderMode renderMode = props.GetEditedPart<Flasher>(m_flasher)->m_d.m_renderMode; renderMode == FlasherData::FLASHER)
+      if (renderMode == FlasherData::FLASHER)
       {
          props.Combo<Flasher>(
             m_flasher, "Image Mode"s, vector { "World"s, "Wrap"s }, //
@@ -98,6 +102,13 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             m_flasher, "Mix Factor (%)"s, //
             [](const Flasher* flasher) { return flasher->m_d.m_filterAmount; }, //
             [](Flasher* flasher, int v) { flasher->m_d.m_filterAmount = v; });
+      }
+      else if (renderMode == FlasherData::EXT_RENDER)
+      {
+         props.Combo<Flasher>(
+            m_flasher, "Renderer"s, vector { "Backglass"s, "Score View"s, "Topper"s }, //
+            [](const Flasher* flasher) { return flasher->m_d.m_renderStyle - 1; }, //
+            [](Flasher* flasher, int v) { flasher->m_d.m_renderStyle = v + 1; });
       }
       else
       {
