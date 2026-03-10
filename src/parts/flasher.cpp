@@ -1207,7 +1207,7 @@ void Flasher::Render(const unsigned int renderMask)
    const Vertex3Ds pos(0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy), m_d.m_height);
 
    if (m_desktopBackdrop)
-      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(false, false, true);
+      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(m_d.m_renderMode == FlasherData::EXT_RENDER, false, true);
 
    if (isUIPass)
    {
@@ -1305,7 +1305,6 @@ void Flasher::Render(const unsigned int renderMask)
       }
 
       case FlasherData::DMD:
-      {
          if (m_dmdFrame)
             m_renderFrame = m_dmdFrame;
          else
@@ -1339,12 +1338,9 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
-      }
 
       case FlasherData::DISPLAY:
-      {
-         const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
-         if (display.state.frame != nullptr)
+         if (const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
          {
             BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
                display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
@@ -1366,12 +1362,9 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
-      }
 
       case FlasherData::ALPHASEG:
-      {
-         const ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
-         if (segs.state.frame != nullptr && segs.source->nElements != 0)
+         if (const ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink); segs.state.frame != nullptr && segs.source->nElements != 0)
          {
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
@@ -1391,8 +1384,44 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
+
+      case FlasherData::EXT_RENDER:
+         if (m_d.m_renderStyle >= VPXWindowId::VPXWINDOW_Backglass && m_d.m_renderStyle <= VPXWindowId::VPXWINDOW_Topper)
+         {
+            const float width = m_maxx - m_minx;
+            const float height = m_maxy - m_miny;
+            m_rd->ResetRenderState();
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            // Draw a solid black background using the common flasher mesh and transform
+            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
+            m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
+            m_rd->DrawMesh(m_rd->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), m_d.m_depthBias - m_d.m_height, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+            // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
+            if (m_desktopBackdrop)
+               g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true, //
+                  Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
+                  * Matrix3D::MatrixScale(width, height, 0.f) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height (and a z scale at 0)
+                  * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) //
+                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f));
+            else
+               g_pplayer->m_renderer->UpdateBasicShaderMatrix( //
+                  Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
+                  * Matrix3D::MatrixScale(width, height, 0.f) //
+                  * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
+                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height));
+            VPXRenderContext2D &context
+               = g_pplayer->m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height);
+            for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
+               if (renderer.Render(&context, renderer.context))
+                  break;
+            g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+         }
+         break;
       }
-   }
+
 
    if (m_desktopBackdrop)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();

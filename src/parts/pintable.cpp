@@ -515,21 +515,6 @@ wstring PinTable::GetUniqueName(const wstring &wzRoot) const
    return wzName;
 }
 
-void PinTable::GetUniqueNamePasting(const int type, wstring& wzUniqueName) const
-{
-   //if the original name is not yet used, use that one (so there's nothing we have to do) 
-   //otherwise add/increase the suffix until we find a name that's not used yet
-   if (!IsNameUnique(wzUniqueName))
-   {
-      //first remove the existing suffix
-      wstring input = wzUniqueName;
-      size_t lastNonDigit = input.length();
-      while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
-         --lastNonDigit;
-      wzUniqueName = GetUniqueName(input.substr(0, lastNonDigit));
-   }
-}
-
 void PinTable::SetDirtyDraw()
 {
    if (g_pplayer == nullptr && m_tableEditor != nullptr)
@@ -3746,7 +3731,16 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
             BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, NULL, NULL);
             peditNew->Load(reader);
             peditNew->m_desktopBackdrop = m_vpinball->m_desktopBackdropView;
-
+            //if the original name is not yet used, use that one (so there's nothing we have to do) otherwise add/increase the suffix until we find a name that's not used yet
+            if (!IsNameUnique(peditNew->GetWName()))
+            {
+               //first remove the existing suffix
+               wstring input = peditNew->GetWName();
+               size_t lastNonDigit = input.length();
+               while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+                  --lastNonDigit;
+               peditNew->SetName(GetUniqueName(input.substr(0, lastNonDigit)));
+            }
             peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
 
             AddPart(peditNew);

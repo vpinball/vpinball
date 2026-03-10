@@ -89,8 +89,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       throw(E_FAIL);
    }
 
-   const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
-   if (isHdr2020)
+   if (const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer(); isHdr2020)
    {
       m_exposure *= g_app->m_settings.GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
@@ -123,6 +122,14 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const float AAfactor = m_table->m_settings.GetPlayer_AAFactor();
    const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
+
+   m_ancillaryRenderContext = VPXRenderContext2D {
+      VPXWindowId::VPXWINDOW_Playfield, 0.f, 0.f, 0, 0.f, 0.f,
+      DrawImage, // Draw an image
+      DrawMatrixDisplay, // Draw a display (DMD, CRT, ...)
+      DrawSegmentDisplay, // Draw a segment display element (just one digit, using max blending to allow building a complete display)
+      &m_ancillaryRenderSetup // Custom rendering data
+   };
 
    if (m_renderDevice->GetOutputBackBuffer() && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
@@ -1131,7 +1138,7 @@ void Renderer::UpdateBallShaderMatrix()
 #endif
 }
 
-void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD)
+void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD, const Matrix3D& objectTrafo)
 {
    Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
    matWorldViewProj[0].SetIdentity();
@@ -1139,6 +1146,7 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
    matWorldViewProj[0]._41 = -1.0f;
    matWorldViewProj[0]._22 = -2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight();
    matWorldViewProj[0]._42 = 1.0f;
+   matWorldViewProj[0] = objectTrafo * matWorldViewProj[0];
    const int eyes = m_renderDevice->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -2971,9 +2979,10 @@ void Renderer::RenderFrame()
 void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const float tintR, const float tintG, const float tintB, const float alpha, const float texX, const float texY,
    const float texW, const float texH, const float pivotX, const float pivotY, const float rotation, const float srcX, const float srcY, const float srcW, const float srcH)
 {
+   assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
    if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
       return;
-   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    std::shared_ptr<BaseTexture> const tex = VPXPluginAPIImpl::GetInstance().GetTexture(texture);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
@@ -3000,8 +3009,12 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    const float ty1 = 1.f - texY / (float)tex->height();
    const float tx2 = (texX + texW) / (float)tex->width();
    const float ty2 = 1.f - (texY + texH) / (float)tex->height();
-   Vertex3D_NoTex2 vertices[4]
-      = { { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 }, { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 }, { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 }, { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
+   Vertex3D_NoTex2 vertices[4] = { //
+      { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 }, //
+      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 }, //
+      { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 }, //
+      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 }
+   };
    if (rotation != 0.f)
    {
       const float px = lerp(vx1, vx2, (pivotX - texX) / (float)tex->width());
@@ -3009,7 +3022,8 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
       const Matrix3D matRot = Matrix3D::MatrixTranslate(-px, -py, 0.f) * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) * Matrix3D::MatrixTranslate(px, py, 0.f);
       matRot.TransformPositions(vertices, vertices, 4);
    }
-   rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, 0.f);
+   rdl->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_with_texture);
+   rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
 void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style, VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB,
@@ -3017,7 +3031,8 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    const float glassAmbientB, VPXTexture dispTex, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha, const float dispPadL,
    const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
 {
-   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
+   const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
    std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
@@ -3052,7 +3067,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
+   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
 void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderStyle style, VPXSegDisplayHint shapeHint, VPXTexture glassTex, const float glassTintR, const float glassTintG,
@@ -3060,7 +3075,8 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    const float glassAmbientG, const float glassAmbientB, SegElementType type, const float* state, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness,
    const float alpha, const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
 {
-   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
+   const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
    VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
@@ -3087,10 +3103,11 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
+   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
-RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear)
+RenderTarget* Renderer::SetupAncillaryRenderTarget(
+   VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear)
 {
    assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
    static std::array<string, 3> renderPassNames = { "Backglass Render"s, "ScoreView Render"s, "Topper Render"s };
@@ -3098,7 +3115,6 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::Rend
    const string& renderPassName = renderPassNames[window - VPXWindowId::VPXWINDOW_Backglass];
    const string& hdrRTName = hdrRTNames[window - VPXWindowId::VPXWINDOW_Backglass];
 
-   // TODO implement rendering for VR (on a flasher)
    if (g_pplayer->IsVR())
       return nullptr;
 
@@ -3197,7 +3213,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::Rend
    return rd->GetCurrentRenderTarget();
 }
 
-void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT)
+void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT)
 {
    if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
       return;
@@ -3233,7 +3249,21 @@ void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, VPX::RenderOutpu
    UpdateBasicShaderMatrix();
 }
 
-void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers)
+VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias)
+{
+   // Ancillary rendering is single threaded, on the main thread, therefore we store render context and state directly in a unique state object owned by the renderer
+   m_ancillaryRenderSetup.isOutputLinear = isOutputLinear;
+   m_ancillaryRenderSetup.depthbias = depthbias;
+   m_ancillaryRenderContext.window = window;
+   m_ancillaryRenderContext.is2D = is2D;
+   m_ancillaryRenderContext.srcWidth = width;
+   m_ancillaryRenderContext.srcHeight = height;
+   m_ancillaryRenderContext.outWidth = width;
+   m_ancillaryRenderContext.outHeight = height;
+   return m_ancillaryRenderContext;
+}
+
+void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers)
 {
    bool isOutputLinear;
    int m_outputX, m_outputY, m_outputW, m_outputH;
@@ -3242,22 +3272,12 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& outp
    if (outputRT == nullptr)
       return;
 
-   VPXRenderContext2D context
-   {
-      window, static_cast<float>(m_outputW), static_cast<float>(m_outputH),
-      1, // 2D render
-      static_cast<float>(m_outputW), static_cast<float>(m_outputH),
-      DrawImage, // Draw an image
-      DrawMatrixDisplay, // Draw a display (DMD, CRT, ...)
-      DrawSegmentDisplay,  // Draw a segment display element (just one digit, using max blending to allow building a complete display)
-      &isOutputLinear // Custom rendering data (for the time being, just the HDR flag)
-   };
-
    rd->ResetRenderState();
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
    bool rendered = false;
+   VPXRenderContext2D& context = GetAncillaryRenderContext(window, static_cast<float>(m_outputW), static_cast<float>(m_outputH), true, isOutputLinear, 0.f);
    for (auto& renderer : ancillaryWndRenderers)
    {
       rendered = renderer.Render(&context, renderer.context);

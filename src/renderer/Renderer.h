@@ -35,7 +35,7 @@ public:
    void MarkShaderDirty() { m_shaderDirty = true; }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
-   void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD);
+   void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD, const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
@@ -205,6 +205,8 @@ public:
 
    unsigned int GetPlayerModeVisibilityMask() const { return m_visibilityMask; }
 
+   VPXRenderContext2D& GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias);
+
 private:
    void RenderItem(IEditable* renderable, bool isNoBackdrop);
    void RenderStaticPrepass();
@@ -237,11 +239,16 @@ private:
       const float glassAmbientG, const float glassAmbientB, SegElementType type, const float* state, const float dispTintR, const float dispTintG, const float dispTintB,
       const float brightness, const float alpha, const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW,
       const float srcH);
-   RenderTarget* SetupAncillaryRenderTarget(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear);
-   void ClearEmbeddedAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT);
-   void RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers);
+   RenderTarget* SetupAncillaryRenderTarget(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear);
+   void ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT);
+   void RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers);
    std::unique_ptr<RenderTarget> m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1];
-
+   struct
+   {
+      bool isOutputLinear;
+      float depthbias;
+   } m_ancillaryRenderSetup;
+   VPXRenderContext2D m_ancillaryRenderContext;
 
    bool m_shaderDirty = true;
    void SetupShaders();
