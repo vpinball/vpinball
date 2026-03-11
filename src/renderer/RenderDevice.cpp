@@ -839,7 +839,14 @@ RenderDevice::RenderDevice(
    if (isVR && !g_isAndroid)
    {
       VPX::Window* previewWnd = new VPX::Window("Visual Pinball VR Preview"s, g_pplayer->m_ptable->m_settings, VPXWindowId::VPXWINDOW_VRPreview);
-      previewWnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8), false);
+#ifdef ENABLE_BGFX
+      // Color and depth format are likely wrong => use the ones selected by the OpenXR backend
+      RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, bgfx::TextureFormat::RGBA8, BGFX_INVALID_HANDLE,
+         bgfx::TextureFormat::D24, "BackBuffer", previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
+#else
+      RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
+#endif
+      previewWnd->SetBackBuffer(backbuffer, false);
       previewWnd->Show();
       previewWnd->RaiseAndFocus();
       m_outputWnd.push_back(previewWnd);

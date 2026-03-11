@@ -838,7 +838,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp" />
@@ -1632,7 +1631,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerPlateMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h" />

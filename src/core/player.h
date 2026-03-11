@@ -324,6 +324,7 @@ public:
    int m_ModalRefCount = 0;
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
+   Flasher *m_implicitVRBackglass = nullptr;
 
    // External DMD and displays, defined from script or captured
    bool m_capExtDMD = false; // frame capturing (hack for VR)
