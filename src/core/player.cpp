@@ -396,6 +396,30 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
    }
 
+   if (IsVR())
+   {
+      m_implicitVRBackglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, m_ptable, 0.5f * (m_ptable->m_right - m_ptable->m_left), 0.f);
+      if (m_implicitVRBackglass)
+      {
+         m_implicitVRBackglass->SetName(m_ptable->GetUniqueName(L"vr_backglass"s));
+         const float flasherWidth = 100.f; // We should gather this from the object instead of guessing the default size
+         const float flasherHeight = 100.f;
+         const float backglassScale = 1.2f;
+         const float backglassWidth = backglassScale * (m_ptable->m_right - m_ptable->m_left);
+         const float backglassHeight = backglassWidth * 3.f / 4.f;
+         m_implicitVRBackglass->Scale(backglassWidth / flasherWidth, backglassHeight / flasherHeight, Vertex2D {}, true);
+         m_implicitVRBackglass->m_d.m_rotX = -90.f;
+         m_implicitVRBackglass->m_d.m_height = backglassHeight * 0.5f + m_ptable->m_glassTopHeight;
+         m_implicitVRBackglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
+         m_implicitVRBackglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
+         m_implicitVRBackglass->m_d.m_depthBias = 10000.0f; // Draw before other objects
+         m_implicitVRBackglass->m_d.m_isVisible = m_ptable->m_settings.GetPlayerVR_AddBackglass();
+         m_ptable->AddPart(m_implicitVRBackglass);
+         m_ptable->m_undo.Undo(true);
+         m_implicitVRBackglass->Release();
+      }
+   }
+
    // Adjust the implicit playfield reflection probe
    RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
    if (pf_reflection_probe)
@@ -933,6 +957,12 @@ Player::~Player()
    {
       m_ptable->RemovePart(m_implicitPlayfieldMesh);
       m_implicitPlayfieldMesh = nullptr;
+   }
+
+   if (m_implicitVRBackglass && FindIndexOf(m_ptable->GetParts(), (IEditable *)m_implicitVRBackglass) != -1)
+   {
+      m_ptable->RemovePart(m_implicitVRBackglass);
+      m_implicitVRBackglass = nullptr;
    }
 
    m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);

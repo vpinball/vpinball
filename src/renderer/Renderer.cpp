@@ -169,28 +169,15 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       BAMView::init();
    #endif
 
-   m_backGlass = nullptr;
-
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR) {
-      m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->GetViewMode()]) : nullptr);
-      //AMD Debugging
-      colorFormat renderBufferFormatVR;
-      const int textureModeVR = g_pplayer->m_ptable->m_settings.GetPlayerVR_EyeFBFormat();
-      switch (textureModeVR) {
-      case 0:
-         renderBufferFormatVR = RGB8;
-         break;
-      case 2:
-         renderBufferFormatVR = RGB16F;
-         break;
-      case 3:
-         renderBufferFormatVR = RGBA16F;
-         break;
-      case 1:
-      default:
-         renderBufferFormatVR = RGBA8;
-         break;
+      colorFormat renderBufferFormatVR; // Legacy AMD Debugging (useless now, remove)
+      switch (g_pplayer->m_ptable->m_settings.GetPlayerVR_EyeFBFormat())
+      {
+      case 0: renderBufferFormatVR = RGB8; break;
+      case 2: renderBufferFormatVR = RGB16F; break;
+      case 3: renderBufferFormatVR = RGBA16F; break;
+      default: renderBufferFormatVR = RGBA8; break;
       }
       m_pOffscreenVRLeft = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "VRLeft"s, m_renderWidth, m_renderHeight, renderBufferFormatVR, false, 1, "Fatal Error: unable to create left eye buffer!");
       m_pOffscreenVRRight = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "VRRight"s, m_renderWidth, m_renderHeight, renderBufferFormatVR, false, 1, "Fatal Error: unable to create right eye buffer!");
@@ -348,7 +335,6 @@ Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
-   delete m_backGlass;
    m_ballMeshBuffer = nullptr;
    #ifdef DEBUG_BALL_SPIN
    m_ballDebugPoints = nullptr;
@@ -1819,12 +1805,6 @@ void Renderer::RenderDynamics()
 
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
-
-   #ifdef OPEN_VR
-   // Render the default backglass without depth write before the table so that it will be visible for tables without a VR backglass but overwriten otherwise
-   if (m_backGlass != nullptr)
-      m_backGlass->Render();
-   #endif
 
    if (m_shadeMode == ShadeMode::Default)
    {

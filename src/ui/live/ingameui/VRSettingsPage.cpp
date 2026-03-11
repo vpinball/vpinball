@@ -47,6 +47,11 @@ VRSettingsPage::VRSettingsPage()
       }));
 
    AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_AddBackglass, //
+      [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
+      [this](bool v) { m_player->m_implicitVRBackglass->m_d.m_isVisible = v; }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));

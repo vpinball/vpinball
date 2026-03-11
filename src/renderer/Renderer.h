@@ -6,7 +6,6 @@
 #include "math/ModelViewProj.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
-#include "Backglass.h"
 #include "plugins/ControllerPlugin.h"
 #include "parts/PartGroup.h"
 
@@ -109,8 +108,6 @@ public:
    void SetAnisoFiltering(bool enable);
 
    std::shared_ptr<Sampler> GetBallEnvironment() const { return m_ballEnvSampler; }
-
-   BackGlass* m_backGlass = nullptr;
 
    class SceneLighting
    {

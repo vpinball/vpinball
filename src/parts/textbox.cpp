@@ -395,19 +395,12 @@ void Textbox::Render(const unsigned int renderMask)
       #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
       // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
       m_rd->m_DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD);
-      if (g_pplayer->m_renderer->m_backGlass)
-      {
-         g_pplayer->m_renderer->m_backGlass->GetDMDPos(x, y, w, h);
-         m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      }
       #elif defined(ENABLE_DX9)
       //const float width = m_renderer->m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
       m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
       #endif
 
-      Vertex3D_NoTex2 vertices[4] = { 
+      Vertex3D_NoTex2 vertices[4] = {
          { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
          { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
          { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
