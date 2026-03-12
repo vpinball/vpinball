@@ -1392,8 +1392,6 @@ void Flasher::Render(const unsigned int renderMask)
             const float height = m_maxy - m_miny;
             m_rd->ResetRenderState();
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-            //m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-            //m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             // Draw a solid black background using the common flasher mesh and transform
             m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
             m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);

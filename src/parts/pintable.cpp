@@ -1673,7 +1673,98 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                         part->GetScriptable()->m_wzName = GetUniqueName(part->GetScriptable()->m_wzName);
                         PLOGE << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetScriptable()->m_wzName);
                      }
-                     AddPart(part);
+
+                     // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an 
+                     // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
+                     // Note that this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object
+                     if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
+                     {
+                        Primitive * primitive = (Primitive *)part;
+                        if (primitive->m_d.m_use3DMesh)
+                        {
+                           // We need to reduce the primitive to a flasher rectangle. The algorithm is:
+                           // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
+                           // - to find the plane position by considering the vertices nearest to the player (to discard back of the primitive if using a box instead of a rect)
+                           // - to evaluate an axis align square in this plane and define a flasher accordingly (a rotated backglass is unlikely)
+                           const Matrix3D& transform = primitive->RecalculateMatrices();
+                           vector<vec3> vertices(primitive->m_mesh.m_vertices.size());
+                           for (size_t i = 0; i < primitive->m_mesh.m_vertices.size(); i++)
+                              vertices[i] = transform * primitive->m_mesh.m_vertices[i];
+                           vec3 planeNormal(0.f, 0.f, 0.f);
+                           float planeNormalWeight = 0.f;
+                           for (size_t i = 0; i < primitive->m_mesh.m_indices.size(); i += 3)
+                           {
+                              vec3 &a = vertices[primitive->m_mesh.m_indices[i]];
+                              vec3 &b = vertices[primitive->m_mesh.m_indices[i + 1]];
+                              vec3 &c = vertices[primitive->m_mesh.m_indices[i + 2]];
+                              vec3 ab(b.x - a.x, b.y - a.y, b.z - a.z);
+                              vec3 ac(c.x - a.x, c.y - a.y, c.z - a.z);
+                              vec3 n = CrossProduct(ac, ab);
+                              n.Normalize();
+                              const float weight = n.Dot(vec3(0.f, 0.f, -1.f));
+                              if (weight > 0.f)
+                              {
+                                 planeNormal += weight * n;
+                                 planeNormalWeight += weight;
+                              }
+                           }
+
+                           planeNormal.x = 0.f; // to simplify, we align the backglass X axis with the table (after all, backglasses should be facing the player)
+                           if (const float normalLength = planeNormal.Length(); normalLength > 1e-5f)
+                           {
+                              planeNormal /= normalLength;
+
+                              float planeDist = FLT_MAX;
+                              for (const int idx : primitive->m_mesh.m_indices)
+                                 planeDist = min(planeDist, planeNormal.Dot(vertices[idx]));
+
+                              float minx = FLT_MAX; // min/max along the x axis
+                              float miny = FLT_MAX; // min/max along planeYAxis
+                              float maxx = FLT_MIN;
+                              float maxy = FLT_MIN;
+                              const vec3 planeYAxis = CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
+                              for (const int idx : primitive->m_mesh.m_indices)
+                                 if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
+                                 {
+                                    const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
+                                    const float py = vertices[idx].Dot(planeYAxis);
+                                    minx = min(minx, px);
+                                    maxx = max(miny, px);
+                                    miny = min(miny, py);
+                                    maxy = max(maxy, py);
+                                 }
+                              const float backglassWidth = maxx - minx;
+                              const float backglassHeight = maxy - miny;
+                              if (backglassWidth > 0.f && backglassHeight > 0.f)
+                              {
+                                 Flasher *backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
+                                 if (backglass)
+                                 {
+                                    backglass->m_wzName = part->GetWName();
+                                    backglass->m_onLoadExpectedPartGroup = part->m_onLoadExpectedPartGroup;
+                                    backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D {}, true); // We should gather the base flasher size from the object instead of guessing its default value
+                                    vec3 center = planeDist * planeNormal;
+                                    center += (miny + 0.5f * backglassHeight) * planeYAxis;
+                                    center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
+                                    backglass->Translate(Vertex2D(center.x, center.y));
+                                    backglass->m_d.m_vCenter = Vertex2D(center.x, center.y);
+                                    backglass->m_d.m_height = center.z;
+                                    backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
+                                    backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
+                                    backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
+                                    backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
+                                    backglass->m_d.m_isVisible = true;
+                                    parts[i] = backglass;
+                                    PLOGI << "Primitive '" << part->GetName() << "' used as a VR backglass was replaced by an external renderer flasher";
+                                    part->Release();
+                                 }
+                              }
+                           }
+                        }
+                     }
+
+                     AddPart(parts[i]);
+                     parts[i]->Release();
                   }
                }
             }
