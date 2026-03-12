@@ -27,6 +27,7 @@
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
+#include "DXGIRegistry.h"
 #endif
 
 #if defined(ENABLE_DX9)
@@ -339,6 +340,9 @@ private:
 
    void CaptureGLScreenshot();
 
+   #if !defined(__STANDALONE__)
+   DXGIRegistry m_DXGIRegistry;
+   #endif
 #elif defined(ENABLE_DX9)
 public:
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }

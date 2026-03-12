@@ -297,7 +297,6 @@ public:
 #else // Linux and variants (POSIX.1-2008)
    bool IsPlayfield() const { return wcscasecmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
 #endif
-   bool IsBackglass() const { return StrCompareNoCase(m_d.m_szImage, "backglassimage"s); }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
@@ -333,7 +332,6 @@ private:
    Light * m_lightmap = nullptr;
 
    bool m_useAsPlayfield = false;
-   bool m_isBackGlassImage = false;
 
    Matrix3D m_fullMatrix;
    Matrix3D m_physicMatrix;

@@ -240,17 +240,6 @@ void main()
    color = float4(color2/*+colorg*/, vRes_Alpha_time.z);
 }
 
-////ps_main_DMD_ext
-
-in vec2 tex0;
-
-void main()
-{
-   FS_LAYER_TO_GLOBAL;
-   color.rgb = texture(tex_dmd, tex0).rgb;
-   color.a = vRes_Alpha_time.z;
-}
-
 ////ps_main_noDMD
 
 in vec2 tex0;
@@ -275,9 +264,7 @@ void main()
 ////TECHNIQUES
 
 basic_DMD:P0:vs_main():gs_simple_main():ps_main_DMD()
-basic_DMD_ext:P0:vs_main():gs_simple_main():ps_main_DMD_ext()
 basic_DMD_world:P0:vs_simple_world():gs_simple_world():ps_main_DMD()
-basic_DMD_world_ext:P0:vs_simple_world():gs_simple_world():ps_main_DMD_ext()
 basic_noDMD:P0:vs_main():gs_simple_main():ps_main_noDMD()
 basic_noDMD_world:P0:vs_simple_world():gs_simple_world():ps_main_noDMD()
 basic_noDMD_notex:P0:vs_main():gs_simple_main():ps_main_noDMD_notex()

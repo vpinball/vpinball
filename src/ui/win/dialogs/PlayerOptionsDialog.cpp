@@ -43,9 +43,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
    {
       AddToolTip(GetDlgItem(IDC_TURN_VR_ON), "Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.");
       AddToolTip(GetDlgItem(IDC_COMBO_TEXTURE), "Pixel format for VR Rendering.");
-      AddToolTip(GetDlgItem(IDC_CAP_EXTDMD),
-         "Attempt to capture an external DMD window such as Freezy/DMDext, UltraDMD or P-ROC.\r\n\r\nFor Freezy/DMDext the DmdDevice.ini needs to set 'stayontop = true'.");
-      AddToolTip(GetDlgItem(IDC_CAP_PUP), "Attempt to capture the PUP player window and display it as a Backglass in VR.");
 
 #if defined(ENABLE_XR) || defined(ENABLE_DX9)
       GetDlgItem(IDC_SCALE_TO_CM).ShowWindow(SW_HIDE); // OpenXR always use fixed scale to real world lockbar width
@@ -65,8 +62,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
 
 #if defined(ENABLE_DX9)
       GetDlgItem(IDC_TURN_VR_ON).EnableWindow(FALSE);
-      GetDlgItem(IDC_CAP_EXTDMD).EnableWindow(FALSE);
-      GetDlgItem(IDC_CAP_PUP).EnableWindow(FALSE);
 #endif
 
       const bool scaleToFixedWidth = settings.GetPlayerVR_ScaleToFixedWidth();
@@ -89,12 +84,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
       ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "VR disabled");
       ::SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-      bool on = settings.GetPlayer_CaptureExternalDMD();
-      SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      on = settings.GetPlayer_CapturePUP();
-      SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
       //AMD Debugging
       const int textureModeVR = settings.GetPlayerVR_EyeFBFormat();
@@ -146,12 +135,6 @@ void PlayerOptionsDialog::OnOK()
 
       const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
       settings.SetPlayerVR_AskToTurnOn((int)askToTurnOn, false);
-
-      bool selected = IsDlgButtonChecked(IDC_CAP_EXTDMD) != 0;
-      settings.SetPlayer_CaptureExternalDMD(selected, false);
-
-      selected = IsDlgButtonChecked(IDC_CAP_PUP) != 0;
-      settings.SetPlayer_CapturePUP(selected, false);
    }
 
    settings.Save();

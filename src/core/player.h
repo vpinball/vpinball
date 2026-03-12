@@ -327,13 +327,9 @@ public:
    Flasher *m_implicitVRBackglass = nullptr;
 
    // External DMD and displays, defined from script or captured
-   bool m_capExtDMD = false; // frame capturing (hack for VR)
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
    unsigned int m_dmdFrameId = 0;
-
-   bool m_capPUP = false;
-   std::shared_ptr<BaseTexture> m_texPUP = nullptr;
 
    int m_nFrameToCapture = 0;
    int m_frameCaptureFPS = 0;

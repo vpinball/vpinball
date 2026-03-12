@@ -809,7 +809,6 @@
 #define IDD_SOUND_POSITION_DIALOG       629
 #define IDR_BLANK_TABLE                 630
 #define IDD_TOOLBAR                     630
-#define IDD_VR_OPTIONS                  631
 #define IDR_STRIPPED_TABLE              631
 #define IDR_LIGHTSEQ_TABLE              632
 #define IDD_PROPERTY_DIALOG             647
@@ -985,7 +984,6 @@
 #define IDC_COMBO_TEXTURE               833
 #define IDC_LAYER_EDIT_BUTTON           834
 #define IDC_EXPAND_COLLAPSE_BUTTON      834
-#define IDC_CAP_EXTDMD                  834
 #define IDC_VR_SCALE_LABEL              835
 #define IDC_LAYER_LISTCONTROL           836
 #define IDC_SUPER_SAMPLING_LABEL        836
@@ -995,7 +993,6 @@
 #define IDC_LAYER_FILTER_STATIC         838
 #define IDC_FAR_LABEL                   838
 #define IDC_DMD_TYPE_INFO               838
-#define IDC_CAP_PUP                     839
 #define IDC_STATIC_ELEMENT_TYPE         839
 #define ID_APPLY                        840
 #define IDC_VR_MODE                     840

@@ -236,8 +236,6 @@ PropEnum(Player, VRPreview, "Preview mode"s, "Select VR preview mode"s, int, 1, 
 PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, "Shrink VR preview"s, false);
 PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass display to the scene"s, false);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
-PropBool(Player, CaptureExternalDMD, "Capture External DMD"s, "Capture an external DMD Window and render it into the VR viewport.\nThis feature is deprecated and unsupported."s, false);
-PropBool(Player, CapturePUP, "Capture PinUp Player"s, "Capture PinUp Player (PUP) Window and render it into the VR viewport.\nThis feature is deprecated and unsupported."s, false);
 // Legacy OpenVR settings (to be removed)
 PropEnum(PlayerVR, EyeFBFormat, "EyeFBFormat"s, "VR frame buffer format"s, int, 1, "RGB 8"s, "RGBA 8 (Recommended)"s, "RGB 16F"s, "RGBA 16F"s);
 PropFloatUnbounded(PlayerVR, Slope, "Slope"s, "VR view slope"s, 6.5f);

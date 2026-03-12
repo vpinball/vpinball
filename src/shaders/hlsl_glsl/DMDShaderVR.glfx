@@ -157,17 +157,6 @@ void main()
     color = float4(InvReinhardToneMap(InvGamma(color2/*+colorg*/)), vRes_Alpha_time.z); 
 }
 
-////ps_main_DMD_ext
-
-in vec2 tex0;
-
-void main()
-{
-   FS_LAYER_TO_GLOBAL;
-   color.rgb = texture(tex_dmd, tex0).rgb; //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
-   color.a = vRes_Alpha_time.z;
-}
-
 ////ps_main_noDMD
 
 in vec2 tex0;
@@ -196,9 +185,7 @@ void main()
 ////TECHNIQUES
 
 basic_DMD:P0:vs_main():gs_simple():ps_main_DMD()
-basic_DMD_ext:P0:vs_main():gs_simple():ps_main_DMD_ext()
 basic_DMD_world:P0:vs_simple_world():gs_simple():ps_main_DMD()
-basic_DMD_world_ext:P0:vs_simple_world():gs_simple():ps_main_DMD_ext()
 basic_noDMD:P0:vs_main():gs_simple():ps_main_noDMD()
 basic_noDMD_world:P0:vs_simple_world():gs_simple():ps_main_noDMD()
 basic_noDMD_notex:P0:vs_main():gs_simple():ps_main_noDMD_notex()

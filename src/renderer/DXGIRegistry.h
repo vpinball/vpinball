@@ -2,25 +2,9 @@
 
 #pragma once
 
-// Disabled for DX9 since it causes conflict with DX9
-// Also disabled for BGFX at the moment
-#ifdef EXT_CAPTURE
-#include "renderer/typedefs3D.h"
-
-#include <vector>
-#include <string>
-#include <mutex>
-
 #include <d3d11.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
-
-void StartDMDCapture();
-void StartPUPCapture();
-void UpdateExtCaptures();
-void StopCaptures();
-bool HasDMDCapture();
-bool HasPUPCapture();
 
 class DXGIRegistry final
 {
@@ -161,70 +145,3 @@ private:
    vector<Output*> m_outputs;
    vector<Device*> m_devices;
 };
-
-extern DXGIRegistry g_DXGIRegistry;
-
-
-
-class ExtCaptureManager final
-{
-public:
-   enum CaptureState
-   {
-      CS_Undeclared, // State of an unkown capture
-      CS_Uninitialized, // Initial state
-      CS_Searching, // Searching for the target window to capture
-      CS_Texture, // Waiting for main render thread to create the texture
-      CS_Capturing, // Everything ok, capture in progress
-      CS_Failure // Failed (no going back)
-   };
-   CaptureState GetState(const string& name) const;
-   void StartCapture(const string& name, std::shared_ptr<BaseTexture>* targetTexture, const vector<string>& windowlist);
-   void Update();
-   void Stop();
-
-   ~ExtCaptureManager() { Stop(); }
-
-private:
-   struct Capture;
-   struct Duplication
-   {
-      bool m_failed = false;
-      DXGIRegistry::Output* m_output = nullptr;
-      DXGIRegistry::Device* m_device = nullptr;
-      IDXGIOutputDuplication* m_duplication = nullptr;
-      ID3D11Texture2D* m_stagingTex = nullptr;
-      uint8_t* m_metaDataBuffer = nullptr;
-      unsigned int m_metaDataBufferSize = 0;
-   };
-   struct Capture
-   {
-      string m_name;
-      CaptureState m_state = CS_Uninitialized;
-      vector<string> m_searchWindows;
-      Duplication* m_duplication;
-      std::shared_ptr<BaseTexture>* m_targetTexture;
-      HWND m_window;
-      HBITMAP m_hBitmap;
-      void* m_data = nullptr;
-      int m_delay = 0;
-      bool m_dirty = false; // Data needs to be updated from monitor capture
-      bool m_updated = false; // Target texture needs to be reuploaded to GPU
-      uint32_t m_dispTop = 0, m_dispLeft = 0;
-      uint32_t m_width = 0, m_height = 0;
-   };
-
-   void UpdateThread();
-
-   bool m_capturing;
-   vector<Capture*> m_captures;
-   vector<Duplication*> m_duplications;
-   std::thread m_captureThread;
-   std::mutex m_captureMutex;
-   std::mutex m_updateMutex;
-   std::condition_variable m_updateCV;
-};
-
-extern ExtCaptureManager g_ExtCaptureManager;
-
-#endif
