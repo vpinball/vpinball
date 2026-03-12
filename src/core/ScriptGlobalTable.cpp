@@ -7,9 +7,6 @@
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
 
-#ifdef EXT_CAPTURE
-#include "renderer/captureExt.h"
-#endif
 #ifndef __STANDALONE__
 #include <atlsafe.h>
 #endif
@@ -908,11 +905,6 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
-   #ifdef EXT_CAPTURE
-      if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
-         return S_OK;
-   #endif
-
    SAFEARRAY *psa = V_ARRAY(&pVal);
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
@@ -933,11 +925,6 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
 
 STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
-   #ifdef EXT_CAPTURE
-      if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
-         return S_OK;
-   #endif
-
    SAFEARRAY *psa = V_ARRAY(&pVal);
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;

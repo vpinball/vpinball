@@ -4,9 +4,6 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
-#ifdef EXT_CAPTURE
-#include "renderer/captureExt.h"
-#endif
 #include "core/VPXPluginAPIImpl.h"
 #include "ui/win/DragPointDialogs.h"
 

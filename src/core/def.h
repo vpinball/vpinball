@@ -352,11 +352,6 @@ static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s,
 #endif
 static const string platform_renderer[3] = { "dx"s, "gl"s, "bgfx"s };
 
-#if !defined(EXT_CAPTURE) && !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
-// External captures for VR is a hack, only available for the full windows build using OpenGL
-#define EXT_CAPTURE
-#endif
-
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 __forceinline __m128 rcpps(const __m128 &T) //Newton Raphson

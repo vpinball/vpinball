@@ -44,9 +44,6 @@
 #elif defined(ENABLE_OPENGL)
 #include "typedefs3D.h"
 #include "TextureManager.h"
-#ifdef EXT_CAPTURE
-#include "captureExt.h"
-#endif
 
 #elif defined(ENABLE_DX9)
 #include "parts/Material.h"
@@ -1391,7 +1388,7 @@ RenderDevice::RenderDevice(
       // DXGI VSync source (Windows 7+, only used for Win32 SDL with OpenGL)
       else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
       {
-         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_outputWnd[0]->GetNativeHWND());
+         DXGIRegistry::Output* out = m_DXGIRegistry.GetForWindow(m_outputWnd[0]->GetNativeHWND());
          if (out != nullptr)
             m_DXGIOutput = out->m_Output;
          if (m_DXGIOutput != nullptr)

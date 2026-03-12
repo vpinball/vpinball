@@ -336,9 +336,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -1220,7 +1217,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h">
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/DXGIRegistry.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h">

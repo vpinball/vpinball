@@ -3,9 +3,6 @@
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
-#ifdef EXT_CAPTURE
-#include "renderer/captureExt.h"
-#endif
 
 Textbox::~Textbox()
 {
@@ -384,21 +381,9 @@ void Textbox::Render(const unsigned int renderMask)
 
    if (is_dmd)
    {
-#ifdef EXT_CAPTURE
-      const bool isExternalDMD = HasDMDCapture();
-#else
-      constexpr bool isExternalDMD = false;
-#endif
-
       m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-      // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
-      m_rd->m_DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD);
-      #elif defined(ENABLE_DX9)
-      //const float width = m_renderer->m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
       m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
-      #endif
 
       Vertex3D_NoTex2 vertices[4] = {
          { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 

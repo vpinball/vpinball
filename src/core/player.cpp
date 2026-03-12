@@ -34,9 +34,6 @@
 #include "renderer/VRDevice.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/RenderCommand.h"
-#ifdef EXT_CAPTURE
-#include "renderer/captureExt.h"
-#endif
 #ifdef _MSC_VER
 // Used to log which program steals the focus from VPX
 #include "psapi.h"
@@ -215,8 +212,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->m_settings.GetPlayer_Stereo3D();
    #endif
 
-   m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.GetPlayer_CaptureExternalDMD();
-   m_capPUP = (stereo3D == STEREO_VR) && m_ptable->m_settings.GetPlayer_CapturePUP();
    m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.GetPlayer_BAMHeadTracking();
    m_detectScriptHang = m_ptable->m_settings.GetPlayer_DetectHang();
 
@@ -647,16 +642,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_vball.push_back(static_cast<Ball *>(hitable));
    }
 
-   #if defined(EXT_CAPTURE)
-   if (m_renderer->m_stereo3D == STEREO_VR)
-   {
-      if (m_capExtDMD)
-         StartDMDCapture();
-      if (m_capPUP)
-         StartPUPCapture();
-   }
-   #endif
-
    if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
@@ -926,11 +911,6 @@ Player::~Player()
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
-
-#ifdef EXT_CAPTURE
-   StopCaptures();
-   g_DXGIRegistry.ReleaseAll();
-#endif
 
    delete m_physics;
    m_physics = nullptr;
@@ -2040,12 +2020,6 @@ void Player::PrepareFrame()
    
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
    
-   #ifdef EXT_CAPTURE
-   // Trigger captures
-   if (m_renderer->m_stereo3D == STEREO_VR)
-      UpdateExtCaptures();
-   #endif
-
    // Update visually animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
    if (IsPlaying())
    {

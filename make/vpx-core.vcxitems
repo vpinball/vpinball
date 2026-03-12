@@ -875,7 +875,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/MeshBuffer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderCommand.cpp" />
@@ -1670,7 +1669,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/hittimer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/DXGIRegistry.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h" />
