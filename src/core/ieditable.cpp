@@ -15,7 +15,8 @@ IEditable::~IEditable()
 
 void IEditable::SetDirtyDraw()
 {
-   GetPTable()->SetDirtyDraw();
+   if (GetPTable())
+      GetPTable()->SetDirtyDraw();
 }
 
 void IEditable::Delete()
@@ -185,17 +186,20 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 
 void IEditable::BeginUndo()
 {
-   GetPTable()->BeginUndo();
+   if (GetPTable())
+      GetPTable()->BeginUndo();
 }
 
 void IEditable::EndUndo()
 {
-   GetPTable()->EndUndo();
+   if (GetPTable())
+      GetPTable()->EndUndo();
 }
 
 void IEditable::MarkForUndo()
 {
-   GetPTable()->m_undo.MarkForUndo(this);
+   if (GetPTable())
+      GetPTable()->m_undo.MarkForUndo(this);
 }
 
 void IEditable::MarkForDelete()
