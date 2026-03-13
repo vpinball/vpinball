@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include <functional>
+#include <unordered_dense.h>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "plugins/ControllerPlugin.h"
@@ -103,6 +104,7 @@ public:
    uint32_t GetEndpointId() const { return m_endpointId; }
    void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
+   float GetState(int b2sId) const;
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
    void GetChangedSolenoids();
@@ -171,6 +173,25 @@ private:
    Timer* m_pTimer;
 
    DevSrcId m_deviceStateSrc;
+
+   static Server* m_singleton;
+   ankerl::unordered_dense::map<int, float> m_b2sStates;
+   const unsigned int m_onGetDevSrcId;
+   DevSrcId m_devSrc {};
+   vector<string> m_devSrcNames;
+   void UpdateDevSrc();
+   struct ChgCallback
+   {
+      ctlpi_chg_callback m_callback;
+      unsigned int m_index;
+      void* m_context;
+   };
+   ankerl::unordered_dense::map<int, vector<ChgCallback>> m_stateChgCallbacks;
+   static void OnGetDevSrc(const unsigned int, void*, void* msgData);
+   static uint8_t MSGPIAPI GetByteState(const unsigned int deviceIndex);
+   static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
+   static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
+
    unsigned int m_nSolenoids;
    int m_GIIndex;
    unsigned int m_nGIs;
