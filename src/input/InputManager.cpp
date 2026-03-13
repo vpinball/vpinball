@@ -642,17 +642,16 @@ void InputManager::CreateInputActions()
    auto addFlipperKeyAction = [this, keyMapping](const string& settingId, const string& label, const SDL_Scancode sdlScancode)
    {
       auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, keyMapping(sdlScancode),
-         [this](const InputAction& action, bool, bool isPressed)
+         [this](const InputAction& action, bool prev, bool isPressed)
          {
             if (g_pplayer->m_liveUI->IsInGameUIOpened())
                return;
             if (isPressed)
-            {
                g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
-               // Debug only, for testing parts of the flipper input lag (note that it excludes device lag, device to computer lag, OS lag, and VPX polling lag)
-               m_leftkey_down_usec = usec();
-               m_leftkey_down_frame = g_pplayer->m_overall_frames;
-            }
+            
+            if (action.GetActionId() == m_leftFlipperActionId)
+               m_leftFlipperLastChangePollDelay = g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::ProfileSection::PROFILE_INPUT_POLL_PERIOD);
+
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
             g_pplayer->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);

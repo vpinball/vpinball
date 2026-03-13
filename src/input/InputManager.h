@@ -185,15 +185,10 @@ public:
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
 
-   uint64_t m_leftkey_down_usec = 0;
-   unsigned int m_leftkey_down_frame = 0;
-   uint64_t m_leftkey_down_usec_rotate_to_end = 0;
-   unsigned int m_leftkey_down_frame_rotate_to_end = 0;
-   uint64_t m_leftkey_down_usec_EOS = 0;
-   unsigned int m_leftkey_down_frame_EOS = 0;
-
    bool m_linearPlunger = false;
    bool m_plunger_retract = false; // enable 1s retract phase for button/key plunger
+
+   int m_leftFlipperLastChangePollDelay = 0;
 
 private:
    void CreateInputActions();
