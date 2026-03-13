@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "PartGroup.h"
 
 
 PartGroup *PartGroup::CopyForPlay() const

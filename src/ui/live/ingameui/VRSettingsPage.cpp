@@ -4,6 +4,7 @@
 
 #include "VRSettingsPage.h"
 #include "renderer/VRDevice.h"
+#include "parts/flasher.h"
 
 namespace VPX::InGameUI
 {

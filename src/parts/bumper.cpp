@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "bumper.h"
+
 #include "utils/objloader.h"
 #include "meshes/bumperBaseMesh.h"
 #include "meshes/bumperRingMesh.h"

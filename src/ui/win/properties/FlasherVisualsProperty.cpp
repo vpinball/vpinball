@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/flasher.h"
+#include "parts/light.h"
+
 #include "ui/win/properties/FlasherVisualsProperty.h"
 
 FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel)

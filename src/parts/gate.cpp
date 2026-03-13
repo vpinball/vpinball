@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "gate.h"
+
 #include "utils/objloader.h"
 #include "meshes/gateBracketMesh.h"
 #include "meshes/gateWireMesh.h"

@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "dispreel.h"
+
 #include "renderer/Shader.h"
 
 DispReel::~DispReel()

@@ -23,6 +23,7 @@
 //   - flipper button press to coil drive is even shorter - again suggesting a faster sample rate of the button is better
 
 #include "core/stdafx.h"
+#include "parts/flipper.h"
 
 // Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
 

@@ -4,6 +4,9 @@
 #include "quadtree.h"
 #include "ThreadPool.h"
 
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    #define QUADTREE_SSE_LEAFTEST
 #else

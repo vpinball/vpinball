@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "kicker.h"
+#include "ball.h"
+
 #include "utils/objloader.h"
 
 #include "meshes/kickerCupMesh.h"

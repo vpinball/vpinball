@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ball.h"
+#include "light.h"
+
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #endif

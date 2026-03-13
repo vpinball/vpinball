@@ -3,6 +3,7 @@
 // implementation of the Decal class.
 
 #include "core/stdafx.h" 
+#include "decal.h"
 
 #ifndef __STANDALONE__
 #include "vpinball.h"

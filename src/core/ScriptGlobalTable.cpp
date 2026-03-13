@@ -7,6 +7,8 @@
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
 
+#include "parts/ball.h"
+
 #ifndef __STANDALONE__
 #include <atlsafe.h>
 #endif

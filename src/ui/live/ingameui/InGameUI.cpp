@@ -23,6 +23,8 @@
 #include "TableRulesPage.h"
 #include "VRSettingsPage.h"
 
+#include "parts/ball.h"
+
 
 namespace VPX::InGameUI
 {

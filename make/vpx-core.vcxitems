@@ -838,6 +838,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp" />
@@ -1597,7 +1598,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/Mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/MeshUtils.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/vector.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/ModelViewProj.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/ballMesh.h" />

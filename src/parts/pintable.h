@@ -15,6 +15,8 @@
 
 #include "ui/win/PinTableMDI.h"
 
+#include "parts/pinbinary.h"
+
 #ifdef __STANDALONE__
 #include <iostream>
 class Light;

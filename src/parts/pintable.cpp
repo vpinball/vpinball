@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "pintable.h"
+
 #include "core/vpversion.h"
 #include "parts/Sound.h"
 #include "ui/win/resource.h"
@@ -27,6 +29,28 @@
 #include "utils/ushock_output.h"
 
 #include "ui/live/ingameui/InGameUIItem.h"
+
+#include "parts/ball.h"
+#include "parts/plunger.h"
+#include "parts/flipper.h"
+#include "parts/timer.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
 
 #ifdef __STANDALONE__
 #include "mINI/ini.h"

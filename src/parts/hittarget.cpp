@@ -2,7 +2,9 @@
 
 // implementation of the HitTarget class.
 
-#include "core/stdafx.h" 
+#include "core/stdafx.h"
+#include "hittarget.h"
+
 #include "utils/objloader.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"

@@ -4,6 +4,8 @@
 #include "VRDevice.h"
 #include "core/vpversion.h"
 
+#include "parts/primitive.h"
+
 // MSVC Concurrency Viewer support
 // This requires to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER

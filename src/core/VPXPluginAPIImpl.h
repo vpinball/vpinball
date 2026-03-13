@@ -5,7 +5,11 @@
 #include "plugins/VPXPlugin.h"
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/LoggingPlugin.h"
+
+#include "plugins/MsgPluginManager.h"
+
 #include "core/DynamicScript.h"
+
 #include "unordered_dense.h"
 
 // VPX serves as a plugin host, using the generic messaging plugin API

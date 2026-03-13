@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ramp.h"
+
 //#include "forsyth.h"
 #include "utils/objloader.h"
 #include "renderer/Shader.h"

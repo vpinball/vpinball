@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "VPXPluginAPIImpl.h"
+#include "parts/flasher.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // General information API

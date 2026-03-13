@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/pinbinary.h"
 
 bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
 {

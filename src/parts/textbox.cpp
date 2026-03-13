@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "textbox.h"
+
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
 

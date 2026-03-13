@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "plunger.h"
+#include "ball.h"
+
 #include "renderer/Shader.h"
 
 Plunger::~Plunger()
