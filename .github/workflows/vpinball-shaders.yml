@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
 
 defaults:
@@ -20,7 +21,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: version
@@ -44,7 +45,7 @@ jobs:
     runs-on: windows-2025
     needs: [ version ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build custom shaderc
         run: |
           source ./platforms/config.sh
@@ -90,7 +91,7 @@ jobs:
           mkdir tmp
           cp src/shaders/bgfx/shaderc.exe tmp
           cp src/shaders/bgfx*.h tmp
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: VPinballX-${{ needs.version.outputs.tag }}-bgfx-shaders
           path: tmp
