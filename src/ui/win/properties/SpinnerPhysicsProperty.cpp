@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/spinner.h"
+
 #include "ui/win/properties/SpinnerPhysicsProperty.h"
 
 SpinnerPhysicsProperty::SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_PHYSICS, pvsel)

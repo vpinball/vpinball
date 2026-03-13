@@ -48,6 +48,11 @@
 
 #include "input/ScanCodes.h"
 
+#include "parts/ball.h"
+#include "parts/light.h"
+#include "parts/flasher.h"
+#include "parts/primitive.h"
+
 #include "utils/ushock_output.h"
 
 // MSVC Concurrency Viewer support

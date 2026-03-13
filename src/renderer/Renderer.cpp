@@ -14,6 +14,8 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "parts/light.h"
+#include "parts/ball.h"
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"

@@ -86,7 +86,9 @@ set(VPX_SOURCES
    src/math/matrix.cpp
    src/math/matrix.h
    src/math/vector.h
-   src/math/mesh.h
+   src/math/Mesh.h
+   src/math/Mesh.cpp
+   src/math/MeshUtils.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h

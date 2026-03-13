@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/plunger.h"
 
 #define PLUNGERHEIGHT 50.0f
 

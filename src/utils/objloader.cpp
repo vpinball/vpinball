@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/primitive.h"
+
 #include "utils/hash.h"
 #include "objloader.h"
 

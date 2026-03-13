@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/trigger.h"
+
 #include "ui/win/properties/TriggerPhysicsProperty.h"
 
 TriggerPhysicsProperty::TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_STATE, pvsel)

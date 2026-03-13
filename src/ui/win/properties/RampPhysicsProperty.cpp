@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/ramp.h"
+
 #include "ui/win/properties/RampPhysicsProperty.h"
 
 RampPhysicsProperty::RampPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)

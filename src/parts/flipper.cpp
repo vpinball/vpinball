@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "flipper.h"
+
 #include "meshes/flipperBase.h"
 #include "utils/objloader.h"
 #include "renderer/Shader.h"

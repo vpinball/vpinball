@@ -231,6 +231,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
@@ -998,7 +1001,10 @@
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h">
+    <ClInclude Include="$(SolutionDir)/../../src/math/Mesh.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/MeshUtils.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/vector.h">

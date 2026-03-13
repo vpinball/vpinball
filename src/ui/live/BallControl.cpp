@@ -4,6 +4,7 @@
 
 #include "BallControl.h"
 
+#include "parts/ball.h"
 
 void BallControl::LoadSettings(const Settings& settings)
 {

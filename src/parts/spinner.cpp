@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "spinner.h"
+
 #include "utils/objloader.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"

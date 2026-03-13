@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "ViewSetup.h"
+#include "parts/flipper.h"
 
 ViewSetup::ViewSetup()
 {

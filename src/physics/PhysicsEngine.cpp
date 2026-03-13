@@ -12,6 +12,8 @@
 
 #include "utils/ushock_output.h"
 
+#include "parts/ball.h"
+
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_hitPlayfield(table)
    , m_hitTopGlass(table)

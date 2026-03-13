@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/kicker.h"
+
 #include "ui/win/properties/KickerVisualsProperty.h"
 
 KickerVisualsProperty::KickerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_VISUALS, pvsel)

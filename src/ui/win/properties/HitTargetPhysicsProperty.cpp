@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/hittarget.h"
+
 #include "ui/win/properties/HitTargetPhysicsProperty.h"
 
 HitTargetPhysicsProperty::HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)

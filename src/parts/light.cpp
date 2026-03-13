@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "light.h"
+
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/Shader.h"

@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "flasher.h"
+#include "light.h"
+
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

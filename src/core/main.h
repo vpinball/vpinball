@@ -239,25 +239,19 @@ class SCNotification final { };
 #include "core/ieditable.h"
 #include "ui/win/codeview.h"
 
-#include "parts/pinbinary.h"
-
-#include "plugins/MsgPluginManager.h"
-
 #include "extern.h"
 
 #include "ui/win/WinEditor.h"
 #include "core/VPApp.h"
 #include "parts/pintable.h"
 
-#include "math/mesh.h"
+#include "math/MeshUtils.h"
 #include "physics/collide.h"
 #include "renderer/Renderer.h"
 
 #include "ui/win/sur.h"
 #include "ui/win/hitsur.h"
 #include "ui/win/hitrectsur.h"
-
-#include "parts/ball.h"
 
 #include "physics/collideex.h"
 #include "physics/hitball.h"
@@ -270,26 +264,6 @@ class SCNotification final { };
 #include "utils/color.h"
 
 #include "parts/dragpoint.h"
-#include "parts/timer.h"
-#include "parts/flipper.h"
-#include "parts/plunger.h"
-#include "parts/textbox.h"
-#include "parts/surface.h"
-#include "parts/dispreel.h"
-#include "parts/lightseq.h"
-#include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/light.h"
-#include "parts/kicker.h"
-#include "parts/decal.h"
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
-#include "parts/gate.h"
-#include "parts/spinner.h"
-#include "parts/ramp.h"
-#include "parts/flasher.h"
-#include "parts/rubber.h"
-#include "parts/PartGroup.h"
 
 #include "renderer/trace.h"
 

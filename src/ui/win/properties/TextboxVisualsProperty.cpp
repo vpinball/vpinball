@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/textbox.h"
+
 #include "ui/win/properties/TextboxVisualsProperty.h"
 
 TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)

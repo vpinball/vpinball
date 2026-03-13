@@ -4,6 +4,8 @@
 
 #include "unordered_dense.h"
 
+#include "parts/pinbinary.h"
+
 #define MIN_TEXTURE_SIZE 8u
 
 class ITexManCacheable

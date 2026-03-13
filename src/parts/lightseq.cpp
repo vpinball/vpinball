@@ -1,6 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "lightseq.h"
+#include "light.h"
+#include "primitive.h"
+#include "parts/flasher.h"
 
 LightSeq *LightSeq::CopyForPlay() const
 {
