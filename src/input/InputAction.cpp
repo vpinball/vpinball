@@ -218,11 +218,11 @@ void InputAction::OnInputChanged(ButtonMapping*)
    if (m_isPressed != wasPressed)
    {
       m_eventManager->OnInputActionStateChanged(this);
-      m_lastOnChangeMs = msec();
+      m_lastOnChangeUs = usec();
       m_onStateChange(*this, wasPressed, m_isPressed);
-      if (m_isPressed && m_repeatPeriodMs >= 0)
+      if (m_isPressed && m_repeatPeriodUs >= 0)
          m_eventManager->RegisterOnUpdate(this);
-      else if (m_repeatPeriodMs >= 0)
+      else if (m_repeatPeriodUs >= 0)
          m_eventManager->UnregisterOnUpdate(this);
    }
 }
@@ -231,10 +231,10 @@ void InputAction::OnUpdate()
 {
    if (m_isPressed)
    {
-      const unsigned int now = msec();
-      if (now >= m_lastOnChangeMs + m_repeatPeriodMs)
+      const uint64_t now = usec();
+      if (now >= m_lastOnChangeUs + m_repeatPeriodUs)
       {
-         m_lastOnChangeMs = now;
+         m_lastOnChangeUs = now;
          m_onStateChange(*this, m_isPressed, m_isPressed);
       }
    }
@@ -242,10 +242,10 @@ void InputAction::OnUpdate()
 
 void InputAction::SetRepeatPeriod(int delayMs)
 {
-   if (m_isPressed && m_repeatPeriodMs >= 0)
+   if (m_isPressed && m_repeatPeriodUs >= 0)
       m_eventManager->UnregisterOnUpdate(this);
-   m_repeatPeriodMs = delayMs;
-   if (m_isPressed && m_repeatPeriodMs >= 0)
+   m_repeatPeriodUs = delayMs * 1000;
+   if (m_isPressed && m_repeatPeriodUs >= 0)
       m_eventManager->RegisterOnUpdate(this);
 }
 

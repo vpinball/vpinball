@@ -157,6 +157,8 @@ public:
        m_d.m_FlipperRadiusMin = max(value,0.0f);
    }
 
+   uint64_t GetLastRotateTime() const { return m_lastRotateTime; }
+
    FlipperData m_d;
 
 private:
@@ -176,7 +178,9 @@ private:
    HitFlipper *m_phitflipper = nullptr;
    float m_lastAngle = 0.f;
 
-// IFlipper
+   uint64_t m_lastRotateTime = 0;
+
+   // IFlipper
 public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);

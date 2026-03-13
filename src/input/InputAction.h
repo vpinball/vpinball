@@ -34,6 +34,7 @@ public:
    void OnInputChanged(ButtonMapping* mapping) override;
    bool IsPressed() const { return m_isPressed; }
    void SetPressed(bool isPressed) { m_isPressed = isPressed; }
+   uint64_t GetLastStateChange() const { return m_lastOnChangeUs; }
 
    void SetActionId(unsigned int id) { m_actionId = id; }
    unsigned int GetActionId() const { return m_actionId; }
@@ -59,7 +60,7 @@ private:
    vector<vector<ButtonMapping>> m_inputMappings;
    vector<bool> m_directStates;
    bool m_isPressed = false;
-   unsigned int m_lastOnChangeMs = 0;
-   int m_repeatPeriodMs = -1;
+   uint64_t m_lastOnChangeUs = 0;
+   int64_t m_repeatPeriodUs = -1;
    unsigned int m_actionId = 0xFFFFFFFF;
 };
