@@ -85,14 +85,18 @@ void UltraDMD::Clear()
 
 Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const
 {
-   for (const auto& pFontDef : m_singleLineFonts) {
-      Label* pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, string());
-      pLabel->SetPosition((float)(m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2.f, (float)(m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2.f);
-      if ((pLabel->GetX() >= 0.f && pLabel->GetY() >= 0.f) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
-         return pLabel;
-      pLabel->Release();
-    }
-    return nullptr;
+   Font* selectedFont = nullptr;
+   for (const auto& pFontDef : m_singleLineFonts)
+   {
+      selectedFont = GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness);
+      if (selectedFont->MeasureFont(text).w <= m_pFlexDMD->GetWidth())
+         break;
+   }
+   if (selectedFont == nullptr)
+      return nullptr;
+   Label* pLabel = new Label(m_pFlexDMD, selectedFont, text, string());
+   pLabel->SetPosition((float)(m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2.f, (float)(m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2.f);
+   return pLabel;
 }
 
 Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrightness) const
