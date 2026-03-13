@@ -64,6 +64,7 @@ extern "C" {
 
 #include <vector>
 #include <string>
+#include <format>
 #include <algorithm>
 #include <commdlg.h>
 #include <dlgs.h>
