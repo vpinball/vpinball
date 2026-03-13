@@ -202,6 +202,7 @@ class SCNotification final { };
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/bbox.h"
+#include "math/MeshUtils.h"
 
 #include "ui/win/resource.h"
 
@@ -209,11 +210,14 @@ class SCNotification final { };
 
 #include "utils/vector.h"
 #include "utils/vectorsort.h"
+#include "utils/color.h"
+
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #else
 #include "standalone/vpinball_standalone_i.h"
 #endif
+
 #include "core/Settings.h"
 
 #include "utils/wintimer.h"
@@ -221,39 +225,32 @@ class SCNotification final { };
 #include "utils/eventproxy.h"
 
 #include "utils/fileio.h"
+
 #include "pinundo.h"
+
 #include "iselect.h"
 
 #include "core/Scriptable.h"
+
 #include "parts/Collection.h"
+
 #include "core/ieditable.h"
-#include "ui/win/codeview.h"
 
 #include "extern.h"
 
 #include "ui/win/WinEditor.h"
+
 #include "core/VPApp.h"
+
 #include "parts/pintable.h"
 
-#include "math/MeshUtils.h"
-#include "physics/collide.h"
 #include "renderer/Renderer.h"
 
 #include "ui/win/sur.h"
-#include "ui/win/hitsur.h"
-#include "ui/win/hitrectsur.h"
 
-#include "physics/collideex.h"
-#include "physics/hitball.h"
-#include "physics/hittimer.h"
 #include "physics/hitable.h"
-#include "physics/hitflipper.h"
-#include "physics/hitplunger.h"
+
 #include "core/player.h"
-
-#include "utils/color.h"
-
-#include "parts/dragpoint.h"
 
 #include "renderer/trace.h"
 

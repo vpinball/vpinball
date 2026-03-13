@@ -22,13 +22,17 @@
 #include "ThreadPool.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "core/ScriptGlobalTable.h"
+
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/codeview.h"
+#include "ui/win/hitsur.h"
+
+#include "ui/live/ingameui/InGameUIItem.h"
 
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
-#include "utils/ushock_output.h"
 
-#include "ui/live/ingameui/InGameUIItem.h"
+#include "utils/ushock_output.h"
 
 #include "parts/ball.h"
 #include "parts/plunger.h"

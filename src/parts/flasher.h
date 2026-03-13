@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dragpoint.h"
 #include "ui/win/resource.h"
 
 class FlasherData final

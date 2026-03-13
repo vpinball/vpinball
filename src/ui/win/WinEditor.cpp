@@ -29,6 +29,8 @@
 
 #include "ui/win/worker.h"
 
+#include "ui/win/codeview.h"
+
 #include "parts/plunger.h"
 #include "parts/flipper.h"
 #include "parts/timer.h"

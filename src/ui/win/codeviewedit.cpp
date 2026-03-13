@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "codeviewedit.h"
+#include "codeview.h"
 
 UserData::UserData()
    : m_lineNum(0),

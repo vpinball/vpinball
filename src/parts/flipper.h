@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "physics/hitflipper.h"
 #include "ui/win/resource.h"  
 
 class FlipperData final : public BaseProperty

@@ -50,7 +50,7 @@ public:
 
    CComObject<PinTable> *const m_table;
    
-   std::unique_ptr<CodeViewer> m_pcv;
+   std::unique_ptr<class CodeViewer> m_pcv;
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)
 

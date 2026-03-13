@@ -6,6 +6,8 @@
 
 #include "PhysicsEngine.h"
 
+#include "hitflipper.h"
+
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"

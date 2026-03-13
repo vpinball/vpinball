@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "physics/hitplunger.h"
 #include "ui/win/resource.h"
 
 constexpr int MAXTIPSHAPE = 256;
