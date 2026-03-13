@@ -667,7 +667,7 @@ STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
    if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
-      return S_FAIL;
+      return E_FAIL;
 
    SetAngleMax(newVal);
    return S_OK;
@@ -683,7 +683,7 @@ STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
    if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax))	// allow only if in limited angle mode
-      return S_FAIL;
+      return E_FAIL;
 
    SetAngleMin(newVal);
    return S_OK;

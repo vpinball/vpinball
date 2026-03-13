@@ -11,12 +11,9 @@
 
 #include <windows.h>
 
-#define DIRECTINPUT_VERSION 0x0800
-
-#ifdef __STANDALONE__
 #define RPC_NO_WINDOWS_H
-#endif
-#include <dinput.h>
+#define COM_NO_WINDOWS_H
+#include <objbase.h>
 
 #if defined(ENABLE_DX9)
  #ifdef _DEBUG
@@ -77,15 +74,8 @@ using std::string;
 using std::wstring;
 using std::vector;
 
-// RESULT codes
-#define S_FAIL MAKE_SCODE(SEVERITY_ERROR, FACILITY_CONTROL, 1004)
-#define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
 #ifndef __STANDALONE__
-
-#ifndef USER_DEFAULT_SCREEN_DPI
-  #define USER_DEFAULT_SCREEN_DPI 96 //!! ??
-#endif
 
 #ifndef WM_THEMECHANGED
   #define WM_THEMECHANGED            0x031A

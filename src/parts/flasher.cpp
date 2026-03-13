@@ -921,7 +921,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         catch (...)
         {
            m_videoCapTex = nullptr;
-           return S_FAIL;
+           return E_FAIL;
         }
     }
 

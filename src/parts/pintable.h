@@ -454,8 +454,8 @@ public:
    void Uncreate(IEditable *pie);
    void Undelete(IEditable *pie);
 
-   STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) { return hrNotImplemented; }
-   STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) { return hrNotImplemented; }
+   STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) { return ResultFromScode(E_NOTIMPL); }
+   STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) { return ResultFromScode(E_NOTIMPL); }
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
 

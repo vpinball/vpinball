@@ -219,8 +219,6 @@ template <class T> inline ULONG GetRefCount(T& obj)
 #define SAFE_RELEASE_NO_RCC(p)	{ if(p) { (p)->Release(); (p)=nullptr; } } // use for releasing things like surfaces gotten from GetSurfaceLevel (that seem to "share" the refcount with the underlying texture)
 #define FORCE_RELEASE(p)		{ if(p) { ULONG rcc = 1; while(rcc!=0) {rcc = (p)->Release();} (p)=nullptr; } } // release all references until it is 0
 
-#define hrNotImplemented ResultFromScode(E_NOTIMPL)
-
 enum SaveDirtyState
 {
    eSaveClean,

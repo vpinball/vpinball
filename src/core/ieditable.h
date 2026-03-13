@@ -106,8 +106,8 @@ public:
 	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
-	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;} \
-	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
+	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR * pbstr) { return ResultFromScode(E_NOTIMPL); } \
+	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID * pclsid) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults(const bool fromMouseClick); \
