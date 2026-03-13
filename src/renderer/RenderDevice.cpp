@@ -777,7 +777,8 @@ void RenderDevice::CaptureDX9Screenshot()
    {
       uint8_t* const __restrict bits = static_cast<uint8_t*>(tex->data());
       const uint8_t* const __restrict pixels = static_cast<uint8_t*>(lockedRect.pBits);
-      memcpy(bits, pixels, lockedRect.Pitch * desc.Height);
+      copy_bgra_rgba<true>((unsigned int*)(tex->data()), (const unsigned int*)lockedRect.pBits, desc.Width * desc.Height); // Backbuffer is BGRA
+      //memcpy(bits, pixels, lockedRect.Pitch * desc.Height);
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
             bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
