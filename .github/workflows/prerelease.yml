@@ -7,6 +7,7 @@ on:
         required: false
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   ACTIONS_API_URL: https://api.github.com/repos/${GITHUB_REPOSITORY}/actions
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
 
@@ -23,7 +24,7 @@ jobs:
            SHA7="${SHA::7}"
            echo "sha=${SHA}" >> $GITHUB_OUTPUT
            echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           ref: ${{ steps.sha.outputs.sha }}
           fetch-depth: 0
