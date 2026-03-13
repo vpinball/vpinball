@@ -54,11 +54,6 @@ static std::mutex sourceMutex;
 static bool isRunning = false;
 static DevSrcId pinmameDevSrc = {};
 static InputSrcId pinmameInputSrc = {};
-static unsigned int nPmSolenoids = 0;
-static int pmGiIndex = -1;
-static unsigned int nPmGIs = 0;
-static int pmLampIndex = -1;
-static unsigned int nPmLamps = 0;
 
 static std::thread pollThread;
 
@@ -128,47 +123,50 @@ static void PollThread(const string& tablePath, const string& gameId)
    SetThreadName("DOF.PollThread"s);
    pDOF->Init(tablePath.c_str(), gameId.c_str());
    bool isInitialState = true;
-   vector<bool> wireStates, solStates, lampStates, giStates;
+   vector<bool> wireStates;
+   vector<bool> deviceStates;
    while (isRunning)
    {
       {
-         std::lock_guard<std::mutex> lock(sourceMutex);
+         std::lock_guard lock(sourceMutex);
 
          isInitialState |= wireStates.size() != pinmameInputSrc.nInputs;
-         isInitialState |= solStates.size() != nPmSolenoids;
-         isInitialState |= lampStates.size() != nPmLamps;
-         isInitialState |= giStates.size() != nPmGIs;
+         isInitialState |= deviceStates.size() != pinmameDevSrc.nDevices;
 
          wireStates.resize(pinmameInputSrc.nInputs);
          for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
          {
-            bool state = pinmameInputSrc.GetInputState(i);
-            if (isInitialState || (wireStates[i] != state))
-               pDOF->DataReceive('W', i + 1, state ? 1 : 0);
+            if (pinmameInputSrc.inputDefs[i].groupId == 0x0001)
+            {
+               bool state = pinmameInputSrc.GetInputState(i);
+               if (isInitialState || (wireStates[i] != state))
+               {
+                  pDOF->DataReceive('W', pinmameInputSrc.inputDefs[i].deviceId, state ? 1 : 0); // Switches
+                  wireStates[i] = state;
+               }
+            }
          }
 
-         solStates.resize(nPmSolenoids);
-         for (unsigned int i = 0; i < nPmSolenoids; i++)
+         deviceStates.resize(pinmameDevSrc.nDevices);
+         for (unsigned int i = 0; i < pinmameDevSrc.nDevices; i++)
          {
-            float state = pinmameDevSrc.GetFloatState(i);
-            if (isInitialState || (solStates[i] && state < 0.25f) || (!solStates[i] && state > 0.75f))
-               pDOF->DataReceive('S', i + 1, state > 0.5f ? 1 : 0);
-         }
-
-         lampStates.resize(nPmLamps);
-         for (unsigned int i = 0; i < nPmLamps; i++)
-         {
-            float state = pinmameDevSrc.GetFloatState(pmLampIndex + i);
-            if (isInitialState || (lampStates[i] && state < 0.25f) || (!lampStates[i] && state > 0.75f))
-               pDOF->DataReceive('L', i + 1, state > 0.5f ? 1 : 0);
-         }
-
-         giStates.resize(nPmGIs);
-         for (unsigned int i = 0; i < nPmGIs; i++)
-         {
-            float state = pinmameDevSrc.GetFloatState(pmGiIndex + i);
-            if (isInitialState || (giStates[i] && state < 0.25f) || (!giStates[i] && state > 0.75f))
-               pDOF->DataReceive('G', i + 1, state > 0.5f ? 1 : 0);
+            char type;
+            switch (pinmameDevSrc.deviceDefs[i].groupId & 0xFF00)
+            {
+            case 0x0000: type = 'S'; break; // Solenoids
+            case 0x0100: type = 'G'; break; // GI
+            case 0x0200: type = 'L'; break; // Lamps
+            default: type = '\0'; break; // Unsupported
+            }
+            if (type != '\0')
+            {
+               float state = pinmameDevSrc.GetFloatState(i);
+               if (isInitialState || (deviceStates[i] && state < 0.25f) || (!deviceStates[i] && state > 0.75f))
+               {
+                  pDOF->DataReceive(type, pinmameDevSrc.deviceDefs[i].deviceId, state > 0.5f ? 1 : 0);
+                  deviceStates[i] = state > 0.5f;
+               }
+            }
          }
 
          isInitialState = false;
@@ -198,7 +196,9 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
       isRunning = true;
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
-      pollThread = std::thread(PollThread, tableInfo.path, msg->gameId);
+      string path = tableInfo.path;
+      string gameId = msg->gameId;
+      pollThread = std::thread(PollThread, path, gameId);
    }
 }
 
@@ -215,17 +215,12 @@ static void OnControllerGameEnd(const unsigned int eventId, void* userData, void
 static void ClearDevices()
 {
    delete[] pinmameDevSrc.deviceDefs;
-   nPmSolenoids = 0;
-   pmGiIndex = -1;
-   nPmGIs = 0;
-   pmLampIndex = -1;
-   nPmLamps = 0;
    memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
 }
 
 static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   std::lock_guard<std::mutex> lock(sourceMutex);
+   std::lock_guard lock(sourceMutex);
    ClearDevices();
 
    GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
@@ -256,31 +251,12 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    }
    delete[] getSrcMsg.entries;
 
-   for (unsigned int i = 0; i < pinmameDevSrc.nDevices; i++)
-   {
-      if (pinmameDevSrc.deviceDefs[i].groupId == 0x0100)
-      {
-         if (pmGiIndex == -1)
-            pmGiIndex = i;
-         nPmGIs++;
-      }
-      else if (pinmameDevSrc.deviceDefs[i].groupId == 0x0200)
-      {
-         if (pmLampIndex == -1)
-            pmLampIndex = i;
-         nPmLamps++;
-      }
-      else if ((pmGiIndex == -1) && (pmLampIndex == -1))
-         nPmSolenoids++;
-   }
-
-   LOGI(std::format("DOFPlugin: OnDevSrcChanged - Found {} PinMAME devices (Sol:{}, Lamps:{}, GI:{})", 
-        pinmameDevSrc.nDevices, nPmSolenoids, nPmLamps, nPmGIs));
+   LOGI(std::format("DOFPlugin: OnDevSrcChanged - Found {} PinMAME devices", pinmameDevSrc.nDevices));
 }
 
 static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   std::lock_guard<std::mutex> lock(sourceMutex);
+   std::lock_guard lock(sourceMutex);
    delete[] pinmameInputSrc.inputDefs;
    memset(&pinmameInputSrc, 0, sizeof(pinmameInputSrc));
 

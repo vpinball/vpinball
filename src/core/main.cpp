@@ -219,7 +219,10 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          }
          void Unlink(void* module) override
          {
-            SDL_UnloadObject(static_cast<SDL_SharedObject*>(module));
+            //FIXME This would block (DOF) or crash (Kinect2) on some plugins
+            #ifndef _MSC_VER
+               SDL_UnloadObject(static_cast<SDL_SharedObject*>(module));
+            #endif
          }
          void* GetFunction(void* module, const std::string& functionName) override
          {
