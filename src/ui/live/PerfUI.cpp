@@ -7,7 +7,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "implot/implot.h"
-#include "parts/Flipper.h"
+#include "parts/flipper.h"
 
 
 PerfUI::PerfUI(Player *const player)

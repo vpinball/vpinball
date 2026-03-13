@@ -336,7 +336,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // We first run in headless mode to initialize the underlying backend and try to gather information to select a supported backbuffer format
    // This is needed to select a safe backbuffer format but will fail under OpenGL or Linux. For these, we start using BGRA8 which seems to be supported everywhere and adjust afterward
    init.resolution.formatColor = bgfx::TextureFormat::BGRA8;
-   if (init.platformData.nwh && init.type != bgfx::RendererType::OpenGL)
+   if (init.platformData.nwh && init.type != bgfx::RendererType::OpenGL && init.type != bgfx::RendererType::OpenGLES)
    {
       const uint32_t width = init.resolution.width;
       const uint32_t height = init.resolution.height;
