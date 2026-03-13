@@ -6107,7 +6107,7 @@ STDMETHODIMP PinTable::get_EnableSSR(UserDefaultOnOff *pVal)
 STDMETHODIMP PinTable::put_EnableSSR(UserDefaultOnOff newVal)
 {
    if (newVal == UserDefaultOnOff::Default)
-      return S_FAIL;
+      return E_FAIL;
    STARTUNDO
    m_enableSSR = (int)newVal;
    STOPUNDO
@@ -6123,7 +6123,7 @@ STDMETHODIMP PinTable::get_EnableAO(UserDefaultOnOff *pVal)
 STDMETHODIMP PinTable::put_EnableAO(UserDefaultOnOff newVal)
 {
    if (newVal == UserDefaultOnOff::Default)
-      return S_FAIL;
+      return E_FAIL;
    STARTUNDO
    m_enableAO = (int)newVal;
    STOPUNDO
