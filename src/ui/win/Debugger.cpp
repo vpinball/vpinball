@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "ui/win/resource.h"
+#include "ui/win/codeview.h"
 #include "Debugger.h"
 
 #define RECOMPUTEBUTTONCHECK (WM_USER+100)

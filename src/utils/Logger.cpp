@@ -18,6 +18,8 @@
 #include "lib/src/WebServer.h"
 #endif
 
+#include "ui/win/codeview.h"
+
 class DebugAppender final : public plog::IAppender
 {
 public:

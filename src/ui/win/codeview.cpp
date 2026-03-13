@@ -16,6 +16,8 @@
 
 #include <fstream>
 
+#include "codeview.h"
+
 static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 
 //Scintilla Lexer parses only lower case unless otherwise told

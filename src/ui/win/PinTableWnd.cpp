@@ -6,6 +6,9 @@
 
 #include "ui/win/paintsur.h"
 #include "ui/win/worker.h"
+#include "ui/win/codeview.h"
+#include "ui/win/hitsur.h"
+#include "ui/win/hitrectsur.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/VPXLoadFileProgressBar.h"

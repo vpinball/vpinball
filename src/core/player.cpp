@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "ui/win/worker.h"
+#include "ui/win/codeview.h"
 
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"

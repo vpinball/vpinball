@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "physics/collide.h"
+#include "collide.h"
 
 // Fake/artistic ball motion trail length, but also used for spin kill, so may not be lower than 10 (to keep 100ms of ball history at 10ms interval)
 #define MAX_BALL_TRAIL_POS 10
