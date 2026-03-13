@@ -24,6 +24,8 @@ using namespace std::string_literals;
 
 namespace B2SLegacy {
 
+Server* Server::m_singleton = nullptr;
+
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex)
    : m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
@@ -31,10 +33,12 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_onDevChangedMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG))
+   , m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG))
    , m_pinmameClassDef(pinmameClassDef)
    , m_pinmameMemberStartIndex(pinmameMemberStartIndex)
    , m_pinmameApi(pinmameClassDef ? new PinMAMEAPI(this, pinmameClassDef) : nullptr)
 {
+   m_singleton = this;
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
    m_pFormBackglass = nullptr;
@@ -66,8 +70,14 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_mechIndex = -1;
    m_nMechs = 0;
 
+   m_devSrc.id.endpointId = m_endpointId;
+   m_devSrc.GetByteState = GetByteState;
+   m_devSrc.GetFloatState = GetFloatState;
+   m_devSrc.SetChangeCallback = RegisterStateChangeCallback;
+
    msgApi->SubscribeMsg(endpointId, m_onGetAuxRendererId, OnGetRendererStatic, this);
    msgApi->SubscribeMsg(endpointId, m_onDevChangedMsgId, OnDevSrcChangedStatic, this);
+   msgApi->SubscribeMsg(endpointId, m_onGetDevSrcId, OnGetDevSrc, this);
    msgApi->BroadcastMsg(endpointId, m_onAuxRendererChgId, nullptr);
 }
 
@@ -75,18 +85,23 @@ Server::~Server()
 {
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic);
    m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChangedStatic);
+   m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
    m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_onGetDevSrcId);
 
    delete m_pinmameApi;
    m_pinmameApi = nullptr;
 
    delete[] m_deviceStateSrc.deviceDefs;
+   delete[] m_devSrc.deviceDefs;
 
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
+
+   m_singleton = nullptr;
 
    delete m_pTimer;
    delete m_pFormBackglass;
@@ -199,6 +214,77 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
 
    LOGI(std::format("B2SLegacy: Device state updated - Solenoids: {}, Lamps: {}, GI: {}, Mechs: {}",
         m_nSolenoids, m_nLamps, m_nGIs, m_nMechs));
+}
+
+void Server::OnGetDevSrc(const unsigned int, void* userData, void* msgData)
+{
+   auto me = static_cast<Server*>(userData);
+   auto msg = static_cast<GetDevSrcMsg*>(msgData);
+   if (msg->count < msg->maxEntryCount)
+      memcpy(&msg->entries[msg->count], &me->m_devSrc, sizeof(DevSrcId));
+   msg->count++;
+}
+
+void Server::UpdateDevSrc()
+{
+   delete[] m_devSrc.deviceDefs;
+   m_devSrc.nDevices = static_cast<unsigned int>(m_b2sStates.size());
+   m_devSrc.deviceDefs = new DeviceDef[m_devSrc.nDevices];
+   m_devSrcNames.resize(m_devSrc.nDevices);
+   uint16_t index = 0;
+   for (const auto& [id, v] : m_b2sStates)
+   {
+      m_devSrcNames[index] = std::format("B2S.Data #{}", id);
+      m_devSrc.deviceDefs[index].name = m_devSrcNames[index].c_str();
+      m_devSrc.deviceDefs[index].groupId = 0x0001;
+      m_devSrc.deviceDefs[index].deviceId = id;
+      index++;
+   }
+   m_stateChgCallbacks.clear();
+   m_msgApi->BroadcastMsg(m_endpointId, m_onDevChangedMsgId, nullptr);
+}
+
+uint8_t MSGPIAPI Server::GetByteState(const unsigned int deviceIndex)
+{
+   if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
+      return 0;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   return static_cast<uint8_t>(m_singleton->GetState(b2sId) * 255.f);
+}
+
+float MSGPIAPI Server::GetFloatState(const unsigned int deviceIndex)
+{
+   if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
+      return 0.f;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   return m_singleton->GetState(b2sId);
+}
+
+void MSGPIAPI Server::RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx)
+{
+   if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
+      return;
+   const int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   if (auto mapIt = m_singleton->m_stateChgCallbacks.find(b2sId); mapIt == m_singleton->m_stateChgCallbacks.end())
+      m_singleton->m_stateChgCallbacks[b2sId] = vector<ChgCallback>();
+   auto& callbacks = m_singleton->m_stateChgCallbacks[b2sId];
+   auto it = std::ranges::find_if(callbacks, [&cb](const ChgCallback& a) { return a.m_callback == cb; });
+   if (isRegister)
+   {
+      if (it == callbacks.end())
+         callbacks.emplace_back(cb, deviceIndex, ctx);
+   }
+   else
+   {
+      if (it != callbacks.end())
+         callbacks.erase(it);
+   }
+}
+
+float Server::GetState(int b2sId) const
+{
+   const auto it = m_b2sStates.find(b2sId);
+   return it == m_b2sStates.end() ? 0.f : it->second;
 }
 
 int Server::OnRenderStatic(VPXRenderContext2D* ctx, void* userData)
@@ -758,6 +844,23 @@ void Server::B2SMapSound(int digit, const string& soundname)
 
 void Server::MyB2SSetData(int id, int value)
 {
+   const auto it = m_b2sStates.find(id);
+   if (it == m_b2sStates.end())
+   {
+      m_b2sStates[id] = static_cast<float>(value);
+      UpdateDevSrc();
+   }
+   else
+   {
+      it->second = static_cast<float>(value);
+      const auto chgIt = m_stateChgCallbacks.find(id);
+      if (chgIt != m_stateChgCallbacks.end())
+      {
+         for (const auto& cb : chgIt->second)
+            cb.m_callback(cb.m_index, cb.m_context);
+      }
+   }
+
    if (m_pB2SData->IsBackglassRunning()) {
       // Handle top/second light switching based on ROM IDs
       if ((m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) ||

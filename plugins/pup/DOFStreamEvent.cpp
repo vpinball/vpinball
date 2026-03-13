@@ -154,7 +154,10 @@ void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData,
    // B2S controller
    delete[] me->m_b2sDevSrc.deviceDefs;
    memset(&me->m_b2sDevSrc, 0, sizeof(me->m_b2sDevSrc));
-   if (unsigned int b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2S"); b2sEndPoint)
+   unsigned int b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2S");
+   if (!b2sEndPoint)
+      b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2SLegacy");
+   if (b2sEndPoint)
    {
       GetDevSrcMsg getSrcMsg = { 1, 0, &me->m_b2sDevSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcId, b2sEndPoint, &getSrcMsg);
@@ -170,7 +173,7 @@ void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData,
    }
 
    lock.unlock();
-   
+
    for (unsigned int i = 0; i < me->m_b2sDevSrc.nDevices; i++)
       OnB2SStateChg(i, me);
 }
@@ -212,7 +215,10 @@ void DOFEventStream::OnInputSrcChanged(const unsigned int eventId, void* userDat
 
    delete[] me->m_b2sInputSrc.inputDefs;
    memset(&me->m_b2sInputSrc, 0, sizeof(me->m_b2sInputSrc));
-   if (unsigned int b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2S"); b2sEndPoint)
+   unsigned int b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2S");
+   if (!b2sEndPoint)
+      b2sEndPoint = me->m_msgApi->GetPluginEndpoint("B2SLegacy");
+   if (b2sEndPoint)
    {
       GetInputSrcMsg getSrcMsg = { 1, 0, &me->m_b2sInputSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getInputSrcId, b2sEndPoint, &getSrcMsg);
