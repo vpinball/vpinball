@@ -728,7 +728,6 @@ private:
 
 VRDevice::VRDevice(const Settings& settings)
 {
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
       // Scene offset (vertical rotation and horizontal shift)
       m_orientation = settings.GetPlayerVR_Orientation();
       m_tablePos.x = settings.GetPlayerVR_TableX();
@@ -736,7 +735,6 @@ VRDevice::VRDevice(const Settings& settings)
       // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
       // (Note that for OpenVR offset is defined from the ground)
       m_tablePos.z = settings.GetPlayerVR_TableZ();
-   #endif
    #if defined(ENABLE_VR)
       m_slope = settings.GetPlayerVR_Slope();
    #endif
@@ -807,10 +805,17 @@ VRDevice::VRDevice(const Settings& settings)
       // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
       // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
+         m_rendererType = bgfx::RendererType::Enum::Direct3D11;
          const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
-         m_rendererType = gfxBackend == "Direct3D11"s ? bgfx::RendererType::Enum::Direct3D11
-            : gfxBackend == "Vulkan"s                 ? bgfx::RendererType::Enum::Vulkan
-                                                      : bgfx::RendererType::Enum::Direct3D11; // Default value
+         #ifdef _DEBUG
+         if (gfxBackend == "Vulkan"s)
+            m_rendererType = bgfx::RendererType::Enum::Vulkan;
+         #else
+         if (gfxBackend != "Direct3D11"s && gfxBackend != "Default"s)
+         {
+            PLOGI << "Renderer backend enforced to Direct3D11 as other backends are still experimental and not enabled in release builds";
+         }
+         #endif
       #elif BX_PLATFORM_ANDROID
          m_rendererType = bgfx::RendererType::Enum::Vulkan;
       #else
