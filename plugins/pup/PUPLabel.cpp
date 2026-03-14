@@ -178,7 +178,10 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    case 2:
    {
       std::lock_guard lock(m_mutex);
-      for (auto& [key, value] : json.as_object())
+      RSJobject& jsonObj = json.as_object();
+      const bool hasXPos = jsonObj.count("xpos"s) > 0;
+      const bool hasYPos = jsonObj.count("ypos"s) > 0;
+      for (auto& [key, value] : jsonObj)
       {
          if (key == "mt")
          {
@@ -230,11 +233,15 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "xalign")
          {
             m_xAlign = (PUP_LABEL_XALIGN)value.as<int>();
+            if (!hasXPos)
+               m_xPos = 0.f;
             m_dirty = true;
          }
          else if (key == "yalign")
          {
             m_yAlign = (PUP_LABEL_YALIGN)value.as<int>();
+            if (!hasYPos)
+               m_yPos = 0.f;
             m_dirty = true;
          }
          else if (key == "pagenum")
@@ -440,6 +447,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    float xposPercent = m_xPos / 100.0f;
    if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_CENTER)
       xposPercent = 0.5f;
+   else if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_RIGHT)
+      xposPercent = 1.0f;
 
    dest.x += static_cast<float>(rect.w) * xposPercent;
 
@@ -457,7 +466,12 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       dest.y -= (height / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y = rect.y + rect.h - height - (static_cast<float>(rect.h) * yposPercent);
+   {
+      // yPos is the bottom-edge position as a % from the top of the screen.
+      // yPos=0 is the natural default: bottom edge flush with screen bottom (100%).
+      const float yPct = (m_yPos == 0.f) ? 1.0f : yposPercent;
+      dest.y = rect.y + static_cast<float>(rect.h) * yPct - height;
+   }
 
    if (m_animation)
    {
@@ -471,7 +485,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
    ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f,
       0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 
-      0.f, 0.f, -m_angle, // FIXME compute center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
+      static_cast<float>(texInfo->width) / 2.f, static_cast<float>(texInfo->height) / 2.f, -m_angle,
       dest.x, dest.y, dest.w, dest.h);
 }
 
