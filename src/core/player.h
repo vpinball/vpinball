@@ -336,6 +336,7 @@ public:
    bool m_cutCaptureToLoop = true;
 
    CComObject<ScriptInterpreter>* m_scriptInterpreter = nullptr;
+   unsigned int m_nScriptErrorNotification = 0;
    void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    ResURIResolver m_resURIResolver;
