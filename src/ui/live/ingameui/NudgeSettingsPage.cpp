@@ -135,8 +135,7 @@ void NudgeSettingsPage::Render(float elapsed)
    const float plumbSize = plotHeight; //m_player->m_physics->IsPlumbSimulated() ? plotHeight : 0.f;
    const float plotWidth = winSize.x - style.WindowPadding.x * 2.f - style.ItemSpacing.x - plumbSize;
 
-   const uint32_t ms = msec();
-   if (ms - m_resetTimestampMs > 2000)
+   if (const uint32_t ms = msec(); ms - m_resetTimestampMs > 2000)
    {
       m_resetTimestampMs = ms;
       for (int sensor = 0; sensor < 2; sensor++)
@@ -160,7 +159,10 @@ void NudgeSettingsPage::Render(float elapsed)
 
    auto renderSensorInfo = [this, plumbSize](int sensor)
    {
-      ImGui::BeginChild(("SensorInfo" + std::to_string(sensor)).c_str(), ImVec2(plumbSize, plumbSize));
+      ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 1.f);
+      const float downscale = min(min(0.5f, plumbSize / ImGui::CalcTextSize("Refresh Rate").x), plumbSize / (ImGui::GetTextLineHeightWithSpacing() * 7.f));
+      ImGui::PushFont(nullptr, ImGui::GetStyle().FontSizeBase * downscale); // Eventually smaller font to fit (otherwise aligned to plot font size)
+      ImGui::BeginChild(std::format("SensorInfo{}", sensor).c_str(), ImVec2(plumbSize, plumbSize), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar);
       ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(2.f, 2.f));
       ImGui::BeginGroup();
       ImGui::SameLine(0.5f * (plumbSize - ImGui::CalcTextSize("Sensor #1").x));
@@ -190,6 +192,8 @@ void NudgeSettingsPage::Render(float elapsed)
          ImGui::Text("  Freq:  - Hz");
       ImGui::EndGroup();
       ImGui::EndChild();
+      ImGui::PopFont();
+      ImGui::PopStyleVar();
    };
 
    constexpr ImGuiWindowFlags window_flags
@@ -212,7 +216,7 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       for (int i = 0; i < 2; i++)
          if (m_player->m_pininput.GetNudgeXSensor(i)->IsMapped() && m_nudgeXRawPlot[i].HasData())
-            ImPlot::PlotLine(("Sensor X" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeXSensor(i)->GetMappingLabel()).c_str(), 
+            ImPlot::PlotLine(std::format("Sensor X{} - {}", i + 1, m_player->m_pininput.GetNudgeXSensor(i)->GetMappingLabel()).c_str(), 
                &m_nudgeXRawPlot[i].m_data[0].x, //
                &m_nudgeXRawPlot[i].m_data[0].y, //
                m_nudgeXRawPlot[i].m_data.size(),  //
@@ -242,7 +246,7 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       for (int i = 0; i < 2; i++)
          if (m_player->m_pininput.GetNudgeYSensor(i)->IsMapped() && m_nudgeYRawPlot[i].HasData())
-            ImPlot::PlotLine(("Sensor Y" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeYSensor(i)->GetMappingLabel()).c_str(), 
+            ImPlot::PlotLine(std::format("Sensor Y{} - {}", i + 1, m_player->m_pininput.GetNudgeYSensor(i)->GetMappingLabel()).c_str(), 
                &m_nudgeYRawPlot[i].m_data[0].x, //
                &m_nudgeYRawPlot[i].m_data[0].y, //
                m_nudgeYRawPlot[i].m_data.size(), //
