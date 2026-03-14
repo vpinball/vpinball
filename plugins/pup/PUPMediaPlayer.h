@@ -36,7 +36,7 @@ private:
    void Run();
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
    void HandleAudioFrame(AVFrame* pFrame, bool sync);
-   void HandleVideoFrame(AVFrame* pFrame, bool sync);
+   void HandleVideoFrame(AVFrame* pFrame);
 
    string m_name;
    SDL_Rect m_bounds;
@@ -65,17 +65,21 @@ private:
    int m_videoStream = -1;
    AVCodecContext* m_pVideoContext = nullptr;
 
-   // Circular buffer of m_nRgbFrames frames, ready to be rendered if framePTS >= playPTS
-   int m_activeRgbFrame = 0;
-   vector<AVFrame*> m_rgbFrames;
-   vector<VPXTexture> m_videoTextures;
+   // Slots of unordered decoded frames
+   struct FrameInfo
+   {
+      bool valid = false;
+      AVFrame* frame = nullptr;
+      VPXTexture texture = nullptr;
+      double pts = -1.0;
+      bool uploaded = false;
+      int age = 0;
+   };
+   vector<FrameInfo> m_frames;
    SwsContext* m_swsContext = nullptr;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_scaledMask;
-
-   VPXTexture m_videoTexture = nullptr;
-   unsigned int m_videoTextureId = 0xFFFFFF;
 
    int m_audioStream = -1;
    AVCodecContext* m_pAudioContext = nullptr;
