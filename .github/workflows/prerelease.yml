@@ -41,25 +41,27 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [ version ]
     steps:
-      - id: download
+      - name: Find build run
+        id: find-run
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-           curl -s "${{ env.ACTIONS_API_URL }}/runs" --output runs.json
-           RUN_ID=$(jq -r --arg SHA "${{ needs.version.outputs.sha }}" --arg NAME "vpinball" '.workflow_runs[] | select(.head_sha==$SHA and .name==$NAME) | .id' runs.json) 
-           echo "Downloading vpinball artifact list ${RUN_ID}..."
-           curl -s "${{ env.ACTIONS_API_URL }}/runs/${RUN_ID}/artifacts" --output artifacts.json
-           ARTIFACTS=($(jq -r '.artifacts[] | .archive_download_url' artifacts.json)) 
-           for url in ${ARTIFACTS[@]}
-           do
-              echo "Downloading artifact: ${url}..."
-              curl -s -OJ -L -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" ${url}
-           done
-           rm *.json
+          RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow=vpinball.yml --status=success --commit=${{ needs.version.outputs.sha }} --limit=1 --json databaseId -q '.[0].databaseId')
+          echo "run_id=${RUN_ID}" >> $GITHUB_OUTPUT
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          pattern: VPinballX_*
+          run-id: ${{ steps.find-run.outputs.run_id }}
+          github-token: ${{ github.token }}
+          skip-decompress: true
       - id: create_release
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
           name: "v${{ needs.version.outputs.tag }}"
-          tag: "v${{ needs.version.outputs.tag }}" 
+          tag: "v${{ needs.version.outputs.tag }}"
           commit: ${{ needs.version.outputs.sha }}
           token:  ${{ secrets.GITHUB_TOKEN }}
-          artifacts: "*"
+          artifacts: "artifacts/**/*"
