@@ -80529,7 +80529,7 @@ MA_PRIVATE ma_uint64 ma_dr_wav__read_smpl_to_metadata_obj(ma_dr_wav__metadata_pa
         ma_uint32 loopCount;
         ma_uint32 calculatedLoopCount;
         loopCount = ma_dr_wav_bytes_to_u32(smplHeaderData + 28);
-        calculatedLoopCount = (pChunkHeader->sizeInBytes - MA_DR_WAV_SMPL_BYTES) / MA_DR_WAV_SMPL_LOOP_BYTES;
+        calculatedLoopCount = (ma_uint32)((pChunkHeader->sizeInBytes - MA_DR_WAV_SMPL_BYTES) / MA_DR_WAV_SMPL_LOOP_BYTES);
         if (loopCount != calculatedLoopCount) {
             return totalBytesRead;
         }

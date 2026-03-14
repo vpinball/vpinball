@@ -31,8 +31,8 @@ class MsgModuleLoader
 public:
    virtual ~MsgModuleLoader() { }
    virtual void* Link(const std::string& directory, const std::string& file) = 0;
-   virtual void Unlink(void* module) = 0;
-   virtual void* GetFunction(void* module, const std::string& functionName) = 0;
+   virtual void Unlink(void* dynamicModule) = 0;
+   virtual void* GetFunction(void* dynamicModule, const std::string& functionName) = 0;
 };
 
 class MsgPlugin final

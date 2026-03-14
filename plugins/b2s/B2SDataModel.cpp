@@ -79,10 +79,10 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
-      const char* value = node->Attribute(attributeName.c_str());
-      if (value)
+      if (const char* value = node->Attribute(attributeName.c_str()))
       {
-         vector<uint8_t> decoded = base64_decode(value, strlen(value));
+         std::string_view valueView { value };
+         vector<uint8_t> decoded = base64_decode(valueView.data(), valueView.size());
          if (decoded.empty())
          {
             string path;
@@ -105,10 +105,10 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
-      const char* value = node->Attribute(attributeName.c_str());
-      if (value)
+      if (const char* value = node->Attribute(attributeName.c_str()))
       {
-         vector<uint8_t> decoded_wav = base64_decode(value, strlen(value));
+         std::string_view valueView { value };
+         vector<uint8_t> decoded_wav = base64_decode(valueView.data(), valueView.size());
          return std::make_shared<vector<uint8_t>>(std::move(decoded_wav));
       }
    }

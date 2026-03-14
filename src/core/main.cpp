@@ -211,22 +211,22 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             #if defined(_MSC_VER)
                SetDllDirectory(directory.c_str());
             #endif
-            void* module = static_cast<void*>(SDL_LoadObject(file.c_str()));
+            void* dynamicModule = static_cast<void*>(SDL_LoadObject(file.c_str()));
             #if defined(_MSC_VER)
                SetDllDirectory(NULL);
             #endif
-            return module;
+            return dynamicModule;
          }
-         void Unlink(void* module) override
+         void Unlink(void* dynamicModule) override
          {
             //FIXME This would block (DOF) or crash (Kinect2) on some plugins
             #ifndef _MSC_VER
-               SDL_UnloadObject(static_cast<SDL_SharedObject*>(module));
+            SDL_UnloadObject(static_cast<SDL_SharedObject*>(dynamicModule));
             #endif
          }
-         void* GetFunction(void* module, const std::string& functionName) override
+         void* GetFunction(void* dynamicModule, const std::string& functionName) override
          {
-            return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(module), functionName.c_str()));
+            return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(dynamicModule), functionName.c_str()));
          }
       };
       MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),

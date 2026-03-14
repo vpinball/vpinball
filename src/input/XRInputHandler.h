@@ -24,6 +24,13 @@ private:
       uint16_t pinInputId;
    };
 
+   template <size_t N> void CopyToXrBuffer(char (&dest)[N], const std::string_view& src)
+   {
+      size_t count = std::min(src.size(), N - 1);
+      std::copy(src.begin(), src.begin() + count, dest);
+      dest[count] = '\0';
+   }
+
 public:
    XRInputHandler(InputManager& pininput, XrInstance instance, XrSession session)
       : m_pininput(pininput)
@@ -31,8 +38,8 @@ public:
       , m_session(session)
    {
       XrActionSetCreateInfo actionSetInfo { XR_TYPE_ACTION_SET_CREATE_INFO };
-      strncpy(actionSetInfo.actionSetName, "universal_diagnostic_set", std::size(actionSetInfo.actionSetName));
-      strncpy(actionSetInfo.localizedActionSetName, "Universal Input Scanner", std::size(actionSetInfo.localizedActionSetName));
+      CopyToXrBuffer(actionSetInfo.actionSetName, "universal_diagnostic_set"s);
+      CopyToXrBuffer(actionSetInfo.localizedActionSetName, "Universal Input Scanner"s);
       xrCreateActionSet(m_instance, &actionSetInfo, &m_actionSet);
 
       m_joyId = m_pininput.RegisterDevice("OpenXR", InputManager::DeviceType::Joystick, "Controller");
@@ -78,8 +85,8 @@ public:
          std::replace(name.begin(), name.end(), '/', '_');
          name.erase(0, 1); // remove leading underscore
 
-         strncpy(actionInfo.actionName, name.c_str(), std::size(actionInfo.actionName));
-         strncpy(actionInfo.localizedActionName, path.c_str(), std::size(actionInfo.localizedActionName));
+         CopyToXrBuffer(actionInfo.actionName, name);
+         CopyToXrBuffer(actionInfo.localizedActionName, path);
 
          xrCreateAction(m_actionSet, &actionInfo, &tracker.action);
 

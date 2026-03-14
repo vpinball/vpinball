@@ -47,10 +47,10 @@ static inline float A(uint32_t col) { return (float)((col>>24) & 0xFFu); }
 
 static constexpr double wgt1 = 0.129633;
 static constexpr double wgt2 = 0.175068;
-static constexpr float w1    = -wgt1;
-static constexpr float w2    = wgt1+0.5;
-static constexpr float w3    = -wgt2;
-static constexpr float w4    = wgt2+0.5;
+static constexpr float w1    = (float) -wgt1;
+static constexpr float w2    = (float) wgt1+0.5;
+static constexpr float w3    = (float) -wgt2;
+static constexpr float w4    = (float) wgt2+0.5;
 
 
 static inline float df(float A, float B)

@@ -38,14 +38,9 @@ static constexpr inline char cLower(char c)
    return c;
 }
 
-static bool StrCompareNoCase(const std::string& strA, const std::string& strB)
+static bool StrCompareNoCase(const std::string_view& strA, const std::string_view& strB)
 {
    return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
-}
-
-static bool StrCompareNoCase(const std::string& strA, const char* const strB)
-{
-   return strA.length() == strlen(strB) && std::equal(strA.begin(), strA.end(), strB, [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
 MsgPluginManager& MsgPluginManager::GetInstance()
@@ -124,17 +119,19 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
    assert(std::this_thread::get_id() == pm.m_apiThread);
 
    MsgEntry* freeMsg = nullptr;
+   const std::string_view namespaceView { name_space };
+   const std::string_view nameView { name };
    for (MsgEntry& msg : pm.m_msgs)
       if (freeMsg == nullptr && msg.refCount == 0)
          freeMsg = &msg;
-      else if (StrCompareNoCase(msg.name_space, name_space) && StrCompareNoCase(msg.name, name))
+      else if (StrCompareNoCase(msg.name_space, namespaceView) && StrCompareNoCase(msg.name, nameView))
       {
          msg.refCount++;
          return msg.id;
       }
    if (freeMsg == nullptr)
    {
-      pm.m_msgs.push_back(MsgEntry());
+      pm.m_msgs.emplace_back();
       freeMsg = &pm.m_msgs.back();
       freeMsg->id = static_cast<unsigned int>(pm.m_msgs.size()) - 1;
    }
