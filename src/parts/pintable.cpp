@@ -1702,9 +1702,12 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                         PLOGE << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetScriptable()->m_wzName);
                      }
 
+                     AddPart(part);
+
                      // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an 
                      // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
-                     // Note that this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object
+                     // As this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object, 
+                     // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
                      if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
                      {
                         Primitive * primitive = (Primitive *)part;
@@ -1768,8 +1771,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                                  Flasher *backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
                                  if (backglass)
                                  {
-                                    backglass->m_wzName = part->GetWName();
-                                    backglass->m_onLoadExpectedPartGroup = part->m_onLoadExpectedPartGroup;
+                                    backglass->m_wzName = GetUniqueName(primitive->GetWName());
+                                    backglass->m_onLoadExpectedPartGroup = primitive->m_onLoadExpectedPartGroup;
                                     backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D {}, true); // We should gather the base flasher size from the object instead of guessing its default value
                                     vec3 center = planeDist * planeNormal;
                                     center += (miny + 0.5f * backglassHeight) * planeYAxis;
@@ -1781,18 +1784,19 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                                     backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
                                     backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
                                     backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
-                                    backglass->m_d.m_isVisible = true;
-                                    parts[i] = backglass;
-                                    PLOGI << "Primitive '" << part->GetName() << "' used as a VR backglass was replaced by an external renderer flasher";
-                                    part->Release();
+                                    backglass->m_d.m_isVisible = primitive->m_d.m_visible;
+                                    primitive->m_d.m_visible = false;
+                                    PLOGE << "Primitive '" << primitive->GetName() << "' used as a deprecated VR backglass was hidden and an external renderer flasher named '"
+                                          << backglass->GetName() << "' was added. This may cause script issues.";
+                                    AddPart(backglass);
+                                    backglass->Release();
                                  }
                               }
                            }
                         }
                      }
 
-                     AddPart(parts[i]);
-                     parts[i]->Release();
+                     part->Release();
                   }
                }
             }
@@ -1878,6 +1882,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             }
 
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
+            parts = GetParts();
             for (auto part : parts)
             {
                if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
