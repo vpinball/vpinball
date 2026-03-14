@@ -242,11 +242,14 @@ void InputAction::OnUpdate()
 
 void InputAction::SetRepeatPeriod(int delayMs)
 {
-   if (m_isPressed && m_repeatPeriodUs >= 0)
-      m_eventManager->UnregisterOnUpdate(this);
-   m_repeatPeriodUs = delayMs * 1000;
-   if (m_isPressed && m_repeatPeriodUs >= 0)
-      m_eventManager->RegisterOnUpdate(this);
+   if (const int64_t targetDelay = delayMs * 1000; m_repeatPeriodUs != targetDelay)
+   {
+      if (m_isPressed && m_repeatPeriodUs >= 0)
+         m_eventManager->UnregisterOnUpdate(this);
+      m_repeatPeriodUs = targetDelay;
+      if (m_isPressed && m_repeatPeriodUs >= 0)
+         m_eventManager->RegisterOnUpdate(this);
+   }
 }
 
 bool InputAction::IsNavigationAction() const
