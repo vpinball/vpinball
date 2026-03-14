@@ -58,6 +58,10 @@ add_executable(vpinball WIN32
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
 
+   src/renderer/XRGraphicBackend.h
+   src/renderer/XRD3D11Backend.h
+   src/renderer/XRVulkanBackend.h
+
    src/utils/StackTrace.cpp
    src/utils/StackTrace.h
    src/utils/MemoryStatus.cpp
