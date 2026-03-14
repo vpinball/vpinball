@@ -20,6 +20,7 @@ PerfUI::PerfUI(Player *const player)
 PerfUI::~PerfUI()
 {
    g_app->m_settings.SetPlayer_ShowFPS(m_showPerf, false);
+   g_app->m_settings.Save();
    ImPlot::DestroyContext();
 }
 
@@ -278,6 +279,8 @@ void PerfUI::RenderFPS()
    }
 
    // Display simple FPS window
+   if (m_showPerf == PerfMode::PM_FPS)
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2());
    ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
    ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
@@ -307,6 +310,8 @@ void PerfUI::RenderFPS()
    }
    ImGui::Text("%s", text.c_str());
    ImGui::EndChild();
+   if (m_showPerf == PerfMode::PM_FPS)
+      ImGui::PopStyleVar();
 
    ImGui::End();
 

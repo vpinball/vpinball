@@ -341,8 +341,7 @@ void LiveUI::Render3D()
 
 void LiveUI::RenderUI()
 {
-   // For the time being, the UI is only available inside a running player
-   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr)
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
       return;
 
    const ImGuiIO& io = ImGui::GetIO();
