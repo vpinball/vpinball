@@ -7,6 +7,8 @@
 
 #include "PUPMediaPlayer.h"
 
+#include <cfloat>
+
 namespace PUP {
 
 #if defined(__clang__)
@@ -19,14 +21,12 @@ namespace PUP {
 
 PUPMediaPlayer::PUPMediaPlayer(const string& name)
    : m_name(name)
-   , m_rgbFrames(3)
-   , m_videoTextures(3)
+   , m_frames(3)
    , m_scaledMask(nullptr, &SDL_DestroySurface)
    , m_libAv(LibAV::LibAV::GetInstance())
    , m_commandQueue(1)
 {
    assert(m_libAv.isLoaded);
-   assert(m_rgbFrames.size() == m_videoTextures.size());
    SetName(name);
 }
 
@@ -77,7 +77,6 @@ double PUPMediaPlayer::GetPlayTime() const
    assert(m_gameTime >= 0.0 || !m_syncOnGameTime);
    return (m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0)) - m_startTimestamp;
 }
-
 
 void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
 {
@@ -246,24 +245,22 @@ void PUPMediaPlayer::StopBlocking()
    m_pVideoContext = nullptr;
    m_videoStream = -1;
 
-   for (size_t i = 0; i < m_videoTextures.size(); i++)
+   for (auto& frame : m_frames)
    {
-      if (m_rgbFrames[i])
-         m_libAv._av_frame_free(&m_rgbFrames[i]);
-      if (m_videoTextures[i])
-      {
-         DeleteTexture(m_videoTextures[i]);
-         m_videoTextures[i] = nullptr;
-      }
+      if (frame.frame)
+         m_libAv._av_frame_free(&frame.frame);
+      if (frame.texture)
+         DeleteTexture(frame.texture);
+      frame.valid = false;
+      frame.frame = nullptr;
+      frame.texture = nullptr;
+      frame.uploaded = false;
+      frame.pts = -1.0;
    }
-   m_activeRgbFrame = 0;
 
    if (m_swsContext)
       m_libAv._sws_freeContext(m_swsContext);
    m_swsContext = nullptr;
-
-   m_videoTexture = nullptr;
-   m_videoTextureId = 0xFFFFFF;
 
    if (m_pAudioContext)
       m_libAv._avcodec_free_context(&m_pAudioContext);
@@ -320,54 +317,44 @@ void PUPMediaPlayer::SetLength(int length)
 
 void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect)
 {
-   std::lock_guard lock(m_mutex);
-
    if (!m_running)
       return;
 
+   std::lock_guard lock(m_mutex);
+
    const double playPts = m_paused ? m_pauseTimestamp : GetPlayTime();
-   if ((m_length) != 0 && (playPts >= m_length))
+
+   // Search for the best frame to display (the one nearest to our play time), also ageing all slots to let the decoder select the eldest used slot
+   int selectedFrameSlot = -1;
+   double bestDelta = DBL_MAX;
+   for (int i = 0; i < static_cast<int>(m_frames.size()); i++)
+   {
+      m_frames[i].age++;
+      if (const double delta = abs(playPts - m_frames[i].pts); m_frames[i].valid && (delta < bestDelta))
+      {
+         bestDelta = delta;
+         selectedFrameSlot = i;
+      }
+   }
+   if (selectedFrameSlot == -1)
       return;
+   FrameInfo& selectedFrame = m_frames[selectedFrameSlot];
+   //LOGD(std::format("{} Render with Play time: {:5.3f} / Video PTS: {:5.3f} / Slot: {}", m_filename.filename().string(), playPts, selectedFrame.pts, selectedFrameSlot));
 
-   // Search for the best frame to display and update the video texture accordingly (if needed)
-   unsigned int m_renderFrameId = m_videoTextureId;
-   for (int i = 0; i < (int)m_rgbFrames.size(); i++)
+   if (!selectedFrame.uploaded)
    {
-      if (m_activeRgbFrame >= i)
-      {
-         const AVFrame* rgbFrame = m_rgbFrames[(m_activeRgbFrame + (int)m_rgbFrames.size() - i) % (int)m_rgbFrames.size()];
-         if (rgbFrame)
-         {
-            const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-            if (playPts <= framePts) // We select the first frame after (or at) the current play timestamp
-               m_renderFrameId = m_activeRgbFrame - i;
-         }
-      }
+      // To optimize a bit more we could update & upload a texture on a frame, then use it on the following render, this would remove the barrier between
+      // the GPU upload/mipmap generation and the GPU render use, allowing more parallelism. Note that for the time being upload is only done on use
+      selectedFrame.uploaded = true;
+      const VPXTextureInfo* texInfo = GetTextureInfo(selectedFrame.texture);
+      UpdateTexture(&selectedFrame.texture, texInfo->width, texInfo->height, texInfo->format, texInfo->data);
    }
 
-   if (m_videoTextureId != m_renderFrameId)
-   {
-      const unsigned int index = m_renderFrameId % (unsigned int)m_videoTextures.size();
-      m_videoTexture = m_videoTextures[index];
-      if (m_videoTexture)
-      {
-         m_videoTextureId = m_renderFrameId;
-         VPXTextureInfo* texInfo = GetTextureInfo(m_videoTexture);
-         UpdateTexture(&m_videoTexture, texInfo->width, texInfo->height, texInfo->format, texInfo->data);
-         // TODO to optimize a bit more we should update & upload a texture on a frame, then use it on the following render, this would remove the barrier between
-         // the GPU upload/mipmap generation and the GPU render use, allowing more parallelism. Note that for the time being upload is only done on use
-         //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-         //LOGD(std::format("Video tex update: play time: {:8.3f}s / frame pts: {:8.3f}s / delta: {:8.3f}s  [{}]", playPts, framePts, framePts - playPts, m_filename.string()));
-      }
-   }
+   const VPXTextureInfo* texInfo = GetTextureInfo(selectedFrame.texture);
+   ctx->DrawImage(ctx, selectedFrame.texture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, 0.f,
+      static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
 
-   // Render image
-   if (m_videoTexture)
-   {
-      VPXTextureInfo* texInfo = GetTextureInfo(m_videoTexture);
-      ctx->DrawImage(ctx, m_videoTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, 0.f,
-         static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
-   }
+   selectedFrame.age = 0;
 }
 
 void PUPMediaPlayer::Run()
@@ -487,7 +474,7 @@ void PUPMediaPlayer::Run()
          while (m_libAv._avcodec_receive_frame(m_pVideoContext, pFrame) >= 0)
          {
             pFrame->opaque = reinterpret_cast<void*>(static_cast<uintptr_t>(m_playIndex));
-            HandleVideoFrame(pFrame, true);
+            HandleVideoFrame(pFrame);
          }
       }
    }
@@ -506,117 +493,131 @@ void PUPMediaPlayer::Run()
    LOGD("Play done " + m_filename.string());
 }
 
-void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
+void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
 {
    // Unknown frame format, don't process frame (would crash in getContext)
    if (frame->format < 0)
       return;
 
-   std::unique_lock lock(m_mutex);
-   const int nextFrame = (m_activeRgbFrame + 1) % m_rgbFrames.size(); // m_activeRgbFrame points to the last frame (the one with the highest presentation timestamp)
+   // Select the best buffer slot, eventually waiting for a free slot
+   int selectedFrameSlot = -1;
+   while (m_running)
+   {
+      const double playPTS = GetPlayTime();
+      int maxAge = INT_MIN;
+      for (int i = 0; i < static_cast<int>(m_frames.size()); i++)
+      {
+         if (!m_frames[i].valid)
+         { // Unused slot => directly select
+            maxAge = 2;
+            selectedFrameSlot = i;
+            break;
+         }
+         else if ((m_frames[i].age > maxAge) && (m_frames[i].pts < playPTS))
+         { // Search for the oldest slot with a frame behind play time
+            maxAge = m_frames[i].age;
+            selectedFrameSlot = i;
+         }
+      }
+      if (maxAge >= 2)
+         break;
+      // This could be change by a condition variable, waiting on changes of either m_frames or m_running
+      SDL_Delay(8);
+   }
+   if (!m_running)
+      return;
 
-   // Lazily create video frame conversion context and frame queue, adjusted to the render size
+   // Take ownership of the frame
+   FrameInfo& selectedFrame = m_frames[selectedFrameSlot];
+   {
+      std::lock_guard lock(m_mutex);
+      selectedFrame.valid = false;
+   }
+
+   // Lazily create/recreate video frame conversion context and frame queue, adjusted to the render size
    const int targetWidth = m_bounds.w > 0 ? m_bounds.w : m_pVideoContext->width;
    const int targetHeight = m_bounds.h > 0 ? m_bounds.h : m_pVideoContext->height;
    constexpr AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
-   AVFrame* rgbFrame = m_rgbFrames[nextFrame];
-   if ((rgbFrame != nullptr) && ((rgbFrame->width != targetWidth) || (rgbFrame->height != targetHeight)))
+   if ((selectedFrame.frame != nullptr) && ((selectedFrame.frame->width != targetWidth) || (selectedFrame.frame->height != targetHeight)))
    {
-      m_libAv._av_frame_free(&rgbFrame);
-      m_rgbFrames[nextFrame] = nullptr;
-      rgbFrame = nullptr;
-      if (m_videoTextures[nextFrame] != nullptr)
-      {
-         if (m_videoTexture == m_videoTextures[nextFrame])
-         {
-            m_videoTexture = nullptr;
-            m_videoTextureId = 0xFFFFFF;
-         }
-         DeleteTexture(m_videoTextures[nextFrame]);
-         m_videoTextures[nextFrame] = nullptr;
-      }
+      m_libAv._av_frame_free(&selectedFrame.frame);
+      if (selectedFrame.texture != nullptr)
+         DeleteTexture(selectedFrame.texture);
+      selectedFrame.frame = nullptr;
+      selectedFrame.texture = nullptr;
    }
-   if (rgbFrame == nullptr)
+   if (selectedFrame.frame == nullptr)
    {
-      rgbFrame = m_libAv._av_frame_alloc();
-      if (rgbFrame == nullptr)
+      selectedFrame.frame = m_libAv._av_frame_alloc();
+      if (selectedFrame.frame == nullptr)
       {
          LOGE("Failed to create RGB buffer frame"s);
          m_running = false;
          return;
       }
-      // Precreate the texture and uses there backing buffer to avoid copying on each update
-      assert(m_videoTextures[nextFrame] == nullptr);
-      UpdateTexture(&m_videoTextures[nextFrame], targetWidth, targetHeight, VPXTextureFormat::VPXTEXFMT_sRGBA8, nullptr);
-      uint8_t* frameBuffer = static_cast<uint8_t*>(GetTextureInfo(m_videoTextures[nextFrame])->data);
+      // Precreate the texture and uses its backing buffer to avoid copying on each update
+      assert(selectedFrame.texture == nullptr);
+      UpdateTexture(&selectedFrame.texture, targetWidth, targetHeight, VPXTextureFormat::VPXTEXFMT_sRGBA8, nullptr);
+      const uint8_t* frameBuffer = static_cast<uint8_t*>(GetTextureInfo(selectedFrame.texture)->data);
       if (frameBuffer == nullptr)
       {
          LOGE("Failed to allocate RGB buffer"s);
          m_running = false;
          return;
       }
-      rgbFrame->width = targetWidth;
-      rgbFrame->height = targetHeight;
-      rgbFrame->format = targetFormat;
-      m_libAv._av_image_fill_arrays(rgbFrame->data, rgbFrame->linesize, frameBuffer, targetFormat, targetWidth, targetHeight, 1);
-      m_rgbFrames[nextFrame] = rgbFrame;
+      selectedFrame.frame->width = targetWidth;
+      selectedFrame.frame->height = targetHeight;
+      selectedFrame.frame->format = targetFormat;
+      m_libAv._av_image_fill_arrays(selectedFrame.frame->data, selectedFrame.frame->linesize, frameBuffer, targetFormat, targetWidth, targetHeight, 1);
    }
 
    // Create/Update conversion context when source format is known (so after decoding at least one frame)
-   m_swsContext = m_libAv._sws_getCachedContext(m_swsContext, 
-      frame->width, frame->height, static_cast<AVPixelFormat>(frame->format),
-      rgbFrame->width, rgbFrame->height, static_cast<AVPixelFormat>(rgbFrame->format),
-      SWS_BILINEAR, NULL, NULL, NULL
-   );
+   m_swsContext = m_libAv._sws_getCachedContext(m_swsContext, frame->width, frame->height, static_cast<AVPixelFormat>(frame->format), selectedFrame.frame->width, selectedFrame.frame->height,
+      static_cast<AVPixelFormat>(selectedFrame.frame->format), SWS_BILINEAR, NULL, NULL, NULL);
    if (m_swsContext == nullptr)
       return;
 
-   lock.unlock();
+   // Convert to a renderable format (we do not lock as the consumer thread is not supposed to be accessing an outdated frame, and this operation can be a bit lengthy)
+   m_libAv._sws_scale(m_swsContext, frame->data, frame->linesize, 0, m_pVideoContext->height, selectedFrame.frame->data, selectedFrame.frame->linesize);
+   selectedFrame.frame->opaque = frame->opaque;
+
+   // Apply the transparency mask
+   if (m_mask)
    {
-      // Wait for the buffer slot to be outdated (do not overwrite a frame that is waiting to be displayed), but only in the same play sequence (stored in the opaque field of the frame. if we looped or seek, skip)
-      if (sync && rgbFrame->opaque == frame->opaque)
+      SDL_Surface* sdlMask = m_mask.get();
+      if (selectedFrame.frame->width != m_mask->w || selectedFrame.frame->height != m_mask->h)
       {
-         const double oldPts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-         while (m_running && GetPlayTime() < oldPts)
-            SDL_Delay(8);
+         if (m_scaledMask == nullptr || selectedFrame.frame->width != m_scaledMask->w || selectedFrame.frame->height != m_scaledMask->h)
+            m_scaledMask = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(
+               SDL_ScaleSurface(m_mask.get(), selectedFrame.frame->width, selectedFrame.frame->height, SDL_ScaleMode::SDL_SCALEMODE_LINEAR), SDL_DestroySurface);
+         sdlMask = m_scaledMask.get();
       }
-
-      // Convert to a renderable format (we do not lock as the consumer thread is not supposed to be accessing an outdated frame, and this operation can be a bit lengthy)
-      m_libAv._sws_scale(m_swsContext, frame->data, frame->linesize, 0, m_pVideoContext->height, rgbFrame->data, rgbFrame->linesize);
-      rgbFrame->opaque = frame->opaque;
-
-      // Apply the transparency mask
-      if (m_mask)
+      if (sdlMask)
       {
-         SDL_Surface* sdlMask = m_mask.get();
-         if (rgbFrame->width != m_mask->w || rgbFrame->height != m_mask->h)
+         SDL_LockSurface(sdlMask);
+         const uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
+         uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(selectedFrame.frame->data[0]);
+         for (int i = 0; i < sdlMask->h; i++)
          {
-            if (m_scaledMask == nullptr || rgbFrame->width != m_scaledMask->w || rgbFrame->height != m_scaledMask->h)
-               m_scaledMask = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(
-                  SDL_ScaleSurface(m_mask.get(), rgbFrame->width, rgbFrame->height, SDL_ScaleMode::SDL_SCALEMODE_LINEAR), SDL_DestroySurface);
-            sdlMask = m_scaledMask.get();
+            for (int j = 0; j < sdlMask->w; j++, mask++, frame2++)
+               *frame2 = *mask ? *frame2 : 0x00000000u;
+            mask += sdlMask->pitch - sdlMask->w * sizeof(uint32_t);
+            frame2 += selectedFrame.frame->linesize[0] - sdlMask->w * sizeof(uint32_t);
          }
-         if (sdlMask)
-         {
-            SDL_LockSurface(sdlMask);
-            const uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
-            uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(rgbFrame->data[0]);
-            for (int i = 0; i < sdlMask->h; i++)
-            {
-               for (int j = 0; j < sdlMask->w; j++, mask++, frame2++)
-                  *frame2 = *mask ? *frame2 : 0x00000000u;
-               mask += sdlMask->pitch - sdlMask->w * sizeof(uint32_t);
-               frame2 += rgbFrame->linesize[0] - sdlMask->w * sizeof(uint32_t);
-            }
-            SDL_UnlockSurface(sdlMask);
-         }
+         SDL_UnlockSurface(sdlMask);
       }
    }
-   lock.lock();
 
-   // Update frame PTS and pointer to latest frame under a lock as this modification impacts the consumer thread frame selection
-   m_libAv._av_frame_copy_props(rgbFrame, frame);
-   m_activeRgbFrame++;
+   // Update frame information & mark it as valid for selection by the renderer thread
+   {
+      std::lock_guard lock(m_mutex);
+      m_libAv._av_frame_copy_props(selectedFrame.frame, frame);
+      selectedFrame.age = 0;
+      selectedFrame.pts = (static_cast<double>(selectedFrame.frame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
+      selectedFrame.uploaded = false;
+      selectedFrame.valid = true;
+      //LOGD(std::format("{} Decoded with Video PTS: {:5.3f} / Slot: {}", m_filename.filename().string(), selectedFrame.pts, selectedFrameSlot));
+   }
 }
 
 AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext, int stream)
@@ -662,7 +663,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
    if (sync && m_pAudioLoop == pFrame->opaque && AV_NOPTS_VALUE != pFrame->pts)
    {
       const double framePTS = static_cast<double>(pFrame->pts * m_pAudioContext->pkt_timebase.num) / static_cast<double>(m_pAudioContext->pkt_timebase.den);
-      const double decodeTS = GetPlayTime() + 0.5; // Now + 500ms buffer
+      const double decodeTS = GetPlayTime() + 0.5; // Target + 500ms buffer
       if (framePTS > decodeTS)
          SDL_Delay(static_cast<uint32_t>(1000.0 * (framePTS - decodeTS)));
       if (!m_running)

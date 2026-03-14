@@ -575,13 +575,6 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    if (!LibAV::LibAV::GetInstance().isLoaded)
       return false;
 
-   if (me->m_vpxApi)
-   {
-      double gameTime = me->m_vpxApi->GetGameTime();
-      for (const auto& [key, screen] : me->m_screenMap)
-         screen->SetGameTime(gameTime);
-   }
-
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
    rootScreen->SetBounds(padLeft, padTop, static_cast<int>(renderCtx->srcWidth) - padLeft - padRight, static_cast<int>(renderCtx->srcHeight) - padTop - padBottom);
@@ -655,6 +648,14 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       {
          screen->Render(renderCtx, 3);
       });
+
+   // Set Game time after rendering to avoid updating while rendering if the decode thread are waiting for it
+   if (me->m_vpxApi)
+   {
+      double gameTime = me->m_vpxApi->GetGameTime();
+      for (const auto& [key, screen] : me->m_screenMap)
+         screen->SetGameTime(gameTime);
+   }
 
    return true;
 }
