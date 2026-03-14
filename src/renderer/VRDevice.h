@@ -6,6 +6,7 @@
    #include <openvr.h>
 #elif defined(ENABLE_XR)
    #include <openxr/openxr.h>
+   #include "input/XRInputHandler.h"
 #endif
 
 class VRDevice final
@@ -181,5 +182,7 @@ private:
 
    bool m_recenterTable = false;
    float m_sceneSize = 0.f;
+
+   XRInputHandler* m_xrInputHandler = nullptr;
 #endif
 };

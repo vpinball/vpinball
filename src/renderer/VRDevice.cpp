@@ -899,11 +899,18 @@ void VRDevice::CreateSession()
       m_backend->CreateImageViews(swapchain);
    }
    m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size(), nullptr);
+
+   auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
+   m_xrInputHandler = inputHandler.get();
+   g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
 }
 
 void VRDevice::ReleaseSession()
 {
    assert(m_session);
+
+   g_pplayer->m_pininput.RemoveInputHandler(m_xrInputHandler);
+   m_xrInputHandler = nullptr;
 
    // Destroy the swapchian render targets, and color/depth image views
    for (auto& rt : m_swapchainRenderTargets)

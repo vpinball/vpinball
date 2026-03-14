@@ -583,6 +583,14 @@ bool LiveUI::ProposeInputLayout(const string &deviceName, const std::function<vo
 
 void LiveUI::UpdateDeviceLayoutPopup()
 {
+   // FIXME add an UI for VR instead of applying blindly
+   if (m_player->IsVR())
+   {
+      m_deviceLayoutName.clear();
+      m_deviceLayoutHandler(true, false);
+      return;
+   }
+
    if (!m_deviceLayoutName.empty())
       ImGui::OpenPopup("Apply Device Layout ?");
    ImGui::SetNextWindowSize(ImVec2(350.f * m_uiScale, 0.f));

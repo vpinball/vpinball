@@ -149,7 +149,16 @@ InputManager::~InputManager()
    #endif
 }
 
+void InputManager::AddInputHandler(std::unique_ptr<InputHandler> handler)
+{
+   m_inputHandlers.push_back(std::move(handler));
+}
 
+std::unique_ptr<InputManager::InputHandler> InputManager::RemoveInputHandler(InputHandler* handler)
+{
+
+   return nullptr;
+}
 
 
 #pragma region Device and Element Management
