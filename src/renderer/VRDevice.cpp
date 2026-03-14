@@ -743,7 +743,7 @@ VRDevice::VRDevice(const Settings& settings)
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
       m_lockbarWidth = settings.GetPlayer_LockbarWidth();
-      m_lockbarHeight = g_app->m_settings.GetPlayer_LockbarHeight();
+      m_lockbarHeight = settings.GetPlayer_LockbarHeight();
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1720,7 +1720,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             m_orientation = RADTOANG(atan2f(m_nextMedianView.m[0][2], m_nextMedianView.m[0][0]));
             m_tablePos.x = g_app->m_settings.GetPlayer_ScreenPlayerX() - VPUTOCM(medianPoseInVPU.position.x);
             m_tablePos.y = g_app->m_settings.GetPlayer_ScreenPlayerY() - VPUTOCM(medianPoseInVPU.position.z);
-            m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
+            m_tablePos.z = 0.f;
+            //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
             m_worldDirty = true;
          }
 
@@ -1801,7 +1802,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                * Matrix3D::MatrixTranslate(
                   -CMTOVPU(m_tablePos.x),
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   0.f) // Feets are always at z=0 in real world, that is to say ground
+                   CMTOVPU(m_tablePos.z)) // Feets are always at z=0 in real world, that is to say ground
                * Matrix3D::MatrixScale(1.f, 1.f, feetScale) // Scale feets in order to match feet bottom to real world floor
                * cabinetSlope // Apply cabinet slope
                * viewOrientation; // Reapply view orientation
@@ -1817,7 +1818,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                * Matrix3D::MatrixTranslate(
                   -CMTOVPU(m_tablePos.x), // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   0.f)
+                   CMTOVPU(m_tablePos.z))
                * viewOrientation; // Reapply view orientation
             m_roomWorld = m_pfWorld * pfToRoom;
          }
@@ -1956,7 +1957,7 @@ void VRDevice::OffsetTable(float dx, float dy, float dz)
 {
    m_tablePos.x = clamp(m_tablePos.x + dx, -100.0f, 100.0f);
    m_tablePos.y = clamp(m_tablePos.y + dy, -100.0f, 100.0f);
-   m_tablePos.z = clamp(m_tablePos.z + dz, 0.0f, 250.0f);
+   m_tablePos.z = clamp(m_tablePos.z + dz, -100.0f, 100.0f);
    m_worldDirty = true;
 }
 

@@ -8,7 +8,7 @@
 class InputAction final : public ButtonMapping::ButtonMappingHandler
 {
 public:
-   InputAction(class InputManager* eventManager, const string& settingId, const string& label, const string& defaultMappings, const std::function<void(const InputAction&, bool, bool)>& onChange)
+   InputAction(class InputManager* eventManager, const string& settingId, const string& label, const string& defaultMappings, const std::function<void(InputAction&, bool, bool)>& onChange)
       : m_settingId(settingId)
       , m_label(label)
       , m_defaultMappings(defaultMappings)
@@ -54,7 +54,7 @@ private:
    const string m_settingId;
    const string m_label;
    const string m_defaultMappings;
-   const std::function<void(const InputAction&, bool, bool)> m_onStateChange;
+   const std::function<void(InputAction&, bool, bool)> m_onStateChange;
    class InputManager* const m_eventManager;
    
    vector<vector<ButtonMapping>> m_inputMappings;

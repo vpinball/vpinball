@@ -623,7 +623,7 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
 void InputManager::CreateInputActions()
 {
 
-   auto keyMapping = [](const SDL_Scancode sdlScancode) { return "Key;" + std::to_string(static_cast<int>(sdlScancode)); };
+   auto keyMapping = [](const SDL_Scancode sdlScancode) { return sdlScancode == SDL_SCANCODE_UNKNOWN ? ""s : ("Key;"s + std::to_string(static_cast<int>(sdlScancode))); };
 
    auto addKeyAction = [this, keyMapping](const string& settingId, const string& label, const SDL_Scancode sdlScancode)
    {
@@ -765,63 +765,38 @@ void InputManager::CreateInputActions()
       m_serviceActionId[i] = addKeyAction("Service" + std::to_string(i + 1), "Service Button #" + std::to_string(i + 1), serviceKeys[i]);
 
    auto vrCenter = AddAction(std::make_unique<InputAction>(this, "VRCenter"s, "Align VR view"s, keyMapping(SDL_SCANCODE_KP_5),
-      [](const InputAction&, bool, bool isPressed)
+      [](InputAction& action, bool wasPressed, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
-            return;
-         if (g_pplayer->m_vrDevice)
+         if (!isPressed || g_pplayer->m_vrDevice == nullptr)
+            action.SetRepeatPeriod(-1);
+         else
+         {
             g_pplayer->m_vrDevice->RecenterTable();
+            action.SetRepeatPeriod(wasPressed ? 5 : 250); // Single recenter then continuous if kept pressed
+         }
       }));
-
-   auto vrUp = AddAction(std::make_unique<InputAction>(this, "VRUp"s, "Move VR view up"s, keyMapping(SDL_SCANCODE_KP_8),
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
-            return;
-         if (g_pplayer->m_vrDevice)
-            g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, 1.f);
-      }));
-
-   auto vrDown = AddAction(std::make_unique<InputAction>(this, "VRDown"s, "Move VR view down"s, keyMapping(SDL_SCANCODE_KP_2),
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
-            return;
-         if (g_pplayer->m_vrDevice)
-            g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, -1.f);
-      }));
-
-   auto vrFront = AddAction(std::make_unique<InputAction>(this, "VRFront"s, "Move VR view to the front"s, ""s,
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed || !g_pplayer->m_vrDevice)
-            return;
-         g_pplayer->m_vrDevice->OffsetTable(0.f, 1.f, 0.f);
-      }));
-
-   auto vrBack = AddAction(std::make_unique<InputAction>(this, "VRBack"s, "Move VR view to the back"s, ""s,
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed || !g_pplayer->m_vrDevice)
-            return;
-         g_pplayer->m_vrDevice->OffsetTable(0.f, -1.f, 0.f);
-      }));
-
-   auto vrLeft = AddAction(std::make_unique<InputAction>(this, "VRLeft"s, "Move VR view to the left"s, ""s,
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed || !g_pplayer->m_vrDevice)
-            return;
-         g_pplayer->m_vrDevice->OffsetTable(-1.f, 0.f, 0.f);
-      }));
-
-   auto vrRight = AddAction(std::make_unique<InputAction>(this, "VRRight"s, "Move VR view to the right"s, ""s,
-      [](const InputAction&, bool, bool isPressed)
-      {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed || !g_pplayer->m_vrDevice)
-            return;
-         g_pplayer->m_vrDevice->OffsetTable(1.f, 0.f, 0.f);
-      }));
+   auto addVRPositionAction = [this, keyMapping](const string& settingId, const string& label, const SDL_Scancode sdlScancode, vec3 direction)
+   {
+      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, keyMapping(sdlScancode),
+         [direction](InputAction& action, bool wasPressed, bool isPressed)
+         {
+            if (!isPressed || g_pplayer->m_vrDevice == nullptr)
+               action.SetRepeatPeriod(-1);
+            else
+            {
+               const float scale = wasPressed ? 0.1f : 1.f;
+               g_pplayer->m_vrDevice->OffsetTable(scale * direction.x, scale * direction.y, scale * direction.z);
+               action.SetRepeatPeriod(wasPressed ? 5 : 250); // Single step then continuous slow move if kept pressed
+            }
+         }));
+      return newAction->GetActionId();
+   };
+   auto vrUp = addVRPositionAction("VRUp"s, "Move VR view up"s, SDL_SCANCODE_KP_8, vec3(0.f, 0.f, 1.f));
+   auto vrDown = addVRPositionAction("VRDown"s, "Move VR view down"s, SDL_SCANCODE_KP_2, vec3(0.f, 0.f, -1.f));
+   auto vrFront = addVRPositionAction("VRFront"s, "Move VR view to the front"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, 1.f, 0.f));
+   auto vrBack = addVRPositionAction("VRBack"s, "Move VR view to the back"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, -1.f, 0.f));
+   auto vrLeft = addVRPositionAction("VRFront"s, "Move VR view to the left"s, SDL_SCANCODE_UNKNOWN, vec3(-1.f, 0.f, 0.f));
+   auto vrRight = addVRPositionAction("VRBack"s, "Move VR view to the right"s, SDL_SCANCODE_UNKNOWN, vec3(1.f, -0.f, 0.f));
 
    AddAction(std::make_unique<InputAction>(this, "GenTournament"s, "Create Tournament File"s, keyMapping(SDL_SCANCODE_LALT) + " & " + keyMapping(SDL_SCANCODE_1),
       [](const InputAction&, bool, bool isPressed)
