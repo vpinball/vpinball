@@ -225,6 +225,27 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
@@ -308,6 +329,12 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/trigger.cpp">
       <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
+      <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/kdtree.cpp">
       <Filter>physics</Filter>
@@ -878,30 +905,6 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <Filter>plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
-      <Filter>physics</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp">
-      <Filter>parts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

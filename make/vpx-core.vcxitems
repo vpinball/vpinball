@@ -1595,6 +1595,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SensorMapping.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />

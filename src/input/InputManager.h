@@ -190,6 +190,10 @@ public:
 
    int m_leftFlipperLastChangePollDelay = 0;
 
+   // Used to add/remove the OpenXR input handler
+   void AddInputHandler(std::unique_ptr<InputHandler> handler);
+   std::unique_ptr<InputHandler> RemoveInputHandler(InputHandler* handler);
+
 private:
    void CreateInputActions();
    InputAction* AddAction(std::unique_ptr<InputAction>&& action);

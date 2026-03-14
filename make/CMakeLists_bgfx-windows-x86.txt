@@ -57,7 +57,8 @@ add_executable(vpinball WIN32
 
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
-
+   src/input/XRInputHandler.h
+   
    src/renderer/XRGraphicBackend.h
    src/renderer/XRD3D11Backend.h
    src/renderer/XRVulkanBackend.h
