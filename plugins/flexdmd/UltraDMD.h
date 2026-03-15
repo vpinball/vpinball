@@ -20,7 +20,7 @@ public:
 
    PSC_IMPLEMENT_REFCOUNT()
 
-   void LoadSetup() { /* Unimplemented */ }
+   void LoadSetup() { /* Reserved for compatibility */ }
    void Init() { m_pFlexDMD->SetRun(true); }
    void Uninit() { m_pFlexDMD->SetRun(false); }
    static int GetMajorVersion() { return 1; }
@@ -33,6 +33,9 @@ public:
    void CancelRenderingWithId(const string& sceneId) { m_pQueue->RemoveScene(sceneId); }
    void Clear();
    void SetProjectFolder(const string& basePath) { m_pFlexDMD->SetProjectFolder(basePath); }
+   uint32_t GetColor() const { return m_pFlexDMD->GetColor(); }
+   void SetColor(uint32_t color) { m_pFlexDMD->SetColor(color); }
+   bool SetColorString(const string& color);
    void SetVideoStretchMode(int mode) { m_stretchMode = mode; }
    void SetScoreboardBackgroundImage(const string& filename, int selectedBrightness, int unselectedBrightness);
    int CreateAnimationFromImages(int fps, bool loop, const string& imageList);
