@@ -38,6 +38,7 @@ public:
    bool IsAdjustable() const;
    virtual bool IsDefaults() const;
    virtual bool IsModified() const;
+   virtual bool IsFlipperNavNeeded() const { return false; }
 
    InGameUIItem* GetItem(const string& label) const;
 

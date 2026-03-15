@@ -194,6 +194,10 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       m_prevMousePos = ImGui::GetMousePos();
    }
 
+   // Allow pages to force flipper navigation (needed by anaglyph calibration)
+   for (const auto &page : m_activePages)
+      m_useFlipperNav |= page->IsFlipperNavNeeded();
+
    if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;

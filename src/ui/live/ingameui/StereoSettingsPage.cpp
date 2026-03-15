@@ -75,8 +75,28 @@ void StereoSettingsPage::AdjustItem(float direction, bool isInitialPress)
 {
    if (IsAnaglyphStereoMode(m_editedStereoMode) && m_calibrationStep >= 0)
    {
+      const uint32_t now = msec();
+      if (isInitialPress)
+      {
+         m_pressStartMs = now;
+         m_lastUpdateMs = now;
+      }
+      const float elapsed = static_cast<float>(now - m_lastUpdateMs) / 1000.f;
+      m_lastUpdateMs = now;
+      const uint32_t elapsedSincePress = now - m_pressStartMs;
+      float speedFactor;
+      if (elapsedSincePress < 250)
+         speedFactor = 1.0f;
+      else if (elapsedSincePress < 500)
+         speedFactor = 2.f;
+      else if (elapsedSincePress < 1000)
+         speedFactor = 4.f;
+      else if (elapsedSincePress < 1500)
+         speedFactor = 8.f;
+      else
+         speedFactor = 16.f;
       float calibrationBrightness = m_player->m_ptable->m_settings.GetFloat(GetCalibratedProperty());
-      calibrationBrightness = clamp(calibrationBrightness - direction * 0.01f, 0.f, 1.f);
+      calibrationBrightness = clamp(calibrationBrightness + direction * speedFactor * elapsed / 32.f, 0.f, 1.f);
       m_player->m_ptable->m_settings.Set(GetCalibratedProperty(), calibrationBrightness, false);
    }
    else
@@ -116,7 +136,7 @@ void StereoSettingsPage::BuildPage()
          const bool stereoRT = m_player->m_renderer->m_stereo3D != STEREO_OFF;
          const bool stereoSel = v != STEREO_OFF;
          if (stereoRT != stereoSel)
-            m_player->m_liveUI->PushNotification("Toggling stereo rendering will be applied after restarting the game"s, 5000);
+            m_notificationId = m_player->m_liveUI->PushNotification("Toggling stereo rendering will be applied after restarting the game"s, 5000);
          else
             m_player->m_renderer->m_stereo3D = (StereoMode)v;
          m_player->m_ptable->m_settings.SetPlayer_Stereo3D((StereoMode)v, false);
@@ -150,6 +170,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_Stereo3DEyeSeparation(v, false);
          OnPointOfViewChanged();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -160,6 +181,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_Stereo3DBrightness(v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -170,20 +192,11 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_Stereo3DSaturation(v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    if (!IsAnaglyphStereoMode(m_editedStereoMode))
       return;
-
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_Stereo3DDefocus, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DDefocus(); }, //
-      [this](float, float v)
-      {
-         m_player->m_ptable->m_settings.SetPlayer_Stereo3DDefocus(v, false);
-         m_player->m_renderer->UpdateStereoShaderState();
-      }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
@@ -193,6 +206,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_Stereo3DLeftContrast(v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -203,6 +217,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_Stereo3DRightContrast(v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    const int glassesIndex = m_editedStereoMode - STEREO_ANAGLYPH_1;
@@ -215,6 +230,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_AnaglyphFilter(glassesIndex, v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -225,6 +241,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_AnaglyphDynDesat(glassesIndex, v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -235,6 +252,18 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_AnaglyphDeghost(glassesIndex, v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
+      }));
+
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_Stereo3DDefocus, 100.f, "%4.1f %%"s, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DDefocus(); }, //
+      [this](float, float v)
+      {
+         m_player->m_ptable->m_settings.SetPlayer_Stereo3DDefocus(v, false);
+         m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -245,6 +274,7 @@ void StereoSettingsPage::BuildPage()
       {
          m_player->m_ptable->m_settings.SetPlayer_AnaglyphsRGB(glassesIndex, v, false);
          m_player->m_renderer->UpdateStereoShaderState();
+         m_notificationId = m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000, m_notificationId);
       }));
 
    AddItem(std::make_unique<InGameUIItem>("Calibrate"s, "Perform calibration to adjust rendering to the characteristic of your display, using your glasses, with your eyes."s,

@@ -69,7 +69,7 @@ public:
 class RenderDevice final
 {
 public:
-   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const bool isStereo, const bool isAnaglyph, const bool isVR, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    void AddWindow(VPX::Window* wnd);
@@ -222,6 +222,7 @@ public:
    void SetVisualLatencyCorrection(int latencyMs) { m_visualLatencyCorrection = latencyMs; }
 
 private:
+   const bool m_isAnaglyph;
    const bool m_isVR;
 
    bool m_useLowPrecision = false; // OpenGL ES use low precision float and needs some clamping to avoid artifacts, but the clamping causes artefacts if applied with VR scene scaling on other backends.
@@ -280,7 +281,7 @@ public:
    }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
-   int m_activeViewId = 0;
+   bgfx::ViewId m_activeViewId = 0;
    uint64_t m_bgfxState = 0;
 
    bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled

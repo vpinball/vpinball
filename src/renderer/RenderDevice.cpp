@@ -302,6 +302,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
    bgfx::Init init = initReq;
 
+   const bool allowHDR10ColorSpace = true //
+      && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract // Disable WCG colorspace as it causes issues with video recording for the time being
+      && !rd->m_isAnaglyph // Anaglyph stereo requires an sRGB colorspace
+      && !g_pplayer->IsVR(); // Not yet supported (not sure if there exists HDR headset)
+
    // If using OpenXR, we need to create a graphics layer adapted to OpenXR requirements
    if (g_pplayer->IsVR())
    {
@@ -353,7 +358,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       {
          // Select the backbuffer color format, after initializing in headless mode to have access to the list of supported backbuffer format
          // This may fail on some backends that need a surface to report its capabilities (for example Linux/Vulkan)
-         init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], bgfx::TextureFormat::Count, bgfx::getCaps()->supported & BGFX_CAPS_HDR10);
+         init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], bgfx::TextureFormat::Count, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
          bgfx::shutdown();
       }
       else
@@ -379,7 +384,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    {
       // Validate the backbuffer format now that we have a swapchain (handles buggy platforms like Linux/Vulkan where capabilities of the swapchain is only reported after creation of the swapchain...)
       const bgfx::TextureFormat::Enum initFormatColor = init.resolution.formatColor;
-      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], initFormatColor, bgfx::getCaps()->supported & BGFX_CAPS_HDR10);
+      init.resolution.formatColor = rd->SelectBackBufferFormat(rd->m_outputWnd[0], initFormatColor, allowHDR10ColorSpace && (bgfx::getCaps()->supported & BGFX_CAPS_HDR10));
       if (initFormatColor != init.resolution.formatColor)
       {
          init.resolution.reset &= ~BGFX_RESET_HDR10;
@@ -400,9 +405,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    }
    else
    {
-      RenderTarget* bacbuffer = new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.resolution.formatColor, BGFX_INVALID_HANDLE,
+      RenderTarget* backbuffer = new RenderTarget(rd, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, init.resolution.formatColor, BGFX_INVALID_HANDLE,
          init.resolution.formatDepthStencil, "BackBuffer", init.resolution.width, init.resolution.height, BGFXtoVPXTextureFormat(init.resolution.formatColor));
-      rd->m_outputWnd[0]->SetBackBuffer(bacbuffer, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
+      rd->m_outputWnd[0]->SetBackBuffer(backbuffer, (init.resolution.reset & BGFX_RESET_HDR10) != 0);
       rd->m_framePending = false; // Request first frame to be prepared as soon as possible
    }
 
@@ -822,10 +827,11 @@ RenderDeviceState::~RenderDeviceState()
 ////////////////////////////////////////////////////////////////////
 
 RenderDevice::RenderDevice(
-   VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
+   VPX::Window* const wnd, const bool isStereo, const bool isAnaglyph, const bool isVR, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
    : m_texMan(*this)
    , m_compressTextures(compressTextures)
-   , m_nEyes(nEyes)
+   , m_nEyes(isStereo ? 2 : 1)
+   , m_isAnaglyph(isAnaglyph)
    , m_isVR(isVR)
    #ifdef ENABLE_BGFX
    , m_bgfxCallback(*this)

@@ -467,7 +467,7 @@ PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, Stereo
 PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 63.f);
 PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
 PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
-PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.f);
+PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye (non dominant eye) applied to anaglyph stereo rendering.\nThis may help to keep the depth perception with less ghosting/retinal rivalry."s, 0.f, 1.f, 0.f);
 PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
@@ -482,41 +482,41 @@ PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2
 PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 PropArray(Player, AnaglyphFilter, int, Int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
    m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
-PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
 PropArray(Player, AnaglyphDynDesat, float, Float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
    m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
    m_propPlayer_Anaglyph10DynDesat);
-PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
 PropArray(Player, AnaglyphDeghost, float, Float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
    m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost, m_propPlayer_Anaglyph10Deghost);
-PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
 PropArray(Player, AnaglyphsRGB, bool, Int, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
    m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
 // Red Cyan

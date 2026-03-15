@@ -172,27 +172,58 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_depthFormat, m_width, m_height, false);
    }
 
-   if (with_depth)
-   {
-      bgfx::Attachment colorAttachment, depthAttachment;
-      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
-      m_framebuffer = bgfx::createFrameBuffer(2, attachments);
-   }
-   else
    {
       bgfx::Attachment colorAttachment;
-      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
+      if (with_depth)
+      {
+         bgfx::Attachment depthAttachment;
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
+         m_framebuffer = bgfx::createFrameBuffer(2, attachments.data());
+      }
+      else
+      {
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
+      }
+      if (!bgfx::isValid(m_framebuffer))
+      {
+         PLOGE << failureMessage;
+         PLOGE << "Failed to create render target";
+         exit(-1);
+      }
+      bgfx::setName(m_framebuffer, name.c_str());
    }
-   if (!bgfx::isValid(m_framebuffer))
+
+   // Create ancillary framebuffers to be able to blit & render from/to the other layers
+   if (m_nLayers > 1)
    {
-      PLOGE << failureMessage;
-      PLOGE << "Failed to create render target";
-      exit(-1);
+      for (uint16_t i = 0; i < static_cast<uint16_t>(m_nLayers); i++)
+      {
+         bgfx::Attachment colorAttachment;
+         if (with_depth)
+         {
+            bgfx::Attachment depthAttachment;
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            depthAttachment.init(m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
+            m_framebuffer_layers[i] = bgfx::createFrameBuffer(2, attachments.data());
+         }
+         else
+         {
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            m_framebuffer_layers[i] = bgfx::createFrameBuffer(1, &colorAttachment);
+         }
+         if (!bgfx::isValid(m_framebuffer_layers[i]))
+         {
+            PLOGE << failureMessage;
+            PLOGE << "Failed to create render target";
+            exit(-1);
+         }
+         bgfx::setName(m_framebuffer_layers[i], std::format("{}.Layer{}", name, i).c_str());
+      }
    }
-   bgfx::setName(m_framebuffer, name.c_str());
 
 #elif defined(ENABLE_OPENGL)
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
@@ -660,7 +691,6 @@ void RenderTarget::Activate(const int layer)
    current_render_layer = layer;
 
    #if defined(ENABLE_BGFX)
-   assert(layer == -1 || m_nLayers == 1);
    m_rd->NextView();
    #ifdef _DEBUG
    bgfx::setViewName(m_rd->m_activeViewId, m_name.c_str());

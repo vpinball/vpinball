@@ -35,11 +35,11 @@ extern marker_series series;
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
-   : m_stereo3D(stereo3D)
+   : m_sceneLighting(table) 
+   , m_stereo3D(stereo3D)
    , m_table(table)
-   , m_sceneLighting(table)
 {
-   m_stereo3Denabled = m_table->m_settings.GetPlayer_Stereo3DEnabled();
+   m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
    m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
    m_exposure = m_table->m_settings.GetTableOverride_Exposure();
@@ -84,7 +84,10 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool compressTextures = m_table->m_settings.GetPlayer_CompressTextures();
    const int nEyes = (m_stereo3D == STEREO_VR || m_stereo3D != STEREO_OFF) ? 2 : 1;
    try {
-      m_renderDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, compressTextures, nMSAASamples, syncMode);
+      m_renderDevice = new RenderDevice(wnd, 
+         nEyes == 2, 
+         IsAnaglyphStereoMode(m_stereo3D),
+         m_stereo3D == STEREO_VR, useNvidiaApi, compressTextures, nMSAASamples, syncMode);
    }
    catch (...) {
       // TODO better error handling => just let the exception up ?
