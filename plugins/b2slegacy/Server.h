@@ -192,14 +192,6 @@ private:
    static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
    static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
 
-   unsigned int m_nSolenoids;
-   int m_GIIndex;
-   unsigned int m_nGIs;
-   int m_lampIndex;
-   unsigned int m_nLamps;
-   int m_mechIndex;
-   unsigned int m_nMechs;
-
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
    const uint32_t m_endpointId;

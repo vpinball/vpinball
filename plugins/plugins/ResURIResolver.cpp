@@ -178,7 +178,7 @@ float ResURIResolver::GetFloatState(const string &link)
                   
                   int ioIndex = -1;
                   for (unsigned int i = 0; i < ioSource->nDevices; i++)
-                     if (ioSource->deviceDefs[i].mappingId == ioId)
+                     if (ioSource->deviceDefs[i].id.mappingId == ioId)
                         ioIndex = i;
                      
                   if (ioIndex >= 0)
@@ -197,7 +197,7 @@ float ResURIResolver::GetFloatState(const string &link)
                   
                   int ioIndex = -1;
                   for (unsigned int i = 0; i < ioSource->nInputs; i++)
-                     if (ioSource->inputDefs[i].mappingId == ioId)
+                     if (ioSource->inputDefs[i].id.mappingId == ioId)
                         ioIndex = i;
                      
                   if (ioIndex >= 0)

@@ -182,7 +182,7 @@ void MSGPIAPI DOFEventStream::OnB2SStateChg(unsigned int index, void* context)
 {
    // E: B2S Controller generic input state (B2SSetData / B2SPulseData)
    auto me = static_cast<DOFEventStream*>(context);
-   me->QueueEvent('E', static_cast<int>(me->m_b2sDevSrc.deviceDefs[index].deviceId), me->m_b2sDevSrc.GetFloatState(index) > 0.5f ? 1 : 0);
+   me->QueueEvent('E', static_cast<int>(me->m_b2sDevSrc.deviceDefs[index].id.deviceId), me->m_b2sDevSrc.GetFloatState(index) > 0.5f ? 1 : 0);
 
    // B: B2S Controller score digit
    // TODO implement
@@ -293,12 +293,12 @@ void DOFEventStream::StatePollingThread()
       // TODO implement switch state event in PinMAME
       for (unsigned int i = 0; i < m_pmInputSrc.nInputs; i++)
       {
-         if (m_pmInputSrc.inputDefs[i].groupId == 0x0001)
+         if (m_pmInputSrc.inputDefs[i].id.groupId == 0x0001)
          {
             const int state = m_pmInputSrc.GetInputState(i) ? 1 : 0;
             if (m_pmSwitchState[i] != state)
             {
-               QueueEvent('W', m_pmInputSrc.inputDefs[i].deviceId, state);
+               QueueEvent('W', m_pmInputSrc.inputDefs[i].id.deviceId, state);
                m_pmSwitchState[i] = state;
             }
          }
@@ -314,12 +314,12 @@ void DOFEventStream::StatePollingThread()
          if (m_pmDeviceState[i] != state)
          {
             m_pmDeviceState[i] = state;
-            switch (m_pmDevSrc.deviceDefs[i].groupId & 0xFF00)
+            switch (m_pmDevSrc.deviceDefs[i].id.groupId & 0xFF00)
             {
-            case 0x0000: QueueEvent('S', m_pmDevSrc.deviceDefs[i].deviceId, state); break;
-            case 0x0100: QueueEvent('G', m_pmDevSrc.deviceDefs[i].deviceId, state); break;
-            case 0x0200: QueueEvent('L', m_pmDevSrc.deviceDefs[i].deviceId, state); break;
-            case 0x0300: QueueEvent('N', m_pmDevSrc.deviceDefs[i].deviceId, state); break;
+            case 0x0000: QueueEvent('S', m_pmDevSrc.deviceDefs[i].id.deviceId, state); break;
+            case 0x0100: QueueEvent('G', m_pmDevSrc.deviceDefs[i].id.deviceId, state); break;
+            case 0x0200: QueueEvent('L', m_pmDevSrc.deviceDefs[i].id.deviceId, state); break;
+            case 0x0300: QueueEvent('N', m_pmDevSrc.deviceDefs[i].id.deviceId, state); break;
             }
          }
       }

@@ -656,7 +656,7 @@ void FormBackglass::LoadB2SData()
 
          // maybe get default glow value
          if (m_pB2SSettings->GetDefaultGlow() == -1)
-             m_pB2SSettings->SetDefaultGlow(d7glow);
+             m_pB2SSettings->SetDefaultGlow(static_cast<int>(d7glow));
 
          // set preferred LED settings
          if (isRenderedLEDs || isDream7LEDs) {
@@ -667,7 +667,7 @@ void FormBackglass::LoadB2SData()
             else if (m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Undefined)
                m_pB2SSettings->SetUsedLEDType(isDream7LEDs ? eLEDTypes_Dream7 : eLEDTypes_Rendered);
             if (m_pB2SSettings->IsGameNameFound() && m_pB2SSettings->GetGlowIndex() > -1)
-               glow = m_pB2SSettings->GetGlowIndex() * 8;
+               glow = static_cast<float>(m_pB2SSettings->GetGlowIndex() * 8);
             if (m_pB2SSettings->IsGameNameFound() && m_pB2SSettings->IsGlowBulbOn())
                glowbulb = { 0.0f, 0.0f, 0.1f, 0.4f };
          }
@@ -687,7 +687,7 @@ void FormBackglass::LoadB2SData()
                pLed->SetType(SegmentNumberType_FourteenSegment);
             pLed->SetScaleMode(ScaleMode_Stretch);
             pLed->SetDigits(digits);
-            pLed->SetSpacing(spacing * 5);
+            pLed->SetSpacing(static_cast<float>(spacing * 5));
             pLed->SetHidden(hidden);
             // color settings
             pLed->SetLightColor(reellitcolor);

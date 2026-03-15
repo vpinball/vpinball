@@ -136,12 +136,12 @@ static void PollThread(const string& tablePath, const string& gameId)
          wireStates.resize(pinmameInputSrc.nInputs);
          for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
          {
-            if (pinmameInputSrc.inputDefs[i].groupId == 0x0001)
+            if (pinmameInputSrc.inputDefs[i].id.groupId == 0x0001)
             {
                bool state = pinmameInputSrc.GetInputState(i);
                if (isInitialState || (wireStates[i] != state))
                {
-                  pDOF->DataReceive('W', pinmameInputSrc.inputDefs[i].deviceId, state ? 1 : 0); // Switches
+                  pDOF->DataReceive('W', pinmameInputSrc.inputDefs[i].id.deviceId, state ? 1 : 0); // Switches
                   wireStates[i] = state;
                }
             }
@@ -151,7 +151,7 @@ static void PollThread(const string& tablePath, const string& gameId)
          for (unsigned int i = 0; i < pinmameDevSrc.nDevices; i++)
          {
             char type;
-            switch (pinmameDevSrc.deviceDefs[i].groupId & 0xFF00)
+            switch (pinmameDevSrc.deviceDefs[i].id.groupId & 0xFF00)
             {
             case 0x0000: type = 'S'; break; // Solenoids
             case 0x0100: type = 'G'; break; // GI
@@ -163,7 +163,7 @@ static void PollThread(const string& tablePath, const string& gameId)
                float state = pinmameDevSrc.GetFloatState(i);
                if (isInitialState || (deviceStates[i] && state < 0.25f) || (!deviceStates[i] && state > 0.75f))
                {
-                  pDOF->DataReceive(type, pinmameDevSrc.deviceDefs[i].deviceId, state > 0.5f ? 1 : 0);
+                  pDOF->DataReceive(type, pinmameDevSrc.deviceDefs[i].id.deviceId, state > 0.5f ? 1 : 0);
                   deviceStates[i] = state > 0.5f;
                }
             }

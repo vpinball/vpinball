@@ -338,6 +338,33 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
 static void OnControllerGameStart(Controller*)
 {
    assert(controller->GetRunning());
+
+   // Little helper to log all devices exposed by the started game
+   if (false)
+   {
+      msgApi->RunOnMainThread(
+         endpointId, 1e-5,
+         [](void*)
+         {
+            unsigned int getDevSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+            GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
+            msgApi->SendMsg(endpointId, getDevSrcMsgId, endpointId, &getSrcMsg);
+            std::vector<DevSrcId> deviceSources(getSrcMsg.count);
+            getSrcMsg = { getSrcMsg.count, 0, deviceSources.data() };
+            msgApi->SendMsg(endpointId, getDevSrcMsgId, endpointId, &getSrcMsg);
+            LOGD("PinMAME Controller started");
+            for (const auto& devSrc : deviceSources)
+            {
+               LOGD(std::format("> Devices (id={:04x}.{:04x}):", devSrc.id.endpointId, devSrc.id.resId));
+               for (unsigned int i = 0; i < devSrc.nDevices; i++)
+               {
+                  LOGD(std::format("  . {:04x}:{:04d} {}", devSrc.deviceDefs[i].id.groupId, devSrc.deviceDefs[i].id.deviceId, devSrc.deviceDefs[i].name));
+               }
+            }
+            msgApi->ReleaseMsgID(getDevSrcMsgId);
+         },
+         nullptr);
+   }
 }
 
 static void OnControllerGameEnd(Controller*)

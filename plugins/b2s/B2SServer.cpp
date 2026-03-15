@@ -117,8 +117,8 @@ void B2SServer::UpdateDevSrc()
    {
       m_devSrcNames[index] = std::format("B2S.Data #{}", id);
       m_devSrc.deviceDefs[index].name = m_devSrcNames[index].c_str();
-      m_devSrc.deviceDefs[index].groupId = 0x0001;
-      m_devSrc.deviceDefs[index].deviceId = id;
+      m_devSrc.deviceDefs[index].id.groupId = 0x0001;
+      m_devSrc.deviceDefs[index].id.deviceId = static_cast<uint16_t>(id);
       index++;
    }
    m_stateChgCallbacks.clear();
@@ -129,7 +129,7 @@ uint8_t MSGPIAPI B2SServer::GetByteState(const unsigned int deviceIndex)
 {
    if (B2SServer::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
       return 0;
-   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    return static_cast<uint8_t>(m_singleton->GetState(b2sId) * 255.f);
 }
 
@@ -137,7 +137,7 @@ float MSGPIAPI B2SServer::GetFloatState(const unsigned int deviceIndex)
 {
    if (B2SServer::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
       return 0.f;
-   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    return m_singleton->GetState(b2sId);
 }
 
@@ -149,7 +149,7 @@ void MSGPIAPI B2SServer::RegisterStateChangeCallback(unsigned int deviceIndex, i
       assert(false);
       return;
    }
-   const int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   const int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    if (auto mapIt = m_singleton->m_stateChgCallbacks.find(b2sId); mapIt == m_singleton->m_stateChgCallbacks.end())
       m_singleton->m_stateChgCallbacks[b2sId] = vector<ChgCallback>();
    auto& callbacks = m_singleton->m_stateChgCallbacks[b2sId];

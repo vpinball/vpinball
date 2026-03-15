@@ -88,12 +88,6 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
    auto me = static_cast<B2SRenderer*>(userData);
    delete[] me->m_deviceStateSrc.deviceDefs;
    memset(&me->m_deviceStateSrc, 0, sizeof(me->m_deviceStateSrc));
-   me->m_nSolenoids = 0;
-   me->m_GIIndex = -1;
-   me->m_nGIs = 0;
-   me->m_lampIndex = -1;
-   me->m_nLamps = 0;
-   me->m_nMechs = 0;
    if (me->m_b2s->m_backglassOnImage.m_image)
       me->m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
    for (auto& bulb : me->m_b2s->m_backglassIlluminations)
@@ -125,30 +119,6 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
    if (me->m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   for (unsigned int i = 0; i < me->m_deviceStateSrc.nDevices; i++)
-   {
-      if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
-      {
-         if (me->m_GIIndex == -1)
-            me->m_GIIndex = i;
-         me->m_nGIs++;
-      }
-      else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
-      {
-         if (me->m_lampIndex == -1)
-            me->m_lampIndex = i;
-         me->m_nLamps++;
-      }
-      else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
-      {
-         if (me->m_mechIndex == -1)
-            me->m_mechIndex = i;
-         me->m_nMechs++;
-      }
-      else if ((me->m_GIIndex == -1) && (me->m_lampIndex == -1))
-         me->m_nSolenoids++;
-   }
-
    if (me->m_b2s->m_backglassOnImage.m_image)
       me->m_b2s->m_backglassOnImage.m_romUpdater = me->ResolveRomPropUpdater(&me->m_b2s->m_backglassOnImage.m_brightness, me->m_b2s->m_backglassOnImage.m_romIdType, me->m_b2s->m_backglassOnImage.m_romId);
 
@@ -163,59 +133,27 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
 {
-   if (m_deviceStateSrc.deviceDefs == nullptr)
-      return []() { /* No ROM source */ };
-   switch (romIdType)
+   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
    {
-   case B2SRomIDType::NotDefined:
-      break;
-
-   case B2SRomIDType::Solenoid:
-      if (0 < romId && (unsigned int)romId <= m_nSolenoids)
+      if (romId == m_deviceStateSrc.deviceDefs[i].id.deviceId)
       {
-         const int index = romId - 1;
-         if (romInverted)
-            return [this, value, index]() { *value = 1.f - m_deviceStateSrc.GetFloatState(index); };
-         else
-            return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
-      }
-      break;
-
-   case B2SRomIDType::GIString:
-      if (0 < romId && (unsigned int)romId <= m_nGIs)
-      {
-         const int index = m_GIIndex + romId - 1;
-         if (romInverted)
-            return [this, value, index]() { *value = 1.f - m_deviceStateSrc.GetFloatState(index); };
-         else
-            return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
-      }
-      break;
-
-   case B2SRomIDType::Lamp:
-      for (unsigned int i = 0; i < m_nLamps; i++)
-      {
-         if (m_deviceStateSrc.deviceDefs[m_lampIndex + i].groupId == 0x0200 && m_deviceStateSrc.deviceDefs[m_lampIndex + i].deviceId == romId)
+         bool found;
+         switch (m_deviceStateSrc.deviceDefs[i].id.groupId & 0xFF00)
          {
-            const int index = m_lampIndex + i;
+         case 0x0000: found = romIdType == B2SRomIDType::Solenoid; break;
+         case 0x0100: found = romIdType == B2SRomIDType::GIString; break;
+         case 0x0200: found = romIdType == B2SRomIDType::Lamp; break;
+         case 0x0300: found = romIdType == B2SRomIDType::Mech; break;
+         default: found = false; break;
+         }
+         if (found)
+         {
             if (romInverted)
-               return [this, value, index]() { *value = 1.f - m_deviceStateSrc.GetFloatState(index); };
+               return [this, value, i]() { *value = 1.f - m_deviceStateSrc.GetFloatState(i); };
             else
-               return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
+               return [this, value, i]() { *value = m_deviceStateSrc.GetFloatState(i); };
          }
       }
-      break;
-
-   case B2SRomIDType::Mech:
-      for (unsigned int i = 0; i < m_nMechs; i++)
-      {
-         if (m_deviceStateSrc.deviceDefs[m_mechIndex + i].groupId == 0x0300 && m_deviceStateSrc.deviceDefs[m_mechIndex + i].deviceId == romId)
-         {
-            const int index = m_mechIndex + i;
-            return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
-         }
-      }
-      break;
    }
    return []() { /* No ROM source */ };
 }

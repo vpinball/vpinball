@@ -62,13 +62,6 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_szPath = "./";
 
    memset(&m_deviceStateSrc, 0, sizeof(m_deviceStateSrc));
-   m_nSolenoids = 0;
-   m_GIIndex = -1;
-   m_nGIs = 0;
-   m_lampIndex = -1;
-   m_nLamps = 0;
-   m_mechIndex = -1;
-   m_nMechs = 0;
 
    m_devSrc.id.endpointId = m_endpointId;
    m_devSrc.GetByteState = GetByteState;
@@ -150,13 +143,6 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
 {
    delete[] m_deviceStateSrc.deviceDefs;
    memset(&m_deviceStateSrc, 0, sizeof(m_deviceStateSrc));
-   m_nSolenoids = 0;
-   m_GIIndex = -1;
-   m_nGIs = 0;
-   m_lampIndex = -1;
-   m_nLamps = 0;
-   m_mechIndex = -1;
-   m_nMechs = 0;
 
    unsigned int pinmameEndpoint = m_msgApi->GetPluginEndpoint("PinMAME");
    if (pinmameEndpoint == 0)
@@ -186,34 +172,7 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
    if (m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
-   {
-      if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
-      {
-         if (m_GIIndex == -1)
-            m_GIIndex = i;
-         m_nGIs++;
-      }
-      else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
-      {
-         if (m_lampIndex == -1)
-            m_lampIndex = i;
-         m_nLamps++;
-      }
-      else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
-      {
-         if (m_mechIndex == -1)
-            m_mechIndex = i;
-         m_nMechs++;
-      }
-      else if ((m_GIIndex == -1) && (m_lampIndex == -1))
-      {
-         m_nSolenoids++;
-      }
-   }
-
-   LOGI(std::format("B2SLegacy: Device state updated - Solenoids: {}, Lamps: {}, GI: {}, Mechs: {}",
-        m_nSolenoids, m_nLamps, m_nGIs, m_nMechs));
+   LOGI(std::format("B2SLegacy: Device state updated - {} devices", m_deviceStateSrc.nDevices));
 }
 
 void Server::OnGetDevSrc(const unsigned int, void* userData, void* msgData)
@@ -236,8 +195,8 @@ void Server::UpdateDevSrc()
    {
       m_devSrcNames[index] = std::format("B2S.Data #{}", id);
       m_devSrc.deviceDefs[index].name = m_devSrcNames[index].c_str();
-      m_devSrc.deviceDefs[index].groupId = 0x0001;
-      m_devSrc.deviceDefs[index].deviceId = id;
+      m_devSrc.deviceDefs[index].id.groupId = 0x0001;
+      m_devSrc.deviceDefs[index].id.deviceId = id;
       index++;
    }
    m_stateChgCallbacks.clear();
@@ -248,7 +207,7 @@ uint8_t MSGPIAPI Server::GetByteState(const unsigned int deviceIndex)
 {
    if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
       return 0;
-   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    return static_cast<uint8_t>(m_singleton->GetState(b2sId) * 255.f);
 }
 
@@ -256,7 +215,7 @@ float MSGPIAPI Server::GetFloatState(const unsigned int deviceIndex)
 {
    if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
       return 0.f;
-   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    return m_singleton->GetState(b2sId);
 }
 
@@ -264,7 +223,7 @@ void MSGPIAPI Server::RegisterStateChangeCallback(unsigned int deviceIndex, int 
 {
    if (Server::m_singleton == nullptr || deviceIndex >= m_singleton->m_devSrc.nDevices)
       return;
-   const int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].deviceId;
+   const int b2sId = m_singleton->m_devSrc.deviceDefs[deviceIndex].id.deviceId;
    if (auto mapIt = m_singleton->m_stateChgCallbacks.find(b2sId); mapIt == m_singleton->m_stateChgCallbacks.end())
       m_singleton->m_stateChgCallbacks[b2sId] = vector<ChgCallback>();
    auto& callbacks = m_singleton->m_stateChgCallbacks[b2sId];
@@ -986,15 +945,15 @@ void Server::CheckGetMech(int number, int mech)
 
 void Server::CheckLamps(ScriptArray* psa)
 {
-   if (m_deviceStateSrc.deviceDefs == nullptr || m_nLamps == 0)
+   if (m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   for (unsigned int i = 0; i < m_nLamps; i++)
+   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
    {
-      if (m_deviceStateSrc.deviceDefs[m_lampIndex + i].groupId == 0x0200)
+      if ((m_deviceStateSrc.deviceDefs[i].id.groupId & 0xFF00) == 0x0200)
       {
-         const int lampId = m_deviceStateSrc.deviceDefs[m_lampIndex + i].deviceId;
-         const float state = m_deviceStateSrc.GetFloatState(m_lampIndex + i);
+         const int lampId = m_deviceStateSrc.deviceDefs[i].id.deviceId;
+         const float state = m_deviceStateSrc.GetFloatState(i);
          const int lampState = static_cast<int>(state * 255.0f);
 
          if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps()) {
@@ -1129,27 +1088,31 @@ void Server::CheckLamps(ScriptArray* psa)
 
 void Server::CheckSolenoids(ScriptArray* psa)
 {
-   if (m_deviceStateSrc.deviceDefs == nullptr || m_nSolenoids == 0)
+   if (m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   for (unsigned int i = 0; i < m_nSolenoids; i++)
+   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
    {
-      const float state = m_deviceStateSrc.GetFloatState(i);
-      const int solenoidId = i + 1;
-      const int solenoidState = static_cast<int>(state * 255.0f);
+      if ((m_deviceStateSrc.deviceDefs[i].id.groupId & 0xFF00) == 0x0000)
+      {
+         const int solenoidId = m_deviceStateSrc.deviceDefs[i].id.deviceId;
+         const float state = m_deviceStateSrc.GetFloatState(i);
+         const int solenoidState = static_cast<int>(state * 255.0f);
 
-      if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids()) {
-         // collect illumination data
-         if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetTopRomID() == solenoidId)
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_TopImage));
-         else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetSecondRomID() == solenoidId)
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_SecondImage));
-         if (m_pB2SData->GetUsedRomSolenoidIDs()->contains(solenoidId))
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Standard));
+         if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids())
+         {
+            // collect illumination data
+            if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetTopRomID() == solenoidId)
+               m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_TopImage));
+            else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetSecondRomID() == solenoidId)
+               m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_SecondImage));
+            if (m_pB2SData->GetUsedRomSolenoidIDs()->contains(solenoidId))
+               m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Standard));
 
-         // collect animation data
-         if (m_pB2SData->GetUsedAnimationSolenoidIDs()->contains(solenoidId) || m_pB2SData->GetUsedRandomAnimationSolenoidIDs()->contains(solenoidId))
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Animation));
+            // collect animation data
+            if (m_pB2SData->GetUsedAnimationSolenoidIDs()->contains(solenoidId) || m_pB2SData->GetUsedRandomAnimationSolenoidIDs()->contains(solenoidId))
+               m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Animation));
+         }
       }
    }
 
@@ -1269,15 +1232,15 @@ void Server::CheckSolenoids(ScriptArray* psa)
 
 void Server::CheckGIStrings(ScriptArray* psa)
 {
-   if (m_deviceStateSrc.deviceDefs == nullptr || m_nGIs == 0 || m_GIIndex == -1)
+   if (m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   for (unsigned int i = 0; i < m_nGIs; i++)
+   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
    {
-      if (m_deviceStateSrc.deviceDefs[m_GIIndex + i].groupId == 0x0100)
+      if ((m_deviceStateSrc.deviceDefs[i].id.groupId & 0xFF00) == 0x0100)
       {
-         const int giStringId = m_deviceStateSrc.deviceDefs[m_GIIndex + i].deviceId;
-         const float state = m_deviceStateSrc.GetFloatState(m_GIIndex + i);
+         const int giStringId = m_deviceStateSrc.deviceDefs[i].id.deviceId;
+         const float state = m_deviceStateSrc.GetFloatState(i);
          const int giStringBool = static_cast<int>(state * 255.0f) > m_giStringThreshold;
 
          if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings()) {
