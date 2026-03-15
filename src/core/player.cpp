@@ -811,6 +811,9 @@ Player::~Player()
    msgApi->ReleaseMsgID(m_getAuxRendererId);
    msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
+   // Save modified settings if any
+   m_ptable->m_settings.Save();
+
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
    {
