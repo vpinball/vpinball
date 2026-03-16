@@ -7,38 +7,30 @@ Anaglyph::Anaglyph()
 {
 }
 
-void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
+void Anaglyph::LoadSetupFromRegistry(const Settings& settings, const int glassesSet)
 {
-   const PinTable* table = g_pplayer->m_ptable;
-
    // Common settings for all anaglyph sets
-   m_brightness = table->m_settings.GetPlayer_Stereo3DBrightness();
-   m_saturation = table->m_settings.GetPlayer_Stereo3DSaturation();
-   m_leftEyeContrast = table->m_settings.GetPlayer_Stereo3DLeftContrast();
-   m_rightEyeContrast = table->m_settings.GetPlayer_Stereo3DRightContrast();
+   m_brightness = settings.GetPlayer_Stereo3DBrightness();
+   m_saturation = settings.GetPlayer_Stereo3DSaturation();
+   m_leftEyeContrast = settings.GetPlayer_Stereo3DLeftContrast();
+   m_rightEyeContrast = settings.GetPlayer_Stereo3DRightContrast();
 
-   vec3 leftLum, rightLum;
    const int set = clamp(glassesSet, 0, 9);
-   m_filter = (Filter)table->m_settings.GetPlayer_AnaglyphFilter(set);
-   m_sRGBDisplay = table->m_settings.GetPlayer_AnaglyphsRGB(set);
-   m_dynDesatLevel = table->m_settings.GetPlayer_AnaglyphDynDesat(set);
-   m_deghostLevel = table->m_settings.GetPlayer_AnaglyphDeghost(set);
-   leftLum.x = table->m_settings.GetPlayer_AnaglyphLeftRed(set);
-   leftLum.y = table->m_settings.GetPlayer_AnaglyphLeftGreen(set);
-   leftLum.z = table->m_settings.GetPlayer_AnaglyphLeftBlue(set);
-   rightLum.x = table->m_settings.GetPlayer_AnaglyphRightRed(set);
-   rightLum.y = table->m_settings.GetPlayer_AnaglyphRightGreen(set);
-   rightLum.z = table->m_settings.GetPlayer_AnaglyphRightBlue(set);
-   SetLuminanceCalibration(leftLum, rightLum);
-
-   Update();
+   m_filter = (Filter)settings.GetPlayer_AnaglyphFilter(set);
+   m_sRGBDisplay = settings.GetPlayer_AnaglyphsRGB(set);
+   m_dynDesatLevel = settings.GetPlayer_AnaglyphDynDesat(set);
+   m_deghostLevel = settings.GetPlayer_AnaglyphDeghost(set);
+   // calibrated sRGB luminance transfer (for each primary, pereceived luminance level of the display emitted light, by the eye of the player through the glass filter)
+   const vec3 leftLumSRGB { settings.GetPlayer_AnaglyphLeftRed(set), settings.GetPlayer_AnaglyphLeftGreen(set), settings.GetPlayer_AnaglyphLeftBlue(set) };
+   const vec3 rightLumSRGB { settings.GetPlayer_AnaglyphRightRed(set), settings.GetPlayer_AnaglyphRightGreen(set), settings.GetPlayer_AnaglyphRightBlue(set) };
+   SetLuminanceCalibration(leftLumSRGB, rightLumSRGB);
 }
 
-void Anaglyph::SetupShader(Shader* shader)
+void Anaglyph::SetupShader(Shader* shader) const
 {
    // Main matrices to project from linear rgb to anaglyph
-   shader->SetMatrix(m_reversedColorPair ? SHADER_Stereo_RightMat : SHADER_Stereo_LeftMat, &m_rgb2AnaglyphLeft);
-   shader->SetMatrix(m_reversedColorPair ? SHADER_Stereo_LeftMat : SHADER_Stereo_RightMat, &m_rgb2AnaglyphRight);
+   shader->SetMatrix(SHADER_Stereo_LeftMat, &m_rgb2AnaglyphLeft);
+   shader->SetMatrix(SHADER_Stereo_RightMat, &m_rgb2AnaglyphRight);
    
    // Used by the dynamic desaturation filter to identify colors that would be seen by only one eye
    constexpr float scale = 0.25f * 0.5f; // 0.5 is because we sum the contribution of the 2 eyes, 0.25 is magic adjusted from real play
@@ -60,12 +52,10 @@ void Anaglyph::SetupShader(Shader* shader)
 
 vec3 Anaglyph::Gamma(const vec3& rgb) const
 {
-   #define sRGB(x) (((x) <= 0.0031308f) ? (12.92f * (x)) : (1.055f * powf(x, (float)(1.0 / 2.4)) - 0.055f))
    if (m_sRGBDisplay)
       return vec3(sRGB(rgb.x), sRGB(rgb.y), sRGB(rgb.z));
    else
       return vec3(powf(rgb.x, 1.f / m_displayGamma), powf(rgb.y, 1.f / m_displayGamma), powf(rgb.z, 1.f / m_displayGamma));
-   #undef sRGB
 }
 
 vec3 Anaglyph::InvGamma(const vec3& rgb) const
@@ -74,15 +64,6 @@ vec3 Anaglyph::InvGamma(const vec3& rgb) const
       return vec3(InvsRGB(rgb.x), InvsRGB(rgb.y), InvsRGB(rgb.z));
    else
       return vec3(powf(rgb.x, m_displayGamma), powf(rgb.y, m_displayGamma), powf(rgb.z, m_displayGamma));
-}
-
-vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB)
-{
-   vec3 xyz{
-      0.4124564f * linearRGB.x + 0.3575761f * linearRGB.y + 0.1804375f * linearRGB.z,
-      0.2126729f * linearRGB.x + 0.7151522f * linearRGB.y + 0.0721750f * linearRGB.z,
-      0.0193339f * linearRGB.x + 0.1191920f * linearRGB.y + 0.9503041f * linearRGB.z};
-   return xyz;
 }
 
 #define powd(a, b) pow(static_cast<double>(a), static_cast<double>(b))
@@ -245,50 +226,214 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
    Update();
 }
 
+
+static Vertex3Ds EvaluateGlassFilter(const Matrix3& M, const float eps = 1e-6f)
+{
+   Matrix3 A = M;
+
+   // Gaussian elimination
+   for (int col = 0; col < 3; ++col)
+   {
+      // Partial pivoting: find the row with the largest element in the current column
+      int max_row = col;
+      for (int i = col + 1; i < 3; ++i)
+         if (std::abs(A.m_d[i][col]) > std::abs(A.m_d[max_row][col]))
+            max_row = i;
+
+      // Swap rows
+      for (int j = 0; j < 3; ++j)
+         std::swap(A.m_d[col][j], A.m_d[max_row][j]);
+
+      // If the pivot is zero, skip to the next column
+      if (std::abs(A.m_d[col][col]) <= eps)
+         continue;
+
+      // Eliminate the current column in all rows below
+      for (int i = col + 1; i < 3; ++i)
+      {
+         float factor = A.m_d[i][col] / A.m_d[col][col];
+         for (int j = col; j < 3; ++j)
+            A.m_d[i][j] -= factor * A.m_d[col][j];
+      }
+   }
+
+   // Evaluate rank (number of free variables, that is to say null rows)
+   {
+      int rank = 0;
+      float minZero = FLT_MAX;
+      for (int row = 0; row < 3; ++row)
+      {
+         float maxRow = FLT_MIN;
+         for (int col = 0; col < 3; ++col)
+            maxRow = max(maxRow, std::abs(A.m_d[row][col]));
+         if (maxRow > eps)
+            rank++;
+         minZero = min(minZero, maxRow);
+      }
+      if (rank == 3)
+         // Only the { 0.0f, 0.0f, 0.0f } trivial solution exists but we know that this is not our solution (glass are not full opaque...)
+         // We guess that this is a calibration precision, issue and restart with an higher precision limit guaranteed to give a suitable rank
+         return EvaluateGlassFilter(A, minZero);
+   }
+
+   // Find a free variable and set it to 1
+   int free_var = -1;
+   Vertex3Ds filter = { 0.0f, 0.0f, 0.0f };
+   {
+      float minZero = FLT_MAX;
+      for (int col = 0; col < 3; ++col)
+      {
+         float maxCol = FLT_MIN;
+         for (int row = 0; row < 3; ++row)
+            maxCol = max(maxCol, std::abs(A.m_d[row][col]));
+         if (maxCol < minZero)
+         {
+            minZero = maxCol;
+            free_var = col;
+         }
+      }
+      switch (free_var)
+      {
+      case 0: filter.x = 1.0f; break;
+      case 1: filter.y = 1.0f; break;
+      case 2: filter.z = 1.0f; break;
+      }
+   }
+
+   // Solve for the other variables
+   for (int row = 2; row >= 0; --row)
+   {
+      float sum = 0.0f;
+      int pivot_col = -1;
+      for (int col = 0; col < 3; ++col)
+      {
+         if (pivot_col == -1 && col != free_var && std ::abs(A.m_d[row][col]) > eps)
+            pivot_col = col;
+         else
+         {
+            switch (col)
+            {
+            case 0: sum += A.m_d[row][col] * filter.x; break;
+            case 1: sum += A.m_d[row][col] * filter.y; break;
+            case 2: sum += A.m_d[row][col] * filter.z; break;
+            }
+         }
+      }
+      if (pivot_col != -1)
+      {
+         switch (pivot_col)
+         {
+         case 0: filter.x = -sum / A.m_d[row][pivot_col]; break;
+         case 1: filter.y = -sum / A.m_d[row][pivot_col]; break;
+         case 2: filter.z = -sum / A.m_d[row][pivot_col]; break;
+         }
+      }
+   }
+
+   filter.NormalizeSafe();
+   if (filter.x < 0.0f || filter.y < 0.0f || filter.z < 0.0f)
+   {
+      // We have a calibration issue as we are searching for a glass filter so only 0..1 values are valids, clamp and renormalize
+      filter.x = max(filter.x, 0.0f);
+      filter.y = max(filter.y, 0.0f);
+      filter.z = max(filter.z, 0.0f);
+      filter.NormalizeSafe();
+   }
+
+   return filter;
+}
+
+
 void Anaglyph::Update()
 {
-   // Enforce luminance model property to account for calibration error (Y(white) = 1)
+   // Calibration consist in finding the point where the white seen through the glass filter has the same luminance as the primary 
+   // also seen through the glass filter. The corresponding equation is (linear RGB colorspace):
+   //   Cr.Lr.Gr + Cr.Lg.Gg + Cr.Lb.Gb = Lr.Gr
+   //   Cg.Lr.Gr + Cg.Lg.Gg + Cg.Lb.Gb = Lr.Gg
+   //   Cb.Lr.Gr + Cb.Lg.Gg + Cb.Lb.Gb = Lr.Gb
+   // With:
+   // . C the Calibration level per primary
+   // . L the Luminance factor per primary
+   // . G the Glass filter factor per primary
+   // The rank of this equation is under 3 otherwise the only solution would be an opaque black filter (G = { 0, 0, 0 })
+   // These equations also implies that Cr + Cg + Cb = 1
+   
+   // Enforce Cr + Cg + Cb = 1 as this may not be true due to calibration imprecision
    m_rgb2Yl = m_rgb2Yl / (m_rgb2Yl.x + m_rgb2Yl.y + m_rgb2Yl.z);
    m_rgb2Yr = m_rgb2Yr / (m_rgb2Yr.x + m_rgb2Yr.y + m_rgb2Yr.z);
 
-   // Compute the anaglyph property of the filter (ability to split the image between the eyes)
-   m_anaglyphRatio = vec3(fabsf(m_rgb2Yl.x - m_rgb2Yr.x) / (m_rgb2Yl.x + m_rgb2Yr.x), 
-                          fabsf(m_rgb2Yl.y - m_rgb2Yr.y) / (m_rgb2Yl.y + m_rgb2Yr.y), 
-                          fabsf(m_rgb2Yl.z - m_rgb2Yr.z) / (m_rgb2Yl.z + m_rgb2Yr.z));
+   // Solve the equations for left and right eyes
+   vec3 lum { 0.2126f, 0.7152f, 0.0722f };
+   Matrix3 leftMat;
+   leftMat._11 = lum.x * (m_rgb2Yl.x - 1.f);
+   leftMat._12 = lum.y * m_rgb2Yl.x;
+   leftMat._13 = lum.z * m_rgb2Yl.x;
+   leftMat._21 = lum.x * m_rgb2Yl.y;
+   leftMat._22 = lum.y * (m_rgb2Yl.y - 1.f);
+   leftMat._23 = lum.z * m_rgb2Yl.y;
+   leftMat._31 = lum.x * m_rgb2Yl.z;
+   leftMat._32 = lum.y * m_rgb2Yl.z;
+   leftMat._33 = lum.z * (m_rgb2Yl.z - 1.f);
+   m_leftEyeGlassFilter = EvaluateGlassFilter(leftMat);
 
-   // Evaluate filter tints (for UI display)
-   m_leftEyeColor = vec3(m_rgb2Yl.x / 0.2126f, m_rgb2Yl.y / 0.7152f, m_rgb2Yl.z / 0.0722f);
-   m_rightEyeColor = vec3(m_rgb2Yr.x / 0.2126f, m_rgb2Yr.y / 0.7152f, m_rgb2Yr.z / 0.0722f);
-   m_leftEyeColor = m_leftEyeColor / max(max(m_leftEyeColor.x, m_leftEyeColor.y), m_leftEyeColor.z);
-   m_rightEyeColor = m_rightEyeColor / max(max(m_rightEyeColor.x, m_rightEyeColor.y), m_rightEyeColor.z);
+   Matrix3 rightMat;
+   rightMat._11 = lum.x * (m_rgb2Yr.x - 1.f);
+   rightMat._12 = lum.y * m_rgb2Yr.x;
+   rightMat._13 = lum.z * m_rgb2Yr.x;
+   rightMat._21 = lum.x * m_rgb2Yr.y;
+   rightMat._22 = lum.y * (m_rgb2Yr.y - 1.f);
+   rightMat._23 = lum.z * m_rgb2Yr.y;
+   rightMat._31 = lum.x * m_rgb2Yr.z;
+   rightMat._32 = lum.y * m_rgb2Yr.z;
+   rightMat._33 = lum.z * (m_rgb2Yr.z - 1.f);
+   m_rightEyeGlassFilter = EvaluateGlassFilter(rightMat);
 
-   // Identify the bichromatic eye with its color from the luminance calibration.
-   //vec3 eyeL(m_rgb2Yl), eyeR(m_rgb2Yr); // Both will work. I'm not sure which one is the correct approach here
-   vec3 eyeL(m_leftEyeColor), eyeR(m_rightEyeColor);
-   #define vecChannel(v, c) ((c) == 0 ? (v).x : (c) == 1 ? (v).y : (v).z)
-   float maxLeft = 0.f, maxRight = 0.f;
-   int mainLeft = -1, mainRight = -1;
-   for (int i = 0; i < 3; i++)
+   // Identify the color pair from the luminance calibration
+   const vec3 leftHSV = VPX::Colors::SRGBToHSV(m_leftEyeGlassFilter);
+   const vec3 rightHSV = VPX::Colors::SRGBToHSV(m_rightEyeGlassFilter);
+   float bestPairMatchDist = FLT_MAX;
+   int bestPairMatch = -1;
+   const auto angularDistance = [](float a, float b)
    {
-      if (vecChannel(eyeL, i) > maxLeft) { maxLeft = vecChannel(eyeL, i); mainLeft = i; }
-      if (vecChannel(eyeR, i) > maxRight) { maxRight = vecChannel(eyeR, i); mainRight = i; }
+      float diff = fabsf(fmodf(a, 360.0f) - fmodf(b, 360.0f));
+      return std::min(diff, 360.0f - diff);
+   };
+   for (int i = 0; i < 6; i++)
+   {
+      float dist = powf(angularDistance(leftHSV.x,i * 60.f), 2.f) + powf(angularDistance(rightHSV.x, i * 60.f + 180.f), 2.f);
+      if (dist < bestPairMatchDist)
+      {
+         bestPairMatchDist = dist;
+         bestPairMatch = i;
+      }
    }
-   if (mainLeft == mainRight)
+   switch (bestPairMatch)
    {
-      // Non anaglyph glasses with the same main channel for the 2 eyes
-      PLOGI << "Invalid anaglyph calibration: both eyes have the same main color channel";
-      m_reversedColorPair = false;
+   case 0:
       m_colorPair = RED_CYAN;
+      m_reversedColorPair = false;
+      break;
+   case 1:
+      m_colorPair = BLUE_AMBER;
+      m_reversedColorPair = true;
+      break;
+   case 2:
+      m_colorPair = GREEN_MAGENTA;
+      m_reversedColorPair = false;
+      break;
+   case 3:
+      m_colorPair = RED_CYAN;
+      m_reversedColorPair = true;
+      break;
+   case 4:
+      m_colorPair = BLUE_AMBER;
+      m_reversedColorPair = false;
+      break;
+   case 5:
+      m_colorPair = GREEN_MAGENTA;
+      m_reversedColorPair = true;
+      break;
    }
-   else
-   {
-      // The bichromatic is the one with the higher luminance value of the channel which is not the main of any of the eyes
-      int lesser = ((1 << mainLeft) | (1 << mainRight)) ^ 0x7;
-      lesser = (int) log2(lesser & -lesser); // Return the position of the first bit which is the unused channel
-      m_reversedColorPair = vecChannel(eyeL, lesser) > vecChannel(eyeR, lesser);
-      m_colorPair = (AnaglyphPair)(m_reversedColorPair ? mainRight : mainLeft);
-   }
-   #undef vecChannel
 
    switch (m_filter)
    {
@@ -310,6 +455,8 @@ void Anaglyph::Update()
          m_rgb2AnaglyphRight = Matrix3D(1.f, 0.f, 0.f, 0.f, /**/ 0.f, 1.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          break;
       }
+      if (m_reversedColorPair)
+         std::swap(m_rgb2AnaglyphLeft, m_rgb2AnaglyphRight);
       break;
    }
 
@@ -332,6 +479,8 @@ void Anaglyph::Update()
          m_rgb2AnaglyphRight = Matrix3D(1.062f, -0.205f, 0.299f, 0.f, /**/ -0.026f, 0.908f, 0.068f, 0.f, /**/ -0.038f, -0.173f, 0.022f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
          break;
       }
+      if (m_reversedColorPair)
+         std::swap(m_rgb2AnaglyphLeft, m_rgb2AnaglyphRight);
       break;
    }
 
@@ -346,8 +495,8 @@ void Anaglyph::Update()
       case GREEN_MAGENTA: chromacity = vec3(-1.f, 0.f, 1.f); break;
       case BLUE_AMBER: chromacity = vec3(-1.f, 1.f, 0.f); break;
       }
-      vec3 rgb2Yl(m_reversedColorPair ? m_rgb2Yr : m_rgb2Yl);
-      vec3 rgb2Yr(m_reversedColorPair ? m_rgb2Yl : m_rgb2Yr);
+      vec3 rgb2Yl(m_rgb2Yl);
+      vec3 rgb2Yr(m_rgb2Yr);
       Matrix3D matYYC2RGB = Matrix3D::MatrixIdentity();
       matYYC2RGB.m[0][0] = rgb2Yl.x;
       matYYC2RGB.m[0][1] = rgb2Yl.y;
@@ -359,9 +508,16 @@ void Anaglyph::Update()
       matYYC2RGB.m[2][1] = chromacity.y;
       matYYC2RGB.m[2][2] = chromacity.z;
       matYYC2RGB.Invert();
-      Matrix3D matLeft2YYC, matRight2YYC;
-      matLeft2YYC = Matrix3D(rgb2Yl.x, rgb2Yl.y, rgb2Yl.z, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-      matRight2YYC = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ rgb2Yr.x, rgb2Yr.y, rgb2Yr.z, 0.f, /**/ chromacity.x, chromacity.y, chromacity.z, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+      const Matrix3D matLeft2YYC( // Left image to left luminance, right luminance, chromacity
+         rgb2Yl.x, rgb2Yl.y, rgb2Yl.z, 0.f, //
+         0.f, 0.f, 0.f, 0.f, //
+         0.f, 0.f, 0.f, 0.f, //
+         0.f, 0.f, 0.f, 1.f);
+      const Matrix3D matRight2YYC( // Right image to left luminance, right luminance, chromacity
+         0.f, 0.f, 0.f, 0.f, //
+         rgb2Yr.x, rgb2Yr.y, rgb2Yr.z, 0.f, //
+         chromacity.x, chromacity.y, chromacity.z, 0.f, //
+         0.f, 0.f, 0.f, 1.f);
       m_rgb2AnaglyphLeft = matYYC2RGB * matLeft2YYC;
       m_rgb2AnaglyphRight = matYYC2RGB * matRight2YYC;
       break;
@@ -448,20 +604,24 @@ void Anaglyph::Update()
          };
       }
       m_deghostFilter.Transpose();
+      if (m_reversedColorPair)
+         std::swap(m_rgb2AnaglyphLeft, m_rgb2AnaglyphRight);
       break;
    }
    }
 
    // Common parameters for all anaglyph composition filters
-   const Matrix3D matLeftContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_reversedColorPair ? m_rightEyeContrast : m_leftEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
-   const Matrix3D matRightContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_reversedColorPair ? m_leftEyeContrast : m_rightEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
-   static constexpr Matrix3D matGrayscale{0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
-   const Matrix3D matSaturation = Matrix3D::MatrixScale(1.f - m_saturation) * matGrayscale + Matrix3D::MatrixScale(m_saturation);
+   const Matrix3D matLeftContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_leftEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
+   const Matrix3D matRightContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_rightEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
+   static constexpr Matrix3D matGrayscale { //
+      0.212655f, 0.715158f, 0.072187f, 0.f, //
+      0.212655f, 0.715158f, 0.072187f, 0.f, //
+      0.212655f, 0.715158f, 0.072187f, 0.f, //
+      0.f, 0.f, 0.f, 1.f};
+   Matrix3D matSaturation = Matrix3D::MatrixScale(1.f - m_saturation) * matGrayscale + Matrix3D::MatrixScale(m_saturation);
    const Matrix3D matBrightness = Matrix3D::MatrixScale(m_brightness); 
    m_rgb2AnaglyphLeft = matBrightness * matLeftContrast * m_rgb2AnaglyphLeft * matSaturation;
    m_rgb2AnaglyphRight = matBrightness * matRightContrast * m_rgb2AnaglyphRight * matSaturation;
-   m_rgb2AnaglyphLeft.Transpose();
-   m_rgb2AnaglyphRight.Transpose();
 
    // Adjust colors before processing in order to avoid needing to clamp after applying anaglyph matrices (since clamping always results in ghosting)
    // This works well but makes the image brighter and less contrasted.
@@ -491,4 +651,78 @@ void Anaglyph::Update()
       m_rgb2AnaglyphLeft = matDeghost * m_rgb2AnaglyphLeft;
       m_rgb2AnaglyphRight = matDeghost * m_rgb2AnaglyphRight;
    }
+}
+
+// This must be kept in sync with the GPU shader implementation
+vec3 Anaglyph::ComputeColor(const vec3& leftCol, const vec3& rightCol, bool isLinearInput) const
+{
+   vec3 lCol = leftCol;
+   vec3 rCol = rightCol;
+
+   // 1. If not Deghost and not linear, convert to linear space (InvGamma)
+   if (m_filter != DEGHOST && !isLinearInput)
+   {
+      lCol = InvGamma(lCol);
+      rCol = InvGamma(rCol);
+   }
+
+   // 2. Apply Dynamic Desaturation if active and not Deghost
+   if (m_filter != DEGHOST && m_dynDesatLevel > 0.f)
+   {
+      const float scale = 0.25f * 0.5f;
+      vec3 lLumGamma = m_rgb2Yl * scale;
+      vec3 rLumDynDesat = m_rgb2Yr * scale;
+      
+      const float left2LeftLum = lCol.x * lLumGamma.x + lCol.y * lLumGamma.y + lCol.z * lLumGamma.z;
+      const float left2RightLum = lCol.x * rLumDynDesat.x + lCol.y * rLumDynDesat.y + lCol.z * rLumDynDesat.z;
+      const float right2LeftLum = rCol.x * lLumGamma.x + rCol.y * lLumGamma.y + rCol.z * lLumGamma.z;
+      const float right2RightLum = rCol.x * rLumDynDesat.x + rCol.y * rLumDynDesat.y + rCol.z * rLumDynDesat.z;
+      
+      const float leftLum = left2LeftLum + left2RightLum;
+      const float rightLum = right2LeftLum + right2RightLum;
+      
+      const float leftDesat = m_dynDesatLevel * fabsf((left2LeftLum - left2RightLum) / (leftLum + 0.0001f));
+      const float rightDesat = m_dynDesatLevel * fabsf((right2LeftLum - right2RightLum) / (rightLum + 0.0001f));
+      
+      lCol = lCol * (1.0f - leftDesat) + vec3(leftLum, leftLum, leftLum) * leftDesat;
+      rCol = rCol * (1.0f - rightDesat) + vec3(rightLum, rightLum, rightLum) * rightDesat;
+   }
+
+   // 3. Setup linear projection matrices based on reversed pair state
+   const Matrix3D& lMat = m_rgb2AnaglyphLeft;
+   const Matrix3D& rMat = m_rgb2AnaglyphRight;
+
+   // 4. Multiply color by matrices (LinearAnaglyph)
+   vec3 color = vec3(
+       lCol.x * lMat.m[0][0] + lCol.y * lMat.m[1][0] + lCol.z * lMat.m[2][0] + lMat.m[3][0] +
+       rCol.x * rMat.m[0][0] + rCol.y * rMat.m[1][0] + rCol.z * rMat.m[2][0] + rMat.m[3][0],
+       
+       lCol.x * lMat.m[0][1] + lCol.y * lMat.m[1][1] + lCol.z * lMat.m[2][1] + lMat.m[3][1] +
+       rCol.x * rMat.m[0][1] + rCol.y * rMat.m[1][1] + rCol.z * rMat.m[2][1] + rMat.m[3][1],
+       
+       lCol.x * lMat.m[0][2] + lCol.y * lMat.m[1][2] + lCol.z * lMat.m[2][2] + lMat.m[3][2] +
+       rCol.x * rMat.m[0][2] + rCol.y * rMat.m[1][2] + rCol.z * rMat.m[2][2] + rMat.m[3][2]
+   );
+
+   // 5. Apply Deghost Filter or Revert Gamma
+   if (m_filter == DEGHOST)
+   {
+      vec3 gammaColor(
+          powf(max(color.x, 0.f), m_deghostGamma.x),
+          powf(max(color.y, 0.f), m_deghostGamma.y),
+          powf(max(color.z, 0.f), m_deghostGamma.z)
+      );
+      
+      color = vec3(
+          gammaColor.x * m_deghostFilter.m[0][0] + gammaColor.y * m_deghostFilter.m[1][0] + gammaColor.z * m_deghostFilter.m[2][0],
+          gammaColor.x * m_deghostFilter.m[0][1] + gammaColor.y * m_deghostFilter.m[1][1] + gammaColor.z * m_deghostFilter.m[2][1],
+          gammaColor.x * m_deghostFilter.m[0][2] + gammaColor.y * m_deghostFilter.m[1][2] + gammaColor.z * m_deghostFilter.m[2][2]
+      );
+   }
+   else if (!isLinearInput)
+   {
+      color = Gamma(color);
+   }
+
+   return color;
 }

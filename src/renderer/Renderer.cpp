@@ -1182,13 +1182,14 @@ void Renderer::UpdateStereoShaderState()
    if (IsAnaglyphStereoMode(m_stereo3D))
    {
       Anaglyph anaglyph;
-      anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
+      anaglyph.LoadSetupFromRegistry(g_pplayer->m_ptable->m_settings, clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_renderDevice->m_stereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
       m_stereo3DDefocus = m_table->m_settings.GetPlayer_Stereo3DDefocus();
-      // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
-      // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
-      if (anaglyph.IsReversedColorPair())
+      const float leftFilterLuminance = VPX::Colors::LuminanceFromLinearRGB(anaglyph.GetLeftEyeGlassFilter(true));
+      const float rightFilterLuminance = VPX::Colors::LuminanceFromLinearRGB(anaglyph.GetRightEyeGlassFilter(true));
+      // We defocus the channel which is the most darkened one (channel for which the luminance of the filter is the lowest)
+      if (rightFilterLuminance < leftFilterLuminance)
          m_stereo3DDefocus = -m_stereo3DDefocus;
    }
    else

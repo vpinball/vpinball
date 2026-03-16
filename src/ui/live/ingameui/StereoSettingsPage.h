@@ -3,6 +3,7 @@
 #pragma once
 
 #include "InGameUIPage.h"
+#include "renderer/Anaglyph.h"
 
 namespace VPX::InGameUI
 {
@@ -22,15 +23,22 @@ public:
 private:
    void BuildPage();
    void OnPointOfViewChanged();
+
+   void RenderAnaglyphInformations() const;
+
    void UpdateAnaglyphCalibrationModal();
    VPX::Properties::PropertyRegistry::PropId GetCalibratedProperty() const;
    int m_calibrationStep = -1;
+   float m_backgroundOpacity = 1.f;
    uint32_t m_lastUpdateMs = 0;
    uint32_t m_pressStartMs = 0;
-   float m_backgroundOpacity = 1.f;
+
+   void NotifyDirectSave();
+   bool m_notificationDone = false;
+
    StereoMode m_editedStereoMode = STEREO_OFF;
    bool m_staticPrepassDisabled = false;
-   unsigned int m_notificationId = 0;
+   Anaglyph m_anaglyph;
 };
 
 }
