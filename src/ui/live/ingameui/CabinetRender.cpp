@@ -113,7 +113,7 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
    {
       // FIXME is it from screen origin or from glass (or from playfield) ?
       ImVec2 playerEye = screenOrig;
-      playerEye.x += playerPos.y * scale;
+      playerEye.x -= playerPos.y * scale;
       playerEye.y -= playerPos.z * scale;
       draw_list->AddCircleFilled(playerEye, 5.f, IM_COL32(255, 0, 0, 255));
    }

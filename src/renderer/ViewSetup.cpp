@@ -33,6 +33,16 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
    mViewZ = pos.z + mWindowBottomZOfs * mSceneScaleY / realToVirtual;
 }
 
+vec3 ViewSetup::GetPlayerPositionFromViewPos(const PinTable* const table, const float screenInclination)
+{
+   assert(mMode == VLM_WINDOW);
+   const float realToVirtual = GetRealToVirtualScale(table);
+   // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
+   const Matrix3D rotx = Matrix3D::MatrixRotateX(-(atan2f(mWindowTopZOfs - mWindowBottomZOfs, table->m_bottom) - ANGTORAD(screenInclination)));
+   const vec3 view(mViewX, mViewY, mViewZ - mWindowBottomZOfs * mSceneScaleY / realToVirtual);
+   return VPUTOCM(rotx.MultiplyVectorNoPerspective(view));
+}
+
 void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch, const std::function<void(string)>& glassNotification)
 {
    const Settings& settings = table->m_settings; 

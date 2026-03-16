@@ -469,7 +469,14 @@ void PointOfViewSettingsPage::BuildPage()
 
 void PointOfViewSettingsPage::Render(float elapsed)
 {
+   if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
+   {
+      const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+      m_playerPos = m_player->m_ptable->GetViewSetup().GetPlayerPositionFromViewPos(m_player->m_ptable, screenInclination);
+   }
+
    InGameUIPage::Render(elapsed);
+
    if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
       m_cabinetRender.Render(
          ImVec4(GetWindowPos().x, GetWindowPos().y - ImGui::GetStyle().ItemSpacing.y, GetWindowSize().x, min(GetWindowSize().x, GetWindowPos().y - 2.f * ImGui::GetStyle().ItemSpacing.y)),
