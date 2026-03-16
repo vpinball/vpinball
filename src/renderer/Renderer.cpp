@@ -2272,6 +2272,10 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    return afterTonemapRT;
    #endif
 
+   // We do not support stereo VR yet
+   if (m_stereo3D == STEREO_VR)
+      return afterTonemapRT;
+
    if (m_motionBlurOff)
       return afterTonemapRT;
 
