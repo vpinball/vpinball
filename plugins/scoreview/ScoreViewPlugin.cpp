@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <memory>
+#include <string>
 
 #include "common.h"
 
@@ -20,6 +21,8 @@
 
 namespace ScoreView
 {
+
+MSGPI_STRING_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
@@ -50,6 +53,11 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          scoreView->Load(tablePath.parent_path() / tablePath.parent_path().filename().replace_extension(".scv"));
 
       // Allow the user to provide a custom folder (out of application path) with his default layouts ?
+      if (!scoreView->HasLayouts())
+      {
+         if (std::string customPath = layoutFolderProp_Get(); !customPath.empty())
+            scoreView->Load(std::filesystem::path(customPath));
+      }
 
       // Finally defaults to base layouts provided with the plugin
       if (!scoreView->HasLayouts())
@@ -108,10 +116,13 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
 
    msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
+
+   msgApi->RegisterSetting(endpointId, &layoutFolderProp);
 }
 
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
 {
+   scoreView = nullptr;
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
