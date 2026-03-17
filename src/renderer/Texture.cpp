@@ -857,9 +857,9 @@ SDL_Surface* BaseTexture::ToSDLSurface() const
    {
    case BW: format = SDL_PIXELFORMAT_INDEX8; break;
    case RGB: format = SDL_PIXELFORMAT_RGB24; break;
-   case RGBA: format = SDL_PIXELFORMAT_ARGB8888; break;
+   case RGBA: format = SDL_PIXELFORMAT_RGBA32; break;
    case SRGB: format = SDL_PIXELFORMAT_RGB24; break;
-   case SRGBA: format = SDL_PIXELFORMAT_ARGB8888; break;
+   case SRGBA: format = SDL_PIXELFORMAT_RGBA32; break;
    case SRGB565: format = SDL_PIXELFORMAT_RGB565; break;
    case RGB_FP16: format = SDL_PIXELFORMAT_RGB48_FLOAT; break;
    case RGBA_FP16: format = SDL_PIXELFORMAT_RGBA64_FLOAT; break;
