@@ -6,8 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.libsdl.app.SDLActivity
-import org.vpinball.app.jni.VPinballLogLevel
-
 class VPinballPlayerActivity : SDLActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,17 +27,6 @@ class VPinballPlayerActivity : SDLActivity() {
         if (hasFocus) {
             setWindowStyle(true)
         }
-    }
-
-    override fun onStop() {
-        VPinballManager.log(VPinballLogLevel.INFO, "VPinballPlayerActivity: onStop: isFinishing=$isFinishing")
-
-        if (!isFinishing) {
-            VPinballManager.log(VPinballLogLevel.INFO, "VPinballPlayerActivity: force quit detected, exiting")
-            System.exit(0)
-        }
-
-        super.onStop()
     }
 
     override fun onDestroy() {
