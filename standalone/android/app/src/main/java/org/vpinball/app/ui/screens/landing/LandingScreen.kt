@@ -363,8 +363,9 @@ fun LandingScreen(
                         onPlay = { table ->
                             if (vpinballModel.activeTable != null) return@TablesList
                             focusManager.clearFocus()
-                            vpinballModel.activeTable = table
-                            vpinballModel.showHUD(table.name, "Launching")
+                            val current = filteredTables.firstOrNull { it.uuid == table.uuid } ?: table
+                            vpinballModel.activeTable = current
+                            vpinballModel.showHUD(current.name, "Launching")
                         },
                         onRename = { table, name -> vpinballModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
                         onViewScript = { table ->
