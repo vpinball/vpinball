@@ -69,15 +69,14 @@ void PinFont::Register()
 
    ReleaseDC(nullptr, hdcScreen);
 
-   string path = GetExecutablePath();
-   const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
-   if (pos != string::npos)
-       path.erase(pos + 1);
+   char tempPath[MAX_PATH];
+   char tempFileName[MAX_PATH];
+   GetTempPathA(MAX_PATH, tempPath);
+   if (GetTempFileNameA(tempPath, "VP", 0, tempFileName) != 0)
+      m_szTempFile = tempFileName;
+   else
+      m_szTempFile = "VPTemp0.ttf"; // Fallback
 
-   static int tempFontNumber = -1;
-   tempFontNumber++;
-
-   m_szTempFile = path + "VPTemp" + std::to_string(tempFontNumber) + ".ttf";
    WriteToFile(m_szTempFile);
 
    /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());
