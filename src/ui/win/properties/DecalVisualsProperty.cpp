@@ -81,11 +81,11 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_SURFACE_COMBO || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(decal->GetPTable(), m_surfaceCombo, decal->m_d.m_szSurface);
 
-        if (decal->m_pIFont)
+        if (dispid == IDC_FONT_DIALOG_BUTTON || dispid == -1)
         {
             m_fontDialogButton.SetWindowText(decal->GetFontName().c_str());
             delete m_font;
-            m_font = new CFont(decal->GetFont());
+            m_font = new CFont(decal->m_d.m_font.ToLogFont());
         }
 
         UpdateBaseVisuals(decal, &decal->m_d, dispid);
@@ -149,26 +149,24 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 m_fontDialog.SetColor(decal->m_d.m_color);
                 if (m_fontDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    FONTDESC fd;
                     m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
-
-                    fd.cbSizeofstruct = sizeof(FONTDESC);
-
                     const LOGFONT font = m_font->GetLogFont();
-                    fd.lpstrName = (LPOLESTR)MakeWide(font.lfFaceName);
 
-                    fd.sWeight = (SHORT)font.lfWidth;
-                    fd.sCharset = font.lfCharSet;
-                    fd.fItalic = font.lfItalic;
-                    fd.fUnderline = font.lfUnderline;
-                    fd.fStrikethrough = font.lfStrikeOut;
+                    decal->m_d.m_font.name = font.lfFaceName;
+                    decal->m_d.m_font.weight = (uint16_t)font.lfWeight;
+                    decal->m_d.m_font.charset = (uint16_t)font.lfCharSet;
+                    
+                    const bool fItalic = font.lfItalic != 0;
+                    const bool fUnderline = font.lfUnderline != 0;
+                    const bool fStrikethrough = font.lfStrikeOut != 0;
+                    decal->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 
-                    // free old font first
-                    decal->m_pIFont->Release();
-                    // create the new one
-                    OleCreateFontIndirect(&fd, IID_IFont, (void **)&decal->m_pIFont);
-                    delete [] fd.lpstrName;
+                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
+                    decal->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+
                     decal->m_d.m_color = m_fontDialog.GetColor();
+                    delete m_font;
+                    m_font = new CFont(decal->m_d.m_font.ToLogFont());
                 }
                 break;
             }

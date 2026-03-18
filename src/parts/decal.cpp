@@ -16,15 +16,11 @@
 Decal::~Decal()
 {
    assert(m_rd == nullptr);
-   SAFE_RELEASE(m_pIFont);
 }
 
 Decal *Decal::CopyForPlay() const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal)
-#ifndef __STANDALONE__
-   m_pIFont->Clone(&dst->m_pIFont);
-#endif
    dst->EnsureSize();
    return dst;
 }
@@ -51,24 +47,21 @@ void Decal::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_text, Text);
    LinkProp(m_d.m_color, Color);
    LinkProp(m_d.m_verticalText, VerticalText);
-#ifndef __STANDALONE__
-   SAFE_RELEASE(m_pIFont);
-   FONTDESC fd;
-   fd.cbSizeofstruct = sizeof(FONTDESC);
+   LinkProp(m_d.m_sizingtype, Sizing);
+
    float fontSize;
-   string fontName;
    LinkProp(fontSize, FontSize);
-   LinkProp(fontName, FontName);
-   LinkProp(fd.sWeight, FontWeight);
-   LinkProp(fd.sCharset, FontCharSet);
-   LinkProp(fd.fItalic, FontItalic);
-   LinkProp(fd.fUnderline, FontUnderline);
-   LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
-   fd.lpstrName = (LPOLESTR)MakeWide(fontName);
-   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   delete [] fd.lpstrName;
-#endif
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
+
+   bool fItalic, fUnderline, fStrikethrough;
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
+
+   m_d.m_font.size = (uint32_t)(fontSize * 10000.0f);
+   m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 #undef LinkProp
 }
 
@@ -84,31 +77,20 @@ void Decal::WriteRegDefaults()
    LinkProp(m_d.m_text, Text);
    LinkProp(m_d.m_color, Color);
    LinkProp(m_d.m_verticalText, VerticalText);
-#ifndef __STANDALONE__
-   if (m_pIFont)
-   {
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-      m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name((BSTR*)&fd.lpstrName);
-      m_pIFont->get_Weight(&fd.sWeight);
-      m_pIFont->get_Charset(&fd.sCharset);
-      m_pIFont->get_Italic(&fd.fItalic);
-      m_pIFont->get_Underline(&fd.fUnderline);
-      m_pIFont->get_Strikethrough(&fd.fStrikethrough);
-      const float fontSize = (float)(fd.cySize.int64 / 10000.0);
-      const string fontName = MakeString((BSTR)fd.lpstrName);
-      SysFreeString((BSTR)fd.lpstrName);
+   LinkProp(m_d.m_sizingtype, Sizing);
 
-      LinkProp(fontSize, FontSize);
-      LinkProp(fontName, FontName);
-      LinkProp(fd.sWeight, FontWeight);
-      LinkProp(fd.sCharset, FontCharSet);
-      LinkProp(fd.fItalic, FontItalic);
-      LinkProp(fd.fUnderline, FontUnderline);
-      LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   }
-#endif
+   const float fontSize = (float)(m_d.m_font.size / 10000.0);
+   const bool fItalic = (m_d.m_font.attributes & 0x02) != 0;
+   const bool fUnderline = (m_d.m_font.attributes & 0x04) != 0;
+   const bool fStrikethrough = (m_d.m_font.attributes & 0x08) != 0;
+
+   LinkProp(fontSize, FontSize);
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
 #undef LinkProp
 }
 
@@ -178,24 +160,17 @@ void Decal::UIRenderPass2(Sur * const psur)
    }
 }
 
-string Decal::GetFontName()
+string Decal::GetFontName() const
 {
-   if(m_pIFont)
-   {
-      BSTR bstr;
-      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-      const string fontName = MakeString(bstr);
-      SysFreeString(bstr);
-      return fontName;
-   }
-   return string();
+   return m_d.m_font.name;
 }
 
 void Decal::GetTextSize(int * const px, int * const py)
 {
 #ifndef __STANDALONE__
    const int len = (int)m_d.m_text.length();
-   const HFONT hFont = GetFont();
+   LOGFONT lf = m_d.m_font.ToLogFont();
+   const HFONT hFont = CreateFontIndirect(&lf);
    constexpr int alignment = DT_LEFT;
 
    const CClientDC clientDC(nullptr);
@@ -215,7 +190,7 @@ void Decal::GetTextSize(int * const px, int * const py)
          rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
          rcOut.right = 0x1;
          rcOut.bottom = 0x1;
-         clientDC.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+         ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str() + i, 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
          *px = max(*px, (int)rcOut.right);
       }
@@ -229,7 +204,7 @@ void Decal::GetTextSize(int * const px, int * const py)
       rcOut.top = 0;			//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
       rcOut.right = 0x1;
       rcOut.bottom = 0x1;
-      clientDC.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+      ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str(), len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
       *px = rcOut.right;
    }
@@ -286,18 +261,12 @@ void Decal::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(VERT), m_d.m_verticalText);
    writer.WriteBool(FID(BGLS), m_desktopBackdrop);
    SaveSharedEditableFields(writer);
-   FontDesc fd;
-#ifndef __STANDALONE__
-   if (m_pIFont)
-      fd.FromOLEFont(m_pIFont);
-#endif
-   writer.WriteFontDescriptor(FID(FONT), fd);
+   writer.WriteFontDescriptor(FID(FONT), m_d.m_font);
    writer.EndObject();
 }
 
 void Decal::Load(IObjectReader& reader)
 {
-   SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
@@ -318,16 +287,7 @@ void Decal::Load(IObjectReader& reader)
          case FID(SIZE): m_d.m_sizingtype = static_cast<SizingType>(reader.AsInt()); break;
          case FID(VERT): m_d.m_verticalText = reader.AsBool(); break;
          case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
-         case FID(FONT):
-         {
-            FontDesc fd = reader.AsFontDescriptor();
-            #ifndef __STANDALONE__
-            FONTDESC oleFD = fd.ToOLEFontDesc();
-            OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
-            delete[] oleFD.lpstrName;
-            #endif
-            break;
-         }
+         case FID(FONT): m_d.m_font = reader.AsFontDescriptor(); break;
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;
@@ -349,12 +309,7 @@ void Decal::EnsureSize()
       int sizex, sizey;
       GetTextSize(&sizex, &sizey);
 
-      CY cy;
- #ifndef __STANDALONE__
-      m_pIFont->get_Size(&cy);
- #endif
-
-      double rh = (double)cy.Lo * (1.0 / 2545.0);
+      double rh = (double)m_d.m_font.size * (1.0 / 2545.0);
 
       if (m_d.m_verticalText)
          rh *= (double)m_d.m_text.length();
@@ -375,15 +330,10 @@ void Decal::EnsureSize()
       }
       else
       {
-         CY cy;
-#ifndef __STANDALONE__
-         m_pIFont->get_Size(&cy);
-#endif
-
          int sizex, sizey;
          GetTextSize(&sizex, &sizey);
 
-         double rh = (double)cy.Lo * (1.0 / 2545.0);
+         double rh = (double)m_d.m_font.size * (1.0 / 2545.0);
 
          if (m_d.m_verticalText)
          {
@@ -398,36 +348,6 @@ void Decal::EnsureSize()
          }
       }
    }
-}
-
-HFONT Decal::GetFont()
-{
-#ifndef __STANDALONE__
-   LOGFONT lf = {};
-   lf.lfHeight = -72;
-   lf.lfCharSet = DEFAULT_CHARSET;
-   lf.lfQuality = NONANTIALIASED_QUALITY;
-
-   BSTR bstr;
-   /*HRESULT hr =*/m_pIFont->get_Name(&bstr);
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
-   SysFreeString(bstr);
-
-   BOOL bl;
-   (void)m_pIFont->get_Bold(&bl);
-
-   lf.lfWeight = bl ? FW_BOLD : FW_NORMAL;
-
-   (void)m_pIFont->get_Italic(&bl);
-
-   lf.lfItalic = (BYTE)bl;
-
-   const HFONT hFont = CreateFontIndirect(&lf);
-
-   return hFont;
-#else
-   return nullptr;
-#endif
 }
 
 
@@ -460,7 +380,8 @@ void Decal::RenderSetup(RenderDevice *device)
    {
       RECT rcOut = { };
       const int len = (int)m_d.m_text.length();
-      const HFONT hFont = GetFont();
+      LOGFONT lf = m_d.m_font.ToLogFont();
+      const HFONT hFont = CreateFontIndirect(&lf);
       int alignment = DT_LEFT;
 
       const CClientDC clientDC(nullptr);
@@ -481,7 +402,7 @@ void Decal::RenderSetup(RenderDevice *device)
             rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.right = 1;
             rcOut.bottom = 1;
-            clientDC.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+            ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str() + i, 1, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
             maxwidth = max(maxwidth, (int)rcOut.right);
          }
 
@@ -496,7 +417,7 @@ void Decal::RenderSetup(RenderDevice *device)
          rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
          rcOut.right = 1;
          rcOut.bottom = 1;
-         clientDC.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+         ::DrawText(clientDC.GetHDC(), m_d.m_text.c_str(), len, &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
          charheight = m_realheight;
       }
@@ -549,7 +470,7 @@ void Decal::RenderSetup(RenderDevice *device)
          {
             rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.bottom = rcOut.top + 100;
-            dc.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+            dc.DrawText(m_d.m_text.c_str() + i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
          }
       }
       else
@@ -900,13 +821,30 @@ STDMETHODIMP Decal::put_Material(BSTR newVal)
 
 STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
 {
-   m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
+   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&pIFont);
+   delete[] oleFD.lpstrName;
+   const HRESULT hr = pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+   pIFont->Release();
+   return hr;
+#else
    return S_OK;
+#endif
 }
 
 STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 {
    //We know that our own property browser gives us the same pointer
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   if (SUCCEEDED(pFont->QueryInterface(IID_IFont, (void**)&pIFont)))
+   {
+       m_d.m_font.FromOLEFont(pIFont);
+       pIFont->Release();
+   }
+#endif
    SetDirtyDraw();
    EnsureSize();
 

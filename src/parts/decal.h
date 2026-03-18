@@ -5,6 +5,7 @@
 #pragma once
 
 #include "physics/hittimer.h"
+#include "utils/fileio.h"
 
 class DecalData final : public BaseProperty
 {
@@ -19,6 +20,7 @@ public:
    COLORREF m_color;
    bool m_verticalText;
    TimerDataRoot m_tdr; // Unused but this is the only (legacy and deprecated) part that does not
+   FontDesc m_font;
 };
 
 class Decal :
@@ -68,8 +70,7 @@ public:
    float GetDepth(const Vertex3Ds &viewDir) const final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
 
-   string GetFontName();
-   HFONT GetFont();
+   string GetFontName() const;
 
    void WriteRegDefaults() final;
 
@@ -78,7 +79,6 @@ public:
    void EnsureSize();
 
    DecalData m_d;
-   IFont *m_pIFont = nullptr;
 
 private:
    void GetTextSize(int * const px, int * const py);
