@@ -102,9 +102,9 @@ PinTable::PinTable()
    CComObject<ScriptGlobalTable>::CreateInstance(&m_psgt);
    m_psgt->AddRef();
    m_psgt->Init(this);
-   m_scriptableNames[L"Debug"] = nullptr; // Debug global object (for Debug.Print)
+   m_scriptableNames[L"debug"] = nullptr; // Debug global object (for Debug.Print)
    for (const wstring& methodName : m_psgt->GetMethodNames()) // Add all global methods as reserved keywords
-      m_scriptableNames[methodName] = nullptr;
+      m_scriptableNames[lowerCase(methodName)] = nullptr;
 
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
@@ -393,8 +393,9 @@ void PinTable::AddPart(IEditable *const part)
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
       assert(!scriptable->m_wzName.empty());
-      assert(m_scriptableNames.find(scriptable->m_wzName) == m_scriptableNames.end());
-      m_scriptableNames[scriptable->m_wzName] = part;
+      const auto id = lowerCase(scriptable->m_wzName);
+      assert(m_scriptableNames.find(id) == m_scriptableNames.end());
+      m_scriptableNames[id] = part;
       if (m_tableEditor)
          m_tableEditor->m_pcv->AddItem(scriptable, false);
    }
@@ -409,7 +410,7 @@ void PinTable::RemovePart(IEditable *const part)
    if (auto scriptable = part->GetScriptable(); scriptable)
    {
       assert(!part->GetScriptable()->m_wzName.empty());
-      auto it = m_scriptableNames.find(scriptable->m_wzName);
+      auto it = m_scriptableNames.find(lowerCase(scriptable->m_wzName));
       assert(it != m_scriptableNames.end());
       m_scriptableNames.erase(it);
       if (m_tableEditor)
@@ -424,11 +425,12 @@ void PinTable::RenamePart(IEditable *const part, const wstring& newName)
    auto scriptable = part->GetScriptable();
    assert(scriptable);
    assert(!scriptable->m_wzName.empty());
-   auto it = m_scriptableNames.find(scriptable->m_wzName);
+   auto it = m_scriptableNames.find(lowerCase(scriptable->m_wzName));
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
-   assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
-   m_scriptableNames[newName] = part;
+   const auto id = lowerCase(newName);
+   assert(m_scriptableNames.find(id) == m_scriptableNames.end());
+   m_scriptableNames[id] = part;
    scriptable->m_wzName = newName;
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(scriptable, newName);
@@ -483,10 +485,11 @@ void PinTable::ReorderParts(bool isDrawingOrder)
 
 void PinTable::AddCollection(Collection* collection)
 {
-   assert(m_scriptableNames.find(collection->m_wzName) == m_scriptableNames.end());
+   const auto id = lowerCase(collection->m_wzName);
+   assert(m_scriptableNames.find(id) == m_scriptableNames.end());
    collection->AddRef();
    m_vcollection.push_back(collection);
-   m_scriptableNames[collection->m_wzName] = nullptr;
+   m_scriptableNames[id] = nullptr;
    if (m_tableEditor)
       m_tableEditor->m_pcv->AddItem((IScriptable *)collection, false);
 }
@@ -494,7 +497,7 @@ void PinTable::AddCollection(Collection* collection)
 void PinTable::RemoveCollection(Collection *collection)
 {
 #ifndef __STANDALONE__
-   auto it = m_scriptableNames.find(collection->m_wzName);
+   auto it = m_scriptableNames.find(lowerCase(collection->m_wzName));
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
    if (m_tableEditor)
@@ -507,20 +510,19 @@ void PinTable::RemoveCollection(Collection *collection)
 void PinTable::RenameCollection(Collection *collection, const wstring &newName)
 {
    assert(!collection->m_wzName.empty());
-   auto it = m_scriptableNames.find(collection->m_wzName);
+   auto it = m_scriptableNames.find(lowerCase(collection->m_wzName));
    assert(it != m_scriptableNames.end());
    m_scriptableNames.erase(it);
-   assert(m_scriptableNames.find(newName) == m_scriptableNames.end());
-   m_scriptableNames[newName] = nullptr;
+   const auto id = lowerCase(newName);
+   assert(m_scriptableNames.find(id) == m_scriptableNames.end());
+   m_scriptableNames[id] = nullptr;
    collection->m_wzName = newName;
    if (m_tableEditor)
       m_tableEditor->m_pcv->ReplaceName(collection, newName);
 }
 
 bool PinTable::IsNameUnique(const wstring &name) const
-{
-   return m_scriptableNames.find(name) == m_scriptableNames.end();
-}
+{return m_scriptableNames.find(lowerCase(name)) == m_scriptableNames.end(); }
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, wstring &wzUniqueName) const
 {
@@ -2167,7 +2169,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    PLOGI << "InitTablePostLoad"; // For profiling
 
-   m_scriptableNames[m_wzName] = this;
+   m_scriptableNames[lowerCase(m_wzName)] = this;
 
    for (unsigned int i = 1; i < NUM_BG_SETS; ++i)
       if (mViewSetups[i].mFOV == FLT_MAX) // old table, copy FS and/or FSS settings over from old DT setting
