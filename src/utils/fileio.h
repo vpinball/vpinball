@@ -12,8 +12,13 @@ struct FontDesc
    uint32_t size = 0;
    string name;
 
+   bool IsBold() const { return weight > 550; }
+   bool IsItalic() const { return (attributes & 0x02) != 0; }
+   bool IsUnderline() const { return (attributes & 0x04) != 0; }
+   bool IsStrikeThrough() const { return (attributes & 0x08) != 0; }
+
 #ifndef __STANDALONE__
-   FONTDESC ToOLEFontDesc()
+   FONTDESC ToOLEFontDesc() const
    {
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -26,6 +31,23 @@ struct FontDesc
       fd.fUnderline = (attributes & 0x04) ? TRUE : FALSE;
       fd.fStrikethrough = (attributes & 0x08) ? TRUE : FALSE;
       return fd;
+   }
+
+   LOGFONT ToLogFont() const
+   {
+      LOGFONT lf = {};
+      FONTDESC const oleFD = ToOLEFontDesc();
+      IFont *pIFont = nullptr;
+      OleCreateFontIndirect(const_cast<FONTDESC*>(&oleFD), IID_IFont, (void **)&pIFont);
+      if (pIFont)
+      {
+         HFONT hFont;
+         pIFont->get_hFont(&hFont);
+         GetObject(hFont, sizeof(LOGFONT), &lf);
+         pIFont->Release();
+      }
+      delete[] oleFD.lpstrName;
+      return lf;
    }
 
    void FromOLEFont(IFont *pIFont)

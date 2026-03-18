@@ -58,12 +58,9 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
         if (dispid == IDC_FONT_DIALOG_BUTTON || dispid == -1)
         {
-            if (text->m_pIFont)
-            {
-                m_fontDialogButton.SetWindowText(text->GetFontName().c_str());
-                delete m_font;
-                m_font = new CFont(text->GetFont());
-            }
+            m_fontDialogButton.SetWindowText(text->GetFontName().c_str());
+            delete m_font;
+            m_font = new CFont(text->m_d.m_font.ToLogFont());
         }
         //only show the first element on multi-select
         break;
@@ -179,32 +176,24 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                 m_fontDialog.SetColor(text->m_d.m_fontcolor);
                 if (m_fontDialog.DoModal(GetHwnd()) == IDOK)
                 {
-                    FONTDESC fd;
                     m_font->CreateFontIndirect(m_fontDialog.GetLogFont());
-
-                    fd.cbSizeofstruct = sizeof(FONTDESC);
-
                     const LOGFONT font = m_font->GetLogFont();
-                    fd.lpstrName = (LPOLESTR)MakeWide(font.lfFaceName);
 
-                    fd.sWeight = (SHORT)font.lfWidth;
-                    fd.sCharset = font.lfCharSet;
-                    fd.fItalic = font.lfItalic;
-                    fd.fUnderline = font.lfUnderline;
-                    fd.fStrikethrough = font.lfStrikeOut;
+                    text->m_d.m_font.name = font.lfFaceName;
+                    text->m_d.m_font.weight = (uint16_t)font.lfWeight;
+                    text->m_d.m_font.charset = font.lfCharSet;
+                    
+                    const bool fItalic = font.lfItalic != 0;
+                    const bool fUnderline = font.lfUnderline != 0;
+                    const bool fStrikethrough = font.lfStrikeOut != 0;
+                    text->m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 
-                    // free old font first
-                    text->m_pIFont->Release();
-                    // create the new one
-                    OleCreateFontIndirect(&fd, IID_IFont, (void **)&text->m_pIFont);
-                    float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
-                    CY size;
-                    size.int64 = (LONGLONG)(fontsize * 10000.0f);
-                    text->m_pIFont->put_Size(size);
-                    delete [] fd.lpstrName;
+                    const float fontsize = (float)((abs(font.lfHeight) * 72) / GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY));
+                    text->m_d.m_font.size = (uint32_t)(fontsize * 10000.0f);
+
                     text->m_d.m_fontcolor = m_fontDialog.GetColor();
                     delete m_font;
-                    m_font = new CFont(text->GetFont());
+                    m_font = new CFont(text->m_d.m_font.ToLogFont());
                 }
                 break;
             }

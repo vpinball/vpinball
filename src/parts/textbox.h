@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/win/resource.h"
+#include "utils/fileio.h"
 
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
@@ -23,6 +24,7 @@ public:
    bool m_transparent;
    bool m_visible;
    bool m_isDMD;
+   FontDesc m_font;
 };
 
 class Textbox :
@@ -81,18 +83,7 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   string GetFontName();
-   HFONT GetFont();
-
-   IFont *m_pIFont = nullptr;
-#ifdef __STANDALONE__
-   bool m_fontItalic;
-   bool m_fontUnderline;
-   bool m_fontStrikeThrough;
-   bool m_fontBold;
-   float m_fontSize;
-   string m_fontName;
-#endif
+   string GetFontName() const;
 
    TextboxData m_d;
 

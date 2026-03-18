@@ -9,22 +9,11 @@
 Textbox::~Textbox()
 {
    assert(m_rd == nullptr);
-   SAFE_RELEASE(m_pIFont);
 }
 
 Textbox *Textbox::CopyForPlay() const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox)
-   if (m_pIFont)
-      m_pIFont->Clone(&dst->m_pIFont);
-#ifdef __STANDALONE__
-   dst->m_fontItalic = m_fontItalic;
-   dst->m_fontUnderline = m_fontUnderline;
-   dst->m_fontStrikeThrough = m_fontStrikeThrough;
-   dst->m_fontBold = m_fontBold;
-   dst->m_fontSize = m_fontSize;
-   dst->m_fontName = m_fontName;
-#endif
    return dst;
 }
 
@@ -54,25 +43,19 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#ifndef __STANDALONE__
-   SAFE_RELEASE(m_pIFont);
-   FONTDESC fd;
-   fd.cbSizeofstruct = sizeof(FONTDESC);
-   float fontSize;
-   string fontName;
-   LinkProp(fontSize, FontSize);
-   LinkProp(fontName, FontName);
-   LinkProp(fd.sWeight, FontWeight);
-   LinkProp(fd.sCharset, FontCharSet);
-   LinkProp(fd.fItalic, FontItalic);
-   LinkProp(fd.fUnderline, FontUnderline);
-   LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
-   fd.lpstrName = (LPOLESTR)MakeWide(fontName);
-   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   delete [] fd.lpstrName;
-#endif
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
 
+   float fontSize;
+   LinkProp(fontSize, FontSize);
+   m_d.m_font.size = (uint32_t)(fontSize * 10000.0f);
+
+   bool fItalic, fUnderline, fStrikethrough;
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
+   m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 #undef LinkProp
 }
 
@@ -89,31 +72,19 @@ void Textbox::WriteRegDefaults()
    LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#ifndef __STANDALONE__
-   if (m_pIFont)
-   {
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-      m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name((BSTR*)&fd.lpstrName);
-      m_pIFont->get_Weight(&fd.sWeight);
-      m_pIFont->get_Charset(&fd.sCharset);
-      m_pIFont->get_Italic(&fd.fItalic);
-      m_pIFont->get_Underline(&fd.fUnderline);
-      m_pIFont->get_Strikethrough(&fd.fStrikethrough);
-      const float fontSize = (float)(fd.cySize.int64 / 10000.0);
-      const string fontName = MakeString((BSTR)fd.lpstrName);
-      SysFreeString((BSTR)fd.lpstrName);
 
-      LinkProp(fontSize, FontSize);
-      LinkProp(fontName, FontName);
-      LinkProp(fd.sWeight, FontWeight);
-      LinkProp(fd.sCharset, FontCharSet);
-      LinkProp(fd.fItalic, FontItalic);
-      LinkProp(fd.fUnderline, FontUnderline);
-      LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   }
-#endif
+   const float fontSize = (float)(m_d.m_font.size / 10000.0);
+   const bool fItalic = (m_d.m_font.attributes & 0x02) != 0;
+   const bool fUnderline = (m_d.m_font.attributes & 0x04) != 0;
+   const bool fStrikethrough = (m_d.m_font.attributes & 0x08) != 0;
+
+   LinkProp(fontSize, FontSize);
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
 #undef LinkProp
 }
 
@@ -132,18 +103,12 @@ void Textbox::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteBool(FID(TRNS), m_d.m_transparent);
    writer.WriteBool(FID(IDMD), m_d.m_isDMD);
    SaveSharedEditableFields(writer);
-   FontDesc fd;
-   #ifndef __STANDALONE__
-   if (m_pIFont)
-      fd.FromOLEFont(m_pIFont);
-   #endif
-   writer.WriteFontDescriptor(FID(FONT), fd);
+   writer.WriteFontDescriptor(FID(FONT), m_d.m_font);
    writer.EndObject();
 }
 
 void Textbox::Load(IObjectReader& reader)
 {
-   SAFE_RELEASE(m_pIFont);
    SetDefaults(false);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
@@ -165,19 +130,7 @@ void Textbox::Load(IObjectReader& reader)
          case FID(IDMD): m_d.m_isDMD = reader.AsBool(); break;
          case FID(FONT):
          {
-            FontDesc fd = reader.AsFontDescriptor();
-#ifndef __STANDALONE__
-            FONTDESC oleFD = fd.ToOLEFontDesc();
-            OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFont);
-            delete[] oleFD.lpstrName;
-#else
-            m_fontItalic = (fd.attributes & 0x02) != 0;
-            m_fontUnderline = (fd.attributes & 0x04) != 0;
-            m_fontStrikeThrough = (fd.attributes & 0x08) != 0;
-            m_fontBold = fd.weight > 550;
-            m_fontSize = (float)fd.size / 10000.f;
-            m_fontName = fd.name;
-#endif
+            m_d.m_font = reader.AsFontDescriptor();
             break;
          }
          default: LoadSharedEditableField(tag, reader); break;
@@ -187,51 +140,9 @@ void Textbox::Load(IObjectReader& reader)
    m_texture = nullptr;
 }
 
-string Textbox::GetFontName()
+string Textbox::GetFontName() const
 {
-   if (m_pIFont)
-   {
-      BSTR bstr;
-      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-      const string fontName = MakeString(bstr);
-      SysFreeString(bstr);
-      return fontName;
-   }
-   return string();
-}
-
-HFONT Textbox::GetFont()
-{
-#ifndef __STANDALONE__
-    FONTDESC fd;
-    fd.cbSizeofstruct = sizeof(FONTDESC);
-    m_pIFont->get_Size(&fd.cySize);
-    const float fontSize = (float)(fd.cySize.int64 / 10000.0);
-
-    LOGFONT lf = {};
-    lf.lfHeight = -MulDiv((int)fontSize, GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY), 72);
-    lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfQuality = NONANTIALIASED_QUALITY;
-
-    BSTR bstr;
-    HRESULT hr = m_pIFont->get_Name(&bstr);
-    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
-    SysFreeString(bstr);
-
-    BOOL bl;
-    hr = m_pIFont->get_Bold(&bl);
-
-    lf.lfWeight = bl ? FW_BOLD : FW_NORMAL;
-
-    hr = m_pIFont->get_Italic(&bl);
-
-    lf.lfItalic = (BYTE)bl;
-
-    const HFONT hFont = CreateFontIndirect(&lf);
-    return hFont;
-#else
-   return nullptr;
-#endif
+   return m_d.m_font.name;
 }
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
@@ -315,14 +226,14 @@ void Textbox::RenderSetup(RenderDevice *device)
    m_rd = device;
 
 #ifndef __STANDALONE__
-   m_pIFont->Clone(&m_pIFontPlay);
+   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
+   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFontPlay);
+   delete[] oleFD.lpstrName;
 
    CY size;
    m_pIFontPlay->get_Size(&size);
    size.int64 = (LONGLONG)(size.int64 / 1.5 * (g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight()));
    m_pIFontPlay->put_Size(size);
-#else
-   m_fontSize *= 1.5;
 #endif
 
    const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
@@ -612,8 +523,17 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
 
 STDMETHODIMP Textbox::get_Font(IFontDisp **pVal)
 {
-   m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
+   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&pIFont);
+   delete[] oleFD.lpstrName;
+   const HRESULT hr = pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+   pIFont->Release();
+   return hr;
+#else
    return S_OK;
+#endif
 }
 
 STDMETHODIMP Textbox::put_Font(IFontDisp *newVal)
@@ -625,9 +545,14 @@ STDMETHODIMP Textbox::put_Font(IFontDisp *newVal)
 STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
 {
    //We know that our own property browser gives us the same pointer
-
-   //m_pIFont->Release();
-   //pFont->QueryInterface(IID_IFont, (void **)&m_pIFont);
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   if (SUCCEEDED(pFont->QueryInterface(IID_IFont, (void**)&pIFont)))
+   {
+       m_d.m_font.FromOLEFont(pIFont);
+       pIFont->Release();
+   }
+#endif
 
    SetDirtyDraw();
 
@@ -756,15 +681,15 @@ TTF_Font* Textbox::LoadFont()
 {
    TTF_Font* pFont = nullptr;
 
-   string fontName = m_fontName;
+   string fontName = m_d.m_font.name;
    std::erase(fontName, ' ');
 
    vector<string> styles;
-   if (m_fontBold && m_fontItalic)
+   if (m_d.m_font.IsBold() > 550 && m_d.m_font.IsItalic())
       styles.push_back("-BoldItalic"s);
-   if (m_fontBold)
+   if (m_d.m_font.IsBold())
       styles.push_back("-Bold"s);
-   if (m_fontItalic)
+   if (m_d.m_font.IsItalic())
       styles.push_back("-Italic"s);
    styles.push_back("-Regular"s);
 
@@ -774,7 +699,7 @@ TTF_Font* Textbox::LoadFont()
    for (const auto& szStyle : styles) {
       path = find_case_insensitive_file_path(tablePath / (fontName + szStyle + ".ttf"));
       if (!path.empty()) {
-         pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
+         pFont = TTF_OpenFont(path.string().c_str(), (float)m_d.m_font.size / 10000.f);
          if (pFont) {
             PLOGI << "Font loaded: path=" << path.string();
             break;
@@ -787,7 +712,7 @@ TTF_Font* Textbox::LoadFont()
       PLOGW << "Unable to locate font: path=" << path.string();
 
       path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "LiberationSans-Regular.ttf";
-      pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
+      pFont = TTF_OpenFont(path.string().c_str(), (float)m_d.m_font.size / 10000.f);
       if (pFont) {
          PLOGW << "Default font loaded: path=" << path.string();
       }
@@ -798,10 +723,14 @@ TTF_Font* Textbox::LoadFont()
    }
 
    TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
-   if (m_fontBold) style |= TTF_STYLE_BOLD;
-   if (m_fontItalic) style |= TTF_STYLE_ITALIC;
-   if (m_fontUnderline) style |= TTF_STYLE_UNDERLINE;
-   if (m_fontStrikeThrough) style |= TTF_STYLE_STRIKETHROUGH;
+   if (m_d.m_font.IsBold())
+      style |= TTF_STYLE_BOLD;
+   if (m_d.m_font.IsItalic())
+      style |= TTF_STYLE_ITALIC;
+   if (m_d.m_font.IsUnderline())
+      style |= TTF_STYLE_UNDERLINE;
+   if (m_d.m_font.IsStrikeThrough())
+      style |= TTF_STYLE_STRIKETHROUGH;
    TTF_SetFontStyle(pFont, style);
 
    return pFont;
