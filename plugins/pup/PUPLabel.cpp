@@ -457,22 +457,33 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       dest.y -= (height / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y = rect.y + rect.h - height - (static_cast<float>(rect.h) * yposPercent);
+      dest.y = static_cast<float>(rect.y + rect.h) - height - (static_cast<float>(rect.h) * yposPercent);
 
+   bool visible = true;
+   int color = 0xFFFFFFFF;
    if (m_animation)
    {
       if (m_animation->Update(rect, dest))
+      {
          m_animation = nullptr;
-
-      dest.x += m_animation->m_xOffset;
-      dest.y += m_animation->m_yOffset;
+      }
+      else
+      {
+         dest.x += m_animation->m_xOffset;
+         dest.y += m_animation->m_yOffset;
+         visible = m_animation->m_visible;
+         color = m_animation->m_color;
+      }
    }
 
-   VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
-   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f,
-      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 
-      0.f, 0.f, -m_angle, // FIXME compute center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
-      dest.x, dest.y, dest.w, dest.h);
+   if (visible)
+   {
+      // FIXME implement color (as the naimation may animate it)
+      // FIXME implement rotation center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
+      const VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
+      ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, -m_angle, dest.x, dest.y,
+         dest.w, dest.h);
+   }
 }
 
 PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath)
