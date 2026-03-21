@@ -58,6 +58,7 @@ static std::mutex sourceMutex;
 static bool isRunning = false;
 static DevSrcId pinmameDevSrc = {};
 static InputSrcId pinmameInputSrc = {};
+static DevSrcId b2sDevSrc = {};
 
 static std::thread pollThread;
 
@@ -128,14 +129,14 @@ static void PollThread(const string& tablePath, const string& gameId)
    pDOF->Init(tablePath.c_str(), gameId.c_str());
    bool isInitialState = true;
    vector<bool> wireStates;
-   vector<bool> deviceStates;
+   vector<bool> pinmameDeviceStates;
    while (isRunning)
    {
       {
          std::lock_guard lock(sourceMutex);
 
          isInitialState |= wireStates.size() != pinmameInputSrc.nInputs;
-         isInitialState |= deviceStates.size() != pinmameDevSrc.nDevices;
+         isInitialState |= pinmameDeviceStates.size() != pinmameDevSrc.nDevices;
 
          wireStates.resize(pinmameInputSrc.nInputs);
          for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
@@ -151,7 +152,7 @@ static void PollThread(const string& tablePath, const string& gameId)
             }
          }
 
-         deviceStates.resize(pinmameDevSrc.nDevices);
+         pinmameDeviceStates.resize(pinmameDevSrc.nDevices);
          for (unsigned int i = 0; i < pinmameDevSrc.nDevices; i++)
          {
             char type;
@@ -165,10 +166,10 @@ static void PollThread(const string& tablePath, const string& gameId)
             if (type != '\0')
             {
                float state = pinmameDevSrc.GetFloatState(i);
-               if (isInitialState || (deviceStates[i] && state < 0.25f) || (!deviceStates[i] && state > 0.75f))
+               if (isInitialState || (pinmameDeviceStates[i] && state < 0.25f) || (!pinmameDeviceStates[i] && state > 0.75f))
                {
                   pDOF->DataReceive(type, pinmameDevSrc.deviceDefs[i].id.deviceId, state > 0.5f ? 1 : 0);
-                  deviceStates[i] = state > 0.5f;
+                  pinmameDeviceStates[i] = state > 0.5f;
                }
             }
          }
@@ -182,6 +183,16 @@ static void PollThread(const string& tablePath, const string& gameId)
    pDOF->Finish();
 }
 
+static void MSGPIAPI OnB2SStateChg(unsigned int index, void* context)
+{
+   std::lock_guard lock(sourceMutex);
+   if (index < b2sDevSrc.nDevices && pDOF != nullptr)
+   {
+      float state = b2sDevSrc.GetFloatState(index);
+      // LOGD(std::format("DOFPlugin: B2S state change E{:d} = {:f}", b2sDevSrc.deviceDefs[index].id.deviceId, state));
+      pDOF->DataReceive('E', b2sDevSrc.deviceDefs[index].id.deviceId, state > 0.5f ? 1 : 0);
+   }
+}
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
@@ -220,6 +231,10 @@ static void ClearDevices()
 {
    delete[] pinmameDevSrc.deviceDefs;
    memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
+   for (unsigned int i = 0; i < b2sDevSrc.nDevices; i++)
+      if (b2sDevSrc.SetChangeCallback)
+         b2sDevSrc.SetChangeCallback(i, 0, OnB2SStateChg, nullptr);
+   memset(&b2sDevSrc, 0, sizeof(b2sDevSrc));
 }
 
 static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* msgData)
@@ -250,12 +265,18 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
             pinmameDevSrc.deviceDefs = new DeviceDef[pinmameDevSrc.nDevices];
             memcpy(pinmameDevSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
          }
-         break;
+      }
+      else if (info.id != nullptr && (info.id == "B2S"s || info.id == "B2SLegacy"s))
+      {
+         b2sDevSrc = getSrcMsg.entries[i];
+         for (unsigned int i = 0; i < b2sDevSrc.nDevices; i++)
+            if (b2sDevSrc.SetChangeCallback)
+               b2sDevSrc.SetChangeCallback(i, 1, OnB2SStateChg, nullptr);
       }
    }
    delete[] getSrcMsg.entries;
 
-   LOGI(std::format("DOFPlugin: OnDevSrcChanged - Found {} PinMAME devices", pinmameDevSrc.nDevices));
+   LOGI(std::format("DOFPlugin: OnDevSrcChanged - Found {} PinMAME devices and {} B2S devices", pinmameDevSrc.nDevices, b2sDevSrc.nDevices));
 }
 
 static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* msgData)
