@@ -29,8 +29,8 @@ public:
    double GetB2SBuildVersion() const { return 0.0; }
    string GetB2SServerDirectory() const { return ""s; }
    string GetVPMBuildVersion() const { return ""s; }
-   string GetB2SName() const { return ""s; }
-   void SetB2SName(const std::string& b2sName) { }
+   string GetB2SName() const;
+   void SetB2SName(const std::string& b2sName);
    string GetTableName() const { return ""s; }
    void SetTableName(const std::string& tableName) { }
    void SetWorkingDir(const std::string& workingDir) { }
@@ -129,6 +129,10 @@ private:
    static void OnGetRenderer(const unsigned int, void*, void* msgData);
 
    // Controller state
+   string m_b2sName;
+   const unsigned int m_onGameStartId;
+   const unsigned int m_onGameEndId;
+   bool m_gameRunning = false;
    ankerl::unordered_dense::map<int, float> m_states;
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, int> m_scoreDigits;

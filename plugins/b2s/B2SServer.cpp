@@ -12,13 +12,15 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    : m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_vpxApi(vpxApi)
+   , m_pinmameClassDef(pinmameClassDef)
+   , m_pinmame(pinmameClassDef ? pinmameClassDef->CreateObject() : nullptr)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_ancillaryRendererDef({ "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", this, OnRender })
+   , m_onGameStartId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START))
+   , m_onGameEndId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END))
    , m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG))
    , m_onDevSrcChgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG))
-   , m_pinmameClassDef(pinmameClassDef)
-   , m_pinmame(pinmameClassDef ? pinmameClassDef->CreateObject() : nullptr)
 {
    m_singleton = this;
 
@@ -76,6 +78,17 @@ B2SServer::~B2SServer()
       m_loadedB2S.get();
    m_renderer = nullptr;
 
+   if (m_gameRunning)
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   m_msgApi->ReleaseMsgID(m_onGameStartId);
+   m_msgApi->ReleaseMsgID(m_onGameEndId);
+
+   if (m_states.size() > 0)
+   {
+      m_states.clear();
+      UpdateDevSrc();
+   }
+
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRenderer);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
@@ -85,8 +98,6 @@ B2SServer::~B2SServer()
    m_msgApi->ReleaseMsgID(m_onGetDevSrcId);
    m_msgApi->ReleaseMsgID(m_onDevSrcChgId);
    
-   delete[] m_devSrc.deviceDefs;
-
    if (m_pinmame)
       PSC_RELEASE(m_pinmameClassDef, m_pinmame);
 
@@ -94,6 +105,21 @@ B2SServer::~B2SServer()
       m_onDestroyHandler(this);
    
    m_singleton = nullptr;
+}
+
+string B2SServer::GetB2SName() const { return m_b2sName; }
+
+void B2SServer::SetB2SName(const std::string& b2sName) { 
+   if (b2sName == m_b2sName)
+      return;
+   if (m_gameRunning)
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   m_b2sName = b2sName;
+   if (m_gameRunning)
+   {
+      CtlOnGameStartMsg msg = { m_b2sName.c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+   }
 }
 
 void B2SServer::OnGetDevSrc(const unsigned int, void* userData, void* msgData)
@@ -108,6 +134,18 @@ void B2SServer::OnGetDevSrc(const unsigned int, void* userData, void* msgData)
 
 void B2SServer::UpdateDevSrc()
 {
+   if (m_gameRunning && m_states.empty())
+   {
+      m_gameRunning = false;
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   }
+   else if (!m_gameRunning && !m_states.empty())
+   {
+      m_gameRunning = true;
+      CtlOnGameStartMsg msg = { m_b2sName.c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+   }
+
    delete[] m_devSrc.deviceDefs;
    m_devSrc.nDevices = static_cast<unsigned int>(m_states.size());
    m_devSrc.deviceDefs = new DeviceDef[m_devSrc.nDevices];
@@ -219,6 +257,7 @@ void B2SServer::ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, Script
 
 void B2SServer::B2SSetData(int b2sId, int value)
 {
+   LOGD(std::format("B2SSetData {}={}", b2sId, value));
    const auto it = m_states.find(b2sId);
    if (it == m_states.end())
    {
