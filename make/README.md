@@ -188,7 +188,7 @@ cd standalone/android
 
 ```
 sudo dnf install @development-tools
-sudo dnf install gcc-c++ pkg-config autoconf automake libtool cmake nasm bison curl systemd-devel mesa-libGL-devel libX11-devel libXext-devel libXcursor-devel libXi-devel libXScrnSaver-devel libXtst-devel libxkbcommon-devel libxkbcommon-x11-devel libXrandr-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel alsa-lib-devel pipewire-devel
+sudo dnf install gcc-c++ pkg-config autoconf automake libtool cmake nasm bison curl systemd-devel mesa-libGL-devel libX11-devel libXext-devel libXcursor-devel libXi-devel libXScrnSaver-devel libXtst-devel libxkbcommon-devel libxkbcommon-x11-devel libXrandr-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel alsa-lib-devel pipewire-devel libgpiod-devel 
 platforms/linux-x64/external.sh
 cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
