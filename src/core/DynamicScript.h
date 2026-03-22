@@ -14,12 +14,16 @@ public:
    DynamicTypeLibrary();
    ~DynamicTypeLibrary();
 
+   void Reset();
+
    void RegisterScriptClass(ScriptClassDef *classDef);
    void RegisterScriptTypeAlias(const char *name, const char *aliasedType);
    void RegisterScriptArray(ScriptArrayDef *arrayDef);
    void ResolveAllClasses();
 
-   // FIXME allow to unregister
+   void UnregisterScriptClass(ScriptClassDef *classDef);
+   void UnregisterScriptTypeAlias(const char *name);
+   void UnregisterScriptArray(ScriptArrayDef *arrayDef);
 
    ScriptClassDef *ResolveClass(const char * name) const;
    int ResolveMemberId(const ScriptClassDef *classDef, const char *memberName) const;
@@ -27,6 +31,7 @@ public:
    HRESULT Invoke(const ScriptClassDef * classDef, void *nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *, UINT *) const;
 
 private:
+   void UnregisterTypeUsers(unsigned int id);
    int ResolveClassId(const char *name) const;
    ScriptClassDef *GetClass(const ScriptTypeNameDef &name) const;
 

@@ -123,9 +123,9 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
 {
    scoreView = nullptr;
-   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
-   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
+   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer, nullptr);
+   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId, nullptr);
    msgApi->ReleaseMsgID(onGetAuxRendererId);
    msgApi->ReleaseMsgID(onAuxRendererChgId);

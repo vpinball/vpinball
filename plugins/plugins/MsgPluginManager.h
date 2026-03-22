@@ -95,7 +95,7 @@ private:
 class MsgPluginManager final
 {
 public:
-   static MsgPluginManager& GetInstance();
+   MsgPluginManager();
    ~MsgPluginManager();
 
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
@@ -121,14 +121,14 @@ public:
    void UpdateAPIThread() { m_apiThread = std::this_thread::get_id(); }
 
 private:
-   MsgPluginManager();
+   static MsgPluginManager* m_pluginManager;
 
    // API implementation
    static unsigned int MSGPIAPI GetPluginEndpoint(const char* id);
    static void MSGPIAPI GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info);
    static unsigned int MSGPIAPI GetMsgID(const char* name_space, const char* name);
    static void MSGPIAPI SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
-   static void MSGPIAPI UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback);
+   static void MSGPIAPI UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    static void MSGPIAPI BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data);
    static void MSGPIAPI SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    static void MSGPIAPI ReleaseMsgID(const unsigned int msgId);
@@ -169,8 +169,6 @@ private:
 
    MsgPluginAPI m_api;
    
-   uint32_t m_nextEndpointId = 1;
-
    std::function<void*(const std::string&, const std::string&)> m_dllLink;
    std::function<void(void*)> m_dllUnlink;
    std::function<void*(void*, const std::string&)> m_dllGetMethod;

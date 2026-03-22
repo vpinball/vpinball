@@ -2973,7 +2973,7 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
       return;
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
-   std::shared_ptr<BaseTexture> const tex = VPXPluginAPIImpl::GetInstance().GetTexture(texture);
+   std::shared_ptr<BaseTexture> const tex = g_pplayer->m_pluginAPI.GetTexture(texture);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -3023,7 +3023,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
-   VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& vxpApi = g_pplayer->m_pluginAPI;
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
    std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
@@ -3067,7 +3067,7 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
 {
    assert(g_pplayer && g_pplayer->m_renderer && ctx->rendererData == &g_pplayer->m_renderer->m_ancillaryRenderSetup);
    const bool isLinearOutput = g_pplayer->m_renderer->m_ancillaryRenderSetup.isOutputLinear;
-   VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& vxpApi = g_pplayer->m_pluginAPI;
    std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)

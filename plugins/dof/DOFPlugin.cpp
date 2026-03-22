@@ -364,10 +364,10 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
    delete pDOF;
    pDOF = nullptr;
 
-   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
-   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
-   msgApi->UnsubscribeMsg(onDevSrcChangedId, OnDevSrcChanged);
-   msgApi->UnsubscribeMsg(onInputSrcChangedId, OnInputSrcChanged);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
+   msgApi->UnsubscribeMsg(onDevSrcChangedId, OnDevSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onInputSrcChangedId, OnInputSrcChanged, nullptr);
 
    msgApi->ReleaseMsgID(onControllerGameStartId);
    msgApi->ReleaseMsgID(onControllerGameEndId);

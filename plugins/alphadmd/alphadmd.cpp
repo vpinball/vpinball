@@ -577,7 +577,7 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
    if (wasRendering != (!selectedSources.empty()))
    {
       if (wasRendering)
-         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
       StopRenderThread();
       if (!selectedSources.empty())
       {
@@ -621,9 +621,9 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
    {
       std::lock_guard lock(sourceMutex);
-      msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged);
+      msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged, nullptr);
       if (!selectedSources.empty())
-         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
       selectedSources.clear();
       msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }

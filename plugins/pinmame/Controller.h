@@ -20,6 +20,7 @@ public:
    void SetOnDestroyHandler(void (*handler)(Controller*)) { m_onDestroyHandler = handler; }
    void SetOnGameStartHandler(void (*handler)(Controller*)) { m_onGameStartHandler = handler; }
    void SetOnGameEndHandler(void (*handler)(Controller*)) { m_onGameEndHandler = handler; }
+   bool GetIsPlugin() const { return true; }
 
    string GetVersion() const;
 

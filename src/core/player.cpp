@@ -90,17 +90,70 @@ using namespace VPX;
 Player::Player(PinTable *const table, const PlayMode playMode)
    : m_ptable(table)
    , m_playMode(playMode)
+   , m_pluginAPI(m_pluginManager)
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
+   , m_pininput(this)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
         table->m_settings.GetPlayer_SoundDeviceBG(), table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->m_settings.GetPlayer_Sound3D())))
-   , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
+   , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
    g_pplayer = this;
    m_ptable->AddRef();
+
+   // Load player plugins
+
+   PLOGI << "Loading player plugins"; // For profiling
+   
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinballLib::SetupStaticPlugins(m_pluginManager);
+#else
+   class SDLModuleLoader final : public MsgPI::MsgModuleLoader
+   {
+   public:
+      ~SDLModuleLoader() override = default;
+      void *Link(const std::string &directory, const std::string &file) override
+      {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+         SetDllDirectory(directory.c_str());
+#endif
+         void *dynamicModule = static_cast<void *>(SDL_LoadObject(file.c_str()));
+#if defined(_MSC_VER) || defined(__MINGW32__)
+         SetDllDirectory(NULL);
+#endif
+         return dynamicModule;
+      }
+      void Unlink(void *dynamicModule) override
+      {
+         SDL_UnloadObject(static_cast<SDL_SharedObject *>(dynamicModule));
+      }
+      void *GetFunction(void *dynamicModule, const std::string &functionName) override
+      {
+         return reinterpret_cast<void *>(SDL_LoadFunction(static_cast<SDL_SharedObject *>(dynamicModule), functionName.c_str()));
+      }
+   };
+   m_pluginManager.ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),
+      [this](MsgPI::MsgPlugin &plugin)
+      {
+         VPX::Properties::PropertyRegistry::PropId enableId;
+         if (auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin.m_id, "Enable"s); existing.has_value())
+            enableId = existing.value();
+         else
+            enableId = Settings::GetRegistry().Register(
+               std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
+         if (g_app->m_settings.GetBool(enableId))
+         {
+            plugin.Load(&m_pluginManager.GetMsgAPI());
+         }
+         else
+         {
+            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
+         }
+      });
+#endif
 
    // Prepare table for playing
 
@@ -245,7 +298,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       const Settings& settings = g_app->m_settings; // Always use main application settings (not overridable per table)
       if (stereo3D == STEREO_VR)
       {
-         m_playfieldWnd = new VPX::Window(g_pplayer->m_vrDevice->GetEyeWidth(), g_pplayer->m_vrDevice->GetEyeHeight());
+         m_playfieldWnd = new VPX::Window(m_vrDevice->GetEyeWidth(), m_vrDevice->GetEyeHeight());
 
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
@@ -659,7 +712,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_scriptInterpreter->SetScriptErrorHandler([this](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
          { OnScriptError(type, line, column, description, stackDump); });
       m_scriptInterpreter->Start(m_ptable);
-      m_scriptInterpreter->Evaluate(VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(table->m_script_text), false);
+      m_scriptInterpreter->Evaluate(m_pluginAPI.ApplyScriptCOMObjectOverrides(table->m_script_text), false);
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
@@ -695,22 +748,22 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
-   const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI *msgApi = &m_pluginManager.GetMsgAPI();
 
    m_onPrepareFrameMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_onAudioUpdatedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
    m_onAudioSrcChangedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG);
    m_getAudioSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
-   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
-   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
+   msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
+   msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
 
    m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
    m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
-   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAuxRendererChgId, OnAuxRendererChanged, this);
+   msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAuxRendererChgId, OnAuxRendererChanged, this);
    OnAuxRendererChanged(m_onAuxRendererChgId, this, nullptr);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   VPXPluginAPIImpl::GetInstance().OnGameStart();
+   m_pluginAPI.OnGameStart();
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == PlayMode::EditPOV)
@@ -779,7 +832,7 @@ Player::~Player()
    PLOGI << "Closing player...";
 
    // Signal plugins early since most fields will become invalid
-   VPXPluginAPIImpl::GetInstance().OnGameEnd();
+   m_pluginAPI.OnGameEnd();
 
    // signal the script that the game is now exited to allow any cleanup
    if (!IsEditorMode())
@@ -800,16 +853,18 @@ Player::~Player()
    }
 
    // Release plugin message Ids
-   const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
+   const MsgPluginAPI *msgApi = &m_pluginManager.GetMsgAPI();
+   msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    msgApi->ReleaseMsgID(m_onAudioUpdatedMsgId);
-   msgApi->UnsubscribeMsg(m_onAudioSrcChangedMsgId, OnAudioSrcChanged);
+   msgApi->UnsubscribeMsg(m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
    msgApi->ReleaseMsgID(m_onAudioSrcChangedMsgId);
    msgApi->ReleaseMsgID(m_getAudioSrcMsgId);
    msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
-   msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged);
+   msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged, this);
    msgApi->ReleaseMsgID(m_getAuxRendererId);
    msgApi->ReleaseMsgID(m_onAuxRendererChgId);
+
+   m_pluginManager.UnloadPlugins();
 
    // Save modified settings if any
    m_ptable->m_settings.Save();
@@ -1560,7 +1615,7 @@ public:
          m_player->FireTimers(-1);
          m_player->FireTimers(-2);
          m_player->m_physics->UpdatePhysics(m_captureTime);
-         MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+         m_player->m_pluginManager.ProcessAsyncCallbacks();
          m_captureStartupEndTime = usec();
          m_captureStartupEndPhysicsTime = m_player->m_physics->GetCurrentTime();
       }
@@ -1760,7 +1815,7 @@ void Player::UpdateGameLogic()
       FireTimers(-2); // Trigger script sync event (to sync solenoids back)
    }
 
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   m_pluginManager.ProcessAsyncCallbacks();
 
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
@@ -2026,7 +2081,7 @@ void Player::PrepareFrame()
    m_LastKnownGoodCounter++;
    m_startFrameTick = usec();
    
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
+   m_pluginAPI.BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
    
    // Update visually animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
    if (IsPlaying())
@@ -2212,7 +2267,7 @@ void Player::FinishFrame()
 void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Player * const me = static_cast<Player *>(userData);
-   const MsgPluginAPI *m_msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI *m_msgApi = &me->m_pluginManager.GetMsgAPI();
    for (int i = 0; i <= VPXWindowId::VPXWINDOW_Topper; i++)
    {
       const VPXWindowId window = (VPXWindowId) i;
@@ -2220,10 +2275,10 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
                            : window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s
                                                                         : "Topper"s;
       GetAncillaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
-      m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      m_msgApi->BroadcastMsg(me->m_pluginAPI.GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
       me->m_ancillaryWndRenderers[window].resize(getAuxRendererMsg.count);
       getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_ancillaryWndRenderers[window].data() };
-      m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      m_msgApi->BroadcastMsg(me->m_pluginAPI.GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
       for (const auto& renderer : me->m_ancillaryWndRenderers[window])
          Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), renderer.name,
             "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the "s + section + " display. Higher values are priorized other lower ones."s,
@@ -2274,7 +2329,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    else if (msg.buffer != nullptr)
    {
       MsgEndpointInfo info;
-      MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
+      me->m_pluginManager.GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
       const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
       VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
       if (stream)
@@ -2294,10 +2349,10 @@ void Player::OnAudioSrcChanged(const unsigned int msgId, void* userData, void* m
 
 void Player::UpdateActiveAudioSource()
 {
-   const MsgPluginAPI &msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI &msgApi = m_pluginManager.GetMsgAPI();
 
    GetAudioSrcMsg getSrcMsg = { 0, 0, nullptr };
-   msgApi.BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
+   msgApi.BroadcastMsg(m_pluginAPI.GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
 
    if (getSrcMsg.count == 0)
    {
@@ -2307,7 +2362,7 @@ void Player::UpdateActiveAudioSource()
 
    vector<AudioSrcId> sources(getSrcMsg.count);
    getSrcMsg = { getSrcMsg.count, 0, sources.data() };
-   msgApi.BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
+   msgApi.BroadcastMsg(m_pluginAPI.GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
 
    uint64_t activeId = 0;
    for (const auto& src : sources)

@@ -8,15 +8,16 @@
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "plugins/ControllerPlugin.h"
+#include "utils/PinMAMEAPI.h"
 
 namespace B2SLegacy {
 
 class PinMAMEAPI;
 
-class Server
+class Server : public ScriptablePlugin::IScriptProxy
 {
 public:
-   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex);
+   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
    ~Server();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -100,9 +101,7 @@ public:
    void SetLockDisplay(bool lockDisplay) { }
    FormBackglass* GetFormBackglass() const { return m_pFormBackglass; }
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
-   PinMAMEAPI* GetPinMAMEApi() const { return m_pinmameApi; }
    uint32_t GetEndpointId() const { return m_endpointId; }
-   void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
    void GetChangedLamps();
@@ -117,6 +116,8 @@ public:
    void CheckGetMech(int number, int mech);
    int OnRender(VPXRenderContext2D* const renderCtx, void* context);
    void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+
+   void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override { m_pinmameApi.HandleCall(memberIndex, pArgs, pRet); }
 
 private:
    void TimerElapsed(Timer* pTimer);
@@ -200,9 +201,7 @@ private:
    const unsigned int m_onAuxRendererChgId;
    const unsigned int m_onDevChangedMsgId;
 
-   ScriptClassDef* const m_pinmameClassDef;
-   const int m_pinmameMemberStartIndex;
-   PinMAMEAPI* m_pinmameApi;
+   PinMAMEAPI m_pinmameApi;
 
    std::function<void(Server*)> m_onDestroyHandler;
 

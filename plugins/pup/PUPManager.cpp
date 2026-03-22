@@ -61,7 +61,7 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
 PUPManager::~PUPManager()
 {
    Unload();
-   m_msgApi->UnsubscribeMsg(m_getAuxRendererId, OnGetRenderer);
+   m_msgApi->UnsubscribeMsg(m_getAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_getAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);

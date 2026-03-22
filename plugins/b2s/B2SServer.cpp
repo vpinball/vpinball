@@ -8,12 +8,12 @@ namespace B2S {
 
 B2SServer* B2SServer::m_singleton = nullptr;
 
-B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* pinmameClassDef)
-   : m_msgApi(msgApi)
+B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
+   : m_controllerClassProxy(msgApi, endpointId, "PinMAME_", "PinMAME_Controller", "B2S_", serverClassDef)
+   , m_controllerProxy(m_controllerClassProxy)
+   , m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_vpxApi(vpxApi)
-   , m_pinmameClassDef(pinmameClassDef)
-   , m_pinmame(pinmameClassDef ? pinmameClassDef->CreateObject() : nullptr)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_ancillaryRendererDef({ "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", this, OnRender })
@@ -89,18 +89,15 @@ B2SServer::~B2SServer()
       UpdateDevSrc();
    }
 
-   m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRenderer);
+   m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
-   m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc);
+   m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc, this);
    m_msgApi->ReleaseMsgID(m_onGetDevSrcId);
    m_msgApi->ReleaseMsgID(m_onDevSrcChgId);
    
-   if (m_pinmame)
-      PSC_RELEASE(m_pinmameClassDef, m_pinmame);
-
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
    
@@ -252,7 +249,6 @@ void B2SServer::OnGetRenderer(const unsigned int, void* userData, void* msgData)
    }
 }
 
-void B2SServer::ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) { m_pinmameClassDef->members[memberIndex].Call(m_pinmame, memberIndex, pArgs, pRet); }
 
 
 void B2SServer::B2SSetData(int b2sId, int value)

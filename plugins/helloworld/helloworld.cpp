@@ -48,9 +48,9 @@ MSGPI_EXPORT void MSGPIAPI HelloWorldPluginLoad(const uint32_t sessionId, const 
 MSGPI_EXPORT void MSGPIAPI HelloWorldPluginUnload()
 {
    // Cleanup is mandatory when plugin is unloaded. All registered callbacks must be unregistered.
-   msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
-   msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame);
+   msgApi->UnsubscribeMsg(onGameStartId, onGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
+   msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame, nullptr);
    msgApi->ReleaseMsgID(getVpxApiId);
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);

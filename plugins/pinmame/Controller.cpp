@@ -28,7 +28,7 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
 Controller::~Controller()
 {
    Stop();
-   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
+   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
    if (m_onDestroyHandler)

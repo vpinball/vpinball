@@ -28,37 +28,57 @@ enum TypeID
 // Set to 1 to log all COM Invoke
 #define LOG_INVOKES 0
 
-DynamicTypeLibrary::DynamicTypeLibrary()
-{
-   m_types.resize(TypeID::TYPEID_COUNT);
-   m_types[TypeID::TYPEID_UNRESOLVED] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { nullptr, TYPEID_UNRESOLVED } };
-   // Base native type
-   m_types[TypeID::TYPEID_VOID  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "void",   TYPEID_VOID } };
-   m_types[TypeID::TYPEID_BOOL  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "bool",   TYPEID_BOOL } };
-   m_types[TypeID::TYPEID_INT   ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int",    TYPEID_INT } };
-   m_types[TypeID::TYPEID_UINT  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint",   TYPEID_UINT } };
-   m_types[TypeID::TYPEID_FLOAT ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "float",  TYPEID_FLOAT } };
-   m_types[TypeID::TYPEID_DOUBLE] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "double", TYPEID_DOUBLE } };
-   m_types[TypeID::TYPEID_STRING] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "string", TYPEID_STRING } };
-   // Sized data type
-   m_types[TypeID::TYPEID_INT8  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int8",   TYPEID_INT8 } };
-   m_types[TypeID::TYPEID_INT16 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int16",  TYPEID_INT16 } };
-   m_types[TypeID::TYPEID_INT32 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int32",  TYPEID_INT32 } };
-   m_types[TypeID::TYPEID_INT64 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int64",  TYPEID_INT64 } };
-   m_types[TypeID::TYPEID_UINT8 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint8",  TYPEID_UINT8 } };
-   m_types[TypeID::TYPEID_UINT16] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint16", TYPEID_UINT16 } };
-   m_types[TypeID::TYPEID_UINT32] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint32", TYPEID_UINT32 } };
-   m_types[TypeID::TYPEID_UINT64] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint64", TYPEID_UINT64 } };
-   for (const TypeDef& type : m_types)
-      if (type.nativeType.name != nullptr)
-         m_typenames[type.nativeType.name] = type.nativeType.id;
-}
+DynamicTypeLibrary::DynamicTypeLibrary() { Reset(); }
 
 DynamicTypeLibrary::~DynamicTypeLibrary()
 {
    for (TypeDef& typeDef : m_types)
       if (typeDef.category == TypeDef::TD_CLASS)
          delete typeDef.classDef;
+}
+
+void DynamicTypeLibrary::Reset()
+{
+   bool hasMissingUnregister = false;
+   for (const TypeDef& typeDef : m_types)
+   {
+      switch (typeDef.category)
+      {
+      case TypeDef::TD_ALIAS: PLOGE << "Invalid state, the plugin that defined the '" << typeDef.aliasDef.alias << "' alias did not unregister it."; break;
+      case TypeDef::TD_ARRAY: PLOGE << "Invalid state, the plugin that defined the '" << typeDef.arrayDef->name.name << "' array did not unregister it."; break;
+      case TypeDef::TD_CLASS: PLOGE << "Invalid state, the plugin that defined the '" << typeDef.classDef->classDef->name.name << "' class did not unregister it."; break;
+      case TypeDef::TD_NATIVE: break;
+      default: break;
+      }
+      hasMissingUnregister |= (typeDef.category != TypeDef::TD_INVALID && typeDef.category != TypeDef::TD_NATIVE);
+   }
+   if (hasMissingUnregister)
+      ShowError("A buggy plugin has put VPX in an invalid state, next play command will likely crash...");
+
+   m_typenames.clear();
+   m_types.clear();
+   m_types.resize(TypeID::TYPEID_COUNT);
+   m_types[TypeID::TYPEID_UNRESOLVED] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { nullptr, TYPEID_UNRESOLVED } };
+   // Base native type
+   m_types[TypeID::TYPEID_VOID] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "void", TYPEID_VOID } };
+   m_types[TypeID::TYPEID_BOOL] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "bool", TYPEID_BOOL } };
+   m_types[TypeID::TYPEID_INT] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int", TYPEID_INT } };
+   m_types[TypeID::TYPEID_UINT] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint", TYPEID_UINT } };
+   m_types[TypeID::TYPEID_FLOAT] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "float", TYPEID_FLOAT } };
+   m_types[TypeID::TYPEID_DOUBLE] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "double", TYPEID_DOUBLE } };
+   m_types[TypeID::TYPEID_STRING] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "string", TYPEID_STRING } };
+   // Sized data type
+   m_types[TypeID::TYPEID_INT8] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int8", TYPEID_INT8 } };
+   m_types[TypeID::TYPEID_INT16] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int16", TYPEID_INT16 } };
+   m_types[TypeID::TYPEID_INT32] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int32", TYPEID_INT32 } };
+   m_types[TypeID::TYPEID_INT64] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int64", TYPEID_INT64 } };
+   m_types[TypeID::TYPEID_UINT8] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint8", TYPEID_UINT8 } };
+   m_types[TypeID::TYPEID_UINT16] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint16", TYPEID_UINT16 } };
+   m_types[TypeID::TYPEID_UINT32] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint32", TYPEID_UINT32 } };
+   m_types[TypeID::TYPEID_UINT64] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint64", TYPEID_UINT64 } };
+   for (const TypeDef& type : m_types)
+      if (type.nativeType.name != nullptr)
+         m_typenames[type.nativeType.name] = type.nativeType.id;
 }
 
 void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
@@ -86,6 +106,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
    classDef->name.id = static_cast<unsigned int>(m_types.size());
    m_typenames[classId] = classDef->name.id;
    m_types.push_back({ .category = TypeDef::TD_CLASS, .classDef = cd });
+   //PLOGD << "Class " << classDef->name.name << " registered with id=" << classDef->name.id;
 
    // Register members
    for (int i = 0; i < static_cast<int>(classDef->nMembers); i++)
@@ -133,6 +154,102 @@ void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
    arrayDef->name.id = static_cast<unsigned int>(m_types.size());
    m_types.push_back({ .category = TypeDef::TD_ARRAY, .arrayDef = arrayDef });
    m_typenames[classId] = arrayDef->name.id;
+}
+
+void DynamicTypeLibrary::UnregisterScriptClass(ScriptClassDef* classDef)
+{
+   const string classId(lowerCase(classDef->name.name));
+   const auto& it = m_typenames.find(classId);
+   if (it == m_typenames.end())
+      return;
+   const unsigned int typeId = it->second;
+   assert(typeId < m_types.size());
+   TypeDef& typeDef = m_types[typeId];
+   assert(typeDef.category == TypeDef::TD_CLASS);
+   delete typeDef.classDef;
+   typeDef = { TypeDef::TD_INVALID };
+   m_typenames.erase(it);
+   //PLOGD << "Class unregistered " << classDef->name.name << " [id=" << classDef->name.id << ']';
+   UnregisterTypeUsers(typeId);
+}
+
+void DynamicTypeLibrary::UnregisterScriptTypeAlias(const char* name)
+{
+   const string classId(lowerCase(name));
+   const auto& it = m_typenames.find(classId);
+   if (it == m_typenames.end())
+      return;
+   m_typenames.erase(it);
+   // Find and invalidate the alias entry in m_types (aliases don't reuse existing slot ids)
+   for (TypeDef& typeDef : m_types)
+   {
+      if (typeDef.category == TypeDef::TD_ALIAS && lowerCase(typeDef.aliasDef.alias) == classId)
+      {
+         //PLOGD << "Alias unregistered " << name << " [id=" << typeDef.aliasDef.typeDef.id << ']';
+         typeDef = { TypeDef::TD_INVALID };
+         break;
+      }
+   }
+}
+
+void DynamicTypeLibrary::UnregisterScriptArray(ScriptArrayDef* arrayDef)
+{
+   const string classId(lowerCase(arrayDef->name.name));
+   const auto& it = m_typenames.find(classId);
+   if (it == m_typenames.end())
+      return;
+   const unsigned int typeId = arrayDef->name.id;
+   assert(typeId < m_types.size());
+   TypeDef& typeDef = m_types[typeId];
+   assert(typeDef.category == TypeDef::TD_ARRAY);
+   typeDef = { TypeDef::TD_INVALID };
+   m_typenames.erase(it);
+   //PLOGD << "Array unregistered " << arrayDef->name.name << " [id=" << typeId << ']';
+   UnregisterTypeUsers(typeId);
+}
+
+void DynamicTypeLibrary::UnregisterTypeUsers(unsigned int typeId)
+{
+   // Transitively invalidate all classes/aliases that reference the removed type in any
+   // member return type or argument type.  Use a worklist so that cascading
+   // dependencies (A -> B -> C) are handled in a single pass without recursion.
+   std::vector<unsigned int> pendingInvalidation = { typeId };
+   while (!pendingInvalidation.empty())
+   {
+      const unsigned int invalidatedId = pendingInvalidation.back();
+      pendingInvalidation.pop_back();
+      for (size_t i = 0; i < m_types.size(); i++)
+      {
+         TypeDef& td = m_types[i];
+         if (td.category == TypeDef::TD_ALIAS)
+         {
+            if (td.aliasDef.typeDef.id == invalidatedId)
+               UnregisterScriptTypeAlias(td.aliasDef.alias);
+         }
+         else if (td.category == TypeDef::TD_CLASS)
+         {
+            bool referencesInvalidated = false;
+            for (unsigned int j = 0; j < td.classDef->classDef->nMembers && !referencesInvalidated; j++)
+            {
+               const ScriptClassMemberDef& memberDef = td.classDef->classDef->members[j];
+               if (memberDef.type.id == invalidatedId)
+                  referencesInvalidated = true;
+               for (unsigned int k = 0; k < memberDef.nArgs && !referencesInvalidated; k++)
+                  if (memberDef.callArgType[k].id == invalidatedId)
+                     referencesInvalidated = true;
+            }
+            if (referencesInvalidated)
+            {
+               const string depClassId(lowerCase(td.classDef->classDef->name.name));
+               m_typenames.erase(depClassId);
+               pendingInvalidation.push_back(static_cast<unsigned int>(i));
+               //PLOGD << "Class unregistered " << td.classDef->classDef->name.name << " [id=" << td.classDef->classDef->name.id << "] due to transitive dependency";
+               delete td.classDef;
+               td = { TypeDef::TD_INVALID };
+            }
+         }
+      }
+   }
 }
 
 void DynamicTypeLibrary::ResolveAllClasses()
@@ -206,15 +323,17 @@ ScriptClassDef* DynamicTypeLibrary::ResolveClass(const char* name) const
 
 int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const char* memberName) const
 {
-   assert(classDef->name.id != TypeID::TYPEID_UNRESOLVED);
-   assert(classDef->name.id < m_types.size());
-   TypeDef type = m_types[classDef->name.id];
-   assert(type.category == TypeDef::TD_CLASS);
-   ClassDef* cd = type.classDef;
-   const string nameId(lowerCase(memberName));
-   const auto& member = cd->memberMap.find(nameId);
-   if (member != cd->memberMap.end())
+   if ((classDef->name.id == TypeID::TYPEID_UNRESOLVED) || (classDef->name.id >= m_types.size()))
+      return -1;
+   
+   const TypeDef& type = m_types[classDef->name.id];
+   if (type.category != TypeDef::TD_CLASS)
+      return -1;
+
+   const ClassDef* cd = type.classDef;
+   if (const auto& member = type.classDef->memberMap.find(lowerCase(memberName)); member != type.classDef->memberMap.end())
       return member->second;
+
    return -1;
 }
 

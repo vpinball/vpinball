@@ -11,50 +11,50 @@
 
 namespace WMP {
 
-#define PSC_VAR_SET_WMPCore(variant, value) PSC_VAR_SET_object(WMPCore, variant, value)
-#define PSC_VAR_SET_WMPControls(variant, value) PSC_VAR_SET_object(WMPControls, variant, value)
-#define PSC_VAR_SET_WMPSettings(variant, value) PSC_VAR_SET_object(WMPSettings, variant, value)
+#define PSC_VAR_SET_WMP_Core(variant, value) PSC_VAR_SET_object(WMPCore, variant, value)
+#define PSC_VAR_SET_WMP_Controls(variant, value) PSC_VAR_SET_object(WMPControls, variant, value)
+#define PSC_VAR_SET_WMP_Settings(variant, value) PSC_VAR_SET_object(WMPSettings, variant, value)
 
-PSC_CLASS_START(WMPCore)
-   PSC_FUNCTION0(WMPCore, void, Close)
-   PSC_PROP_RW(WMPCore, string, URL)
-   PSC_PROP_R(WMPCore, int32, OpenState)
-   PSC_PROP_R(WMPCore, int32, PlayState)
-   PSC_PROP_R(WMPCore, WMPControls, Controls)
-   PSC_PROP_R(WMPCore, WMPSettings, Settings)
-   PSC_PROP_R(WMPCore, string, VersionInfo)
-   PSC_PROP_R(WMPCore, bool, IsOnline)
-   PSC_PROP_R(WMPCore, string, Status)
-PSC_CLASS_END(WMPCore)
+PSC_CLASS_START(WMP_Core, WMPCore)
+   PSC_FUNCTION0(void, Close)
+   PSC_PROP_RW(string, URL)
+   PSC_PROP_R(int32, OpenState)
+   PSC_PROP_R(int32, PlayState)
+   PSC_PROP_R(WMP_Controls, Controls)
+   PSC_PROP_R(WMP_Settings, Settings)
+   PSC_PROP_R(string, VersionInfo)
+   PSC_PROP_R(bool, IsOnline)
+   PSC_PROP_R(string, Status)
+PSC_CLASS_END()
 
-PSC_CLASS_START(WMPControls)
-   PSC_FUNCTION0(WMPControls, void, Play)
-   PSC_FUNCTION0(WMPControls, void, Stop)
-   PSC_FUNCTION0(WMPControls, void, Pause)
-   PSC_FUNCTION0(WMPControls, void, FastForward)
-   PSC_FUNCTION0(WMPControls, void, FastReverse)
-   PSC_PROP_RW(WMPControls, double, CurrentPosition)
-   PSC_PROP_R(WMPControls, string, CurrentPositionString)
-   PSC_FUNCTION0(WMPControls, void, Next)
-   PSC_FUNCTION0(WMPControls, void, Previous)
-   PSC_FUNCTION1(WMPControls, bool, GetIsAvailable, string)
-PSC_CLASS_END(WMPControls)
+PSC_CLASS_START(WMP_Controls, WMPControls)
+   PSC_FUNCTION0(void, Play)
+   PSC_FUNCTION0(void, Stop)
+   PSC_FUNCTION0(void, Pause)
+   PSC_FUNCTION0(void, FastForward)
+   PSC_FUNCTION0(void, FastReverse)
+   PSC_PROP_RW(double, CurrentPosition)
+   PSC_PROP_R(string, CurrentPositionString)
+   PSC_FUNCTION0(void, Next)
+   PSC_FUNCTION0(void, Previous)
+   PSC_FUNCTION1(bool, GetIsAvailable, string)
+PSC_CLASS_END()
 
-PSC_CLASS_START(WMPSettings)
-   PSC_PROP_RW(WMPSettings, bool, AutoStart)
-   PSC_PROP_RW(WMPSettings, bool, Mute)
-   PSC_PROP_RW(WMPSettings, int32, Volume)
-   PSC_PROP_RW(WMPSettings, double, Rate)
-   PSC_PROP_RW(WMPSettings, int32, Balance)
-   PSC_PROP_RW(WMPSettings, int32, PlayCount)
-   PSC_PROP_RW(WMPSettings, string, BaseURL)
-   PSC_PROP_RW(WMPSettings, string, DefaultFrame)
-   PSC_PROP_RW(WMPSettings, bool, InvokeURLs)
-   PSC_PROP_RW(WMPSettings, bool, EnableErrorDialogs)
-   PSC_FUNCTION1(WMPSettings, bool, GetIsAvailable, string)
-   PSC_FUNCTION1(WMPSettings, bool, GetMode, string)
-   PSC_FUNCTION2(WMPSettings, void, SetMode, string, bool)
-PSC_CLASS_END(WMPSettings)
+PSC_CLASS_START(WMP_Settings, WMPSettings)
+   PSC_PROP_RW(bool, AutoStart)
+   PSC_PROP_RW(bool, Mute)
+   PSC_PROP_RW(int32, Volume)
+   PSC_PROP_RW(double, Rate)
+   PSC_PROP_RW(int32, Balance)
+   PSC_PROP_RW(int32, PlayCount)
+   PSC_PROP_RW(string, BaseURL)
+   PSC_PROP_RW(string, DefaultFrame)
+   PSC_PROP_RW(bool, InvokeURLs)
+   PSC_PROP_RW(bool, EnableErrorDialogs)
+   PSC_FUNCTION1(bool, GetIsAvailable, string)
+   PSC_FUNCTION1(bool, GetMode, string)
+   PSC_FUNCTION2(void, SetMode, string, bool)
+PSC_CLASS_END()
 
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
@@ -92,19 +92,19 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPlug
       return;
    }
 
-   auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
-   RegisterWMPCoreSCD(regLambda);
-   RegisterWMPControlsSCD(regLambda);
-   RegisterWMPSettingsSCD(regLambda);
+   auto regLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+   RegisterWMP_Core(regLambda);
+   RegisterWMP_Controls(regLambda);
+   RegisterWMP_Settings(regLambda);
 
-   scriptApi->SubmitTypeLibrary();
+   scriptApi->SubmitTypeLibrary(endpointId);
 
-   WMPCore_SCD->CreateObject = []() -> void*
+   WMP_Core_SCD->CreateObject = []() -> void*
    {
       return static_cast<void*>(new WMPCore(msgApi, endpointId, onAudioUpdateId));
    };
 
-   scriptApi->SetCOMObjectOverride("WMPlayer.OCX", WMPCore_SCD);
+   scriptApi->SetCOMObjectOverride("WMPlayer.OCX", WMP_Core_SCD);
 
    LOGI("WMP Plugin loaded successfully"s);
 }
@@ -112,7 +112,14 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPlug
 MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
 {
    if (scriptApi != nullptr)
+   {
       scriptApi->SetCOMObjectOverride("WMPlayer.OCX", nullptr);
+      auto regLambda = [](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
+      UnregisterWMP_Core(regLambda);
+      UnregisterWMP_Controls(regLambda);
+      UnregisterWMP_Settings(regLambda);
+      scriptApi = nullptr;
+   }
 
    if (msgApi && onAudioUpdateId != 0) {
       msgApi->ReleaseMsgID(onAudioUpdateId);
@@ -120,7 +127,6 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
    }
 
    vpxApi = nullptr;
-   scriptApi = nullptr;
    msgApi = nullptr;
 
    LOGI("WMP Plugin unloaded"s);

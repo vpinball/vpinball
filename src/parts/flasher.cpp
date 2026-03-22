@@ -843,7 +843,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
-   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(this, true);
+   g_pplayer->m_pluginAPI.UpdateDMDSource(this, true);
    return S_OK;
 }
 

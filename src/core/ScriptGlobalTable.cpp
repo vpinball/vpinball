@@ -353,7 +353,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
          if (szFileName.ends_with(".vbs"))
-            content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
+            content = g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(content);
          *pContents = MakeWideBSTR(content);
          return S_OK;
       }
@@ -858,7 +858,7 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 
 STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch** pVal)
 {
-   VPXPluginAPIImpl &pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl &pi = g_pplayer->m_pluginAPI;
    *pVal = pi.CreateCOMPluginObject(MakeString(classId));
    return (*pVal != nullptr) ? S_OK : E_FAIL;
 }
@@ -921,7 +921,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
+   g_pplayer->m_pluginAPI.UpdateDMDSource(nullptr, true);
    return S_OK;
 }
 
@@ -941,7 +941,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
+   g_pplayer->m_pluginAPI.UpdateDMDSource(nullptr, true);
    return S_OK;
 }
 

@@ -24,19 +24,22 @@
 class VPXPluginAPIImpl
 {
 public:
-   static VPXPluginAPIImpl& GetInstance();
+   VPXPluginAPIImpl(MsgPI::MsgPluginManager& msgApi);
+   ~VPXPluginAPIImpl();
 
    const VPXPluginAPI& getAPI() const { return m_api; }
    unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
-   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
+   void BroadcastVPXMsg(const unsigned int msgId, void* data) const;
 
-   static unsigned int GetMsgID(const char* name_space, const char* name) { return MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
-   static void ReleaseMsgID(const unsigned int msgId) { MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
+   unsigned int GetMsgID(const char* name_space, const char* name);
+   void ReleaseMsgID(const unsigned int msgId);
 
    string ApplyScriptCOMObjectOverrides(const string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
 
    std::shared_ptr<BaseTexture> GetTexture(VPXTexture texture) const;
+
+   bool IsScriptContributor(const unsigned int endpointId) const;
 
    struct PluginSetting
    {
@@ -51,8 +54,7 @@ public:
    void OnGameEnd();
 
 private:
-   VPXPluginAPIImpl();
-   ~VPXPluginAPIImpl();
+   const MsgPluginAPI& m_msgApi;
 
    // VPX API
    std::shared_ptr<MsgPI::MsgPlugin> m_vpxPlugin;
@@ -101,10 +103,14 @@ private:
    static void MSGPIAPI RegisterScriptClass(ScriptClassDef* classDef);
    static void MSGPIAPI RegisterScriptTypeAlias(const char* name, const char* aliasedType);
    static void MSGPIAPI RegisterScriptArray(ScriptArrayDef* arrayDef);
-   static void MSGPIAPI SubmitTypeLibrary();
+   static void MSGPIAPI SubmitTypeLibrary(const unsigned int endpointId);
    static void MSGPIAPI OnScriptError(unsigned int type, const char* message);
    static void MSGPIAPI SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
    static ScriptClassDef* MSGPIAPI GetClassDef(const char* typeName);
+   static void MSGPIAPI UnregisterScriptClass(ScriptClassDef* classDef);
+   static void MSGPIAPI UnregisterScriptTypeAlias(const char* name);
+   static void MSGPIAPI UnregisterScriptArray(ScriptArrayDef* arrayDef);
+   vector<unsigned int> m_scriptContributors;
 
    ankerl::unordered_dense::map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;

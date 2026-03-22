@@ -27,9 +27,9 @@ ScoreView::ScoreView(const MsgPluginAPI* api, unsigned int endpointId, VPXPlugin
 
 ScoreView::~ScoreView()
 {
-   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnResChanged);
+   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnResChanged, this);
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
-   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnResChanged);
+   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnResChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    for (auto& image : m_images)
       m_vpxApi->DeleteTexture(image.second);

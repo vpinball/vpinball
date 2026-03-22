@@ -106,7 +106,7 @@ void MSGPIAPI VPXPluginAPIImpl::SetActionState(const VPXAction actionId, const i
    if (!g_pplayer)
       return; // No game in progress
 
-   VPXPluginAPIImpl& me = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
    auto it = me.m_actionMap.find(actionId);
    if (it == me.m_actionMap.end())
       return; // action not mapped
@@ -195,7 +195,7 @@ void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, in
 VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread and other rendering backends are single threaded
-   // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
+   // assert(std::this_thread::get_id() == g_pplayer->m_pluginAPI.m_apiThread);
    VPXTextureBlock* tex = new VPXTextureBlock();
    tex->tex = BaseTexture::CreateFromData(rawData, size);
    if (tex->tex == nullptr)
@@ -206,15 +206,15 @@ VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 
 VPXTextureInfo* MSGPIAPI VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 {
-   //assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
+   //assert(std::this_thread::get_id() == g_pplayer->m_pluginAPI.m_apiThread);
    VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(texture);
    return tex ? &tex->info : nullptr;
 }
 
 void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
-   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(
-      VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0, 
+   g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(
+      g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0, 
       [](void* context) {
       VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
       if (tex)
@@ -233,7 +233,7 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 
 void MSGPIAPI VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    switch (level)
    {
    case LPI_LVL_DEBUG: PLOGD << message; break;
@@ -250,38 +250,59 @@ void MSGPIAPI VPXPluginAPIImpl::PluginLog(unsigned int level, const char* messag
 
 void MSGPIAPI VPXPluginAPIImpl::RegisterScriptClass(ScriptClassDef* classDef)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    pi.m_dynamicTypeLibrary.RegisterScriptClass(classDef);
 }
 
 void MSGPIAPI VPXPluginAPIImpl::RegisterScriptTypeAlias(const char* name, const char* aliasedType)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    pi.m_dynamicTypeLibrary.RegisterScriptTypeAlias(name, aliasedType);
 }
 
 void MSGPIAPI VPXPluginAPIImpl::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    pi.m_dynamicTypeLibrary.RegisterScriptArray(arrayDef);
 }
 
-void MSGPIAPI VPXPluginAPIImpl::SubmitTypeLibrary()
+void MSGPIAPI VPXPluginAPIImpl::SubmitTypeLibrary(const unsigned int endpointId)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
+   pi.m_scriptContributors.push_back(endpointId);
    pi.m_dynamicTypeLibrary.ResolveAllClasses();
 }
 
+bool VPXPluginAPIImpl::IsScriptContributor(const unsigned int endpointId) const { return std::ranges::find(m_scriptContributors, endpointId) != m_scriptContributors.end(); }
+
 void MSGPIAPI VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    // FIXME implement in DynamicDispatch
 }
 
 ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    return pi.m_dynamicTypeLibrary.ResolveClass(typeName);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::UnregisterScriptClass(ScriptClassDef* classDef)
+{
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
+   pi.m_dynamicTypeLibrary.UnregisterScriptClass(classDef);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::UnregisterScriptTypeAlias(const char* name)
+{
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
+   pi.m_dynamicTypeLibrary.UnregisterScriptTypeAlias(name);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::UnregisterScriptArray(ScriptArrayDef* arrayDef)
+{
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
+   pi.m_dynamicTypeLibrary.UnregisterScriptArray(arrayDef);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -289,7 +310,7 @@ ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)
 
 void MSGPIAPI VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    // FIXME remove when classDef is unregistered
    // FIXME check that classDef has been registered in the type library ?
    const string classId(lowerCase(className));
@@ -331,7 +352,7 @@ string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(const string& script) con
 IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 {
    // FIXME we are not separating type library per plugin, therefore collision may occur
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    const string className(lowerCase(classId));
    const auto& overrideEntry = m_scriptCOMObjectOverrides.find(className);
    if (overrideEntry == m_scriptCOMObjectOverrides.end())
@@ -487,7 +508,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
 void VPXPluginAPIImpl::OnGameStart()
 {
    assert(m_dmdSources.empty());
-   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = m_msgApi;
 
    msgApi.SubscribeMsg(GetVPXEndPointId(), m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
 
@@ -525,9 +546,9 @@ void VPXPluginAPIImpl::OnGameStart()
 
 void VPXPluginAPIImpl::OnGameEnd()
 {
-   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = m_msgApi;
 
-   msgApi.UnsubscribeMsg(m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc);
+   msgApi.UnsubscribeMsg(m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
 
    m_dmdSources.clear();
 
@@ -556,13 +577,13 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
       }
    }
 
-   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = m_msgApi;
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 }
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 {
-   VPXPluginAPIImpl& me = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
 
    if ((g_pplayer == nullptr) || (id.endpointId != me.m_vpxPlugin->m_endpointId))
       return { 0, nullptr };
@@ -637,25 +658,19 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
 ///////////////////////////////////////////////////////////////////////////////
 // 
 
-VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
-{
-   static VPXPluginAPIImpl instance;
-   return instance;
-}
-
-VPXPluginAPIImpl::VPXPluginAPIImpl()
-   : m_apiThread(std::this_thread::get_id())
-   , m_getVPXAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API))
-   , m_onGameStartMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START))
-   , m_onGameEndMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END))
-   , m_getLoggingAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API))
-   , m_getScriptingAPIMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
-   , m_onDisplaySrcChgMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
-   , m_onDisplayGetSrcMsgId(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
+VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
+   : m_msgApi(pluginManager.GetMsgAPI()) 
+   , m_apiThread(std::this_thread::get_id())
+   , m_getVPXAPIMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API))
+   , m_onGameStartMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START))
+   , m_onGameEndMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END))
+   , m_getLoggingAPIMsgId(m_msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API))
+   , m_getScriptingAPIMsgId(m_msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
+   , m_onDisplaySrcChgMsgId(m_msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
+   , m_onDisplayGetSrcMsgId(m_msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
 {
    // Message host
-   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler(
+   pluginManager.SetSettingsHandler(
       [this](const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef) { UpdateSetting(pluginId, action, settingDef); });
 
    // VPX API
@@ -680,15 +695,16 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
 
-   m_vpxPlugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s,  //
+   m_vpxPlugin = pluginManager.RegisterPlugin(
+      "vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, //
       [](const uint32_t, const MsgPluginAPI*) { /* Load: nothing to do */ }, //
       []() { /* Load: nothing to do */ });
-   m_vpxPlugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
+   m_vpxPlugin->Load(&m_msgApi);
+   m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
 
    // Logging API
    m_loggingApi.Log = PluginLog;
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, nullptr);
+   m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, nullptr);
 
    // Scriptable API
    m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
@@ -698,41 +714,62 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_scriptableApi.SetCOMObjectOverride = SetCOMObjectOverride;
    m_scriptableApi.OnError = OnScriptError;
    m_scriptableApi.GetClassDef = GetClassDef;
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, nullptr);
+   m_scriptableApi.UnregisterScriptClass = UnregisterScriptClass;
+   m_scriptableApi.UnregisterScriptTypeAlias = UnregisterScriptTypeAlias;
+   m_scriptableApi.UnregisterScriptArrayType = UnregisterScriptArray;
+   m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, nullptr);
 }
 
 VPXPluginAPIImpl::~VPXPluginAPIImpl()
 {
-   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI);
-   msgApi.ReleaseMsgID(m_getVPXAPIMsgId);
-   msgApi.UnsubscribeMsg(m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI);
-   msgApi.ReleaseMsgID(m_getLoggingAPIMsgId);
-   msgApi.UnsubscribeMsg(m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI);
-   msgApi.ReleaseMsgID(m_getScriptingAPIMsgId);
-   msgApi.ReleaseMsgID(m_onGameStartMsgId);
-   msgApi.ReleaseMsgID(m_onGameEndMsgId);
-   msgApi.ReleaseMsgID(m_onDisplayGetSrcMsgId);
-   msgApi.ReleaseMsgID(m_onDisplaySrcChgMsgId);
+   m_dynamicTypeLibrary.Reset();
+   for (const auto& [a, b] : m_scriptCOMObjectOverrides)
+   {
+      PLOGE << "An invalid plugin did not unregister COM Object override: " << a;
+   }
+   m_scriptCOMObjectOverrides.clear();
+   m_dmdSources.clear();
+
+   m_msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
+   m_msgApi.ReleaseMsgID(m_getVPXAPIMsgId);
+   m_msgApi.UnsubscribeMsg(m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, nullptr);
+   m_msgApi.ReleaseMsgID(m_getLoggingAPIMsgId);
+   m_msgApi.UnsubscribeMsg(m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, nullptr);
+   m_msgApi.ReleaseMsgID(m_getScriptingAPIMsgId);
+   m_msgApi.ReleaseMsgID(m_onGameStartMsgId);
+   m_msgApi.ReleaseMsgID(m_onGameEndMsgId);
+   m_msgApi.ReleaseMsgID(m_onDisplayGetSrcMsgId);
+   m_msgApi.ReleaseMsgID(m_onDisplaySrcChgMsgId);
+
+   // FIXME unregister from MsgAPI plugins (not yet implemented in MsgAPI)
 }
+
+void VPXPluginAPIImpl::BroadcastVPXMsg(const unsigned int msgId, void* data) const
+{
+   m_msgApi.BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data);
+}
+
+unsigned int VPXPluginAPIImpl::GetMsgID(const char* name_space, const char* name) { return m_msgApi.GetMsgID(name_space, name); }
+
+void VPXPluginAPIImpl::ReleaseMsgID(const unsigned int msgId) { m_msgApi.ReleaseMsgID(msgId); }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    VPXPluginAPI** pResult = static_cast<VPXPluginAPI**>(msgData);
    *pResult = &pi.m_api;
 }
 
 void VPXPluginAPIImpl::OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    ScriptablePluginAPI** pResult = static_cast<ScriptablePluginAPI**>(msgData);
    *pResult = &pi.m_scriptableApi;
 }
 
 void VPXPluginAPIImpl::OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData)
 {
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
    LoggingPluginAPI** pResult = static_cast<LoggingPluginAPI**>(msgData);
    *pResult = &pi.m_loggingApi;
 }

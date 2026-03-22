@@ -451,14 +451,14 @@ static void stopThread()
 {
    if (runMode == RunMode::RunModePlayer)
    {
-      msgApi->UnsubscribeMsg(onUpdatePhysicsId, onPlayerUpdatePhysics);
-      msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame);
+      msgApi->UnsubscribeMsg(onUpdatePhysicsId, onPlayerUpdatePhysics, nullptr);
+      msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame, nullptr);
    }
    else if (runMode == RunMode::RunModeController)
    {
-      msgApi->UnsubscribeMsg(onUpdatePhysicsId, onControllerUpdatePhysics);
-      msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame);
-      msgApi->UnsubscribeMsg(onActionEventId, onControllerActionEvent);
+      msgApi->UnsubscribeMsg(onUpdatePhysicsId, onControllerUpdatePhysics, nullptr);
+      msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame, nullptr);
+      msgApi->UnsubscribeMsg(onActionEventId, onControllerActionEvent, nullptr);
    }
    runMode = RunMode::RunModeNone;
    if (udpThread.joinable())
@@ -499,8 +499,8 @@ MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, con
 MSGPI_EXPORT void MSGPIAPI RemoteControlPluginUnload()
 {
    stopThread();
-   msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
+   msgApi->UnsubscribeMsg(onGameStartId, onGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
    msgApi->ReleaseMsgID(getVpxApiId);
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);

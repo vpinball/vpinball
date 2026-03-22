@@ -91,9 +91,6 @@ int VPinballLib::AppInit(int argc, char** argv)
       #endif
    }
 
-   if (g_isAndroid)
-      MsgPI::MsgPluginManager::GetInstance().UpdateAPIThread();
-
    return 1;
 }
 
@@ -190,13 +187,6 @@ void VPinballLib::Init(VPinballEventCallback callback)
       g_app->SetSettingsFileName((g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini").string());
       g_app->InitInstance();
 
-      RegisterStaticPlugins();
-
-      for (const auto& plugin : MsgPI::MsgPluginManager::GetInstance().GetPlugins()) {
-         if (lib->LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
-            plugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-      }
-
       lib->UpdateWebServer();
 
       SendEvent(VPINBALL_EVENT_INIT_COMPLETE, nullptr);
@@ -269,7 +259,7 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
       WebServer::BroadcastStatus();
 }
 
-void VPinballLib::RegisterStaticPlugins()
+void VPinballLib::SetupStaticPlugins(MsgPI::MsgPluginManager& manager)
 {
    static constexpr struct {
       const char* id;
@@ -295,8 +285,17 @@ void VPinballLib::RegisterStaticPlugins()
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
       auto& p = plugins[i];
-      MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
+      manager.RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
    }
+
+   auto& lib = VPinballLib::Instance();
+   for (const auto& plugin : manager.GetPlugins()) {
+      if (lib.LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
+         plugin->Load(&manager.GetMsgAPI());
+   }
+
+   if (g_isAndroid)
+      manager.UpdateAPIThread();
 }
 
 void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)

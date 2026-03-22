@@ -26,17 +26,15 @@ namespace B2SLegacy {
 
 Server* Server::m_singleton = nullptr;
 
-Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex)
-   : m_msgApi(msgApi)
+Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
+   : m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG)) 
+   , m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
    , m_endpointId(endpointId)
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_onDevChangedMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG))
-   , m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG))
-   , m_pinmameClassDef(pinmameClassDef)
-   , m_pinmameMemberStartIndex(pinmameMemberStartIndex)
-   , m_pinmameApi(pinmameClassDef ? new PinMAMEAPI(this, pinmameClassDef) : nullptr)
+   , m_pinmameApi(msgApi, endpointId, this, serverClassDef)
 {
    m_singleton = this;
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
@@ -76,17 +74,14 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
 
 Server::~Server()
 {
-   m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic);
-   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChangedStatic);
-   m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc);
+   m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic, this);
+   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChangedStatic, this);
+   m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
    m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
    m_msgApi->ReleaseMsgID(m_onGetDevSrcId);
-
-   delete m_pinmameApi;
-   m_pinmameApi = nullptr;
 
    delete[] m_deviceStateSrc.deviceDefs;
    delete[] m_devSrc.deviceDefs;
@@ -276,12 +271,6 @@ void Server::OnDevSrcChangedStatic(const unsigned int msgId, void* userData, voi
    static_cast<Server*>(userData)->OnDevSrcChanged(msgId, userData, msgData);
 }
 
-void Server::ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
-{
-   if (m_pinmameApi)
-      m_pinmameApi->HandleCall(memberIndex + m_pinmameMemberStartIndex, m_pinmameMemberStartIndex, pArgs, pRet);
-}
-
 void Server::TimerElapsed(Timer* pTimer)
 {
    // have a look for important pollings
@@ -438,10 +427,7 @@ void Server::SetPuPHide(bool puPHide)
 
 void Server::GetChangedLamps()
 {
-   if (!m_pinmameApi)
-      return;
-
-   ScriptArray* lampArray = m_pinmameApi->GetChangedLamps();
+   ScriptArray* lampArray = m_pinmameApi.GetChangedLamps();
    if (m_pB2SData->IsLampsData() && lampArray)
       CheckLamps(lampArray);
 }
@@ -455,10 +441,7 @@ void Server::GetChangedLamps(ScriptVariant* pRet)
 
 void Server::GetChangedSolenoids()
 {
-   if (!m_pinmameApi)
-      return;
-
-   ScriptArray* solenoidArray = m_pinmameApi->GetChangedSolenoids();
+   ScriptArray* solenoidArray = m_pinmameApi.GetChangedSolenoids();
    if (m_pB2SData->IsSolenoidsData() && solenoidArray)
       CheckSolenoids(solenoidArray);
 }
@@ -472,10 +455,7 @@ void Server::GetChangedSolenoids(ScriptVariant* pRet)
 
 void Server::GetChangedGIStrings()
 {
-   if (!m_pinmameApi)
-      return;
-
-   ScriptArray* giStringArray = m_pinmameApi->GetChangedGIStrings();
+   ScriptArray* giStringArray = m_pinmameApi.GetChangedGIStrings();
    if (m_pB2SData->IsGIStringsData() && giStringArray)
       CheckGIStrings(giStringArray);
 }
@@ -489,10 +469,7 @@ void Server::GetChangedGIStrings(ScriptVariant* pRet)
 
 void Server::GetChangedLEDs()
 {
-   if (!m_pinmameApi)
-      return;
-
-   ScriptArray* ledArray = m_pinmameApi->GetChangedLEDs();
+   ScriptArray* ledArray = m_pinmameApi.GetChangedLEDs();
    if (m_pB2SData->IsLEDsData() && ledArray)
       CheckLEDs(ledArray);
 }
@@ -506,8 +483,7 @@ void Server::GetChangedLEDs(ScriptVariant* pRet)
 
 void Server::SetSwitch(int switchId, bool value)
 {
-   if (m_pinmameApi)
-      m_pinmameApi->SetSwitch(switchId, value);
+   m_pinmameApi.SetSwitch(switchId, value);
 }
 
 void Server::B2SSetData(int id, int value)

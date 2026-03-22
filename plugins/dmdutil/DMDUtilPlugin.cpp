@@ -266,8 +266,8 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()
 {
    onGameEnd(onGameEndId, nullptr, nullptr);
 
-   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
-   msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged);
+   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
+   msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged, nullptr);
 
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);

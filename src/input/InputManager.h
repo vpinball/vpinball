@@ -13,7 +13,7 @@ class InputManager final
    , public SensorMapping::AxisInputEventManager
 {
 public:
-   InputManager();
+   InputManager(class Player* player);
    InputManager(const InputManager&) = delete;
    InputManager& operator=(const InputManager&) = delete;
    ~InputManager() override;
@@ -195,6 +195,8 @@ public:
    std::unique_ptr<InputHandler> RemoveInputHandler(InputHandler* handler);
 
 private:
+   class Player* m_player;
+
    void CreateInputActions();
    InputAction* AddAction(std::unique_ptr<InputAction>&& action);
    vector<std::unique_ptr<InputAction>> m_inputActions;

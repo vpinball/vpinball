@@ -18,19 +18,6 @@ using namespace MsgPI;
 
 static unsigned int onPrepareFrameMsgId = 0;
 
-void AddOnPrepareFrameHandler(msgpi_msg_callback onPrepareFrame, void* context)
-{
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   unsigned int vpxEndpoint = msgApi.GetPluginEndpoint("vpx");
-   msgApi.SubscribeMsg(vpxEndpoint, onPrepareFrameMsgId, onPrepareFrame, context);
-}
-
-void RemoveOnPrepareFrameHandler(msgpi_msg_callback onPrepareFrame)
-{
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   msgApi.UnsubscribeMsg(onPrepareFrameMsgId, onPrepareFrame);
-}
-
 #ifdef ENABLE_BGFX
 bgfx::RendererType::Enum lastBgfxRenderer = bgfx::RendererType::Count;
 bgfx::RendererType::Enum GetLastRenderer()
@@ -132,18 +119,17 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
                state->done = true;
             });
    };
-   AddOnPrepareFrameHandler(onPrepareFrame, &state);
 
    CComObject<PinTable>* table;
    CComObject<PinTable>::CreateInstance(&table);
    table->AddRef();
    table->LoadGameFromFilename((GetAssetPath() / tablePath).string());
    auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   player->m_pluginManager.GetMsgAPI().SubscribeMsg(player->m_pluginAPI.GetVPXEndPointId(), onPrepareFrameMsgId, onPrepareFrame, &state);
    player->GameLoop();
+   player->m_pluginManager.GetMsgAPI().UnsubscribeMsg(onPrepareFrameMsgId, onPrepareFrame, &state);
    player = nullptr;
    table->Release();
-
-   RemoveOnPrepareFrameHandler(onPrepareFrame);
 }
 
 void ResetVPX()

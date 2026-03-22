@@ -278,8 +278,8 @@ MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginLoad(const uint32_t sessionId, const
 
 MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginUnload()
 {
-   msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
+   msgApi->UnsubscribeMsg(onGameStartId, onGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onSerumTriggerId);

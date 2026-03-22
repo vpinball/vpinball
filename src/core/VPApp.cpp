@@ -258,7 +258,7 @@ VPApp::VPApp()
    EditableRegistry::RegisterEditable<HitTarget>();
    EditableRegistry::RegisterEditable<PartGroup>();
 
-   VPXPluginAPIImpl::GetInstance();
+   g_pplayer->m_pluginAPI;
 }
 
 VPApp::~VPApp()
@@ -368,7 +368,8 @@ void VPApp::InitInstance()
 #ifndef __STANDALONE__
 BOOL VPApp::WinApp::OnIdle(LONG)
 {
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   if (g_pplayer)
+      g_pplayer->m_pluginManager.ProcessAsyncCallbacks();
    return FALSE;
 }
 BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)

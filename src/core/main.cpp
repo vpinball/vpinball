@@ -204,56 +204,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          exit(1);
       }
 
-      class SDLModuleLoader final : public MsgPI::MsgModuleLoader
-      {
-      public:
-         ~SDLModuleLoader() override = default;
-         void* Link(const std::string& directory, const std::string& file) override {
-            #if defined(_MSC_VER) || defined(__MINGW32__)
-               SetDllDirectory(directory.c_str());
-            #endif
-            void* dynamicModule = static_cast<void*>(SDL_LoadObject(file.c_str()));
-            #if defined(_MSC_VER) || defined(__MINGW32__)
-               SetDllDirectory(NULL);
-            #endif
-            return dynamicModule;
-         }
-         void Unlink(void* dynamicModule) override
-         {
-            //FIXME This would block (DOF) or crash (Kinect2) on some plugins
-            #ifndef _MSC_VER
-            SDL_UnloadObject(static_cast<SDL_SharedObject*>(dynamicModule));
-            #endif
-         }
-         void* GetFunction(void* dynamicModule, const std::string& functionName) override
-         {
-            return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(dynamicModule), functionName.c_str()));
-         }
-      };
-      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),
-         [](MsgPI::MsgPlugin& plugin)
-         {
-            VPX::Properties::PropertyRegistry::PropId enableId;
-            if (auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin.m_id, "Enable"s); existing.has_value())
-               enableId = existing.value();
-            else
-               enableId = Settings::GetRegistry().Register(
-                  std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
-            if (g_app->m_settings.GetBool(enableId))
-            {
-               plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-            }
-            else
-            {
-               PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
-            }
-         });
-
       // Run the application
       if (cmdLine.m_command)
-      {
          cmdLine.m_command->Execute();
-      }
    }
 
    // catch all CException types
@@ -264,8 +217,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-
-   MsgPI::MsgPluginManager::GetInstance().UnloadPlugins();
 
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 

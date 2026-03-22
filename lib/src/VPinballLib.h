@@ -75,13 +75,14 @@ public:
    VPINBALL_STATUS Stop();
    void SetGameLoop(std::function<void()> gameLoop) { m_gameLoop = gameLoop; }
 
+   static void SetupStaticPlugins(MsgPI::MsgPluginManager& manager);
+
 private:
    VPinballLib();
    ~VPinballLib();
    VPinballLib(const VPinballLib&) = delete;
    VPinballLib& operator=(const VPinballLib&) = delete;
    void SetEventCallback(VPinballEventCallback callback);
-   static void RegisterStaticPlugins();
 
    SDL_Window* m_pWindow = nullptr;
 #ifdef __APPLE__

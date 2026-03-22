@@ -395,7 +395,7 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
          }
          else
          {
-            msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc);
+            msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc, nullptr);
             isRunning = false;
             lock.unlock();
             updateCondVar.notify_all();
@@ -433,9 +433,9 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
 
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
 {
-   msgApi->UnsubscribeMsg(onDisplaySrcChangedId, OnDmdSrcChanged);
+   msgApi->UnsubscribeMsg(onDisplaySrcChangedId, OnDmdSrcChanged, nullptr);
    if (IsSourceSelected())
-      msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc);
+      msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc, nullptr);
    isRunning = false;
    updateCondVar.notify_all();
    if (renderThread.joinable())

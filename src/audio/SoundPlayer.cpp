@@ -486,8 +486,8 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
    SoundPlayer* me = static_cast<SoundPlayer*>(pUserData);
    if (me->m_loopCount == 0)
    {
-      MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(
-         VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0,
+      g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(
+         g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0,
          [](void* callbackInfo)
          {
             string* callbackId = static_cast<string*>(callbackInfo);

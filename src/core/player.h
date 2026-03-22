@@ -14,6 +14,7 @@
 #include "plugins/ResURIResolver.h"
 #include "audio/AudioPlayer.h"
 #include "core/ScriptInterpreter.h"
+#include "VPXPluginAPIImpl.h"
 
 class VRDevice;
 
@@ -119,6 +120,9 @@ public:
 
    Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
+
+   MsgPI::MsgPluginManager m_pluginManager;
+   VPXPluginAPIImpl m_pluginAPI;
 
 private:
    bool m_playing = true;

@@ -49,25 +49,25 @@ ResURIResolver::~ResURIResolver()
 {
    if (m_onInputChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onInputChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getInputSrcMsgId);
    }
    if (m_onDevChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onDevChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getDevSrcMsgId);
    }
    if (m_onSegChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onSegChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getSegSrcMsgId);
    }
    if (m_onDisplayChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onDisplayChangedMsgId, OnDisplaySrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onDisplayChangedMsgId, OnDisplaySrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onDisplayChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getDisplaySrcMsgId);
    }

@@ -21,7 +21,7 @@ void PluginHomePage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    ClearItems();
-   const MsgPluginManager& manager = MsgPluginManager::GetInstance();
+   const MsgPluginManager& manager = m_player->m_pluginManager;
    for (const auto& plugin : manager.GetPlugins())
    {
       const string& id = plugin->m_id;
@@ -34,9 +34,9 @@ void PluginHomePage::Open(bool isBackwardAnimation)
 
 
 PluginSettingsPage::PluginSettingsPage(const string& pluginId)
-   : InGameUIPage(MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_name,
-        MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_description + "\nBy " + MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_author + "\nVersion "
-           + MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_version,
+   : InGameUIPage(m_player->m_pluginManager.GetPlugin(pluginId)->m_name,
+        m_player->m_pluginManager.GetPlugin(pluginId)->m_description + "\nBy " + m_player->m_pluginManager.GetPlugin(pluginId)->m_author + "\nVersion "
+           + m_player->m_pluginManager.GetPlugin(pluginId)->m_version,
         SaveMode::Both)
    , m_pluginId(pluginId)
 {
@@ -57,7 +57,7 @@ void PluginSettingsPage::BuildPage()
    #endif
 
    const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin." + m_pluginId, "Enable"s).value();
-   const MsgPluginManager& manager = MsgPluginManager::GetInstance();
+   const MsgPluginManager& manager = m_player->m_pluginManager;
    auto plugin = manager.GetPlugin(m_pluginId);
    if (plugin == nullptr)
    {
@@ -69,25 +69,35 @@ void PluginSettingsPage::BuildPage()
       enablePropId, //
       [this]()
       {
-         const MsgPluginManager& manager = MsgPluginManager::GetInstance();
+         const MsgPluginManager& manager = m_player->m_pluginManager;
          auto plugin = manager.GetPlugin(m_pluginId);
          return plugin ? plugin->IsLoaded() : false;
       }, // Live
       [this](bool v)
       {
-         MsgPluginManager& manager = MsgPluginManager::GetInstance();
+         MsgPluginManager& manager = m_player->m_pluginManager;
          auto& plugin = *manager.GetPlugin(m_pluginId);
          if (v && !plugin.IsLoaded())
             manager.LoadPlugin(plugin);
          else if (!v && plugin.IsLoaded())
+         {
+            if (m_player->m_scriptInterpreter && m_player->m_pluginAPI.IsScriptContributor(plugin.m_endpointId))
+            {
+               m_player->m_scriptInterpreter->Stop(m_player->m_ptable);
+               ULONG refCount = m_player->m_scriptInterpreter->Release();
+               m_player->m_scriptInterpreter = nullptr;
+               assert(refCount == 0);
+               m_player->m_liveUI->PushNotification("The plugin you have disabled contributed to the script engine.\nTherefore, the script was stopped to prevent issues.", 5000);
+            }
             manager.UnloadPlugin(plugin);
+         }
          BuildPage();
       })).m_excludeFromDefault = true;
 
    if (!plugin->IsLoaded())
       return;
 
-   for (const auto& option : VPXPluginAPIImpl::GetInstance().GetPluginSettings())
+   for (const auto& option : g_pplayer->m_pluginAPI.GetPluginSettings())
    {
       if (option.pluginId != m_pluginId)
          continue;

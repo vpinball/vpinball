@@ -44,12 +44,12 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
 
 B2SRenderer::~B2SRenderer()
 {
-   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
+   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDevSrcMsgId);
    delete[] m_deviceStateSrc.deviceDefs;
 
-   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged);
+   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);
    m_segDisplays.clear();

@@ -11,8 +11,6 @@
 #include <cassert>
 #include <charconv>
 
-using namespace std::string_literals;
-
 #include "Rom.h"
 #include "Roms.h"
 #include "Settings.h"
@@ -27,59 +25,59 @@ namespace PinMAME {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Scriptable object definitions
 
-#define PSC_VAR_SET_Rom(variant, value) PSC_VAR_SET_object(Rom, variant, value)
-PSC_CLASS_START(Rom)
-   PSC_PROP_R(Rom, string, Name)
-   PSC_PROP_R(Rom, int32, State)
-   PSC_PROP_R(Rom, string, StateDescription)
-   PSC_PROP_R(Rom, int32, Length)
-   PSC_PROP_R(Rom, int32, ExpLength)
-   PSC_PROP_R(Rom, int32, Checksum)
-   PSC_PROP_R(Rom, int32, ExpChecksum)
-   PSC_PROP_R(Rom, int32, Flags)
-   //PSC_FUNCTION0(Rom, void, Audit) // not yet supported (2 functions with the same name, matched by their arguments)
-   PSC_FUNCTION1(Rom, void, Audit, bool)
-PSC_CLASS_END(Rom)
+#define PSC_VAR_SET_PinMAME_Rom(variant, value) PSC_VAR_SET_object(Rom, variant, value)
+PSC_CLASS_START(PinMAME_Rom, Rom)
+   PSC_PROP_R(string, Name)
+   PSC_PROP_R(int32, State)
+   PSC_PROP_R(string, StateDescription)
+   PSC_PROP_R(int32, Length)
+   PSC_PROP_R(int32, ExpLength)
+   PSC_PROP_R(int32, Checksum)
+   PSC_PROP_R(int32, ExpChecksum)
+   PSC_PROP_R(int32, Flags)
+   //PSC_FUNCTION0(void, Audit) // not yet supported (2 functions with the same name, matched by their arguments)
+   PSC_FUNCTION1(void, Audit, bool)
+PSC_CLASS_END()
 
-PSC_CLASS_START(Roms)
-PSC_CLASS_END(Roms)
+PSC_CLASS_START(PinMAME_Roms, Roms)
+PSC_CLASS_END()
 
-#define PSC_VAR_SET_Settings(variant, value) PSC_VAR_SET_object(Settings, variant, value)
-PSC_CLASS_START(Settings)
-   PSC_PROP_RW_ARRAY1(Settings, int, Value, string)
-PSC_CLASS_END(Settings)
+#define PSC_VAR_SET_PinMAME_Settings(variant, value) PSC_VAR_SET_object(Settings, variant, value)
+PSC_CLASS_START(PinMAME_Settings, Settings)
+   PSC_PROP_RW_ARRAY1(int, Value, string)
+PSC_CLASS_END()
 
-#define PSC_VAR_SET_GameSettings(variant, value) PSC_VAR_SET_object(GameSettings, variant, value)
-PSC_CLASS_START(GameSettings)
-   PSC_PROP_RW_ARRAY1(GameSettings, int, Value, string)
-PSC_CLASS_END(GameSettings)
+#define PSC_VAR_SET_PinMAME_GameSettings(variant, value) PSC_VAR_SET_object(GameSettings, variant, value)
+PSC_CLASS_START(PinMAME_GameSettings, GameSettings)
+   PSC_PROP_RW_ARRAY1(int, Value, string)
+PSC_CLASS_END()
 
-#define PSC_VAR_SET_Game(variant, value) PSC_VAR_SET_object(Game, variant, value)
-PSC_CLASS_START(Game)
-   PSC_PROP_R(Game, string, Name)
-   PSC_PROP_R(Game, string, Description)
-   PSC_PROP_R(Game, string, Year)
-   PSC_PROP_R(Game, string, Manufacturer)
-   PSC_PROP_R(Game, string, CloneOf)
-   PSC_PROP_R(Game, GameSettings, Settings)
-PSC_CLASS_END(Game)
+#define PSC_VAR_SET_PinMAME_Game(variant, value) PSC_VAR_SET_object(Game, variant, value)
+PSC_CLASS_START(PinMAME_Game, Game)
+   PSC_PROP_R(string, Name)
+   PSC_PROP_R(string, Description)
+   PSC_PROP_R(string, Year)
+   PSC_PROP_R(string, Manufacturer)
+   PSC_PROP_R(string, CloneOf)
+   PSC_PROP_R(PinMAME_GameSettings, Settings)
+PSC_CLASS_END()
 
-PSC_CLASS_START(Games)
-PSC_CLASS_END(Games)
+PSC_CLASS_START(PinMAME_Games, Games)
+PSC_CLASS_END()
 
-PSC_CLASS_START(ControllerSettings)
-PSC_CLASS_END(ControllerSettings)
+PSC_CLASS_START(PinMAME_ControllerSettings, ControllerSettings)
+PSC_CLASS_END()
 
-PSC_ARRAY1(ByteArray, uint8, 0)
-#define PSC_VAR_SET_ByteArray(variant, value) PSC_VAR_SET_array1(ByteArray, variant, value)
-#define PSC_VAR_ByteArray(variant) PSC_VAR_array1(uint8_t, variant)
+PSC_ARRAY1(PinMAME_ByteArray, uint8, 0)
+#define PSC_VAR_SET_PinMAME_ByteArray(variant, value) PSC_VAR_SET_array1(PinMAME_ByteArray, variant, value)
+#define PSC_VAR_PinMAME_ByteArray(variant) PSC_VAR_array1(uint8_t, variant)
 
-PSC_ARRAY1(IntArray, int32, 0)
-#define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
+PSC_ARRAY1(PinMAME_IntArray, int32, 0)
+#define PSC_VAR_SET_PinMAME_IntArray(variant, value) PSC_VAR_SET_array1(PinMAME_IntArray, variant, value)
 
 // Map a an array of struct to a 2 dimensions array of int32_t
-PSC_ARRAY2(StructArray, int32, 0, 0)
-#define PSC_VAR_SET_StructArray2(structType, fieldName1, fieldName2, variant, value) { \
+PSC_ARRAY2(PinMAME_StructArray, int32, 0, 0)
+#define PSC_VAR_SET_PinMAME_StructArray2(structType, fieldName1, fieldName2, variant, value) { \
       const unsigned int nDimensions = 2; \
       const std::vector<structType>& vec = (value); \
       const size_t size0 = vec.size(); \
@@ -94,7 +92,7 @@ PSC_ARRAY2(StructArray, int32, 0, 0)
       } \
       (variant).vArray = array; \
    }
-#define PSC_VAR_SET_StructArray3(structType, fieldName1, fieldName2, fieldName3, variant, value) { \
+#define PSC_VAR_SET_PinMAME_StructArray3(structType, fieldName1, fieldName2, fieldName3, variant, value) { \
       const unsigned int nDimensions = 3; \
       const std::vector<structType>& vec = (value); \
       const size_t size0 = vec.size(); \
@@ -111,86 +109,86 @@ PSC_ARRAY2(StructArray, int32, 0, 0)
       (variant).vArray = array; \
    }
 
-#define PSC_PROP_R_StructArray2(className, type, fieldName1, fieldName2, name) \
-   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
+#define PSC_PROP_R_StructArray2(type, fieldName1, fieldName2, name) \
+   members.push_back( { { #name }, { "PinMAME_StructArray" }, 0, { }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray2(type, fieldName1, fieldName2, *pRet, static_cast<className*>(me)->Get##name()); } });
+         PSC_VAR_SET_PinMAME_StructArray2(type, fieldName1, fieldName2, *pRet, static_cast<_BindedClass*>(me)->Get##name()); } });
 
-#define PSC_PROP_R_StructArray3(className, type, fieldName1, fieldName2, fieldName3, name) \
-   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
+#define PSC_PROP_R_StructArray3(type, fieldName1, fieldName2, fieldName3, name) \
+   members.push_back( { { #name }, { "PinMAME_StructArray" }, 0, { }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name()); } });
-#define PSC_PROP_R_StructArray3_2(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2) \
-   members.push_back( { { #name }, { "StructArray" }, 2, { { #arg1 }, { #arg2 } }, \
+         PSC_VAR_SET_PinMAME_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<_BindedClass*>(me)->Get##name()); } });
+#define PSC_PROP_R_StructArray3_2(type, fieldName1, fieldName2, fieldName3, name, arg1, arg2) \
+   members.push_back( { { #name }, { "PinMAME_StructArray" }, 2, { { #arg1 }, { #arg2 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]) )); } } );
-#define PSC_PROP_R_StructArray3_3(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3) \
-   members.push_back( { { #name }, { "StructArray"}, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
+         PSC_VAR_SET_PinMAME_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<_BindedClass*>(me)->Get##name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]))); } });
+#define PSC_PROP_R_StructArray3_3(type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3) \
+   members.push_back( { { #name }, { "PinMAME_StructArray"}, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]) )); } } );
-#define PSC_PROP_R_StructArray3_4(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3, arg4) \
-   members.push_back( { { #name }, { "StructArray" }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
+         PSC_VAR_SET_PinMAME_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<_BindedClass*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]) )); } } );
+#define PSC_PROP_R_StructArray3_4(type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3, arg4) \
+   members.push_back( { { #name }, { "PinMAME_StructArray" }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )); } } );
+         PSC_VAR_SET_PinMAME_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<_BindedClass*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )); } } );
 
 
-PSC_CLASS_START(Controller)
+PSC_CLASS_START(PinMAME_Controller, Controller)
    // Overall setup
-   PSC_PROP_R(Controller, string, Version)
-   PSC_PROP_RW(Controller, string, GameName)
-   PSC_PROP_R(Controller, string, ROMName)
-   PSC_PROP_RW(Controller, string, SplashInfoLine)
-   PSC_PROP_RW(Controller, bool, ShowTitle)
-   PSC_PROP_RW(Controller, bool, HandleKeyboard)
-   PSC_PROP_RW(Controller, bool, HandleMechanics)
-   PSC_PROP_RW_ARRAY1(Controller, int32, SolMask, int)
+   PSC_PROP_R(string, Version)
+   PSC_PROP_RW(string, GameName)
+   PSC_PROP_R(string, ROMName)
+   PSC_PROP_RW(string, SplashInfoLine)
+   PSC_PROP_RW(bool, ShowTitle)
+   PSC_PROP_RW(bool, HandleKeyboard)
+   PSC_PROP_RW(bool, HandleMechanics)
+   PSC_PROP_RW_ARRAY1(int32, SolMask, int)
    // Run/Pause/Stop
-   PSC_FUNCTION0(Controller, void, Run)
-   PSC_FUNCTION1(Controller, void, Run, int32)
-   PSC_FUNCTION2(Controller, void, Run, int32, int)
-   PSC_PROP_W(Controller, double, TimeFence)
-   PSC_PROP_R(Controller, bool, Running)
-   PSC_PROP_RW(Controller, bool, Pause)
-   PSC_FUNCTION0(Controller, void, Stop)
-   PSC_PROP_RW(Controller, bool, Hidden)
+   PSC_FUNCTION0(void, Run)
+   PSC_FUNCTION1(void, Run, int32)
+   PSC_FUNCTION2(void, Run, int32, int)
+   PSC_PROP_W(double, TimeFence)
+   PSC_PROP_R(bool, Running)
+   PSC_PROP_RW(bool, Pause)
+   PSC_FUNCTION0(void, Stop)
+   PSC_PROP_RW(bool, Hidden)
    // Emulated machine state access
-   PSC_PROP_RW_ARRAY1(Controller, bool, Switch, int)
-   PSC_PROP_W_ARRAY1(Controller, int32, Mech, int)
-   PSC_PROP_R_ARRAY1(Controller, int32, GetMech, int)
-   PSC_PROP_R_ARRAY1(Controller, bool, Lamp, int)
-   PSC_PROP_R_ARRAY1(Controller, bool, Solenoid, int)
-   PSC_PROP_R_ARRAY1(Controller, int32, GIString, int)
-   PSC_PROP_RW_ARRAY1(Controller, int32, Dip, int)
-   PSC_PROP_R(Controller, ByteArray, NVRAM)
-   PSC_PROP_R_StructArray3(Controller, PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
-   PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);
-   PSC_PROP_R_StructArray2(Controller, PinmameGIState, giNo, state, ChangedGIStrings);
-   PSC_PROP_R_StructArray2(Controller, PinmameSolenoidState, solNo, state, ChangedSolenoids);
-   PSC_PROP_R_StructArray2(Controller, PinmameSoundCommand, sndNo, sndNo, NewSoundCommands); // 2nd field is unused
-   PSC_PROP_R_StructArray3_2(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int);
-   PSC_PROP_R_StructArray3_3(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int);
-   PSC_PROP_R_StructArray3_4(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int, int);
-   PSC_PROP_R(Controller, int, RawDmdWidth)
-   PSC_PROP_R(Controller, int, RawDmdHeight)
-   PSC_PROP_R(Controller, ByteArray, RawDmdPixels)
-   PSC_PROP_R(Controller, IntArray, RawDmdColoredPixels)
+   PSC_PROP_RW_ARRAY1(bool, Switch, int)
+   PSC_PROP_W_ARRAY1(int32, Mech, int)
+   PSC_PROP_R_ARRAY1(int32, GetMech, int)
+   PSC_PROP_R_ARRAY1(bool, Lamp, int)
+   PSC_PROP_R_ARRAY1(bool, Solenoid, int)
+   PSC_PROP_R_ARRAY1(int32, GIString, int)
+   PSC_PROP_RW_ARRAY1(int32, Dip, int)
+   PSC_PROP_R(PinMAME_ByteArray, NVRAM)
+   PSC_PROP_R_StructArray3(PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
+   PSC_PROP_R_StructArray2(PinmameLampState, lampNo, state, ChangedLamps);
+   PSC_PROP_R_StructArray2(PinmameGIState, giNo, state, ChangedGIStrings);
+   PSC_PROP_R_StructArray2(PinmameSolenoidState, solNo, state, ChangedSolenoids);
+   PSC_PROP_R_StructArray2(PinmameSoundCommand, sndNo, sndNo, NewSoundCommands); // 2nd field is unused
+   PSC_PROP_R_StructArray3_2(PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int);
+   PSC_PROP_R_StructArray3_3(PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int);
+   PSC_PROP_R_StructArray3_4(PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int, int);
+   PSC_PROP_R(int, RawDmdWidth)
+   PSC_PROP_R(int, RawDmdHeight)
+   PSC_PROP_R(PinMAME_ByteArray, RawDmdPixels)
+   PSC_PROP_R(PinMAME_IntArray, RawDmdColoredPixels)
    // Overall information
-   PSC_PROP_R_ARRAY1(Controller, Game, Games, string)
+   PSC_PROP_R_ARRAY1(PinMAME_Game, Games, string)
    // Deprecated properties
-   PSC_PROP_RW(Controller, bool, DoubleSize)
-   PSC_PROP_RW(Controller, bool, LockDisplay)
-   PSC_PROP_RW(Controller, bool, ShowFrame)
-   PSC_PROP_RW(Controller, bool, ShowDMDOnly)
-   PSC_PROP_RW(Controller, bool, ShowTitle)
-   PSC_PROP_RW(Controller, int, FastFrames)
-   PSC_PROP_RW(Controller, bool, IgnoreRomCrc)
-   PSC_PROP_RW(Controller, bool, CabinetMode)
-   PSC_PROP_RW(Controller, int, SoundMode)
-   PSC_FUNCTION0(Controller, void, ShowOptsDialog)
-   PSC_FUNCTION1(Controller, void, ShowOptsDialog, int32)
+   PSC_PROP_RW(bool, DoubleSize)
+   PSC_PROP_RW(bool, LockDisplay)
+   PSC_PROP_RW(bool, ShowFrame)
+   PSC_PROP_RW(bool, ShowDMDOnly)
+   PSC_PROP_RW(bool, ShowTitle)
+   PSC_PROP_RW(int, FastFrames)
+   PSC_PROP_RW(bool, IgnoreRomCrc)
+   PSC_PROP_RW(bool, CabinetMode)
+   PSC_PROP_RW(int, SoundMode)
+   PSC_FUNCTION0(void, ShowOptsDialog)
+   PSC_FUNCTION1(void, ShowOptsDialog, int32)
    // Custom property to allow host to identify the object as the plugin version
-   members.push_back({ { "IsPlugin" }, { "bool" }, 0, {}, [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { pRet->vBool = true; } });
-PSC_CLASS_END(Controller)
+   PSC_PROP_R(bool, IsPlugin)
+PSC_CLASS_END()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,21 +409,20 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    // Contribute our API to the script engine
    getScriptApiMsgId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiMsgId, &scriptApi);
-   auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
-   auto aliasLambda = [&](const char* name, const char* aliasedType) { scriptApi->RegisterScriptTypeAlias(name, aliasedType); };
-   auto arrayLambda = [&](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
-   RegisterRomSCD(regLambda);
-   RegisterRomsSCD(regLambda);
-   RegisterGameSCD(regLambda);
-   RegisterGamesSCD(regLambda);
-   RegisterSettingsSCD(regLambda);
-   RegisterGameSettingsSCD(regLambda);
-   RegisterControllerSCD(regLambda);
-   RegisterControllerSettingsSCD(regLambda);
-   RegisterByteArraySCD(arrayLambda);
-   RegisterIntArraySCD(arrayLambda);
-   RegisterStructArraySCD(arrayLambda);
-   Controller_SCD->CreateObject = []()
+   auto regLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+   auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
+   RegisterPinMAME_Rom(regLambda);
+   RegisterPinMAME_Roms(regLambda);
+   RegisterPinMAME_Game(regLambda);
+   RegisterPinMAME_Games(regLambda);
+   RegisterPinMAME_Settings(regLambda);
+   RegisterPinMAME_GameSettings(regLambda);
+   RegisterPinMAME_Controller(regLambda);
+   RegisterPinMAME_ControllerSettings(regLambda);
+   RegisterPinMAME_ByteArray(arrayLambda);
+   RegisterPinMAME_IntArray(arrayLambda);
+   RegisterPinMAME_StructArray(arrayLambda);
+   PinMAME_Controller_SCD->CreateObject = []()
    {
       assert(controller == nullptr); // We do not support having multiple instance running concurrently
 
@@ -495,8 +492,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
       return static_cast<void*>(pController);
    };
-   scriptApi->SubmitTypeLibrary();
-   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", Controller_SCD);
+   scriptApi->SubmitTypeLibrary(endpointId);
+   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", PinMAME_Controller_SCD);
 
    PinmameSetMsgAPI(const_cast<MsgPluginAPI*>(msgApi), endpointId);
 }
@@ -504,16 +501,38 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
 {
    if (controller)
-      controller->Stop();
+   {
+      int nRemainingRef = 0;
+      while (controller)
+      {
+         controller->Release();
+         nRemainingRef++;
+      }
+      LOGE(std::format("PinMAME Controller was not destroyed before unloading the plugin ({} remaining references)", nRemainingRef));
+   }
    StopAudioStream();
+
+   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
+   auto regLambda = [](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
+   auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->UnregisterScriptArrayType(sad); };
+   UnregisterPinMAME_Rom(regLambda);
+   UnregisterPinMAME_Roms(regLambda);
+   UnregisterPinMAME_Game(regLambda);
+   UnregisterPinMAME_Games(regLambda);
+   UnregisterPinMAME_Settings(regLambda);
+   UnregisterPinMAME_GameSettings(regLambda);
+   UnregisterPinMAME_Controller(regLambda);
+   UnregisterPinMAME_ControllerSettings(regLambda);
+   UnregisterPinMAME_ByteArray(arrayLambda);
+   UnregisterPinMAME_IntArray(arrayLambda);
+   UnregisterPinMAME_StructArray(arrayLambda);
+
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
-   msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc);
+   msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
    msgApi->ReleaseMsgID(getAudioSrcId);
    msgApi->ReleaseMsgID(onAudioSrcChangedId);
-   // TODO we should unregister the script API contribution
-   scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    msgApi->FlushPendingCallbacks(endpointId);
    PinmameSetMsgAPI(nullptr, 0);
    msgApi = nullptr;

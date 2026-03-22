@@ -384,10 +384,10 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    StopColorization();
-   msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc);
-   msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged);
-   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
-   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
+   msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc, nullptr);
+   msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
    msgApi->ReleaseMsgID(onControllerGameStartId);
    msgApi->ReleaseMsgID(onControllerGameEndId);
    msgApi->ReleaseMsgID(onDmdTrigger);

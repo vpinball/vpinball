@@ -53,11 +53,11 @@ DOFEventStream::~DOFEventStream()
    for (unsigned int i = 0; i < m_b2sDevSrc.nDevices; i++)
       m_b2sDevSrc.SetChangeCallback(i, 0, OnB2SStateChg, this);
 
-   m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onDevSrcChangedId, OnDevSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onInputSrcChangedId, OnInputSrcChanged);
-   m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger);
+   m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged, this);
+   m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged, this);
+   m_msgApi->UnsubscribeMsg(m_onDevSrcChangedId, OnDevSrcChanged, this);
+   m_msgApi->UnsubscribeMsg(m_onInputSrcChangedId, OnInputSrcChanged, this);
+   m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger, this);
    delete[] m_b2sInputSrc.inputDefs;
    delete[] m_b2sDevSrc.deviceDefs;
    delete[] m_pmInputSrc.inputDefs;

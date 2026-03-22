@@ -475,7 +475,7 @@ void Ball::Render(const unsigned int renderMask)
          Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
          // Release on main thread as Ball methods are not multithreaded
-         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
+         g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)

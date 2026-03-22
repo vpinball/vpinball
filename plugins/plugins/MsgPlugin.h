@@ -211,7 +211,7 @@ typedef struct MsgPluginAPI
    void(MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
    unsigned int (MSGPIAPI* GetMsgID)(const char* name_space, const char* name);
    void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
-   void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
+   void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (MSGPIAPI* BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
    void (MSGPIAPI* SendMsg)(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    void (MSGPIAPI* ReleaseMsgID)(const unsigned int msgId);

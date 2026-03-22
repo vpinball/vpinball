@@ -267,17 +267,17 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
     if (msgApi) {
         msgApi->FlushPendingCallbacks(endpointId);
         if (onControllerGameStartId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
+            msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
             msgApi->ReleaseMsgID(onControllerGameStartId);
             onControllerGameStartId = 0;
         }
         if (onSoundCommandId != 0) {
-            msgApi->UnsubscribeMsg(onSoundCommandId, OnSoundCommand);
+            msgApi->UnsubscribeMsg(onSoundCommandId, OnSoundCommand, nullptr);
             msgApi->ReleaseMsgID(onSoundCommandId);
             onSoundCommandId = 0;
         }
         if (onControllerGameEndId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
+            msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
             msgApi->ReleaseMsgID(onControllerGameEndId);
             onControllerGameEndId = 0;
         }
@@ -286,12 +286,12 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
             onAudioUpdateId = 0;
         }
         if (getAudioSrcId != 0) {
-            msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc);
+            msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
             msgApi->ReleaseMsgID(getAudioSrcId);
             getAudioSrcId = 0;
         }
         if (onAudioSrcChangedId != 0) {
-            msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged);
+            msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged, nullptr);
             msgApi->ReleaseMsgID(onAudioSrcChangedId);
             onAudioSrcChangedId = 0;
         }
