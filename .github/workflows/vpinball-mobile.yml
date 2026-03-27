@@ -2,6 +2,10 @@ name: vpinball-mobile
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
 
@@ -56,25 +60,32 @@ jobs:
           brew install bison autoconf automake libtool ldid
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v6
-      - name: Calculate external cache timestamp
+      - name: Calculate external cache hash
         run: |
-          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+          echo "EXT_HASH=$(cat platforms/config.sh platforms/ios-arm64/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
       - name: Restore external cache
+        id: cache
         uses: actions/cache/restore@v5
         with:
           path: external
-          key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: ios-arm64-${{ matrix.config }}-external-${{ env.EXT_HASH }}
           restore-keys: |
-            BGFX-ios-arm64-${{ matrix.config }}-external-
+            ios-arm64-${{ matrix.config }}-external-
       - name: Build external cache
         run: |
           BUILD_TYPE=${{ matrix.config }} ./platforms/ios-arm64/external.sh
-      - if: ${{ !cancelled() }} 
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Clean external cache
+        run: |
+          find external -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+          find external -name "*.tar.gz" -delete 2>/dev/null || true
+          find external \( -name "*.o" -o -name "*.obj" \) -delete 2>/dev/null || true
+      - if: steps.cache.outputs.cache-hit != 'true'
         name: Save external cache
         uses: actions/cache/save@v5
         with:
           path: external
-          key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: ios-arm64-${{ matrix.config }}-external-${{ env.EXT_HASH }}
       - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
@@ -129,25 +140,32 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - uses: actions/checkout@v6
-      - name: Calculate external cache timestamp
+      - name: Calculate external cache hash
         run: |
-          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+          echo "EXT_HASH=$(cat platforms/config.sh platforms/android-arm64-v8a/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
       - name: Restore external cache
+        id: cache
         uses: actions/cache/restore@v5
         with:
           path: external
-          key: BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: android-arm64-v8a-${{ matrix.config }}-external-${{ env.EXT_HASH }}
           restore-keys: |
-            BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-
+            android-arm64-v8a-${{ matrix.config }}-external-
       - name: Build external cache
         run: |
           BUILD_TYPE=${{ matrix.config }} ./platforms/android-arm64-v8a/external.sh
-      - if: ${{ !cancelled() }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Clean external cache
+        run: |
+          find external -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+          find external -name "*.tar.gz" -delete 2>/dev/null || true
+          find external \( -name "*.o" -o -name "*.obj" \) -delete 2>/dev/null || true
+      - if: steps.cache.outputs.cache-hit != 'true'
         name: Save external cache
         uses: actions/cache/save@v5
         with:
           path: external
-          key: BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: android-arm64-v8a-${{ matrix.config }}-external-${{ env.EXT_HASH }}
       - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
