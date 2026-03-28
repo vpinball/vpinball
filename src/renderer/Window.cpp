@@ -344,7 +344,7 @@ void Window::SetSize(const int x, const int y)
             delete m_backBuffer;
             m_backBuffer = nullptr;
             // We must destroy the swapchain before attaching a new swapchain, so flush and flip now
-            g_pplayer->m_renderer->m_renderDevice->SubmitAndFlipFrame();
+            g_pplayer->m_renderer->m_renderDevice->Flip();
             g_pplayer->m_renderer->m_renderDevice->AddWindow(this);
          });
    }

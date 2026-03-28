@@ -524,8 +524,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          if (!rd->m_framePending)
             continue;
          const bool useVSync = (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract);
-         const bool noSync = rd->m_frameNoSync;
-         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
+         const bool noPresent = rd->m_frameNoPresent;
+         const bool needsVSync = useVSync && !noPresent; // User has activated VSync, and we are not processing an unpresented frame (offline rendering for example)
          g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
 
 #if defined(__ANDROID__)
@@ -555,10 +555,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
-            rd->m_frameNoSync = false;
+            rd->m_frameNoPresent = false;
             const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
             const int windowHeight = rd->m_outputWnd[0]->GetPixelHeight();
-            if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
+            if (((gpuVSync != needsVSync) && !noPresent) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
             {
                gpuVSync = needsVSync;
                backBufferWidth = windowWidth;
@@ -573,7 +573,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
-         if (!noSync && // This is a synced frame (not offline rendering)
+         if (!noPresent && // This is a synced frame (not offline rendering)
             ((!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f) // the user has disabled VSync without an unbound FPS limit
                || (useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate()))) // the user has enabled VSync with a max FPS below the display FPS
          {
@@ -604,7 +604,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
 #endif
-            rd->Flip();
+            if (noPresent)
+               rd->SubmitAndFlipFrame(false);
+            else
+               rd->Flip();
             if (!rd->m_screenshotWindow.empty())
             {
                rd->m_screenshotFrameDelay--;
@@ -1725,6 +1728,49 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
       lambda();
 }
 
+#if defined(ENABLE_BGFX)
+void RenderDevice::NextView()
+{
+   if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
+   {
+      PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
+      SubmitRenderFrame();
+      bgfx::frame(BGFX_FRAME_FLUSH);
+      ResetActiveView();
+   }
+   m_activeViewId++;
+   bgfx::resetView(m_activeViewId);
+   bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
+   bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
+   bgfx::touch(m_activeViewId);
+}
+
+void RenderDevice::ResetActiveView()
+{
+   RenderTarget::OnFrameFlushed();
+   m_activeViewId = 1; // view 0 & 1 are reserved for mipmap generation (so 1 is before the first available for rendering)
+}
+
+void RenderDevice::SubmitAndFlipFrame(bool present)
+{
+   // Process pending texture upload/mipmap generation before flipping the frame
+   for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
+   {
+      (*it)->GetCoreTexture(true);
+      if ((*it)->IsMipMapGenerated())
+      {
+         it = m_pendingTextureUploads.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
+   bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
+   ResetActiveView();
+}
+#endif
+
 // Schedule frame presentation (usually by flipping the front & back buffer)
 void RenderDevice::Flip()
 {
@@ -1756,20 +1802,7 @@ void RenderDevice::Flip()
 
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    #if defined(ENABLE_BGFX)
-   // Process pending texture upload/mipmap generation before flipping the frame
-   for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
-   {
-      (*it)->GetCoreTexture(true);
-      if ((*it)->IsMipMapGenerated())
-      {
-         it = m_pendingTextureUploads.erase(it);
-      }
-      else
-      {
-         ++it;
-      }
-   }
-   SubmitAndFlipFrame();
+   SubmitAndFlipFrame(true);
 
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
@@ -2095,7 +2128,7 @@ void RenderDevice::SubmitRenderFrame()
    {
       // post semaphore and wait for render thread to process frame
       m_framePending = true;
-      m_frameNoSync = true;
+      m_frameNoPresent = true;
       m_frameMutex.unlock(); // release the lock and wait for render thread to process the frame
       m_frameReadySem.post();
       while (m_framePending)

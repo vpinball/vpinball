@@ -254,48 +254,29 @@ private:
 
 #if defined(ENABLE_BGFX)
 public:
+   void NextView();
+   void ResetActiveView();
+
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
-   void NextView()
-   {
-      if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
-      {
-         PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
-         SubmitRenderFrame();
-         SubmitAndFlipFrame();
-      }
-      m_activeViewId++;
-      bgfx::resetView(m_activeViewId);
-      bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
-      bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
-      bgfx::touch(m_activeViewId);
-   }
-   void ResetActiveView()
-   {
-      RenderTarget::OnFrameFlushed();
-      m_activeViewId = 1; // view 0 & 1 are reserved for mipmap generation (so 1 is before the first available for rendering)
-   }
-   void SubmitAndFlipFrame()
-   {
-      ResetActiveView();
-      bgfx::frame(); // BGFX always flips backbuffer when its render queue is submitted
-   }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    bgfx::ViewId m_activeViewId = 0;
    uint64_t m_bgfxState = 0;
 
-   bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled
+   bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
 private:
-   bool m_renderDeviceAlive;
-   std::thread m_renderThread;
+   void SubmitAndFlipFrame(bool present);
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
    static colorFormat BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format);
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
+
+   bool m_renderDeviceAlive;
+   std::thread m_renderThread;
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;
 
