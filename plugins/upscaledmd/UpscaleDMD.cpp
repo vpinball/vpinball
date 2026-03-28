@@ -4,6 +4,7 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
 
+#include <format>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -48,6 +49,12 @@
 #ifdef __SSSE3__
  #include <tmmintrin.h>
 #endif
+
+LPI_USE_CPP();
+#define LOGD UpscaleDMD::LPI_LOGD_CPP
+#define LOGI UpscaleDMD::LPI_LOGI_CPP
+#define LOGW UpscaleDMD::LPI_LOGW_CPP
+#define LOGE UpscaleDMD::LPI_LOGE_CPP
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -332,6 +339,7 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
 {
    bool wasRendering = IsSourceSelected();
    bool modeChanged = upscalerMode != nextUpscalerMode;
+   DisplaySrcId prevSrc = dmdSrc;
    DisplaySrcId selectedSrc {};
 
    // Request new source (without locking the render thread)
@@ -349,7 +357,6 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
       upscalerMode = nextUpscalerMode;
       if (IsSourceSelected())
       {
-         // LPI_LOGI("DMD Upscaler source selected [endpointId=%d, %dx%d]", selectedSrc.id.endpointId, selectedSrc.width, selectedSrc.height);
          displayId = {
             .id = { { endpointId, 0 } },
             .groupId = { { endpointId, 0 } },
@@ -398,8 +405,11 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
       }
    }
 
+   if (prevSrc.id.id != dmdSrc.id.id)
+      LOGI(std::format("DMD Upscaler source selected [endpointId={}.{}, {}x{} fmt={}]", dmdSrc.id.endpointId, dmdSrc.id.resId, dmdSrc.width, dmdSrc.height, dmdSrc.frameFormat));
+
    // If we are starting or stopping rendering, or changed our display, report it
-   if (modeChanged || wasRendering != IsSourceSelected())
+   if (modeChanged || (prevSrc.id.id != dmdSrc.id.id))
       msgApi->BroadcastMsg(endpointId, onDisplaySrcChangedId, nullptr);
 }
 
