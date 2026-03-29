@@ -283,8 +283,18 @@ void PerfUI::RenderFPS()
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2());
    ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
    ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
-   string text;
+   #ifdef ENABLE_BGFX
+      if (m_player->m_renderer->m_renderDevice->GetRenderLatency() > 0.f)
+         ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * m_player->m_renderer->m_renderDevice->GetRenderLatency());
+      else
+         ImGui::Text("Render: %5.1ffps", 1e6 / frameLength);
+   #else
+      ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME));
+   #endif
+
+   bool hasFlipperLatency = false;
    if (const uint64_t lastFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetLeftFlipperActionId()]->GetLastStateChange(); usec() < lastFlipChange + 1000000ULL)
    {
       for (const auto part : m_player->m_ptable->GetParts())
@@ -295,20 +305,16 @@ void PerfUI::RenderFPS()
             {
                const double prevAcqToAction = 1e-3 * (static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange) + m_player->m_pininput.m_leftFlipperLastChangePollDelay);
                const double acqToAction = 1e-3 * static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange);
-               text = std::format("Render: {:5.1f}fps {:4.1f}ms ({:4.1f}ms)\nFlipper latency: {:3.1f} - {:3.1f}ms", 1e6 / frameLength, 1e-3 * frameLength,
-                  1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), acqToAction, prevAcqToAction);
+               ImGui::Text("Flipper latency: %3.1f - %3.1fms", acqToAction, prevAcqToAction);
+               hasFlipperLatency = true;
                break;
             }
          }
       }
    }
-   if (text.empty())
-   {
-      text = std::format("Render: {:5.1f}fps {:4.1f}ms ({:4.1f}ms)\nLatency: {:4.1f}ms ({:4.1f}ms max)", 1e6 / frameLength, 1e-3 * frameLength,
-         1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(false),
-         1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(true));
-   }
-   ImGui::Text("%s", text.c_str());
+   if (!hasFlipperLatency)
+      ImGui::Text("Input Latency: %4.1fms (%4.1fms max)", 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(false), 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(true));
+
    ImGui::EndChild();
    if (m_showPerf == PerfMode::PM_FPS)
       ImGui::PopStyleVar();

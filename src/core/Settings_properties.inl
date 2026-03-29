@@ -98,14 +98,10 @@ PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth,
    m_propPlayerVR_PreviewColorDepth);
 
 // Graphics synchronisation and latency reduction
-#if defined(ENABLE_BGFX)
-PropEnum(Player, SyncMode, "Synchronization"s, "None: No synchronization.\nVertical Sync: Synchronize on video sync, which avoids video tearing, but has higher input latency."s, int, 1, "No Sync"s, "Vertical Sync"s);
-#else
 PropEnum(Player, SyncMode, "Synchronization"s,
-   "None: No synchronization.\nVertical Sync: Synchronize on video sync, which avoids video tearing, but has higher input latency.\nAdaptive Sync: Synchronize on video sync, "
-   "except for late frames (below target FPS), also features higher input latency.\nFrame Pacing: same as adaptive sync, but with lower latency. Comes with the risk of introducing more stutters if the computer is not powerful enough."s,
-   int, 1, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
-#endif
+   "None: No synchronization.\nVertical Sync: Synchronize on video sync, avoids video tearing at the price of high visual latency.\nAdaptive Sync: Synchronize on video sync, "
+   "except for late frames (below target FPS), also features higher visual latency.\nFrame Pacing: pace the frame rendering to limit visual latency, comes with the risk of introducing more stutters if the computer is not powerful enough."s,
+   int, 3, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
 PropFloat(Player, MaxFramerate, "Limit Framerate"s,
    "-1 will limit FPS to the display refresh rate\n0 will not limit the display refresh rate\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
    1000.f, -1.f);

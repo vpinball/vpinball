@@ -126,11 +126,11 @@ void GraphicSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Display synchronization"s));
 
    // Sync modes:
-   // - Hardware Synchronization (Hardware VSync)
-   // - Hardware Synchronization (Adaptive Vsync)
-   // - Hardware Synchronization (Frame Pacing) => 'fake' multithreading where VSYNC is done on an ancillary thread while continuously syncing game logic/rendering
-   // - Synchronize to display FPS (Software VSync)
-   // - Synchronize to user selected FPS
+   // - Hardware VSync
+   // - Adaptive Vsync (hardware or software): hardware VSync if not late
+   // - Frame Pacing: produce frames at a pace that correspond to the GPU rendering to limit input and display latency (not blocking on GPU flip, not filling GPU frame in flight queue)
+   // - Software VSync: synchronize to display FPS
+   // - User selected FPS
    // Sync: None / VSync / Adaptive VSync / Frame Paced VSync
    // Limit FPS: None / Display / User
    constexpr bool adaptiveVSyncSupported = isDX9 || isOpenGL;
@@ -139,23 +139,25 @@ void GraphicSettingsPage::BuildPage()
          "Select how frame generation is synchronized to display refresh rate.\nHardware synchronization is recommended for smoother gameplay.\nVSync stands for 'Vertical Synchronization'."s,
          false, 0, 0,
          vector { "Hardware VSync"s,
-#if defined(ENABLE_DX9) || defined(ENABLE_OPENGL)
-            "Hardware Adaptive VSync"s, "Hardware Frame Paced VSync"s,
+#if defined(ENABLE_OPENGL)
+            "Hardware Adaptive VSync"s,
+#elif defined(ENABLE_DX9)
+            "Software Adaptive VSync"s,
 #endif
-            "Software VSync"s, "Custom FPS"s, "No synchronization"s }),
+            "Frame Pacing"s, "Software VSync"s, "Custom FPS"s, "No synchronization"s }),
       [this]()
       {
          switch (m_player->GetVideoSyncMode())
          {
          case VideoSyncMode::VSM_VSYNC: return 0;
          case VideoSyncMode::VSM_ADAPTIVE_VSYNC: return 1;
-         case VideoSyncMode::VSM_FRAME_PACING: return 2;
+         case VideoSyncMode::VSM_FRAME_PACING: return adaptiveVSyncSupported ? 2 : 1;
          case VideoSyncMode::VSM_NONE:
             if (m_player->GetTargetRefreshRate() == m_player->m_playfieldWnd->GetRefreshRate())
-               return adaptiveVSyncSupported ? 3 : 1; // Main display refresh rate => Software VSync
+               return adaptiveVSyncSupported ? 3 : 2; // Main display refresh rate => Software VSync
             if (m_player->GetTargetRefreshRate() == 10000.f)
-               return adaptiveVSyncSupported ? 5 : 3; // No synchronization
-            return adaptiveVSyncSupported ? 4 : 2; // Custom FPS
+               return adaptiveVSyncSupported ? 5 : 4; // No synchronization
+            return adaptiveVSyncSupported ? 4 : 3; // Custom FPS
          default: assert(false); return 0;
          }
       }, // Live
@@ -165,43 +167,43 @@ void GraphicSettingsPage::BuildPage()
          {
          case VideoSyncMode::VSM_VSYNC: return 0;
          case VideoSyncMode::VSM_ADAPTIVE_VSYNC: return 1;
-         case VideoSyncMode::VSM_FRAME_PACING: return 2;
+         case VideoSyncMode::VSM_FRAME_PACING: return adaptiveVSyncSupported ? 2 : 1;
          case VideoSyncMode::VSM_NONE:
             if (settings.GetPlayer_MaxFramerate() == m_player->m_playfieldWnd->GetRefreshRate())
-               return adaptiveVSyncSupported ? 3 : 1; // Main display refresh rate => Software VSync
+               return adaptiveVSyncSupported ? 3 : 2; // Main display refresh rate => Software VSync
             if (settings.GetPlayer_MaxFramerate() == 10000.f)
-               return adaptiveVSyncSupported ? 5 : 3; // No synchronization
-            return adaptiveVSyncSupported ? 4 : 2; // Custom FPS
+               return adaptiveVSyncSupported ? 5 : 4; // No synchronization
+            return adaptiveVSyncSupported ? 4 : 3; // Custom FPS
          default: assert(false); return 0;
          }
       }, // Stored
       [this](int, int v)
       {
          if (!adaptiveVSyncSupported && v > 0)
-            v += 2;
+            v += 1;
          switch (v)
          {
-         case 0:
+         case 0: // Hardware VSync
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_VSYNC);
             m_player->SetTargetRefreshRate(10000.f);
             break;
-         case 1:
+         case 1: // Adaptive Sync
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC);
             m_player->SetTargetRefreshRate(10000.f);
             break;
-         case 2:
+         case 2: // Frame Pacing
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_FRAME_PACING);
             m_player->SetTargetRefreshRate(10000.f);
             break;
-         case 3:
+         case 3: // Software VSync
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_NONE);
             m_player->SetTargetRefreshRate(m_player->m_playfieldWnd->GetRefreshRate());
             break;
-         case 4:
+         case 4: // Custom FPS
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_NONE);
             m_player->SetTargetRefreshRate(roundf(2.f * m_player->m_playfieldWnd->GetRefreshRate()));
             break;
-         case 5:
+         case 5: // No synchronization
             m_player->SetVideoSyncMode(VideoSyncMode::VSM_NONE);
             m_player->SetTargetRefreshRate(10000.f);
             break;

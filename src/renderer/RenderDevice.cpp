@@ -341,7 +341,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // We first run in headless mode to initialize the underlying backend and try to gather information to select a supported backbuffer format
    // This is needed to select a safe backbuffer format but will fail under OpenGL or Linux. For these, we start using BGRA8 which seems to be supported everywhere and adjust afterward
    init.resolution.formatColor = bgfx::TextureFormat::BGRA8;
-   if (init.platformData.nwh && init.type != bgfx::RendererType::OpenGL && init.type != bgfx::RendererType::OpenGLES)
+   if (init.platformData.nwh && init.type != bgfx::RendererType::OpenGL && init.type != bgfx::RendererType::OpenGLES && init.type != bgfx::RendererType::Direct3D12)
    {
       const uint32_t width = init.resolution.width;
       const uint32_t height = init.resolution.height;
@@ -513,6 +513,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    {
       uint64_t lastFlipTick = 0;
       bool gpuVSync = false;
+      int framePacingFlushing = 0;
 
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
@@ -523,38 +524,58 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_renderProfiler->ExitProfileSection();
          if (!rd->m_framePending)
             continue;
-         const bool useVSync = (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract);
-         const bool noPresent = rd->m_frameNoPresent;
-         const bool needsVSync = useVSync && !noPresent; // User has activated VSync, and we are not processing an unpresented frame (offline rendering for example)
-         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
 
-#if defined(__ANDROID__)
-         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-         static void* prevNwh = nwh;
-         if (nwh != prevNwh)
-         {
-            prevNwh = nwh;
+         #if defined(__ANDROID__)
+            void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+            static void* prevNwh = nwh;
+            if (nwh != prevNwh)
+            {
+               prevNwh = nwh;
+               if (nwh == nullptr)
+                  continue;
+
+               bgfx::PlatformData pd = {};
+               pd.nwh = nwh;
+               bgfx::setPlatformData(pd);
+               gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
+            }
             if (nwh == nullptr)
                continue;
+         #endif
 
-            bgfx::PlatformData pd = {};
-            pd.nwh = nwh;
-            bgfx::setPlatformData(pd);
-            gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
-         }
-         if (nwh == nullptr)
-            continue;
-#endif
-
+         // Evaluate number of 'frames in flight', that is to say frames that have been submitted to the GPU but not yet processed
+         // We target 2 frames in flight (one just submitted, one being processed). If we have more than 3 we are in a situation 
+         // where the GPU is too much behind and we are piling up frames in the GPU queue, which is bad for latency. In this case,
+         // we start a flush sequence:
+         // - process a few frames without VSync to flush the queue (as they will be discarded or presented directly)
+         // - then process a few frame with VSync enabled, to measure the new number of frames in flights
+         // This is not really correct as gpuFrameNum is the last porocessed frame, not the last presented frame. Therefore 
+         // if all frames are quickly processed, gpuFrameNum will be the same as m_lastPresentFrameIdx, but the present queue
+         // will be filled up anyway, leading to high latency. The user needs to limit the maximum number of prerendered frame to
+         // avoid this situation. Still, the tests seem to dhow that the estimate is good enough.
+         const uint32_t framesInFlight = rd->m_lastPresentFrameIdx - bgfx::getStats()->gpuFrameNum;
+         if (framePacingFlushing > 0)
+            framePacingFlushing--;
+         else if (framesInFlight > 3 && g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING)
+            framePacingFlushing = 8;
+         const bool noPresent = rd->m_frameNoPresent;
+         const bool useVSync = (g_pplayer->GetVideoSyncMode() != VideoSyncMode::VSM_NONE) && (g_pplayer->m_playMode != Player::PlayMode::CaptureAttract);
+         const bool needsVSync = useVSync // User has activated VSync or is using frame pacing
+            && !noPresent // we are not processing an unpresented frame (offline rendering for example)
+            && (framePacingFlushing < 4); // We are not catching up
+         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
+         if (!noPresent && framesInFlight <= bgfx::getStats()->maxGpuLatency)
+            rd->m_renderLatency = framePacingFlushing || !useVSync ? -1.f : (static_cast<float>(framesInFlight) / rd->m_outputWnd[0]->GetRefreshRate());
+         // PLOGD << std::format("VS: {}   FiF: {}   Flush: {:2d}", needsVSync, framesInFlight, framePacingFlushing);
+          
          // lock prepared frame and submit it
          {
-#ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("VPX->BGFX"));
-#endif
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               span* tagSpan = new span(series, 1, _T("VPX->BGFX"));
+            #endif
             std::lock_guard lock(rd->m_frameMutex);
             g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-            rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoPresent = false;
             const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
             const int windowHeight = rd->m_outputWnd[0]->GetPixelHeight();
@@ -567,43 +588,65 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
             }
             rd->SubmitRenderFrame();
-#ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-#endif
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpan;
+            #endif
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
-         if (!noPresent && // This is a synced frame (not offline rendering)
-            ((!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f) // the user has disabled VSync without an unbound FPS limit
-               || (useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate()))) // the user has enabled VSync with a max FPS below the display FPS
+         // Software sync
+         int targetFrameLength = 0;
+         if (noPresent)
+         {
+            // We are in a no present mode (for example offline rendering), we want to push frames as fast as possible without any sync, so we do not wait at all before flipping
+            targetFrameLength = 0;
+         }
+         else if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING)
+         {
+            // We are using frame pacing, that is to say we aim at low latency by trying to push frames in sync with the display rate to avoid piling up frames in the GPU queue
+            // We add a (very) little roudning margin to the frame to be slightly late and avoid pushing frames in the GPU queue
+            targetFrameLength = static_cast<int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate()) + 10;
+         }
+         else if (!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f)
+         {
+            // The user has disabled VSync without an unbound FPS limit)
+            targetFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+         }
+         else if (useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate())
+         {
+            // The user has enabled VSync with a max FPS below the display FPS
+            // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+            targetFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000;
+         }
+         uint64_t now = usec();
+         if (targetFrameLength)
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-#ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("WaitSync"));
-#endif
-            uint64_t now = usec();
-            const int targetFrameLength = useVSync ? (static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate())
-                                                        - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-                                                   : static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               span* tagSpan = new span(series, 1, _T("WaitSync"));
+            #endif
             if ((int64_t)(now - lastFlipTick) < (int64_t)targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
                uSleep(targetFrameLength - (now - lastFlipTick));
                now = usec();
             }
-            lastFlipTick = now;
-#ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-#endif
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpan;
+            #endif
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
+         lastFlipTick = now;
 
-         // Flip (eventually blocking until a VSYNC happens) then submit render commands to GPU
+         // Request next frame to be prepared while we submit and render the current one (we used to do it when submitting to BGFX but it adds a little useless latency)
+         rd->m_framePending = false;
+
+         // Submit to GPU then Flip (eventually blocking until a VSYNC happens, also eventually discarding unpresented frame)
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-#ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
-#endif
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
+            #endif
             if (noPresent)
                rd->SubmitAndFlipFrame(false);
             else
@@ -622,9 +665,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                      bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
                }
             }
-#ifdef MSVC_CONCURRENCY_VIEWER
-            delete tagSpan;
-#endif
+            #ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpan;
+            #endif
             const bgfx::Stats* const stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
@@ -887,8 +930,9 @@ RenderDevice::RenderDevice(
    // BGFX device initialization
    bgfx::Init init;
 
-   // Limit to VSYNC on/off
-   syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
+   // Adaptive VSync is not implemented for BGFX
+   if (syncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC)
+      syncMode = VideoSyncMode::VSM_VSYNC;
    
    // Select backend
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
@@ -1408,6 +1452,9 @@ RenderDevice::RenderDevice(
             hasVSync = true;
          }
       }
+   #elif defined(ENABLE_BGFX)
+      // BGFX implements frame pacing by monitoring frames in flight (instead of relying on a VSync source)
+      hasVSync = true;
    #endif
    
    if (syncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
@@ -1766,7 +1813,9 @@ void RenderDevice::SubmitAndFlipFrame(bool present)
          ++it;
       }
    }
-   bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
+   uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
+   if (present)
+      m_lastPresentFrameIdx = frameIdx;
    ResetActiveView();
 }
 #endif
