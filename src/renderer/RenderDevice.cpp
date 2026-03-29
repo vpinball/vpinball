@@ -1734,12 +1734,28 @@ float RenderDevice::GetPredictedDisplayDelayInS() const
    if (g_pplayer->m_vrDevice)
       return g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
 
-   // Assume a constant delay of at least 1 frame (in most situations, this will be at least 2 or 3 times higher)
-   if (m_visualLatencyCorrection < 0)
-      return 1.f / g_pplayer->GetTargetRefreshRate();
+   // User has defined a fixed latency (for high end situations, measuring with PresentMon or a highspeed camera)
+   if (m_visualLatencyCorrection >= 0)
+      return (float)m_visualLatencyCorrection * 1e-3f;
 
-   // User has measured their setup latency
-   return (float)m_visualLatencyCorrection * 1e-3f;
+   // Visual latency is the sum of these 3 estimates:
+   // - finger to frame preparation latency => estimate to half of the frame time (since the input is not synced to the frame, it can happen at any time during the frame, so on average at mid frame)
+   // - render latency (frame preparation to frame presentation) => use BGFX estimate or estimate based on sync strategy (note that both ways are somewhat imprecise)
+   // - display latency (frame presentation to display) => varies a lot between displays, from just a few ms on high end gaming monitor to ~15ms on TV with gaming mode (and even more on cheaper TV or without gaming mode)
+   float delay = 0.5f / g_pplayer->GetTargetRefreshRate(); // finger to frame preparation latency average estimate
+   #ifdef ENABLE_BGFX
+      if (m_renderLatency > 0.f)
+         delay += m_renderLatency;
+      else
+         delay += 2.f / g_pplayer->GetTargetRefreshRate();
+   #else
+      if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC || g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_ADAPTIVE_VSYNC)
+         delay += 5.f / g_pplayer->GetTargetRefreshRate();
+      else
+         delay += 2.f / g_pplayer->GetTargetRefreshRate();
+   #endif
+   delay += 0.010f; // display latency estimate
+   return delay;
 }
 
 void RenderDevice::WaitForVSync(const bool asynchronous)

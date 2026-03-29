@@ -269,12 +269,6 @@ public:
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
-   // The visual latency (a.k.a. finger to photon) if the sum of:
-   // - finger to frame preparation latency
-   // - render latency (frame preparation to frame presentation), for which an estimate is provided by the following function
-   // - display latency (frame presentation to display)
-   float GetRenderLatency() const { return m_renderLatency; }
-
 private:
    void SubmitAndFlipFrame(bool present);
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;

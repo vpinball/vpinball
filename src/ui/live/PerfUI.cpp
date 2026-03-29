@@ -286,10 +286,7 @@ void PerfUI::RenderFPS()
 
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
    #ifdef ENABLE_BGFX
-      if (m_player->m_renderer->m_renderDevice->GetRenderLatency() > 0.f)
-         ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * m_player->m_renderer->m_renderDevice->GetRenderLatency());
-      else
-         ImGui::Text("Render: %5.1ffps", 1e6 / frameLength);
+      ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS());
    #else
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME));
    #endif
