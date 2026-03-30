@@ -266,8 +266,6 @@ void VPinballLib::SetupStaticPlugins(MsgPI::MsgPluginManager& manager)
       void (*load)(uint32_t, const MsgPluginAPI*);
       void (*unload)();
    } plugins[] = {
-      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
-      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
       { "AltSound",      &AltSoundPluginLoad,      &AltSoundPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
@@ -275,8 +273,10 @@ void VPinballLib::SetupStaticPlugins(MsgPI::MsgPluginManager& manager)
       { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
       { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
       { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
+      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
       { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
       { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    },

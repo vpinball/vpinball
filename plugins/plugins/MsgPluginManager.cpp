@@ -463,7 +463,7 @@ void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
 void MsgPluginManager::UnloadPlugins()
 {
    for (const auto& plugin : m_plugins)
-      if (!plugin->m_library.empty() && plugin->IsLoaded())
+      if (plugin->IsLoaded())
          plugin->Unload();
 }
 
@@ -477,7 +477,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& plugin
 
 MsgPlugin::~MsgPlugin()
 {
-   if (!m_library.empty() && IsLoaded())
+   if (IsLoaded())
       Unload();
 }
 
