@@ -35,6 +35,9 @@ WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsign
 WMPAudioPlayer::~WMPAudioPlayer()
 {
    UnloadFile();
+   m_shouldStopStreaming = true;
+   if (m_thread.joinable())
+      m_thread.join();
 }
 
 bool WMPAudioPlayer::LoadFile(const string& filepath)
