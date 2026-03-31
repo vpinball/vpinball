@@ -146,6 +146,8 @@ open standalone/ios/VPinball.xcodeproj
 <details>
 <summary>android-arm64-v8a (Mobile)</summary>
 
+> Minimum supported version: Android 13 (API level 33)
+
 ```
 brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
