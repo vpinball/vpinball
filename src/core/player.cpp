@@ -136,24 +136,25 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
    };
    m_pluginManager.ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Plugins),
-      [this](MsgPI::MsgPlugin &plugin)
-      {
-         VPX::Properties::PropertyRegistry::PropId enableId;
-         if (auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin.m_id, "Enable"s); existing.has_value())
-            enableId = existing.value();
-         else
-            enableId = Settings::GetRegistry().Register(
-               std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
-         if (g_app->m_settings.GetBool(enableId))
-         {
-            plugin.Load(&m_pluginManager.GetMsgAPI());
-         }
-         else
-         {
-            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
-         }
-      });
+      [](MsgPI::MsgPlugin &) { });
 #endif
+
+   for (const auto& plugin : m_pluginManager.GetPlugins()) {
+      VPX::Properties::PropertyRegistry::PropId enableId;
+      if (auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin->m_id, "Enable"s); existing.has_value())
+         enableId = existing.value();
+      else
+         enableId = Settings::GetRegistry().Register(
+            std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin->m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin->m_name + '\'', true, false));
+      if (m_ptable->m_settings.GetBool(enableId))
+      {
+         plugin->Load(&m_pluginManager.GetMsgAPI());
+      }
+      else
+      {
+         PLOGI << "Plugin " << plugin->m_id << " was found but is disabled (" << plugin->m_library << ')';
+      }
+   }
 
    // Prepare table for playing
 

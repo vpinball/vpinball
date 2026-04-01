@@ -288,14 +288,6 @@ void VPinballLib::SetupStaticPlugins(MsgPI::MsgPluginManager& manager)
       manager.RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
    }
 
-   auto& lib = VPinballLib::Instance();
-   for (const auto& plugin : manager.GetPlugins()) {
-      if (lib.LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
-         plugin->Load(&manager.GetMsgAPI());
-   }
-
-   if (g_isAndroid)
-      manager.UpdateAPIThread();
 }
 
 void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)
