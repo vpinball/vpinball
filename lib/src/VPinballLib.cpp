@@ -202,11 +202,7 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
 
       if (data != nullptr) {
          switch(event) {
-            case VPINBALL_EVENT_LOADING_ITEMS:
-            case VPINBALL_EVENT_LOADING_SOUNDS:
-            case VPINBALL_EVENT_LOADING_IMAGES:
-            case VPINBALL_EVENT_LOADING_FONTS:
-            case VPINBALL_EVENT_LOADING_COLLECTIONS:
+            case VPINBALL_EVENT_LOADING:
             case VPINBALL_EVENT_PRERENDERING:
             case VPINBALL_EVENT_EXTRACT_SCRIPT: {
                ProgressData* progressData = (ProgressData*)data;

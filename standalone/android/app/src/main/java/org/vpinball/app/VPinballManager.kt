@@ -106,11 +106,7 @@ object VPinballManager : KoinComponent {
                     }
                 }
                 VPinballEvent.EXTRACT_SCRIPT,
-                VPinballEvent.LOADING_ITEMS,
-                VPinballEvent.LOADING_SOUNDS,
-                VPinballEvent.LOADING_IMAGES,
-                VPinballEvent.LOADING_FONTS,
-                VPinballEvent.LOADING_COLLECTIONS,
+                VPinballEvent.LOADING,
                 VPinballEvent.PRERENDERING -> {
                     val progressData =
                         jsonData?.let { jsonStr ->

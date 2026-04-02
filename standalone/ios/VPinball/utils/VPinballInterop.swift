@@ -85,11 +85,7 @@ enum VPinballExternalDMD: CInt {
 enum VPinballEvent: CInt {
     case initComplete
     case extractScript
-    case loadingItems
-    case loadingSounds
-    case loadingImages
-    case loadingFonts
-    case loadingCollections
+    case loading
     case prerendering
     case playerStarted
     case rumble
@@ -101,16 +97,8 @@ enum VPinballEvent: CInt {
         switch self {
         case .extractScript:
             return "Extracting Script"
-        case .loadingItems:
-            return "Loading Items"
-        case .loadingSounds:
-            return "Loading Sounds"
-        case .loadingImages:
-            return "Loading Images"
-        case .loadingFonts:
-            return "Loading Fonts"
-        case .loadingCollections:
-            return "Loading Collections"
+        case .loading:
+            return "Loading"
         case .prerendering:
             return "Prerendering Static Parts"
         default:

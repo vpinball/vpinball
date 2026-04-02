@@ -47,6 +47,8 @@ class VPXFileFeedback
       // of collections the table contains.
       virtual void CollectionHasBeenProcessed(int collectionCount, int totalCollections) {}
 
+      virtual void LoadingProgressUpdated(int loaded, int total) {}
+
       // Called when all items have been processed and the file is ready to be
       // used.
       virtual void Finalizing() {}

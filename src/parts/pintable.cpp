@@ -1667,12 +1667,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             }
 
             // Wait for dispatched tasks, updating the progress bar on UI thread
+            const int totalToLoad = csubobj + csounds + ctextures;
             while (pool.has_work_in_flight())
             {
                SDL_Delay(10);
-               feedback.ImageHasBeenProcessed(nLoadedImages, ctextures);
-               feedback.ItemHasBeenProcessed(nLoadedParts, csubobj);
-               feedback.SoundHasBeenProcessed(nLoadedSounds, csounds);
+               feedback.LoadingProgressUpdated(nLoadedParts + nLoadedSounds + nLoadedImages, totalToLoad);
             };
 
             // Handle failed loading & duplicates
@@ -1856,7 +1855,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               feedback.FontHasBeenProcessed(i + 1, cfonts);
             }
 
             for (int i = 0; i < ccollection; i++)
@@ -1876,7 +1874,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               feedback.CollectionHasBeenProcessed(i + 1, ccollection);
             }
 
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
