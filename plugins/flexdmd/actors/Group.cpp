@@ -79,7 +79,7 @@ Actor* Group::Get(const string& name, bool logMissing)
          }
          if (child->GetType() == Actor::AT_Group)
          {
-            if (Actor* found = static_cast<Group*>(child)->Get(name, logMissing); found)
+            if (Actor* found = static_cast<Group*>(child)->Get(name, false); found)
                return found;
          }
       }
