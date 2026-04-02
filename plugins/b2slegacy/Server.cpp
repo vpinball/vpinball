@@ -28,7 +28,9 @@ namespace B2SLegacy {
 Server* Server::m_singleton = nullptr;
 
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
-   : m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG)) 
+   : m_onGameStartId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START))
+   , m_onGameEndId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END))
+   , m_onGetDevSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG)) 
    , m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
    , m_endpointId(endpointId)
@@ -75,6 +77,11 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
 
 Server::~Server()
 {
+   if (m_gameRunning)
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   m_msgApi->ReleaseMsgID(m_onGameStartId);
+   m_msgApi->ReleaseMsgID(m_onGameEndId);
+
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic, this);
    m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChangedStatic, this);
    m_msgApi->UnsubscribeMsg(m_onGetDevSrcId, OnGetDevSrc, this);
@@ -182,6 +189,18 @@ void Server::OnGetDevSrc(const unsigned int, void* userData, void* msgData)
 
 void Server::UpdateDevSrc()
 {
+   if (m_gameRunning && m_b2sStates.empty())
+   {
+      m_gameRunning = false;
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   }
+   else if (!m_gameRunning && !m_b2sStates.empty())
+   {
+      m_gameRunning = true;
+      CtlOnGameStartMsg msg = { GetB2SName().c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+   }
+
    delete[] m_devSrc.deviceDefs;
    m_devSrc.nDevices = static_cast<unsigned int>(m_b2sStates.size());
    m_devSrc.deviceDefs = new DeviceDef[m_devSrc.nDevices];
@@ -367,7 +386,19 @@ const string& Server::GetB2SName() const
 
 void Server::SetB2SName(const string& b2sName)
 {
+   if (b2sName == m_pB2SSettings->GetB2SName())
+      return;
+
+   if (m_gameRunning)
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+
    m_pB2SSettings->SetB2SName(b2sName);
+
+   if (m_gameRunning)
+   {
+      CtlOnGameStartMsg msg = { GetB2SName().c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+   }
 }
 
 const string& Server::GetTableName() const

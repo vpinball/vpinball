@@ -177,6 +177,9 @@ private:
 
    static Server* m_singleton;
    ankerl::unordered_dense::map<int, float> m_b2sStates;
+   const unsigned int m_onGameStartId;
+   const unsigned int m_onGameEndId;
+   bool m_gameRunning = false;
    const unsigned int m_onGetDevSrcId;
    DevSrcId m_devSrc {};
    vector<string> m_devSrcNames;
