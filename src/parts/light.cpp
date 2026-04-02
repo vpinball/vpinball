@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "light.h"
+
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/Shader.h"
@@ -30,9 +32,9 @@ Light::~Light()
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Light *Light::CopyForPlay(PinTable *live_table) const
+Light *Light::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, m_vdpoint)
    // Light specific copy and live data (not really needed)
    dst->m_currentIntensity = m_currentIntensity;
    dst->m_currentFilamentTemperature = m_currentFilamentTemperature;
@@ -46,13 +48,11 @@ Light *Light::CopyForPlay(PinTable *live_table) const
    dst->m_lightcenter = m_lightcenter;
    dst->m_initSurfaceHeight = m_initSurfaceHeight;
    dst->m_maxDist = m_maxDist;
-   dst->m_roundLight = m_roundLight;
    return dst;
 }
 
-HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Light::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -149,7 +149,7 @@ void Light::UIRenderPass1(Sur * const psur)
 
 void Light::UIRenderPass2(Sur * const psur)
 {
-   bool drawDragpoints = ((m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
+   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!drawDragpoints)
@@ -158,7 +158,7 @@ void Light::UIRenderPass2(Sur * const psur)
       for (size_t i = 0; i < m_vdpoint.size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != eNotSelected)
+         if (pdp->m_selectstate != SelectState::NotSelected)
          {
             drawDragpoints = true;
             break;
@@ -277,7 +277,7 @@ void Light::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {
-   return !m_backglass ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
+   return !m_desktopBackdrop ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
 }
 
 void Light::UpdateBounds()
@@ -362,11 +362,12 @@ void Light::RenderSetup(RenderDevice *device)
    m_iblinkframe = 0;
 
    m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
-   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
+   const wstring wSurface = MakeWString(m_d.m_szSurface); 
+   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(wSurface);
+   m_surfaceTexture = m_ptable->GetSurfaceImage(wSurface);
 
    m_surfaceHeight = m_initSurfaceHeight;
-   
+
    UpdateBounds();
 
    if (m_inPlayState == (float)LightStateBlinking)
@@ -492,15 +493,15 @@ void Light::UpdateMeshBuffer()
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
 
       Vertex3D_NoTex2 *buf;
       m_lightmapMeshBuffer->m_vb->Lock(buf);
       for (unsigned int t = 0; t < m_vvertex.size(); t++)
       {
          const RenderVertex *const pv0 = &m_vvertex[t];
-         if (!m_backglass)
+         if (!m_desktopBackdrop)
          {
             buf[t].x = pv0->x;
             buf[t].y = pv0->y;
@@ -556,9 +557,9 @@ void Light::Render(const unsigned int renderMask)
 
       UpdateMeshBuffer();
 
-      if (m_backglass)
+      if (m_desktopBackdrop)
          g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
-      const vec3 pos = m_backglass ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
+      const vec3 pos = m_desktopBackdrop ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
       if (renderMask & Renderer::UI_FILL)
       {
          m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
@@ -579,12 +580,12 @@ void Light::Render(const unsigned int renderMask)
 
       // FIXME render bulb
 
-      if (m_backglass)
+      if (m_desktopBackdrop)
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }
 
-   if (m_backglass && !GetPTable()->GetDecalsEnabled())
+   if (m_desktopBackdrop && !GetPTable()->GetDecalsEnabled())
       return;
 
    // FIXME BGFX DX12 will crash on this
@@ -595,7 +596,7 @@ void Light::Render(const unsigned int renderMask)
 
    if (isLightBuffer)
    {
-      if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_backglass)
+      if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_desktopBackdrop)
          return;
       // Compute projected bounds
       const float radius = m_d.m_falloff;
@@ -652,7 +653,7 @@ void Light::Render(const unsigned int renderMask)
       && m_d.m_visible
       && m_bulbLightMeshBuffer != nullptr 
       && !(isReflectionPass && !m_d.m_reflectionEnabled)
-      && !m_backglass
+      && !m_desktopBackdrop
       && !isLightBuffer)
    {
       Material mat;
@@ -700,7 +701,7 @@ void Light::Render(const unsigned int renderMask)
    // Lightmap
    if (!isStaticOnly
       && m_d.m_visible
-      && ((m_d.m_reflectionEnabled && !m_backglass) || !isReflectionPass)
+      && ((m_d.m_reflectionEnabled && !m_desktopBackdrop) || !isReflectionPass)
       && (m_lightmapMeshBuffer != nullptr)) // in case of degenerate light
    {
       Texture * const offTexel = m_d.m_BulbLight ? nullptr : m_ptable->GetImage(m_d.m_szImage);
@@ -709,7 +710,7 @@ void Light::Render(const unsigned int renderMask)
       vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
       vec4 lightColor_intensity = convertColor(m_d.m_color, 1.f);
       if (m_d.m_BulbLight ||
-         (!m_d.m_BulbLight && (m_surfaceTexture == offTexel) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+         (!m_d.m_BulbLight && (m_surfaceTexture == offTexel) && (offTexel != nullptr) && !m_desktopBackdrop && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
       {
          if (m_currentIntensity == 0.f)
             return;
@@ -733,7 +734,7 @@ void Light::Render(const unsigned int renderMask)
       }
 
       m_rd->ResetRenderState();
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          m_rd->SetRenderStateDepthBias(0.0f);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
@@ -745,10 +746,10 @@ void Light::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
 
-      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          centerHUD.x = centerHUD.x * xmult - 0.5f;
          centerHUD.y = centerHUD.y * ymult - 0.5f;
@@ -801,7 +802,7 @@ void Light::Render(const unsigned int renderMask)
 
       if (!m_d.m_BulbLight)
       {
-         shader->SetLightImageBackglassMode(m_d.m_imageMode, m_backglass);
+         shader->SetLightImageBackglassMode(m_d.m_imageMode, m_desktopBackdrop);
          shader->SetMaterial(m_surfaceMaterial);
          if (offTexel != nullptr)
          {
@@ -809,7 +810,7 @@ void Light::Render(const unsigned int renderMask)
             shader->SetTexture(SHADER_tex_light_color, offTexel, false, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
             // TOTAN and Flintstones inserts break if alpha blending is disabled here.
             // Also see below if changing again
-            if (!m_backglass)
+            if (!m_desktopBackdrop)
             {
                m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
                m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
@@ -831,15 +832,16 @@ void Light::Render(const unsigned int renderMask)
 
       Vertex3Ds pos0(0.f, 0.f, 0.f);
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-      if (m_backglass)
+      if (m_desktopBackdrop)
       {
          g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(shader == m_rd->m_basicShader, shader == m_rd->m_lightShader, false);
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias,
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
             m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       }
       else
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
+            m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
    }
 }
 
@@ -862,57 +864,47 @@ void Light::MoveOffset(const float dx, const float dy)
    }
 }
 
-HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Light::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(HGHT), m_d.m_height);
-   bw.WriteFloat(FID(RADI), m_d.m_falloff);
-   bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
-   bw.WriteInt(FID(STAT), m_d.m_state == 0.f ? 0 : (m_d.m_state == 2.f ? 2 : 1)); //!! deprecated, remove as soon as increasing file version to 10.9+
-   bw.WriteFloat(FID(STTF), m_d.m_state);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteInt(FID(COL2), m_d.m_color2);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
-   bw.WriteString(FID(IMG1), m_d.m_szImage);
-   bw.WriteInt(FID(BINT), m_d.m_blinkinterval);
-   //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
-   bw.WriteFloat(FID(BWTH), m_d.m_intensity);
-   bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteBool(FID(BGLS), m_backglass);
-   bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
-   bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
-   bw.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
-   bw.WriteBool(FID(BULT), m_d.m_BulbLight);
-   bw.WriteBool(FID(IMMO), m_d.m_imageMode);
-   bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
-   bw.WriteBool(FID(STBM), m_d.m_staticBulbMesh);
-   bw.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
-   bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
-   bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
-   bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
-   bw.WriteInt(FID(SHDW), m_d.m_shadows);
-   bw.WriteInt(FID(FADE), m_d.m_fader);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   //bw.WriteTag(FID(PNTS));
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(HGHT), m_d.m_height);
+   writer.WriteFloat(FID(RADI), m_d.m_falloff);
+   writer.WriteFloat(FID(FAPO), m_d.m_falloff_power);
+   writer.WriteInt(FID(STAT), m_d.m_state == 0.f ? 0 : (m_d.m_state == 2.f ? 2 : 1)); //!! deprecated, remove as soon as increasing file version to 10.9+
+   writer.WriteFloat(FID(STTF), m_d.m_state);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteInt(FID(COL2), m_d.m_color2);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(BPAT), m_d.m_rgblinkpattern);
+   writer.WriteString(FID(IMG1), m_d.m_szImage);
+   writer.WriteInt(FID(BINT), m_d.m_blinkinterval);
+   //writer.WriteInt(FID(BCOL), m_d.m_bordercolor);
+   writer.WriteFloat(FID(BWTH), m_d.m_intensity);
+   writer.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteBool(FID(BGLS), m_desktopBackdrop);
+   writer.WriteFloat(FID(LIDB), m_d.m_depthBias);
+   writer.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
+   writer.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
+   writer.WriteBool(FID(BULT), m_d.m_BulbLight);
+   writer.WriteBool(FID(IMMO), m_d.m_imageMode);
+   writer.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
+   writer.WriteBool(FID(STBM), m_d.m_staticBulbMesh);
+   writer.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
+   writer.WriteFloat(FID(BMSC), m_d.m_meshRadius);
+   writer.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
+   writer.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
+   writer.WriteInt(FID(SHDW), m_d.m_shadows);
+   writer.WriteInt(FID(FADE), m_d.m_fader);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   SaveSharedEditableFields(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
-HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Light::Load(IObjectReader& reader)
 {
    SetDefaults(false);
 
@@ -932,91 +924,70 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);
 
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
 
-   br.Load();
-   return S_OK;
-}
-
-bool Light::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
-   case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
-   case FID(FAPO): pbr->GetFloat(m_d.m_falloff_power); break;
-   case FID(STAT): // Pre-10.8 tables only had 0 (off), 1 (on), 2 (blinking)
-   {
-      int state;
-      pbr->GetInt(state);
-      m_inPlayState = m_d.m_state = clampLightState((float)state);
-      break;
-   }
-   case FID(STTF):
-   {
-      pbr->GetFloat(m_d.m_state);
-      m_d.m_state = clampLightState(m_d.m_state);
-      m_inPlayState = m_d.m_state;
-      break;
-   }
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(COL2): pbr->GetInt(m_d.m_color2); break;
-   case FID(IMG1): pbr->GetString(m_d.m_szImage); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SHAP): m_roundLight = true; break;
-   case FID(BPAT): pbr->GetString(m_d.m_rgblinkpattern); break;
-   case FID(BINT): pbr->GetInt(m_d.m_blinkinterval); break;
-   //case FID(BCOL): pbr->GetInt(m_d.m_bordercolor); break;
-   case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
-   case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   case FID(BGLS): pbr->GetBool(m_backglass); break;
-   case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;
-   case FID(FASD): pbr->GetFloat(m_d.m_fadeSpeedDown); break;
-   case FID(BULT): pbr->GetBool(m_d.m_BulbLight); break;
-   case FID(IMMO): pbr->GetBool(m_d.m_imageMode); break;
-   case FID(SHBM): pbr->GetBool(m_d.m_showBulbMesh); break;
-   case FID(STBM): pbr->GetBool(m_d.m_staticBulbMesh); break;
-   case FID(SHRB): pbr->GetBool(m_d.m_showReflectionOnBall); break;
-   case FID(BMSC): pbr->GetFloat(m_d.m_meshRadius); break;
-   case FID(BMVA): pbr->GetFloat(m_d.m_modulate_vs_add); break;
-   case FID(BHHI): pbr->GetFloat(m_d.m_bulbHaloHeight); break;
-   case FID(SHDW): pbr->GetInt(&m_d.m_shadows); break;
-   case FID(FADE): pbr->GetInt(&m_d.m_fader); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
-}
-
-HRESULT Light::InitPostLoad()
-{
-   // workaround for the old round light object
-   // after loading m_roundLight is true if an pre-VPX table was loaded
-   // init the round light to the new custom one
-   if (m_roundLight)
-   {
+   bool roundLight = false;
+   reader.AsObject(
+      [this, &roundLight](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_vCenter = reader.AsVector2(); break;
+         case FID(HGHT): m_d.m_height = reader.AsFloat(); break;
+         case FID(RADI): m_d.m_falloff = reader.AsFloat(); break;
+         case FID(FAPO): m_d.m_falloff_power = reader.AsFloat(); break;
+         case FID(STAT): // Pre-10.8 tables only had 0 (off), 1 (on), 2 (blinking)
+         {
+            int state;
+            state = reader.AsInt();
+            m_inPlayState = m_d.m_state = clampLightState((float)state);
+            break;
+         }
+         case FID(STTF):
+         {
+            m_d.m_state = reader.AsFloat();
+            m_d.m_state = clampLightState(m_d.m_state);
+            m_inPlayState = m_d.m_state;
+            break;
+         }
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+         case FID(COL2): m_d.m_color2 = reader.AsInt(); break;
+         case FID(IMG1): m_d.m_szImage = reader.AsString(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(SHAP): roundLight = true; break;
+         case FID(BPAT): m_d.m_rgblinkpattern = reader.AsString(); break;
+         case FID(BINT): m_d.m_blinkinterval = reader.AsInt(); break;
+         //case FID(BCOL): m_d.m_bordercolor = reader.AsInt(); break;
+         case FID(BWTH): m_d.m_intensity = reader.AsFloat(); break;
+         case FID(TRMS): m_d.m_transmissionScale = reader.AsFloat(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(BGLS): m_desktopBackdrop = reader.AsBool(); break;
+         case FID(LIDB): m_d.m_depthBias = reader.AsFloat(); break;
+         case FID(FASP): m_d.m_fadeSpeedUp = reader.AsFloat(); break;
+         case FID(FASD): m_d.m_fadeSpeedDown = reader.AsFloat(); break;
+         case FID(BULT): m_d.m_BulbLight = reader.AsBool(); break;
+         case FID(IMMO): m_d.m_imageMode = reader.AsBool(); break;
+         case FID(SHBM): m_d.m_showBulbMesh = reader.AsBool(); break;
+         case FID(STBM): m_d.m_staticBulbMesh = reader.AsBool(); break;
+         case FID(SHRB): m_d.m_showReflectionOnBall = reader.AsBool(); break;
+         case FID(BMSC): m_d.m_meshRadius = reader.AsFloat(); break;
+         case FID(BMVA): m_d.m_modulate_vs_add = reader.AsFloat(); break;
+         case FID(BHHI): m_d.m_bulbHaloHeight = reader.AsFloat(); break;
+         case FID(SHDW): m_d.m_shadows = static_cast<ShadowMode>(reader.AsInt()); break;
+         case FID(FADE): m_d.m_fader = static_cast<Fader>(reader.AsInt()); break;
+         case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
+         case FID(DPNT): LoadPointToken(reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
+   // workaround for the old round light object after loading m_roundLight is true if an pre-VPX table was loaded init the round light to the new custom one
+   if (roundLight)
       InitShape();
-      m_roundLight = false;
-   }
-
-   return S_OK;
 }
 
 Vertex2D Light::GetPointCenter() const
@@ -1550,7 +1521,7 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    if(m_d.m_bulbHaloHeight != newVal)
    {
       m_d.m_bulbHaloHeight = newVal;
-      m_lightmapMeshBufferDirty |= m_d.m_BulbLight && !m_backglass;
+      m_lightmapMeshBufferDirty |= m_d.m_BulbLight && !m_desktopBackdrop;
    }
 
    return S_OK;

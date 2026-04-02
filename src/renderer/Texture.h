@@ -4,6 +4,8 @@
 
 #include "unordered_dense.h"
 
+#include "parts/pinbinary.h"
+
 #define MIN_TEXTURE_SIZE 8u
 
 class ITexManCacheable
@@ -97,7 +99,7 @@ public:
    std::shared_ptr<BaseTexture> GetAlias(Format format) const; // Get an alias of this texture in a different format. Alias share the texture life and update cycle
 
    std::shared_ptr<BaseTexture> Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
-   std::shared_ptr<BaseTexture> ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
+   std::shared_ptr<BaseTexture> ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha), solely triggered by windows UI
    std::shared_ptr<BaseTexture> NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
    struct SDL_Surface* ToSDLSurface() const; // Create a new SDL_Surface initialized with this texture content
 
@@ -145,10 +147,10 @@ class Texture final : public ITexManCacheable
 {
 public:
    static Texture *CreateFromFile(const std::filesystem::path& filename, const bool isImageData = true);
-   static Texture *CreateFromStream(IStream * const pstream, int version, PinTable * const pt);
+   static Texture *CreateFromObjectReader(IObjectReader& reader, PinTable * const pt);
    ~Texture() override;
 
-   HRESULT SaveToStream(IStream *pstream, const PinTable *pt) const;
+   void Save(IObjectWriter &writer, class PinTable *pt) const;
 
    uint64_t GetLiveHash() const override { return m_liveHash; }
    const string& GetName() const override { return m_name; }

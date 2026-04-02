@@ -9,7 +9,7 @@
 
 namespace PinMAME {
 
-Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config)
+Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config)
    : m_msgApi(api)
    , m_endpointId(endpointId)
 {
@@ -28,7 +28,7 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, Pinmame
 Controller::~Controller()
 {
    Stop();
-   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
+   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
    if (m_onDestroyHandler)
@@ -76,7 +76,7 @@ void Controller::SetGameName(const string& name)
    }, this);
    if (status == PINMAME_STATUS_OK)
    {
-      LOGI("Game found: name=%s, description=%s, manufacturer=%s, year=%s", m_pPinmameGame->name, m_pPinmameGame->description, m_pPinmameGame->manufacturer, m_pPinmameGame->year);
+      LOGI(std::format("Game found: name={}, description={}, manufacturer={}, year={}", m_pPinmameGame->name, m_pPinmameGame->description, m_pPinmameGame->manufacturer, m_pPinmameGame->year));
       //m_hidden = false;
    }
    else if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING)
@@ -100,7 +100,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
 
    PinmameSetCheat(m_cheat);
 
-   // Trigger startup, status will be either 2 (staring), 1 (running), 0  (stopped, likely after failure)
+   // Trigger startup, status will be either 2 (staring), 1 (running), 0 (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_pPinmameGame->name);
    while (PinmameIsRunning() == 2) // Wait until the machine is either running or stopped
       std::this_thread::sleep_for(std::chrono::milliseconds(75)); 
@@ -111,7 +111,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
    }
    else
    {
-      LOGE("Failed to start emulation of rom '%s'", m_pPinmameGame->name);
+      LOGE("Failed to start emulation of rom '"s + m_pPinmameGame->name + '\'');
       VPXPluginAPI* vpxApi = nullptr;
       unsigned int getVpxApiId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
       m_msgApi->BroadcastMsg(m_endpointId, getVpxApiId, &vpxApi);
@@ -120,7 +120,7 @@ void Controller::Run(long hParentWnd, int nMinVersion)
          vpxApi->PushNotification(("Failed to start emulation of rom '"s + m_pPinmameGame->name + '\'').c_str(), 10000);
    }
    if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING) {
-      LOGE("Game already running.");
+      LOGE("Game already running."s);
    }
 }
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dragpoint.h"
 #include "ui/win/resource.h"
 #include "unordered_dense.h"
 
@@ -121,8 +122,6 @@ public:
 private:
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
    void SetupHitObject(class PhysicsEngine *physics, HitObject *obj, const bool isUI);
-
-   PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;

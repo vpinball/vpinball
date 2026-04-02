@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dragpoint.h"
 #include "ui/win/resource.h"
 
 class TriggerData final : public BaseProperty
@@ -111,8 +112,6 @@ public:
 private:
    void InitShape(float x, float y);
    void GenerateMesh();
-
-   PinTable *m_ptable = nullptr;
 
    TriggerHitCircle *m_ptriggerhitcircle = nullptr;
    Hit3DPoly *m_ptriggerhitpoly = nullptr;

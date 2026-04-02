@@ -9,7 +9,6 @@
 #include <map>
 
 
-
 namespace B2SLegacy {
 
 class Dream7Display final : public Control
@@ -75,7 +74,7 @@ public:
 
 private:
    void InitMatrix(float shear, float scaleFactor, bool mirrored);
-   SDL_FRect GetBounds(Matrix* const pMatrix);
+   SDL_FRect GetBounds(const Matrix* const pMatrix);
    void InitSegments();
    void InitSegments(int digits, SegmentNumberType type, float shear);
    void InitSegmentsStyle();

@@ -294,7 +294,8 @@ public:
     static int GetIntTextbox(const CEdit &textbox)
     {
         int value;
-        const string t = textbox.GetWindowText().GetString();
+        CString text = textbox.GetWindowText();
+        const string& t = text.GetString();
         return (std::from_chars(t.c_str(), t.c_str() + t.length(), value).ec == std::errc{}) ? value : 0;
     }
 
@@ -340,7 +341,7 @@ private:
     BasePropertyDialog *m_tabs[PROPERTY_TABS];
     ItemTypeEnum m_previousType;
     bool         m_isPlayfieldMesh;
-    bool         m_backglassView;
+    bool         m_desktopBackdropView;
 
     int      m_curTabIndex;
     CEdit    m_nameEdit;

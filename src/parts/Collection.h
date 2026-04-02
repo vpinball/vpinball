@@ -8,8 +8,7 @@ class Collection :
    public EventProxy<Collection, &DIID_ICollectionEvents>,
    public IConnectionPointContainerImpl<Collection>,
    public IProvideClassInfo2Impl<&CLSID_Collection, &DIID_ICollectionEvents, &LIBID_VPinballLib>,
-   public IScriptable,
-   public ILoadable
+   public IScriptable
 {
 public:
 #ifdef __STANDALONE__
@@ -21,18 +20,11 @@ public:
    Collection();
 
    // IScriptable
-   const WCHAR *get_Name() const final { return m_wzName; }
-   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(m_wzName); return S_OK; }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
-   ISelect *GetISelect() final { return nullptr; }
-   const ISelect *GetISelect() const final { return nullptr; }
-
-   //ILoadable
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   bool LoadToken(const int id, BiffReader * const pbr) final;
+   void Save(IObjectWriter& writer, const bool saveForUndo);
+   void Load(IObjectReader &reader);
    HRESULT InitPostLoad(const PinTable * const pt);
 
    STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;

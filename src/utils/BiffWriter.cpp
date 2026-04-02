@@ -1,0 +1,210 @@
+// license:GPLv3+
+
+#include "core/stdafx.h"
+#include "BiffWriter.h"
+
+#include <mutex>
+static std::mutex mtx; //!! only used for Wine multithreading bug workaround
+
+#ifdef __STANDALONE__
+#include <fstream>
+#endif
+
+BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
+   : m_pistream(pistream)
+   , m_hcrypthash(hcrypthash)
+{
+}
+
+void BiffWriter::WriteRecordSize(const int size)
+{
+   static_assert(sizeof(size) == sizeof(int32_t));
+   ULONG written = 0;
+   m_hasError |= FAILED(m_pistream->Write(&size, sizeof(int32_t), &written));
+   m_hasError |= written != sizeof(int32_t);
+
+#ifndef __STANDALONE__
+   if (m_hcrypthash && !m_subObjectRecordSizePos.empty() && m_subObjectRecordSizePos.back().QuadPart >= 0)
+      CryptHashData(m_hcrypthash, (BYTE *)&size, sizeof(int32_t), 0);
+#endif
+}
+
+void BiffWriter::WriteBytes(const void *pv, const ULONG count)
+{
+   ULONG written = 0;
+   m_hasError |= FAILED(m_pistream->Write(pv, count, &written));
+   m_hasError |= written != count;
+
+#ifndef __STANDALONE__
+   if (m_hcrypthash)
+      CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+#endif
+}
+
+void BiffWriter::BeginObject(const int objectId, bool isArray, bool isSkippable)
+{
+   static_assert(sizeof(objectId) == sizeof(int32_t));
+   // BIFF implementation has always been very hacky regarding encapsulating sub objects.
+   // Most legacy sub arry/objects are encapsulated by having a tag, then the sub object ended by
+   // a ENDB tag, but the initial tag does not encompass the object in its recordsize. Therefore,
+   // if it is not recognized, it won't be skipped and the following field will be wrongly read 
+   // and the ENDB tag will be interpreted as the end of the container object and not as the end 
+   // of the sub object. To solve this, later sub object have increased the record size of their 
+   // initial tag, to cover the complete subobject data up to the end of the ENDB block.
+   // Sub objects saved with isSkippable must be read with the reader that found them in order
+   // to actually read the record bytes.
+   WriteRecordSize(sizeof(int32_t));
+   LARGE_INTEGER seek {};
+   if (isSkippable)
+   {
+      ULARGE_INTEGER pos;
+      m_pistream->Seek(seek, STREAM_SEEK_CUR, &pos);
+      seek.QuadPart = pos.QuadPart - sizeof(int32_t);
+      m_subObjectRecordSizePos.push_back(seek);
+   }
+   else
+   {
+      seek.QuadPart = -1;
+      m_subObjectRecordSizePos.push_back(seek);
+   }
+   WriteBytes(&objectId, sizeof(int32_t));
+}
+
+void BiffWriter::WriteBool(const int id, const bool value)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   int v = value ? 1 : 0;
+   WriteRecordSize(sizeof(int32_t) * 2);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&v, sizeof(int32_t));
+}
+
+void BiffWriter::WriteInt(const int id, const int value)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   WriteRecordSize(sizeof(int32_t) * 2);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&value, sizeof(int32_t));
+}
+
+void BiffWriter::WriteUInt(const int id, const unsigned int value)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   WriteRecordSize(sizeof(int32_t) * 2);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&value, sizeof(int32_t));
+}
+
+void BiffWriter::WriteFloat(const int id, const float value)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   WriteRecordSize(sizeof(int32_t) + sizeof(float));
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&value, sizeof(int32_t));
+}
+
+void BiffWriter::WriteString(const int id, const string &szvalue)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   const int len = (int)szvalue.length();
+   WriteRecordSize((int)sizeof(int32_t) * 2 + len);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&len, sizeof(int32_t));
+   WriteBytes(szvalue.c_str(), len);
+}
+
+void BiffWriter::WriteWideString(const int id, const wstring& wzvalue)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+#if (WCHAR_T_SIZE == 4) // Linux, macOS
+   const std::u16string wzvalue_utf16 = utf32_to_utf16(wzvalue);
+   const int len = (int)wzvalue_utf16.length() * 2;
+#else // Windows
+   const int len = (int)wzvalue.length() * sizeof(WCHAR);
+#endif
+   WriteRecordSize((int)sizeof(int32_t) * 2 + len);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(&len, sizeof(int32_t));
+#if (WCHAR_T_SIZE == 4) // Linux, macOS
+   WriteBytes(wzvalue_utf16.c_str(), len);
+#else // Windows
+   WriteBytes(wzvalue.c_str(), len);
+#endif
+}
+
+void BiffWriter::WriteVector2(const int id, const Vertex2D &vec) { 
+   static_assert(2 * sizeof(float) == sizeof(vec));
+   WriteRaw(id, &vec.x, 2 * sizeof(float));
+}
+
+void BiffWriter::WriteVector3(const int id, const vec3 &vec)
+{
+   static_assert(3 * sizeof(float) == sizeof(vec));
+   WriteRaw(id, &vec.x, 3 * sizeof(float));
+}
+
+void BiffWriter::WriteVector4(const int id, const vec4 &vec)
+{
+   static_assert(4 * sizeof(float) == sizeof(vec));
+   WriteRaw(id, &vec.x, 4 * sizeof(float));
+}
+
+void BiffWriter::WriteScript(int fieldId, const string &value)
+{
+   // Not really a valid BIFF format: the object tag is directly followed by data without a field id
+   ULONG writ = 0;
+   BeginObject(FID(CODE), false, false);
+   const int32_t nBytes = (int32_t)value.size();
+   m_hasError |= FAILED(m_pistream->Write(&nBytes, static_cast<ULONG>(sizeof(int32_t)), &writ));
+   m_hasError |= FAILED(m_pistream->Write(value.c_str(), static_cast<ULONG>(nBytes), &writ));
+#ifndef __STANDALONE__
+   CryptHashData(m_hcrypthash, (const BYTE*)(value.c_str()), static_cast<DWORD>(nBytes), 0);
+#endif
+}
+
+void BiffWriter::WriteRaw(const int id, const void *pvalue, const int size)
+{
+   static_assert(sizeof(id) == sizeof(int32_t));
+   WriteRecordSize((int)sizeof(int32_t) + size);
+   WriteBytes(&id, sizeof(int32_t));
+   WriteBytes(pvalue, size);
+}
+
+void BiffWriter::WriteFontDescriptor(int fieldId, const FontDesc &fontdesc)
+{
+   static_assert(sizeof(fieldId) == sizeof(int32_t));
+   const uint8_t nameLen = static_cast<uint8_t>(fontdesc.name.size());
+   WriteRecordSize(sizeof(int32_t)); // Invalid BIFF file format: the size does not include the data blob and fields are untagged
+   WriteBytes(&fieldId, sizeof(int32_t));
+   WriteBytes(&fontdesc.version, 1); // Should always be equal to 1
+   WriteBytes(&fontdesc.charset, 2);
+   WriteBytes(&fontdesc.attributes, 1);
+   WriteBytes(&fontdesc.weight, 2);
+   WriteBytes(&fontdesc.size, 4);
+   WriteBytes(&nameLen, 1);
+   WriteBytes(fontdesc.name.c_str(), nameLen);
+}
+
+void BiffWriter::EndObject()
+{
+   const int fieldId = FID(ENDB);
+   WriteRecordSize(sizeof(int32_t));
+   WriteBytes(&fieldId, sizeof(int32_t));
+
+   if (!m_subObjectRecordSizePos.empty())
+   {
+      LARGE_INTEGER seekStart = m_subObjectRecordSizePos.back();
+      m_subObjectRecordSizePos.pop_back();
+      if (seekStart.QuadPart >= 0)
+      {
+         LARGE_INTEGER seek0 {};
+         ULARGE_INTEGER curPos;
+         m_pistream->Seek(seek0, STREAM_SEEK_CUR, &curPos);
+         const int size = static_cast<int>(curPos.QuadPart - 2 * sizeof(int32_t) - seekStart.QuadPart);
+         m_pistream->Seek(seekStart, STREAM_SEEK_SET, nullptr);
+         WriteRecordSize((int)sizeof(int32_t) + size);
+         seekStart.QuadPart = curPos.QuadPart;
+         m_pistream->Seek(seekStart, STREAM_SEEK_SET, nullptr);
+      }
+   }
+}

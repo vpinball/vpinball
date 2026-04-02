@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/primitive.h"
+
 #include "utils/hash.h"
 #include "objloader.h"
 
@@ -80,7 +82,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       char lineHeader[256];
       const int res = fscanf_s(f, "\n%s", lineHeader
 #ifndef __STANDALONE__
-      ,static_cast<unsigned int>(sizeof(lineHeader))
+      ,static_cast<unsigned int>(std::size(lineHeader))
 #endif
       );
       if (res == EOF)
@@ -89,7 +91,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
          break;
       }
 
-      if (lineHeader == "v"s)
+      if (lineHeader == "v"sv)
       {
          Vertex3Ds tmp;
          if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
@@ -101,7 +103,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.z = -tmp.z;
          m_tmpVerts.push_back(tmp);
       }
-      else if (lineHeader == "vt"s)
+      else if (lineHeader == "vt"sv)
       {
          Vertex2D tmp;
          if (fscanf_s(f, "%f %f", &tmp.x, &tmp.y) != 2)
@@ -113,7 +115,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.y = 1.f - tmp.y;
          m_tmpTexel.push_back(tmp);
       }
-      else if (lineHeader == "vn"s)
+      else if (lineHeader == "vn"sv)
       {
          Vertex3Ds tmp;
          if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
@@ -125,7 +127,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.z = -tmp.z;
          m_tmpNorms.push_back(tmp);
       }
-      else if (lineHeader == "f"s)
+      else if (lineHeader == "f"sv)
       {
          if (m_tmpVerts.empty())
          {
@@ -433,19 +435,19 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader, static_cast<unsigned int>(sizeof(lineHeader)));
+      const int res = fscanf_s(f, "\n%s", lineHeader, static_cast<unsigned int>(std::size(lineHeader)));
       if (res == EOF)
       {
          fclose(f);
          return true;
       }
-      if (lineHeader == "newmtl"s)
+      if (lineHeader == "newmtl"sv)
       {
          char buf[MAXSTRING];
          fscanf_s(f, "%s\n", buf, MAXSTRING);
          mat->m_name = buf;
       }
-      else if (lineHeader == "Ns"s)
+      else if (lineHeader == "Ns"sv)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
@@ -461,12 +463,12 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          if (mat->m_fRoughness < 0.01f)
             mat->m_fRoughness = 0.01f;
       }
-      else if (lineHeader == "Ka"s)
+      else if (lineHeader == "Ka"sv)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
       }
-      else if (lineHeader == "Kd"s)
+      else if (lineHeader == "Kd"sv)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
@@ -475,7 +477,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cBase = RGB(r, g, b);
       }
-      else if (lineHeader == "Ks"s)
+      else if (lineHeader == "Ks"sv)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
@@ -484,12 +486,12 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cGlossy = RGB(r, g, b);
       }
-      else if (lineHeader == "Ni"s)
+      else if (lineHeader == "Ni"sv)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
       }
-      else if (lineHeader == "d"s)
+      else if (lineHeader == "d"sv)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);

@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/ball.h"
 
 HitBall::HitBall()
 {

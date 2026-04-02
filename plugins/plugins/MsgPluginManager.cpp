@@ -12,10 +12,14 @@
 #include <plog/Log.h>
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 #if defined(_WIN32) || defined(_WIN64)
    #ifndef WIN32_LEAN_AND_MEAN
       #define WIN32_LEAN_AND_MEAN
+   #endif
+   #ifdef __STANDALONE__
+      #define __WINE_WINCON_H
    #endif
    #include <windows.h>
 #endif
@@ -38,25 +42,18 @@ static constexpr inline char cLower(char c)
    return c;
 }
 
-static bool StrCompareNoCase(const std::string& strA, const std::string& strB)
+static bool StrCompareNoCase(const std::string_view& strA, const std::string_view& strB)
 {
    return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-static bool StrCompareNoCase(const std::string& strA, const char* const strB)
-{
-   return strA.length() == strlen(strB) && std::equal(strA.begin(), strA.end(), strB, [](char a, char b) { return cLower(a) == cLower(b); });
-}
-
-MsgPluginManager& MsgPluginManager::GetInstance()
-{
-   static MsgPluginManager instance;
-   return instance;
-}
+MsgPluginManager* MsgPluginManager::m_pluginManager = nullptr;
 
 MsgPluginManager::MsgPluginManager()
    : m_apiThread(std::this_thread::get_id())
 {
+   assert(m_pluginManager == nullptr);
+   m_pluginManager = this;
    m_api.GetPluginEndpoint = GetPluginEndpoint;
    m_api.GetEndpointInfo = GetEndpointInfo;
    m_api.GetMsgID = GetMsgID;
@@ -74,12 +71,14 @@ MsgPluginManager::MsgPluginManager()
 MsgPluginManager::~MsgPluginManager()
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   assert(m_pluginManager == this);
+   m_pluginManager = nullptr;
    m_plugins.clear();
    for (const auto& msg : m_msgs)
       if (msg.refCount > 0)
       {
+         PLOGE << "Message " << msg.name_space << '.' << msg.name << " was not released (leaked reference count: " << msg.refCount << ')';
          assert(false);
-         // PLOGE << "Message " << msg.name_space << '.' << msg.name << " was not released (leaked reference count: " << msg.refCount << ')';
       }
 }
 
@@ -89,13 +88,13 @@ MsgPluginManager::~MsgPluginManager()
 
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    std::string searched_id(id);
    const auto item = std::ranges::find_if(pm.m_plugins,
       [searched_id](const std::shared_ptr<MsgPlugin>& plg)
       {
          return plg->IsLoaded()
-            && std::equal(plg->m_id.begin(), plg->m_id.end(), searched_id.begin(), searched_id.end(),
+            && std::ranges::equal(plg->m_id.begin(), plg->m_id.end(), searched_id.begin(), searched_id.end(),
                [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
       });
    if (item == pm.m_plugins.end())
@@ -105,7 +104,7 @@ unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 
 void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
@@ -120,21 +119,23 @@ void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInf
 
 unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
 
    MsgEntry* freeMsg = nullptr;
+   const std::string_view namespaceView { name_space };
+   const std::string_view nameView { name };
    for (MsgEntry& msg : pm.m_msgs)
       if (freeMsg == nullptr && msg.refCount == 0)
          freeMsg = &msg;
-      else if (StrCompareNoCase(msg.name_space, name_space) && StrCompareNoCase(msg.name, name))
+      else if (StrCompareNoCase(msg.name_space, namespaceView) && StrCompareNoCase(msg.name, nameView))
       {
          msg.refCount++;
          return msg.id;
       }
    if (freeMsg == nullptr)
    {
-      pm.m_msgs.push_back(MsgEntry());
+      pm.m_msgs.emplace_back();
       freeMsg = &pm.m_msgs.back();
       freeMsg->id = static_cast<unsigned int>(pm.m_msgs.size()) - 1;
    }
@@ -147,41 +148,42 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
 
 void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
-#ifdef _DEBUG
-   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
-      assert(entry.callback != callback); // Callback are only allowed to be registered once per message
-#endif
-
+   assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
+   assert(std::ranges::find_if(pm.m_msgs[msgId].callbacks, [&callback, &userData](const CallbackEntry& entry) { return callback == entry.callback && userData == entry.context; })
+      == pm.m_msgs[msgId].callbacks.end()); // Each callback/userData must be unique
    pm.m_msgs[msgId].callbacks.emplace_back(endpointId, callback, userData);
+   //PLOGD << std::format("Subscribe {:08x}.{:08x} to {}.{} [{} plugin]", (intptr_t)callback, (intptr_t)userData, pm.m_msgs[msgId].name_space, pm.m_msgs[msgId].name, pm.m_plugins[endpointId - 1]->m_id).c_str();
 }
 
-void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback)
+void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   
    std::list<CallbackEntry>& callbacks = pm.m_msgs[msgId].callbacks;
-   const auto it = std::ranges::find_if(callbacks, [&callback](const CallbackEntry& entry) { return callback == entry.callback; });
+   const auto it = std::ranges::find_if(callbacks, [&callback, &userData](const CallbackEntry& entry) { return callback == entry.callback && userData == entry.context; });
    assert(it != callbacks.end()); // Subscribe/Unsubscribe pairs must match
+   const unsigned int endpointId = it->endpointId;
+   assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
    callbacks.erase(it);
+   assert(std::ranges::find_if(callbacks, [&callback, &userData](const CallbackEntry& entry) { return callback == entry.callback && userData == entry.context; }) == callbacks.end());
+   //PLOGD << std::format("Unsubscribe {:08x}.{:08x} from {}.{} [{} plugin]", (intptr_t)callback, (intptr_t)userData, pm.m_msgs[msgId].name_space, pm.m_msgs[msgId].name, pm.m_plugins[endpointId - 1]->m_id).c_str();
 }
 
 void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
+   assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       entry.callback(msgId, entry.context, data);
@@ -189,11 +191,11 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
 
 void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
+   assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
    for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId == targetEndpointId)
@@ -205,7 +207,7 @@ void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msg
 
 void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
@@ -213,7 +215,7 @@ void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
    pm.m_msgs[msgId].refCount--;
    if (pm.m_msgs[msgId].refCount == 0)
    {
-      assert(pm.m_msgs[msgId].callbacks.empty()); // Callbacks must be unsbscribed before destroying the message
+      assert(pm.m_msgs[msgId].callbacks.empty()); // Callbacks must be unsubscribed before destroying the message
       while (!pm.m_msgs.empty() && pm.m_msgs.back().refCount == 0)
          pm.m_msgs.pop_back();
    }
@@ -221,7 +223,7 @@ void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
 
 void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    if (pm.m_settingHandler == nullptr)
       return;
@@ -233,7 +235,7 @@ void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef*
 
 void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    if (pm.m_settingHandler == nullptr)
       return;
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
@@ -244,7 +246,7 @@ void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* set
 
 void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double delayInS, const msgpi_timer_callback callback, void* userData)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(callback != nullptr);
 
    if (delayInS <= 0. && std::this_thread::get_id() == pm.m_apiThread)
@@ -278,7 +280,7 @@ void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double d
 
 void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
 {
-   MsgPluginManager& pm = GetInstance();
+   MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
    assert(std::this_thread::get_id() == pm.m_apiThread);
    
    bool modified = true; // The callbacks may result in new callbacks being registered, so continue until we have no more pending ones
@@ -344,7 +346,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& i
 {
    assert(loadPlugin != nullptr);
    assert(unloadPlugin != nullptr);
-   std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, name, description, author, version, link, loadPlugin, unloadPlugin, m_nextEndpointId++);
+   auto plugin = std::make_shared<MsgPlugin>(id, name, description, author, version, link, loadPlugin, unloadPlugin, static_cast<unsigned int>(m_plugins.size() + 1));
    m_plugins.push_back(plugin);
    return plugin;
 }
@@ -358,28 +360,28 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       return;
    }
    std::string libraryKey;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #if (INTPTR_MAX == INT32_MAX)
-   libraryKey = "windows.x86"s;
+   libraryKey = "windows.x86"sv;
 #else
-   libraryKey = "windows.x64"s;
+   libraryKey = "windows.x64"sv;
 #endif
 #elif defined(__ANDROID__) // leave here, as it also defines linux
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__)           \
    || defined(__x86_64__)
 #if (INTPTR_MAX == INT32_MAX)
-   libraryKey = "android.x86_32"s;
+   libraryKey = "android.x86_32"sv;
 #else
-   libraryKey = "android.x86_64"s;
+   libraryKey = "android.x86_64"sv;
 #endif
 #elif (INTPTR_MAX == INT32_MAX)
-   libraryKey = "android.x86_32"s;
+   libraryKey = "android.x86_32"sv;
 #endif
 #elif (defined(__linux) || defined(__linux__))
 #if defined(__aarch64__)
-   libraryKey = "linux.aarch64"s;
+   libraryKey = "linux.aarch64"sv;
 #else
-   libraryKey = "linux.x64"s;
+   libraryKey = "linux.x64"sv;
 #endif
 #elif defined(__APPLE__)
 #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
@@ -387,9 +389,9 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
 #elif defined(TARGET_OS_TV) && TARGET_OS_TV
    // Not yet implemented
 #elif defined(__aarch64__)
-   libraryKey = "macos.arm64"s;
+   libraryKey = "macos.arm64"sv;
 #else
-   libraryKey = "macos.x64"s;
+   libraryKey = "macos.x64"sv;
 #endif
 #endif
    if (libraryKey.empty())
@@ -403,13 +405,10 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
       if (entry.is_directory())
       {
          mINI::INIStructure ini;
-         mINI::INIFile file(entry.path() / "plugin.cfg");
+         mINI::INIFile file(entry.path() / "plugin.cfg"sv);
          if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
          {
             std::string id = unquote(ini["configuration"s]["id"s]);
-            for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
-               if ((*it)->m_id == id)
-                  it = m_plugins.erase(it);
             const std::string libraryFile = unquote(ini["libraries"s][libraryKey]);
             const std::filesystem::path libraryPath = entry.path() / libraryFile;
             if (!std::filesystem::exists(libraryPath))
@@ -417,11 +416,20 @@ void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader,
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                continue;
             }
-            std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
-               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(), libraryPath.string(),
-               m_nextEndpointId++);
-            m_plugins.push_back(plugin);
-            callback(*plugin);
+            auto it = std::ranges::find_if(m_plugins, [&id](const auto& plugin) { return plugin->m_id == id; });
+            if (it != m_plugins.end())
+            {
+               // We should validate that the already registered plugin correspond to the newly located one
+               callback(**it);
+            }
+            else
+            {
+               auto plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
+                  unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(),
+                  libraryPath.string(), static_cast<unsigned int>(m_plugins.size() + 1));
+               m_plugins.push_back(plugin);
+               callback(*plugin);
+            }
          }
       }
    }
@@ -456,7 +464,7 @@ void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
 void MsgPluginManager::UnloadPlugins()
 {
    for (const auto& plugin : m_plugins)
-      if (!plugin->m_library.empty() && plugin->IsLoaded())
+      if (plugin->IsLoaded())
          plugin->Unload();
 }
 
@@ -470,7 +478,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& plugin
 
 MsgPlugin::~MsgPlugin()
 {
-   if (!m_library.empty() && IsLoaded())
+   if (IsLoaded())
       Unload();
 }
 
@@ -507,11 +515,11 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
    m_loadPlugin(m_endpointId, m_msgAPI);
    if (m_loader)
    {
-      PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
+      PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ") [id=" << m_endpointId << ']';
    }
    else
    {
-      PLOGI << "Plugin " << m_id << " loaded (statically linked plugin)";
+      PLOGI << "Plugin " << m_id << " loaded (statically linked plugin) [id=" << m_endpointId << ']';
    }
    unsigned int msgId = m_msgAPI->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED);
    m_msgAPI->BroadcastMsg(m_endpointId, msgId, const_cast<char*>(m_id.c_str()));
@@ -537,6 +545,7 @@ void MsgPlugin::Unload()
    m_msgAPI->BroadcastMsg(m_endpointId, msgId, const_cast<char*>(m_id.c_str()));
    m_msgAPI->ReleaseMsgID(msgId);
    m_msgAPI = nullptr;
+   PLOGI << "Plugin " << m_id << " unloaded [id=" << m_endpointId << ']';
 }
 
 }

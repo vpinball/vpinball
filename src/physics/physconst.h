@@ -7,12 +7,12 @@
 
 #define PHYSICS_STEPTIME    1000         // usecs to go between each physics update
 
-#define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6)     // step time in seconds
+#define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6) // step time in seconds
 
 #define DEFAULT_STEPTIME      10000      // default physics rate: 1000Hz
 #define DEFAULT_STEPTIME_S    0.01       // default physics rate: 1000Hz
 
-#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S) // Physic step time expressed in Visual Pinball Time (VPT)
+#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S) // Physics step time expressed in Visual Pinball Time (VPT)
 
 #define DEFAULT_TABLE_GRAVITY            0.97f
 #define DEFAULT_TABLE_CONTACTFRICTION    0.075f
@@ -38,9 +38,9 @@
  *
  * Therefore, Earth gravity in VP units can be computed as
  *   g  =  9.81 m/s^2  =  1.81751 U/T^2
- * 
+ *
  * For historical reason, 1 VP mass unit is defined as the mass of a standard ball, that is to say 80g.
- * 
+ *
  * see def.h for exact helper conversion macros
  */
 #define GRAVITYCONST 1.81751f
@@ -56,6 +56,7 @@
 // layer is used to calculate contact effects ... beyond this and objects pass through each other
 // Default 25.0
 #define PHYS_SKIN 25.0 //!! seems like this mimics the radius of the ball -> replace with radius where possible?
+#define DEFAULT_BALL_SIZE 25.f
 // Layer outside object which increases it's size for contact measurements. Used to determine clearances.
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01

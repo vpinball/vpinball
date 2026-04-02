@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <memory>
+#include <string>
 
 #include "common.h"
 
@@ -21,7 +22,9 @@
 namespace ScoreView
 {
 
-LPI_IMPLEMENT // Implement shared log support
+MSGPI_STRING_VAL_SETTING(layoutFolderProp, "LayoutFolder", "Layout Folder", "Folder where custom ScoreView layouts are stored", true, "", 1024);
+
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 static const MsgPluginAPI* msgApi = nullptr;
 static unsigned int getVpxApiId;
@@ -50,6 +53,11 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          scoreView->Load(tablePath.parent_path() / tablePath.parent_path().filename().replace_extension(".scv"));
 
       // Allow the user to provide a custom folder (out of application path) with his default layouts ?
+      if (!scoreView->HasLayouts())
+      {
+         if (std::string customPath = layoutFolderProp_Get(); !customPath.empty())
+            scoreView->Load(std::filesystem::path(customPath));
+      }
 
       // Finally defaults to base layouts provided with the plugin
       if (!scoreView->HasLayouts())
@@ -59,11 +67,11 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
          vpxApi->GetVpxInfo(&vpxInfo);
-         path = std::filesystem::path(vpxInfo.path) / "plugins" / "scoreview";
+         path = std::filesystem::path(vpxInfo.path) / "plugins"sv / "scoreview"sv;
          #else
          path = GetPluginPath();
          #endif
-         path = path / "layouts"s;
+         path = path / "layouts"sv;
          scoreView->Load(path);
       }
    }
@@ -108,13 +116,16 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
 
    msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
+
+   msgApi->RegisterSetting(endpointId, &layoutFolderProp);
 }
 
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
 {
-   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
-   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
-   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
+   scoreView = nullptr;
+   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer, nullptr);
+   msgApi->UnsubscribeMsg(onGameStartId, OnGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId, nullptr);
    msgApi->ReleaseMsgID(onGetAuxRendererId);
    msgApi->ReleaseMsgID(onAuxRendererChgId);

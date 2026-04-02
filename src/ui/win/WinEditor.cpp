@@ -29,6 +29,29 @@
 
 #include "ui/win/worker.h"
 
+#include "ui/win/codeview.h"
+
+#include "parts/plunger.h"
+#include "parts/flipper.h"
+#include "parts/timer.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -406,7 +429,7 @@ void WinEditor::SetPosCur(float x, float y)
 #ifndef __STANDALONE__
    // display position 1st column in VP units
    char szT[256];
-   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
+   sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 
    // display converted position in separate status
@@ -415,10 +438,10 @@ void WinEditor::SetPosCur(float x, float y)
        switch (m_convertToUnit)
        {
            case 0:
-               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
+               sprintf_s(szT, std::size(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (inch)");
                break;
            case 1:
-               sprintf_s(szT, sizeof(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
+               sprintf_s(szT, std::size(szT), "%.2f, %.2f %s", ConvertToUnit(x), ConvertToUnit(y), " (mm)");
                break;
            default:
                assert(!"wrong unit");
@@ -434,9 +457,9 @@ void WinEditor::SetPosCur(float x, float y)
 
 void WinEditor::SetObjectPosCur(float x, float y)
 {
-   char szT[256];
-   sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
 #ifndef __STANDALONE__
+   char szT[256];
+   sprintf_s(szT, std::size(szT), "%.4f, %.4f", x, y);
    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 #endif
 }
@@ -475,7 +498,7 @@ void WinEditor::SetPropSel(VectorProtected<ISelect> &pvsel)
 void WinEditor::RenameEditable(IEditable *editable, const string &name)
 {
    const string oldName = MakeString(editable->GetScriptable()->m_wzName);
-   editable->SetName(name);
+   editable->SetName(MakeWString(name));
 
 #ifndef __STANDALONE__
    PinTable *const pt = editable->GetPTable();
@@ -894,7 +917,6 @@ void WinEditor::DoPlay(const int playMode)
    }
 
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
-   bool initError = false;
 
    // Create the player on a (shallow) copy of the table, that will be animated by the script, animations, ...
    PinTable *live_table = table->CopyForPlay();
@@ -1116,7 +1138,7 @@ void WinEditor::SetEnableMenuItems()
    // Set menu item to the correct state
    const CMenu mainMenu = GetMenu();
 
-   mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_backglassView ? MF_CHECKED : MF_UNCHECKED));
+   mainMenu.CheckMenuItem(ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_desktopBackdropView ? MF_CHECKED : MF_UNCHECKED));
 
    // is there a valid table??
    constexpr UINT grayed = MF_BYCOMMAND | MF_GRAYED, enabled = MF_BYCOMMAND | MF_ENABLED;
@@ -1971,8 +1993,8 @@ void WinEditor::CloseAllDialogs()
 
 void WinEditor::ToggleBackglassView()
 {
-   const bool show = !m_backglassView;
-   m_backglassView = show;
+   const bool show = !m_desktopBackdropView;
+   m_desktopBackdropView = show;
 
    for (const auto ptT : m_vtable)
    {
@@ -2175,9 +2197,9 @@ void WinEditor::SaveTable(const bool saveAs)
       std::filesystem::path vpxPath = ptCur->m_filename;
       vpxPath.replace_extension(".vpx");
       char fileName[MAXSTRING];
-      strncpy_s(fileName, sizeof(fileName), vpxPath.string().c_str());
+      strncpy_s(fileName, std::size(fileName), vpxPath.string().c_str());
       ofn.lpstrFile = fileName;
-      ofn.nMaxFile = sizeof(fileName);
+      ofn.nMaxFile = std::size(fileName);
       ofn.lpstrDefExt = "vpx";
       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -2228,16 +2250,16 @@ void WinEditor::OpenNewTable(size_t tableId)
    string path;
    switch (tableId)
    {
-   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"s; break;
-   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"s; break;
-   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"s; break;
+   case ID_NEW_EXAMPLETABLE: path = "exampleTable.vpx"sv; break;
+   case ID_NEW_STRIPPEDTABLE: path = "strippedTable.vpx"sv; break;
+   case ID_NEW_LIGHTSEQTABLE: path = "lightSeqTable.vpx"sv; break;
    case ID_NEW_BLANKTABLE:
-   default: path = "blankTable.vpx"s;
+   default: path = "blankTable.vpx"sv;
    }
    ppt->m_glassTopHeight = ppt->m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       ppt->m_rgcolorcustom[i] = RGB(0, 0, 0);
-   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path).string());
+   ppt->LoadGameFromFilename(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, path));
    ppt->m_title = LocalString(IDS_TABLE).m_szbuffer /*"Table"*/ + std::to_string(m_NextTableID);
    m_NextTableID++;
    ppt->m_settings.SetIniPath(std::filesystem::path());

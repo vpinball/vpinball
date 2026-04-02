@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "dragpoint.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;
@@ -278,7 +279,7 @@ void IHaveDragPoints::ClearPointsForOverwrite()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
-      if (m_vdpoint[i]->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint[i]*/)
+      if (m_vdpoint[i]->m_selectstate != ISelect::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
       {
          //GetPTable()->SetSel(GetPTable());
          GetPTable()->AddMultiSel(GetPTable(), false, true, false);
@@ -290,41 +291,58 @@ void IHaveDragPoints::ClearPointsForOverwrite()
    m_vdpoint.clear();
 }
 
-HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
+void IHaveDragPoints::SavePoints(IObjectWriter &writer) const
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   for (auto* pdp : m_vdpoint)
+   for (const auto pdp : m_vdpoint)
    {
-      bw.WriteTag(FID(DPNT));
-      bw.WriteStruct(FID(VCEN), &pdp->m_v, sizeof(Vertex2D));
-      bw.WriteFloat(FID(POSZ), pdp->m_v.z);
-      bw.WriteBool(FID(SMTH), pdp->m_smooth);
-      bw.WriteBool(FID(SLNG), pdp->m_slingshot);
-      bw.WriteBool(FID(ATEX), pdp->m_autoTexture);
-      bw.WriteFloat(FID(TEXC), pdp->m_texturecoord);
-
-      static_cast<ISelect*>(pdp)->SaveData(pstm, hcrypthash);
-
-      bw.WriteTag(FID(ENDB));
+      writer.BeginObject(FID(DPNT), true, false);
+      writer.WriteVector2(FID(VCEN), Vertex2D(pdp->m_v.x, pdp->m_v.y));
+      writer.WriteFloat(FID(POSZ), pdp->m_v.z);
+      writer.WriteBool(FID(SMTH), pdp->m_smooth);
+      writer.WriteBool(FID(SLNG), pdp->m_slingshot);
+      writer.WriteBool(FID(ATEX), pdp->m_autoTexture);
+      writer.WriteFloat(FID(TEXC), pdp->m_texturecoord);
+      writer.WriteBool(FID(LOCK), pdp->m_uiLocked);
+      writer.WriteBool(FID(LVIS), pdp->m_uiVisible);
+      writer.EndObject();
    }
-
-   return S_OK;
 }
 
-
-void IHaveDragPoints::LoadPointToken(BiffReader *pbr)
+void IHaveDragPoints::LoadPointToken(IObjectReader& reader)
 {
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(this, 0.f, 0.f, 0.f, false);
-      m_vdpoint.push_back(pdp);
-      BiffReader br(pbr->m_pistream, pdp, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
-      br.Load();
-   }
+   if (pdp == nullptr)
+      return;
+
+   pdp->AddRef();
+   pdp->Init(this, 0.f, 0.f, 0.f, false);
+   reader.AsObject(
+      [pdp](int tag, IObjectReader &reader)
+      {
+         switch (tag)
+         {
+         case FID(VCEN):
+         {
+            auto v = reader.AsVector2();
+            pdp->m_v.x = v.x;
+            pdp->m_v.y = v.y; 
+            break;
+         }
+         case FID(POSZ): pdp->m_v.z = reader.AsFloat(); break;
+         case FID(SMTH): pdp->m_smooth = reader.AsBool(); break;
+         case FID(SLNG): pdp->m_slingshot = reader.AsBool(); break;
+         case FID(ATEX): pdp->m_autoTexture = reader.AsBool(); break;
+         case FID(TEXC): pdp->m_texturecoord = reader.AsFloat(); break;
+         case FID(LOCK): pdp->m_uiLocked = reader.AsBool(); break;
+         case FID(LVIS): pdp->m_uiVisible = reader.AsBool(); break;
+         // Old save would wrongly save these fields which do not apply to dragpoint
+         case FID(LAYR): reader.AsInt(); break;
+         case FID(LANR): reader.AsString(); break;
+         }
+         return true;
+      });
+   m_vdpoint.push_back(pdp);
 }
 
 void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth)
@@ -484,21 +502,6 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
          return S_OK;
 
    return S_FALSE;
-}
-
-bool DragPoint::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch (id)
-   {
-   case FID(VCEN): pbr->GetStruct(&m_v, sizeof(Vertex2D)); break;
-   case FID(POSZ): pbr->GetFloat(m_v.z); break;
-   case FID(SMTH): pbr->GetBool(m_smooth); break;
-   case FID(SLNG): pbr->GetBool(m_slingshot); break;
-   case FID(ATEX): pbr->GetBool(m_autoTexture); break;
-   case FID(TEXC): pbr->GetFloat(m_texturecoord); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
 }
 
 void DragPoint::Copy()

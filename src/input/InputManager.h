@@ -13,7 +13,7 @@ class InputManager final
    , public SensorMapping::AxisInputEventManager
 {
 public:
-   InputManager();
+   InputManager(class Player* player);
    InputManager(const InputManager&) = delete;
    InputManager& operator=(const InputManager&) = delete;
    ~InputManager() override;
@@ -185,17 +185,18 @@ public:
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
 
-   uint64_t m_leftkey_down_usec = 0;
-   unsigned int m_leftkey_down_frame = 0;
-   uint64_t m_leftkey_down_usec_rotate_to_end = 0;
-   unsigned int m_leftkey_down_frame_rotate_to_end = 0;
-   uint64_t m_leftkey_down_usec_EOS = 0;
-   unsigned int m_leftkey_down_frame_EOS = 0;
-
    bool m_linearPlunger = false;
    bool m_plunger_retract = false; // enable 1s retract phase for button/key plunger
 
+   int m_leftFlipperLastChangePollDelay = 0;
+
+   // Used to add/remove the OpenXR input handler
+   void AddInputHandler(std::unique_ptr<InputHandler> handler);
+   std::unique_ptr<InputHandler> RemoveInputHandler(InputHandler* handler);
+
 private:
+   class Player* m_player;
+
    void CreateInputActions();
    InputAction* AddAction(std::unique_ptr<InputAction>&& action);
    vector<std::unique_ptr<InputAction>> m_inputActions;

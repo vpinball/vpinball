@@ -9,7 +9,6 @@ class TableRulesPage final : public InGameUIPage
 {
 public:
    TableRulesPage();
-
 };
 
 }

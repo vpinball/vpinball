@@ -170,8 +170,6 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
 
    SHADER_TECHNIQUE(basic_DMD, SHADER_glassPad, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
-   SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassPad, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassPad, SHADER_glassArea, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
 
    SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
       SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
@@ -697,8 +695,11 @@ void Shader::Begin()
          const int v = *(int*)src;
          const int pos = v & 0x0FF;
          std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
-         const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
-         const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
+         assert(RenderTarget::GetCurrentRenderTarget()->IsBackBuffer()
+            || (RenderTarget::GetCurrentRenderTarget()->GetColorSampler().get() != texel.get()
+               && (!RenderTarget::GetCurrentRenderTarget()->HasDepth() || RenderTarget::GetCurrentRenderTarget()->GetDepthSampler().get() != texel.get())));
+         //const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
+         //const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
          const SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE : (SamplerFilter)((v >> 20) & 0x0F);
          const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE && filter != SF_BILINEAR);
       }
@@ -1343,13 +1344,11 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    }
    (isClipVariant ? m_clipPlaneTechniques[technique] : m_techniques[technique]) = ph;
 
-   // Create uniforms from informations gathered by BGFX
-   if (bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGL || bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGLES)
-   {
-      // BGFX uses glsl optimizer to parse GLSL but it does not support recent GLSL language versions, in turn not gathering uniform informations for OpenGL...
-      m_uniforms[technique] = shaderTechniqueNames[technique].uniforms;
-   }
-   else
+   // BGFX is not reliable regarding the list of uniforms it produces, so we only use it in debug build to validate what we can:
+   // - BGFX uses glsl optimizer to parse GLSL but it does not support recent GLSL language versions, in turn not gathering uniform informations for OpenGL
+   // - Direct3D 11 & 12 have issues with SMAA and DMD display shaders
+   #ifdef _DEBUG
+   if (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL && bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES)
    {
       m_uniforms[technique].clear();
       for (int j = 0; j < 2; j++)
@@ -1374,7 +1373,6 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             }
          }
       }
-      #ifdef _DEBUG
       vector<ShaderUniforms> uniforms = shaderTechniqueNames[technique].uniforms;
       assert(!isClipVariant || FindIndexOf(uniforms, SHADER_clip_plane) != -1);
       for (ShaderUniforms uniform : m_uniforms[technique])
@@ -1393,8 +1391,16 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       RemoveFromVectorSingle(uniforms, SHADER_clip_plane);
       RemoveFromVectorSingle(uniforms, SHADER_layer);
       if (!(bgfx::getRendererType() == bgfx::RendererType::Enum::Vulkan
-             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap || technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
-                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter)))
+             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter 
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
+                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter))
+         && !(technique == SHADER_TECHNIQUE_display_DMD
+                || technique == SHADER_TECHNIQUE_display_DMD_world
+                || technique == SHADER_TECHNIQUE_SMAA_ColorEdgeDetection
+                || technique == SHADER_TECHNIQUE_SMAA_BlendWeightCalculation
+                || technique == SHADER_TECHNIQUE_SMAA_NeighborhoodBlending)
+         )
       {
          for (const auto uniform : uniforms)
          {
@@ -1402,7 +1408,6 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          }
          assert(uniforms.empty()); // Uniforms are declared in the code, but not in the shader
       }
-      #endif
       /* Can be used to update the list of used uniforms for OpenGL / OpenGL ES backends
       std::sort(m_uniforms[technique].begin(), m_uniforms[technique].end());
       std::stringstream ss;
@@ -1413,9 +1418,11 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       PLOGD << ss.str();
       */
    }
+   #endif
+   m_uniforms[technique] = shaderTechniqueNames[technique].uniforms;
 
    // Put sampler uniforms at the beginning to speed up binding (see ApplyUniform)
-   std::stable_sort(m_uniforms[technique].begin(), m_uniforms[technique].end(),
+   std::ranges::stable_sort(m_uniforms[technique].begin(), m_uniforms[technique].end(),
       [](ShaderUniforms a, ShaderUniforms b)
       {
          const bool aIsSampler = ShaderUniform::coreUniforms[a].type == ShaderUniformType::SUT_Sampler;
@@ -1798,11 +1805,11 @@ bool Shader::parseFile(const string& fileNameRoot, const string& filename, int l
       {
          linenumber++;
          if (line.starts_with("////")) {
-            string newMode = line.substr(4, line.length() - 4);
+            string newMode = line.substr(4);
             if (newMode == "DEFINES") {
-               currentElement += "#define GLSL\n\n";
-               currentElement += UseGeometryShader() ? "#define USE_GEOMETRY_SHADER 1\n" : "#define USE_GEOMETRY_SHADER 0\n";
-               currentElement += m_isStereo ? "#define N_EYES 2\n" : "#define N_EYES 1\n";
+               currentElement += "#define GLSL\n\n"sv;
+               currentElement += UseGeometryShader() ? "#define USE_GEOMETRY_SHADER 1\n"sv : "#define USE_GEOMETRY_SHADER 0\n"sv;
+               currentElement += m_isStereo ? "#define N_EYES 2\n"sv : "#define N_EYES 1\n"sv;
             } else if (newMode != currentMode) {
                values[currentMode] = currentElement;
                currentElemIt = values.find(newMode);
@@ -2016,13 +2023,13 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
    if ((WRITE_SHADER_FILES == 2) || ((WRITE_SHADER_FILES == 1) && !success))
    {
       std::ofstream shaderCode;
-      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".vert"));
+      shaderCode.open(m_shaderPath / "log"sv / (shaderCodeName + ".vert"));
       shaderCode << vertex;
       shaderCode.close();
-      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".geom"));
+      shaderCode.open(m_shaderPath / "log"sv / (shaderCodeName + ".geom"));
       shaderCode << geometry;
       shaderCode.close();
-      shaderCode.open(m_shaderPath / "log" / (shaderCodeName + ".frag"));
+      shaderCode.open(m_shaderPath / "log"sv / (shaderCodeName + ".frag"));
       shaderCode << fragment;
       shaderCode.close();
    }
@@ -2049,7 +2056,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          GLenum type;
          GLint size;
          GLsizei length;
-         glGetActiveUniform(shader->program, (GLuint)i, sizeof(uniformName), &length, &size, &type, uniformName);
+         glGetActiveUniform(shader->program, (GLuint)i, std::size(uniformName), &length, &size, &type, uniformName);
          GLint location = glGetUniformLocation(shader->program, uniformName);
          if (location >= 0 && size > 0) {
             // hack for packedLights, but works for all arrays
@@ -2153,16 +2160,16 @@ string Shader::PreprocessGLShader(const string& shaderCode) {
    {
       if (line.starts_with("#version ")) {
          #if defined(__OPENGLES__)
-            header += "#version 300 es\n";
-            header += "#define SHADER_GLES30\n";
+            header += "#version 300 es\n"sv;
+            header += "#define SHADER_GLES30\n"sv;
          #elif defined(__APPLE__)
-            header += "#version 410\n";
-            header += "#define SHADER_GL410\n";
+            header += "#version 410\n"sv;
+            header += "#define SHADER_GL410\n"sv;
          #else
             header += line + '\n';
          #endif
          #ifdef __STANDALONE__
-            header += "#define SHADER_STANDALONE\n";
+            header += "#define SHADER_STANDALONE\n"sv;
          #endif
       }
       else if (line.starts_with("#extension "))
@@ -2311,14 +2318,14 @@ void Shader::Load()
    unsigned int codeSize;
    switch (m_shaderId)
    {
-   case UI_SHADER: m_shaderCodeName = "UIShader.hlsl"s; code = g_uiShaderCode; codeSize = sizeof(g_uiShaderCode); break;
-   case BASIC_SHADER: m_shaderCodeName = "BasicShader.hlsl"s; code = g_basicShaderCode; codeSize = sizeof(g_basicShaderCode); break;
-   case BALL_SHADER: m_shaderCodeName = "BallShader.hlsl"s; code = g_ballShaderCode; codeSize = sizeof(g_ballShaderCode); break;
-   case DMD_SHADER: m_shaderCodeName = "DMDShader.hlsl"s; code = g_dmdShaderCode; codeSize = sizeof(g_dmdShaderCode); break;
+   case UI_SHADER: m_shaderCodeName = "UIShader.hlsl"sv; code = g_uiShaderCode; codeSize = sizeof(g_uiShaderCode); break;
+   case BASIC_SHADER: m_shaderCodeName = "BasicShader.hlsl"sv; code = g_basicShaderCode; codeSize = sizeof(g_basicShaderCode); break;
+   case BALL_SHADER: m_shaderCodeName = "BallShader.hlsl"sv; code = g_ballShaderCode; codeSize = sizeof(g_ballShaderCode); break;
+   case DMD_SHADER: m_shaderCodeName = "DMDShader.hlsl"sv; code = g_dmdShaderCode; codeSize = sizeof(g_dmdShaderCode); break;
    case DMD_VR_SHADER: assert(false); break;
-   case FLASHER_SHADER: m_shaderCodeName = "FlasherShader.hlsl"s; code = g_flasherShaderCode; codeSize = sizeof(g_flasherShaderCode); break;
-   case LIGHT_SHADER: m_shaderCodeName = "LightShader.hlsl"s; code = g_lightShaderCode; codeSize = sizeof(g_lightShaderCode); break;
-   case POSTPROCESS_SHADER: m_shaderCodeName = "FBShader.hlsl"s; code = g_FBShaderCode; codeSize = sizeof(g_FBShaderCode); break;
+   case FLASHER_SHADER: m_shaderCodeName = "FlasherShader.hlsl"sv; code = g_flasherShaderCode; codeSize = sizeof(g_flasherShaderCode); break;
+   case LIGHT_SHADER: m_shaderCodeName = "LightShader.hlsl"sv; code = g_lightShaderCode; codeSize = sizeof(g_lightShaderCode); break;
+   case POSTPROCESS_SHADER: m_shaderCodeName = "FBShader.hlsl"sv; code = g_FBShaderCode; codeSize = sizeof(g_FBShaderCode); break;
    }
    LPD3DXBUFFER pBufferErrors;
    constexpr DWORD dwShaderFlags = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL

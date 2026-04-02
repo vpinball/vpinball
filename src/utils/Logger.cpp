@@ -15,8 +15,12 @@
 #else
 #include <plog/Appenders/AndroidAppender.h>
 #endif
+#ifdef __LIBVPINBALL__
 #include "lib/src/WebServer.h"
 #endif
+#endif
+
+#include "ui/win/codeview.h"
 
 class DebugAppender final : public plog::IAppender
 {
@@ -58,30 +62,23 @@ public:
 
       std::string level;
       switch (record.getSeverity()) {
-         case plog::fatal:   level = "FATAL"s; break;
-         case plog::error:   level = "ERROR"s; break;
-         case plog::warning: level = "WARN"s; break;
-         case plog::info:    level = "INFO"s; break;
-         case plog::debug:   level = "DEBUG"s; break;
-         case plog::verbose: level = "VERBOSE"s; break;
-         default:            level = "UNKNOWN"s; break;
+         case plog::fatal:   level = "FATAL"sv; break;
+         case plog::error:   level = "ERROR"sv; break;
+         case plog::warning: level = "WARN"sv; break;
+         case plog::info:    level = "INFO"sv; break;
+         case plog::debug:   level = "DEBUG"sv; break;
+         case plog::verbose: level = "VERBOSE"sv; break;
+         default:            level = "UNKNOWN"sv; break;
       }
 
-      std::string message;
       #ifdef _WIN32
-      auto msg = record.getMessage();
-      const int len = WideCharToMultiByte(CP_UTF8, 0, msg, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(msg) + 1;
-      if (len > 1)
-      {
-         message.resize(len - 1, '\0');
-         WideCharToMultiByte(CP_UTF8, 0, msg, -1, message.data(), len, nullptr, nullptr);
-      }
+      std::string message = MakeString(record.getMessage(), CP_UTF8);
       #else
-      message = std::string(record.getMessage());
+      std::string message(record.getMessage());
       #endif
 
       char timeBuffer[32];
-      snprintf(timeBuffer, sizeof(timeBuffer), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
+      snprintf(timeBuffer, std::size(timeBuffer), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
                timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday,
                timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec,
                static_cast<int>(record.getTime().millitm));

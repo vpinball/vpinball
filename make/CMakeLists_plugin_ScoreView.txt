@@ -18,53 +18,57 @@ set(SCOREVIEW_PLUGIN_SOURCES
 if(BUILD_SHARED)
    add_library(ScoreViewPlugin MODULE ${SCOREVIEW_PLUGIN_SOURCES})
 
-   if(NOT PluginPlatform STREQUAL "windows")
+   if(NOT (PluginPlatform STREQUAL "windows" OR PluginPlatform STREQUAL "windows-mingw"))
       target_compile_definitions(ScoreViewPlugin PRIVATE
          "__forceinline=__attribute__((always_inline)) inline"
       )
    endif()
 
-   if(PluginPlatform STREQUAL "windows")
+   if(PluginPlatform STREQUAL "windows" OR PluginPlatform STREQUAL "windows-mingw")
       target_include_directories(ScoreViewPlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview
       )
-      add_compile_options(
-         $<$<CONFIG:RELEASE>:/Ob2>
-         $<$<CONFIG:RELEASE>:/O2>
-         $<$<CONFIG:RELEASE>:/Oi>
-         $<$<CONFIG:RELEASE>:/arch:SSE2>
-         $<$<CONFIG:RELEASE>:/fp:fast>
-         $<$<CONFIG:RELEASE>:/fp:except->
-         $<$<CONFIG:RELEASE>:/Ot>
-         $<$<CONFIG:RELEASE>:/GF>
-         $<$<CONFIG:RELEASE>:/GS->
-         $<$<CONFIG:RELEASE>:/Gy>
-         $<$<CONFIG:RELEASE>:/GR>
-         $<$<CONFIG:RELEASE>:/Oy>
-         $<$<CONFIG:RELEASE>:/GT>
-         $<$<CONFIG:RELEASE>:/GL>
-      )
-      set_target_properties(ScoreViewPlugin PROPERTIES
-         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-      )
-      target_compile_options(ScoreViewPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-      )
-      target_link_options(ScoreViewPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-         $<$<CONFIG:RELEASE>:/OPT:REF>
-         $<$<CONFIG:RELEASE>:/OPT:ICF>
-         $<$<CONFIG:RELEASE>:/LTCG>
-      )
+      if(MSVC)
+         add_compile_options(
+            $<$<CONFIG:RELEASE>:/Ob2>
+            $<$<CONFIG:RELEASE>:/O2>
+            $<$<CONFIG:RELEASE>:/Oi>
+            $<$<CONFIG:RELEASE>:/arch:SSE2>
+            $<$<CONFIG:RELEASE>:/fp:fast>
+            $<$<CONFIG:RELEASE>:/fp:except->
+            $<$<CONFIG:RELEASE>:/Ot>
+            $<$<CONFIG:RELEASE>:/GF>
+            $<$<CONFIG:RELEASE>:/GS->
+            $<$<CONFIG:RELEASE>:/Gy>
+            $<$<CONFIG:RELEASE>:/GR>
+            $<$<CONFIG:RELEASE>:/Oy>
+            $<$<CONFIG:RELEASE>:/GT>
+            $<$<CONFIG:RELEASE>:/GL>
+         )
+         set_target_properties(ScoreViewPlugin PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+         )
+         target_compile_options(ScoreViewPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+         )
+         target_link_options(ScoreViewPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+            $<$<CONFIG:RELEASE>:/OPT:REF>
+            $<$<CONFIG:RELEASE>:/OPT:ICF>
+            $<$<CONFIG:RELEASE>:/LTCG>
+         )
+      endif()
       if (PluginArch STREQUAL "x64")
          set_target_properties(ScoreViewPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-scoreview64"
          )
       else()
          set_target_properties(ScoreViewPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-scoreview"
          )
       endif()
@@ -91,6 +95,13 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/scoreview/layouts" "${PLUGINS_DIR}/scoreview/layouts"
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:ScoreViewPlugin>"
    )
+
+   if(POST_BUILD_COPY_EXT_LIBS AND PluginPlatform STREQUAL "windows-mingw")
+      add_custom_command(TARGET ScoreViewPlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/scoreview/libgcc_s_seh-1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libstdc++-6.dll" "${PLUGINS_DIR}/scoreview/libstdc++-6.dll"
+      )
+   endif()
 endif()
 
 if(BUILD_STATIC)
@@ -98,7 +109,7 @@ if(BUILD_STATIC)
 
    add_library(ScoreViewPlugin STATIC ${SCOREVIEW_PLUGIN_SOURCES})
 
-   if(PluginPlatform STREQUAL "windows")
+   if(PluginPlatform STREQUAL "windows" OR PluginPlatform STREQUAL "windows-mingw")
       target_include_directories(ScoreViewPlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
@@ -106,7 +117,9 @@ if(BUILD_STATIC)
       )
    else()
       target_include_directories(ScoreViewPlugin PUBLIC
-         standalone/inc/wine/include
+         ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+         ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
+         ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview

@@ -533,26 +533,26 @@ private:
          string name;
          switch (v.first)
          {
-         case 1000: name = "GameEvents:KeyDown"s; break;
-         case 1001: name = "GameEvents:KeyUp"s; break;
-         case 1002: name = "GameEvents:Init"s; break;
-         case 1003: name = "GameEvents:MusicDone"s; break;
-         case 1004: name = "GameEvents:Exit"s; break;
-         case 1005: name = "GameEvents:Paused"s; break;
-         case 1006: name = "GameEvents:UnPaused"s; break;
-         case 1007: name = "GameEvents:OptionEvent"s; break;
-         case 1101: name = "SurfaceEvents:Slingshot"s; break;
-         case 1200: name = "FlipperEvents:Collide"s; break;
-         case 1300: name = "TimerEvents:Timer"s; break;
-         case 1301: name = "SpinnerEvents:Spin"s; break;
-         case 1302: name = "TargetEvents:Dropped"s; break;
-         case 1303: name = "TargetEvents:Raised"s; break;
-         case 1320: name = "LightSeqEvents:PlayDone"s; break;
-         case 1400: name = "HitEvents:Hit"s; break;
-         case 1401: name = "HitEvents:Unhit"s; break;
-         case 1402: name = "LimitEvents:EOS"s; break;
-         case 1403: name = "LimitEvents:BOS"s; break;
-         case 1404: name = "AnimateEvents:Animate"s; break;
+         case 1000: name = "GameEvents:KeyDown"sv; break;
+         case 1001: name = "GameEvents:KeyUp"sv; break;
+         case 1002: name = "GameEvents:Init"sv; break;
+         case 1003: name = "GameEvents:MusicDone"sv; break;
+         case 1004: name = "GameEvents:Exit"sv; break;
+         case 1005: name = "GameEvents:Paused"sv; break;
+         case 1006: name = "GameEvents:UnPaused"sv; break;
+         case 1007: name = "GameEvents:OptionEvent"sv; break;
+         case 1101: name = "SurfaceEvents:Slingshot"sv; break;
+         case 1200: name = "FlipperEvents:Collide"sv; break;
+         case 1300: name = "TimerEvents:Timer"sv; break;
+         case 1301: name = "SpinnerEvents:Spin"sv; break;
+         case 1302: name = "TargetEvents:Dropped"sv; break;
+         case 1303: name = "TargetEvents:Raised"sv; break;
+         case 1320: name = "LightSeqEvents:PlayDone"sv; break;
+         case 1400: name = "HitEvents:Hit"sv; break;
+         case 1401: name = "HitEvents:Unhit"sv; break;
+         case 1402: name = "LimitEvents:EOS"sv; break;
+         case 1403: name = "LimitEvents:BOS"sv; break;
+         case 1404: name = "AnimateEvents:Animate"sv; break;
          default: name = "DispID[" + std::to_string(v.first) + ']';
          }
          // ss << " spent in " << std::setw(3) << v.second.callCount << " calls of " << name;

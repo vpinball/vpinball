@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dragpoint.h"
 #include "ui/win/resource.h"
 
 class RampData final : public BaseProperty
@@ -129,8 +130,6 @@ public:
    RampData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
 
    int m_rampVertex;

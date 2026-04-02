@@ -181,7 +181,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
    {
       const float lumLimit = (lumMin + lumMax) * 0.5f;
 
-      LOGD("DMD area search thr: %f area is %d,%d %dx%d", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w);
+      LOGD(std::format("DMD area search thr: {} area is {},{} {}x{}", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w));
 
       // Find the largest dark rectangle in the background image
       ivec4 subFrame;
@@ -271,8 +271,8 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
          }
       }
 
-      LOGD("DMD area search %f -> %f, thr: %f lead to %d,%d %dx%d Heur:%f, PrevHeur: %f", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
-         heuristic(subFrame), heuristic(bestFrame));
+      LOGD(std::format("DMD area search {} -> {}, thr: {} lead to {},{} {}x{} Heur:{}, PrevHeur: {}", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
+         heuristic(subFrame), heuristic(bestFrame)));
 
       // There are no heuristic between luminance levels, this can lead to unwanted behavior (for example drifting insde a box)
       if (subFrame.w > 0) // && (bestFrame.w == 0 || (heuristic(subFrame) > 0.6f * heuristic(bestFrame))))

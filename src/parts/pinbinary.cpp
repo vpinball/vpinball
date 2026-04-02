@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/pinbinary.h"
 
 bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
 {
@@ -10,57 +11,36 @@ bool PinBinary::ReadFromFile(const std::filesystem::path& filename)
    return true;
 }
 
-bool PinBinary::WriteToFile(const string& filename)
+bool PinBinary::WriteToFile(const string& filename) const
 {
    write_file(filename, m_buffer);
    return true;
 }
 
-HRESULT PinBinary::SaveToStream(IStream *pstream)
+void PinBinary::Save(IObjectWriter& writer) const
 {
-   BiffWriter bw(pstream, 0);
-
-   bw.WriteString(FID(NAME), m_name);
-   bw.WriteString(FID(PATH), m_path.string());
-   bw.WriteInt(FID(SIZE), static_cast<int>(m_buffer.size()));
-   bw.WriteStruct(FID(DATA), m_buffer.data(), static_cast<int>(m_buffer.size()));
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteString(FID(NAME), m_name);
+   writer.WriteString(FID(PATH), m_path.string());
+   writer.WriteInt(FID(SIZE), static_cast<int>(m_buffer.size()));
+   writer.WriteRaw(FID(DATA), m_buffer.data(), static_cast<int>(m_buffer.size()));
+   writer.EndObject();
 }
 
-HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
+void PinBinary::Load(IObjectReader& reader)
 {
-   BiffReader br(pstream, this, version, 0, 0);
-
-   br.Load();
-
-   return S_OK;
-}
-
-bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(NAME): pbr->GetString(m_name); break;
-   case FID(PATH):
-   {
-      string path;
-      pbr->GetString(path);
-      m_path = path;
-      break;
-   }
-   case FID(SIZE):
-   {
-      int size;
-      pbr->GetInt(size);
-      m_buffer.resize(size);
-      break;
-   }
-   // Size must come before data, otherwise our structure won't be allocated
-   case FID(DATA): pbr->GetStruct(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
-   }
-   return true;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(NAME): m_name = reader.AsString(); break;
+         case FID(PATH): m_path = PathFromString(reader.AsString()); break;
+         case FID(SIZE): m_buffer.resize(reader.AsInt()); break;
+         // Size must come before data, otherwise our structure won't be allocated
+         case FID(DATA): reader.AsRaw(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
+         }
+         return true;
+      });
 }
 
 #ifndef __STANDALONE__
@@ -89,15 +69,14 @@ void PinFont::Register()
 
    ReleaseDC(nullptr, hdcScreen);
 
-   string path = GetExecutablePath();
-   const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
-   if (pos != string::npos)
-       path.erase(pos + 1);
+   char tempPath[MAX_PATH];
+   char tempFileName[MAX_PATH];
+   GetTempPathA(MAX_PATH, tempPath);
+   if (GetTempFileNameA(tempPath, "VP", 0, tempFileName) != 0)
+      m_szTempFile = tempFileName;
+   else
+      m_szTempFile = "VPTemp0.ttf"; // Fallback
 
-   static int tempFontNumber = -1;
-   tempFontNumber++;
-
-   m_szTempFile = path + "VPTemp" + std::to_string(tempFontNumber) + ".ttf";
    WriteToFile(m_szTempFile);
 
    /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());

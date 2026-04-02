@@ -79,10 +79,10 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
-      const char* value = node->Attribute(attributeName.c_str());
-      if (value)
+      if (const char* value = node->Attribute(attributeName.c_str()))
       {
-         vector<uint8_t> decoded = base64_decode(value, strlen(value));
+         std::string_view valueView { value };
+         vector<uint8_t> decoded = base64_decode(valueView.data(), valueView.size());
          if (decoded.empty())
          {
             string path;
@@ -93,7 +93,7 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
                   path = "/"s + parent->ToElement()->Name() + path;
                parent = parent->Parent();
             }
-            LOGE("Failed to decode image at line %d (%s)", node->GetLineNum(), path.c_str());
+            LOGE(std::format("Failed to decode image at line {} ({})", node->GetLineNum(), path));
          }
          return CreateTexture(decoded.data(), static_cast<int>(decoded.size()));
       }
@@ -105,10 +105,10 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
-      const char* value = node->Attribute(attributeName.c_str());
-      if (value)
+      if (const char* value = node->Attribute(attributeName.c_str()))
       {
-         vector<uint8_t> decoded_wav = base64_decode(value, strlen(value));
+         std::string_view valueView { value };
+         vector<uint8_t> decoded_wav = base64_decode(valueView.data(), valueView.size());
          return std::make_shared<vector<uint8_t>>(std::move(decoded_wav));
       }
    }
@@ -183,8 +183,11 @@ static std::vector<std::string> GetStringList(const std::string& str, char delim
    return tokens;
 }
 
-static bool StartsWithCaseInsensitive(const std::string& str, const std::string& prepend) { return string_to_lower(str).starts_with(string_to_lower(prepend)); }
-
+static bool StartsWithCaseInsensitive(const std::string& str, const std::string& prefix)
+{
+   if (prefix.length() > str.length()) return false;
+   return std::equal(prefix.begin(), prefix.end(), str.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
+}
 
 B2SSound::B2SSound(const tinyxml2::XMLNode& root)
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))

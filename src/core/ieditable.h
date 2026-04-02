@@ -48,26 +48,12 @@ public:
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-// declare and implement some methods for an IEditable which does not support scripting (only used for legacy, deprecated Decal editable)
-#define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
-	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
-	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
-	virtual EventProxyBase *GetEventProxyBase() {return nullptr;} \
-	inline IFireEvents *GetIFireEvents() {return nullptr;} \
-	virtual IScriptable *GetScriptable() {return nullptr;} \
-	virtual const IScriptable *GetScriptable() const {return nullptr;}
-
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
-	virtual const WCHAR *get_Name() const { return m_wzName; } \
-	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
-	{ \
-		*pVal = SysAllocString(m_wzName); \
-		return S_OK; \
-	} \
-	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(MakeString(newVal)); return S_OK; } \
+	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) { *pVal = SysAllocStringLen(m_wzName.c_str(), static_cast<UINT>(m_wzName.length())); return S_OK; } \
+	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) { SetName(newVal); return S_OK; } \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_d.m_tdr.m_TimerInterval);} \
 	STDMETHOD(get_TimerEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) {*pVal = FTOVB(m_d.m_tdr.m_TimerEnabled); return S_OK;} \
@@ -91,25 +77,27 @@ public:
         return obj; \
     } \
     static IEditable* COMCreateEditable()   { return static_cast<IEditable*>(COMCreate()); } \
-    static IEditable* COMCreateAndInit(PinTable * const ptable, const float x, const float y) \
+    static IEditable* COMCreateAndInit(const float x, const float y) \
     { \
         T *obj = T::COMCreate(); \
-        obj->Init(ptable, x, y, true); \
+        obj->Init(x, y, true); \
         return obj; \
     } \
-	T *CopyForPlay(PinTable *live_table) const; \
-	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
+	T *CopyForPlay() const; \
+	HRESULT Init(const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
 	virtual void UIRenderPass1(Sur * const psur); \
 	virtual void UIRenderPass2(Sur * const psur); \
+	bool IsUILocked() const override { return m_uiLocked; } \
+	void SetUILock(bool lock) override { m_uiLocked = lock; } \
+	bool IsUIVisible() const override { return m_uiVisible; } \
+	void SetUIVisible(bool visible) override { m_uiVisible = visible; } \
 	virtual PinTable *GetPTable() { return m_ptable; } \
 	virtual const PinTable *GetPTable() const { return m_ptable; } \
 	virtual void Delete() {IEditable::Delete();} \
 	virtual void Uncreate() {IEditable::Uncreate();} \
-	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
+	virtual void Load(IObjectReader &reader); \
+	virtual void Save(IObjectWriter &writer, const bool saveForUndo); \
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
-	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
-	virtual HRESULT InitPostLoad(); \
-	virtual bool LoadToken(const int id, BiffReader * const pbr); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
 	virtual const IDispatch *GetDispatch() const {return static_cast<const IDispatch *>(this);} \
 	virtual IEditable *GetIEditable() {return static_cast<IEditable*>(this);} \
@@ -118,8 +106,8 @@ public:
 	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
-	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;} \
-	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;} \
+	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR * pbstr) { return ResultFromScode(E_NOTIMPL); } \
+	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID * pclsid) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults(const bool fromMouseClick); \
@@ -155,17 +143,17 @@ public:
 	static const int CursorID = IDC_##ResName; \
 	static const unsigned AllowedViews = AllwdViews;
 
-#define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
+#define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
    type *dst = type::COMCreate(); \
-   dst->Init(table, 0.f, 0.f, false, true); \
-   memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
-   dst->m_isVisible = m_isVisible; \
-   dst->m_backglass = m_backglass; \
-   dst->m_locked = m_locked; \
+   dst->Init(0.f, 0.f, false, true); \
+   dst->m_wzName = m_wzName; \
+   dst->m_desktopBackdrop = m_desktopBackdrop; \
+   dst->m_uiLocked = m_uiLocked; \
+   dst->m_uiVisible = m_uiVisible; \
    dst->m_d = m_d;
 
-#define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, table, points) \
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
+#define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, points) \
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
    for (size_t i = 0; i < dst->points.size(); i++) \
       dst->points[i]->Release(); \
    dst->points.clear(); \
@@ -185,30 +173,33 @@ public:
       } \
    }
 
-// IEditable is the subclass for anything class which is a self-contained table element.
-// It knows how to draw itself, interact with event and properties,
-// And talk to the player
-// Example:  Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 
+// Each IEditable manage a data block named m_d. All data block derive from these BaseProperty
+// FIXME Not everything in here is used in all of the derived classes, it was made this way to simplify the Win32 UI code but this is fairly wrong and should be cleaned up
+class BaseProperty
+{
+public:
+   string m_szImage;
+   string m_szMaterial;
+   string m_szPhysicsMaterial;
+   float m_elasticity;
+   float m_friction;
+   float m_scatter;
+   float m_threshold;
+   bool m_collidable;
+   bool m_hitEvent = false;
+   bool m_overwritePhysics = true;
+   bool m_reflectionEnabled = true;
+   bool m_visible = true;
+};
+
+// IEditable is the interface for self-contained table element.
+// Example: Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 class IEditable
 {
 public:
    IEditable();
    virtual ~IEditable();
-
-   // this function draws the shape of the object with a solid fill
-   // only used in the UI/editor and not the game
-   //
-   // this is called before the grid lines are drawn on the map
-   virtual void UIRenderPass1(Sur * const psur) = 0;
-   // this function draws the shape of the object with a black outline (no solid fill)
-   // only used in the UI/editor and not the game
-   //
-   // this is called after the grid lines have been drawn on the map.
-   // draws a solid outline over the grid lines
-   virtual void UIRenderPass2(Sur * const psur) = 0;
-
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
 
    virtual void ExportMesh(class ObjLoader& loader) {}
 
@@ -218,21 +209,32 @@ public:
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
+   // Report a change that would need the Win32 UI to be redrawn
+   // FIXME move to ISelect
    virtual void SetDirtyDraw();
+
+   virtual ISelect *GetISelect() = 0;
+   virtual const ISelect *GetISelect() const = 0;
 
    virtual Hitable *GetIHitable() { return nullptr; }
    virtual const Hitable *GetIHitable() const { return nullptr; }
 
-   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) = 0;
+   virtual void Save(IObjectWriter& writer, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite() { }
-   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
-   virtual HRESULT InitPostLoad() = 0;
-   virtual ISelect *GetISelect() = 0;
-   virtual const ISelect *GetISelect() const = 0;
+   virtual void Load(IObjectReader &partReader) = 0;
+   wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
+protected:
+   void LoadSharedEditableField(const int id, IObjectReader &reader);
+   void SaveSharedEditableFields(IObjectWriter &writer);
+
+public:
    virtual void SetDefaults(const bool fromMouseClick) = 0;
+
    virtual IScriptable *GetScriptable() = 0;
    virtual const IScriptable *GetScriptable() const = 0;
+
    virtual IFireEvents *GetIFireEvents() = 0;
+
    virtual ItemTypeEnum GetItemType() const = 0;
 
    // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
@@ -242,15 +244,18 @@ public:
 
    virtual void BeginUndo();
    virtual void EndUndo();
-   void MarkForUndo();
-   void MarkForDelete();
-   void Undelete();
-   string GetName() const;
-   void SetName(const string& name);
    virtual void Delete();
    virtual void Uncreate();
 
-   bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
+   // Shared implementation
+
+   void MarkForUndo();
+   void MarkForDelete();
+   void Undelete();
+
+   string GetName() const;
+   const wstring& GetWName() const;
+   void SetName(const wstring& name);
 
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; }
@@ -265,6 +270,14 @@ public:
 
    HRESULT get_UserValue(VARIANT *pVal);
    HRESULT put_UserValue(VARIANT *newVal);
+
+   PinTable *m_ptable = nullptr; // This may only be set by PinTable in AddPart/RemovePart (guarantee reverse reference with table's list of parts)
+
+   bool m_desktopBackdrop = false; // if true, the element is part of the desktop backdrop
+
+   bool m_uiLocked = false; // Can not be dragged in the editor
+
+   bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 private:
    VARIANT m_uservalue;

@@ -63,8 +63,8 @@ void RenderProbeDialog::UpdateList()
       const int index = ListView_InsertItem(hListHwnd, &lvitem);
       /* switch (prp->GetType())
       {
-      case RenderProbe::PLANE_REFLECTION: ListView_SetItemText(hListHwnd, index, 1, (LPSTR) "Plane Reflection"); break;
-      case RenderProbe::SCREEN_SPACE_TRANSPARENCY: ListView_SetItemText(hListHwnd, index, 1, (LPSTR) "ScreenSpace Refraction"); break;
+      case RenderProbe::PLANE_REFLECTION: ListView_SetItemText_Safe(hListHwnd, index, 1, "Plane Reflection"); break;
+      case RenderProbe::SCREEN_SPACE_TRANSPARENCY: ListView_SetItemText_Safe(hListHwnd, index, 1, "ScreenSpace Refraction"); break;
       }*/
    }
 }

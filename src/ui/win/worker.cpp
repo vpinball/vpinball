@@ -14,7 +14,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
    {
       // Nothing happened since the last time - we are probably hung
       EXCEPINFO eiInterrupt = {};
-      eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
+      eiInterrupt.bstrDescription = MakeWideBSTR(LocalStringW(IDS_HANG).m_buffer);
       //eiInterrupt.scode = E_NOTIMPL;
       eiInterrupt.wCode = 2345;
       g_pplayer->m_scriptInterpreter->Stop(g_pplayer->m_ptable, true);

@@ -12,8 +12,12 @@
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <cassert>
 
@@ -27,7 +31,7 @@ template<class T> int   IndexOf(const vector<T> & c, const T & v)  { return (int
 template<class T> T     Pop(vector<T> & c)                         { const T val = std::move(c.back()); c.pop_back(); return val; }
 template<class T> void  AddUnique(vector<T> & c, T t)              { if (!Contains(c, t)) c.push_back(t); }
 //template<class T> void  Remove(vector<T> & c, T t)                 { const vector<T>::const_iterator it = std::find(begin(c), end(c), t); assert(it != end(c)); c.erase(it); assert(!Contains(c, t)); }
-template<class T> void  RemoveFillWithBack(vector<T> & c, T t)     { const int idxof = IndexOf(c, t); const T val = Pop(c); if (idxof == c.size()) return; c[idxof] = val; assert(!Contains(c, t)); }
+template<class T> void  RemoveFillWithBack(vector<T> & c, T t)     { const int idxof = IndexOf(c, t); const T val = Pop(c); if (idxof == (int)c.size()) return; c[idxof] = val; assert(!Contains(c, t)); }
 
 
 /*

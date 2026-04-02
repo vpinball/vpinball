@@ -15,6 +15,7 @@ echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
+echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
@@ -299,6 +300,37 @@ if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
 fi
 
 #
+# build libwinevbs
+#
+
+LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}"
+LIBWINEVBS_FOUND_SHA="$([ -f libwinevbs/cache.txt ] && cat libwinevbs/cache.txt || echo "")"
+
+if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
+   echo "Building libwinevbs. Expected: ${LIBWINEVBS_EXPECTED_SHA}, Found: ${LIBWINEVBS_FOUND_SHA}"
+
+   rm -rf libwinevbs
+   mkdir libwinevbs
+   cd libwinevbs
+
+   curl -sL https://github.com/vpinball/libwinevbs/archive/${LIBWINEVBS_SHA}.tar.gz -o libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   tar xzf libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   mv libwinevbs-${LIBWINEVBS_SHA} libwinevbs
+   cd libwinevbs
+   cmake \
+      -DPLATFORM=macos \
+      -DARCH=arm64 \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBWINEVBS_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build ffmpeg
 #
 
@@ -416,6 +448,15 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libvni.{dylib,*
 
 cp -a libaltsound/libaltsound/build/libaltsound.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
+
+cp -a libwinevbs/libwinevbs/build/libwinevbs.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
+mkdir -p ../../../third-party/include/libwinevbs/wine/include
+mkdir -p ../../../third-party/include/libwinevbs/atl/include
+mkdir -p ../../../third-party/include/libwinevbs/atlmfc/include
+cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
+cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
+cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
+cp -r libwinevbs/libwinevbs/atlmfc/include/* ../../../third-party/include/libwinevbs/atlmfc/include/
 
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/

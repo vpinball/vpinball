@@ -30,7 +30,7 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             string line, text;
             while (std::getline(file, line))
             {
-               line += "\r\n";
+               line += "\r\n"sv;
                text += line;
             }
             SetDlgItemText(IDC_CHANGELOG, text.c_str());

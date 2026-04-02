@@ -2,21 +2,31 @@
 
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 
 #ifdef __STANDALONE__
 #define __null 0
+#define __WINE_WINCON_H
 #endif
 
 #include <windows.h>
 
-#define DIRECTINPUT_VERSION 0x0800
-
 #ifdef __STANDALONE__
-#define RPC_NO_WINDOWS_H
+#ifdef GetClassInfo
+#undef GetClassInfo
 #endif
-#include <dinput.h>
+#endif
+
+#ifndef __STANDALONE__
+#define RPC_NO_WINDOWS_H
+#define COM_NO_WINDOWS_H
+#include <objbase.h>
+#endif
 
 #if defined(ENABLE_DX9)
  #ifdef _DEBUG
@@ -25,17 +35,13 @@
  #include "minid3d9.h"
 #endif
 
-#include <mmsystem.h>
-
 #ifndef __STANDALONE__
+#include <mmsystem.h>
+#endif
+
 #include <atlbase.h>
+#ifndef __STANDALONE__
 #include <atlctl.h>
-#else
-#undef PlaySound
-extern "C" {
-   #include <atlbase.h>
-}
-#undef strncpy
 #endif
 
 #ifdef _MSC_VER
@@ -48,7 +54,9 @@ extern "C" {
 
 #include <oleauto.h>
 
+#ifndef __STANDALONE__
 #include <wincrypt.h>
+#endif
 
 #ifndef __STANDALONE__
 #include <intrin.h>
@@ -67,25 +75,22 @@ extern "C" {
 
 #include <vector>
 #include <string>
+#include <format>
 #include <algorithm>
+#ifndef __STANDALONE__
 #include <commdlg.h>
 #include <dlgs.h>
 #include <cderr.h>
+#endif
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 using std::string;
 using std::wstring;
 using std::vector;
 
-// RESULT codes
-#define S_FAIL MAKE_SCODE(SEVERITY_ERROR, FACILITY_CONTROL, 1004)
-#define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
 #ifndef __STANDALONE__
-
-#ifndef USER_DEFAULT_SCREEN_DPI
-  #define USER_DEFAULT_SCREEN_DPI 96 //!! ??
-#endif
 
 #ifndef WM_THEMECHANGED
   #define WM_THEMECHANGED            0x031A
@@ -134,22 +139,16 @@ using std::vector;
 
 #define sscanf_s sscanf
 
+#ifndef __MINGW32__
 #define localtime_s(x, y) localtime_r(y, x)
 #define gmtime_s(x, y) gmtime_r(y, x)
-
 #define _aligned_malloc(size, align) aligned_alloc(align, size)
 #define _aligned_free free
-
-#define strnlen_s strnlen
-#define sprintf_s snprintf
-#define _snprintf_s snprintf
+#endif
 
 #define _T(x) (x)
 #define AtoT(x) (x)
 #define _ASSERTE(expr) ((void)0)
-
-#undef GetCurrentDirectory
-#define GetCurrentDirectory GetCurrentDirectoryA
 
 #undef SetCurrentDirectory
 #define SetCurrentDirectory SetCurrentDirectoryA
@@ -157,19 +156,44 @@ using std::vector;
 #undef MessageBox
 #define MessageBox MessageBoxA
 
-#undef OutputDebugString
-#define OutputDebugString OutputDebugStringA
+typedef ULONG_PTR HCRYPTPROV;
+typedef ULONG_PTR HCRYPTHASH;
+typedef ULONG_PTR HCRYPTKEY;
+
+#pragma pack(push, 1)
+typedef struct {
+   WORD wFormatTag;
+   WORD nChannels;
+   DWORD nSamplesPerSec;
+   DWORD nAvgBytesPerSec;
+   WORD nBlockAlign;
+   WORD wBitsPerSample;
+   WORD cbSize;
+} WAVEFORMATEX, *LPWAVEFORMATEX;
+#pragma pack(pop)
+
+typedef struct {
+   DWORD lStructSize;
+   HWND hwndOwner;
+   HINSTANCE hInstance;
+   DWORD Flags;
+   LPSTR lpstrFindWhat;
+   LPSTR lpstrReplaceWith;
+   WORD wFindWhatLen;
+   WORD wReplaceWithLen;
+   LPARAM lCustData;
+   void* lpfnHook;
+   LPCSTR lpTemplateName;
+} FINDREPLACEA;
 
 #define FINDREPLACE FINDREPLACEA
 #define CREATESTRUCT CREATESTRUCTA
 #define WNDCLASS WNDCLASSA
 #define LOGFONT LOGFONTA
-#define MONITORINFOEX MONITORINFOEXA
 
 typedef LPSTR LPTSTR;
 typedef LPCSTR LPCTSTR;
 
-class LayersListDialog final { };
 class ImageDialog final { };
 class SoundDialog final { };
 class EditorOptionsDialog final { };
@@ -183,27 +207,23 @@ class AboutDialog final { };
 class ToolbarDialog final { };
 class NotesDialog final { };
 class PropertyDialog final { };
-class ColorButton final { };
 class SCNotification final { };
 #endif
 
 #include "utils/Logger.h"
 
 #ifdef __STANDALONE__
-#include "standalone/inc/atl/atldef.h"
-#include "standalone/inc/atl/atlbase.h"
-#include "standalone/inc/atl/atlcom.h"
-#include "standalone/inc/atl/atlcomcli.h"
-#include "standalone/inc/atl/atlsafe.h"
+#include <atldef.h>
+#include <atlcom.h>
+#include <atlcomcli.h>
+#include <atlsafe.h>
 
-#include "standalone/inc/atlmfc/afx.h"
-#include "standalone/inc/atlmfc/afxdlgs.h"
-#include "standalone/inc/atlmfc/afxwin.h"
-#include "standalone/inc/atlmfc/atltypes.h"
+#include <afx.h>
+#include <afxdlgs.h>
+#include <afxwin.h>
+#include <atltypes.h>
 
 #include "standalone/inc/win32xx/win32xx.h"
-
-#include <cstdint>
 #endif
 
 #include "def.h"
@@ -212,6 +232,7 @@ class SCNotification final { };
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/bbox.h"
+#include "math/MeshUtils.h"
 
 #include "ui/win/resource.h"
 
@@ -219,11 +240,14 @@ class SCNotification final { };
 
 #include "utils/vector.h"
 #include "utils/vectorsort.h"
+#include "utils/color.h"
+
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #else
 #include "standalone/vpinball_standalone_i.h"
 #endif
+
 #include "core/Settings.h"
 
 #include "utils/wintimer.h"
@@ -231,65 +255,32 @@ class SCNotification final { };
 #include "utils/eventproxy.h"
 
 #include "utils/fileio.h"
+
 #include "pinundo.h"
+
 #include "iselect.h"
 
 #include "core/Scriptable.h"
+
 #include "parts/Collection.h"
+
 #include "core/ieditable.h"
-#include "ui/win/codeview.h"
-
-#include "parts/pinbinary.h"
-
-#include "plugins/MsgPluginManager.h"
 
 #include "extern.h"
 
 #include "ui/win/WinEditor.h"
+
 #include "core/VPApp.h"
+
 #include "parts/pintable.h"
 
-#include "math/mesh.h"
-#include "physics/collide.h"
 #include "renderer/Renderer.h"
 
 #include "ui/win/sur.h"
-#include "ui/win/hitsur.h"
-#include "ui/win/hitrectsur.h"
 
-#include "parts/ball.h"
-
-#include "physics/collideex.h"
-#include "physics/hitball.h"
-#include "physics/hittimer.h"
 #include "physics/hitable.h"
-#include "physics/hitflipper.h"
-#include "physics/hitplunger.h"
+
 #include "core/player.h"
-
-#include "utils/color.h"
-
-#include "parts/dragpoint.h"
-#include "parts/timer.h"
-#include "parts/flipper.h"
-#include "parts/plunger.h"
-#include "parts/textbox.h"
-#include "parts/surface.h"
-#include "parts/dispreel.h"
-#include "parts/lightseq.h"
-#include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/light.h"
-#include "parts/kicker.h"
-#include "parts/decal.h"
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
-#include "parts/gate.h"
-#include "parts/spinner.h"
-#include "parts/ramp.h"
-#include "parts/flasher.h"
-#include "parts/rubber.h"
-#include "parts/PartGroup.h"
 
 #include "renderer/trace.h"
 

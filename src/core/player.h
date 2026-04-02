@@ -14,6 +14,7 @@
 #include "plugins/ResURIResolver.h"
 #include "audio/AudioPlayer.h"
 #include "core/ScriptInterpreter.h"
+#include "VPXPluginAPIImpl.h"
 
 class VRDevice;
 
@@ -120,6 +121,9 @@ public:
    Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
 
+   MsgPI::MsgPluginManager m_pluginManager;
+   VPXPluginAPIImpl m_pluginAPI;
+
 private:
    bool m_playing = true;
    void ApplyPlayingState(const bool play);
@@ -217,7 +221,7 @@ public:
 
 #pragma region Rendering
 public:
-   VPX::RenderOutput& GetOutput(VPXWindowId window);
+   //VPX::RenderOutput& GetOutput(VPXWindowId window);
    VPX::Window* m_playfieldWnd = nullptr;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_scoreViewOutput;
@@ -226,6 +230,8 @@ public:
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
+
+   bool IsVR() const { return m_vrDevice != nullptr; }
 
    int GetCabinetAutoFitMode() const { return m_cabinetAutoFitMode; }
    void SetCabinetAutoFitMode(int mode);
@@ -322,21 +328,19 @@ public:
    int m_ModalRefCount = 0;
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
+   Flasher *m_implicitVRBackglass = nullptr;
 
    // External DMD and displays, defined from script or captured
-   bool m_capExtDMD = false; // frame capturing (hack for VR)
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
    unsigned int m_dmdFrameId = 0;
-
-   bool m_capPUP = false;
-   std::shared_ptr<BaseTexture> m_texPUP = nullptr;
 
    int m_nFrameToCapture = 0;
    int m_frameCaptureFPS = 0;
    bool m_cutCaptureToLoop = true;
 
    CComObject<ScriptInterpreter>* m_scriptInterpreter = nullptr;
+   unsigned int m_nScriptErrorNotification = 0;
    void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
    ResURIResolver m_resURIResolver;

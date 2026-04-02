@@ -9,19 +9,3 @@
 #ifdef _ATL_STATIC_REGISTRY
  #include <statreg.h>
 #endif
-#include "parts/bumper.h"
-#include "parts/dispreel.h"
-#include "parts/flasher.h"
-#include "parts/gate.h"
-#include "parts/kicker.h"
-#include "parts/light.h"
-#include "parts/lightseq.h"
-#include "parts/plunger.h"
-#include "parts/primitive.h"
-#include "parts/ramp.h"
-#include "parts/spinner.h"
-#include "parts/textbox.h"
-#include "parts/timer.h"
-#include "parts/trigger.h"
-#include "parts/ball.h"
-#include "parts/PartGroup.h"

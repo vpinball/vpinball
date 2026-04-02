@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef __STANDALONE__
 #include <commdlg.h>
+#endif
 #include <atlcom.h>
 #include "codeviewedit.h"
 

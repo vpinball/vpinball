@@ -19,6 +19,7 @@ private:
       int r, g, b;
    };
    rgb m_arColorKey;
+   unsigned int m_notifId = 0;
 };
 
 }

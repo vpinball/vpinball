@@ -27,6 +27,7 @@ public:
    void SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const;
    void SetWindowModeFromSettings(const PinTable* const table);
    void SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination);
+   vec3 GetPlayerPositionFromViewPos(const PinTable* const table, const float screenInclination);
 
    void SetWindowAutofit(const PinTable* const table, const vec3& playerPos, const float aspect, const float flipperPos, const bool allowNonUniformStretch,
       const std::function<void(string)>& glassNotification);

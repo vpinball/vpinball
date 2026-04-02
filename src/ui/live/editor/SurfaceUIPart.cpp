@@ -138,7 +138,7 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Surface* surf) { return surf->m_d.m_slingshotforce; }, //
          [](Surface* surf, float v) { surf->m_d.m_slingshotforce = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Surface>(
-         m_surface, "Slignshot Threshold"s, //
+         m_surface, "Slingshot Threshold"s, //
          [](const Surface* surf) { return surf->m_d.m_slingshot_threshold; }, //
          [](Surface* surf, float v) { surf->m_d.m_slingshot_threshold = v; }, PropertyPane::Unit::None, 2);
       props.MaterialCombo<Surface>(

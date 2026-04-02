@@ -127,8 +127,6 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //Create Listview Item
             LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
-            LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
-
             LVITEM lvitem;
             lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
             lvitem.iItem = i;
@@ -137,9 +135,9 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             lvitem.lParam = (LPARAM)i; //Need this LPARM in order to sort the listview by column.  Using the counter i for this as each loop will provide a unique number.
             const int index = ListView_InsertItem(hListView, &lvitem);
             //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
-            ListView_SetItemText(hListView, index, 1, (LPSTR)where.whereUsedObjectname.c_str());
+            ListView_SetItemText_Safe(hListView, index, 1, where.whereUsedObjectname.c_str());
             //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
-            ListView_SetItemText(hListView, index, 2, usedByPropertyName);
+            ListView_SetItemText_Safe(hListView, index, 2, where.whereUsedPropertyName.c_str());
             i++;
          }
          ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -324,8 +322,6 @@ void WhereUsedDialog::RefreshList()
          //Create Listview Item
          LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
-         LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
-
          LVITEM lvitem;
          lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
          lvitem.iItem = i;
@@ -334,9 +330,9 @@ void WhereUsedDialog::RefreshList()
          lvitem.lParam = (LPARAM)i; //Need this LPARM in order to sort the listview by column.  Using counter i as it will be a unique number for each loop.
          const int index = ListView_InsertItem(hListView, &lvitem);
          //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
-         ListView_SetItemText(hListView, index, 1, (LPSTR)where.whereUsedObjectname.c_str());
+         ListView_SetItemText_Safe(hListView, index, 1, where.whereUsedObjectname.c_str());
          //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
-         ListView_SetItemText(hListView, index, 2, usedByPropertyName);
+         ListView_SetItemText_Safe(hListView, index, 2, where.whereUsedPropertyName.c_str());
          i++;
       }
    }
@@ -368,7 +364,7 @@ void WhereUsedDialog::EditObject(HWND hWhereListView)
       //Make the call to get the item text from the listview item at the 'sel' index and subitem 1.  Store the listview item text in 'controlName'.
       ListView_GetItemText(hWhereListView, sel, 1, controlName, std::size(controlName));
       //Make sure the controlName returned isn't 'Decal' as Decal doesn't support a unique name so we can't issue the 'GetElementByName' method on it.
-      if (controlName == "Decal"s)
+      if (controlName == "Decal"sv)
       {
          MessageBox("Decal objects don't have unique names so these objects need to be selected/edited manually.", "Decals", MB_ICONEXCLAMATION | MB_OK);
       }

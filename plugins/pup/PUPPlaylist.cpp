@@ -51,7 +51,7 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFol
 
    m_szBasePath = find_case_insensitive_directory_path(manager->GetPath() / szFolder);
    if (m_szBasePath.empty()) {
-      LOGE("Playlist folder not found: %s", szFolder.c_str());
+      LOGE("Playlist folder not found: " + szFolder.string());
       return;
    }
 
@@ -76,13 +76,13 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 7) {
-      LOGE("Invalid playlist: %s", line.c_str());
+      LOGE("Invalid playlist: " + line);
       return nullptr;
    }
 
    std::filesystem::path szFolderPath = find_case_insensitive_directory_path(manager->GetPath() / parts[1]);
    if (szFolderPath.empty()) {
-      LOGE("Playlist folder not found: %s", parts[1].c_str());
+      LOGE("Playlist folder not found: " + parts[1]);
       return nullptr;
    }
 
@@ -99,7 +99,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 
    if (!hasFiles) {
       // TODO add to a pup pack audit, we log as info as not a big deal.
-      LOGI("Playlist folder %s is empty",szFolderPath.string().c_str());
+      LOGI("Playlist folder " + szFolderPath.string() + " is empty");
    }
 
    PUPPlaylist* pPlaylist = new PUPPlaylist(

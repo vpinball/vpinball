@@ -18,10 +18,11 @@
 #include "plugins/LoggingPlugin.h"
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 namespace Serum {
 
-LPI_IMPLEMENT
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
@@ -330,15 +331,15 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    const std::filesystem::path cromc = msg->gameId + ".cROMc"s;
 
    // Priority 1: serum/rom/rom.crz
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / crz); !path1.empty())
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / crz); !path1.empty())
       serumPath = path1.parent_path().parent_path();
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum" / msg->gameId / cromc); !path2.empty())
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / cromc); !path2.empty())
       serumPath = path2.parent_path().parent_path();
 
    // Priority 2: pinmame/altcolor/rom/rom.crz
-   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / crz); !path3.empty())
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / crz); !path3.empty())
       serumPath = path3.parent_path().parent_path();
-   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altcolor" / msg->gameId / cromc); !path4.empty())
+   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / cromc); !path4.empty())
       serumPath = path4.parent_path().parent_path();
 
    // Default to global user setup folder if no table specific file is found
@@ -384,10 +385,10 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    StopColorization();
-   msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc);
-   msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged);
-   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
-   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
+   msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc, nullptr);
+   msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
    msgApi->ReleaseMsgID(onControllerGameStartId);
    msgApi->ReleaseMsgID(onControllerGameEndId);
    msgApi->ReleaseMsgID(onDmdTrigger);

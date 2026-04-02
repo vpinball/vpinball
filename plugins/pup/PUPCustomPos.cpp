@@ -14,11 +14,11 @@ std::unique_ptr<PUPCustomPos> PUPCustomPos::CreateFromCSV(const string& line)
       return nullptr;
    vector<string> parts = parse_csv_line(line);
    if (parts.size() < 5){
-      LOGE("Expected 5 parts for CustomPos, got %d: %s", parts.size(), line.c_str());
+      LOGE(std::format("Expected 5 parts for CustomPos, got {}: {}", parts.size(), line));
       return nullptr;
    }
    if (parts.size() > 5){
-      LOGE("Ignoring trailing parts for CustomPos. Expected 5 parts, got %d: %s", parts.size(), line.c_str());
+      LOGE(std::format("Ignoring trailing parts for CustomPos. Expected 5 parts, got {}: {}", parts.size(), line));
    }
 
    std::unique_ptr<PUPCustomPos> pCustomPos = std::make_unique<PUPCustomPos>();

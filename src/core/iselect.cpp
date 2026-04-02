@@ -12,6 +12,8 @@ void ISelect::SetObjectPos()
    m_vpinball->ClearObjectPosCur();
 }
 
+void ISelect::RenderBlueprint(Sur *psur, const bool solid) { UIRenderPass2(psur); }
+
 void ISelect::OnLButtonDown(int x, int y)
 {
    m_dragging = true;
@@ -92,7 +94,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
       break;
    case ID_LOCK:
       STARTUNDOSELECT
-      m_locked = !m_locked;
+      SetUILock(!IsUILocked());
       STOPUNDOSELECT
       break;
    }
@@ -101,8 +103,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
 void ISelect::SetSelectFormat(Sur *psur)
 {
-   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor
-                                   : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor
+                                       : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 4);
    psur->SetLineColor(color, false, 4);
@@ -110,8 +112,8 @@ void ISelect::SetSelectFormat(Sur *psur)
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
 {
-   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor :
-                                     m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor :
+                                         m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 3);
    psur->SetLineColor(color, false, 3);
@@ -187,13 +189,12 @@ void ISelect::Translate(const Vertex2D &pvOffset)
 
 HRESULT ISelect::GetTypeName(BSTR *pVal) const
 {
-   WCHAR buf[256];
-   GetTypeNameForType(GetItemType(), buf);
-   *pVal = SysAllocString(buf);
+   wstring buf = GetTypeNameForType(GetItemType());
+   *pVal = SysAllocStringLen(buf.c_str(), static_cast<UINT>(buf.length()));
    return S_OK;
 }
 
-void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const
+wstring ISelect::GetTypeNameForType(const ItemTypeEnum type) const
 {
    UINT strID;
    switch (type)
@@ -207,103 +208,14 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
    }
 
 #ifndef __STANDALONE__
-   buf[0] = L'\0';
-   /*const int len =*/LoadStringW(g_app->GetInstanceHandle(), strID, buf, 256);
-   buf[256-1] = L'\0'; // in case of truncation
- #else
-   wcsncpy_s(buf, 256, LocalStringW(strID).m_szbuffer);
+   LPWSTR strPtr = nullptr;
+   const int len = LoadStringW(g_app->GetInstanceHandle(), strID, reinterpret_cast<LPWSTR>(&strPtr), 0);
+   if (len > 0 && strPtr)
+      return wstring(strPtr, len);
+   return wstring();
+#else
+   return LocalStringW(strID).m_buffer;
 #endif
-}
-
-static void SetPartGroup(ISelect* const me, string layerName)
-{
-   if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
-   {
-      if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
-         layerName.erase(std::size(me->GetPTable()->m_wzName) - 1);
-      const wstring newName = MakeWString(layerName);
-      const auto partGroupF = std::ranges::find_if(me->GetPTable()->GetParts(),
-         [&newName](const IEditable *editable) {
-         return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName);
-      });
-      if (partGroupF == me->GetPTable()->GetParts().end())
-      {
-         PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
-         if (newGroup)
-         {
-            wcsncpy_s(newGroup->m_wzName, std::size(newGroup->m_wzName), newName.c_str());
-            me->GetPTable()->AddPart(newGroup);
-            me->GetIEditable()->SetPartGroup(newGroup);
-         }
-      }
-      else
-      {
-         me->GetIEditable()->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
-      }
-   }
-}
-
-bool ISelect::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-      case FID(LOCK): pbr->GetBool(m_locked); break;
-      case FID(LVIS): pbr->GetBool(m_isVisible); break;
-      case FID(LAYR): // Old layer style (limited number of unnamed layers)
-      {
-         int layerIndex;
-         pbr->GetInt(layerIndex);
-         SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
-         break;
-      }
-      case FID(LANR): // 10.7 layers (limited number of named layers)
-      {
-         string layerName;
-         pbr->GetString(layerName);
-         std::ranges::transform(
-            layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
-               return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
-            });
-         SetPartGroup(this, "Layer_" + layerName);
-         break;
-      }
-      case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
-      {
-         string partGroupName;
-         pbr->GetString(partGroupName);
-         SetPartGroup(this, partGroupName);
-         break;
-      }
-   }
-   return true;
-}
-
-HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
-{
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteBool(FID(LOCK), m_locked);
-   if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
-   {
-      // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
-      const PartGroup* layer = GetIEditable()->GetPartGroup();
-      while (layer->GetPartGroup() != nullptr)
-         layer = layer->GetPartGroup();
-      int index = 0;
-      for (const auto edit : GetPTable()->GetParts())
-      {
-         if (edit == layer)
-            break;
-         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
-            index++;
-      }
-      bw.WriteInt(FID(LAYR), min(index, 11));
-      bw.WriteString(FID(LANR), layer->GetName());
-      bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
-   }
-   bw.WriteBool(FID(LVIS), m_isVisible);
-   
-   return S_OK;
 }
 
 void ISelect::UpdateStatusBarInfo()
@@ -314,7 +226,7 @@ void ISelect::UpdateStatusBarInfo()
 
 bool ISelect::IsVisible(IEditable *editable) const
 {
-   return m_isVisible
+   return IsUIVisible()
       && (editable == nullptr || editable->GetPartGroup() == nullptr || editable->GetPartGroup()->GetISelect() == nullptr
          || editable->GetPartGroup()->GetISelect()->IsVisible(editable->GetPartGroup()));
 }

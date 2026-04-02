@@ -29,7 +29,7 @@ private:
    std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
    bool RenderBackglass(VPXRenderContext2D* context, class B2SServer* server);
    bool RenderScoreView(VPXRenderContext2D* context, class B2SServer* server);
-   void RenderBulbs(VPXRenderContext2D* ctx, B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs);
+   void RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, const vector<std::unique_ptr<B2SBulb>>& bulbs);
    void RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const B2SScores& scores);
 
    std::shared_ptr<B2STable> m_b2s;
@@ -40,13 +40,6 @@ private:
    unsigned int m_onDevChangedMsgId = 0;
    static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    DevSrcId m_deviceStateSrc {};
-   unsigned int m_nSolenoids = 0;
-   int m_GIIndex = -1;
-   unsigned int m_nGIs = 0;
-   int m_lampIndex = -1;
-   unsigned int m_nLamps = 0;
-   int m_mechIndex = -1;
-   unsigned int m_nMechs = 0;
 
    unsigned int m_getSegSrcMsgId = 0;
    unsigned int m_onSegChangedMsgId = 0;

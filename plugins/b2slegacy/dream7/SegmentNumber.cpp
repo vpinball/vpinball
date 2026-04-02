@@ -150,7 +150,7 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
       pSegment->SetStyle(&m_pStyle);
 }
 
-void SegmentNumber::InitMatrix(const SDL_FPoint& location, Matrix* pMatrix)
+void SegmentNumber::InitMatrix(const SDL_FPoint& location, const Matrix* pMatrix)
 {
    delete m_pNumberMatrix;
    m_pNumberMatrix = pMatrix->Clone();
@@ -184,120 +184,120 @@ void SegmentNumber::DisplayCharacter(const string& szCharacter)
       switch (m_type) {
          case SegmentNumberType_SevenSegment:
             switch (szCharacter[0]) {
-               case '0': szSegments = "abcdef"s; break;
-               case '1': szSegments = "bc"s; break;
-               case '2': szSegments = "abdeg"s; break;
-               case '3': szSegments = "abcdg"s; break;
-               case '4': szSegments = "bcfg"s; break;
-               case '5': szSegments = "acdfg"s; break;
-               case '6': szSegments = "acdefg"s; break;
-               case '7': szSegments = "abc"s; break;
-               case '8': szSegments = "abcdefg"s; break;
-               case '9': szSegments = "abcdfg"s; break;
+               case '0': szSegments = "abcdef"sv; break;
+               case '1': szSegments = "bc"sv; break;
+               case '2': szSegments = "abdeg"sv; break;
+               case '3': szSegments = "abcdg"sv; break;
+               case '4': szSegments = "bcfg"sv; break;
+               case '5': szSegments = "acdfg"sv; break;
+               case '6': szSegments = "acdefg"sv; break;
+               case '7': szSegments = "abc"sv; break;
+               case '8': szSegments = "abcdefg"sv; break;
+               case '9': szSegments = "abcdfg"sv; break;
                case 'A':
-               case 'a': szSegments = "abcefg"s; break;
+               case 'a': szSegments = "abcefg"sv; break;
                case 'B':
-               case 'b': szSegments = "cdefg"s; break;
+               case 'b': szSegments = "cdefg"sv; break;
                case 'C':
-               case 'c': szSegments = "adef"s; break;
+               case 'c': szSegments = "adef"sv; break;
                case 'D':
-               case 'd': szSegments = "bcdeg"s; break;
+               case 'd': szSegments = "bcdeg"sv; break;
                case 'E':
-               case 'e': szSegments = "adefg"s; break;
+               case 'e': szSegments = "adefg"sv; break;
                case 'F':
-               case 'f': szSegments = "aefg"s; break;
+               case 'f': szSegments = "aefg"sv; break;
             }
             break;
          case SegmentNumberType_TenSegment:
             switch (szCharacter[0]) {
-               case '0': szSegments = "abcdefjk"s; break;
-               case '1': szSegments = "il"s; break;
-               case '2': szSegments = "abdeg1g2"s; break;
-               case '3': szSegments = "abcdg2"s; break;
-               case '4': szSegments = "bcfg1g2"s; break;
-               case '5': szSegments = "acdfg1g2"s; break;
-               case '6': szSegments = "acdefg1g2"s; break;
-               case '7': szSegments = "abc"s; break;
-               case '8': szSegments = "abcdefg1g2"s; break;
-               case '9': szSegments = "abcdfg1g2"s; break;
+               case '0': szSegments = "abcdefjk"sv; break;
+               case '1': szSegments = "il"sv; break;
+               case '2': szSegments = "abdeg1g2"sv; break;
+               case '3': szSegments = "abcdg2"sv; break;
+               case '4': szSegments = "bcfg1g2"sv; break;
+               case '5': szSegments = "acdfg1g2"sv; break;
+               case '6': szSegments = "acdefg1g2"sv; break;
+               case '7': szSegments = "abc"sv; break;
+               case '8': szSegments = "abcdefg1g2"sv; break;
+               case '9': szSegments = "abcdfg1g2"sv; break;
                case 'A':
-               case 'a': szSegments = "abcefg"s; break;
+               case 'a': szSegments = "abcefg"sv; break;
                case 'B':
-               case 'b': szSegments = "cdefg"s; break;
+               case 'b': szSegments = "cdefg"sv; break;
                case 'C':
-               case 'c': szSegments = "adef"s; break;
+               case 'c': szSegments = "adef"sv; break;
                case 'D':
-               case 'd': szSegments = "bcdeg"s; break;
+               case 'd': szSegments = "bcdeg"sv; break;
                case 'E':
-               case 'e': szSegments = "adefg"s; break;
+               case 'e': szSegments = "adefg"sv; break;
                case 'F':
-               case 'f': szSegments = "aefg"s; break;
+               case 'f': szSegments = "aefg"sv; break;
             }
             break;
          case SegmentNumberType_FourteenSegment:
              switch (szCharacter[0]) {
-                case '0': szSegments = "abcdefjk"s; break;
-                case '1': szSegments = "bcj"s; break;
-                case '2': szSegments = "abdeg1g2"s; break;
-                case '3': szSegments = "abcdg2"s; break;
-                case '4': szSegments = "bcfg1g2"s; break;
-                case '5': szSegments = "acdfg1g2"s; break;
-                case '6': szSegments = "acdefg1g2"s; break;
-                case '7': szSegments = "abc"s; break;
-                case '8': szSegments = "abcdefg1g2"s; break;
-                case '9': szSegments = "abcdfg1g2"s; break;
+                case '0': szSegments = "abcdefjk"sv; break;
+                case '1': szSegments = "bcj"sv; break;
+                case '2': szSegments = "abdeg1g2"sv; break;
+                case '3': szSegments = "abcdg2"sv; break;
+                case '4': szSegments = "bcfg1g2"sv; break;
+                case '5': szSegments = "acdfg1g2"sv; break;
+                case '6': szSegments = "acdefg1g2"sv; break;
+                case '7': szSegments = "abc"sv; break;
+                case '8': szSegments = "abcdefg1g2"sv; break;
+                case '9': szSegments = "abcdfg1g2"sv; break;
                 case 'A':
-                case 'a': szSegments = "abcefg1g2"s; break;
+                case 'a': szSegments = "abcefg1g2"sv; break;
                 case 'B':
-                case 'b': szSegments = "abcdg2il"s; break;
+                case 'b': szSegments = "abcdg2il"sv; break;
                 case 'C':
-                case 'c': szSegments = "adef"s; break;
+                case 'c': szSegments = "adef"sv; break;
                 case 'D':
-                case 'd': szSegments = "abcdil"s; break;
+                case 'd': szSegments = "abcdil"sv; break;
                 case 'E':
-                case 'e': szSegments = "adefg1"s; break;
+                case 'e': szSegments = "adefg1"sv; break;
                 case 'F':
-                case 'f': szSegments = "aefg1"s; break;
+                case 'f': szSegments = "aefg1"sv; break;
                 case 'G':
-                case 'g': szSegments = "acdefg2"s; break;
+                case 'g': szSegments = "acdefg2"sv; break;
                 case 'H':
-                case 'h': szSegments = "bcefg1g2"s; break;
+                case 'h': szSegments = "bcefg1g2"sv; break;
                 case 'I':
-                case 'i': szSegments = "adil"s; break;
+                case 'i': szSegments = "adil"sv; break;
                 case 'J':
-                case 'j': szSegments = "bcde"s; break;
+                case 'j': szSegments = "bcde"sv; break;
                 case 'K':
-                case 'k': szSegments = "efg1jm"s; break;
+                case 'k': szSegments = "efg1jm"sv; break;
                 case 'L':
-                case 'l': szSegments = "def"s; break;
+                case 'l': szSegments = "def"sv; break;
                 case 'M':
-                case 'm': szSegments = "bcefhj"s; break;
+                case 'm': szSegments = "bcefhj"sv; break;
                 case 'N':
-                case 'n': szSegments = "bcefhm"s; break;
+                case 'n': szSegments = "bcefhm"sv; break;
                 case 'O':
-                case 'o': szSegments = "abcdef"s; break;
+                case 'o': szSegments = "abcdef"sv; break;
                 case 'P':
-                case 'p': szSegments = "abefg1g2"s; break;
+                case 'p': szSegments = "abefg1g2"sv; break;
                 case 'Q':
-                case 'q': szSegments = "abcdefm"s; break;
+                case 'q': szSegments = "abcdefm"sv; break;
                 case 'R':
-                case 'r': szSegments = "abefg1g2m"s; break;
+                case 'r': szSegments = "abefg1g2m"sv; break;
                 case 'S':
-                case 's': szSegments = "acdfg1g2"s; break;
+                case 's': szSegments = "acdfg1g2"sv; break;
                 case 'T':
-                case 't': szSegments = "ail"s; break;
+                case 't': szSegments = "ail"sv; break;
                 case 'U':
-                case 'u': szSegments = "bcdef"s; break;
+                case 'u': szSegments = "bcdef"sv; break;
                 case 'V':
-                case 'v': szSegments = "efjk"s; break;
+                case 'v': szSegments = "efjk"sv; break;
                 case 'W':
-                case 'w': szSegments = "bcefkm"s; break;
+                case 'w': szSegments = "bcefkm"sv; break;
                 case 'X':
-                case 'x': szSegments = "hjkm"s; break;
+                case 'x': szSegments = "hjkm"sv; break;
                 case 'Y':
-                case 'y': szSegments = "hjl"s; break;
+                case 'y': szSegments = "hjl"sv; break;
                 case 'Z':
-                case 'z': szSegments = "adjk"s; break;
+                case 'z': szSegments = "adjk"sv; break;
              }
              break;
          default: break;

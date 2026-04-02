@@ -18,9 +18,12 @@
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
 #include "StereoSettingsPage.h"
+#include "TableMiscPage.h"
 #include "TableOptionsPage.h"
 #include "TableRulesPage.h"
 #include "VRSettingsPage.h"
+
+#include "parts/ball.h"
 
 
 namespace VPX::InGameUI
@@ -42,6 +45,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/pov"s, []() { return std::make_unique<PointOfViewSettingsPage>(); });
    AddPage("settings/stereo"s, []() { return std::make_unique<StereoSettingsPage>(); });
    AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
+   AddPage("table/general"s, []() { return std::make_unique<TableMiscPage>(); });
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
    AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
@@ -189,6 +193,10 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       m_useFlipperNav &= fabs(delta.x) <= 3.f && fabs(delta.y) <= 3.f;
       m_prevMousePos = ImGui::GetMousePos();
    }
+
+   // Allow pages to force flipper navigation (needed by anaglyph calibration)
+   for (const auto &page : m_activePages)
+      m_useFlipperNav |= page->IsFlipperNavNeeded();
 
    if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
    {

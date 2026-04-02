@@ -341,8 +341,7 @@ void LiveUI::Render3D()
 
 void LiveUI::RenderUI()
 {
-   // For the time being, the UI is only available inside a running player
-   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr)
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
       return;
 
    const ImGuiIO& io = ImGui::GetIO();
@@ -416,7 +415,7 @@ void LiveUI::RenderUI()
                tex->BackendUserData = new std::shared_ptr<BaseTexture>();
             auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
             BaseTexture::Update(*texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
-            tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadTexture((*texture).get(), false));
+            tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadTexture(texture->get(), false));
             tex->SetStatus(ImTextureStatus_OK);
          }
          else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
@@ -462,7 +461,7 @@ void LiveUI::RenderUI()
    m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
-   float depthSort = -10000.f;
+   int depthSort = -10000;
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
       const ImDrawList * const cmd_list = draw_data->CmdLists[n];
@@ -506,7 +505,7 @@ void LiveUI::RenderUI()
          {
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), depthSort, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), static_cast<float>(depthSort), m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
             depthSort--;
          }
       }
@@ -584,6 +583,14 @@ bool LiveUI::ProposeInputLayout(const string &deviceName, const std::function<vo
 
 void LiveUI::UpdateDeviceLayoutPopup()
 {
+   // FIXME add an UI for VR instead of applying blindly
+   if (m_player->IsVR())
+   {
+      m_deviceLayoutName.clear();
+      m_deviceLayoutHandler(true, false);
+      return;
+   }
+
    if (!m_deviceLayoutName.empty())
       ImGui::OpenPopup("Apply Device Layout ?");
    ImGui::SetNextWindowSize(ImVec2(350.f * m_uiScale, 0.f));
@@ -595,14 +602,14 @@ void LiveUI::UpdateDeviceLayoutPopup()
       ImGui::Separator();
       if (ImGui::Button("Discard"))
       {
-         m_deviceLayoutName = ""s;
+         m_deviceLayoutName.clear();
          m_deviceLayoutHandler(false, m_deviceLayoutDontAskAgain);
          ImGui::CloseCurrentPopup();
       }
       ImGui::SameLine(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().FramePadding.x * 2.f);
       if (ImGui::Button("Apply"))
       {
-         m_deviceLayoutName = ""s;
+         m_deviceLayoutName.clear();
          m_deviceLayoutHandler(true, m_deviceLayoutDontAskAgain);
          ImGui::CloseCurrentPopup();
       }

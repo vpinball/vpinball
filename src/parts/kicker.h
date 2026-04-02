@@ -93,8 +93,6 @@ public:
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf) const;
 
-   PinTable *m_ptable = nullptr;
-
    RenderDevice* m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_plateMeshBuffer;
    std::shared_ptr<MeshBuffer> m_meshBuffer;

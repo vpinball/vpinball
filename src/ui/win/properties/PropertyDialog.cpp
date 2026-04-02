@@ -46,6 +46,27 @@
 #include "ui/win/properties/TableLightsProperty.h"
 #include "ui/win/properties/PartGroupVisualsProperty.h"
 
+#include "parts/plunger.h"
+#include "parts/flipper.h"
+#include "parts/timer.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 #pragma region PropertyDialog
 
 LRESULT EditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
@@ -85,7 +106,7 @@ LRESULT ComboBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
     return WndProcDefault(msg, wparam, lparam);
 }
 
-PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_backglassView(false), m_curTabIndex(0)
+PropertyDialog::PropertyDialog() : CDialog(IDD_PROPERTY_DIALOG), m_previousType((ItemTypeEnum)0), m_desktopBackdropView(false), m_curTabIndex(0)
 {
     memset(m_tabs, 0, sizeof(m_tabs));
 }
@@ -97,7 +118,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         return;
 
     int activePage = m_tab.m_activePage;
-    m_backglassView = g_pvp->m_backglassView;
+    m_desktopBackdropView = g_pvp->m_desktopBackdropView;
     m_isPlayfieldMesh = false;
 
     while (m_tab.GetItemCount() > 0)
@@ -108,9 +129,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     {
     case eItemTable:
     {
-        if (g_pvp->m_backglassView)
+        if (g_pvp->m_desktopBackdropView)
         {
-            m_elementTypeName.SetWindowText("Backglass");
+            m_elementTypeName.SetWindowText("Desktop Backdrop");
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
             if (m_tab.m_activeTabText == "Visuals")
@@ -436,7 +457,7 @@ void PropertyDialog::DeleteAllTabs()
             m_tabs[i] = nullptr;
         }
     m_previousType = (ItemTypeEnum)0;
-    m_backglassView = false;
+    m_desktopBackdropView = false;
 }
 
 void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList, const CComboBox &combo, const string &selectName)
@@ -531,11 +552,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (int i = 0; i < ptable->m_vcollection.size(); i++)
-        {
-            char * const szT = MakeChar(ptable->m_vcollection[i].m_wzName);
-            combo.AddString(szT);
-            delete [] szT;
-        }
+            combo.AddString(MakeString(ptable->m_vcollection[i].m_wzName).c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
 }
@@ -588,7 +605,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
    m_tab.ShowWindow();
 
    const bool is_playfield_mesh = psel->GetItemType() == eItemPrimitive && ((Primitive *)psel)->IsPlayfield();
-   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_backglassView != g_pvp->m_backglassView || m_multipleElementsStatic.IsWindowVisible())
+   if (m_previousType != psel->GetItemType() || m_isPlayfieldMesh != is_playfield_mesh || m_desktopBackdropView != g_pvp->m_desktopBackdropView || m_multipleElementsStatic.IsWindowVisible())
    {
       BasePropertyDialog::m_disableEvents = true;
       m_curTabIndex = m_tab.GetCurSel();
@@ -625,8 +642,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
-        const string collection = (wzName != nullptr) ? MakeString(wzName) : string();
+        const wstring& wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
+        const string collection = MakeString(wzName);
 
         BSTR bstr;
         psel->GetTypeName(&bstr);
@@ -720,7 +737,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                 return TRUE;                    //disable enter key for any input otherwise the app would crash!?
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
             {
-                const string className = GetFocus().GetClassName().GetString();
+                const string& className = GetFocus().GetClassName().GetString();
                 if (className != "Edit")
                 {
                     g_pvp->ParseCommand(ID_DELETE, false);
@@ -729,7 +746,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
             }
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
             {
-               const string className = GetFocus().GetClassName().GetString();
+               const string& className = GetFocus().GetClassName().GetString();
                // filter ESC-key otherwise VPX will enter an endless event loop!?
                if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
                   return TRUE;

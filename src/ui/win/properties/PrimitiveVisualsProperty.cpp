@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/primitive.h"
+#include "parts/light.h"
+
 #include "ui/win/properties/PrimitiveVisualsProperty.h"
 
 PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
@@ -114,7 +117,7 @@ void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, con
       if (pe->GetItemType() == ItemTypeEnum::eItemLight)
          lights.push_back((Light *)pe);
 
-    bool need_reset = combo.GetCount() != lights.size() + 1; // Not the same number of items
+    bool need_reset = combo.GetCount() != (int)lights.size() + 1; // Not the same number of items
     need_reset |= combo.FindStringExact(1, selectName.c_str()) == CB_ERR; // Selection is not part of combo
     if (!need_reset)
     {

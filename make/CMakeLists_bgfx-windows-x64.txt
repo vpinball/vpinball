@@ -54,11 +54,13 @@ add_executable(vpinball WIN32
 
    src/core/vpinball.idl
 
-   src/renderer/captureExt.cpp
-   src/renderer/captureExt.h
-
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
+   src/input/XRInputHandler.h
+   
+   src/renderer/XRGraphicBackend.h
+   src/renderer/XRD3D11Backend.h
+   src/renderer/XRVulkanBackend.h
 
    src/utils/StackTrace.cpp
    src/utils/StackTrace.h

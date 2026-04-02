@@ -1,37 +1,24 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "textbox.h"
+
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
-#ifdef EXT_CAPTURE
-#include "renderer/captureExt.h"
-#endif
 
 Textbox::~Textbox()
 {
    assert(m_rd == nullptr);
-   SAFE_RELEASE(m_pIFont);
 }
 
-Textbox *Textbox::CopyForPlay(PinTable *live_table) const
+Textbox *Textbox::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
-   if (m_pIFont)
-      m_pIFont->Clone(&dst->m_pIFont);
-#ifdef __STANDALONE__
-   dst->m_fontItalic = m_fontItalic;
-   dst->m_fontUnderline = m_fontUnderline;
-   dst->m_fontStrikeThrough = m_fontStrikeThrough;
-   dst->m_fontBold = m_fontBold;
-   dst->m_fontSize = m_fontSize;
-   dst->m_fontName = m_fontName;
-#endif
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox)
    return dst;
 }
 
-HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Textbox::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    const float width  = g_app->m_settings.GetDefaultPropsTextbox_Width();
    const float height = g_app->m_settings.GetDefaultPropsTextbox_Height();
@@ -56,25 +43,19 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#ifndef __STANDALONE__
-   SAFE_RELEASE(m_pIFont);
-   FONTDESC fd;
-   fd.cbSizeofstruct = sizeof(FONTDESC);
-   float fontSize;
-   string fontName;
-   LinkProp(fontSize, FontSize);
-   LinkProp(fontName, FontName);
-   LinkProp(fd.sWeight, FontWeight);
-   LinkProp(fd.sCharset, FontCharSet);
-   LinkProp(fd.fItalic, FontItalic);
-   LinkProp(fd.fUnderline, FontUnderline);
-   LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
-   fd.lpstrName = (LPOLESTR)MakeWide(fontName);
-   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   delete [] fd.lpstrName;
-#endif
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
 
+   float fontSize;
+   LinkProp(fontSize, FontSize);
+   m_d.m_font.size = (uint32_t)(fontSize * 10000.0f);
+
+   bool fItalic, fUnderline, fStrikethrough;
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
+   m_d.m_font.attributes = (fItalic ? 0x02 : 0x00) | (fUnderline ? 0x04 : 0x00) | (fStrikethrough ? 0x08 : 0x00);
 #undef LinkProp
 }
 
@@ -91,199 +72,77 @@ void Textbox::WriteRegDefaults()
    LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#ifndef __STANDALONE__
-   if (m_pIFont)
-   {
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-      m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name((BSTR*)&fd.lpstrName);
-      m_pIFont->get_Weight(&fd.sWeight);
-      m_pIFont->get_Charset(&fd.sCharset);
-      m_pIFont->get_Italic(&fd.fItalic);
-      m_pIFont->get_Underline(&fd.fUnderline);
-      m_pIFont->get_Strikethrough(&fd.fStrikethrough);
-      const float fontSize = (float)(fd.cySize.int64 / 10000.0);
-      const string fontName = MakeString((BSTR)fd.lpstrName);
-      SysFreeString((BSTR)fd.lpstrName);
 
-      LinkProp(fontSize, FontSize);
-      LinkProp(fontName, FontName);
-      LinkProp(fd.sWeight, FontWeight);
-      LinkProp(fd.sCharset, FontCharSet);
-      LinkProp(fd.fItalic, FontItalic);
-      LinkProp(fd.fUnderline, FontUnderline);
-      LinkProp(fd.fStrikethrough, FontStrikeThrough);
-   }
-#endif
+   const float fontSize = (float)(m_d.m_font.size / 10000.0);
+   const bool fItalic = (m_d.m_font.attributes & 0x02) != 0;
+   const bool fUnderline = (m_d.m_font.attributes & 0x04) != 0;
+   const bool fStrikethrough = (m_d.m_font.attributes & 0x08) != 0;
+
+   LinkProp(fontSize, FontSize);
+   LinkProp(m_d.m_font.name, FontName);
+   LinkProp(m_d.m_font.weight, FontWeight);
+   LinkProp(m_d.m_font.charset, FontCharSet);
+   LinkProp(fItalic, FontItalic);
+   LinkProp(fUnderline, FontUnderline);
+   LinkProp(fStrikethrough, FontStrikeThrough);
 #undef LinkProp
 }
 
-
-HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Textbox::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VER1), m_d.m_v1);
-   bw.WriteVector2(FID(VER2), m_d.m_v2);
-   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
-   bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
-   bw.WriteString(FID(TEXT), m_d.m_text);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(ALGN), m_d.m_talign);
-   bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteBool(FID(IDMD), m_d.m_isDMD);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(FONT));
-   IPersistStream * ips;
-   m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-   const HRESULT hr = ips->Save(pstm, TRUE);
-   SAFE_RELEASE_NO_RCC(ips);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VER1), m_d.m_v1);
+   writer.WriteVector2(FID(VER2), m_d.m_v2);
+   writer.WriteInt(FID(CLRB), m_d.m_backcolor);
+   writer.WriteInt(FID(CLRF), m_d.m_fontcolor);
+   writer.WriteFloat(FID(INSC), m_d.m_intensity_scale);
+   writer.WriteString(FID(TEXT), m_d.m_text);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteInt(FID(ALGN), m_d.m_talign);
+   writer.WriteBool(FID(TRNS), m_d.m_transparent);
+   writer.WriteBool(FID(IDMD), m_d.m_isDMD);
+   SaveSharedEditableFields(writer);
+   writer.WriteFontDescriptor(FID(FONT), m_d.m_font);
+   writer.EndObject();
 }
 
-HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Textbox::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool Textbox::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
-   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
-   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
-   case FID(CLRF): pbr->GetInt(m_d.m_fontcolor); break;
-   case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(TEXT): pbr->GetString(m_d.m_text); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
-   case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
-   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
-   case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
-   case FID(FONT):
-   {
-#ifndef __STANDALONE__
-      if (!m_pIFont)
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
       {
-         FONTDESC fd;
-         fd.cbSizeofstruct = sizeof(FONTDESC);
-         fd.lpstrName = (LPOLESTR)(L"Arial");
-         fd.cySize.int64 = 142500;
-         //fd.cySize.Lo = 0;
-         fd.sWeight = FW_NORMAL;
-         fd.sCharset = 0;
-         fd.fItalic = 0;
-         fd.fUnderline = 0;
-         fd.fStrikethrough = 0;
-         OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-      }
-      IPersistStream * ips;
-      m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-      ips->Load(pbr->m_pistream);
-      SAFE_RELEASE_NO_RCC(ips);
-#else
-      BYTE buffer[255];
-      BYTE attributes;
-      short weight;
-      int size;
-      int len;
-
-      pbr->ReadBytes(buffer, 1); // version
-      pbr->ReadBytes(buffer, 2); // charset
-      pbr->ReadBytes(&attributes, 1); // attributes
-      m_fontItalic = (attributes & 0x02) > 0;
-      m_fontUnderline = (attributes & 0x04) > 0;
-      m_fontStrikeThrough = (attributes & 0x08) > 0;
-      pbr->ReadBytes(&weight, 2); // weight
-      m_fontBold = weight > 550;
-      pbr->ReadBytes(&size, 4); // size
-      m_fontSize = (float)size / 10000.f;
-      pbr->ReadBytes(buffer, 1); // name length
-      len = (int)buffer[0];
-      if (len > 0) {
-         pbr->ReadBytes(buffer, len); // name
-         m_fontName = string(reinterpret_cast<char*>(buffer), len);
-      }
-      else
-         m_fontName.clear();
-#endif
-      break;
-   }
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT Textbox::InitPostLoad()
-{
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VER1): m_d.m_v1 = reader.AsVector2(); break;
+         case FID(VER2): m_d.m_v2 = reader.AsVector2(); break;
+         case FID(CLRB): m_d.m_backcolor = reader.AsInt(); break;
+         case FID(CLRF): m_d.m_fontcolor = reader.AsInt(); break;
+         case FID(INSC): m_d.m_intensity_scale = reader.AsFloat(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(TEXT): m_d.m_text = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(ALGN): m_d.m_talign = static_cast<TextAlignment>(reader.AsInt()); break;
+         case FID(TRNS): m_d.m_transparent = reader.AsBool(); break;
+         case FID(IDMD): m_d.m_isDMD = reader.AsBool(); break;
+         case FID(FONT):
+         {
+            m_d.m_font = reader.AsFontDescriptor();
+            break;
+         }
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
    m_texture = nullptr;
-   return S_OK;
 }
 
-string Textbox::GetFontName()
+const string& Textbox::GetFontName() const
 {
-   if (m_pIFont)
-   {
-      BSTR bstr;
-      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-      const string fontName = MakeString(bstr);
-      SysFreeString(bstr);
-      return fontName;
-   }
-   return string();
-}
-
-HFONT Textbox::GetFont()
-{
-#ifndef __STANDALONE__
-    FONTDESC fd;
-    fd.cbSizeofstruct = sizeof(FONTDESC);
-    m_pIFont->get_Size(&fd.cySize);
-    const float fontSize = (float)(fd.cySize.int64 / 10000.0);
-
-    LOGFONT lf = {};
-    lf.lfHeight = -MulDiv((int)fontSize, GetDeviceCaps(g_pvp->GetDC(), LOGPIXELSY), 72);
-    lf.lfCharSet = DEFAULT_CHARSET;
-    lf.lfQuality = NONANTIALIASED_QUALITY;
-
-    BSTR bstr;
-    HRESULT hr = m_pIFont->get_Name(&bstr);
-    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
-    SysFreeString(bstr);
-
-    BOOL bl;
-    hr = m_pIFont->get_Bold(&bl);
-
-    lf.lfWeight = bl ? FW_BOLD : FW_NORMAL;
-
-    hr = m_pIFont->get_Italic(&bl);
-
-    lf.lfItalic = (BYTE)bl;
-
-    const HFONT hFont = CreateFontIndirect(&lf);
-    return hFont;
-#else
-   return nullptr;
-#endif
+   return m_d.m_font.name;
 }
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
@@ -367,14 +226,14 @@ void Textbox::RenderSetup(RenderDevice *device)
    m_rd = device;
 
 #ifndef __STANDALONE__
-   m_pIFont->Clone(&m_pIFontPlay);
+   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
+   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&m_pIFontPlay);
+   delete[] oleFD.lpstrName;
 
    CY size;
    m_pIFontPlay->get_Size(&size);
    size.int64 = (LONGLONG)(size.int64 / 1.5 * (g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight()));
    m_pIFontPlay->put_Size(size);
-#else
-   m_fontSize *= 1.5;
 #endif
 
    const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
@@ -403,7 +262,7 @@ void Textbox::UpdateAnimation(const float diff_time_msec)
 void Textbox::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(m_backglass);
+   assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -429,36 +288,17 @@ void Textbox::Render(const unsigned int renderMask)
    float h = (rect_bottom - rect_top)*ymult;
 
    #ifdef ENABLE_DX9
-      x -= 0.5f / m_rd->GetOutputBackBuffer()->GetWidth();
-      y -= 0.5f / m_rd->GetOutputBackBuffer()->GetHeight();
+      x -= 0.5f / (float)m_rd->GetOutputBackBuffer()->GetWidth();
+      y -= 0.5f / (float)m_rd->GetOutputBackBuffer()->GetHeight();
    #endif
 
    if (is_dmd)
    {
-#ifdef EXT_CAPTURE
-      const bool isExternalDMD = HasDMDCapture();
-#else
-      constexpr bool isExternalDMD = false;
-#endif
-
       m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-      // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
-      m_rd->m_DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD);
-      if (g_pplayer->m_renderer->m_backGlass)
-      {
-         g_pplayer->m_renderer->m_backGlass->GetDMDPos(x, y, w, h);
-         m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      }
-      #elif defined(ENABLE_DX9)
-      //const float width = m_renderer->m_useAA ? 2.0f*(float)m_width : (float)m_width; //!! AA ?? -> should just work
       m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
-      #endif
 
-      Vertex3D_NoTex2 vertices[4] = { 
+      Vertex3D_NoTex2 vertices[4] = {
          { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
          { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
          { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
@@ -683,8 +523,17 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
 
 STDMETHODIMP Textbox::get_Font(IFontDisp **pVal)
 {
-   m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
+   OleCreateFontIndirect(&oleFD, IID_IFont, (void **)&pIFont);
+   delete[] oleFD.lpstrName;
+   const HRESULT hr = pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
+   pIFont->Release();
+   return hr;
+#else
    return S_OK;
+#endif
 }
 
 STDMETHODIMP Textbox::put_Font(IFontDisp *newVal)
@@ -696,9 +545,14 @@ STDMETHODIMP Textbox::put_Font(IFontDisp *newVal)
 STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
 {
    //We know that our own property browser gives us the same pointer
-
-   //m_pIFont->Release();
-   //pFont->QueryInterface(IID_IFont, (void **)&m_pIFont);
+#ifndef __STANDALONE__
+   IFont* pIFont;
+   if (SUCCEEDED(pFont->QueryInterface(IID_IFont, (void**)&pIFont)))
+   {
+       m_d.m_font.FromOLEFont(pIFont);
+       pIFont->Release();
+   }
+#endif
 
    SetDirtyDraw();
 
@@ -827,15 +681,15 @@ TTF_Font* Textbox::LoadFont()
 {
    TTF_Font* pFont = nullptr;
 
-   string fontName = m_fontName;
+   string fontName = m_d.m_font.name;
    std::erase(fontName, ' ');
 
    vector<string> styles;
-   if (m_fontBold && m_fontItalic)
+   if (m_d.m_font.IsBold() > 550 && m_d.m_font.IsItalic())
       styles.push_back("-BoldItalic"s);
-   if (m_fontBold)
+   if (m_d.m_font.IsBold())
       styles.push_back("-Bold"s);
-   if (m_fontItalic)
+   if (m_d.m_font.IsItalic())
       styles.push_back("-Italic"s);
    styles.push_back("-Regular"s);
 
@@ -845,7 +699,7 @@ TTF_Font* Textbox::LoadFont()
    for (const auto& szStyle : styles) {
       path = find_case_insensitive_file_path(tablePath / (fontName + szStyle + ".ttf"));
       if (!path.empty()) {
-         pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
+         pFont = TTF_OpenFont(path.string().c_str(), (float)(m_d.m_font.size / 10000.));
          if (pFont) {
             PLOGI << "Font loaded: path=" << path.string();
             break;
@@ -857,8 +711,8 @@ TTF_Font* Textbox::LoadFont()
       path = tablePath / (fontName + styles[0] + ".ttf");
       PLOGW << "Unable to locate font: path=" << path.string();
 
-      path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "LiberationSans-Regular.ttf";
-      pFont = TTF_OpenFont(path.string().c_str(), m_fontSize);
+      path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets) / "LiberationSans-Regular.ttf"sv;
+      pFont = TTF_OpenFont(path.string().c_str(), (float)(m_d.m_font.size / 10000.));
       if (pFont) {
          PLOGW << "Default font loaded: path=" << path.string();
       }
@@ -869,10 +723,14 @@ TTF_Font* Textbox::LoadFont()
    }
 
    TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
-   if (m_fontBold) style |= TTF_STYLE_BOLD;
-   if (m_fontItalic) style |= TTF_STYLE_ITALIC;
-   if (m_fontUnderline) style |= TTF_STYLE_UNDERLINE;
-   if (m_fontStrikeThrough) style |= TTF_STYLE_STRIKETHROUGH;
+   if (m_d.m_font.IsBold())
+      style |= TTF_STYLE_BOLD;
+   if (m_d.m_font.IsItalic())
+      style |= TTF_STYLE_ITALIC;
+   if (m_d.m_font.IsUnderline())
+      style |= TTF_STYLE_UNDERLINE;
+   if (m_d.m_font.IsStrikeThrough())
+      style |= TTF_STYLE_STRIKETHROUGH;
    TTF_SetFontStyle(pFont, style);
 
    return pFont;

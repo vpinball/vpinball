@@ -24,13 +24,14 @@ $debug = $false
 function Process-Shader {
    Param($Source, $OutputFile, $Header, $Type, $Defines=@())
 
-   $outputs = @('mtl', 'essl', 'glsl', 'dx11', 'spv')
+   $outputs = @('mtl', 'essl', 'glsl', 'dxbc', 'dxil', 'spv')
    $targets = @(
-      '--platform osx     -p metal -O 3', # Metal     '--platform ios -p metal'
-      '--platform windows -p 320_es    ', # OpenGL ES '--platform android -p 320_es'
-      '--platform windows -p 440       ', # OpenGL    '--platform linux -p440'
-      '--platform windows -p s_5_0 -O 3', # DirectX   '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
-      '--platform windows -p spirv     ') # Vulkan
+      '--platform osx     -p metal',      # Metal      '--platform ios -p metal'
+      '--platform android -p 320_es    ', # OpenGL ES  '--platform android -p 320_es'
+      '--platform linux   -p 440       ', # OpenGL     '--platform linux -p440'
+      '--platform windows -p s_5_0 -O 3', # DirectX 11 '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
+      '--platform windows -p s_6_0 -O 3', # DirectX 12 '--platform windows -p s_6_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
+      '--platform linux   -p spirv     ') # Vulkan
    $shaderc = ".\shaderc.exe"
 
    $OutputPath = ("../bgfx_" + $OutputFile)
@@ -38,7 +39,7 @@ function Process-Shader {
 
    Add-Content -Path $OutputPath -Value ("`n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////`n// Build of " + $Type + " shader from " + $Source + " to " + $ShortName + " with options: " + $Defines)
    Write-Host ("> " + $Type + " shader from " + $Source + " to " + $ShortName + " with " + $Defines)
-   for($i = 0; $i -lt 5; $i++)
+   for($i = 0; $i -lt 6; $i++)
    {
       $CmdLine = "-f " + $Source + " " + $targets[$i] + " --bin2c " + $Header + $outputs[$i] + " --type " + $Type
       #$CmdLine = "-f " + $Source + " " + $Target + " -o shaders/" + $Header + ".bin --type " + $Type

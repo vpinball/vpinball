@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
+#include <format>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -22,6 +23,7 @@
 
 #include <string>
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 using std::string;
 
 #include <vector>
@@ -38,11 +40,11 @@ namespace Flex
 
 PSC_USE_ERROR();
 
-LPI_USE();
-#define LOGD Flex::LPI_LOGD
-#define LOGI Flex::LPI_LOGI
-#define LOGW Flex::LPI_LOGW
-#define LOGE Flex::LPI_LOGE
+LPI_USE_CPP();
+#define LOGD Flex::LPI_LOGD_CPP
+#define LOGI Flex::LPI_LOGI_CPP
+#define LOGW Flex::LPI_LOGW_CPP
+#define LOGE Flex::LPI_LOGE_CPP
 
 typedef uint32_t ColorRGBA32;
 #ifndef RGB

@@ -34,6 +34,8 @@ namespace {
    constexpr int STATUS_METHOD_NOT_ALLOWED = 405;
    constexpr int STATUS_CONFLICT = 409;
    constexpr int STATUS_INTERNAL_SERVER_ERROR = 500;
+
+   constexpr size_t MAX_UPLOAD_SIZE = size_t(2) * 1024 * 1024 * 1024; // 2GB
 }
 
 std::mutex WebServer::s_logMutex;
@@ -393,7 +395,7 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
 
    string path = BuildTablePath(q);
 
-   if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500) == length) {
+   if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), MAX_UPLOAD_SIZE) == length) {
       if (*q == '\0' && file == "VPinballX.ini") {
          g_app->m_settings.SetIniPath(path);
          g_app->m_settings.Load(true);

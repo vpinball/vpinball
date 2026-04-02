@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 #include "vpversion.h"
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
 
 PinUndo::PinUndo(PinTable *table)
    : m_table(table)
@@ -16,9 +18,13 @@ void PinUndo::SetCleanPoint(const SaveDirtyState sds)
    m_table->SetDirty(sds);
 }
 
+// The default behavior is to undo everything, so we disable it when playing (which is evaluated here hackily ...)
+// FIXME this is really hacky. Undo should really only be performed on request by an editor.
+bool PinUndo::IsDisabled() const { return g_pplayer && (g_pplayer->m_liveUI  == nullptr || !g_pplayer->m_liveUI->IsEditorUIOpened()); }
+
 void PinUndo::BeginUndo()
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    m_cUndoLayer++;
@@ -35,7 +41,7 @@ void PinUndo::BeginUndo()
 
 void PinUndo::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -50,7 +56,7 @@ void PinUndo::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 
 void PinUndo::MarkForCreate(IEditable *const pie)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -65,7 +71,7 @@ void PinUndo::MarkForCreate(IEditable *const pie)
 
 void PinUndo::MarkForDelete(IEditable *const pie)
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(!m_undoRecords.empty());
@@ -80,7 +86,7 @@ void PinUndo::MarkForDelete(IEditable *const pie)
 
 void PinUndo::Undo(bool discard)
 {
-   if (m_undoRecords.empty())
+   if (IsDisabled())
       return;
 
    assert(m_cUndoLayer == 0);
@@ -114,8 +120,9 @@ void PinUndo::Undo(bool discard)
          pstm->Read(&pie, sizeof(IEditable *), &read);
          pie->ClearForOverwrite();
 
-         pie->InitLoad(pstm, m_table, CURRENT_FILE_FORMAT_VERSION, 0, 0);
-         pie->InitPostLoad();
+         // Note that we do not process the loaded PartGroup parenting. This is not an issue as we do not support unoding reparenting (yet)
+         BiffReader reader(pstm, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+         pie->Load(reader);
          if (g_pplayer)
          {
             if (pie->GetIHitable())
@@ -148,7 +155,7 @@ void PinUndo::Undo(bool discard)
 
 void PinUndo::EndUndo()
 {
-   if (m_table->m_liveBaseTable)
+   if (IsDisabled())
       return;
 
    assert(m_cUndoLayer > 0);
@@ -189,7 +196,8 @@ void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
    DWORD write;
    pstm->Write(&pie, sizeof(IEditable *), &write);
 
-   pie->SaveData(pstm, 0, true);
+   BiffWriter writer(pstm, 0);
+   pie->Save(writer, true);
 
    m_vstm.push_back(pstm);
 #endif

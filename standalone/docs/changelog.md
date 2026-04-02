@@ -4,6 +4,12 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 03/26/26
+    * Bump libwinevbs with Wine 11.5
+
+* 03/24/26
+    * Decouple atl, wine, and vbscript into libwinevbs 
+
 * 11/17/25
     * Bump Wine source to wine-fe1175af410d04f806dda770502d0476a8ccbef6 (10.19)
 

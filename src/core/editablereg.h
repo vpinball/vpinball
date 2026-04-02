@@ -5,7 +5,7 @@
 #include "unordered_dense.h"
 
 typedef IEditable*(*CreateFuncType)();
-typedef IEditable*(*CreateAndInitFuncType)(PinTable *pt, float x, float y);
+typedef IEditable*(*CreateAndInitFuncType)(float x, float y);
 
 struct EditableInfo
 {
@@ -44,7 +44,7 @@ public:
    static IEditable* CreateAndInit(ItemTypeEnum type, PinTable *pt, float x, float y)
    {
       const EditableInfo* const info = FindOrFail(type);
-      return info->createAndInitFunc ? info->createAndInitFunc(pt, x, y) : nullptr;
+      return info->createAndInitFunc ? info->createAndInitFunc(x, y) : nullptr;
    }
 
    static int GetTypeNameStringID(ItemTypeEnum type)

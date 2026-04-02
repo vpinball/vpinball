@@ -95,7 +95,7 @@ protected:
    virtual bool equals(const PropertyDef& other) const override
    {
       const FloatPropertyDef* o = dynamic_cast<const FloatPropertyDef*>(&other);
-      return o && PropertyDef::equals(other) && (m_min == o->m_min) && (m_max == o->m_max) && (m_step == o->m_def) && (m_def == o->m_def);
+      return o && PropertyDef::equals(other) && (m_min == o->m_min) && (m_max == o->m_max) && (m_step == o->m_step) && (m_def == o->m_def);
    }
 };
 

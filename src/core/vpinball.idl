@@ -1630,6 +1630,15 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
         };
 
+        [
+        uuid(349B04C7-BF64-48D2-9EE8-177793E801CD),
+        ]
+        dispinterface IDecalEvents
+        {
+        properties:
+        methods:
+        }
+
         //////////////////////////////
         ////// Primitive
         ///////////////////////////////
@@ -2648,6 +2657,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         };
 
         [
+                uuid(9CEFB29F-BDA8-4DBC-BFA2-F8703CF4A18A),
+                helpstring("Decal Class")
+        ]
+        coclass Decal
+        {
+                [default] interface IDecal;
+                [default, source]  dispinterface IDecalEvents;
+        };
+
+        [
                 uuid(44D58C78-14BA-47F3-B82C-425853ABB698),
                 helpstring("Trigger Class")
         ]
@@ -2786,6 +2805,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [default] interface IPrimitive;
                 [default, source]  dispinterface IPrimitiveEvents;
         };
+		
         [
                 uuid(7770B875-0F54-4187-81E3-389742D97BAF),
                 helpstring("HitTarget Class")

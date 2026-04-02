@@ -4,6 +4,27 @@
 #include "ui/win/resource.h"
 #include "ImageDialog.h"
 
+#include "parts/plunger.h"
+#include "parts/flipper.h"
+#include "parts/timer.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 typedef struct _tagSORTDATA
 {
    HWND hwndList;
@@ -183,7 +204,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                {
                   return FALSE;
                }
-               ListView_SetItemText(hSoundlist, pinfo->item.iItem, 0, pinfo->item.pszText);
+               ListView_SetItemText_Safe(hSoundlist, pinfo->item.iItem, 0, pinfo->item.pszText);
                LVITEM lvitem;
                lvitem.mask = LVIF_PARAM;
                lvitem.iItem = pinfo->item.iItem;
@@ -521,12 +542,12 @@ void ImageDialog::Export()
             }
             else
             {
-               strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               strncat_s(g_filename, ppi->m_name.c_str(), std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
                const size_t idx = ppi->GetFilePath().string().find_last_of('.');
-               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               strncat_s(g_filename, ppi->GetFilePath().string().c_str() + idx, std::size(g_filename)-strnlen_s(g_filename, std::size(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
-            ofn.nMaxFile = sizeof(g_filename);
+            ofn.nMaxFile = std::size(g_filename);
 
             const string defExt = extension_from_path(g_filename);
             ofn.lpstrDefExt = defExt.c_str();
@@ -681,13 +702,11 @@ void ImageDialog::Reimport()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const HANDLE hFile = CreateFile(ppi->GetFilePath().string().c_str(), GENERIC_READ, FILE_SHARE_READ,
-                                               nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+               const auto &filePath = ppi->GetFilePath();
 
-               if (hFile != INVALID_HANDLE_VALUE)
+               if (std::filesystem::exists(filePath))
                {
-                  CloseHandle(hFile);
-                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+                  CCO(PinTable) *const pt = g_pvp->GetActiveTable();
                   m_overallFilesize -= ppi->GetFileSize();
                   m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                   Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
@@ -703,7 +722,7 @@ void ImageDialog::Reimport()
                   pt->UpdatePropertyImageList();
                }
                else
-                  MessageBox(ppi->GetFilePath().string().c_str(), "FILE NOT FOUND!", MB_OK);
+                  MessageBox(filePath.string().c_str(), "FILE NOT FOUND!", MB_OK);
 
                sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
             }
@@ -731,11 +750,10 @@ void ImageDialog::UpdateAll()
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != nullptr)
       {
-         const HANDLE hFile = CreateFile(ppi->GetFilePath().string().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-         if (hFile != INVALID_HANDLE_VALUE)
+         const auto &filePath = ppi->GetFilePath();
+         if (std::filesystem::exists(filePath))
          {
-            CloseHandle(hFile);
-            CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
             m_overallFilesize -= ppi->GetFileSize();
             m_overallGPUsize -= ppi->GetEstimatedGPUSize();
             Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
@@ -876,20 +894,17 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   {
-   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->GetFilePath().c_str());
-   const string sizeString = std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height);
-   ListView_SetItemText(hwndListView, index, 2, (LPSTR)sizeString.c_str());
-   ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
-   }
+   ListView_SetItemText_Safe(hwndListView, index, 1, ppi->GetFilePath().string().c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 2, (std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height)).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 3, usedStringNo);
 
    m_overallFilesize += ppi->GetFileSize();
    m_overallGPUsize += ppi->GetEstimatedGPUSize();
-   ListView_SetItemText(hwndListView, index, 4, (LPSTR)SizeToReadable(ppi->GetFileSize()).c_str());
-   ListView_SetItemText(hwndListView, index, 5, (LPSTR)SizeToReadable(ppi->GetEstimatedGPUSize()).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 4, SizeToReadable(ppi->GetFileSize()).c_str());
+   ListView_SetItemText_Safe(hwndListView, index, 5, SizeToReadable(ppi->GetEstimatedGPUSize()).c_str());
 
    const char *format = ppi->IsHDR() ? (ppi->IsOpaque() ? "RGB_ HDR" : "RGBA HDR") : (ppi->IsOpaque() ? "RGB_" : "RGBA");
-   ListView_SetItemText(hwndListView, index, 6, (LPSTR)format);
+   ListView_SetItemText_Safe(hwndListView, index, 6, format);
 
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
@@ -899,7 +914,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
        || StrCompareNoCase(pt->m_BG_image[BG_DESKTOP], ppi->m_name) || StrCompareNoCase(pt->m_BG_image[BG_FSS], ppi->m_name)
        || StrCompareNoCase(pt->m_BG_image[BG_FULLSCREEN], ppi->m_name) || StrCompareNoCase(pt->m_imageColorGrade, ppi->m_name))
       {
-         ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
+         ListView_SetItemText_Safe(hwndListView, index, 3, usedStringYes);
       }
       else
       {
@@ -1003,7 +1018,7 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 
             if (inUse)
             {
-               ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
+               ListView_SetItemText_Safe(hwndListView, index, 3, usedStringYes);
                break;
             }
          } //for

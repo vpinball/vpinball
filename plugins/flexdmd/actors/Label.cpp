@@ -16,7 +16,7 @@ Label::Label(const FlexDMD* pFlexDMD, Font* pFont, const string& text, const str
    if (m_pFont)
       m_pFont->AddRef();
    else {
-      LOGW("NULL font specified for label: %s", name.c_str());
+      LOGW("NULL font specified for label: " + name);
    }
 
    m_autopack = pFlexDMD->GetRuntimeVersion() <= 1008;

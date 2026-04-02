@@ -96,7 +96,4 @@ public:
    PartGroupData::SpaceReference GetReferenceSpace() const;
 
    PartGroupData m_d;
-
-private:
-   PinTable *m_ptable = nullptr;
 };

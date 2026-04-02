@@ -16,6 +16,7 @@ echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
+echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
@@ -56,7 +57,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDL_DISABLE_ANDROID_JAR=OFF \
       -DSDL_CAMERA=OFF \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DANDROID_NDK=${ANDROID_NDK_HOME} \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -79,7 +80,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDLIMAGE_WEBP=OFF \
       -DSDL3_DIR=../SDL/build \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--undefined-version" \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -99,7 +100,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDLTTF_HARFBUZZ=ON \
       -DSDL3_DIR=../SDL/build \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
@@ -166,7 +167,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    mv ../bgfx-${BGFX_PATCH_SHA} bgfx
    cmake -S. \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DBGFX_BUILD_EXAMPLES=OFF \
       -DBGFX_BUILD_TOOLS=OFF \
@@ -236,7 +237,7 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    cd openxr
    cmake  \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DBUILD_TESTS=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -348,6 +349,38 @@ if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
 fi
 
 #
+# build libwinevbs
+#
+
+LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}"
+LIBWINEVBS_FOUND_SHA="$([ -f libwinevbs/cache.txt ] && cat libwinevbs/cache.txt || echo "")"
+
+if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
+   echo "Building libwinevbs. Expected: ${LIBWINEVBS_EXPECTED_SHA}, Found: ${LIBWINEVBS_FOUND_SHA}"
+
+   rm -rf libwinevbs
+   mkdir libwinevbs
+   cd libwinevbs
+
+   curl -sL https://github.com/vpinball/libwinevbs/archive/${LIBWINEVBS_SHA}.tar.gz -o libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   tar xzf libwinevbs-${LIBWINEVBS_SHA}.tar.gz
+   mv libwinevbs-${LIBWINEVBS_SHA} libwinevbs
+   cd libwinevbs
+   cmake \
+      -DPLATFORM=android \
+      -DARCH=arm64-v8a \
+      -DBUILD_STATIC=OFF \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBWINEVBS_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build ffmpeg
 #
 
@@ -375,11 +408,11 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --target-os=android \
       --arch=aarch64 \
       --sysroot=${TOOLCHAIN}/sysroot \
-      --cc=${TOOLCHAIN}/bin/aarch64-linux-android34-clang \
-      --cxx=${TOOLCHAIN}/bin/aarch64-linux-android34-clang++ \
-      --ld=${TOOLCHAIN}/bin/aarch64-linux-android34-clang \
+      --cc=${TOOLCHAIN}/bin/aarch64-linux-android33-clang \
+      --cxx=${TOOLCHAIN}/bin/aarch64-linux-android33-clang++ \
+      --ld=${TOOLCHAIN}/bin/aarch64-linux-android33-clang \
       --ar=${TOOLCHAIN}/bin/llvm-ar \
-      --as=${TOOLCHAIN}/bin/aarch64-linux-android34-clang \
+      --as=${TOOLCHAIN}/bin/aarch64-linux-android33-clang \
       --nm=${TOOLCHAIN}/bin/llvm-nm \
       --ranlib=${TOOLCHAIN}/bin/llvm-ranlib \
       --strip=${TOOLCHAIN}/bin/llvm-strip \
@@ -426,7 +459,7 @@ if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
       -DBUILD_EXAMPLES=OFF \
       -DBUILD_DOC=OFF \
       -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=34 \
+      -DCMAKE_SYSTEM_VERSION=33 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DANDROID_NDK=${ANDROID_NDK_HOME} \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -488,6 +521,15 @@ cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
 cp libdof/libdof/build/libdof.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
+
+cp libwinevbs/libwinevbs/build/libwinevbs.so ../../../third-party/runtime-libs/android-arm64-v8a
+mkdir -p ../../../third-party/include/libwinevbs/wine/include
+mkdir -p ../../../third-party/include/libwinevbs/atl/include
+mkdir -p ../../../third-party/include/libwinevbs/atlmfc/include
+cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
+cp -r libwinevbs/libwinevbs/wine/include/* ../../../third-party/include/libwinevbs/wine/include/
+cp -r libwinevbs/libwinevbs/atl/include/* ../../../third-party/include/libwinevbs/atl/include/
+cp -r libwinevbs/libwinevbs/atlmfc/include/* ../../../third-party/include/libwinevbs/atlmfc/include/
 
 for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
    cp ffmpeg/ffmpeg/${LIB}/${LIB}.so ../../../third-party/runtime-libs/android-arm64-v8a

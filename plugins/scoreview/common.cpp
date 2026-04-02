@@ -25,7 +25,7 @@ static inline bool StrCompareNoCase(const string& strA, const string& strB)
 
 inline void StrToLower(std::filesystem::path& path)
 {
-   std::u8string str = path.u8string();
+   std::string str = path.string();
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
    path = str;
 }
@@ -126,12 +126,7 @@ std::filesystem::path GetPluginPath()
        return std::filesystem::path();
 
 #ifdef _UNICODE
-    const std::wstring buf = GetModulePath<std::wstring>(hm);
-    if (buf.empty())
-       return string();
-    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    string pathBuf(size_needed - 1, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, buf.c_str(), -1, pathBuf.data(), size_needed, nullptr, nullptr);
+    const std::wstring pathBuf = GetModulePath<std::wstring>(hm);
 #else
     const string pathBuf = GetModulePath<string>(hm);
 #endif
@@ -140,11 +135,9 @@ std::filesystem::path GetPluginPath()
     if (dladdr((void*)&GetPluginPath, &info) == 0 || !info.dli_fname)
         return string();
 
-    char realBuf[PATH_MAX];
-    if (!realpath(info.dli_fname, realBuf))
+    char pathBuf[PATH_MAX];
+    if (!realpath(info.dli_fname, pathBuf))
         return string();
-
-    const string pathBuf(realBuf);
 #endif
 
     std::filesystem::path path(pathBuf);

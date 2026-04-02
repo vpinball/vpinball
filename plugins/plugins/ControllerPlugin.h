@@ -60,7 +60,7 @@ typedef struct DeviceDef
          uint16_t deviceId;
       };
       uint32_t mappingId;
-   };
+   } id;
 } DeviceDef;
 
 

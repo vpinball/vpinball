@@ -40,7 +40,7 @@ public:
 
    PropId Register(std::unique_ptr<PropertyDef> prop)
    {
-      const string& id = prop->m_groupId + '.' + prop->m_propId;
+      const string id = prop->m_groupId + '.' + prop->m_propId;
       const auto it = m_idToIndexMap.find(id);
       PropId propId;
       if (it != m_idToIndexMap.end())

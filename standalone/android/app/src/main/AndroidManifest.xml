@@ -85,7 +85,7 @@
          -->
 
         <activity android:name="VPinballActivity"
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:configChanges="layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize"
             android:theme="@style/Theme.VPinball"
             android:exported="true"

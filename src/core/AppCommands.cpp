@@ -4,6 +4,7 @@
 #include "AppCommands.h"
 #include "extern.h"
 #include "core/TournamentFile.h"
+#include "utils/BiffReader.h"
 
 #include <iostream>
 
@@ -69,20 +70,31 @@ void ExportVBSCommand::Execute()
             IStream* pstmGame;
             if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
             {
-               BiffReader reader(pstmGame, nullptr, loadfileversion, 0, 0);
-               reader.Load(
-                  [&script](int id, BiffReader* pbr)
+               bool isProtected = false;
+               BiffReader reader(pstmGame, loadfileversion, 0, 0);
+               reader.AsObject(
+                  [&script, &isProtected](int tag, IObjectReader& reader)
                   {
-                     if (id != FID(CODE))
-                        return true;
-                     ULONG read = 0;
-                     int cchar;
-                     pbr->m_pistream->Read(&cchar, sizeof(int), &read);
-                     char* szText = new char[cchar + 1];
-                     pbr->m_pistream->Read(szText, cchar * (int)sizeof(char), &read);
-                     szText[cchar] = '\0';
-                     script = string_from_utf8_or_iso8859_1(szText, cchar);
-                     delete[] szText;
+                     switch (tag)
+                     {
+                     case FID(SECB): // old protection/encryption data
+                     {
+                        struct ProtectionData
+                        {
+                           int32_t fileversion;
+                           int32_t size;
+                           uint8_t paraphrase[16 + 8];
+                           uint32_t flags;
+                           int32_t keyversion;
+                           int32_t spare1;
+                           int32_t spare2;
+                        } protectionData;
+                        reader.AsRaw(&protectionData, sizeof(ProtectionData));
+                        isProtected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
+                        break;
+                     }
+                     case FID(CODE): script = reader.AsScript(isProtected); break;
+                     }
                      return true;
                   });
                pstmGame->Release();
@@ -192,6 +204,8 @@ void Win32EditCommand::Execute()
    else if (g_app->m_settings.GetEditor_SelectTableOnStart())
    {
       vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
+      if (vpxEditor.m_table_played_via_SelectTableOnStart)
+         vpxEditor.DoPlay(0);
    }
    g_app->m_winApp.Run();
    g_pvp = nullptr;
@@ -358,7 +372,7 @@ std::filesystem::path CommandLineProcessor::GetPathFromArg(const string& arg)
 
    // On Windows only, we used to remove leading - or /. This is removed as this is not cross platform and is a bug on the front end side
    //if (!pathString.empty() && ((pathString[0] == '-') || (pathString[0] == '/')))
-   //   pathString = pathString.substr(1, pathString.size() - 1);
+   //   pathString = pathString.substr(1);
 
    if (pathString.length() >= 2 && pathString[0] == '"') // Remove " "
       pathString = pathString.substr(1, pathString.size() - 2);
@@ -616,13 +630,13 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          {
             switch (opt)
             {
-            case OPTION_POVEDIT: commands.push_back(std ::make_unique<PovEditCommand>(tableFileName)); break;
-            case OPTION_PLAY: commands.push_back(std ::make_unique<PlayTableCommand>(tableFileName)); break;
-            case OPTION_AUDIT: commands.push_back(std ::make_unique<AuditTableCommand>(tableFileName)); break;
-            case OPTION_POV: commands.push_back(std ::make_unique<ExportPOVCommand>(tableFileName)); break;
-            case OPTION_EXTRACTVBS: commands.push_back(std ::make_unique<ExportVBSCommand>(tableFileName)); break;
+            case OPTION_POVEDIT: commands.push_back(std::make_unique<PovEditCommand>(tableFileName)); break;
+            case OPTION_PLAY: commands.push_back(std::make_unique<PlayTableCommand>(tableFileName)); break;
+            case OPTION_AUDIT: commands.push_back(std::make_unique<AuditTableCommand>(tableFileName)); break;
+            case OPTION_POV: commands.push_back(std::make_unique<ExportPOVCommand>(tableFileName)); break;
+            case OPTION_EXTRACTVBS: commands.push_back(std::make_unique<ExportVBSCommand>(tableFileName)); break;
             #ifndef __STANDALONE__
-            case OPTION_EDIT: commands.push_back(std ::make_unique<Win32EditCommand>(tableFileName)); break;
+            case OPTION_EDIT: commands.push_back(std::make_unique<Win32EditCommand>(tableFileName)); break;
             #endif
             }
          }

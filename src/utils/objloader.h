@@ -4,6 +4,8 @@
 
 #include "unordered_dense.h"
 
+#include "math/Mesh.h"
+
 class ObjLoader final
 {
 public:

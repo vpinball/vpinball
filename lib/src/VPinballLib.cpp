@@ -91,9 +91,6 @@ int VPinballLib::AppInit(int argc, char** argv)
       #endif
    }
 
-   if (g_isAndroid)
-      MsgPI::MsgPluginManager::GetInstance().UpdateAPIThread();
-
    return 1;
 }
 
@@ -190,13 +187,6 @@ void VPinballLib::Init(VPinballEventCallback callback)
       g_app->SetSettingsFileName((g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini").string());
       g_app->InitInstance();
 
-      RegisterStaticPlugins();
-
-      for (const auto& plugin : MsgPI::MsgPluginManager::GetInstance().GetPlugins()) {
-         if (lib->LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
-            plugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-      }
-
       lib->UpdateWebServer();
 
       SendEvent(VPINBALL_EVENT_INIT_COMPLETE, nullptr);
@@ -212,11 +202,7 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
 
       if (data != nullptr) {
          switch(event) {
-            case VPINBALL_EVENT_LOADING_ITEMS:
-            case VPINBALL_EVENT_LOADING_SOUNDS:
-            case VPINBALL_EVENT_LOADING_IMAGES:
-            case VPINBALL_EVENT_LOADING_FONTS:
-            case VPINBALL_EVENT_LOADING_COLLECTIONS:
+            case VPINBALL_EVENT_LOADING:
             case VPINBALL_EVENT_PRERENDERING:
             case VPINBALL_EVENT_EXTRACT_SCRIPT: {
                ProgressData* progressData = (ProgressData*)data;
@@ -269,15 +255,13 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
       WebServer::BroadcastStatus();
 }
 
-void VPinballLib::RegisterStaticPlugins()
+void VPinballLib::SetupStaticPlugins(MsgPI::MsgPluginManager& manager)
 {
    static constexpr struct {
       const char* id;
       void (*load)(uint32_t, const MsgPluginAPI*);
       void (*unload)();
    } plugins[] = {
-      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
-      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
       { "AltSound",      &AltSoundPluginLoad,      &AltSoundPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
@@ -285,8 +269,10 @@ void VPinballLib::RegisterStaticPlugins()
       { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
       { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
       { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
+      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
       { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
       { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    },
@@ -295,8 +281,9 @@ void VPinballLib::RegisterStaticPlugins()
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
       auto& p = plugins[i];
-      MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
+      manager.RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
    }
+
 }
 
 void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)

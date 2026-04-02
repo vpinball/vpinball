@@ -86,7 +86,9 @@ set(VPX_SOURCES
    src/math/matrix.cpp
    src/math/matrix.h
    src/math/vector.h
-   src/math/mesh.h
+   src/math/Mesh.h
+   src/math/Mesh.cpp
+   src/math/MeshUtils.h
    src/math/ModelViewProj.h
 
    src/meshes/ballMesh.h
@@ -122,6 +124,7 @@ set(VPX_SOURCES
 
    src/parts/dragpoint.h
    src/parts/Material.h
+   src/parts/pinbinary.cpp
    src/parts/pinbinary.h
    src/parts/ball.cpp
    src/parts/ball.h
@@ -150,7 +153,6 @@ set(VPX_SOURCES
    src/parts/lightseq.h
    src/parts/PartGroup.cpp
    src/parts/PartGroup.h
-   src/parts/pinbinary.cpp
    src/parts/pintable.cpp
    src/parts/pintable.h
    src/parts/plunger.cpp
@@ -200,8 +202,6 @@ set(VPX_SOURCES
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h
-   src/renderer/Backglass.h
-   src/renderer/Backglass.cpp
    src/renderer/IndexBuffer.cpp
    src/renderer/IndexBuffer.h
    src/renderer/MeshBuffer.cpp
@@ -339,6 +339,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/SensorSetupPage.cpp
    src/ui/live/ingameui/StereoSettingsPage.h
    src/ui/live/ingameui/StereoSettingsPage.cpp
+   src/ui/live/ingameui/TableMiscPage.h
+   src/ui/live/ingameui/TableMiscPage.cpp
    src/ui/live/ingameui/TableOptionsPage.h
    src/ui/live/ingameui/TableOptionsPage.cpp
    src/ui/live/ingameui/TableRulesPage.h
@@ -361,6 +363,10 @@ set(VPX_SOURCES
    src/ui/win/WinEditor.cpp
    src/ui/win/WinEditor.h
 
+   src/utils/BiffReader.cpp
+   src/utils/BiffReader.h
+   src/utils/BiffWriter.cpp
+   src/utils/BiffWriter.h
    src/utils/bulb.cpp
    src/utils/bulb.h
    src/utils/eventproxy.h

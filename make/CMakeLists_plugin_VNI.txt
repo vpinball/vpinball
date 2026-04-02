@@ -19,48 +19,51 @@ if(BUILD_SHARED)
       plugins/vni
    )
 
-   if(PluginPlatform STREQUAL "windows")
-      add_compile_options(
-         $<$<CONFIG:RELEASE>:/Ob2>
-         $<$<CONFIG:RELEASE>:/O2>
-         $<$<CONFIG:RELEASE>:/Oi>
-         $<$<CONFIG:RELEASE>:/arch:SSE2>
-         $<$<CONFIG:RELEASE>:/fp:fast>
-         $<$<CONFIG:RELEASE>:/fp:except->
-         $<$<CONFIG:RELEASE>:/Ot>
-         $<$<CONFIG:RELEASE>:/GF>
-         $<$<CONFIG:RELEASE>:/GS->
-         $<$<CONFIG:RELEASE>:/Gy>
-         $<$<CONFIG:RELEASE>:/GR>
-         $<$<CONFIG:RELEASE>:/Oy>
-         $<$<CONFIG:RELEASE>:/GT>
-         $<$<CONFIG:RELEASE>:/GL>
-      )
-      set_target_properties(VNIPlugin PROPERTIES
-         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-      )
-      target_compile_options(VNIPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-      )
-      target_link_options(VNIPlugin PUBLIC
-         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-         $<$<CONFIG:RELEASE>:/OPT:REF>
-         $<$<CONFIG:RELEASE>:/OPT:ICF>
-         $<$<CONFIG:RELEASE>:/LTCG>
-      )
+   if(PluginPlatform STREQUAL "windows" OR PluginPlatform STREQUAL "windows-mingw")
+      if(MSVC)
+         add_compile_options(
+            $<$<CONFIG:RELEASE>:/Ob2>
+            $<$<CONFIG:RELEASE>:/O2>
+            $<$<CONFIG:RELEASE>:/Oi>
+            $<$<CONFIG:RELEASE>:/arch:SSE2>
+            $<$<CONFIG:RELEASE>:/fp:fast>
+            $<$<CONFIG:RELEASE>:/fp:except->
+            $<$<CONFIG:RELEASE>:/Ot>
+            $<$<CONFIG:RELEASE>:/GF>
+            $<$<CONFIG:RELEASE>:/GS->
+            $<$<CONFIG:RELEASE>:/Gy>
+            $<$<CONFIG:RELEASE>:/GR>
+            $<$<CONFIG:RELEASE>:/Oy>
+            $<$<CONFIG:RELEASE>:/GT>
+            $<$<CONFIG:RELEASE>:/GL>
+         )
+         set_target_properties(VNIPlugin PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+         )
+         target_compile_options(VNIPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+            $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+         )
+         target_link_options(VNIPlugin PUBLIC
+            $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+            $<$<CONFIG:RELEASE>:/OPT:REF>
+            $<$<CONFIG:RELEASE>:/OPT:ICF>
+            $<$<CONFIG:RELEASE>:/LTCG>
+         )
+      endif()
+      target_link_directories(VNIPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/${PluginPlatform}-${PluginArch} ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch})
       if (PluginArch STREQUAL "x64")
          set_target_properties(VNIPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-vni64"
          )
-         target_link_directories(VNIPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
-         target_link_libraries(VNIPlugin vni64.lib)
+         target_link_libraries(VNIPlugin vni64)
       else()
          set_target_properties(VNIPlugin PROPERTIES
+            PREFIX ""
             OUTPUT_NAME "plugin-vni"
          )
-         target_link_directories(VNIPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
-         target_link_libraries(VNIPlugin vni.lib)
+         target_link_libraries(VNIPlugin vni)
       endif()
    else()
       set_target_properties(VNIPlugin PROPERTIES
@@ -88,13 +91,19 @@ if(BUILD_SHARED)
       if(PluginPlatform STREQUAL "windows")
          if (PluginArch STREQUAL "x64")
             add_custom_command(TARGET VNIPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/vni64.dll" "${PLUGINS_DIR}/vni/vni64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/vni64.dll" "${PLUGINS_DIR}/vni/vni64.dll"
             )
          elseif (PluginArch STREQUAL "x86")
             add_custom_command(TARGET VNIPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/vni.dll" "${PLUGINS_DIR}/vni/vni.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/vni.dll" "${PLUGINS_DIR}/vni/vni.dll"
             )
          endif()
+      elseif(PluginPlatform STREQUAL "windows-mingw")
+         add_custom_command(TARGET VNIPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/vni64.dll" "${PLUGINS_DIR}/vni/vni64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/vni/libgcc_s_seh-1.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libstdc++-6.dll" "${PLUGINS_DIR}/vni/libstdc++-6.dll"
+         )
       elseif(PluginPlatform STREQUAL "linux")
          add_custom_command(TARGET VNIPlugin POST_BUILD
             COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libvni.so" "${PLUGINS_DIR}/vni/"

@@ -1,0 +1,129 @@
+cmake_minimum_required(VERSION 3.25)
+
+option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+
+file(READ src/core/vpversion.h version)
+string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MAJOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VP_VERSION_MINOR[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_MINOR "${CMAKE_MATCH_1}")
+string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp ${version})
+set(VERSION_REV "${CMAKE_MATCH_1}")
+set(APP_NAME "VPinballX_BGFX64")
+
+project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
+
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_common_standalone.txt")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
+set_source_files_properties(
+   third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
+)
+
+add_executable(vpinball
+   ${VPX_STANDALONE_SOURCES}
+
+   src/input/OpenPinDevHandler.h
+   src/input/OpenPinDevHandler.cpp
+
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+   third-party/include/imgui/imgui_impl_sdl3.h
+)
+
+target_include_directories(vpinball PUBLIC
+   ${CMAKE_SOURCE_DIR}/third-party/include
+   ${CMAKE_SOURCE_DIR}
+   ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
+   ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
+   ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+   media
+   pin
+   src
+   plugins
+)
+
+target_precompile_headers(vpinball PUBLIC
+)
+
+target_compile_definitions(vpinball PRIVATE
+   __STANDALONE__
+
+   ENABLE_BGFX
+
+   __LIBWINEVBS__
+   WINE_UNICODE_NATIVE
+
+   $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+
+   WINBOOL=int
+   WIN32_LEAN_AND_MEAN
+   NOMINMAX
+)
+
+target_compile_options(vpinball PUBLIC
+   -mssse3
+   $<$<CXX_COMPILER_ID:GNU>:
+      -ffast-math
+      -ffp-contract=off
+      -Wno-template-body>
+)
+
+target_link_directories(vpinball PUBLIC
+   ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-mingw-x64
+   ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64
+)
+
+target_link_libraries(vpinball
+   bgfx64
+   bimg64
+   bx64
+   SDL364
+   SDL3_image64
+   SDL3_ttf64
+   freeimage64
+   hidapi64
+   openxr_loader64
+   winevbs64
+)
+
+target_link_options(vpinball PUBLIC
+   -Wl,--dynamicbase
+   -Wl,--nxcompat
+   -Wl,--high-entropy-va
+)
+
+set_target_properties(vpinball PROPERTIES
+   RUNTIME_OUTPUT_NAME "${APP_NAME}"
+)
+
+add_custom_command(TARGET vpinball POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
+   COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+)
+
+if(POST_BUILD_COPY_EXT_LIBS)
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/SDL364.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/SDL3_image64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/SDL3_ttf64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/freeimage64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/pinmame64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/altsound64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/dmdutil64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/dof64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/hidapi64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/openxr_loader64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/winevbs64.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/libwinpthread-1.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-mingw-x64/libstdc++-6.dll" "$<TARGET_FILE_DIR:vpinball>"
+   )
+endif()
+
+set(PluginPlatform "windows-mingw")
+set(PluginArch "x64")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

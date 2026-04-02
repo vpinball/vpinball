@@ -3,7 +3,7 @@
 #pragma once
 
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
-class RenderProbe final : ILoadable
+class RenderProbe final
 {
 public:
    enum ProbeType
@@ -47,10 +47,8 @@ public:
    void ApplyAreaOfInterest(RenderPass* pass = nullptr);
 
    // Load/Save
-   int GetSaveSize() const;
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   bool LoadToken(const int id, BiffReader* const pbr) override;
+   void Save(IObjectWriter& writer, bool saveForUndo);
+   void Load(IObjectReader& reader);
 
    // Rendering
    void RenderSetup(class Renderer* renderer);

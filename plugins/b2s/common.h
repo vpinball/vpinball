@@ -7,6 +7,7 @@
 #include <string>
 using std::string;
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 #include <vector>
 using std::vector;
@@ -20,6 +21,7 @@ using std::vector;
 #include <memory> // needed for std::shared_ptr on Linux
 #include <functional>
 #include <filesystem>
+#include <format>
 
 // Shared logging
 #include "plugins/LoggingPlugin.h"
@@ -33,11 +35,11 @@ using std::vector;
 namespace B2S
 {
 
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGW LPI_LOGW
-#define LOGE LPI_LOGE
+LPI_USE_CPP();
+#define LOGD B2S::LPI_LOGD_CPP
+#define LOGI B2S::LPI_LOGI_CPP
+#define LOGW B2S::LPI_LOGW_CPP
+#define LOGE B2S::LPI_LOGE_CPP
 
 PSC_USE_ERROR();
 
@@ -66,6 +68,13 @@ extern void DeleteTexture(VPXTexture texture);
 extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const void *image);
 
 // The following function are duplicates from the main VPX codebase
+constexpr inline char cLower(char c)
+{
+   if (c >= 'A' && c <= 'Z')
+      c ^= 32; //ASCII convention
+   return c;
+}
+
 string string_to_lower(string str);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path &searchedFile);
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);

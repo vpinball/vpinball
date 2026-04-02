@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/lightseq.h"
+
 #include "ui/win/properties/LightseqStatesProperty.h"
 
 LightseqStatesProperty::LightseqStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHTSEQ_STATE, pvsel)
@@ -25,13 +27,8 @@ void LightseqStatesProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_posYEdit, lightseq->GetY());
         if (dispid == IDC_LIGHTSEQ_UPDATE_INTERVAL_EDIT || dispid == -1)
             PropertyDialog::SetIntTextbox(m_updateIntervalEdit, lightseq->GetUpdateInterval());
-
         if (dispid == DISPID_Collection || dispid == -1)
-        {
-            char * const szT = MakeChar(lightseq->m_d.m_wzCollection.c_str());
-            PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, szT);
-            delete [] szT;
-        }
+            PropertyDialog::UpdateCollectionComboBox(lightseq->GetPTable(), m_collectionCombo, MakeString(lightseq->m_d.m_wzCollection).c_str());
 
         // only show the first element on multi-select
         break;

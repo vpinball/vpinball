@@ -6,6 +6,7 @@
    #include <openvr.h>
 #elif defined(ENABLE_XR)
    #include <openxr/openxr.h>
+   #include "input/XRInputHandler.h"
 #endif
 
 class VRDevice final
@@ -19,6 +20,8 @@ public:
    
    float GetLockbarWidth() const { return m_lockbarWidth; }
    void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
+   float GetLockbarHeight() const { return m_lockbarHeight; }
+   void SetLockbarHeight(float height) { m_lockbarHeight = height; m_worldDirty = true; }
 
    void OffsetTable(float dx, float dy, float dz);
    void RecenterTable();
@@ -40,9 +43,7 @@ private:
 
    float m_scale = 1.0f;
    float m_lockbarWidth = 57.0f; // Real world width of the lockbar in cm
-#ifdef ENABLE_BGFX
    float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
-#endif
    float m_orientation = 0.0f;
    Vertex3Ds m_tablePos;
    float m_slope = 0.0f;
@@ -167,7 +168,7 @@ private:
    static XrBool32 OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageType, const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
    bool m_visibilityMaskExtensionSupported = false;
-   PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
+   PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR = nullptr;
    bool m_visibilityMaskDirty = true;
    std::shared_ptr<MeshBuffer> m_visibilityMask;
 
@@ -181,5 +182,7 @@ private:
 
    bool m_recenterTable = false;
    float m_sceneSize = 0.f;
+
+   XRInputHandler* m_xrInputHandler = nullptr;
 #endif
 };

@@ -6,6 +6,9 @@
 
 #include "ui/win/paintsur.h"
 #include "ui/win/worker.h"
+#include "ui/win/codeview.h"
+#include "ui/win/hitsur.h"
+#include "ui/win/hitrectsur.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/VPXLoadFileProgressBar.h"
@@ -89,7 +92,7 @@ void PinTableWnd::SetZoom(float zoom)
 
 void PinTableWnd::GetViewRect(FRect *const pfrect) const
 {
-   if (!m_vpxEditor->m_backglassView)
+   if (!m_vpxEditor->m_desktopBackdropView)
    {
       pfrect->left = m_table->m_left;
       pfrect->top = m_table->m_top;
@@ -153,12 +156,12 @@ void PinTableWnd::ExportBlueprint()
    ofn.hwndOwner = m_vpxEditor->GetHwnd();
    ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
    char szBlueprintFileName[MAXSTRING];
-   strncpy_s(szBlueprintFileName, sizeof(szBlueprintFileName), m_table->m_filename.string().c_str());
+   strncpy_s(szBlueprintFileName, std::size(szBlueprintFileName), m_table->m_filename.string().c_str());
    const size_t idx = m_table->m_filename.string().find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szBlueprintFileName[idx] = '\0';
    ofn.lpstrFile = szBlueprintFileName;
-   ofn.nMaxFile = sizeof(szBlueprintFileName);
+   ofn.nMaxFile = std::size(szBlueprintFileName);
    ofn.lpstrDefExt = "png";
    ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
@@ -173,7 +176,7 @@ void PinTableWnd::ExportBlueprint()
    const bool solid = (result == IDYES);
 
    float tableheight, tablewidth;
-   if (m_vpxEditor->m_backglassView)
+   if (m_vpxEditor->m_desktopBackdropView)
    {
       tablewidth = (float)EDITOR_BG_WIDTH;
       tableheight = (float)EDITOR_BG_HEIGHT;
@@ -234,13 +237,13 @@ void PinTableWnd::ExportBlueprint()
       dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
       dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
 
-      if (m_vpxEditor->m_backglassView)
+      if (m_vpxEditor->m_desktopBackdropView)
          Render3DProjection(&psur);
 
       for (const auto &ptr : m_table->GetParts())
       {
-         if (ptr->GetISelect()->m_isVisible && ptr->m_backglass == m_vpxEditor->m_backglassView)
-            ptr->RenderBlueprint(&psur, solid);
+         if (ptr->m_uiVisible && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
+            ptr->GetISelect()->RenderBlueprint(&psur, solid);
       }
    }
 
@@ -286,7 +289,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
 
    if (GetDisplayBackdrop())
    {
-      Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_backglassView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);
+      Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_desktopBackdropView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);
 
       if (ppi && ppi->GetGDIBitmap())
       {
@@ -300,15 +303,15 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       }
    }
 
-   if (m_vpxEditor->m_backglassView)
+   if (m_vpxEditor->m_desktopBackdropView)
    {
       Render3DProjection(psur);
    }
 
    for (const auto &ptr : m_table->GetParts())
    {
-      if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
-         ptr->UIRenderPass1(psur);
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
+         ptr->GetISelect()->UIRenderPass1(psur);
    }
 
    if (GetDisplayGrid() && m_vpxEditor->m_gridSize > 0)
@@ -345,11 +348,11 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
 
    for (const auto &ptr : m_table->GetParts())
    {
-      if (ptr->m_backglass == m_vpxEditor->m_backglassView && ptr->GetISelect()->m_isVisible)
-         ptr->UIRenderPass2(psur);
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
+         ptr->GetISelect()->UIRenderPass2(psur);
    }
 
-   if (m_vpxEditor->m_backglassView) // Outline of the view, for when the grid is off
+   if (m_vpxEditor->m_desktopBackdropView) // Outline of the view, for when the grid is off
    {
       psur->SetObject(nullptr);
       psur->SetFillColor(-1);
@@ -369,7 +372,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    //    SetTextColor( psur->m_hdc,RGB(180,180,180));
    //    char text[64];
    //    char number[8];
-   //    strncpy_s( text, sizeof(text), "Layer_");
+   //    strncpy_s( text, std::size(text), "Layer_");
    //    _itoa_s(activeLayer+1, number, 10 );
    //    strcat_s( text, number);
    //    RECT textRect;
@@ -389,9 +392,9 @@ void PinTableWnd::Render3DProjection(Sur *const psur)
 
    // dummy coordinate system for backdrop view
    ModelViewProj mvp;
-   if (m_table->mViewSetups[m_table->m_currentBackglassMode].mMode == VLM_WINDOW)
-      m_table->mViewSetups[m_table->m_currentBackglassMode].SetWindowModeFromSettings(m_table);
-   m_table->mViewSetups[m_table->m_currentBackglassMode].ComputeMVP(m_table, (float)EDITOR_BG_WIDTH / (float)EDITOR_BG_HEIGHT, false, mvp);
+   if (m_table->mViewSetups[m_currentBackglassMode].mMode == VLM_WINDOW)
+      m_table->mViewSetups[m_currentBackglassMode].SetWindowModeFromSettings(m_table);
+   m_table->mViewSetups[m_currentBackglassMode].ComputeMVP(m_table, (float)EDITOR_BG_WIDTH / (float)EDITOR_BG_HEIGHT, false, mvp);
 
    Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_table->m_left;
@@ -697,9 +700,9 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    for (IEditable *const ptr : m_table->GetParts())
    {
-      if (ptr->m_backglass == m_vpxEditor->m_backglassView)
+      if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->GetISelect())
       {
-         ptr->UIRenderPass1(&phs2);
+         ptr->GetISelect()->UIRenderPass1(&phs2);
          ISelect *const tmp = phs2.m_pselected;
          if (FindIndexOf(m_table->m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != m_table)
          {
@@ -741,7 +744,7 @@ void PinTableWnd::OnKeyDown(int key)
       for (int i = 0; i < m_table->m_vmultisel.size(); i++)
       {
          ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
-         if (!pisel->GetIEditable()->GetISelect()->m_locked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
+         if (!pisel->GetIEditable()->m_uiLocked) // control points get lock info from parent - UNDONE - make this code snippet be in one place
          {
             switch (key)
             {
@@ -991,7 +994,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
          {
             for (int i = 0; i < m_table->m_vmultisel.size(); i++)
             {
-               if (m_table->m_vmultisel[i].m_dragging && !m_table->m_vmultisel[i].GetIEditable()->GetISelect()->m_locked) // For drag points, follow the lock of the parent
+               if (m_table->m_vmultisel[i].m_dragging && !m_table->m_vmultisel[i].GetIEditable()->m_uiLocked) // For drag points, follow the lock of the parent
                {
                   if (!m_table->m_vmultisel[i].m_markedForUndo)
                   {
@@ -1059,13 +1062,10 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    // the actual processing is done in ISelect::DoCommand()
    for (int i = maxItems; i >= 0; i--)
    {
-      char *const szT = MakeChar(m_table->m_vcollection[i].get_Name());
-
       UINT flags = MF_POPUP | MF_UNCHECKED;
       if ((maxItems - i) % 32 == 0) // add new column each 32 entries
          flags |= MF_MENUBREAK;
-      colSubMenu.AppendMenu(flags, 0x40000 + i, szT);
-      delete[] szT;
+      colSubMenu.AppendMenu(flags, 0x40000 + i, MakeString(m_table->m_vcollection[i].get_Name()).c_str());
    }
    if (m_table->m_vmultisel.size() == 1)
    {
@@ -1172,7 +1172,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       // now list all elements that are stacked at the mouse pointer
       for (size_t i = 0; i < m_table->m_allHitElements.size(); i++)
       {
-         if (!m_table->m_allHitElements[i]->GetIEditable()->GetISelect()->m_isVisible)
+         if (!m_table->m_allHitElements[i]->GetIEditable()->m_uiVisible)
             continue;
 
          ISelect *const ptr = m_table->m_allHitElements[i];
@@ -1196,7 +1196,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             }
          }
       }
-      bool locked = psel->m_locked;
+      bool locked = psel->IsUILocked();
       //!! HACK
       if (psel == m_table) // multi-select case
       {

@@ -37,6 +37,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    m_depth_sampler = nullptr;
 
    #if defined(ENABLE_BGFX)
+   assert(false);
    m_framebuffer = BGFX_INVALID_HANDLE; // Invalid handle is the reserved Id for BGFX's back buffer
 
    #elif defined(ENABLE_OPENGL)
@@ -85,7 +86,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    , m_depth_sampler(nullptr)
    , m_framebuffer(fbh)
    , m_color_tex(colorTex)
+   , m_colorFormat(colFormat)
    , m_depth_tex(depthTex)
+   , m_depthFormat(depthFormat)
 {
    if (bgfx::isValid(colorTex))
       m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, colFormat, width, height, false);
@@ -114,7 +117,6 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    m_depth_sampler = nullptr;
 
 #if defined(ENABLE_BGFX)
-   bgfx::TextureFormat::Enum fmt;
    uint64_t msaaFlags;
    if (nMSAASamples > 8)
       msaaFlags = BGFX_TEXTURE_RT_MSAA_X16;
@@ -131,64 +133,97 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    // FIXME most render target are not blit destination and are only used as write target (then GPU sampling, no readback) => BGFX_TEXTURE_READ_BACK
    const uint64_t colorFlags = BGFX_TEXTURE_BLIT_DST | msaaFlags;
    const uint64_t depthFlags = BGFX_TEXTURE_BLIT_DST | msaaFlags /* MSAA depth buffer must be write only | BGFX_TEXTURE_RT_WRITE_ONLY */;
+   bgfx::TextureFormat::Enum m_colorFormat;
    switch (format)
    {
-   case colorFormat::RED16F: fmt = bgfx::TextureFormat::R16F; break;
-   case colorFormat::RG16F: fmt = bgfx::TextureFormat::RG16F; break;
-   case colorFormat::RGB16F: fmt = bgfx::TextureFormat::RGBA16F; break;
-   case colorFormat::RGBA16F: fmt = bgfx::TextureFormat::RGBA16F; break;
-   case colorFormat::RGB32F: fmt = bgfx::TextureFormat::RGBA32F; break;
-   case colorFormat::RGBA32F: fmt = bgfx::TextureFormat::RGBA32F; break;
-   case colorFormat::RGB5: fmt = bgfx::TextureFormat::RGB5A1; break;
-   case colorFormat::RGB8: fmt = bgfx::TextureFormat::RGB8; break;
-   case colorFormat::RGB10: fmt = bgfx::TextureFormat::RGB10A2; break;
-   case colorFormat::RGBA8: fmt = bgfx::TextureFormat::RGBA8; break;
-   case colorFormat::RGBA10: fmt = bgfx::TextureFormat::RGB10A2; break;
-   case colorFormat::GREY8: fmt = bgfx::TextureFormat::R8; break;
+   case colorFormat::RED16F: m_colorFormat = bgfx::TextureFormat::R16F; break;
+   case colorFormat::RG16F: m_colorFormat = bgfx::TextureFormat::RG16F; break;
+   case colorFormat::RGB16F: m_colorFormat = bgfx::TextureFormat::RGBA16F; break;
+   case colorFormat::RGBA16F: m_colorFormat = bgfx::TextureFormat::RGBA16F; break;
+   case colorFormat::RGB32F: m_colorFormat = bgfx::TextureFormat::RGBA32F; break;
+   case colorFormat::RGBA32F: m_colorFormat = bgfx::TextureFormat::RGBA32F; break;
+   case colorFormat::RGB5: m_colorFormat = bgfx::TextureFormat::RGB5A1; break;
+   case colorFormat::RGB8: m_colorFormat = bgfx::TextureFormat::RGB8; break;
+   case colorFormat::RGB10: m_colorFormat = bgfx::TextureFormat::RGB10A2; break;
+   case colorFormat::RGBA8: m_colorFormat = bgfx::TextureFormat::RGBA8; break;
+   case colorFormat::RGBA10: m_colorFormat = bgfx::TextureFormat::RGB10A2; break;
+   case colorFormat::GREY8: m_colorFormat = bgfx::TextureFormat::R8; break;
    default: assert(false); // Unsupported texture format 
    }
-   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
-   m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, fmt, m_width, m_height, false);
+   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_colorFormat, colorFlags);
+   m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, m_colorFormat, m_width, m_height, false);
 
    if (m_shared_depth)
    {
+      m_depthFormat = sharedDepth->m_depthFormat;
       m_depth_tex = sharedDepth->m_depth_tex;
       m_depth_sampler = sharedDepth->m_depth_sampler;
    }
    else if (with_depth)
    {
-      bgfx::TextureFormat::Enum depthFormat = bgfx::TextureFormat::D24;
+      m_depthFormat = bgfx::TextureFormat::D24;
       #ifdef ENABLE_XR
       // For OpenXR, we need to be able to copy from the render depth buffer to the swapchain's depth buffer.
       // TODO we should use directly the vr's swapchain depth buffer instead of creating a compatible one to avoid the blit
       if (g_pplayer->m_vrDevice)
-         depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
+         m_depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
       #endif
-      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, depthFormat, depthFlags);
-      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, depthFormat, m_width, m_height, false);
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_depthFormat, depthFlags);
+      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_depthFormat, m_width, m_height, false);
    }
 
-   if (with_depth)
-   {
-      bgfx::Attachment colorAttachment, depthAttachment;
-      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
-      m_framebuffer = bgfx::createFrameBuffer(2, attachments);
-   }
-   else
    {
       bgfx::Attachment colorAttachment;
-      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
-      m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
+      if (with_depth)
+      {
+         bgfx::Attachment depthAttachment;
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
+         m_framebuffer = bgfx::createFrameBuffer(2, attachments.data());
+      }
+      else
+      {
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+         m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
+      }
+      if (!bgfx::isValid(m_framebuffer))
+      {
+         PLOGE << failureMessage;
+         PLOGE << "Failed to create render target";
+         exit(-1);
+      }
+      bgfx::setName(m_framebuffer, name.c_str());
    }
-   if (!bgfx::isValid(m_framebuffer))
+
+   // Create ancillary framebuffers to be able to blit & render from/to the other layers
+   if (m_nLayers > 1)
    {
-      PLOGE << failureMessage;
-      PLOGE << "Failed to create render target";
-      exit(-1);
+      for (uint16_t i = 0; i < static_cast<uint16_t>(m_nLayers); i++)
+      {
+         bgfx::Attachment colorAttachment;
+         if (with_depth)
+         {
+            bgfx::Attachment depthAttachment;
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            depthAttachment.init(m_depth_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
+            m_framebuffer_layers[i] = bgfx::createFrameBuffer(2, attachments.data());
+         }
+         else
+         {
+            colorAttachment.init(m_color_tex, bgfx::Access::Write, i, 1, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+            m_framebuffer_layers[i] = bgfx::createFrameBuffer(1, &colorAttachment);
+         }
+         if (!bgfx::isValid(m_framebuffer_layers[i]))
+         {
+            PLOGE << failureMessage;
+            PLOGE << "Failed to create render target";
+            exit(-1);
+         }
+         bgfx::setName(m_framebuffer_layers[i], std::format("{}.Layer{}", name, i).c_str());
+      }
    }
-   bgfx::setName(m_framebuffer, name.c_str());
 
 #elif defined(ENABLE_OPENGL)
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
@@ -656,7 +691,6 @@ void RenderTarget::Activate(const int layer)
    current_render_layer = layer;
 
    #if defined(ENABLE_BGFX)
-   assert(layer == -1 || m_nLayers == 1);
    m_rd->NextView();
    #ifdef _DEBUG
    bgfx::setViewName(m_rd->m_activeViewId, m_name.c_str());

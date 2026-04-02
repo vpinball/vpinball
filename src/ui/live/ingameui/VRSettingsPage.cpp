@@ -4,6 +4,7 @@
 
 #include "VRSettingsPage.h"
 #include "renderer/VRDevice.h"
+#include "parts/flasher.h"
 
 namespace VPX::InGameUI
 {
@@ -11,6 +12,8 @@ namespace VPX::InGameUI
 VRSettingsPage::VRSettingsPage()
    : InGameUIPage("Virtual Reality Settings"s, ""s, SaveMode::Both)
 {
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Offset"s));
+
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_Orientation, 1.f, "%4.1f deg"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOrientation(); }, //
@@ -46,10 +49,39 @@ VRSettingsPage::VRSettingsPage()
          m_player->m_vrDevice->SetSceneOffset(offset);
       }));
 
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet Layout"s));
+
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_vrDevice->GetLockbarWidth(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetLockbarWidth(v); }));
+
+#ifdef ENABLE_BGFX
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_LockbarHeight, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_vrDevice->GetLockbarHeight(); }, //
+      [this](float, float v) { m_player->m_vrDevice->SetLockbarHeight(v); }));
+#endif
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerX(); }, //
+      [this](float, float v)
+      {
+         m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
+         m_player->m_ptable->m_settings.SetPlayer_ScreenPlayerX(v, false);
+      })).m_excludeFromDefault = true;
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerY(); }, //
+      [this](float, float v)
+      {
+         m_notifId = m_player->m_liveUI->PushNotification("This change is directly persisted and is used when centering view"s, 5000, m_notifId);
+         m_player->m_ptable->m_settings.SetPlayer_ScreenPlayerY(v, false);
+      })).m_excludeFromDefault = true;
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Augmented Reality"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_UsePassthroughColor, //
@@ -63,7 +95,7 @@ VRSettingsPage::VRSettingsPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return m_arColorKey.r; }, //
-      [this](Settings& settings) { return settings.GetPlayerVR_PassthroughColor() & 0xFF; }, //
+      [this](const Settings& settings) { return settings.GetPlayerVR_PassthroughColor() & 0xFF; }, //
       [this](int, int v)
       {
          m_arColorKey.r = v;
@@ -74,7 +106,7 @@ VRSettingsPage::VRSettingsPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return m_arColorKey.g; }, //
-      [this](Settings& settings) { return (settings.GetPlayerVR_PassthroughColor() >> 8) & 0xFF; }, //
+      [this](const Settings& settings) { return (settings.GetPlayerVR_PassthroughColor() >> 8) & 0xFF; }, //
       [this](int, int v)
       {
          m_arColorKey.g = v;
@@ -85,7 +117,7 @@ VRSettingsPage::VRSettingsPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return m_arColorKey.b; }, //
-      [this](Settings& settings) { return (settings.GetPlayerVR_PassthroughColor() >> 16) & 0xFF; }, //
+      [this](const Settings& settings) { return (settings.GetPlayerVR_PassthroughColor() >> 16) & 0xFF; }, //
       [this](int, int v)
       {
          m_arColorKey.b = v;
@@ -93,6 +125,13 @@ VRSettingsPage::VRSettingsPage()
       }, //
       [](Settings& settings) { settings.ResetPlayerVR_PassthroughColor(); }, // we reset the 3 channels at once
       [](int v, Settings& settings, bool isTableOverride) { settings.SetPlayerVR_PassthroughColor((settings.GetPlayerVR_PassthroughColor() & 0x00FFFF) | (v << 16), isTableOverride); }));
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous Settings"s));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_AddBackglass, //
+      [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
+      [this](bool v) { m_player->m_implicitVRBackglass->m_d.m_isVisible = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_VRPreview, //

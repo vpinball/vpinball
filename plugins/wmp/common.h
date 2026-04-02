@@ -10,7 +10,9 @@
 
 #include <string>
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 using std::string;
+#include <format>
 
 #include <memory>
 
@@ -26,12 +28,12 @@ string normalize_path_separators(const string& szPath);
 string find_case_insensitive_file_path(const string& szPath);
 bool StrCompareNoCase(const string& strA, const string& strB);
 
-LPI_USE();
+LPI_USE_CPP();
 #ifndef LOGD
-#define LOGD(...) LPI_LOGD(__VA_ARGS__)
-#define LOGI(...) LPI_LOGI(__VA_ARGS__)
-#define LOGW(...) LPI_LOGW(__VA_ARGS__)
-#define LOGE(...) LPI_LOGE(__VA_ARGS__)
+#define LOGD WMP::LPI_LOGD_CPP
+#define LOGI WMP::LPI_LOGI_CPP
+#define LOGW WMP::LPI_LOGW_CPP
+#define LOGE WMP::LPI_LOGE_CPP
 #endif
 
 PSC_USE_ERROR();

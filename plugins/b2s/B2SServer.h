@@ -16,10 +16,10 @@
 
 namespace B2S {
 
-class B2SServer final
+class B2SServer final : public ScriptablePlugin::IScriptProxy
 {
 public:
-   B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* pinmameClassDef);
+   B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef);
    ~B2SServer();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -29,8 +29,8 @@ public:
    double GetB2SBuildVersion() const { return 0.0; }
    string GetB2SServerDirectory() const { return ""s; }
    string GetVPMBuildVersion() const { return ""s; }
-   string GetB2SName() const { return ""s; }
-   void SetB2SName(const std::string& b2sName) { }
+   string GetB2SName() const;
+   void SetB2SName(const std::string& b2sName);
    string GetTableName() const { return ""s; }
    void SetTableName(const std::string& tableName) { }
    void SetWorkingDir(const std::string& workingDir) { }
@@ -101,22 +101,23 @@ public:
    void B2SStopSound(const string& soundName) { } // FIXME
    void B2SMapSound(int digit, const string& soundName) { } // FIXME
 
-   void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
-
    void SetOnDestroyHandler(std::function<void(B2SServer*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
    int GetScoreDigit(int digit) const;
    int GetPlayerScore(int player) const;
 
+   void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override { m_controllerProxy.ForwardCall(me, memberIndex, pArgs, pRet); }
+
 private:
+   ScriptablePlugin::ScriptClassProxy m_controllerClassProxy;
+   ScriptablePlugin::ScriptObjectProxy m_controllerProxy;
+
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
    const VPXPluginAPI* const m_vpxApi;
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
    std::function<void(B2SServer*)> m_onDestroyHandler;
-   const ScriptClassDef* m_pinmameClassDef;
-   void* const m_pinmame;
 
    static B2SServer* m_singleton;
 
@@ -129,6 +130,10 @@ private:
    static void OnGetRenderer(const unsigned int, void*, void* msgData);
 
    // Controller state
+   string m_b2sName;
+   const unsigned int m_onGameStartId;
+   const unsigned int m_onGameEndId;
+   bool m_gameRunning = false;
    ankerl::unordered_dense::map<int, float> m_states;
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, int> m_scoreDigits;

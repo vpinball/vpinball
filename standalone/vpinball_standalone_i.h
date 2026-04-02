@@ -226,6 +226,14 @@ interface IDecal;
 #endif /* __cplusplus */
 #endif
 
+#ifndef __IDecalEvents_FWD_DEFINED__
+#define __IDecalEvents_FWD_DEFINED__
+typedef interface IDecalEvents IDecalEvents;
+#ifdef __cplusplus
+interface IDecalEvents;
+#endif /* __cplusplus */
+#endif
+
 #ifndef __IPrimitive_FWD_DEFINED__
 #define __IPrimitive_FWD_DEFINED__
 typedef interface IPrimitive IPrimitive;
@@ -473,6 +481,15 @@ typedef class Bumper Bumper;
 typedef struct Bumper Bumper;
 #endif /* defined __cplusplus */
 #endif /* defined __Bumper_FWD_DEFINED__ */
+
+#ifndef __Decal_FWD_DEFINED__
+#define __Decal_FWD_DEFINED__
+#ifdef __cplusplus
+typedef class Decal Decal;
+#else
+typedef struct Decal Decal;
+#endif /* defined __cplusplus */
+#endif /* defined __Decal_FWD_DEFINED__ */
 
 #ifndef __Trigger_FWD_DEFINED__
 #define __Trigger_FWD_DEFINED__
@@ -4097,7 +4114,7 @@ interface ITableGlobal {
 #define ITableGlobal_get_PlatformCPU(This,pVal) (This)->lpVtbl->get_PlatformCPU(This,pVal)
 #define ITableGlobal_get_PlatformBits(This,pVal) (This)->lpVtbl->get_PlatformBits(This,pVal)
 #define ITableGlobal_put_ShowCursor(This,show) (This)->lpVtbl->put_ShowCursor(This,show)
-#define ITableGlobal_get_GetPlayerHWnd(This,pVal) (This)->lpVtbl->(This,pVal)
+#define ITableGlobal_get_GetPlayerHWnd(This,pVal) (This)->lpVtbl->get_GetPlayerHWnd(This,pVal)
 #define ITableGlobal_StopSound(This,Sound) (This)->lpVtbl->StopSound(This,Sound)
 #define ITableGlobal_SaveValue(This,TableName,ValueName,Value) (This)->lpVtbl->SaveValue(This,TableName,ValueName,Value)
 #define ITableGlobal_LoadValue(This,TableName,ValueName,Value) (This)->lpVtbl->LoadValue(This,TableName,ValueName,Value)
@@ -12511,6 +12528,116 @@ static inline HRESULT IDecal_put_Surface(IDecal* This,BSTR newVal) {
 
 
 #endif  /* __IDecal_INTERFACE_DEFINED__ */
+
+/*****************************************************************************
+ * IDecalEvents dispinterface
+ */
+#ifndef __IDecalEvents_DISPINTERFACE_DEFINED__
+#define __IDecalEvents_DISPINTERFACE_DEFINED__
+
+DEFINE_GUID(DIID_IDecalEvents, 0x349b04c7, 0xbf64, 0x48d2, 0x9e,0xe8, 0x17,0x77,0x93,0xe8,0x01,0xcd);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("349b04c7-bf64-48d2-9ee8-177793e801cd")
+IDecalEvents : public IDispatch
+{
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IDecalEvents, 0x349b04c7, 0xbf64, 0x48d2, 0x9e,0xe8, 0x17,0x77,0x93,0xe8,0x01,0xcd)
+#endif
+#else
+typedef struct IDecalEventsVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IDecalEvents *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IDecalEvents *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IDecalEvents *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        IDecalEvents *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        IDecalEvents *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        IDecalEvents *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        IDecalEvents *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    END_INTERFACE
+} IDecalEventsVtbl;
+
+interface IDecalEvents {
+    CONST_VTBL IDecalEventsVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define IDecalEvents_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IDecalEvents_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IDecalEvents_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define IDecalEvents_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define IDecalEvents_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define IDecalEvents_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define IDecalEvents_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+#else
+/*** IUnknown methods ***/
+static inline HRESULT IDecalEvents_QueryInterface(IDecalEvents* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static inline ULONG IDecalEvents_AddRef(IDecalEvents* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static inline ULONG IDecalEvents_Release(IDecalEvents* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static inline HRESULT IDecalEvents_GetTypeInfoCount(IDecalEvents* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static inline HRESULT IDecalEvents_GetTypeInfo(IDecalEvents* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static inline HRESULT IDecalEvents_GetIDsOfNames(IDecalEvents* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static inline HRESULT IDecalEvents_Invoke(IDecalEvents* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+#endif
+#endif
+
+#endif
+
+#endif  /* __IDecalEvents_DISPINTERFACE_DEFINED__ */
 
 /*****************************************************************************
  * IPrimitive interface
@@ -21369,6 +21496,19 @@ DEFINE_GUID(CLSID_Bumper, 0xc242ddff, 0x0d79, 0x4c56, 0x96,0x7f, 0x76,0x5a,0x30,
 class DECLSPEC_UUID("c242ddff-0d79-4c56-967f-765a30de8ed6") Bumper;
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(Bumper, 0xc242ddff, 0x0d79, 0x4c56, 0x96,0x7f, 0x76,0x5a,0x30,0xde,0x8e,0xd6)
+#endif
+#endif
+
+/*****************************************************************************
+ * Decal coclass
+ */
+
+DEFINE_GUID(CLSID_Decal, 0x9cefb29f, 0xbda8, 0x4dbc, 0xbf,0xa2, 0xf8,0x70,0x3c,0xf4,0xa1,0x8a);
+
+#ifdef __cplusplus
+class DECLSPEC_UUID("9cefb29f-bda8-4dbc-bfa2-f8703cf4a18a") Decal;
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(Decal, 0x9cefb29f, 0xbda8, 0x4dbc, 0xbf,0xa2, 0xf8,0x70,0x3c,0xf4,0xa1,0x8a)
 #endif
 #endif
 

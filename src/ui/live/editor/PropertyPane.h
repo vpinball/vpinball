@@ -35,7 +35,7 @@ public:
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
-   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
+   void Header(const string& typeName, const std::function<wstring()>& getName, const std::function<void(const wstring&)>& setName);
    void EditableHeader(const string& typeName, IEditable* editable);
    void Separator(const string& label) const;
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);
@@ -83,7 +83,7 @@ private:
 };
 
 
-// Inline deifnition of template functions
+// Inline definition of template functions
 
 template <class T> T* PropertyPane::GetStartupObj(T* obj) const
 {
@@ -589,7 +589,7 @@ template <class T> inline void PropertyPane::ImageCombo(T* obj, const string& la
 {
    std::vector<string> images(m_table->m_vimage.size());
    const std::function<string(Texture*)> map = [](const Texture* image) -> string { return image->m_name; };
-   std::transform(m_table->m_vimage.begin(), m_table->m_vimage.end(), images.begin(), map);
+   std::ranges::transform(m_table->m_vimage.begin(), m_table->m_vimage.end(), images.begin(), map);
    std::sort(images.begin(), images.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
    images.insert(images.begin(), ""s);
@@ -600,7 +600,7 @@ template <class T> inline void PropertyPane::MaterialCombo(T* obj, const string&
 {
    std::vector<string> materials(m_table->m_materials.size());
    const std::function<string(Material*)> map = [](const Material* material) { return material->m_name; };
-   std::transform(m_table->m_materials.begin(), m_table->m_materials.end(), materials.begin(), map);
+   std::ranges::transform(m_table->m_materials.begin(), m_table->m_materials.end(), materials.begin(), map);
    std::sort(materials.begin(), materials.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
    materials.insert(materials.begin(), ""s);

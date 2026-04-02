@@ -14,10 +14,10 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
    float width = rect.z;
    float height = rect.w;
 
-   const ImU32 cabColor = IM_COL32(255, 0, 255, 255);
-   const ImU32 glassColor = IM_COL32(0, 128, 255, 255);
-   const ImU32 pfColor = IM_COL32(0, 0, 255, 255);
-   const ImU32 screenColor = IM_COL32(255, 255, 0, 255);
+   constexpr ImU32 cabColor = IM_COL32(255, 0, 255, 255);
+   constexpr ImU32 glassColor = IM_COL32(0, 128, 255, 255);
+   constexpr ImU32 pfColor = IM_COL32(0, 0, 255, 255);
+   constexpr ImU32 screenColor = IM_COL32(255, 255, 0, 255);
 
    const float scale = height / 200.f;
 
@@ -113,7 +113,7 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
    {
       // FIXME is it from screen origin or from glass (or from playfield) ?
       ImVec2 playerEye = screenOrig;
-      playerEye.x += playerPos.y * scale;
+      playerEye.x -= playerPos.y * scale;
       playerEye.y -= playerPos.z * scale;
       draw_list->AddCircleFilled(playerEye, 5.f, IM_COL32(255, 0, 0, 255));
    }

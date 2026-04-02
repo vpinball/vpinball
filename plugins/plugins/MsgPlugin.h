@@ -194,7 +194,7 @@ typedef struct MsgSettingDef
    static void varName##_Set(int v) { varName##_Val = v; } \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, &varName##_Get, &varName##_Set } }
 #define MSGPI_STRING_VAL_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize) \
-   static char* varName##_Val = new char[bufferSize]; \
+   static char varName##_Val[bufferSize]; \
    static const char* varName##_Get() { return varName##_Val; } \
    static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); } \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, &varName##_Get, &varName##_Set } }
@@ -211,7 +211,7 @@ typedef struct MsgPluginAPI
    void(MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
    unsigned int (MSGPIAPI* GetMsgID)(const char* name_space, const char* name);
    void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
-   void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
+   void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (MSGPIAPI* BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
    void (MSGPIAPI* SendMsg)(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    void (MSGPIAPI* ReleaseMsgID)(const unsigned int msgId);

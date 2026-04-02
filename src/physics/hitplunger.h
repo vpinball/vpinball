@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "collide.h"
+
 class Plunger;
 
 class PlungerMoverObject : public MoverObject

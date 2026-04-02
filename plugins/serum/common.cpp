@@ -11,8 +11,12 @@
 namespace Serum {
    
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <locale>
 void SetThreadName(const std::string& name)
@@ -88,7 +92,7 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
             const auto& found = ent.path();
             if (found != path)
             {
-               LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
+               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
             }
             return found;
          }

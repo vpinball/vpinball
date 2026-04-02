@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "physics/hitflipper.h"
 #include "ui/win/resource.h"  
 
 class FlipperData final : public BaseProperty
@@ -156,9 +157,9 @@ public:
        m_d.m_FlipperRadiusMin = max(value,0.0f);
    }
 
-   FlipperData m_d;
+   uint64_t GetLastRotateTime() const { return m_lastRotateTime; }
 
-   PinTable *m_ptable = nullptr;
+   FlipperData m_d;
 
 private:
    RenderDevice *m_rd = nullptr;
@@ -177,7 +178,9 @@ private:
    HitFlipper *m_phitflipper = nullptr;
    float m_lastAngle = 0.f;
 
-// IFlipper
+   uint64_t m_lastRotateTime = 0;
+
+   // IFlipper
 public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);

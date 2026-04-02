@@ -3,9 +3,9 @@
 #pragma once
 
 // Object to expose global methods and properties to table scripts
-class ScriptGlobalTable : 
-   public CComObjectRootEx<CComSingleThreadModel>, 
-   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>, 
+class ScriptGlobalTable :
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
    public IScriptable
 {
 public:
@@ -99,7 +99,6 @@ public:
    STDMETHOD(NudgeSensorStatus)(VARIANT *XNudge, VARIANT *YNudge);
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
-   const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
@@ -137,14 +136,12 @@ public:
 
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
+   ScriptGlobalTable() { m_wzName = L"Global"sv; }
    void Init(PinTable *pt);
    ~ScriptGlobalTable();
 
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
-
-   ISelect *GetISelect() final { return nullptr; }
-   const ISelect *GetISelect() const final { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
    COM_INTERFACE_ENTRY(ITableGlobal)

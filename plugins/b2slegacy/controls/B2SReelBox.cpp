@@ -10,7 +10,7 @@ B2SReelBox::B2SReelBox(VPXPluginAPI* vpxApi, B2SData* pB2SData)
 {
    m_led = false;
    m_length = 1;
-   m_initValue = "0"s;
+   m_initValue = "0"sv;
    m_szReelIndex.clear();
    m_intermediates = -1;
    m_intermediates2go = 0;
@@ -48,9 +48,9 @@ void B2SReelBox::OnPaint(VPXRenderContext2D* const ctx)
                m_intermediates2go = 2;
             }
             else {
-               const auto& img = pImages->find(m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()));
-               if (img != pImages->end())
-                  VPXGraphics::DrawImage(m_vpxApi, ctx, img->second, nullptr, &rect);
+               const auto& img2 = pImages->find(m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()));
+               if (img2 != pImages->end())
+                  VPXGraphics::DrawImage(m_vpxApi, ctx, img2->second, nullptr, &rect);
                m_intermediates = m_firstintermediatecount - 1;
                m_intermediates2go = 1;
             }
@@ -132,17 +132,17 @@ void B2SReelBox::SetReelType(const string& szReelType)
 {
    if (szReelType.back() == '_') {
       m_length = 2;
-      m_szReelIndex = "00"s;
+      m_szReelIndex = "00"sv;
       m_szReelType = szReelType.substr(0, szReelType.length() - 1);
    }
    else {
-      m_szReelIndex = "0"s;
+      m_szReelIndex = "0"sv;
       m_szReelType = szReelType;
    }
    if (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)) {
       m_led = true;
-      m_szReelIndex = "Empty"s;
-      m_initValue = "Empty"s;
+      m_szReelIndex = "Empty"sv;
+      m_initValue = "Empty"sv;
       SetText(-1);
       m_szReelType.clear();
    }
@@ -193,20 +193,20 @@ string B2SReelBox::ConvertValue(int value) const
    // map value
    switch (value) {
          // 7-segment stuff
-         case 63: ret = "0"s; break;
-         case 6:  ret = "1"s; break;
-         case 91: ret = "2"s; break;
-         case 79: ret = "3"s; break;
-         case 102:ret = "4"s; break;
-         case 109:ret = "5"s; break;
-         case 125:ret = "6"s; break;
-         case 7:  ret = "7"s; break;
-         case 127:ret = "8"s; break;
-         case 111:ret = "9"s; break;
+         case 63: ret = "0"sv; break;
+         case 6:  ret = "1"sv; break;
+         case 91: ret = "2"sv; break;
+         case 79: ret = "3"sv; break;
+         case 102:ret = "4"sv; break;
+         case 109:ret = "5"sv; break;
+         case 125:ret = "6"sv; break;
+         case 7:  ret = "7"sv; break;
+         case 127:ret = "8"sv; break;
+         case 111:ret = "9"sv; break;
          //additional 10-segment stuff
-         case 768:ret = "1"s; break;
-         case 124:ret = "6"s; break;
-         case 103:ret = "9"s; break;
+         case 768:ret = "1"sv; break;
+         case 124:ret = "6"sv; break;
+         case 103:ret = "9"sv; break;
          default: ret = m_initValue; break;
       }
    if(m_length == 2)

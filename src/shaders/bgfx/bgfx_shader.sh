@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2026 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
@@ -56,28 +56,27 @@
 #	define dFdy(_y) ddy(-(_y))
 #	define inversesqrt(_x) rsqrt(_x)
 #	define fract(_x) frac(_x)
+#	define not(_x) (!_x)
 
 #	define bvec2 bool2
 #	define bvec3 bool3
 #	define bvec4 bool4
 
-// To be able to patch the uav registers on the DXBC SPDB Chunk (D3D11 renderer) the whitespaces around
-// '_type[_reg]' are necessary. This only affects shaders with debug info (i.e., those that have the SPDB Chunk).
-#	if BGFX_SHADER_LANGUAGE_HLSL > 400                     \
-	|| BGFX_SHADER_LANGUAGE_PSSL                           \
-	|| BGFX_SHADER_LANGUAGE_SPIRV                          \
-	|| BGFX_SHADER_LANGUAGE_METAL                          \
+#	if BGFX_SHADER_LANGUAGE_HLSL  \
+	|| BGFX_SHADER_LANGUAGE_PSSL  \
+	|| BGFX_SHADER_LANGUAGE_SPIRV \
+	|| BGFX_SHADER_LANGUAGE_METAL \
 	|| BGFX_SHADER_LANGUAGE_WGSL
-#		define REGISTER(_type, _reg) register( _type[_reg] )
-#	else
-#		define REGISTER(_type, _reg) register(_type ##     _reg)
+
+#		define REGISTER(_type, _reg) register(_type ## _reg)
 #	endif // BGFX_SHADER_LANGUAGE_*
 
-#	if BGFX_SHADER_LANGUAGE_HLSL > 400 \
-	|| BGFX_SHADER_LANGUAGE_PSSL       \
-	|| BGFX_SHADER_LANGUAGE_SPIRV      \
-	|| BGFX_SHADER_LANGUAGE_METAL      \
+#	if BGFX_SHADER_LANGUAGE_HLSL  \
+	|| BGFX_SHADER_LANGUAGE_PSSL  \
+	|| BGFX_SHADER_LANGUAGE_SPIRV \
+	|| BGFX_SHADER_LANGUAGE_METAL \
 	|| BGFX_SHADER_LANGUAGE_WGSL
+
 #		define dFdxCoarse(_x) ddx_coarse(_x)
 #		define dFdxFine(_x)   ddx_fine(_x)
 #		define dFdyCoarse(_y) ddy_coarse(-(_y))
@@ -589,7 +588,7 @@ float bgfxShadow2DProj(sampler2DShadow _sampler, vec4 _coord)
 #		define texture3DLod(_sampler, _coord, _level) tex3Dlod(_sampler, vec4( (_coord).xyz, _level) )
 #		define textureCubeLod(_sampler, _coord, _level) texCUBElod(_sampler, vec4( (_coord).xyz, _level) )
 
-#	endif // BGFX_SHADER_LANGUAGE_HLSL > 300
+#	endif // BGFX_SHADER_LANGUAGE_*
 
 bvec2 lessThan(vec2 _a, vec2 _b) { return _a < _b; }
 bvec3 lessThan(vec3 _a, vec3 _b) { return _a < _b; }
@@ -812,6 +811,37 @@ float mtxGetElement(mat4 _mtx, int _column, int _row)
     return _mtx[_row][_column];
 #endif // BGFX_SHADER_LANGUAGE_GLSL
 }
+
+#if !BGFX_SHADER_LANGUAGE_DXIL
+float select(bool  _cond, float _true, float _false) { return _cond ? _true : _false; }
+vec2  select(bool  _cond, vec2  _true, vec2  _false) { return _cond ? _true : _false; }
+vec3  select(bool  _cond, vec3  _true, vec3  _false) { return _cond ? _true : _false; }
+vec4  select(bool  _cond, vec4  _true, vec4  _false) { return _cond ? _true : _false; }
+vec2  select(bvec2 _cond, vec2  _true, vec2  _false) { return (vec2(_cond) * _true) + (vec2(not(_cond) ) * _false); }
+vec3  select(bvec3 _cond, vec3  _true, vec3  _false) { return (vec3(_cond) * _true) + (vec3(not(_cond) ) * _false); }
+vec4  select(bvec4 _cond, vec4  _true, vec4  _false) { return (vec4(_cond) * _true) + (vec4(not(_cond) ) * _false); }
+#	if BGFX_SHADER_LANGUAGE_GLSL >= 130 \
+	|| BGFX_SHADER_LANGUAGE_HLSL        \
+	|| BGFX_SHADER_LANGUAGE_PSSL        \
+	|| BGFX_SHADER_LANGUAGE_SPIRV       \
+	|| BGFX_SHADER_LANGUAGE_METAL       \
+	|| BGFX_SHADER_LANGUAGE_WGSL
+int   select(bool  _cond, int   _true, int   _false) { return _cond ? _true : _false; }
+ivec2 select(bool  _cond, ivec2 _true, ivec2 _false) { return _cond ? _true : _false; }
+ivec3 select(bool  _cond, ivec3 _true, ivec3 _false) { return _cond ? _true : _false; }
+ivec4 select(bool  _cond, ivec4 _true, ivec4 _false) { return _cond ? _true : _false; }
+ivec2 select(bvec2 _cond, ivec2 _true, ivec2 _false) { return (ivec2(_cond) * _true) + (ivec2(not(_cond) ) * _false); }
+ivec3 select(bvec3 _cond, ivec3 _true, ivec3 _false) { return (ivec3(_cond) * _true) + (ivec3(not(_cond) ) * _false); }
+ivec4 select(bvec4 _cond, ivec4 _true, ivec4 _false) { return (ivec4(_cond) * _true) + (ivec4(not(_cond) ) * _false); }
+uint  select(bool  _cond, uint  _true, uint  _false) { return _cond ? _true : _false; }
+uvec2 select(bool  _cond, uvec2 _true, uvec2 _false) { return _cond ? _true : _false; }
+uvec3 select(bool  _cond, uvec3 _true, uvec3 _false) { return _cond ? _true : _false; }
+uvec4 select(bool  _cond, uvec4 _true, uvec4 _false) { return _cond ? _true : _false; }
+uvec2 select(bvec2 _cond, uvec2 _true, uvec2 _false) { return (uvec2(_cond) * _true) + (uvec2(not(_cond) ) * _false); }
+uvec3 select(bvec3 _cond, uvec3 _true, uvec3 _false) { return (uvec3(_cond) * _true) + (uvec3(not(_cond) ) * _false); }
+uvec4 select(bvec4 _cond, uvec4 _true, uvec4 _false) { return (uvec4(_cond) * _true) + (uvec4(not(_cond) ) * _false); }
+#	endif // BGFX_SHADER_LANGUAGE_*
+#endif // !BGFX_SHADER_LANGUAGE_DXIL
 
 uniform vec4 u_viewRect;
 uniform vec4 u_viewTexel;

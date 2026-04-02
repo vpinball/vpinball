@@ -40,7 +40,6 @@
 //     disposed by the caller of the method using the provided 'Release' lambda.
 //
 // FIXME: Not yet implemented features:
-// - unregistering, 
 // - type library memory freeing
 // - byref arguments
 //
@@ -127,13 +126,18 @@ typedef struct ScriptablePluginAPI
    void (MSGPIAPI *RegisterScriptClass)(ScriptClassDef* classDef);
    void (MSGPIAPI *RegisterScriptTypeAlias)(const char* name, const char* aliasedType);
    void (MSGPIAPI *RegisterScriptArrayType)(ScriptArrayDef* type);
-   void (MSGPIAPI *SubmitTypeLibrary)();
+   void (MSGPIAPI *SubmitTypeLibrary)(const unsigned int endpointId);
+
+   // Unregister previously registered types
+   void (MSGPIAPI *UnregisterScriptClass)(ScriptClassDef* classDef);
+   void (MSGPIAPI *UnregisterScriptTypeAlias)(const char* name);
+   void (MSGPIAPI *UnregisterScriptArrayType)(ScriptArrayDef* type);
 
    // If called while processing a call, the scripting engine will handle the call failure
    void (MSGPIAPI *OnError)(unsigned int type, const char* message);
 
    // Allows to request a COM object to be overriden by our own implementation
-   void (MSGPIAPI *SetCOMObjectOverride)(const char* className, const ScriptClassDef* classDef);
+   void (MSGPIAPI *SetCOMObjectOverride)(const char* classname, const ScriptClassDef* classDef);
    
    // Allow to use declared type library by other plugin
    ScriptClassDef* (MSGPIAPI *GetClassDef)(const char* typeName);
@@ -150,7 +154,10 @@ typedef struct ScriptablePluginAPI
 #ifdef __cplusplus
 
 #include <cassert>
+#include <string>
+#include <memory>
 #include <vector>
+#include <map>
 
 #define PSC_USE_ERROR() extern void PSCOnError(unsigned int type, const char* format, ...)
 #define PSC_FAIL(...) PSCOnError(PSC_ERR_FAIL, __VA_ARGS__)
@@ -218,15 +225,15 @@ typedef struct ScriptablePluginAPI
 // Since script arrays are not shared, but single owner, they are copied/released for each assignment
 // If this is a performance issue, use reference counted objects instead (which are shared and not copied)
 
-#define PSC_ARRAY1(name, type, lowerBound) \
-   static ScriptArrayDef name##_SCD = { { #name }, { #type }, 1, { lowerBound } }; \
-   template<typename F> void Register##name##SCD(F&& regFunc) { regFunc(&name##_SCD); } \
-   template<typename F> void Unregister##name##SCD(F&& unregFunc) { unregFunc(&name##_SCD); }
+#define PSC_ARRAY1(classname, type, lowerBound) \
+   static ScriptArrayDef classname##_SAD = { { #classname }, { #type }, 1, { lowerBound } }; \
+   template <typename F> void Register##classname(F && regFunc) { regFunc(&classname##_SAD); } \
+   template <typename F> void Unregister##classname(F && unregFunc) { unregFunc(&classname##_SAD); }
 
-#define PSC_ARRAY2(name, type, lowerBound1, lowerBound2) \
-   static ScriptArrayDef name##_SCD = { { #name }, { #type }, 2, { lowerBound1, lowerBound2 } }; \
-   template<typename F> void Register##name##SCD(F&& regFunc) { regFunc(&name##_SCD); } \
-   template<typename F> void Unregister##name##SCD(F&& unregFunc) { unregFunc(&name##_SCD); }
+#define PSC_ARRAY2(classname, type, lowerBound1, lowerBound2) \
+   static ScriptArrayDef classname##_SAD = { { #classname }, { #type }, 2, { lowerBound1, lowerBound2 } }; \
+   template <typename F> void Register##classname(F&& regFunc) { regFunc(&classname##_SAD); } \
+   template <typename F> void Unregister##classname(F&& unregFunc) { unregFunc(&classname##_SAD); }
 
 #define PSC_VAR_array1(type, variant) \
    std::vector<type>( \
@@ -234,7 +241,7 @@ typedef struct ScriptablePluginAPI
       reinterpret_cast<type *>(&(variant).vArray->lengths[1]) + (variant).vArray->lengths[0] )
 
 #define PSC_VAR_SET_array1(type, variant, value) { \
-      const unsigned int nDimensions = type##_SCD.nDimensions; \
+      const unsigned int nDimensions = type##_SAD.nDimensions; \
       const auto& vec = (value); \
       const size_t dataSize = vec.empty() ? 0 : (vec.size() * sizeof(vec[0])); \
       ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + dataSize)); \
@@ -246,7 +253,7 @@ typedef struct ScriptablePluginAPI
    }
 
 #define PSC_VAR_SET_array2(type, variant, value) { \
-      const unsigned int nDimensions = type##_SCD.nDimensions; \
+      const unsigned int nDimensions = type##_SAD.nDimensions; \
       const auto& vec = (value); \
       const unsigned int subDataSize = (vec.empty() || vec[0].empty()) ? 0 : (sizeof(vec[0][0]) * vec[0].size()); \
       const size_t dataSize = (vec.empty() || vec[0].empty()) ? 0 : (vec.size() * subDataSize); \
@@ -260,19 +267,56 @@ typedef struct ScriptablePluginAPI
       (variant).vArray = array; \
    }
 
-#define PSC_CLASS_ALIAS(name, alias) \
-   template <typename F> void Register##name##SCD(F&& regFunc) { regFunc(#name, #alias); } \
-   template <typename F> void Unregister##name##SCD(F&& regFunc) { regFunc(#name); }
+#define PSC_CLASS_ALIAS(classname, alias) \
+   template <typename F> void Register##classname(F && regFunc) { regFunc(#classname, #alias); } \
+   template <typename F> void Unregister##classname(F && unregFunc) { unregFunc(#classname); }
 
-#define PSC_CLASS_START(name) \
-   static ScriptClassDef* name##_SCD = nullptr; \
-   template<typename F> void Register##name##SCD(F&& regFunc) { \
-      assert(name##_SCD == nullptr); \
+#define PSC_CLASS_START(classname, typeName) \
+   static ScriptClassDef* classname##_SCD = nullptr; \
+   template<typename F> void Unregister##classname(F&& unregFunc) { \
+      assert(classname##_SCD != nullptr); \
+      unregFunc(classname##_SCD); \
+      free(classname##_SCD); \
+      classname##_SCD = nullptr; \
+   } \
+   template <typename F> void Register##classname(F && regFunc)                                                                                                                            \
+   { \
+      assert(classname##_SCD == nullptr); \
       std::vector<ScriptClassMemberDef> members; \
+      const auto registerClass = [&members, &regFunc]() { \
+         for (std::vector<ScriptClassMemberDef>::iterator i = members.begin(); i != members.end(); i++) { \
+            for (std::vector<ScriptClassMemberDef>::iterator j = i + 1; j != members.end(); j++) { \
+               bool isOverload = true; \
+               isOverload &= strcmp(i->name.name, j->name.name) == 0; \
+               isOverload &= strcmp(i->type.name, j->type.name) == 0; \
+               for (int k = 0; isOverload && (k < PSC_CALL_MAX_ARG_COUNT); k++) { \
+                  isOverload &= (i->callArgType[k].name == nullptr) != (j->callArgType[k].name == nullptr); \
+                  if ((i->callArgType[k].name != nullptr) && (j->callArgType[k].name != nullptr)) \
+                     isOverload &= strcmp(i->callArgType[k].name, j->callArgType[k].name) == 0; \
+               } \
+               if (isOverload) { \
+                  *i = *j; \
+                  members.erase(j); \
+                  break;  \
+               } \
+            } \
+         } \
+         classname##_SCD = static_cast<ScriptClassDef*>(malloc(sizeof(ScriptClassDef) + members.size() * sizeof(ScriptClassMemberDef))); \
+         classname##_SCD->name.name = #classname; \
+         classname##_SCD->name.id = 0; \
+         classname##_SCD->CreateObject = nullptr; \
+         classname##_SCD->nMembers = static_cast<unsigned int>(members.size()); \
+         for (size_t i = 0; i < members.size(); i++) \
+            classname##_SCD->members[i] = members[i]; \
+         regFunc(classname##_SCD); \
+      }; \
+      using _BindedClass = typeName; \
       members.push_back( { { "AddRef" }, { "uint32" }, 0, { }, \
-         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { uint32_t rc = static_cast<name *>(me)->AddRef(); if (pRet != nullptr) pRet->vUInt32 = rc; } } ); \
+         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { uint32_t rc = static_cast<_BindedClass*>(me)->AddRef(); if (pRet != nullptr) pRet->vUInt32 = rc; } } ); \
       members.push_back( { { "Release" }, { "uint32" }, 0, { }, \
-         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { uint32_t rc = static_cast<name *>(me)->Release(); if (pRet != nullptr) pRet->vUInt32 = rc; } } );
+         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { uint32_t rc = static_cast<_BindedClass*>(me)->Release(); if (pRet != nullptr) pRet->vUInt32 = rc; } } );
+
+#define PSC_CLASS_END() registerClass(); }
 
 #define PSC_IMPLEMENT_REFCOUNT() \
    protected: \
@@ -284,140 +328,325 @@ typedef struct ScriptablePluginAPI
 #define PSC_ADD_REF(classDef, object) classDef->members[0].Call(object, 0, nullptr, nullptr)
 #define PSC_RELEASE(classDef, object) classDef->members[1].Call(object, 1, nullptr, nullptr)
 
-#define PSC_CLASS_END(className) \
-      for (std::vector<ScriptClassMemberDef>::iterator i = members.begin(); i != members.end(); i++) { \
-         for (std::vector<ScriptClassMemberDef>::iterator j = i + 1; j != members.end(); j++) { \
-            bool isOverload = true; \
-            isOverload &= strcmp(i->name.name, j->name.name) == 0; \
-            isOverload &= strcmp(i->type.name, j->type.name) == 0; \
-            for (int k = 0; isOverload && (k < PSC_CALL_MAX_ARG_COUNT); k++) { \
-               isOverload &= (i->callArgType[k].name == nullptr) != (j->callArgType[k].name == nullptr); \
-               if ((i->callArgType[k].name != nullptr) && (j->callArgType[k].name != nullptr)) \
-                  isOverload &= strcmp(i->callArgType[k].name, j->callArgType[k].name) == 0; \
-            } \
-            if (isOverload) { \
-               *i = *j; \
-               members.erase(j); \
-               break;  \
-            } \
-         } \
-      } \
-      className##_SCD = static_cast<ScriptClassDef*>(malloc(sizeof(ScriptClassDef) + members.size() * sizeof(ScriptClassMemberDef))); \
-      className##_SCD->name.name = #className; \
-      className##_SCD->name.id = 0; \
-      className##_SCD->CreateObject = nullptr; \
-      className##_SCD->nMembers = static_cast<unsigned int>(members.size()); \
-      for (size_t i = 0; i < members.size(); i++) \
-         className##_SCD->members[i] = members[i]; \
-      regFunc(className##_SCD); \
-   } \
-   template<typename F> void Unregister##className##SCD(F&& regFunc) { \
-      assert(className##_SCD != nullptr); \
-      regFunc(className##_SCD); \
-      free(className##_SCD); \
-      className##_SCD = nullptr; \
-   }      
-
-#define PSC_INHERIT_CLASS(className, parentName) \
+#define PSC_INHERIT_CLASS(parentName) \
    for (unsigned int i = 0; i < parentName##_SCD->nMembers; i++) { members.push_back(parentName##_SCD->members[i]); }
 
-#define PSC_PROP_R(className, type, name) \
+#define PSC_PROP_R(type, name) \
    members.push_back( { { #name }, { #type }, 0, { }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className*>(me)->Get##name()); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->Get##name()); } });
 
-#define PSC_PROP_R_ARRAY1(className, type, name, arg1) \
+#define PSC_PROP_R_ARRAY1(type, name, arg1) \
    members.push_back( { { #name }, { #type }, 1, { { #arg1 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className*>(me)->Get##name(PSC_VAR_##arg1(pArgs[0]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->Get##name(PSC_VAR_##arg1(pArgs[0]))); } });
 
-#define PSC_PROP_W(className, type, name) \
+#define PSC_PROP_W(type, name) \
    members.push_back({ { #name }, { "void" }, 1, { #type }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         static_cast<className*>(me)->Set##name(PSC_VAR_##type(pArgs[0])); } } );
+         static_cast<_BindedClass*>(me)->Set##name(PSC_VAR_##type(pArgs[0])); } });
 
-#define PSC_PROP_W_ARRAY1(className, type, name, arg1) \
+#define PSC_PROP_W_ARRAY1(type, name, arg1) \
    members.push_back({ { #name }, { "void" }, 2, { { #arg1 }, { #type } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         static_cast<className*>(me)->Set##name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##type(pArgs[1])); } } );
+         static_cast<_BindedClass*>(me)->Set##name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##type(pArgs[1])); } });
 
-#define PSC_PROP_RW(className, type, name) \
-   PSC_PROP_R(className, type, name) \
-   PSC_PROP_W(className, type, name)
+#define PSC_PROP_RW(type, name) \
+   PSC_PROP_R(type, name) \
+   PSC_PROP_W(type, name)
 
-#define PSC_PROP_RW_ARRAY1(className, type, name, arg1) \
-   PSC_PROP_R_ARRAY1(className, type, name, arg1) \
-   PSC_PROP_W_ARRAY1(className, type, name, arg1)
+#define PSC_PROP_RW_ARRAY1(type, name, arg1) \
+   PSC_PROP_R_ARRAY1(type, name, arg1) \
+   PSC_PROP_W_ARRAY1(type, name, arg1)
 
-#define PSC_FUNCTION0(className, type, name) \
+#define PSC_FUNCTION0(type, name) \
    members.push_back( { { #name }, { #type }, 0, { }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className*>(me)->name()); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->name()); } });
 
-#define PSC_FUNCTION1(className, type, name, arg1) \
+#define PSC_FUNCTION1(type, name, arg1) \
    members.push_back( { { #name }, { #type }, 1, { { #arg1 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className*>(me)->name(PSC_VAR_##arg1(pArgs[0]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->name(PSC_VAR_##arg1(pArgs[0]))); } });
 
-#define PSC_FUNCTION2(className, type, name, arg1, arg2) \
+#define PSC_FUNCTION2(type, name, arg1, arg2) \
    members.push_back( { { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]))); } });
 
-#define PSC_FUNCTION3(className, type, name, arg1, arg2, arg3) \
+#define PSC_FUNCTION3(type, name, arg1, arg2, arg3) \
    members.push_back( { { #name }, { #type }, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]))); } });
 
-#define PSC_FUNCTION4(className, type, name, arg1, arg2, arg3, arg4) \
+#define PSC_FUNCTION4(type, name, arg1, arg2, arg3, arg4) \
    members.push_back( { { #name }, { #type }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass*>(me)->name(PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]))); } });
 
-#define PSC_FUNCTION5(className, type, name, arg1, arg2, arg3, arg4, arg5) \
+#define PSC_FUNCTION5(type, name, arg1, arg2, arg3, arg4, arg5) \
    members.push_back( { { #name }, { #type }, 5, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]))); } } );
 
-#define PSC_FUNCTION6(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6) \
+#define PSC_FUNCTION6(type, name, arg1, arg2, arg3, arg4, arg5, arg6) \
    members.push_back( { { #name }, { #type }, 6, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]))); } } );
 
-#define PSC_FUNCTION7(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
+#define PSC_FUNCTION7(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
    members.push_back( { { #name }, { #type }, 7, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]))); } } );
 
-#define PSC_FUNCTION8(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
+#define PSC_FUNCTION8(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
    members.push_back( { { #name }, { #type }, 8, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]))); } } );
 
-#define PSC_FUNCTION9(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
+#define PSC_FUNCTION9(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
    members.push_back( { { #name }, { #type }, 9, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]))); } } );
 
-#define PSC_FUNCTION10(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) \
+#define PSC_FUNCTION10(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) \
    members.push_back( { { #name }, { #type }, 10, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]))); } } );
 
-#define PSC_FUNCTION11(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
+#define PSC_FUNCTION11(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
    members.push_back( { { #name }, { #type }, 11, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 }, { #arg11 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]))); } } );
 
-#define PSC_FUNCTION12(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12) \
+#define PSC_FUNCTION12(type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12) \
    members.push_back( { { #name }, { #type }, 12, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 }, { #arg10 }, { #arg12 } }, \
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
-                                                                       PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]), PSC_VAR_##arg12(pArgs[11]))); } } );
+         PSC_VAR_SET_##type(*pRet, static_cast<_BindedClass *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]), PSC_VAR_##arg12(pArgs[11]))); } } );
+
+
+namespace ScriptablePlugin
+{
+
+class IScriptProxy
+{
+public:
+   virtual ~IScriptProxy() = default;
+   virtual void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) = 0;
+};
+
+
+class ScriptClassProxy : public IScriptProxy
+{
+public:
+   ScriptClassProxy(const MsgPluginAPI* msgApi, const unsigned int endpointId, const std::string& basePrefix, const std::string& baseName, const std::string& proxyPrefix,
+      const ScriptClassDef* proxyClassDef)
+      : m_msgApi(msgApi)
+      , m_endpointId(endpointId)
+      , m_getScriptApiId(msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
+      , m_onPluginLoaded(msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED))
+      , m_onPluginUnloaded(msgApi->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED))
+      , m_basePrefix(basePrefix)
+      , m_baseName(baseName)
+      , m_proxyPrefix(proxyPrefix)
+      , m_proxyClassDef(proxyClassDef)
+   {
+      assert(m_baseName.starts_with(m_basePrefix));
+      msgApi->BroadcastMsg(m_endpointId, m_getScriptApiId, &m_scriptApi);
+      msgApi->SubscribeMsg(m_endpointId, m_onPluginLoaded, OnPluginLoaded, this);
+      msgApi->SubscribeMsg(m_endpointId, m_onPluginUnloaded, OnPluginUnloaded, this);
+      OnPluginLoaded(0, this, nullptr);
+   }
+   ~ScriptClassProxy()
+   {
+      m_msgApi->UnsubscribeMsg(m_onPluginLoaded, OnPluginLoaded, this);
+      m_msgApi->UnsubscribeMsg(m_onPluginUnloaded, OnPluginUnloaded, this);
+      m_msgApi->ReleaseMsgID(m_getScriptApiId);
+      m_msgApi->ReleaseMsgID(m_onPluginLoaded);
+      m_msgApi->ReleaseMsgID(m_onPluginUnloaded);
+   }
+
+   // Forward a call on the object to the one we proxied
+   void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override
+   {
+      if (m_baseClassDef == nullptr)
+      {
+         // FIXME Report error to caller (unimplemented)
+         return;
+      }
+      unsigned int baseMember = 0xFFFFFFFF;
+      if (const auto& it = m_proxyToBaseMemberMap.find(memberIndex); it != m_proxyToBaseMemberMap.end())
+      {
+         baseMember = it->second;
+      }
+      else
+      {
+         m_proxyToBaseMemberMap[memberIndex] = 0xFFFFFFFF;
+         for (unsigned int j = 0; j < m_baseClassDef->nMembers; j++)
+         {
+            if (const unsigned int nArgs = m_proxyClassDef->members[memberIndex].nArgs; (nArgs == m_baseClassDef->members[j].nArgs)
+               && IsNameMatch(m_proxyClassDef->members[memberIndex].name.name, m_baseClassDef->members[j].name.name)
+               && IsNameMatch(m_proxyClassDef->members[memberIndex].type.name, m_baseClassDef->members[j].type.name))
+            {
+               bool match = true;
+               for (unsigned int k = 0; k < nArgs; k++)
+                  match &= IsNameMatch(m_proxyClassDef->members[memberIndex].callArgType[k].name, m_baseClassDef->members[j].callArgType[k].name);
+               if (match)
+               {
+                  baseMember = j;
+                  m_proxyToBaseMemberMap[memberIndex] = j;
+                  break;
+               }
+            }
+         }
+      }
+      if (baseMember == 0xFFFFFFFF)
+      {
+         // FIXME Report error to caller (unimplemented)
+         return;
+      }
+      m_baseClassDef->members[baseMember].Call(me, baseMember, pArgs, pRet);
+   }
+
+   const ScriptClassDef* GetBaseClassDef() const { return m_baseClassDef; }
+
+private:
+   inline bool IsNameMatch(const std::string_view& proxyName, const std::string_view& className) const
+   {
+      const std::string_view name1 = proxyName.starts_with(m_proxyPrefix) ? proxyName.substr(m_proxyPrefix.length()) : proxyName;
+      const std::string_view name2 = className.starts_with(m_basePrefix) ? className.substr(m_basePrefix.length()) : className;
+      return (name1.length() == name2.length()) && std::equal(name1.begin(), name1.end(), name2.begin(), [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
+   }
+
+   static void OnPluginLoaded(const unsigned int, void* userData, void*)
+   {
+      auto me = static_cast<ScriptClassProxy*>(userData);
+      if (me->m_scriptApi && me->m_baseClassDef == nullptr)
+      {
+         if (const ScriptClassDef* classDef = me->m_scriptApi->GetClassDef(me->m_baseName.c_str()); classDef)
+         {
+            assert(me->m_baseClassDef == nullptr);
+            me->m_baseClassDef = classDef;
+         }
+      }
+   }
+
+   static void OnPluginUnloaded(const unsigned int, void* userData, void*)
+   {
+      auto me = static_cast<ScriptClassProxy*>(userData);
+      if (me->m_scriptApi && me->m_baseClassDef)
+      {
+         if (const ScriptClassDef* classDef = me->m_scriptApi->GetClassDef(me->m_baseName.c_str()); classDef == nullptr)
+         {
+            assert(me->m_baseClassDef != nullptr);
+            me->m_proxyToBaseMemberMap.clear();
+            me->m_baseClassDef = nullptr;
+         }
+      }
+   }
+
+   const MsgPluginAPI* m_msgApi;
+   const unsigned int m_endpointId;
+   const unsigned int m_getScriptApiId;
+   const ScriptablePluginAPI* m_scriptApi = nullptr;
+   const unsigned int m_onPluginLoaded;
+   const unsigned int m_onPluginUnloaded;
+
+   std::map<unsigned int, unsigned int> m_proxyToBaseMemberMap;
+
+   // The base class we are proxying
+   const std::string m_basePrefix;
+   const std::string m_baseName;
+   const ScriptClassDef* m_baseClassDef = nullptr;
+
+   // The proxy (front facing interface)
+   const std::string m_proxyPrefix;
+   const ScriptClassDef* const m_proxyClassDef;
+};
+
+class ScriptObjectProxy : public IScriptProxy
+{
+public:
+   ScriptObjectProxy(ScriptClassProxy& classProxy)
+      : m_classProxy(classProxy)
+   {
+   }
+   ~ScriptObjectProxy()
+   {
+      if (m_classProxy.GetBaseClassDef() && m_instance)
+         PSC_RELEASE(m_classProxy.GetBaseClassDef(), m_instance);
+   }
+
+   // Forward a call on the object to the one we proxied, eventually creating the proxied instance if needed
+   void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override
+   {
+      if (m_classProxy.GetBaseClassDef() == nullptr)
+      {
+         // FIXME Report error to caller (unimplemented)
+         return;
+      }
+      if (m_instance == nullptr)
+         m_instance = m_classProxy.GetBaseClassDef()->CreateObject();
+      if (m_instance == nullptr)
+      {
+         // FIXME Report error to caller (failed to create object)
+         return;
+      }
+      m_classProxy.ForwardCall(m_instance, memberIndex, pArgs, pRet);
+   }
+
+   // FIXME we should discard any instance created if the providing plugin is unloaded
+
+private:
+   void* m_instance = nullptr;
+   ScriptClassProxy& m_classProxy;
+};
+
+#define PSC_PROXY_PROP_R(proxy, type, name)                                                                                                                                                  \
+   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_R_ARRAY1(proxy, type, name, arg1)                                                                                                                                     \
+   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_R_ARRAY2(proxy, type, name, arg1, arg2)                                                                                                                                     \
+   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_R_ARRAY3(proxy, type, name, arg1, arg2, arg3)                                                                                                                                     \
+   members.push_back({ { #name }, { #type }, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_R_ARRAY4(proxy, type, name, arg1, arg2, arg3, arg4)                                                                                                                                     \
+   members.push_back({ { #name }, { #type }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_W(proxy, type, name)                                                                                                                                                  \
+   members.push_back({ { #name }, { "void" }, 1, { #type }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_W_ARRAY1(proxy, type, name, arg1)                                                                                                                                     \
+   members.push_back({ { #name }, { "void" }, 2, { { #arg1 }, { #type } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_PROP_RW(proxy, type, name)                                                                                                                                                 \
+   PSC_PROXY_PROP_R(proxy, type, name)                                                                                                                                                       \
+   PSC_PROXY_PROP_W(proxy, type, name)
+
+#define PSC_PROXY_PROP_RW_ARRAY1(proxy, type, name, arg1)                                                                                                                                    \
+   PSC_PROXY_PROP_R_ARRAY1(proxy, type, name, arg1)                                                                                                                                          \
+   PSC_PROXY_PROP_W_ARRAY1(proxy, type, name, arg1)
+
+#define PSC_PROXY_FUNCTION0(proxy, type, name)                                                                                                                                               \
+   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_FUNCTION1(proxy, type, name, arg1)                                                                                                                                         \
+   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+#define PSC_PROXY_FUNCTION2(proxy, type, name, arg1, arg2)                                                                                                                                   \
+   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+
+};
+
 
 #endif

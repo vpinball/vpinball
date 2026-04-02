@@ -75,7 +75,7 @@ android {
 
     defaultConfig {
         applicationId = "org.vpinball.vpinball_bgfx"
-        minSdk = 34
+        minSdk = 33
         targetSdk = 35
         versionCode = versionCodeValue
         versionName = versionNameValue

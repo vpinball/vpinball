@@ -6,11 +6,15 @@
 
 #include "PhysicsEngine.h"
 
+#include "hitflipper.h"
+
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
 #include "utils/ushock_output.h"
+
+#include "parts/ball.h"
 
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_hitPlayfield(table)
@@ -93,7 +97,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
       m_hitoctree.DumpTree(0);
    #endif
 
-   m_onUpdatePhysicsMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
+   m_onUpdatePhysicsMsgId = g_pplayer->m_pluginAPI.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
 
 #ifdef DEBUGPHYSICS
    c_hitcnts = 0;
@@ -119,7 +123,7 @@ PhysicsEngine::~PhysicsEngine()
       ReleaseVHO(*m_pendingHitObjects, false);
    ReleaseVHO(m_hitoctree.GetHitObjects(), false);
    
-   VPXPluginAPIImpl::ReleaseMsgID(m_onUpdatePhysicsMsgId);
+   g_pplayer->m_pluginAPI.ReleaseMsgID(m_onUpdatePhysicsMsgId);
    
    // We should release objects from the dynamic tree except HitBall (but there are only HitBall...)
 }
@@ -575,7 +579,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 #endif
 
    if (m_nextPhysicsFrameTime < initial_time_usec)
-      VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
+      g_pplayer->m_pluginAPI.BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {

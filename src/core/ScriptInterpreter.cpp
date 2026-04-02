@@ -15,12 +15,14 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 //DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
 //DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
 
-
 ScriptInterpreter::ScriptInterpreter()
 {
    CComObject<DebuggerModule>::CreateInstance(&m_pdm);
    m_pdm->AddRef();
 
+   // Note: For standalone, CoCreateInstance resolves to libwinevbs's implementation via the
+   // filtered import library. Alternatively, VBScriptFactory_CreateInstance() from winevbs64.dll
+   // could be called directly here to avoid any dependency on import library symbol ordering.
    const HRESULT vbScriptResult = CoCreateInstance(
       CLSID_VBScript, 0, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER, IID_IActiveScriptParse, (LPVOID *)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
    if (vbScriptResult != S_OK)
@@ -85,10 +87,11 @@ ScriptInterpreter::~ScriptInterpreter()
          {
             PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
             EXCEPINFO eiInterrupt = {};
-            eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
+            eiInterrupt.bstrDescription = MakeWideBSTR(LocalStringW(IDS_HANG).m_buffer);
             //eiInterrupt.scode = E_NOTIMPL;
             eiInterrupt.wCode = 2345;
             m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+            SysFreeString(eiInterrupt.bstrDescription);
          }
          else
          {
@@ -148,10 +151,11 @@ void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
       {
          PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
          EXCEPINFO eiInterrupt = {};
-         eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
+         eiInterrupt.bstrDescription = MakeWideBSTR(LocalStringW(IDS_HANG).m_buffer);
          //eiInterrupt.scode = E_NOTIMPL;
          eiInterrupt.wCode = 2345;
          m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
+         SysFreeString(eiInterrupt.bstrDescription);
       }
    }
 
@@ -165,7 +169,7 @@ void ScriptInterpreter::Stop(PinTable *table, bool interruptDirectly)
          RemoveItem(editable->GetScriptable());
 }
 
-void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bool global)
+void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const bool global)
 {
    if (auto it = m_vcvd.find(name); it != m_vcvd.end())
    {
@@ -188,7 +192,7 @@ void ScriptInterpreter::AddItem(const WCHAR *name, IDispatch *dispatch, const bo
    if (global)
       flags |= SCRIPTITEM_GLOBALMEMBERS;
    if (m_pScript != nullptr)
-      m_pScript->AddNamedItem(name, flags);
+      m_pScript->AddNamedItem(name.c_str(), flags);
 }
 
 void ScriptInterpreter::RemoveItem(IScriptable *const piscript)
@@ -203,11 +207,9 @@ void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
 {
    if (m_pScriptParse)
    {
-      WCHAR *const wzScript = MakeWide(script);
       EXCEPINFO exception {};
-      m_pScriptParse->ParseScriptText(wzScript, isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
+      m_pScriptParse->ParseScriptText(MakeWString(script).c_str(), isDebugStatement ? L"Debug" : nullptr, nullptr, nullptr, isDebugStatement ? m_debugContextCookie : m_compileContextCookie, 0,
          isDebugStatement ? 0 : SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
-      delete[] wzScript;
    }
    if (m_pScript)
       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
@@ -272,15 +274,19 @@ void ScriptInterpreter::HandleScriptError(IActiveScriptError *pScriptError, IAct
                   for (ULONG i2 = 0; i2 < numInfos; i2++)
                   {
                      callSite << infos[i2].m_bstrFullName << L'=' << infos[i2].m_bstrValue;
+                     SysFreeString(infos[i2].m_bstrFullName);
+                     SysFreeString(infos[i2].m_bstrValue);
                      // Add a comma if this isn't the last item in the list
                      if (i2 != numInfos - 1)
                         callSite << L", ";
                   }
-                  callSite << L")";
+                  callSite << L')';
                }
 
                propInfoEnum->Release();
                debugProp->Release();
+
+               stackFrames[i].pdsf->Release();
 
                stackDump.push_back(MakeString(callSite.str()));
             }
@@ -365,9 +371,8 @@ STDMETHODIMP ScriptInterpreter::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMa
 
 STDMETHODIMP ScriptInterpreter::GetDocVersionString(BSTR *pbstrVersion)
 {
-   WCHAR *version = MakeWide(VP_VERSION_STRING_POINTS);
-   *pbstrVersion = SysAllocString(version);
-   delete[] version;
+   static const wstring version = MakeWString(VP_VERSION_STRING_POINTS);
+   *pbstrVersion = SysAllocStringLen(version.c_str(), static_cast<UINT>(version.length()));
    return S_OK;
 }
 
@@ -578,7 +583,7 @@ bool ScriptInterpreter::IsUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) con
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
    HWND parent = nullptr;
-   if (parent == nullptr && g_pplayer)
+   if (parent == nullptr && g_pplayer && !g_pplayer->IsVR())
       parent = g_pplayer->m_playfieldWnd->GetNativeHWND();
    if (parent == nullptr && g_pvp)
       parent = g_pvp->GetHwnd();
@@ -628,8 +633,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Print(VARIANT *pvar)
       return S_OK;
    }
 
-   const string szT = MakeString(V_BSTR(&varT));
-   PLOGI << "Script.Print '" << szT << '\'';
+   PLOGI << "Script.Print '" << MakeString(V_BSTR(&varT)) << '\'';
 
    return S_OK;
 }

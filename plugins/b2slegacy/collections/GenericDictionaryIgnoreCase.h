@@ -9,7 +9,7 @@ namespace B2SLegacy {
 
 struct CaseInsensitiveComparatorGenericDictionaryIgnoreCase {
     bool operator() (const string& a, const string& b) const noexcept {
-        return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
+        return std::ranges::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
             [](char c1, char c2) { return cLower(c1) < cLower(c2); });
     }
 };

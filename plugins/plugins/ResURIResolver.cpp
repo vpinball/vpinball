@@ -7,8 +7,10 @@
 #include <cassert>
 #include <sstream>
 #include <charconv>
+#include <format>
 using std::string;
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
    : m_msgAPI(msgAPI)
@@ -48,25 +50,25 @@ ResURIResolver::~ResURIResolver()
 {
    if (m_onInputChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onInputChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getInputSrcMsgId);
    }
    if (m_onDevChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onDevChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getDevSrcMsgId);
    }
    if (m_onSegChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onSegChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getSegSrcMsgId);
    }
    if (m_onDisplayChangedMsgId)
    {
-      m_msgAPI.UnsubscribeMsg(m_onDisplayChangedMsgId, OnDisplaySrcChanged);
+      m_msgAPI.UnsubscribeMsg(m_onDisplayChangedMsgId, OnDisplaySrcChanged, this);
       m_msgAPI.ReleaseMsgID(m_onDisplayChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getDisplaySrcMsgId);
    }
@@ -140,13 +142,11 @@ void ResURIResolver::OnDisplaySrcChanged(const unsigned int msgId, void *userDat
 
 float ResURIResolver::GetFloatState(const string &link)
 {
-   const auto &cache = m_floatCache.find(link);
-   if (cache != m_floatCache.end())
+   if (const auto &cache = m_floatCache.find(link); cache != m_floatCache.end())
       return cache->second(link);
 
    floatCacheLambda lambda = nullptr;
-   const auto& uri = uri::parse_uri(link);
-   if (uri.error != uri::Error::None)
+   if (const auto &uri = uri::parse_uri(link); uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
@@ -162,8 +162,7 @@ float ResURIResolver::GetFloatState(const string &link)
          if (plugin)
          {
             int resId = 0;
-            auto resIdPart = uri.query.find("id"s);
-            if (resIdPart != uri.query.end())
+            if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end())
                try_parse_int(resIdPart->second, resId);
 
             if (uri.path == "/device")
@@ -172,17 +171,16 @@ float ResURIResolver::GetFloatState(const string &link)
                if (ioSource != m_deviceSources.end())
                {
                   int ioId = 0;
-                  auto ioIdPart = uri.query.find("io"s);
-                  if (ioIdPart != uri.query.end())
+                  if (auto ioIdPart = uri.query.find("io"s); ioIdPart != uri.query.end())
                      try_parse_int(ioIdPart->second, ioId);
                   
                   int ioIndex = -1;
                   for (unsigned int i = 0; i < ioSource->nDevices; i++)
-                     if (ioSource->deviceDefs[i].mappingId == ioId)
+                     if (ioSource->deviceDefs[i].id.mappingId == ioId)
                         ioIndex = i;
                      
                   if (ioIndex >= 0)
-                     lambda = [ioSource, ioIndex](const string &) -> float { return ioSource->GetFloatState(ioIndex); };
+                     lambda = [ioSource, ioIndex](const string &) { return ioSource->GetFloatState(ioIndex); };
                }
             }
             else if (uri.path == "/input")
@@ -191,17 +189,16 @@ float ResURIResolver::GetFloatState(const string &link)
                if (ioSource != m_inputSources.end())
                {
                   int ioId = 0;
-                  auto ioIdPart = uri.query.find("io"s);
-                  if (ioIdPart != uri.query.end())
+                  if (auto ioIdPart = uri.query.find("io"s); ioIdPart != uri.query.end())
                      try_parse_int(ioIdPart->second, ioId);
                   
                   int ioIndex = -1;
                   for (unsigned int i = 0; i < ioSource->nInputs; i++)
-                     if (ioSource->inputDefs[i].mappingId == ioId)
+                     if (ioSource->inputDefs[i].id.mappingId == ioId)
                         ioIndex = i;
                      
                   if (ioIndex >= 0)
-                     lambda = [ioSource, ioIndex](const string &) -> float { return static_cast<float>(ioSource->GetInputState(ioIndex)); };
+                     lambda = [ioSource, ioIndex](const string &) { return static_cast<float>(ioSource->GetInputState(ioIndex)); };
                }
             }
             else if (uri.path == "/display")
@@ -213,36 +210,34 @@ float ResURIResolver::GetFloatState(const string &link)
    }
 
    if (lambda == nullptr)
-      lambda = [](const string &) -> float { return 0.f; };
+      lambda = [](const string &) { return 0.f; };
    m_floatCache[link] = lambda;
    return lambda(link);
 }
 
 ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string &link)
 {
-   const auto &cache = m_segCache.find(link);
-   if (cache != m_segCache.end())
+   if (const auto &cache = m_segCache.find(link); cache != m_segCache.end())
       return cache->second(link);
 
    segCacheLambda lambda = nullptr;
-   const auto& uri = uri::parse_uri(link);
-   if (uri.error != uri::Error::None)
+   if (const auto &uri = uri::parse_uri(link); uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
    else if ((uri.scheme == "ctrl") && (uri.path == "/seg"))
    {
-      SegSrcId *segSource = nullptr;
+      const SegSrcId *segSource = nullptr;
       if (uri.authority.host == "default")
       {
          if (!m_segSources.empty())
          {
             CtlResId group = m_segSources[0].groupId;
             int index = 0;
-            auto indexPart = uri.query.find("id"s); // id is used as index inside selected display group (which expects plugins to report displays in a stable order, should we sort by resId first ?)
-            if (indexPart != uri.query.end())
+            // id is used as index inside selected display group (which expects plugins to report displays in a stable order, should we sort by resId first ?)
+            if (auto indexPart = uri.query.find("id"s); indexPart != uri.query.end())
                try_parse_int(indexPart->second, index);
-            for (SegSrcId& source : m_segSources)
+            for (const SegSrcId& source : m_segSources)
             {
                if (source.groupId.id == group.id)
                {
@@ -262,14 +257,13 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
          if (plugin)
          {
             int resId = 0;
-            auto resIdPart = uri.query.find("id"s);
-            if (resIdPart != uri.query.end())
+            if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end())
                try_parse_int(resIdPart->second, resId);
 
             auto source = std::ranges::find_if(m_segSources.begin(), m_segSources.end(), 
                [plugin, resId](const SegSrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
             if (source != m_segSources.end())
-               segSource = &*source;
+               segSource = std::to_address(source);
          }
       }
       if (segSource)
@@ -281,7 +275,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
 
          if (subId < 0)
          {
-            lambda = [segSource, subIdPart](const string &) -> SegDisplayState { return { segSource, segSource->GetState(segSource->id) }; };
+            lambda = [segSource, subIdPart](const string &) { return SegDisplayState { segSource, segSource->GetState(segSource->id) }; };
          }
          else if (subId < static_cast<int>(segSource->nElements))
          {
@@ -289,47 +283,53 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
             subSegSrc.GetState = nullptr;
             subSegSrc.nElements = 1;
             subSegSrc.elementType[0] = segSource->elementType[subId];
-            lambda = [segSource, subSegSrc, subId](const string &) -> SegDisplayState
+            lambda = [segSource, subSegSrc, subId](const string &)
             {
                SegDisplayFrame state = segSource->GetState(segSource->id);
-               return { &subSegSrc, { state.frameId, state.frame + subId * 16 } };
+               return SegDisplayState { &subSegSrc, { state.frameId, state.frame + subId * 16 } };
             };
          }
       }
    }
 
    if (lambda == nullptr)
-      lambda = [](const string &) -> SegDisplayState { return { nullptr, { 0, nullptr} }; };
+      lambda = [](const string &) { return SegDisplayState { nullptr, { 0, nullptr } }; };
    m_segCache[link] = lambda;
    return lambda(link);
 }
 
-void ResURIResolver::SetDisplayFilter(std::function<bool(const DisplaySrcId& src)> filter)
+void ResURIResolver::SetDisplayFilter(const std::function<bool(const DisplaySrcId& src)>& filter)
 {
    m_displayFilter = filter;
    m_displayCache.clear();
 }
 
+std::string ResURIResolver::DumpDisplaySources() const
+{
+   std::stringstream ss;
+   for (const auto &source : m_displaySources)
+      ss << std::format("Id:{}.{} Override:{}.{} {}x{} {}\n", source.id.endpointId, source.id.resId, source.overrideId.endpointId, source.overrideId.resId, source.width, source.height, source.frameFormat);
+   return ss.str();
+}
+
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
 {
-   const auto &cache = m_displayCache.find(link);
-   if (cache != m_displayCache.end())
+   if (const auto &cache = m_displayCache.find(link); cache != m_displayCache.end())
       return cache->second(link);
 
    displayCacheLambda lambda = nullptr;
-   const auto& uri = uri::parse_uri(link);
-   if (uri.error != uri::Error::None)
+   if (const auto &uri = uri::parse_uri(link); uri.error != uri::Error::None)
    {
       // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
    else if ((uri.scheme == "ctrl") && (uri.path == "/display"))
    {
-      DisplaySrcId* displaySource = nullptr;
+      const DisplaySrcId* displaySource = nullptr;
       bool walkDownOverrides = true;
       if (uri.authority.host == "default")
       {
          unsigned int dsSize = 0; 
-         for (auto& source : m_displaySources)
+         for (const auto& source : m_displaySources)
          {
             if (m_displayFilter)
             {
@@ -381,14 +381,13 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
          if (plugin)
          {
             int resId = 0;
-            auto resIdPart = uri.query.find("id"s);
-            if (resIdPart != uri.query.end())
+            if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end())
                try_parse_int(resIdPart->second, resId);
 
             auto source = std::ranges::find_if(m_displaySources.begin(), m_displaySources.end(), 
                [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
             if (source != m_displaySources.end())
-               displaySource = &*source;
+               displaySource = std::to_address(source);
          }
       }
 
@@ -411,11 +410,11 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       }
 
       if (displaySource != nullptr)
-         lambda = [displaySource](const string &) -> DisplayState { return { displaySource, displaySource->GetRenderFrame(displaySource->id)}; };
+         lambda = [displaySource](const string &) { return DisplayState { displaySource, displaySource->GetRenderFrame(displaySource->id) }; };
    }
 
    if (lambda == nullptr)
-      lambda = [](const string &) -> DisplayState { return { nullptr, { 0, nullptr} }; };
+      lambda = [](const string &) { return DisplayState { nullptr, { 0, nullptr } }; };
    m_displayCache[link] = lambda;
    return lambda(link);
 }

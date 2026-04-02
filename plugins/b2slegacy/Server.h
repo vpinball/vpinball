@@ -4,18 +4,20 @@
 
 #include "common.h"
 #include <functional>
+#include <unordered_dense.h>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "plugins/ControllerPlugin.h"
+#include "utils/PinMAMEAPI.h"
 
 namespace B2SLegacy {
 
 class PinMAMEAPI;
 
-class Server
+class Server : public ScriptablePlugin::IScriptProxy
 {
 public:
-   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef, int pinmameMemberStartIndex);
+   Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
    ~Server();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -99,10 +101,9 @@ public:
    void SetLockDisplay(bool lockDisplay) { }
    FormBackglass* GetFormBackglass() const { return m_pFormBackglass; }
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
-   PinMAMEAPI* GetPinMAMEApi() const { return m_pinmameApi; }
    uint32_t GetEndpointId() const { return m_endpointId; }
-   void ForwardPinMAMECall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
+   float GetState(int b2sId) const;
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
    void GetChangedSolenoids();
@@ -115,6 +116,8 @@ public:
    void CheckGetMech(int number, int mech);
    int OnRender(VPXRenderContext2D* const renderCtx, void* context);
    void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+
+   void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override { m_pinmameApi.HandleCall(memberIndex, pArgs, pRet); }
 
 private:
    void TimerElapsed(Timer* pTimer);
@@ -171,13 +174,24 @@ private:
    Timer* m_pTimer;
 
    DevSrcId m_deviceStateSrc;
-   unsigned int m_nSolenoids;
-   int m_GIIndex;
-   unsigned int m_nGIs;
-   int m_lampIndex;
-   unsigned int m_nLamps;
-   int m_mechIndex;
-   unsigned int m_nMechs;
+
+   static Server* m_singleton;
+   ankerl::unordered_dense::map<int, float> m_b2sStates;
+   const unsigned int m_onGetDevSrcId;
+   DevSrcId m_devSrc {};
+   vector<string> m_devSrcNames;
+   void UpdateDevSrc();
+   struct ChgCallback
+   {
+      ctlpi_chg_callback m_callback;
+      unsigned int m_index;
+      void* m_context;
+   };
+   ankerl::unordered_dense::map<int, vector<ChgCallback>> m_stateChgCallbacks;
+   static void OnGetDevSrc(const unsigned int, void*, void* msgData);
+   static uint8_t MSGPIAPI GetByteState(const unsigned int deviceIndex);
+   static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
+   static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
 
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
@@ -187,9 +201,7 @@ private:
    const unsigned int m_onAuxRendererChgId;
    const unsigned int m_onDevChangedMsgId;
 
-   ScriptClassDef* const m_pinmameClassDef;
-   const int m_pinmameMemberStartIndex;
-   PinMAMEAPI* m_pinmameApi;
+   PinMAMEAPI m_pinmameApi;
 
    std::function<void(Server*)> m_onDestroyHandler;
 

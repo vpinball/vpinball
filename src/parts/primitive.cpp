@@ -3,6 +3,9 @@
 // implementation of the Primitive class.
 
 #include "core/stdafx.h" 
+#include "primitive.h"
+#include "light.h"
+
 #include "forsyth.h"
 #include "utils/objloader.h"
 #include "miniz/miniz.h"
@@ -10,202 +13,21 @@
 #include "ThreadPool.h"
 #include "renderer/Shader.h"
 
-ThreadPool *g_pPrimitiveDecompressThreadPool = nullptr;
-
-void Mesh::Clear()
-{
-   m_vertices.clear();
-   m_indices.clear();
-   for (size_t i = 0; i < m_animationFrames.size(); i++)
-      m_animationFrames[i].m_frameVerts.clear();
-   m_animationFrames.clear();
-   middlePoint.x = 0.0f;
-   middlePoint.y = 0.0f;
-   middlePoint.z = 0.0f;
-   m_validBounds = false;
-}
-
-bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
-{
-   m_validBounds = false;
-   string name(fname);
-   size_t idx = name.find_last_of('_');
-   if (idx == string::npos)
-   {
-      ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
-      return false;
-   }
-#ifndef __STANDALONE__
-   idx++;
-   name.erase(idx);
-   string sname = name + "*.obj";
-   WIN32_FIND_DATA data;
-   const HANDLE h = FindFirstFile(sname.c_str(), &data);
-   vector<string> allFiles;
-   int frameCounter = 0;
-   if (h != INVALID_HANDLE_VALUE)
-   {
-      do
-      {
-         allFiles.push_back(data.cFileName);
-         frameCounter++;
-      } while (FindNextFile(h, &data));
-   }
-   m_animationFrames.resize(frameCounter);
-   for (size_t i = 0; i < allFiles.size(); i++)
-   {
-      sname = allFiles[i];
-      ObjLoader loader;
-      if (loader.Load(sname, flipTV, convertToLeftHanded))
-      {
-         const vector<Vertex3D_NoTex2>& verts = loader.GetVertices();
-         const vector<unsigned int>& indices = loader.GetIndices();
-         if ((m_indices.size() != indices.size()) || (m_vertices.size() != verts.size()) || (memcmp(m_indices.data(), indices.data(), indices.size()*sizeof(unsigned int)) != 0))
-         {
-            ShowError("Error: frames of animation do not share the same data layout.");
-            return false;
-         }
-         for (size_t t = 0; t < verts.size(); t++)
-         {
-            VertData vd;
-            vd.x = verts[t].x; vd.y = verts[t].y; vd.z = verts[t].z;
-            vd.nx = verts[t].nx; vd.ny = verts[t].ny; vd.nz = verts[t].nz;
-            m_animationFrames[i].m_frameVerts.push_back(vd);
-         }
-      }
-      else
-      {
-         name = "Unable to load file " + sname;
-         ShowError(name);
-         return false;
-      }
-
-   }
-   sname = std::to_string(frameCounter)+" frames imported!";
-   g_pvp->MessageBox(sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
-#endif
-   return true;
-}
-
-bool Mesh::LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded)
-{
-   m_validBounds = false;
-   Clear();
-   ObjLoader loader;
-   if (loader.Load(fname, flipTV, convertToLeftHanded))
-   {
-      m_vertices = loader.GetVertices();
-      m_indices = loader.GetIndices();
-      float maxX = -FLT_MAX, minX = FLT_MAX;
-      float maxY = -FLT_MAX, minY = FLT_MAX;
-      float maxZ = -FLT_MAX, minZ = FLT_MAX;
-
-      for (size_t i = 0; i < m_vertices.size(); i++)
-      {
-         if (m_vertices[i].x > maxX) maxX = m_vertices[i].x;
-         if (m_vertices[i].x < minX) minX = m_vertices[i].x;
-         if (m_vertices[i].y > maxY) maxY = m_vertices[i].y;
-         if (m_vertices[i].y < minY) minY = m_vertices[i].y;
-         if (m_vertices[i].z > maxZ) maxZ = m_vertices[i].z;
-         if (m_vertices[i].z < minZ) minZ = m_vertices[i].z;
-      }
-      middlePoint.x = (maxX + minX)*0.5f;
-      middlePoint.y = (maxY + minY)*0.5f;
-      middlePoint.z = (maxZ + minZ)*0.5f;
-
-      return true;
-   }
-   else
-      return false;
-}
-
-void Mesh::SaveWavefrontObj(const string& fname, const string& description)
-{
-   ObjLoader loader;
-   loader.Save(fname, description.empty() ? fname : description, *this);
-}
-
-void Mesh::UploadToVB(std::shared_ptr<VertexBuffer> vb, const float frame) 
-{
-   if(!vb)
-      return;
-
-   if (frame >= 0.f)
-   {
-      float intPart;
-      const float fractpart = modff(frame, &intPart);
-      const int iFrame = (int)intPart;
-
-      if (iFrame+1 < (int)m_animationFrames.size())
-      {
-          for (size_t i = 0; i < m_vertices.size(); i++)
-          {
-              const VertData& v  = m_animationFrames[iFrame  ].m_frameVerts[i];
-              const VertData& v2 = m_animationFrames[iFrame+1].m_frameVerts[i];
-              m_vertices[i].x  = v.x  + (v2.x  - v.x) *fractpart;
-              m_vertices[i].y  = v.y  + (v2.y  - v.y) *fractpart;
-              m_vertices[i].z  = v.z  + (v2.z  - v.z) *fractpart;
-              m_vertices[i].nx = v.nx + (v2.nx - v.nx)*fractpart;
-              m_vertices[i].ny = v.ny + (v2.ny - v.ny)*fractpart;
-              m_vertices[i].nz = v.nz + (v2.nz - v.nz)*fractpart;
-          }
-      }
-      else
-          for (size_t i = 0; i < m_vertices.size(); i++)
-          {
-              const VertData& v = m_animationFrames[iFrame].m_frameVerts[i];
-              m_vertices[i].x  = v.x;
-              m_vertices[i].y  = v.y;
-              m_vertices[i].z  = v.z;
-              m_vertices[i].nx = v.nx;
-              m_vertices[i].ny = v.ny;
-              m_vertices[i].nz = v.nz;
-          }
-   }
-
-   Vertex3D_NoTex2 *buf;
-   vb->Lock(buf);
-   memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_vertices.size());
-   vb->Unlock();
-}
-
-void Mesh::UpdateBounds()
-{
-   if (!m_validBounds)
-   {
-      m_validBounds = true;
-      m_minAABound = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
-      m_maxAABound = Vertex3Ds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-      for (const Vertex3D_NoTex2 &v : m_vertices)
-      {
-          m_minAABound.x = min(m_minAABound.x, v.x);
-          m_minAABound.y = min(m_minAABound.y, v.y);
-          m_minAABound.z = min(m_minAABound.z, v.z);
-          m_maxAABound.x = max(m_maxAABound.x, v.x);
-          m_maxAABound.y = max(m_maxAABound.y, v.y);
-          m_maxAABound.z = max(m_maxAABound.z, v.z);
-      }
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 Primitive::~Primitive()
 {
-   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
    assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
-Primitive *Primitive::CopyForPlay(PinTable *live_table) const
+Primitive *Primitive::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive)
    dst->m_mesh = m_mesh;
    return dst;
 }
 
-HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Primitive::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
@@ -1173,7 +995,6 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
    m_currentFrame = -1.f;
-   m_isBackGlassImage = IsBackglass();
 
    if (m_mesh.NumVertices() > 0 && !m_mesh.m_indices.empty())
    {
@@ -1205,7 +1026,7 @@ void Primitive::RenderRelease()
 void Primitive::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
 
    if (!m_d.m_visible || m_skipRendering)
       return;
@@ -1307,33 +1128,22 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
-   ITexManCacheable *pin = nullptr;
-   float pinAlphaTest;
-   if (g_pplayer->m_texPUP && m_isBackGlassImage)
-   {
-      pin = g_pplayer->m_texPUP.get();
-      pinAlphaTest = 0.f;
-   }
-   else
-   {
-      Texture * const img = m_ptable->GetImage(m_d.m_szImage);
-      pin = img;
-      pinAlphaTest = img != nullptr ? img->m_alphaTestValue : -1.f;
-   }
+   Texture * const img = m_ptable->GetImage(m_d.m_szImage);
+   const float pinAlphaTest = img != nullptr ? img->m_alphaTestValue : -1.f;
    m_rd->m_basicShader->SetAlphaTestValue(pinAlphaTest);
 
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
-   if (pin && nMap)
+   if (img && nMap)
    {
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SA_REPEAT, SA_REPEAT);
       m_rd->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, true);
       m_rd->m_basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
-      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
+      m_rd->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
    }
-   else if (pin)
+   else if (img)
    {
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
    }
    else
    {
@@ -1355,8 +1165,8 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, alpha * (float)(1.0 / 100.0));
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
-      m_rd->m_basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
-                                                 : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
+      m_rd->m_basicShader->SetTechnique(lightmap ? (img ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
+                                                 : (img ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
       m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
    }
    else
@@ -1365,8 +1175,8 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, depthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
       const vec4 color = convertColor(m_d.m_color, alpha * (float)(1.0 / 100.0));
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, &color);
-      m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-         *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, reflections, refractions);
+      m_rd->m_basicShader->SetTechniqueMaterial(img ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+         *mat, img ? pinAlphaTest >= 0.f && !img->IsOpaque() : false, nMap, reflections, refractions);
       bool is_reflection_only_pass = false;
 
       // Handle render probes
@@ -1417,8 +1227,9 @@ void Primitive::Render(const unsigned int renderMask)
             is_reflection_only_pass = m_d.m_staticRendering && isDynamicOnly;
             if (!is_reflection_only_pass && !m_rd->GetRenderState().IsOpaque())
             { // Primitive uses alpha transparency => render in 2 passes, one for the texture with alpha blending, one for the reflections which can happen above a transparent part (like for a glass or insert plastic)
-               m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
-                  *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
+               m_rd->m_basicShader->SetTechniqueMaterial(
+                  img ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
+                  *mat, img ? pinAlphaTest >= 0.f && !img->IsOpaque() : false, nMap, false, false);
                m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
                   m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
                is_reflection_only_pass = true;
@@ -1524,63 +1335,56 @@ void Primitive::PutCenter(const Vertex2D& pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Primitive::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   /*
-    * Someone decided that it was a good idea to write these vectors including
-    * the fourth padding float that they used to have, so now we have to write
-    * them padded to 4 floats to maintain compatibility.
-    */
-   bw.WriteVector3Padded(FID(VPOS), m_d.m_vPosition);
-   bw.WriteVector3Padded(FID(VSIZ), m_d.m_vSize);
-   bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
-   bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
-   bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
-   bw.WriteFloat(FID(RTV3), m_d.m_aRotAndTra[3]);
-   bw.WriteFloat(FID(RTV4), m_d.m_aRotAndTra[4]);
-   bw.WriteFloat(FID(RTV5), m_d.m_aRotAndTra[5]);
-   bw.WriteFloat(FID(RTV6), m_d.m_aRotAndTra[6]);
-   bw.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
-   bw.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(NRMA), m_d.m_szNormalMap);
-   bw.WriteInt(FID(SIDS), m_d.m_Sides);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteInt(FID(SCOL), m_d.m_SideColor);
-   bw.WriteBool(FID(TVIS), m_d.m_visible);
-   bw.WriteBool(FID(DTXI), m_d.m_drawTexturesInside);
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(RFCT), m_d.m_friction);
-   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
-   bw.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
-   bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   bw.WriteBool(FID(ISTO), m_d.m_toy);
-   bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
-   bw.WriteBool(FID(STRE), m_d.m_staticRendering);
-   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
-   bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-   bw.WriteBool(FID(DIPT), m_d.m_displayTexture);
-   bw.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
+   writer.WriteVector4(FID(VPOS), vec4(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z, 0.f));
+   writer.WriteVector4(FID(VSIZ), vec4(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z, 0.f));
+   writer.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
+   writer.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
+   writer.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
+   writer.WriteFloat(FID(RTV3), m_d.m_aRotAndTra[3]);
+   writer.WriteFloat(FID(RTV4), m_d.m_aRotAndTra[4]);
+   writer.WriteFloat(FID(RTV5), m_d.m_aRotAndTra[5]);
+   writer.WriteFloat(FID(RTV6), m_d.m_aRotAndTra[6]);
+   writer.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
+   writer.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(NRMA), m_d.m_szNormalMap);
+   writer.WriteInt(FID(SIDS), m_d.m_Sides);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteInt(FID(SCOL), m_d.m_SideColor);
+   writer.WriteBool(FID(TVIS), m_d.m_visible);
+   writer.WriteBool(FID(DTXI), m_d.m_drawTexturesInside);
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(RFCT), m_d.m_friction);
+   writer.WriteFloat(FID(RSCT), m_d.m_scatter);
+   writer.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
+   writer.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
+   writer.WriteBool(FID(CLDR), m_d.m_collidable);
+   writer.WriteBool(FID(ISTO), m_d.m_toy);
+   writer.WriteBool(FID(U3DM), m_d.m_use3DMesh);
+   writer.WriteBool(FID(STRE), m_d.m_staticRendering);
+   writer.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
+   writer.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteBool(FID(EBFC), m_d.m_backfacesEnabled);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   writer.WriteBool(FID(DIPT), m_d.m_displayTexture);
+   writer.WriteBool(FID(OSNM), m_d.m_objectSpaceNormalMap);
 
    // Don't save the meshes for undo/redo
    if (m_d.m_use3DMesh && !saveForUndo)
    {
-      bw.WriteString(FID(M3DN), m_d.m_meshFileName);
-      bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
+      writer.WriteString(FID(M3DN), m_d.m_meshFileName);
+      writer.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
 
 #ifndef COMPRESS_MESHES
-      bw.WriteStruct(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
+      writer.WriteRaw(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
 #else
       {
       const mz_ulong slen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
@@ -1588,25 +1392,25 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
       mz_uint8 * const c = new mz_uint8[clen];
       if (compress2(c, &clen, (const unsigned char *)m_mesh.m_vertices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
          ShowError("Could not compress primitive vertex data");
-      bw.WriteInt(FID(M3CY), (int)clen);
-      bw.WriteStruct(FID(M3CX), c, clen);
+      writer.WriteInt(FID(M3CY), (int)clen);
+      writer.WriteRaw(FID(M3CX), c, clen);
       delete [] c;
       }
 #endif
 
-      bw.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());
+      writer.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());
       if (m_mesh.NumVertices() > 65535)
       {
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
+         writer.WriteRaw(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
 #else
          const mz_ulong slen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * const c = new mz_uint8[clen];
          if (compress2(c, &clen, (const unsigned char *)m_mesh.m_indices.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
-         bw.WriteInt(FID(M3CJ), (int)clen);
-         bw.WriteStruct(FID(M3CI), c, clen);
+         writer.WriteInt(FID(M3CJ), (int)clen);
+         writer.WriteRaw(FID(M3CI), c, clen);
          delete [] c;
 #endif
       }
@@ -1616,15 +1420,15 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
          for (size_t i = 0; i < m_mesh.NumIndices(); ++i)
             tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
+         writer.WriteRaw(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
 #else
          const mz_ulong slen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * const c = new mz_uint8[clen];
          if (compress2(c, &clen, (const unsigned char *)tmp.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
             ShowError("Could not compress primitive index data");
-         bw.WriteInt(FID(M3CJ), (int)clen);
-         bw.WriteStruct(FID(M3CI), c, clen);
+         writer.WriteInt(FID(M3CJ), (int)clen);
+         writer.WriteRaw(FID(M3CI), c, clen);
          delete [] c;
 #endif
       }
@@ -1638,259 +1442,220 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
             mz_uint8 * const c = new mz_uint8[clen];
             if (compress2(c, &clen, (const unsigned char *)m_mesh.m_animationFrames[i].m_frameVerts.data(), slen, MZ_BEST_COMPRESSION) != Z_OK)
                ShowError("Could not compress primitive animation vertex data");
-            bw.WriteInt(FID(M3AY), (int)clen);
-            bw.WriteStruct(FID(M3AX), c, clen);
+            writer.WriteInt(FID(M3AY), (int)clen);
+            writer.WriteRaw(FID(M3AX), c, clen);
             delete [] c;
          }
 
       }
    }
-   bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
-   bw.WriteBool(FID(ADDB), m_d.m_addBlend);
-   bw.WriteBool(FID(ZMSK), m_d.m_useDepthMask);
-   bw.WriteFloat(FID(FALP), m_d.m_alpha);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteFloat(FID(PIDB), m_d.m_depthBias);
+   writer.WriteBool(FID(ADDB), m_d.m_addBlend);
+   writer.WriteBool(FID(ZMSK), m_d.m_useDepthMask);
+   writer.WriteFloat(FID(FALP), m_d.m_alpha);
+   writer.WriteInt(FID(COLR), m_d.m_color);
 
-   bw.WriteString(FID(LMAP), m_d.m_szLightmap);
+   writer.WriteString(FID(LMAP), m_d.m_szLightmap);
 
-   bw.WriteString(FID(REFL), m_d.m_szReflectionProbe);
-   bw.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
-   bw.WriteString(FID(REFR), m_d.m_szRefractionProbe);
-   bw.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
+   writer.WriteString(FID(REFL), m_d.m_szReflectionProbe);
+   writer.WriteFloat(FID(RSTR), m_d.m_reflectionStrength);
+   writer.WriteString(FID(REFR), m_d.m_szRefractionProbe);
+   writer.WriteFloat(FID(RTHI), m_d.m_refractionThickness);
 
-   ISelect::SaveData(pstm, hcrypthash);
+   SaveSharedEditableFields(writer);
 
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.EndObject();
 }
 
-HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Primitive::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
    m_mesh.m_validBounds = false;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break; // Deprecated (unique part id, now the name is guaranteed to be unique)
+         case FID(BMIN): reader.AsVector3(); break; // Deprecated (bounding box min)
+         case FID(BMAX): reader.AsVector3(); break; // Deprecated (bounding box max)
+         case FID(VPOS): m_d.m_vPosition = reader.AsVector4().xyz(); break;
+         case FID(VSIZ): m_d.m_vSize = reader.AsVector4().xyz(); break;
+         case FID(RTV0): m_d.m_aRotAndTra[0] = reader.AsFloat(); break;
+         case FID(RTV1): m_d.m_aRotAndTra[1] = reader.AsFloat(); break;
+         case FID(RTV2): m_d.m_aRotAndTra[2] = reader.AsFloat(); break;
+         case FID(RTV3): m_d.m_aRotAndTra[3] = reader.AsFloat(); break;
+         case FID(RTV4): m_d.m_aRotAndTra[4] = reader.AsFloat(); break;
+         case FID(RTV5): m_d.m_aRotAndTra[5] = reader.AsFloat(); break;
+         case FID(RTV6): m_d.m_aRotAndTra[6] = reader.AsFloat(); break;
+         case FID(RTV7): m_d.m_aRotAndTra[7] = reader.AsFloat(); break;
+         case FID(RTV8): m_d.m_aRotAndTra[8] = reader.AsFloat(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(NRMA): m_d.m_szNormalMap = reader.AsString(); break;
+         case FID(SIDS): m_d.m_Sides = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(SCOL): m_d.m_SideColor = reader.AsInt(); break;
+         case FID(TVIS): m_d.m_visible = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(DTXI): m_d.m_drawTexturesInside = reader.AsBool(); break;
+         case FID(HTEV): m_d.m_hitEvent = reader.AsBool(); break;
+         case FID(THRS): m_d.m_threshold = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(RFCT): m_d.m_friction = reader.AsFloat(); break;
+         case FID(RSCT): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(EFUI): m_d.m_edgeFactorUI = reader.AsFloat(); break;
+         case FID(CORF): m_d.m_collision_reductionFactor = reader.AsFloat(); break;
+         case FID(CLDR): m_d.m_collidable = reader.AsBool(); break;
+         case FID(ISTO): m_d.m_toy = reader.AsBool(); break;
+         case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
+         case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         case FID(STRE): m_d.m_staticRendering = reader.AsBool(); break;
+         case FID(DILI):
+         {
+            int tmp;
+            tmp = reader.AsInt();
+            m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp);
+            break;
+         } // Pre 10.8 compatible hacky loading!
+         case FID(DILT): m_d.m_disableLightingTop = reader.AsFloat(); break;
+         case FID(DILB): m_d.m_disableLightingBelow = reader.AsFloat(); break;
+         case FID(U3DM): m_d.m_use3DMesh = reader.AsBool(); break;
+         case FID(EBFC): m_d.m_backfacesEnabled = reader.AsBool(); break;
+         case FID(DIPT): m_d.m_displayTexture = reader.AsBool(); break;
+         case FID(M3DN): m_d.m_meshFileName = reader.AsString(); break;
+         case FID(M3VN):
+         {
+            m_numVertices = reader.AsInt();
+            if (!m_mesh.m_animationFrames.empty())
+            {
+               for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
+                  m_mesh.m_animationFrames[i].m_frameVerts.clear();
+               m_mesh.m_animationFrames.clear();
+            }
+            break;
+         }
+         case FID(M3DX):
+         {
+            m_mesh.m_vertices.clear();
+            m_mesh.m_vertices.resize(m_numVertices);
+            reader.AsRaw(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2) * m_numVertices);
+            break;
+         }
+#ifdef COMPRESS_MESHES
+         case FID(M3AY): m_compressedAnimationVertices = reader.AsInt(); break;
+         case FID(M3AX):
+         {
+            Mesh::FrameData frameData;
+            frameData.m_frameVerts.clear();
+            frameData.m_frameVerts.resize(m_numVertices);
 
-   br.Load();
+            mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData) * m_mesh.NumVertices());
+            mz_uint8 *const c = new mz_uint8[m_compressedAnimationVertices];
+            reader.AsRaw(c, m_compressedAnimationVertices);
+            const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
+            if (error != Z_OK)
+               ShowError("Could not uncompress primitive animation vertex data, error " + std::to_string(error));
+            delete[] c;
+            m_mesh.m_animationFrames.push_back(frameData);
+            break;
+         }
+         case FID(M3CY): m_compressedVertices = reader.AsInt(); break;
+         case FID(M3CX):
+         {
+            m_mesh.m_vertices.clear();
+            m_mesh.m_vertices.resize(m_numVertices);
+            const mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2) * m_mesh.NumVertices());
+            mz_uint8 *const c = new mz_uint8[m_compressedVertices];
+            reader.AsRaw(c, m_compressedVertices);
+            mz_ulong uclen2 = uclen;
+            const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
+            if (error != Z_OK)
+               ShowError("Could not uncompress primitive vertex data, error " + std::to_string(error));
+            delete[] c;
+            break;
+         }
+#endif
+         case FID(M3FN): m_numIndices = reader.AsInt(); break;
+         case FID(M3DI):
+         {
+            m_mesh.m_indices.resize(m_numIndices);
+            if (m_numVertices > 65535)
+               reader.AsRaw(m_mesh.m_indices.data(), (int)sizeof(unsigned int) * m_numIndices);
+            else
+            {
+               vector<WORD> tmp(m_numIndices);
+               reader.AsRaw(tmp.data(), (int)sizeof(WORD) * m_numIndices);
+               for (int i = 0; i < m_numIndices; ++i)
+                  m_mesh.m_indices[i] = tmp[i];
+            }
+            break;
+         }
+#ifdef COMPRESS_MESHES
+         case FID(M3CJ): m_compressedIndices = reader.AsInt(); break;
+         case FID(M3CI):
+         {
+            m_mesh.m_indices.resize(m_numIndices);
+            if (m_numVertices > 65535)
+            {
+               const mz_ulong uclen = (mz_ulong)(sizeof(unsigned int) * m_mesh.NumIndices());
+               mz_uint8 *const c = new mz_uint8[m_compressedIndices];
+               reader.AsRaw(c, m_compressedIndices);
+               mz_ulong uclen2 = uclen;
+               const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
+               if (error != Z_OK)
+                  ShowError("Could not uncompress (large) primitive index data, error " + std::to_string(error));
+               delete[] c;
+            }
+            else
+            {
+               const mz_ulong uclen = (mz_ulong)(sizeof(WORD) * m_mesh.NumIndices());
+               mz_uint8 *const c = new mz_uint8[m_compressedIndices];
+               reader.AsRaw(c, m_compressedIndices);
+               vector<WORD> tmp(m_numIndices);
 
-   if(version < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
+               mz_ulong uclen2 = uclen;
+               const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
+               if (error != Z_OK)
+                  ShowError("Could not uncompress (small) primitive index data, error " + std::to_string(error));
+               delete[] c;
+               for (int i = 0; i < m_numIndices; ++i)
+                  m_mesh.m_indices[i] = tmp[i];
+            }
+            break;
+         }
+#endif
+         case FID(PIDB): m_d.m_depthBias = reader.AsFloat(); break;
+         case FID(OSNM): m_d.m_objectSpaceNormalMap = reader.AsBool(); break;
+         case FID(ADDB): m_d.m_addBlend = reader.AsBool(); break;
+         case FID(ZMSK): m_d.m_useDepthMask = reader.AsBool(); break;
+         case FID(FALP): m_d.m_alpha = reader.AsFloat(); break;
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+
+         case FID(LMAP): m_d.m_szLightmap = reader.AsString(); break;
+
+         case FID(REFL): m_d.m_szReflectionProbe = reader.AsString(); break;
+         case FID(RSTR): m_d.m_reflectionStrength = reader.AsFloat(); break;
+         case FID(REFR): m_d.m_szRefractionProbe = reader.AsString(); break;
+         case FID(RTHI): m_d.m_refractionThickness = reader.AsFloat(); break;
+
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
+
+   if (reader.GetVersion() < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
-      WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
-
-      unsigned int* const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
+      unsigned int *const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
       if (tmp != nullptr)
       {
          memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices() * sizeof(unsigned int));
          delete[] tmp;
       }
    }
-
    m_inPlayState = m_d.m_visible;
-
-   return S_OK;
-}
-
-bool Primitive::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
-   case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
-   case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;
-   case FID(RTV1): pbr->GetFloat(m_d.m_aRotAndTra[1]); break;
-   case FID(RTV2): pbr->GetFloat(m_d.m_aRotAndTra[2]); break;
-   case FID(RTV3): pbr->GetFloat(m_d.m_aRotAndTra[3]); break;
-   case FID(RTV4): pbr->GetFloat(m_d.m_aRotAndTra[4]); break;
-   case FID(RTV5): pbr->GetFloat(m_d.m_aRotAndTra[5]); break;
-   case FID(RTV6): pbr->GetFloat(m_d.m_aRotAndTra[6]); break;
-   case FID(RTV7): pbr->GetFloat(m_d.m_aRotAndTra[7]); break;
-   case FID(RTV8): pbr->GetFloat(m_d.m_aRotAndTra[8]); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
-   case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(SCOL): pbr->GetInt(m_d.m_SideColor); break;
-   case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(DTXI): pbr->GetBool(m_d.m_drawTexturesInside); break;
-   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(EFUI): pbr->GetFloat(m_d.m_edgeFactorUI); break;
-   case FID(CORF): pbr->GetFloat(m_d.m_collision_reductionFactor); break;
-   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-   case FID(ISTO): pbr->GetBool(m_d.m_toy); break;
-   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-   case FID(STRE): pbr->GetBool(m_d.m_staticRendering); break;
-   case FID(DILI): { int tmp; pbr->GetInt(tmp); m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); break; } // Pre 10.8 compatible hacky loading!
-   case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
-   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
-   case FID(U3DM): pbr->GetBool(m_d.m_use3DMesh); break;
-   case FID(EBFC): pbr->GetBool(m_d.m_backfacesEnabled); break;
-   case FID(DIPT): pbr->GetBool(m_d.m_displayTexture); break;
-   case FID(M3DN): pbr->GetString(m_d.m_meshFileName); break;
-   case FID(M3VN):
-   {
-      pbr->GetInt(m_numVertices);
-      if (!m_mesh.m_animationFrames.empty())
-      {
-         for (size_t i = 0; i < m_mesh.m_animationFrames.size(); i++)
-            m_mesh.m_animationFrames[i].m_frameVerts.clear();
-         m_mesh.m_animationFrames.clear();
-      }
-      break;
-   }
-   case FID(M3DX):
-   {
-      m_mesh.m_vertices.clear();
-      m_mesh.m_vertices.resize(m_numVertices);
-      pbr->GetStruct(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2)*m_numVertices);
-      break;
-   }
-#ifdef COMPRESS_MESHES
-   case FID(M3AY): pbr->GetInt(m_compressedAnimationVertices); break;
-   case FID(M3AX):
-   {
-      Mesh::FrameData frameData;
-      frameData.m_frameVerts.clear();
-      frameData.m_frameVerts.resize(m_numVertices);
-
-      mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
-      mz_uint8 * const c = new mz_uint8[m_compressedAnimationVertices];
-      pbr->GetStruct(c, m_compressedAnimationVertices);
-      const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, m_compressedAnimationVertices);
-      if (error != Z_OK)
-         ShowError("Could not uncompress primitive animation vertex data, error "+std::to_string(error));
-      delete [] c;
-      m_mesh.m_animationFrames.push_back(frameData);
-      break;
-   }
-   case FID(M3CY): pbr->GetInt(m_compressedVertices); break;
-   case FID(M3CX):
-   {
-      m_mesh.m_vertices.clear();
-      m_mesh.m_vertices.resize(m_numVertices);
-      const mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
-      mz_uint8 * const c = new mz_uint8[m_compressedVertices];
-      pbr->GetStruct(c, m_compressedVertices);
-      if (g_pPrimitiveDecompressThreadPool == nullptr)
-		  g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-
-      g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-		  mz_ulong uclen2 = uclen;
-		  const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
-		  if (error != Z_OK)
-			  ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
-        delete [] c;
-      });
-      break;
-   }
-#endif
-   case FID(M3FN): pbr->GetInt(m_numIndices); break;
-   case FID(M3DI):
-   {
-      m_mesh.m_indices.resize(m_numIndices);
-      if (m_numVertices > 65535)
-         pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int)*m_numIndices);
-      else
-      {
-         vector<WORD> tmp(m_numIndices);
-         pbr->GetStruct(tmp.data(), (int)sizeof(WORD)*m_numIndices);
-         for (int i = 0; i < m_numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
-      }
-      break;
-   }
-#ifdef COMPRESS_MESHES
-   case FID(M3CJ): pbr->GetInt(m_compressedIndices); break;
-   case FID(M3CI):
-   {
-      m_mesh.m_indices.resize(m_numIndices);
-      if (m_numVertices > 65535)
-      {
-         const mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
-         mz_uint8 * const c = new mz_uint8[m_compressedIndices];
-         pbr->GetStruct(c, m_compressedIndices);
-         if (g_pPrimitiveDecompressThreadPool == nullptr)
-			 g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-
-         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-			 mz_ulong uclen2 = uclen;
-			 const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
-			 if (error != Z_OK)
-				 ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
-			 delete [] c;
-         });
-      }
-      else
-      {
-         const mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
-         mz_uint8 * const c = new mz_uint8[m_compressedIndices];
-         pbr->GetStruct(c, m_compressedIndices);
-         if (g_pPrimitiveDecompressThreadPool == nullptr)
-            g_pPrimitiveDecompressThreadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-
-         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
-            vector<WORD> tmp(m_numIndices);
-
-            mz_ulong uclen2 = uclen;
-            const int error = uncompress((unsigned char *)tmp.data(), &uclen2, c, m_compressedIndices);
-            if (error != Z_OK)
-               ShowError("Could not uncompress (small) primitive index data, error "+std::to_string(error));
-            delete [] c;
-            for (int i = 0; i < m_numIndices; ++i)
-               m_mesh.m_indices[i] = tmp[i];
-         });
-      }
-      break;
-   }
-#endif
-   case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(OSNM): pbr->GetBool(m_d.m_objectSpaceNormalMap); break;
-   case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
-   case FID(ZMSK): pbr->GetBool(m_d.m_useDepthMask); break;
-   case FID(FALP): pbr->GetFloat(m_d.m_alpha); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-
-   case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
-
-   case FID(REFL): pbr->GetString(m_d.m_szReflectionProbe); break;
-   case FID(RSTR): pbr->GetFloat(m_d.m_reflectionStrength); break;
-   case FID(REFR): pbr->GetString(m_d.m_szRefractionProbe); break;
-   case FID(RTHI): pbr->GetFloat(m_d.m_refractionThickness); break;
-
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-void Primitive::WaitForMeshDecompression()
-{
-   if (g_pPrimitiveDecompressThreadPool)
-   {
-      // This will wait for the threads to finish decompressing meshes.
-      g_pPrimitiveDecompressThreadPool->wait_until_empty();
-      g_pPrimitiveDecompressThreadPool->wait_until_nothing_in_flight();
-      delete g_pPrimitiveDecompressThreadPool;
-      g_pPrimitiveDecompressThreadPool = nullptr;
-   }
-}
-
-HRESULT Primitive::InitPostLoad()
-{
-   WaitForMeshDecompression(); //!! needed nowadays due to multithreaded mesh decompression
    CalculateBuiltinOriginal();
-   UpdateStatusBarInfo();
-   return S_OK;
 }
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2071,7 +1836,7 @@ bool Primitive::BrowseFor3DMeshFile()
    // TEXT
    ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
    ofn.lpstrFile = szFileName;
-   ofn.nMaxFile = sizeof(szFileName);
+   ofn.nMaxFile = std::size(szFileName);
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 

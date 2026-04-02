@@ -68,12 +68,13 @@ AudioSettingsPage::AudioSettingsPage()
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Live
-      [this](Settings& settings)
+      [this](const Settings& settings)
       {
          auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceBG());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Stored
-      [this](int, int v) {
+      [this](int, int v)
+      {
          m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
             m_devices[v], //
             m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
@@ -89,7 +90,7 @@ AudioSettingsPage::AudioSettingsPage()
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Live
-      [this](Settings& settings)
+      [this](const Settings& settings)
       {
          auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDevice());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);

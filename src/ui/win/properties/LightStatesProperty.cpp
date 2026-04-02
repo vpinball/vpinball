@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/light.h"
+
 #include "ui/win/properties/LightStatesProperty.h"
 
 LightStatesProperty::LightStatesProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_STATE, pvsel)
@@ -60,7 +62,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
             }
             case IDC_BLINK_PATTERN_EDIT:
             {
-                const string pattern(m_blinkPatternEdit.GetWindowText().GetString());
+                const string& pattern = m_blinkPatternEdit.GetWindowText().GetString();
                 if (pattern != light->m_d.m_rgblinkpattern)
                 {
                     PropertyDialog::StartUndo(light);

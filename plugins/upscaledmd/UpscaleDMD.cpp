@@ -4,6 +4,7 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
 
+#include <format>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -27,8 +28,12 @@
 #include "plugins/ResURIResolver.h"
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <locale>
 #endif
@@ -45,6 +50,12 @@
  #include <tmmintrin.h>
 #endif
 
+LPI_USE_CPP();
+#define LOGD UpscaleDMD::LPI_LOGD_CPP
+#define LOGI UpscaleDMD::LPI_LOGI_CPP
+#define LOGW UpscaleDMD::LPI_LOGW_CPP
+#define LOGE UpscaleDMD::LPI_LOGE_CPP
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // UpscaleDMD plugin: upscale DMD content to a high res DMD or a LCD/CRT display
@@ -60,6 +71,7 @@ namespace UpscaleDMD
 {
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 static const MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
@@ -103,8 +115,8 @@ static void SetUpscalerMode(int v)
 }
 MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
 
-LPI_USE();
-LPI_IMPLEMENT // Implement shared log support
+LPI_USE_CPP();
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 
 #ifdef _WIN32
@@ -328,6 +340,7 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
 {
    bool wasRendering = IsSourceSelected();
    bool modeChanged = upscalerMode != nextUpscalerMode;
+   DisplaySrcId prevSrc = dmdSrc;
    DisplaySrcId selectedSrc {};
 
    // Request new source (without locking the render thread)
@@ -345,7 +358,6 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
       upscalerMode = nextUpscalerMode;
       if (IsSourceSelected())
       {
-         // LPI_LOGI("DMD Upscaler source selected [endpointId=%d, %dx%d]", selectedSrc.id.endpointId, selectedSrc.width, selectedSrc.height);
          displayId = {
             .id = { { endpointId, 0 } },
             .groupId = { { endpointId, 0 } },
@@ -384,7 +396,7 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
          }
          else
          {
-            msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc);
+            msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc, nullptr);
             isRunning = false;
             lock.unlock();
             updateCondVar.notify_all();
@@ -394,8 +406,11 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
       }
    }
 
+   if (prevSrc.id.id != dmdSrc.id.id)
+      LOGI(std::format("DMD Upscaler source selected [endpointId={}.{}, {}x{} fmt={}]", dmdSrc.id.endpointId, dmdSrc.id.resId, dmdSrc.width, dmdSrc.height, dmdSrc.frameFormat));
+
    // If we are starting or stopping rendering, or changed our display, report it
-   if (modeChanged || wasRendering != IsSourceSelected())
+   if (modeChanged || (prevSrc.id.id != dmdSrc.id.id))
       msgApi->BroadcastMsg(endpointId, onDisplaySrcChangedId, nullptr);
 }
 
@@ -419,9 +434,9 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
 
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
 {
-   msgApi->UnsubscribeMsg(onDisplaySrcChangedId, OnDmdSrcChanged);
+   msgApi->UnsubscribeMsg(onDisplaySrcChangedId, OnDmdSrcChanged, nullptr);
    if (IsSourceSelected())
-      msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc);
+      msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc, nullptr);
    isRunning = false;
    updateCondVar.notify_all();
    if (renderThread.joinable())

@@ -5,6 +5,7 @@
 #include "physics/kdtree.h"
 #include "physics/quadtree.h"
 #include "physics/AsyncDynamicQuadTree.h"
+#include "physics/collideex.h"
 
 class PhysicsEngine final
 {
@@ -93,7 +94,7 @@ private:
 
    unsigned int m_onUpdatePhysicsMsgId;
 
-   vector<HitFlipper *> m_vFlippers;
+   vector<class HitFlipper *> m_vFlippers;
    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
    HitPlane m_hitTopGlass;
 

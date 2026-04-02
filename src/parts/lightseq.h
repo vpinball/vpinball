@@ -11,7 +11,7 @@ class LightSeqData final
 public:
    Vertex2D      m_v; // UI position
    Vertex2D      m_vCenter; // Center position used to compute light animations
-   std::basic_string<WCHAR> m_wzCollection;
+   std::wstring  m_wzCollection;
    int           m_updateinterval;
    TimerDataRoot m_tdr;
 };
@@ -190,8 +190,6 @@ public:
    LightSeqData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-
    void     SetupTracers(const SequencerState Animation, int TailLength, int Repeat, int Pause);
    bool     ProcessTracer(_tracer * const pTracer, const LightState State);
    void     SetAllLightsToState(const LightState State);

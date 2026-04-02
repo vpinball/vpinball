@@ -65,8 +65,7 @@ add_executable(vpinball WIN32
 
    src/core/vpinball.idl
 
-   src/renderer/captureExt.cpp
-   src/renderer/captureExt.h
+   src/renderer/DXGIRegistry.h
 
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp

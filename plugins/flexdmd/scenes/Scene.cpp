@@ -182,7 +182,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_None:
          return 0.0f;
       default:
-         LOGE("Unsupported animation in scene '%s': %d", GetName().c_str(), animation);
+         LOGE("Unsupported animation in scene '" + GetName() + "': " + std::to_string(animation));
          return 0.0f;
    }
 }

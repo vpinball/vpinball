@@ -163,7 +163,7 @@ ScalePointsDialog::ScalePointsDialog(ISelect *psel)
 
 int ScalePointsDialog::m_applyCount = 0;
 
-INT_PTR CALLBACK  ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ScalePointsDialog::ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
 

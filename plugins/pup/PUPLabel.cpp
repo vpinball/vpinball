@@ -49,7 +49,7 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
 {
    if (!szFont.empty() && !m_pFont)
    {
-      LOGE("Font not found: label=%s, font=%s", szName.c_str(), szFont.c_str());
+      LOGE("Font not found: label=" + szName + ", font=" + szFont);
    }
 }
 
@@ -92,14 +92,14 @@ void PUPLabel::SetCaption(const string& szCaption)
                }
                else
                {
-                  LOGE("Image not found: screen=%d, label=%s, path=%s", m_pScreen->GetScreenNum(), m_szName.c_str(), szText.c_str());
+                  LOGE(std::format("Image not found: screen={}, label={}, path={}", m_pScreen->GetScreenNum(), m_szName, szText));
                   // we need to set a path otherwise the caption will be used as text
                   m_szPath = szText;
                }
             }
             else
             {
-               LOGE("Image playlist not found: screen=%d, label=%s, path=%s, playlist=%s", m_pScreen->GetScreenNum(), m_szName.c_str(), szText.c_str(), playlistFolder.c_str());
+               LOGE(std::format("Image playlist not found: screen={}, label={}, path={}, playlist={}", m_pScreen->GetScreenNum(), m_szName, szText, playlistFolder));
             }
          }
 
@@ -118,7 +118,7 @@ void PUPLabel::SetVisible(bool visible)
 void PUPLabel::SetSpecial(const string& szSpecial)
 {
    #if LOG_PUPLABEL
-   LOGD("PUPLabel::SetSpecial: name=%s, caption=%s, json=%s", m_szName.c_str(), m_szCaption.c_str(), szSpecial.c_str());
+   LOGD(std::format("PUPLabel::SetSpecial: name={}, caption={}, json={}", m_szName, m_szCaption, szSpecial));
    #endif
 
    string str = trim_string(szSpecial);
@@ -153,7 +153,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(), json["fc"s].as<int>(), 1000 / json["fq"s].as<int>());
             else
             {
-               LOGE("Invalid label animation specified: {%s}", szSpecial.c_str());
+               LOGE("Invalid label animation specified: {" + szSpecial + '}');
             }
             break;
             
@@ -164,12 +164,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                   json["mlen"s].as<int>(0), json["tt"s].as<int>(0), json["mColor"s].as<int>(0));
             else
             {
-               LOGE("Invalid label animation specified: {%s}", szSpecial.c_str());
+               LOGE("Invalid label animation specified: {" + szSpecial + '}');
             }
             break;
 
          default:
-            LOGE("Unsupported Label.SetSpecial animation type: %d", json["at"s].as<int>(0));
+            LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(json["at"s].as<int>(0)));
             break;
          }
       }
@@ -214,7 +214,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             string szFont = value.as_str();
             m_pFont = m_pManager->GetFont(szFont);
             if (!m_pFont)
-               LOGE("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
+               LOGE("Label font not found: name=" + m_szName + ", font=" + szFont);
             m_dirty = true;
          }
          else if (key == "fonth")
@@ -257,37 +257,37 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "zoom")
          {
             // 120 for 120% of current height, 80% etc...
-            NOT_IMPLEMENTED("zoom not implemented");
+            NOT_IMPLEMENTED("zoom not implemented"s);
             m_dirty = true;
          }
          else if (key == "alpha")
          {
             // '0-255  255=full, 0=blank
-            NOT_IMPLEMENTED("alpha not implemented");
+            NOT_IMPLEMENTED("alpha not implemented"s);
             m_dirty = true;
          }
          else if (key == "gradstate")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
-            NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
+            NOT_IMPLEMENTED("gradstate/gradcolor not implemented"s);
             m_dirty = true;
          }
          else if (key == "gradcolor")
          {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
-            NOT_IMPLEMENTED("gradstate/gradcolor not implemented");
+            NOT_IMPLEMENTED("gradstate/gradcolor not implemented"s);
             m_dirty = true;
          }
          else if (key == "grayscale")
          {
             // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
-            NOT_IMPLEMENTED("filter not implemented");
+            NOT_IMPLEMENTED("filter not implemented"s);
             m_dirty = true;
          }
          else if (key == "filter")
          {
             // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
-            NOT_IMPLEMENTED("filter not implemented");
+            NOT_IMPLEMENTED("filter not implemented"s);
             m_dirty = true;
          }
          else if (key == "shadowstate")
@@ -303,7 +303,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "shadowtype")
          {
             // ST = 1 (Shadow), ST = 2 (Border)
-            NOT_IMPLEMENTED("shadowtype not implemented");
+            NOT_IMPLEMENTED("shadowtype not implemented"s);
             m_dirty = true;
          }
          else if (key == "xoffset")
@@ -333,12 +333,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "autow")
          {
-            NOT_IMPLEMENTED("autow not implemented");
+            NOT_IMPLEMENTED("autow not implemented"s);
             m_dirty = true;
          }
          else if (key == "autoh")
          {
-            NOT_IMPLEMENTED("autoh not implemented");
+            NOT_IMPLEMENTED("autoh not implemented"s);
             m_dirty = true;
          }
          else if (key == "outline")
@@ -353,14 +353,14 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else
          {
-            NOT_IMPLEMENTED(key.c_str(), " not implemented");
+            NOT_IMPLEMENTED(key + " not implemented");
          }
       }
    }
       break;
 
    default:
-      LOGE("Unsupported Label.SetSpecial mt mode: %d", json["mt"s].as<int>(0));
+      LOGE("Unsupported Label.SetSpecial mt mode: " + std::to_string(json["mt"s].as<int>(0)));
       break;
    }
 }
@@ -437,32 +437,53 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    SDL_FRect dest = { static_cast<float>(rect.x), static_cast<float>(rect.y), width, height };
 
-   dest.x += static_cast<float>(rect.w) * (m_xPos == 0.f ? 0.5f : (m_xPos / 100.0f));
+   float xposPercent = m_xPos / 100.0f;
+   if (m_xPos == 0.f && m_xAlign == PUP_LABEL_XALIGN_CENTER)
+      xposPercent = 0.5f;
+
+   dest.x += static_cast<float>(rect.w) * xposPercent;
+
    if (m_xAlign == PUP_LABEL_XALIGN_CENTER)
       dest.x -= (width / 2.f);
    else if (m_xAlign == PUP_LABEL_XALIGN_RIGHT)
       dest.x -= width;
 
-   dest.y += static_cast<float>(rect.h) * (m_yPos == 0.f ? 0.5f : (m_yPos / 100.0f));
+   float yposPercent = m_yPos / 100.0f;
+   if (m_yPos == 0.f && m_yAlign == PUP_LABEL_YALIGN_CENTER)
+      yposPercent = 0.5f;
+
+   dest.y += static_cast<float>(rect.h) * yposPercent;
+
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       dest.y -= (height / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y -= height;
+      dest.y = static_cast<float>(rect.y + rect.h) - height - (static_cast<float>(rect.h) * yposPercent);
 
+   bool visible = true;
+   int color = 0xFFFFFFFF;
    if (m_animation)
    {
       if (m_animation->Update(rect, dest))
+      {
          m_animation = nullptr;
-
-      dest.x += m_animation->m_xOffset;
-      dest.y += m_animation->m_yOffset;
+      }
+      else
+      {
+         dest.x += m_animation->m_xOffset;
+         dest.y += m_animation->m_yOffset;
+         visible = m_animation->m_visible;
+         color = m_animation->m_color;
+      }
    }
 
-   VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
-   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f,
-      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 
-      0.f, 0.f, -m_angle, // FIXME compute center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
-      dest.x, dest.y, dest.w, dest.h);
+   if (visible)
+   {
+      // FIXME implement color (as the naimation may animate it)
+      // FIXME implement rotation center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
+      const VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
+      ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, -m_angle, dest.x, dest.y,
+         dest.w, dest.h);
+   }
 }
 
 PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath)
@@ -486,7 +507,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
       }
       else
       {
-         LOGE("Unable to load image: %s", szPath.c_str());
+         LOGE("Unable to load image: " + szPath.string());
       }
    }
    else if (type == PUP_LABEL_TYPE_GIF)
@@ -507,7 +528,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          }
       }
       else
-         LOGE("Unable to load animation: %s", szPath.c_str());
+         LOGE("Unable to load animation: " + szPath.string());
    }
    return rs;
 }
@@ -525,7 +546,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
 
    const float fontHeight = (size / 100.0f) * static_cast<float>(outHeight);
    TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
-   // FIXME TTF_STYLE_BOLD gives bad results (test with Blood Machines, during Bonnus sequence)
+   // FIXME TTF_STYLE_BOLD gives bad results (test with Blood Machines, during Bonus sequence)
    // style |= m_bold ? TTF_STYLE_BOLD : 0;
    TTF_SetFontSize(pFont, fontHeight);
    // FIXME TTF_SetFontOutline does not gives clean outlines
@@ -541,7 +562,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
    SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), textColor, 0);
    if (!pTextSurface)
    {
-      LOGE("Unable to render text: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
+      LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
       return rs;
    }
 
@@ -550,7 +571,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
    SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + abs(xoffset), pTextSurface->h + abs(yoffset), SDL_PIXELFORMAT_RGBA32);
    if (!pMergedSurface)
    {
-      LOGE("Unable to render text: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
+      LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
       return rs;
    }
    //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(SDL_GetPixelFormatDetails(pMergedSurface->format), nullptr, 255, 255, 0, 255));
@@ -570,7 +591,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       }
       else
       {
-         LOGE("Failed to render shadow: label=%s, error=%s", m_szName.c_str(), SDL_GetError());
+         LOGE("Failed to render shadow: label=" + m_szName + ", error=" + SDL_GetError());
          SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
          SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
       }
@@ -604,7 +625,7 @@ string PUPLabel::ToString() const
       m_xPos, m_yPos, m_pagenum, m_szPath.string());
 }
 
-PUPLabel::Animation::Animation(PUPLabel* label, int lengthMs, int foregroundColor, int flashingPeriod)
+PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod)
    : m_color(label->m_color)
    , m_label(label)
    , m_lengthMs(lengthMs)
@@ -614,7 +635,7 @@ PUPLabel::Animation::Animation(PUPLabel* label, int lengthMs, int foregroundColo
 {
 }
 
-PUPLabel::Animation::Animation(PUPLabel* label, int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor)
+PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor)
    : m_label(label)
    , m_color(label->m_color)
    , m_lengthMs(lengthMs)

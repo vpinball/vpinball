@@ -249,15 +249,15 @@ void PaintSur::SetObject(ISelect * const psel)
 {
    if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
-      if (psel->m_selectstate == eSelected)
+      if (psel->m_selectstate == ISelect::SelectState::Selected)
       {
          psel->SetSelectFormat(this);
       }
-      else if (psel->m_selectstate == eMultiSelected)
+      else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
       {
          psel->SetMultiSelectFormat(this);
       }
-      else if (psel->m_locked)
+      else if (psel->IsUILocked())
       {
          psel->SetLockedFormat(this);
       }

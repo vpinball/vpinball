@@ -84,10 +84,6 @@ FEATURES:
   The new input setup is stored along the old one to allow to use older versions of VPX together with newers.
   This change requires users to redefine their input settings in the new UI.
 
-- add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The score view uses a layout defined in a 'scv' file placed along the table file
-  matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
-  define the layout.
-
 - add 'raytraced' ball motion blur (BGFX only)
 
 - add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirectX output only):
@@ -115,6 +111,9 @@ FEATURES:
     - by providing the headset with information for live reprojection (depth data).
   . Correct colorspace for all headsets (no more washed out colors that needed hacks in the previous version),
   . VPX's TweakUI is now fully supported in VR, which allows to adjust all settings in-game using the usual pinball controls, also supporting continuous recentering.
+  . (hacky) external window capture has been removed and replaced by the ability to use external plugin renderers in the 3D scene, using flashers. Tables using the
+    legacy feature are automatically updated. This allows to use all plugins in 3D at full resolution (backglass, scoreview, PinUp player, dimmed segment, toppers,...).
+  . New option to add a plugin rendered backglass flasher to handle non VR tables (there used to be a limited hacky fixed backglass image added on all tables with some hacks to allow VR tables to overwrite it)
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)
@@ -135,7 +134,7 @@ FEATURES:
 
 - a new preliminary plugin architecture has been added to support adding functionality to VPX in a cross platform and reusable (across other applications of the pinball simulation ecosystem) way.
   This feature is still in early stage and should be considered as a 'feature preview' as it will most likely evolve more, and the programming interface is not yet fully stabilized, so breaking changes may still happen!
-  The following beta plugins are included with VPX:
+  The following plugins are included with VPX:
   . AlphaDMD: render alpahanumeric segment displays inside any DMD (physical or virtual)
   . B2S legacy: render the backglass and fullDMD of B2S files to VPX anciliary windows
   . B2S: a newer B2S renderer which supports light fading, better mech animation, but is still far from feature complete, expect more changes!

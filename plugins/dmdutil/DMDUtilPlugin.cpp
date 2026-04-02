@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstring>
 #include <charconv>
+#include <format>
 
 #include "plugins/VPXPlugin.h"
 #include "plugins/ControllerPlugin.h"
@@ -21,7 +22,7 @@
 using namespace std;
 
 namespace DMDUtilPlugin {
-   
+
 static const MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 
@@ -61,13 +62,13 @@ MSGPI_INT_VAL_SETTING(lumTintGProp, "LumTintG", "LumTintG", "", true, 0, 255, DM
 MSGPI_INT_VAL_SETTING(lumTintBProp, "LumTintB", "LumTintB", "", true, 0, 255, DMDUTIL_TINT_B);
 
 
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGW LPI_LOGW
-#define LOGE LPI_LOGE
+LPI_USE_CPP();
+#define LOGD DMDUtilPlugin::LPI_LOGD_CPP
+#define LOGI DMDUtilPlugin::LPI_LOGI_CPP
+#define LOGW DMDUtilPlugin::LPI_LOGW_CPP
+#define LOGE DMDUtilPlugin::LPI_LOGE_CPP
 
-LPI_IMPLEMENT
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
 {
@@ -76,22 +77,22 @@ void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format,
    int size = vsnprintf(nullptr, 0, format, args_copy);
    va_end(args_copy);
    if (size > 0) {
-      char* const buffer = new char[size + 1];
-      vsnprintf(buffer, size + 1, format, args);
+      string buffer(size + 1, '\0');
+      vsnprintf(buffer.data(), size + 1, format, args);
+      buffer.pop_back(); // remove null terminator
       switch(logLevel) {
          case DMDUtil_LogLevel_INFO:
-            LOGI("%s", buffer);
+            LOGI(buffer);
             break;
          case DMDUtil_LogLevel_DEBUG:
-            LOGD("%s", buffer);
+            LOGD(buffer);
             break;
          case DMDUtil_LogLevel_ERROR:
-            LOGE("%s", buffer);
+            LOGE(buffer);
             break;
          default:
             break;
       }
-      delete [] buffer;
    }
 }
 
@@ -177,7 +178,7 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
    selectedDmdId = newDmdId;
 
    if (foundDMD) {
-      LOGI("DMD Source Changed: format=%d, width=%d, height=%d", newDmdId.frameFormat, newDmdId.width, newDmdId.height);
+      LOGI(std::format("DMD Source Changed: format={}, width={}, height={}", newDmdId.frameFormat, newDmdId.width, newDmdId.height));
       if (!pDmd) {
          pDmd = new DMDUtil::DMD();
 
@@ -265,8 +266,8 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()
 {
    onGameEnd(onGameEndId, nullptr, nullptr);
 
-   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
-   msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged);
+   msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
+   msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged, nullptr);
 
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);

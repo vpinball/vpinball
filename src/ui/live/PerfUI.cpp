@@ -7,6 +7,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "implot/implot.h"
+#include "parts/flipper.h"
 
 
 PerfUI::PerfUI(Player *const player)
@@ -19,6 +20,7 @@ PerfUI::PerfUI(Player *const player)
 PerfUI::~PerfUI()
 {
    g_app->m_settings.SetPlayer_ShowFPS(m_showPerf, false);
+   g_app->m_settings.Save();
    ImPlot::DestroyContext();
 }
 
@@ -54,7 +56,6 @@ void PerfUI::RenderFPS()
    const ImGuiIO &io = ImGui::GetIO();
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
    if (m_player->m_vrDevice == nullptr)
       ImGui::SetNextWindowPos(ImVec2(8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(0.f, 1.f));
    else if (m_showPerf == PerfMode::PM_STATS) // VR with stats
@@ -62,6 +63,28 @@ void PerfUI::RenderFPS()
    else // VR without stats
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
 
+   bool pop = false;
+#if defined(ENABLE_BGFX)
+   // TODO We are missing a way to evaluate properly if we are syncing on display or not
+   if ((m_player->GetVideoSyncMode() != VideoSyncMode::VSM_NONE)
+      && ((m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_player->m_playfieldWnd->GetRefreshRate() >= 1000000))
+   {
+      pop = true;
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.5f, 0.0f, 0.0f, 1.f)); // Missing target framerate => red background
+   }
+#else
+   if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
+   {
+      pop = true;
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.5f, 1.f)); // Running at app regulated speed (not hardware)
+   }
+   else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
+   {
+      pop = true;
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.5f, 0.f, 0.f, 1.f)); // Running slower than expected
+   }
+#endif
+   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
 
    ImGui::Begin("FPS", nullptr, window_flags);
 
@@ -256,37 +279,47 @@ void PerfUI::RenderFPS()
    }
 
    // Display simple FPS window
-   #if defined(ENABLE_BGFX)
-   // TODO We are missing a way to evaluate properly if we are syncing on display or not
-   const bool pop = (m_player->GetVideoSyncMode() != VideoSyncMode::VSM_NONE)
-      && ((m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_player->m_playfieldWnd->GetRefreshRate() < 1000000);
-      // && (abs(static_cast<float>(m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)) - (1000000.f / m_player->m_playfieldWnd->GetRefreshRate())) < 100.f);
-   if (pop)
-      ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.5f, 0.2f, 1.f)); // Rendering at target framerate => green background
-   #else
-   if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
-      ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
-   else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
-      ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
-   #endif
+   if (m_showPerf == PerfMode::PM_FPS)
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2());
    ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
-   ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar);
+   ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
-   ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
-      1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME),
-      1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(false), 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(true));
-   ImGui::EndChild();
-   #if defined(ENABLE_BGFX)
-   if (pop)
-      ImGui::PopStyleColor();
+   #ifdef ENABLE_BGFX
+      ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS());
    #else
-   if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
-      ImGui::PopStyleColor();
-   else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
-      ImGui::PopStyleColor();
+      ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME));
    #endif
 
+   bool hasFlipperLatency = false;
+   if (const uint64_t lastFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetLeftFlipperActionId()]->GetLastStateChange(); usec() < lastFlipChange + 1000000ULL)
+   {
+      for (const auto part : m_player->m_ptable->GetParts())
+      {
+         if (part->GetItemType() == eItemFlipper)
+         {
+            if (auto flipper = (Flipper *)part; lastFlipChange < flipper->GetLastRotateTime())
+            {
+               const double prevAcqToAction = 1e-3 * (static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange) + m_player->m_pininput.m_leftFlipperLastChangePollDelay);
+               const double acqToAction = 1e-3 * static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange);
+               ImGui::Text("Flipper latency: %3.1f - %3.1fms", acqToAction, prevAcqToAction);
+               hasFlipperLatency = true;
+               break;
+            }
+         }
+      }
+   }
+   if (!hasFlipperLatency)
+      ImGui::Text("Input Latency: %4.1fms (%4.1fms max)", 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(false), 1e-3 * m_player->m_logicProfiler.GetSlidingInputLag(true));
+
+   ImGui::EndChild();
+   if (m_showPerf == PerfMode::PM_FPS)
+      ImGui::PopStyleVar();
+
    ImGui::End();
+
+   if (pop)
+      ImGui::PopStyleColor();
 }
 
 void PerfUI::RenderStats()

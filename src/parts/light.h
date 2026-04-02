@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dragpoint.h"
 #include "ui/win/resource.h"
 #include "renderer/RenderDevice.h"
 
@@ -133,7 +134,7 @@ public:
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
    Vertex2D GetPointCenter() const final;
    void PutPointCenter(const Vertex2D& pv) final;
-   float GetCurrentHeight() const { return m_backglass ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
+   float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
 protected:
    RenderDevice *m_rd = nullptr;
@@ -166,6 +167,15 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
+      void UIRenderPass1(Sur *const psur) override { /* Processed by light */ }
+      void UIRenderPass2(Sur *const psur) override { /* Processed by light */ }
+      void RenderBlueprint(Sur *psur, const bool solid) override { /* Processed by light */ }
+
+      bool IsUILocked() const override { return m_uiLocked; }
+      void SetUILock(bool lock) override { m_uiLocked = lock; }
+      bool IsUIVisible() const override { return m_uiVisible; }
+      void SetUIVisible(bool visible) override { m_uiVisible = visible; }
+
       HRESULT GetTypeName(BSTR *pVal) const override { return m_plight->GetTypeName(pVal); }
 
       IDispatch *GetDispatch() override { return m_plight->GetDispatch(); }
@@ -182,8 +192,6 @@ private:
       PinTable *GetPTable() override { return m_plight->GetPTable(); }
       const PinTable *GetPTable() const override { return m_plight->GetPTable(); }
 
-      bool LoadToken(const int id, BiffReader * const pbr) override { return true; }
-
       Vertex2D GetCenter() const override { return m_plight->m_d.m_vCenter; }
       void PutCenter(const Vertex2D& pv) override { m_plight->m_d.m_vCenter = pv; }
 
@@ -196,10 +204,9 @@ private:
 
    private:
       Light *m_plight;
+      bool m_uiLocked = false; // Can not be dragged in the editor
+      bool m_uiVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
    };
-
-
-   PinTable *m_ptable = nullptr;
 
    Material *m_surfaceMaterial;
    Texture  *m_surfaceTexture;
@@ -217,8 +224,6 @@ private:
    float m_maxDist = 0.0f;
    bool  m_lightmapMeshBufferDirty = false;
    void UpdateMeshBuffer();
-
-   bool  m_roundLight = false; // pre-VPX compatibility
 
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;

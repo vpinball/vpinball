@@ -34,7 +34,7 @@ struct SavePhysicsMaterial
 
 #define MATERIAL_VERSION 1 // for im/export
 
-class Material final : ILoadable
+class Material final
 {
 public:
 
@@ -171,86 +171,59 @@ public:
    float m_fScatterAngle;
    COLORREF m_cRefractionTint; // 10.8+ only
    
-   size_t GetSaveSize() const
+   void Save(IObjectWriter& writer, const bool saveForUndo)
    {
-      size_t size = 0;
-      size += 2 * sizeof(int) + sizeof(int); // TYPE
-      size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
-      size += 2 * sizeof(int) + sizeof(float); // WLIG
-      size += 2 * sizeof(int) + sizeof(float); // ROUG
-      size += 2 * sizeof(int) + sizeof(float); // GIML
-      size += 2 * sizeof(int) + sizeof(float); // THCK
-      size += 2 * sizeof(int) + sizeof(float); // EDGE
-      size += 2 * sizeof(int) + sizeof(float); // EALP
-      size += 2 * sizeof(int) + sizeof(float); // OPAC
-      size += 2 * sizeof(int) + sizeof(int); // BASE
-      size += 2 * sizeof(int) + sizeof(int); // GLOS
-      size += 2 * sizeof(int) + sizeof(int); // COAT
-      size += 2 * sizeof(int) + sizeof(int); // RTNT
-      size += 2 * sizeof(int) + sizeof(int); // EOPA
-      size += 2 * sizeof(int) + sizeof(float); // ELAS
-      size += 2 * sizeof(int) + sizeof(float); // ELFO
-      size += 2 * sizeof(int) + sizeof(float); // FRIC
-      size += 2 * sizeof(int) + sizeof(float); // SCAT
-      size += 2 * sizeof(int); // ENDB
-      return size;
+      // Save as a data blob inside the main gamedata. This allows backward compatibility since the block will be blindly discarded on older versions, still hashing it.
+      writer.BeginObject(FID(MATR), true, true);
+      writer.WriteInt(FID(TYPE), m_type);
+      writer.WriteString(FID(NAME), m_name);
+      writer.WriteFloat(FID(WLIG), m_fWrapLighting);
+      writer.WriteFloat(FID(ROUG), m_fRoughness);
+      writer.WriteFloat(FID(GIML), m_fGlossyImageLerp);
+      writer.WriteFloat(FID(THCK), m_fThickness);
+      writer.WriteFloat(FID(EDGE), m_fEdge);
+      writer.WriteFloat(FID(EALP), m_fEdgeAlpha);
+      writer.WriteFloat(FID(OPAC), m_fOpacity);
+      writer.WriteInt(FID(BASE), m_cBase);
+      writer.WriteInt(FID(GLOS), m_cGlossy);
+      writer.WriteInt(FID(COAT), m_cClearcoat);
+      writer.WriteInt(FID(RTNT), m_cRefractionTint);
+      writer.WriteBool(FID(EOPA), m_bOpacityActive);
+      writer.WriteFloat(FID(ELAS), m_fElasticity);
+      writer.WriteFloat(FID(ELFO), m_fElasticityFalloff);
+      writer.WriteFloat(FID(FRIC), m_fFriction);
+      writer.WriteFloat(FID(SCAT), m_fScatterAngle);
+      writer.EndObject();
    }
 
-   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+   void Load(IObjectReader& reader)
    {
-      BiffWriter bw(pstm, hcrypthash);
-      bw.WriteInt(FID(TYPE), m_type);
-      bw.WriteString(FID(NAME), m_name);
-      bw.WriteFloat(FID(WLIG), m_fWrapLighting);
-      bw.WriteFloat(FID(ROUG), m_fRoughness);
-      bw.WriteFloat(FID(GIML), m_fGlossyImageLerp);
-      bw.WriteFloat(FID(THCK), m_fThickness);
-      bw.WriteFloat(FID(EDGE), m_fEdge);
-      bw.WriteFloat(FID(EALP), m_fEdgeAlpha);
-      bw.WriteFloat(FID(OPAC), m_fOpacity);
-      bw.WriteInt(FID(BASE), m_cBase);
-      bw.WriteInt(FID(GLOS), m_cGlossy);
-      bw.WriteInt(FID(COAT), m_cClearcoat);
-      bw.WriteInt(FID(RTNT), m_cRefractionTint);
-      bw.WriteBool(FID(EOPA), m_bOpacityActive);
-      bw.WriteFloat(FID(ELAS), m_fElasticity);
-      bw.WriteFloat(FID(ELFO), m_fElasticityFalloff);
-      bw.WriteFloat(FID(FRIC), m_fFriction);
-      bw.WriteFloat(FID(SCAT), m_fScatterAngle);
-      bw.WriteTag(FID(ENDB));
-      return S_OK;
-   }
-
-   HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-   {
-      BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-      br.Load();
-      return S_OK;
-   }
-
-   bool LoadToken(const int id, BiffReader* const pbr) override
-   {
-      switch (id)
-      {
-      case FID(TYPE): pbr->GetInt(&m_type); break;
-      case FID(NAME): pbr->GetString(m_name); break;
-      case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
-      case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
-      case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;
-      case FID(THCK): pbr->GetFloat(m_fThickness); break;
-      case FID(EDGE): pbr->GetFloat(m_fEdge); break;
-      case FID(EALP): pbr->GetFloat(m_fEdgeAlpha); break;
-      case FID(OPAC): pbr->GetFloat(m_fOpacity); break;
-      case FID(BASE): pbr->GetInt(m_cBase); break;
-      case FID(GLOS): pbr->GetInt(m_cGlossy); break;
-      case FID(COAT): pbr->GetInt(m_cClearcoat); break;
-      case FID(RTNT): pbr->GetInt(m_cRefractionTint); break;
-      case FID(EOPA): pbr->GetBool(m_bOpacityActive); break;
-      case FID(ELAS): pbr->GetFloat(m_fElasticity); break;
-      case FID(ELFO): pbr->GetFloat(m_fElasticityFalloff); break;
-      case FID(FRIC): pbr->GetFloat(m_fFriction); break;
-      case FID(SCAT): pbr->GetFloat(m_fScatterAngle); break;
-      }
-      return true;
+      reader.AsObject(
+         [this](int tag, IObjectReader& reader)
+         {
+            switch (tag)
+            {
+            case FID(TYPE): m_type = static_cast<MaterialType>(reader.AsInt()); break;
+            case FID(NAME): m_name = reader.AsString(); break;
+            case FID(WLIG): m_fWrapLighting = reader.AsFloat(); break;
+            case FID(ROUG): m_fRoughness = reader.AsFloat(); break;
+            case FID(GIML): m_fGlossyImageLerp = reader.AsFloat(); break;
+            case FID(THCK): m_fThickness = reader.AsFloat(); break;
+            case FID(EDGE): m_fEdge = reader.AsFloat(); break;
+            case FID(EALP): m_fEdgeAlpha = reader.AsFloat(); break;
+            case FID(OPAC): m_fOpacity = reader.AsFloat(); break;
+            case FID(BASE): m_cBase = reader.AsInt(); break;
+            case FID(GLOS): m_cGlossy = reader.AsInt(); break;
+            case FID(COAT): m_cClearcoat = reader.AsInt(); break;
+            case FID(RTNT): m_cRefractionTint = reader.AsInt(); break;
+            case FID(EOPA): m_bOpacityActive = reader.AsBool(); break;
+            case FID(ELAS): m_fElasticity = reader.AsFloat(); break;
+            case FID(ELFO): m_fElasticityFalloff = reader.AsFloat(); break;
+            case FID(FRIC): m_fFriction = reader.AsFloat(); break;
+            case FID(SCAT): m_fScatterAngle = reader.AsFloat(); break;
+            }
+            return true;
+         },
+         true);
    }
 };

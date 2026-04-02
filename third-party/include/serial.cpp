@@ -295,9 +295,9 @@ const char* serial::get_setup_str()
 {
 	static char str[11];
 	if (!configured)
-		snprintf(str, sizeof(str), "INVALID");
+		snprintf(str, std::size(str), "INVALID");
 	else
-		snprintf(str, sizeof(str), "%u %u%c%u",
+		snprintf(str, std::size(str), "%u %u%c%u",
 			get_baud_int(baud),
 			get_bits_int(bits),
 			get_parity_str(parity),

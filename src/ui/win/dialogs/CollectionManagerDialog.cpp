@@ -75,11 +75,8 @@ void CollectionManagerDialog::EditCollection()
         if (colDlg->DoModal() >= 0)
             pt->m_table->SetNonUndoableDirty(eSaveDirty);
 
-        char * const szT = MakeChar(pcol->m_wzName);
-        ListView_SetItemText(hListHwnd, sel, 0, szT);
-        delete [] szT;
-        string count = std::to_string(pcol->m_visel.size());
-        ListView_SetItemText(hListHwnd, sel, 1, const_cast<char*>(count.c_str()));
+        ListView_SetItemText_Safe(hListHwnd, sel, 0, MakeString(pcol->m_wzName).c_str());
+        ListView_SetItemText_Safe(hListHwnd, sel, 1, std::to_string(pcol->m_visel.size()).c_str());
     }
 }
 
@@ -118,8 +115,7 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                        lvitem.iSubItem = 0;
                        ListView_GetItem(hListHwnd, &lvitem);
                        const Collection * const pcol = (Collection *)lvitem.lParam;
-                       const string tmp = std::to_string(pcol->m_visel.size());
-                       ListView_SetItemText(hListHwnd, i, 1, (LPSTR)tmp.c_str());
+                       ListView_SetItemText_Safe(hListHwnd, i, 1, std::to_string(pcol->m_visel.size()).c_str());
                     }
                 }
             }
@@ -136,14 +132,10 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                 Collection * const pcol = (Collection *)lvitem.lParam;
                 wstring newName = MakeWString(pinfo->item.pszText);
                 if (!pt->m_table->IsNameUnique(newName))
-                {
-                   WCHAR uniqueName[std::size(pcol->m_wzName)];
-                   pt->m_table->GetUniqueName(newName, uniqueName, std::size(pcol->m_wzName));
-                   newName = uniqueName;
-                }
+                   newName = pt->m_table->GetUniqueName(newName);
                 pt->m_table->RenameCollection(pcol, newName);
                 if (hListHwnd)
-                   ListView_SetItemText(hListHwnd, pinfo->item.iItem, 0, (char *)MakeString(pcol->m_wzName).c_str());
+                   ListView_SetItemText_Safe(hListHwnd, pinfo->item.iItem, 0, MakeString(pcol->m_wzName).c_str());
                 pt->m_table->SetNonUndoableDirty(eSaveDirty);
                 return TRUE;
             }
@@ -215,11 +207,8 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx - 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                char * const szT = MakeChar(pcol->m_wzName);
-                ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
-                delete [] szT;
-                const string tmp = std::to_string(pcol->m_visel.size());
-                ListView_SetItemText(hListHwnd, idx - 1, 1, (LPSTR)tmp.c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx - 1, 0, MakeString(pcol->m_wzName).c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx - 1, 1, std::to_string(pcol->m_visel.size()).c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
@@ -244,11 +233,8 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx + 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                char * const szT = MakeChar(pcol->m_wzName);
-                ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
-                delete [] szT;
-                const string tmp = std::to_string(pcol->m_visel.size());
-                ListView_SetItemText(hListHwnd, idx + 1, 1, (LPSTR)tmp.c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx + 1, 0, MakeString(pcol->m_wzName).c_str());
+                ListView_SetItemText_Safe(hListHwnd, idx + 1, 1, std::to_string(pcol->m_visel.size()).c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
@@ -327,7 +313,7 @@ CollectionDialog::CollectionDialog(CollectionDialogStruct &pcds) : CDialog(IDD_C
 BOOL CollectionDialog::OnInitDialog()
 {
     Collection * const pcol = pCurCollection.pcol;
-    SetWindowTextW(GetDlgItem(IDC_NAME), pcol->m_wzName);
+    SetWindowTextW(GetDlgItem(IDC_NAME), pcol->m_wzName.c_str());
 
     SendDlgItemMessage(IDC_FIRE, BM_SETCHECK, pcol->m_fireEvents ? BST_CHECKED : BST_UNCHECKED, 0);
     SendDlgItemMessage(IDC_SUPPRESS, BM_SETCHECK, pcol->m_stopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -343,9 +329,8 @@ BOOL CollectionDialog::OnInitDialog()
         IScriptable * const piscript = piedit->GetScriptable();
         if (piscript)
         {
-            char * const szT = MakeChar(piscript->m_wzName);
-            const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
-            delete [] szT;
+            string name = MakeString(piscript->m_wzName);
+            const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)name.data());
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }
@@ -368,9 +353,8 @@ BOOL CollectionDialog::OnInitDialog()
         if ((l == pcol->m_visel.size()) && piscript)
         //if (!piedit->m_pcollection)
         {
-            char * const szT = MakeChar(piscript->m_wzName);
-            const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
-            delete [] szT;
+            string name = MakeString(piscript->m_wzName);
+            const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)name.data());
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }
@@ -480,14 +464,20 @@ void CollectionDialog::OnOK()
 
     for (size_t i = 0; i < count; i++)
     {
-        IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
-        ISelect * const pisel = piscript->GetISelect();
-        if (pisel) // Not sure how we could possibly get an iscript here that was never an iselect
-        {
-            pcol->m_visel.push_back(pisel);
-            pisel->GetIEditable()->m_vCollection.push_back(pcol);
-            pisel->GetIEditable()->m_viCollection.push_back((int)i);
-        }
+       IScriptable * const piscript = (IScriptable *)::SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
+       for (const auto &pedit : pCurCollection.ppt->m_table->GetParts())
+       {
+          if (piscript == pedit->GetScriptable())
+          {
+             if (ISelect *const pisel = pedit->GetISelect(); pisel) // Not sure how we could possibly get an iscript here that was never an iselect
+             {
+                pcol->m_visel.push_back(pisel);
+                pisel->GetIEditable()->m_vCollection.push_back(pcol);
+                pisel->GetIEditable()->m_viCollection.push_back((int)i);
+             }
+             break;
+          }
+       }
     }
 
     const size_t fireEvents = GetDlgItem(IDC_FIRE).SendMessage(BM_GETCHECK, 0, 0);
@@ -501,11 +491,7 @@ void CollectionDialog::OnOK()
 
     wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString());
     if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
-    {
-       WCHAR uniqueName[std::size(pCurCollection.pcol->m_wzName)];
-       pCurCollection.ppt->m_table->GetUniqueName(newName, uniqueName, std::size(pCurCollection.pcol->m_wzName));
-       newName = uniqueName;
-    }
+       newName = pCurCollection.ppt->m_table->GetUniqueName(newName);
 
     pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
 

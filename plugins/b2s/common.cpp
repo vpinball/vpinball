@@ -22,13 +22,6 @@ typedef int ssize_t;
 namespace B2S
 {
 
-constexpr inline char cLower(char c)
-{
-   if (c >= 'A' && c <= 'Z')
-      c ^= 32; //ASCII convention
-   return c;
-}
-
 static inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
@@ -61,7 +54,7 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
             const auto& found = ent.path();
             if (found != path)
             {
-               LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
+               LOGI(std::format("Case insensitive file match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
             }
             return found;
          }

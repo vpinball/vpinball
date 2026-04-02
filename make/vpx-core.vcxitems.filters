@@ -225,17 +225,38 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp">
       <Filter>parts</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp">
-      <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp">
       <Filter>parts</Filter>
@@ -309,6 +330,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/trigger.cpp">
       <Filter>parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/kdtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -337,9 +364,6 @@
       <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp">
@@ -538,6 +562,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp">
@@ -780,6 +807,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffReader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffWriter.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -872,30 +905,6 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <Filter>plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
-      <Filter>physics</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
-      <Filter>input</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp">
-      <Filter>parts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -995,7 +1004,10 @@
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h">
+    <ClInclude Include="$(SolutionDir)/../../src/math/Mesh.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/MeshUtils.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/vector.h">
@@ -1093,9 +1105,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerSimpleHoleMesh.h">
       <Filter>assets\meshes</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h">
-      <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/ball.h">
       <Filter>parts</Filter>
@@ -1217,7 +1226,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h">
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/DXGIRegistry.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h">
@@ -1284,6 +1293,15 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRGraphicBackend.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D11Backend.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRVulkanBackend.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h">
@@ -1428,6 +1446,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h">
@@ -1666,6 +1687,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/TableLightsProperty.h">
       <Filter>ui\win\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffReader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffWriter.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h">
       <Filter>utils</Filter>

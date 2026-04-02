@@ -4,6 +4,8 @@
 #include "VRDevice.h"
 #include "core/vpversion.h"
 
+#include "parts/primitive.h"
+
 // MSVC Concurrency Viewer support
 // This requires to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
@@ -27,6 +29,7 @@ extern marker_series series;
       #define XR_USE_GRAPHICS_API_OPENGL
       #define XR_USE_GRAPHICS_API_OPENGL_ES
       #define XR_USE_GRAPHICS_API_D3D11
+      #define VK_USE_PLATFORM_WIN32_KHR
       //#define XR_USE_GRAPHICS_API_D3D12
    #elif BX_PLATFORM_ANDROID
       #define XR_USE_PLATFORM_ANDROID
@@ -99,6 +102,9 @@ extern marker_series series;
 
    #ifdef XR_USE_GRAPHICS_API_VULKAN
    #include <vulkan/vulkan.h>
+   #ifdef XR_USE_PLATFORM_ANDROID
+   #include <vulkan/vulkan_android.h>
+   #endif  // XR_USE_PLATFORM_ANDROID
    #endif  // XR_USE_GRAPHICS_API_VULKAN
 
    #ifdef XR_USE_PLATFORM_WAYLAND
@@ -136,10 +142,9 @@ static inline const char* GetXRErrorString(XrInstance xrInstance, XrResult resul
 
 #define OPENXR_CHECK(x, y)                                                                                                                                                                   \
    {                                                                                                                                                                                         \
-      const XrResult res = (x);                                                                                                                                                           \
-      if (!XR_SUCCEEDED(res) && g_pplayer->m_vrDevice)                                                                                                                                    \
+      if (const XrResult res = (x); !XR_SUCCEEDED(res))                                                                                                                                      \
       {                                                                                                                                                                                      \
-         PLOGE << "ERROR: OPENXR: " << int(res) << '(' << (m_xrInstance ? GetXRErrorString(m_xrInstance, res) : "") << ") " << (y);        \
+         PLOGE << "ERROR: OPENXR: " << int(res) << " (" << (m_xrInstance ? GetXRErrorString(m_xrInstance, res) : "") << ") " << (y);                                                         \
       }                                                                                                                                                                                      \
    }
 
@@ -192,555 +197,13 @@ inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
    result->m[3][2] += invertPosition.z;
 }
 
-class XRGraphicBackend
-{
-public:
-   virtual ~XRGraphicBackend() = default;
-
-   virtual void* GetGraphicContext() const = 0;
-   virtual bgfx::RendererType::Enum GetRendererType() const = 0;
-   virtual void* GetGraphicsBinding() = 0;
-
-   virtual XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) = 0;
-   virtual void FreeSwapchainImageData(XrSwapchain swapchain) = 0;
-   virtual void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) = 0;
-
-   virtual void CreateImageViews(VRDevice::SwapchainInfo& swapchain) = 0;
-
-   virtual const std::vector<int64_t> GetSupportedColorSwapchainFormats() = 0;
-   virtual const std::vector<int64_t> GetSupportedDepthSwapchainFormats() = 0;
-
-   int64_t SelectColorSwapchainFormat(const std::vector<int64_t>& formats)
-   {
-      const std::vector<int64_t>& supportSwapchainFormats = GetSupportedColorSwapchainFormats();
-      const std::vector<int64_t>::const_iterator& swapchainFormatIt = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
-      if (swapchainFormatIt == formats.end())
-      {
-         PLOGE << "ERROR: Unable to find supported Color Swapchain Format";
-         assert(false);
-         return 0;
-      }
-      return *swapchainFormatIt;
-   }
-
-   int64_t SelectDepthSwapchainFormat(const std::vector<int64_t>& formats)
-   {
-      const std::vector<int64_t>& supportSwapchainFormats = GetSupportedDepthSwapchainFormats();
-      const std::vector<int64_t>::const_iterator& swapchainFormatIt = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
-      if (swapchainFormatIt == formats.end())
-      {
-         PLOGE << "ERROR: Unable to find supported Depth Swapchain Format";
-         assert(false);
-         return 0;
-      }
-      return *swapchainFormatIt;
-   }
-};
-
 
 #ifdef XR_USE_GRAPHICS_API_D3D11
-#include <d3d11_1.h>
-#include <dxgi1_6.h>
-
-#define D3D11_CHECK(x, y)                                                                                                                                                                    \
-   {                                                                                                                                                                                         \
-      const HRESULT result = (x);                                                                                                                                                            \
-      if (FAILED(result))                                                                                                                                                                    \
-      {                                                                                                                                                                                      \
-         PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;                                                                                                                \
-         PLOGE << "ERROR: D3D11: " << (y);                                                                                                                                                   \
-      }                                                                                                                                                                                      \
-   }
-
-#define D3D11_SAFE_RELEASE(p)                                                                                                                                                                \
-   {                                                                                                                                                                                         \
-      if (p)                                                                                                                                                                                 \
-      {                                                                                                                                                                                      \
-         (p)->Release();                                                                                                                                                                     \
-         (p) = nullptr;                                                                                                                                                                      \
-      }                                                                                                                                                                                      \
-   }
-
-class XRD3D11Backend final : public XRGraphicBackend
-{
-public:
-   XRD3D11Backend(const XrInstance& m_xrInstance, const XrSystemId& m_systemID)
-   {
-      xrGetD3D11GraphicsRequirementsKHR = nullptr;
-      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetD3D11GraphicsRequirementsKHR", (PFN_xrVoidFunction*)&xrGetD3D11GraphicsRequirementsKHR), "Failed to get InstanceProcAddr xrGetD3D11GraphicsRequirementsKHR.");
-      XrGraphicsRequirementsD3D11KHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR };
-      OPENXR_CHECK(xrGetD3D11GraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Graphics Requirements for D3D11.");
-
-      static const char* dxgiDllName = "dxgi.dll";
-      m_dxgiDll = bx::dlopen(dxgiDllName);
-      typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID _riid, void** _factory);
-      PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)bx::dlsym(m_dxgiDll, "CreateDXGIFactory1");
-
-      IDXGIFactory4* factory = nullptr;
-      D3D11_CHECK(CreateDXGIFactory(IID_PPV_ARGS(&factory)), "Failed to create DXGI factory.");
-      IDXGIAdapter* adapter = nullptr;
-      DXGI_ADAPTER_DESC adapterDesc = {};
-      for (UINT i = 0; factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
-      {
-         adapter->GetDesc(&adapterDesc);
-         if (memcmp(&graphicsRequirements.adapterLuid, &adapterDesc.AdapterLuid, sizeof(LUID)) == 0)
-            break; // We have the matching adapter that OpenXR wants.
-         adapter = nullptr; // If we don't get a match, reset adapter to nullptr to force a throw.
-      }
-      OPENXR_CHECK(adapter != nullptr ? XR_SUCCESS : XR_ERROR_VALIDATION_FAILURE, "Failed to find matching graphics adapter from xrGetD3D11GraphicsRequirementsKHR.");
-
-      static const char* d3d11DllName = "d3d11.dll";
-      m_d3d11Dll = bx::dlopen(d3d11DllName);
-      PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
-      #ifdef DEBUG
-      {
-         // Try to create the device with the debug layer and fallback to default DX11 if DX SDK is not installed.
-         HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
-         if (result == DXGI_ERROR_SDK_COMPONENT_MISSING)
-            result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
-         if (FAILED(result))
-         {
-            PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;
-            PLOGE << "ERROR: D3D11: Failed to create D3D11 Device.";
-         }
-      }
-      #else
-         D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
-      #endif
-      D3D11_SAFE_RELEASE(factory);
-
-      m_graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D11_KHR };
-      m_graphicsBinding.device = m_device;
-   }
-
-   ~XRD3D11Backend()
-   {
-      D3D11_SAFE_RELEASE(m_immediateContext);
-      D3D11_SAFE_RELEASE(m_device);
-      if (m_dxgiDll)
-         bx::dlclose(m_dxgiDll);
-      if (m_d3d11Dll)
-         bx::dlclose(m_d3d11Dll);
-   }
-
-   void* GetGraphicContext() const override
-   {
-      return m_device;
-   }
-
-   bgfx::RendererType::Enum GetRendererType() const override { return bgfx::RendererType::Direct3D11; }
-
-   void* GetGraphicsBinding() override { return &m_graphicsBinding; }
-
-   void CreateImageViews(VRDevice::SwapchainInfo& swapchain) override
-   {
-      // TODO BGFX_TEXTURE_BLIT_DST was added since we are blitting the depth instead of directly using it. Remove asap
-      uint64_t flags = BGFX_TEXTURE_RT;
-      swapchain.format = bgfx::TextureFormat::Enum::Count;
-      switch (swapchain.backendFormat)
-      { // Convert from values returned from GetSupportedColorSwapchainFormats / GetSupportedDepthSwapchainFormats
-      case DXGI_FORMAT_R8G8B8A8_UNORM: swapchain.format = bgfx::TextureFormat::RGBA8; break;
-      case DXGI_FORMAT_B8G8R8A8_UNORM: swapchain.format = bgfx::TextureFormat::BGRA8; break;
-      case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::RGBA8; flags |= BGFX_TEXTURE_SRGB; break;
-      case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::BGRA8; flags |= BGFX_TEXTURE_SRGB; break;
-      case DXGI_FORMAT_D32_FLOAT: swapchain.format = bgfx::TextureFormat::D32F; flags |= BGFX_TEXTURE_BLIT_DST; break;
-      case DXGI_FORMAT_D16_UNORM: swapchain.format = bgfx::TextureFormat::D16; flags |= BGFX_TEXTURE_BLIT_DST; break;
-      default: assert(false); break; // Unsupported format
-      };
-      for (size_t i = 0; i < m_swapchainImagesMap[swapchain.swapchain].second.size(); i++)
-      {
-         const bgfx::TextureHandle handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, flags);
-         bgfx::frame(); // TODO This is needed for BGFX to actually create the texture, but this is somewhat hacky and suboptimal
-         uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, (uint32_t)i)));
-         assert(nativePtr); // Override failed
-         swapchain.imageViews.push_back(handle);
-      }
-   }
-
-   XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) override
-   {
-      m_swapchainImagesMap[swapchain].first = type;
-      m_swapchainImagesMap[swapchain].second.resize(count, { XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR });
-      return reinterpret_cast<XrSwapchainImageBaseHeader*>(m_swapchainImagesMap[swapchain].second.data());
-   }
-   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) override { return m_swapchainImagesMap[swapchain].second[index].texture; }
-   void FreeSwapchainImageData(XrSwapchain swapchain) override
-   {
-      m_swapchainImagesMap[swapchain].second.clear();
-      m_swapchainImagesMap.erase(swapchain);
-   }
-
-   const std::vector<int64_t> GetSupportedColorSwapchainFormats() override { return { DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB /*, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB  not supported by BGFX */ }; }
-   const std::vector<int64_t> GetSupportedDepthSwapchainFormats() override { return { DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_D16_UNORM }; }
-
-private:
-   void* m_dxgiDll = nullptr;
-   void* m_d3d11Dll = nullptr;
-   ID3D11Device* m_device = nullptr;
-   ID3D11DeviceContext* m_immediateContext = nullptr;
-   PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
-   XrGraphicsBindingD3D11KHR m_graphicsBinding {};
-   ankerl::unordered_dense::map<XrSwapchain, std::pair<VRDevice::SwapchainType, std::vector<XrSwapchainImageD3D11KHR>>> m_swapchainImagesMap {};
-};
+#include "XRD3D11Backend.h"
 #endif
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-class LibVulkan
-{
-public:
-   static const LibVulkan& GetInstance()
-   {
-      static LibVulkan lib;
-      return lib;
-   }
-
-   PFN_vkCreateInstance _vkCreateInstance;
-   PFN_vkDestroyInstance _vkDestroyInstance;
-   PFN_vkGetPhysicalDeviceFeatures _vkGetPhysicalDeviceFeatures;
-   PFN_vkGetPhysicalDeviceQueueFamilyProperties _vkGetPhysicalDeviceQueueFamilyProperties;
-   PFN_vkGetInstanceProcAddr _vkGetInstanceProcAddr;
-   PFN_vkCreateDevice _vkCreateDevice;
-   PFN_vkDestroyDevice _vkDestroyDevice;
-   PFN_vkGetDeviceQueue _vkGetDeviceQueue;
-   PFN_vkDeviceWaitIdle _vkDeviceWaitIdle;
-
-private:
-   void* m_vulkan1Dll;
-   ~LibVulkan()
-   {
-      if (m_vulkan1Dll)
-         bx::dlclose(m_vulkan1Dll);
-   }
-   LibVulkan()
-   { 
-   #if BX_PLATFORM_WINDOWS
-      m_vulkan1Dll = bx::dlopen(
-      #if BX_PLATFORM_WINDOWS
-         "vulkan-1.dll"
-      #elif BX_PLATFORM_ANDROID
-         "libvulkan.so"
-      #elif BX_PLATFORM_OSX
-          "libMoltenVK.dylib"
-      #else
-         "libvulkan.so.1"
-      #endif // BX_PLATFORM_*
-      );
-      if (m_vulkan1Dll == nullptr)
-         return;
-      _vkCreateInstance = (PFN_vkCreateInstance)bx::dlsym(m_vulkan1Dll, "vkCreateInstance");
-      _vkDestroyInstance = (PFN_vkDestroyInstance)bx::dlsym(m_vulkan1Dll, "vkDestroyInstance");
-      _vkGetPhysicalDeviceFeatures = (PFN_vkGetPhysicalDeviceFeatures)bx::dlsym(m_vulkan1Dll, "vkGetPhysicalDeviceFeatures");
-      _vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)bx::dlsym(m_vulkan1Dll, "vkGetPhysicalDeviceQueueFamilyProperties");
-      _vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)bx::dlsym(m_vulkan1Dll, "vkGetInstanceProcAddr");
-      _vkCreateDevice = (PFN_vkCreateDevice)bx::dlsym(m_vulkan1Dll, "vkCreateDevice");
-      _vkDestroyDevice = (PFN_vkDestroyDevice)bx::dlsym(m_vulkan1Dll, "vkDestroyDevice");
-      _vkGetDeviceQueue = (PFN_vkGetDeviceQueue)bx::dlsym(m_vulkan1Dll, "vkGetDeviceQueue");
-      _vkDeviceWaitIdle = (PFN_vkDeviceWaitIdle)bx::dlsym(m_vulkan1Dll, "vkDeviceWaitIdle");
-   #else
-      _vkCreateInstance = &vkCreateInstance;
-      _vkDestroyInstance = &vkDestroyInstance;
-      _vkGetPhysicalDeviceFeatures = &vkGetPhysicalDeviceFeatures;
-      _vkGetPhysicalDeviceQueueFamilyProperties = &vkGetPhysicalDeviceQueueFamilyProperties;
-      _vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-      _vkCreateDevice = &vkCreateDevice;
-      _vkDestroyDevice = &vkDestroyDevice;
-      _vkGetDeviceQueue = &vkGetDeviceQueue;
-      _vkDeviceWaitIdle = &vkDeviceWaitIdle;
-   #endif
-   }
-};
-
-class XRVulkanBackend final : public XRGraphicBackend
-{
-public:
-   XRVulkanBackend(const XrInstance& xrInstance, const XrSystemId& systemID)
-      : m_xrInstance(xrInstance)
-      , m_systemID(systemID)
-      , m_vulkan(LibVulkan::GetInstance())
-   {
-      assert(m_xrInstance != XR_NULL_HANDLE);
-      assert(m_systemID != XR_NULL_SYSTEM_ID);
-      assert(m_vulkan._vkCreateDevice != nullptr);
-
-      PLOGI << "Initializing Vulkan OpenXR backend (creating Vulkan instance/device for OpenXR)";
-
-      PFN_xrGetVulkanInstanceExtensionsKHR xrGetVulkanInstanceExtensionsKHR;
-      PFN_xrGetVulkanDeviceExtensionsKHR xrGetVulkanDeviceExtensionsKHR;
-      PFN_xrGetVulkanGraphicsDeviceKHR xrGetVulkanGraphicsDeviceKHR;
-
-      xrGetInstanceProcAddr(xrInstance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction*)&xrGetVulkanInstanceExtensionsKHR);
-      xrGetInstanceProcAddr(xrInstance, "xrGetVulkanDeviceExtensionsKHR", (PFN_xrVoidFunction*)&xrGetVulkanDeviceExtensionsKHR);
-      xrGetInstanceProcAddr(xrInstance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsDeviceKHR);
-
-      uint32_t instanceExtensionNamesSize = 0;
-      xrGetVulkanInstanceExtensionsKHR(xrInstance, systemID, 0, &instanceExtensionNamesSize, nullptr);
-      std::vector<char> instanceExtensionNames(instanceExtensionNamesSize);
-      xrGetVulkanInstanceExtensionsKHR(xrInstance, systemID, instanceExtensionNamesSize, &instanceExtensionNamesSize, instanceExtensionNames.data());
-
-      PLOGI << "OpenXR requires the following Vulkan instance extensions:";
-      std::vector<const char*> extensions;
-      size_t start = 0;
-      for (size_t i = 0; i < instanceExtensionNames.size(); i++)
-      {
-         if (instanceExtensionNames[i] == ' ' || instanceExtensionNames[i] == '\0')
-         {
-            if (i > start)
-            {
-               instanceExtensionNames[i] = '\0';
-               extensions.push_back(&instanceExtensionNames[start]);
-               PLOGI << " . " << extensions.back();
-            }
-            start = i + 1;
-         }
-      }
-
-      extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); // Required to create swap chain
-      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-      extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-#if BX_PLATFORM_ANDROID
-      //We are not creating the swapchain on Android VR headset
-      //extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_LINUX
-      extensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-      extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-      extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_WINDOWS
-      extensions.push_back("VK_KHR_win32_surface"); // VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#elif BX_PLATFORM_OSX
-      extensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#elif BX_PLATFORM_NX
-      extensions.push_back(VK_NN_VI_SURFACE_EXTENSION_NAME);
-#endif
-      uint32_t apiVersion = VK_API_VERSION_1_0;
-      PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)m_vulkan._vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
-      if (vkEnumerateInstanceVersion)
-      {
-         vkEnumerateInstanceVersion(&apiVersion);
-         PLOGI << "Vulkan API version: " << VK_VERSION_MAJOR(apiVersion) << '.' << VK_VERSION_MINOR(apiVersion) << '.' << VK_VERSION_PATCH(apiVersion);
-      }
-      else
-      {
-         PLOGI << "Vulkan 1.0 loader detected (no vkEnumerateInstanceVersion)";
-      }
-
-      VkApplicationInfo appInfo{ VK_STRUCTURE_TYPE_APPLICATION_INFO };
-      appInfo.pApplicationName = "VPinball";
-      appInfo.applicationVersion = 1;
-      appInfo.pEngineName = "bgfx";
-      appInfo.engineVersion = 1;
-      appInfo.apiVersion = apiVersion;
-
-      VkInstanceCreateInfo instanceInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
-      instanceInfo.pApplicationInfo = &appInfo;
-      instanceInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-      instanceInfo.ppEnabledExtensionNames = extensions.data();
-
-      VkResult result = m_vulkan._vkCreateInstance(&instanceInfo, nullptr, &m_instance);
-      if (result != VK_SUCCESS)
-      {
-         PLOGE << "Failed to create Vulkan instance for OpenXR: " << result;
-         return;
-      }
-
-      PLOGI << "Created Vulkan instance with OpenXR extensions";
-
-      xrGetVulkanGraphicsDeviceKHR(xrInstance, systemID, m_instance, &m_physicalDevice);
-
-      uint32_t deviceExtensionNamesSize = 0;
-      xrGetVulkanDeviceExtensionsKHR(xrInstance, systemID, 0, &deviceExtensionNamesSize, nullptr);
-      std::vector<char> deviceExtensionNames(deviceExtensionNamesSize);
-      xrGetVulkanDeviceExtensionsKHR(xrInstance, systemID, deviceExtensionNamesSize, &deviceExtensionNamesSize, deviceExtensionNames.data());
-
-      std::vector<const char*> deviceExtensions;
-      start = 0;
-      for (size_t i = 0; i < deviceExtensionNames.size(); i++)
-      {
-         if (deviceExtensionNames[i] == ' ' || deviceExtensionNames[i] == '\0')
-         {
-            if (i > start)
-            {
-               deviceExtensionNames[i] = '\0';
-               deviceExtensions.push_back(&deviceExtensionNames[start]);
-            }
-            start = i + 1;
-         }
-      }
-      const char* ext_VK_EXT_shader_viewport_index_layer = "VK_EXT_shader_viewport_index_layer";
-      const char* ext_VK_KHR_fragment_shading_rate = "VK_KHR_fragment_shading_rate";
-      deviceExtensions.push_back(ext_VK_EXT_shader_viewport_index_layer);
-      //deviceExtensions.push_back(ext_VK_KHR_fragment_shading_rate);
-
-      uint32_t queueFamilyCount = 0;
-      m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
-      std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-      m_vulkan._vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-      m_queueFamilyIndex = UINT32_MAX;
-      for (uint32_t i = 0; i < queueFamilyCount; i++)
-      {
-         if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
-         {
-            m_queueFamilyIndex = i;
-            break;
-         }
-      }
-
-      float queuePriority = 1.0f;
-      VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-      queueInfo.queueFamilyIndex = m_queueFamilyIndex;
-      queueInfo.queueCount = 1;
-      queueInfo.pQueuePriorities = &queuePriority;
-
-      VkPhysicalDeviceFeatures availableFeatures{};
-      m_vulkan._vkGetPhysicalDeviceFeatures(m_physicalDevice, &availableFeatures);
-
-      VkPhysicalDeviceFeatures deviceFeatures{};
-      if (availableFeatures.samplerAnisotropy) deviceFeatures.samplerAnisotropy = VK_TRUE;
-      if (availableFeatures.textureCompressionETC2) deviceFeatures.textureCompressionETC2 = VK_TRUE;
-      if (availableFeatures.textureCompressionASTC_LDR) deviceFeatures.textureCompressionASTC_LDR = VK_TRUE;
-      if (availableFeatures.fillModeNonSolid) deviceFeatures.fillModeNonSolid = VK_TRUE;
-      if (availableFeatures.independentBlend) deviceFeatures.independentBlend = VK_TRUE;
-      if (availableFeatures.depthClamp) deviceFeatures.depthClamp = VK_TRUE;
-      if (availableFeatures.depthBiasClamp) deviceFeatures.depthBiasClamp = VK_TRUE;
-
-      VkDeviceCreateInfo deviceInfo{ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-      deviceInfo.queueCreateInfoCount = 1;
-      deviceInfo.pQueueCreateInfos = &queueInfo;
-      deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-      deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
-      deviceInfo.pEnabledFeatures = &deviceFeatures;
-
-      result = m_vulkan._vkCreateDevice(m_physicalDevice, &deviceInfo, nullptr, &m_device);
-      if (result != VK_SUCCESS)
-      {
-         PLOGE << "Failed to create Vulkan device for OpenXR: " << result;
-         m_vulkan._vkDestroyInstance(m_instance, nullptr);
-         return;
-      }
-
-      m_vulkan._vkGetDeviceQueue(m_device, m_queueFamilyIndex, 0, &m_queue);
-
-      PLOGI << "Created Vulkan device for OpenXR";
-      PLOGI << "  Instance: " << m_instance;
-      PLOGI << "  PhysicalDevice: " << m_physicalDevice;
-      PLOGI << "  Device: " << m_device;
-      PLOGI << "  Queue: " << m_queue;
-      PLOGI << "  QueueFamilyIndex: " << m_queueFamilyIndex;
-
-      m_contextForBgfx.instance = m_instance;
-      m_contextForBgfx.physicalDevice = m_physicalDevice;
-      m_contextForBgfx.device = m_device;
-      m_contextForBgfx.queue = m_queue;
-      m_contextForBgfx.queueFamilyIndex = m_queueFamilyIndex;
-      m_contextForBgfx.has_EXT_shader_viewport_index_layer = true;
-      m_contextForBgfx.has_KHR_fragment_shading_rate = false;
-
-      m_graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR };
-      m_graphicsBinding.instance = m_instance;
-      m_graphicsBinding.physicalDevice = m_physicalDevice;
-      m_graphicsBinding.device = m_device;
-      m_graphicsBinding.queueFamilyIndex = m_queueFamilyIndex;
-      m_graphicsBinding.queueIndex = 0;
-   }
-
-   ~XRVulkanBackend() final
-   {
-      if (m_device != VK_NULL_HANDLE)
-      {
-         m_vulkan._vkDeviceWaitIdle(m_device);
-         m_vulkan._vkDestroyDevice(m_device, nullptr);
-      }
-      if (m_instance != VK_NULL_HANDLE)
-      {
-         m_vulkan._vkDestroyInstance(m_instance, nullptr);
-      }
-   }
-
-   void* GetGraphicContext() const override { return (void*)&m_contextForBgfx; }
-
-   bgfx::RendererType::Enum GetRendererType() const override { return bgfx::RendererType::Vulkan; }
-
-   void* GetGraphicsBinding() override { return &m_graphicsBinding; }
-
-   void CreateImageViews(VRDevice::SwapchainInfo& swapchain) override
-   {
-      uint64_t flags = BGFX_TEXTURE_RT;
-      swapchain.format = bgfx::TextureFormat::Enum::Count;
-      switch (swapchain.backendFormat)
-      {
-      case VK_FORMAT_R8G8B8A8_UNORM: swapchain.format = bgfx::TextureFormat::RGBA8; break;
-      case VK_FORMAT_R8G8B8A8_SRGB: swapchain.format = bgfx::TextureFormat::RGBA8; flags |= BGFX_TEXTURE_SRGB; break;
-      case VK_FORMAT_D32_SFLOAT: swapchain.format = bgfx::TextureFormat::D32F; flags |= BGFX_TEXTURE_BLIT_DST; break;
-      case VK_FORMAT_D24_UNORM_S8_UINT: swapchain.format = bgfx::TextureFormat::D24S8; flags |= BGFX_TEXTURE_BLIT_DST; break;
-      case VK_FORMAT_D16_UNORM: swapchain.format = bgfx::TextureFormat::D16; flags |= BGFX_TEXTURE_BLIT_DST; break;
-      default:
-         PLOGE << "ERROR: Unsupported Vulkan swapchain format: " << swapchain.backendFormat;
-         return;
-      }
-
-      for (size_t i = 0; i < m_swapchainImages[swapchain.swapchain].size(); ++i)
-      {
-         const bgfx::TextureHandle handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, flags);
-         bgfx::frame();
-         uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, (uint32_t)i)));
-         PLOGI << "bgfx::overrideInternal returned: " << nativePtr << " for image " << i;
-         if (nativePtr == 0)
-         {
-            PLOGE << "WARNING: bgfx::overrideInternal failed for swapchain image " << i;
-         }
-         swapchain.imageViews.push_back(handle);
-      }
-   }
-
-   XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) override
-   {
-      m_swapchainImages[swapchain].resize(count, { XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR });
-      return reinterpret_cast<XrSwapchainImageBaseHeader*>(m_swapchainImages[swapchain].data());
-   }
-
-   void FreeSwapchainImageData(XrSwapchain swapchain) override
-   {
-      m_swapchainImages[swapchain].clear();
-      m_swapchainImages.erase(swapchain);
-   }
-
-   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) override
-   {
-      return (void*)(uintptr_t)m_swapchainImages[swapchain][index].image;
-   }
-
-   const std::vector<int64_t> GetSupportedColorSwapchainFormats() override
-   {
-      return { VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R8G8B8A8_UNORM };
-   }
-
-   const std::vector<int64_t> GetSupportedDepthSwapchainFormats() override
-   {
-      return { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM };
-   }
-
-private:
-   const LibVulkan& m_vulkan;
-   XrInstance m_xrInstance;
-   XrSystemId m_systemID;
-   VkInstance m_instance = VK_NULL_HANDLE;
-   VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-   VkDevice m_device = VK_NULL_HANDLE;
-   VkQueue m_queue = VK_NULL_HANDLE;
-   uint32_t m_queueFamilyIndex = 0;
-   XrGraphicsBindingVulkanKHR m_graphicsBinding {};
-   std::map<XrSwapchain, std::vector<XrSwapchainImageVulkanKHR>> m_swapchainImages;
-
-   struct {
-      VkInstance instance;
-      VkPhysicalDevice physicalDevice;
-      VkDevice device;
-      VkQueue queue;
-      uint32_t queueFamilyIndex;
-      bool has_KHR_fragment_shading_rate;
-      bool has_EXT_shader_viewport_index_layer;
-   } m_contextForBgfx = {};
-};
+#include "XRVulkanBackend.h"
 #endif
 
 #endif
@@ -755,7 +218,6 @@ private:
 
 VRDevice::VRDevice(const Settings& settings)
 {
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
       // Scene offset (vertical rotation and horizontal shift)
       m_orientation = settings.GetPlayerVR_Orientation();
       m_tablePos.x = settings.GetPlayerVR_TableX();
@@ -763,7 +225,6 @@ VRDevice::VRDevice(const Settings& settings)
       // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
       // (Note that for OpenVR offset is defined from the ground)
       m_tablePos.z = settings.GetPlayerVR_TableZ();
-   #endif
    #if defined(ENABLE_VR)
       m_slope = settings.GetPlayerVR_Slope();
    #endif
@@ -772,7 +233,7 @@ VRDevice::VRDevice(const Settings& settings)
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
       m_lockbarWidth = settings.GetPlayer_LockbarWidth();
-      m_lockbarHeight = g_app->m_settings.GetPlayer_LockbarHeight();
+      m_lockbarHeight = settings.GetPlayer_LockbarHeight();
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -793,9 +254,9 @@ VRDevice::VRDevice(const Settings& settings)
 
       // Check the requested API layers against the ones from the OpenXR. If found add it to the Active API Layers.
       m_activeAPILayers.clear();
-      for (auto& requestLayer : m_apiLayers)
+      for (const auto& requestLayer : m_apiLayers)
       {
-         for (auto& layerProperty : apiLayerProperties)
+         for (const auto& layerProperty : apiLayerProperties)
          {
             if (requestLayer == layerProperty.layerName)
             {
@@ -831,13 +292,20 @@ VRDevice::VRDevice(const Settings& settings)
          }
          return false;
       };
-      // FIXME VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
-      // For now, renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
+      // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
+      // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
+         m_rendererType = bgfx::RendererType::Enum::Direct3D11;
          const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
-         m_rendererType = gfxBackend == "Direct3D11"s ? bgfx::RendererType::Enum::Direct3D11
-            : gfxBackend == "Vulkan"s                 ? bgfx::RendererType::Enum::Vulkan
-                                                      : bgfx::RendererType::Enum::Direct3D11; // Default value
+         #ifdef _DEBUG
+         if (gfxBackend == "Vulkan"sv)
+            m_rendererType = bgfx::RendererType::Enum::Vulkan;
+         #else
+         if (gfxBackend != "Direct3D11"sv && gfxBackend != "Default"sv)
+         {
+            PLOGI << "Renderer backend enforced to Direct3D11 as other backends are still experimental and not enabled in release builds";
+         }
+         #endif
       #elif BX_PLATFORM_ANDROID
          m_rendererType = bgfx::RendererType::Enum::Vulkan;
       #else
@@ -847,16 +315,20 @@ VRDevice::VRDevice(const Settings& settings)
       switch (m_rendererType)
       {
       #ifdef XR_USE_GRAPHICS_API_VULKAN
-         case bgfx::RendererType::Enum::Vulkan: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+         case bgfx::RendererType::Enum::Vulkan:
+            // According to https://github.khronos.org/OpenXR-Inventory/runtime_extension_support.html all runtimes that support XR_KHR_VULKAN_ENABLE_EXTENSION_NAME do support XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME
+            hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME);
+            break;
       #endif
       #ifdef XR_USE_GRAPHICS_API_D3D11
-         case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+         case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); break;
       #endif
       }
+      assert(hasGraphicBackend);
       if (!hasGraphicBackend)
          return;
 
-      m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME); // Should be supported but not yet implemented
+      m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
       m_colorSpaceExtensionSupported = EnableExtensionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
       #if BX_PLATFORM_WINDOWS
@@ -1083,28 +555,28 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
       std::string msgFlags;
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
       {
-         msgFlags += "VERBOSE";
+         msgFlags += "VERBOSE"sv;
          separator = true;
       }
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
       {
          if (separator)
             msgFlags += ',';
-         msgFlags += "INFO";
+         msgFlags += "INFO"sv;
          separator = true;
       }
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
       {
          if (separator)
             msgFlags += ',';
-         msgFlags += "WARN";
+         msgFlags += "WARN"sv;
          separator = true;
       }
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
       {
          if (separator)
             msgFlags += ',';
-         msgFlags += "ERROR";
+         msgFlags += "ERROR"sv;
       }
       return msgFlags;
    };
@@ -1116,21 +588,21 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
       std::string msgFlags;
       if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
       {
-         msgFlags += "GEN";
+         msgFlags += "GEN"sv;
          separator = true;
       }
       if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
       {
          if (separator)
             msgFlags += ',';
-         msgFlags += "SPEC";
+         msgFlags += "SPEC"sv;
          separator = true;
       }
       if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
       {
          if (separator)
             msgFlags += ',';
-         msgFlags += "PERF";
+         msgFlags += "PERF"sv;
       }
       return msgFlags;
    };
@@ -1343,17 +815,6 @@ void VRDevice::CreateSession()
    }
    m_sceneSize = (sceneMax - sceneMin).Length();
 
-   if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
-   {
-      PFN_xrGetVulkanGraphicsRequirementsKHR xrGetVulkanGraphicsRequirementsKHR;
-      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction*)&xrGetVulkanGraphicsRequirementsKHR), "Failed to get xrGetVulkanGraphicsRequirementsKHR.");
-
-      XrGraphicsRequirementsVulkanKHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR };
-      OPENXR_CHECK(xrGetVulkanGraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Vulkan graphics requirements.");
-
-      PLOGI << "OpenXR Vulkan requirements: min API version " << XR_VERSION_MAJOR(graphicsRequirements.minApiVersionSupported) << '.' << XR_VERSION_MINOR(graphicsRequirements.minApiVersionSupported);
-   }
-
    // Create an XrSessionCreateInfo structure.
    XrSessionCreateInfo sessionCI { XR_TYPE_SESSION_CREATE_INFO };
    sessionCI.next = m_backend->GetGraphicsBinding();
@@ -1438,18 +899,25 @@ void VRDevice::CreateSession()
       m_backend->CreateImageViews(swapchain);
    }
    m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size(), nullptr);
+
+   auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
+   m_xrInputHandler = inputHandler.get();
+   g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
 }
 
 void VRDevice::ReleaseSession()
 {
    assert(m_session);
 
+   g_pplayer->m_pininput.RemoveInputHandler(m_xrInputHandler);
+   m_xrInputHandler = nullptr;
+
    // Destroy the swapchian render targets, and color/depth image views
    for (auto& rt : m_swapchainRenderTargets)
       delete rt;
-   for (auto& imageView : m_colorSwapchainInfo.imageViews)
+   for (const auto& imageView : m_colorSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
-   for (auto& imageView : m_depthSwapchainInfo.imageViews)
+   for (const auto& imageView : m_depthSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
 
    // Free the Swapchain Image Data.
@@ -1749,7 +1217,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             m_orientation = RADTOANG(atan2f(m_nextMedianView.m[0][2], m_nextMedianView.m[0][0]));
             m_tablePos.x = g_app->m_settings.GetPlayer_ScreenPlayerX() - VPUTOCM(medianPoseInVPU.position.x);
             m_tablePos.y = g_app->m_settings.GetPlayer_ScreenPlayerY() - VPUTOCM(medianPoseInVPU.position.z);
-            m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
+            m_tablePos.z = 0.f;
+            //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
             m_worldDirty = true;
          }
 
@@ -1830,7 +1299,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                * Matrix3D::MatrixTranslate(
                   -CMTOVPU(m_tablePos.x),
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   0.f) // Feets are always at z=0 in real world, that is to say ground
+                   CMTOVPU(m_tablePos.z)) // Feets are always at z=0 in real world, that is to say ground
                * Matrix3D::MatrixScale(1.f, 1.f, feetScale) // Scale feets in order to match feet bottom to real world floor
                * cabinetSlope // Apply cabinet slope
                * viewOrientation; // Reapply view orientation
@@ -1846,7 +1315,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                * Matrix3D::MatrixTranslate(
                   -CMTOVPU(m_tablePos.x), // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   0.f)
+                   CMTOVPU(m_tablePos.z))
                * viewOrientation; // Reapply view orientation
             m_roomWorld = m_pfWorld * pfToRoom;
          }
@@ -1985,7 +1454,7 @@ void VRDevice::OffsetTable(float dx, float dy, float dz)
 {
    m_tablePos.x = clamp(m_tablePos.x + dx, -100.0f, 100.0f);
    m_tablePos.y = clamp(m_tablePos.y + dy, -100.0f, 100.0f);
-   m_tablePos.z = clamp(m_tablePos.z + dz, 0.0f, 250.0f);
+   m_tablePos.z = clamp(m_tablePos.z + dz, -100.0f, 100.0f);
    m_worldDirty = true;
 }
 

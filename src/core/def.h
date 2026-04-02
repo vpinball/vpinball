@@ -2,8 +2,12 @@
 
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <cstdint>
 #include <algorithm>
@@ -15,6 +19,7 @@ using std::vector;
 
 #include <string>
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 using std::string;
 using std::wstring;
 
@@ -34,6 +39,20 @@ using std::wstring;
 #endif
 #ifdef max
 #undef max
+#endif
+
+// MinGW's filesystem::path validates UTF-8 and throws on invalid sequences.
+// VPX files may store paths as legacy ANSI. Try UTF-8 first, fall back to
+// Latin-1 (1:1 byte-to-wchar widening) which doesn't need codepage support.
+#ifdef __MINGW32__
+inline std::filesystem::path PathFromString(const std::string& s)
+{
+   int len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, s.c_str(), -1, nullptr, 0);
+   if (len > 0) { std::wstring ws(len - 1, L'\0'); MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, ws.data(), len); return ws; }
+   return std::wstring(s.begin(), s.end());
+}
+#else
+inline std::filesystem::path PathFromString(const std::string& s) { return s; }
 #endif
 
 #ifdef __STANDALONE__
@@ -219,8 +238,6 @@ template <class T> inline ULONG GetRefCount(T& obj)
 #define SAFE_RELEASE_NO_RCC(p)	{ if(p) { (p)->Release(); (p)=nullptr; } } // use for releasing things like surfaces gotten from GetSurfaceLevel (that seem to "share" the refcount with the underlying texture)
 #define FORCE_RELEASE(p)		{ if(p) { ULONG rcc = 1; while(rcc!=0) {rcc = (p)->Release();} (p)=nullptr; } } // release all references until it is 0
 
-#define hrNotImplemented ResultFromScode(E_NOTIMPL)
-
 enum SaveDirtyState
 {
    eSaveClean,
@@ -281,7 +298,7 @@ class LocalStringW final
 public:
    LocalStringW(const int resid);
 
-   WCHAR m_szbuffer[256]; // max size would be 4096
+   wstring m_buffer;
 };
 
 #ifndef M_PI
@@ -317,7 +334,7 @@ static const string platform_cpu[2] = { "x86"s, "arm"s };
 #endif
 static const string platform_bits[2] = { "32"s, "64"s };
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
  #define GET_PLATFORM_OS_ENUM 0
  #define GET_PLATFORM_OS "windows"
 #elif defined(__ANDROID__) // leave here, as it also defines linux
@@ -351,11 +368,6 @@ static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s,
  #define GET_PLATFORM_RENDERER "dx"
 #endif
 static const string platform_renderer[3] = { "dx"s, "gl"s, "bgfx"s };
-
-#if !defined(EXT_CAPTURE) && !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
-// External captures for VR is a hack, only available for the full windows build using OpenGL
-#define EXT_CAPTURE
-#endif
 
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
@@ -627,92 +639,150 @@ string convert_decimal_point_and_trim(string sz, const bool use_locale);
 
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
+wstring f2wz(const float f, const bool can_convert_decimal_point = true);
 
 string SizeToReadable(const size_t bytes);
 
-WCHAR* MakeWide(const char* const sz);
 #ifndef MINIMAL_DEF_H
-BSTR MakeWideBSTR(const string& sz);
+BSTR MakeWideBSTR(const string& sz, const UINT codepage = CP_ACP);
+BSTR MakeWideBSTR(const wstring& wz);
 #endif
-WCHAR* MakeWide(const string& sz);
-char *MakeChar(const WCHAR* const wz);
-string MakeString(const wstring& wz);
-string MakeString(const WCHAR* const wz);
+WCHAR* MakeWide(const string& sz, const UINT codepage = CP_ACP);
+string MakeString(const wstring& wz, const UINT codepage = CP_ACP);
+string MakeString(const WCHAR* const wz, const UINT codepage = CP_ACP);
 #ifndef MINIMAL_DEF_H
-string MakeString(const BSTR wz);
+string MakeString(const BSTR wz, const UINT codepage = CP_ACP);
 #endif
-wstring MakeWString(const string& sz);
-wstring MakeWString(const char* const sz);
+wstring MakeWString(const string& sz, const UINT codepage = CP_ACP);
+wstring MakeWString(const char* const sz, const UINT codepage = CP_ACP);
 
 // in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
 inline int WideCharToMultiByteNull(
-    const uint32_t CodePage,
-    const uint32_t dwFlags,
-    LPCWSTR        lpWideCharStr,
-    const int      cchWideChar,
-    char*          lpMultiByteStr,
-    const int      cbMultiByte,
-    const char*    lpDefaultChar,
-    BOOL*          lpUsedDefaultChar)
+   const uint32_t CodePage,
+   const uint32_t dwFlags,
+   LPCWSTR        lpWideCharStr,
+   const int      cchWideChar,
+   char*          lpMultiByteStr,
+   const int      cbMultiByte,
+   const char*    lpDefaultChar,
+   BOOL*          lpUsedDefaultChar)
 {
-    const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
-    if(cbMultiByte > 0 && lpMultiByteStr)
-        lpMultiByteStr[cbMultiByte-1] = '\0';
-    return res;
+   const int res = WideCharToMultiByte(CodePage,dwFlags,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,lpDefaultChar,lpUsedDefaultChar);
+   if(cbMultiByte > 0 && lpMultiByteStr)
+      lpMultiByteStr[min(res, cbMultiByte - 1)] = '\0';
+   return res;
 }
 
 
 // in case the incoming string length is >= the maximum wchar length of the outgoing one, MultiByteToWideChar will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
 inline int MultiByteToWideCharNull(
-    const uint32_t CodePage,
-    const uint32_t dwFlags,
-    const char*    lpMultiByteStr,
-    const int      cbMultiByte,
-    LPWSTR         lpWideCharStr,
-    const int      cchWideChar)
+   const uint32_t CodePage,
+   const uint32_t dwFlags,
+   const char*    lpMultiByteStr,
+   const int      cbMultiByte,
+   LPWSTR         lpWideCharStr,
+   const int      cchWideChar)
 {
-    const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
-    if(cchWideChar > 0 && lpWideCharStr)
-        lpWideCharStr[cchWideChar-1] = L'\0';
-    return res;
+   const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
+   if(cchWideChar > 0 && lpWideCharStr)
+      lpWideCharStr[min(res, cchWideChar - 1)] = L'\0';
+   return res;
 }
+
+//
+
+// determine what the byte-size of wchar_t is (and so what a wstring contains)
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#define WCHAR_T_SIZE 2
+static_assert(sizeof(WCHAR) == 2, "WCHAR must be 2 bytes, otherwise change WCHAR_T_SIZE define");
+static_assert(sizeof(wchar_t) == 2, "wchar_t must be 2 bytes, otherwise change WCHAR_T_SIZE define");
+#else
+#define WCHAR_T_SIZE __SIZEOF_WCHAR_T__ // should be 4 on gcc/clang/linux/macOS
+static_assert(__SIZEOF_WCHAR_T__ == 4, "__SIZEOF_WCHAR_T__ must be 4 bytes");
+static_assert(sizeof(WCHAR) == 4, "WCHAR must be 4 bytes");
+static_assert(sizeof(wchar_t) == 4, "wchar_t must be 4 bytes");
+static_assert(sizeof(char16_t) == 2, "char16_t must be 2 bytes, otherwise u16string<->wstring conversions must be adapted");
+#endif
+
+#if (WCHAR_T_SIZE == 4)
+inline std::u16string utf32_to_utf16(const std::wstring& input)
+{
+   std::u16string result;
+   result.reserve(input.size());
+   for (wchar_t wc : input)
+   {
+      char32_t code = static_cast<char32_t>(wc);
+      if (code <= 0xFFFF)
+         result.push_back(static_cast<char16_t>(code));
+      else
+      {
+         code -= 0x10000;
+         result.push_back(static_cast<char16_t>((code >> 10) + 0xD800));
+         result.push_back(static_cast<char16_t>((code & 0x3FF) + 0xDC00));
+      }
+   }
+   return result;
+}
+
+inline std::wstring utf16_to_utf32(const std::u16string& input)
+{
+   std::wstring result;
+   result.reserve(input.size()/2);
+   for (size_t i = 0; i < input.size(); ++i)
+   {
+      const char16_t w1 = input[i];
+      if (w1 >= 0xD800 && w1 <= 0xDBFF) // high surrogate
+      {
+         if (i+1 < input.size())
+         {
+            const char16_t w2 = input[++i];
+            const char32_t code = ((static_cast<char32_t>(w1) - 0xD800) << 10) + (static_cast<char32_t>(w2) - 0xDC00) + 0x10000;
+            result.push_back(code);
+         }
+      }
+      else
+         result.push_back(static_cast<char32_t>(w1));
+   }
+   return result;
+}
+#endif
 
 //
 
 constexpr inline char cLower(char c)
 {
-    if (c >= 'A' && c <= 'Z')
-        c ^= 32; //ASCII convention
-    return c;
+   if (c >= 'A' && c <= 'Z')
+      c ^= 32; //ASCII convention
+   return c;
 }
 
 constexpr inline void szLower(char* pC)
 {
-    while (*pC)
-    {
-        if (*pC >= 'A' && *pC <= 'Z')
-            *pC ^= 32; //ASCII convention
-        pC++;
-    }
+   while (*pC)
+   {
+      if (*pC >= 'A' && *pC <= 'Z')
+         *pC ^= 32; //ASCII convention
+      pC++;
+   }
 }
 
 constexpr inline char cUpper(char c)
 {
-    if (c >= 'a' && c <= 'z')
-        c ^= 32; //ASCII convention
-    return c;
+   if (c >= 'a' && c <= 'z')
+      c ^= 32; //ASCII convention
+   return c;
 }
 
 constexpr inline void szUpper(char* pC)
 {
-    while (*pC)
-    {
-        if (*pC >= 'a' && *pC <= 'z')
-            *pC ^= 32; //ASCII convention
-        pC++;
-    }
+   while (*pC)
+   {
+      if (*pC >= 'a' && *pC <= 'z')
+         *pC ^= 32; //ASCII convention
+      pC++;
+   }
 }
 
 CONSTEXPR inline void StrToLower(string& str)
@@ -745,6 +815,12 @@ CONSTEXPR inline string lowerCase(string input)
    return input;
 }
 
+CONSTEXPR inline wstring lowerCase(wstring input)
+{
+   std::ranges::transform(input.begin(), input.end(), input.begin(), [](wchar_t c) -> wchar_t { return (c >= L'A' && c <= L'Z') ? (c ^ 32) : c; });
+   return input;
+}
+
 CONSTEXPR inline string upperCase(string input)
 {
    StrToUpper(input);
@@ -764,7 +840,7 @@ CONSTEXPR inline size_t StrFindNoCase(const string& strA, const string& strB)
          ++i;
          if (i > strA.length() - strB.length())
             return string::npos;
-         j = 0;
+         j = -1;
       }
    return i;
 }
@@ -809,9 +885,12 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
 
 vector<uint8_t> read_file(const std::filesystem::path& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
+inline bool DirExists(const std::filesystem::path& dirPath) { return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath); }
+inline bool FileExists(const std::filesystem::path& filePath) { return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath); }
+inline string TitleFromFilename(const std::filesystem::path& filename) { return filename.stem().string(); }
+inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
-std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
 string extension_from_path(const string& path);
 bool path_has_extension(const string& path, const string& extension);
 inline string trim_string(const string& str)
@@ -830,10 +909,6 @@ inline bool try_parse_int(const string& str, int& value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 bool try_parse_float(const string& str, float& value);
-bool is_string_numeric(const string& str);
-int string_to_int(const string& str, int default_value = 0);
-float string_to_float(const string& str, float default_value = 0.0f);
-vector<string> parse_csv_line(const string& line);
 // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
 inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const char* const __restrict src)
 {
@@ -862,27 +937,11 @@ inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, cons
    }
    dest[i] = L'\0';
 }
-bool string_contains_case_insensitive(const string& str1, const string& str2);
-bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
 string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
 string string_from_utf8_or_iso8859_1(const char* src, size_t srcSize);
-string create_hex_dump(const uint8_t* buffer, size_t size);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
 #endif
 vector<string> add_line_numbers(const char* src);
-
-#ifndef MINIMAL_DEF_H
-bool try_parse_color(const string& str, OLE_COLOR& value);
-string color_to_hex(OLE_COLOR color);
-
-#ifdef __STANDALONE__
-extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen);
-extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
-extern "C" void external_log_info(const char* format, ...);
-extern "C" void external_log_debug(const char* format, ...);
-extern "C" void external_log_error(const char* format, ...);
-#endif
-#endif

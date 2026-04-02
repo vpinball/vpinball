@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "physics/hitplunger.h"
 #include "ui/win/resource.h"
 
 constexpr int MAXTIPSHAPE = 256;
@@ -156,8 +157,6 @@ public:
    PlungerData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-
    RenderDevice *m_rd = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
 

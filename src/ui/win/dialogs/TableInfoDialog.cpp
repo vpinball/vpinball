@@ -55,7 +55,7 @@ BOOL TableInfoDialog::OnInitDialog()
    m_descriptionEdit.SetWindowText(pt->m_description.c_str());
    m_rulesEdits.SetWindowText(pt->m_rules.c_str());
 
-   const string tmp = (!pt->m_dateSaved.empty() ? pt->m_dateSaved : "N.A."s) + " Revision " + std::to_string(pt->m_numTimesSaved);
+   const string tmp = (!pt->m_dateSaved.empty() ? pt->m_dateSaved : "N/A"s) + " Revision " + std::to_string(pt->m_numTimesSaved);
    m_dateSavedEdit.SetWindowText(tmp.c_str());
 
    // Init list of images

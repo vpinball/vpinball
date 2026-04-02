@@ -98,14 +98,10 @@ PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth,
    m_propPlayerVR_PreviewColorDepth);
 
 // Graphics synchronisation and latency reduction
-#if defined(ENABLE_BGFX)
-PropEnum(Player, SyncMode, "Synchronization"s, "None: No synchronization.\nVertical Sync: Synchronize on video sync, which avoids video tearing, but has higher input latency."s, int, 1, "No Sync"s, "Vertical Sync"s);
-#else
 PropEnum(Player, SyncMode, "Synchronization"s,
-   "None: No synchronization.\nVertical Sync: Synchronize on video sync, which avoids video tearing, but has higher input latency.\nAdaptive Sync: Synchronize on video sync, "
-   "except for late frames (below target FPS), also features higher input latency.\nFrame Pacing: same as adaptive sync, but with lower latency. Comes with the risk of introducing more stutters if the computer is not powerful enough."s,
-   int, 1, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
-#endif
+   "None: No synchronization.\nVertical Sync: Synchronize on video sync, avoids video tearing at the price of high visual latency.\nAdaptive Sync: Synchronize on video sync, "
+   "except for late frames (below target FPS), also features higher visual latency.\nFrame Pacing: pace the frame rendering to limit visual latency, comes with the risk of introducing more stutters if the computer is not powerful enough."s,
+   int, 3, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
 PropFloat(Player, MaxFramerate, "Limit Framerate"s,
    "-1 will limit FPS to the display refresh rate\n0 will not limit the display refresh rate\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
    1000.f, -1.f);
@@ -219,19 +215,23 @@ PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may
    100); // Hacky: This should be a table override, not a player property as it overrides table data
 
 // VR settings
+#if SDL_PLATFORM_ANDROID && defined(ENABLE_XR)
+// Android with VR is native Quest build, so force VR mode
+PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 0, "Enabled"s, "Autodetect"s, "Disabled"s);
+#else
 PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
-PropFloat(PlayerVR, Orientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
-PropFloat(PlayerVR, TableX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
-PropFloat(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
-PropFloat(PlayerVR, TableZ, "View Offset Z"s, "VR view Z offset"s, -100.f, 100.f, 0.f);
+#endif
+PropFloatDyn(PlayerVR, Orientation, "View orientation"s, "VR view orientation"s, -180.f, 180.f, 0.f);
+PropFloatDyn(PlayerVR, TableX, "View Offset X"s, "VR view X offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, TableY, "View Offset Y"s, "VR view Y offset"s, -100.f, 100.f, 0.f);
+PropFloatDyn(PlayerVR, TableZ, "View Offset Z"s, "VR view Z offset"s, -100.f, 100.f, 0.f);
 PropBool(
    PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by a user defined color, to allow color keyed passthrough (for example using Virtual Desktop)"s, false);
 PropInt(PlayerVR, PassthroughColor, "Color Keyed Passthrough color"s, "Color that will replace the background"s, 0x000000, 0xFFFFFF, 0xBB4700);
 PropEnum(Player, VRPreview, "Preview mode"s, "Select VR preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
 PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, "Shrink VR preview"s, false);
+PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass display to the scene"s, false);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
-PropBool(Player, CaptureExternalDMD, "Capture External DMD"s, "Capture an external DMD Window and render it into the VR viewport.\nThis feature is deprecated and unsupported."s, false);
-PropBool(Player, CapturePUP, "Capture PinUp Player"s, "Capture PinUp Player (PUP) Window and render it into the VR viewport.\nThis feature is deprecated and unsupported."s, false);
 // Legacy OpenVR settings (to be removed)
 PropEnum(PlayerVR, EyeFBFormat, "EyeFBFormat"s, "VR frame buffer format"s, int, 1, "RGB 8"s, "RGBA 8 (Recommended)"s, "RGB 16F"s, "RGBA 16F"s);
 PropFloatUnbounded(PlayerVR, Slope, "Slope"s, "VR view slope"s, 6.5f);
@@ -463,7 +463,7 @@ PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, Stereo
 PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 63.f);
 PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
 PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
-PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.f);
+PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye (non dominant eye) applied to anaglyph stereo rendering.\nThis may help to keep the depth perception with less ghosting/retinal rivalry."s, 0.f, 1.f, 0.f);
 PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
@@ -478,41 +478,41 @@ PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2
 PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 PropArray(Player, AnaglyphFilter, int, Int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
    m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
-PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
 PropArray(Player, AnaglyphDynDesat, float, Float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
    m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
    m_propPlayer_Anaglyph10DynDesat);
-PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
 PropArray(Player, AnaglyphDeghost, float, Float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
    m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost, m_propPlayer_Anaglyph10Deghost);
-PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
 PropArray(Player, AnaglyphsRGB, bool, Int, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
    m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
 // Red Cyan
@@ -878,7 +878,7 @@ PropEnum(Controller, DOFShaker, "DOF Shaker"s, "Hints the table script on how to
 PropEnum(Controller, DOFFlippers, "DOF Flippers"s, "Hints the table script on how to handle flipper events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
 PropEnum(Controller, DOFTargets, "DOF Targets"s, "Hints the table script on how to handle target events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
 PropEnum(Controller, DOFDropTargets, "DOF Drop Targets"s, "Hints the table script on how to handle drop target events, between sounds and direct output framework"s, int, 2, "Sound FX"s, "DOF"s, "Both"s);
-PropBool(Controller, ForceDisableB2S, "Disable B2S"s, "Legacy 'Disable B2S' hints script to avoid using B2S controller."s, false);
+PropBool(Controller, ForceDisableB2S, "Disable B2S"s, "Legacy 'Disable B2S' hints script to avoid using B2S controller. Only works with tables using 'controller.vbs' and not using plugins for backglass rendering"s, false);
 
 // Parts Defaults: Balls
 PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);

@@ -39,6 +39,8 @@ void HomePage::BuildPage()
    else
       AddItem(std::make_unique<InGameUIItem>("Point Of View"s, ""s, "settings/pov"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Generic Options"s, ""s, "table/general"s));
+
    if (m_player->m_ptable->TournamentModePossible())
       AddItem(std::make_unique<InGameUIItem>("Generate Tournament File"s, ""s,
          [this]()
@@ -99,6 +101,8 @@ void HomePage::BuildPage()
    ////////////////////////////////////////////////////////////////////////////////////////////////
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Settings"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
+
    AddItem(std::make_unique<InGameUIItem>("Sound Settings"s, ""s, "settings/audio"s));
 
    AddItem(std::make_unique<InGameUIItem>("Graphic Settings"s, ""s, "settings/graphic"s));
@@ -120,9 +124,7 @@ void HomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Alpha/DMD Profile Settings"s, ""s, "settings/display_profiles"s));
 
-   AddItem(std::make_unique<InGameUIItem>("Miscellaneous Settings"s, ""s, "settings/misc"s));
-
-   AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
+   AddItem(std::make_unique<InGameUIItem>("Legacy DOF & B2S Settings"s, ""s, "settings/misc"s));
 
    // FIXME remove unsupported Win32 only legacy BAM headtracking
 #ifdef WIN32
@@ -134,6 +136,7 @@ void HomePage::BuildPage()
 void HomePage::Render(float elapsedMs)
 {
    // Display table name, author, version, blurb and description => Move to a dedicated page ?
+   if (m_player->m_vrDevice == nullptr)
    {
       std::ostringstream info;
 
@@ -157,7 +160,7 @@ void HomePage::Render(float elapsedMs)
          info << "By " << m_player->m_ptable->m_author << ", ";
       if (!m_player->m_ptable->m_version.empty())
          info << "Version: " << m_player->m_ptable->m_version;
-      info << " (" << (!m_player->m_ptable->m_dateSaved.empty() ? m_player->m_ptable->m_dateSaved : "N.A."s) << " Revision " << m_player->m_ptable->m_numTimesSaved << ")\n";
+      info << " (" << (!m_player->m_ptable->m_dateSaved.empty() ? m_player->m_ptable->m_dateSaved : "N/A"s) << " Revision " << m_player->m_ptable->m_numTimesSaved << ")\n";
 
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
          | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
@@ -165,7 +168,7 @@ void HomePage::Render(float elapsedMs)
       ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
       ImGui::SetNextWindowPos(ImVec2(0, 0));
       ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-      ImGui::Begin((std::to_string(reinterpret_cast<uint64_t>(this)) + ".back").c_str(), nullptr, window_flags);
+      ImGui::Begin((std::to_string(reinterpret_cast<size_t>(this)) + ".back").c_str(), nullptr, window_flags);
       m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
       ImGui::Markdown(info.str().c_str(), info.str().length(), m_player->m_liveUI->GetMarkdownConfig());
       ImGui::End();

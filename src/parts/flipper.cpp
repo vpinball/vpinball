@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "flipper.h"
+
 #include "meshes/flipperBase.h"
 #include "utils/objloader.h"
 #include "renderer/Shader.h"
@@ -88,16 +90,15 @@ Flipper::~Flipper()
    assert(m_phitflipper == nullptr);
 }
 
-Flipper *Flipper::CopyForPlay(PinTable *live_table) const
+Flipper *Flipper::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Flipper, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Flipper)
    return dst;
 }
 
-HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Flipper::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    assert(m_phitflipper == nullptr);
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_Center.x = x;
    m_d.m_Center.y = y;
@@ -505,11 +506,10 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down/pressed
 {
+   m_lastRotateTime = usec();
+
    if (m_phitflipper)
    {
-      g_pplayer->m_pininput.m_leftkey_down_usec_rotate_to_end = usec(); // debug only
-      g_pplayer->m_pininput.m_leftkey_down_frame_rotate_to_end = g_pplayer->m_overall_frames;
-
       m_phitflipper->m_flipperMover.m_enableRotateEvent = 1;
       m_phitflipper->m_flipperMover.SetSolenoidState(true);
    }
@@ -755,7 +755,7 @@ void Flipper::UpdateAnimation(const float diff_time_msec)
 void Flipper::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -827,132 +827,115 @@ void Flipper::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Flipper::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_Center);
-   bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
-   bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
-   bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
-   //bw.WriteFloat(FID(FAEO), m_d.m_angleEOS);
-   bw.WriteFloat(FID(FRTN), m_d.m_return);
-   bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
-   bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
-   bw.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
-   bw.WriteFloat(FID(FORC), m_d.m_mass);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
-   bw.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
-   bw.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
-   bw.WriteInt(FID(RHGT), (int)m_d.m_rubberheight); //!! deprecated, remove
-   bw.WriteFloat(FID(RHGF), m_d.m_rubberheight);
-   bw.WriteInt(FID(RWDT), (int)m_d.m_rubberwidth); //!! deprecated, remove
-   bw.WriteFloat(FID(RWDF), m_d.m_rubberwidth);
-   bw.WriteFloat(FID(STRG), m_d.m_strength);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(FRIC), m_d.m_friction);
-   bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
-   bw.WriteFloat(FID(SCTR), m_d.m_scatter);
-   bw.WriteFloat(FID(TODA), m_d.m_torqueDamping);
-   bw.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-   bw.WriteBool(FID(ENBL), m_d.m_enabled);
-   bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
-   bw.WriteFloat(FID(FHGT), m_d.m_height);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_Center);
+   writer.WriteFloat(FID(BASR), m_d.m_BaseRadius);
+   writer.WriteFloat(FID(ENDR), m_d.m_EndRadius);
+   writer.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
+   //writer.WriteFloat(FID(FAEO), m_d.m_angleEOS);
+   writer.WriteFloat(FID(FRTN), m_d.m_return);
+   writer.WriteFloat(FID(ANGS), m_d.m_StartAngle);
+   writer.WriteFloat(FID(ANGE), m_d.m_EndAngle);
+   writer.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
+   writer.WriteFloat(FID(FORC), m_d.m_mass);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
+   writer.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
+   writer.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
+   writer.WriteInt(FID(RHGT), (int)m_d.m_rubberheight); //!! deprecated, remove
+   writer.WriteFloat(FID(RHGF), m_d.m_rubberheight);
+   writer.WriteInt(FID(RWDT), (int)m_d.m_rubberwidth); //!! deprecated, remove
+   writer.WriteFloat(FID(RWDF), m_d.m_rubberwidth);
+   writer.WriteFloat(FID(STRG), m_d.m_strength);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(FRIC), m_d.m_friction);
+   writer.WriteFloat(FID(RPUP), m_d.m_rampUp);
+   writer.WriteFloat(FID(SCTR), m_d.m_scatter);
+   writer.WriteFloat(FID(TODA), m_d.m_torqueDamping);
+   writer.WriteFloat(FID(TDAA), m_d.m_torqueDampingAngle);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   writer.WriteBool(FID(ENBL), m_d.m_enabled);
+   writer.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
+   writer.WriteFloat(FID(FHGT), m_d.m_height);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   SaveSharedEditableFields(writer);
+   writer.EndObject();
 }
 
-HRESULT Flipper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Flipper::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool Flipper::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_Center); break;
-   case FID(BASR): pbr->GetFloat(m_d.m_BaseRadius); break;
-   case FID(ENDR): pbr->GetFloat(m_d.m_EndRadius); break;
-   case FID(FLPR): pbr->GetFloat(m_d.m_FlipperRadiusMax); break;
-   //case FID(FAEO): pbr->GetFloat(m_d.m_angleEOS); break;
-   case FID(FRTN): pbr->GetFloat(m_d.m_return); break;
-   case FID(ANGS): pbr->GetFloat(m_d.m_StartAngle); break;
-   case FID(ANGE): pbr->GetFloat(m_d.m_EndAngle); break;
-   case FID(OVRP): pbr->GetInt(m_d.m_OverridePhysics); break;
-   case FID(FORC): pbr->GetFloat(m_d.m_mass); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(RUMA): pbr->GetString(m_d.m_szRubberMaterial); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   case FID(RTHK): //!! deprecated, remove
-   {
-      int rt;
-      pbr->GetInt(rt);
-      m_d.m_rubberthickness = (float)rt;
-      break;
-   }
-   case FID(RTHF): pbr->GetFloat(m_d.m_rubberthickness); break;
-   case FID(RHGT): //!! deprecated, remove
-   {
-      int rh;
-      pbr->GetInt(rh);
-      m_d.m_rubberheight = (float)rh;
-      break;
-   }
-   case FID(RHGF): pbr->GetFloat(m_d.m_rubberheight); break;
-   case FID(RWDT): //!! deprecated, remove
-   {
-      int rw;
-      pbr->GetInt(rw);
-      m_d.m_rubberwidth = (float)rw;
-      break;
-   }
-   case FID(RWDF): pbr->GetFloat(m_d.m_rubberwidth); break;
-   case FID(FHGT): pbr->GetFloat(m_d.m_height); break;
-   case FID(STRG): pbr->GetFloat(m_d.m_strength); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(FRIC): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RPUP): pbr->GetFloat(m_d.m_rampUp); break;
-   case FID(SCTR): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(TODA): pbr->GetFloat(m_d.m_torqueDamping); break;
-   case FID(TDAA): pbr->GetFloat(m_d.m_torqueDampingAngle); break;
-   case FID(FRMN): pbr->GetFloat(m_d.m_FlipperRadiusMin); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   case FID(ENBL): pbr->GetBool(m_d.m_enabled); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT Flipper::InitPostLoad()
-{
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_Center = reader.AsVector2(); break;
+         case FID(BASR): m_d.m_BaseRadius = reader.AsFloat(); break;
+         case FID(ENDR): m_d.m_EndRadius = reader.AsFloat(); break;
+         case FID(FLPR): m_d.m_FlipperRadiusMax = reader.AsFloat(); break;
+         //case FID(FAEO): m_d.m_angleEOS = reader.AsFloat(); break;
+         case FID(FRTN): m_d.m_return = reader.AsFloat(); break;
+         case FID(ANGS): m_d.m_StartAngle = reader.AsFloat(); break;
+         case FID(ANGE): m_d.m_EndAngle = reader.AsFloat(); break;
+         case FID(OVRP): m_d.m_OverridePhysics = reader.AsInt(); break;
+         case FID(FORC): m_d.m_mass = reader.AsFloat(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(RUMA): m_d.m_szRubberMaterial = reader.AsString(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(RTHK): //!! deprecated, remove
+         {
+            int rt;
+            rt = reader.AsInt();
+            m_d.m_rubberthickness = (float)rt;
+            break;
+         }
+         case FID(RTHF): m_d.m_rubberthickness = reader.AsFloat(); break;
+         case FID(RHGT): //!! deprecated, remove
+         {
+            int rh;
+            rh = reader.AsInt();
+            m_d.m_rubberheight = (float)rh;
+            break;
+         }
+         case FID(RHGF): m_d.m_rubberheight = reader.AsFloat(); break;
+         case FID(RWDT): //!! deprecated, remove
+         {
+            int rw;
+            rw = reader.AsInt();
+            m_d.m_rubberwidth = (float)rw;
+            break;
+         }
+         case FID(RWDF): m_d.m_rubberwidth = reader.AsFloat(); break;
+         case FID(FHGT): m_d.m_height = reader.AsFloat(); break;
+         case FID(STRG): m_d.m_strength = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(FRIC): m_d.m_friction = reader.AsFloat(); break;
+         case FID(RPUP): m_d.m_rampUp = reader.AsFloat(); break;
+         case FID(SCTR): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(TODA): m_d.m_torqueDamping = reader.AsFloat(); break;
+         case FID(TDAA): m_d.m_torqueDampingAngle = reader.AsFloat(); break;
+         case FID(FRMN): m_d.m_FlipperRadiusMin = reader.AsFloat(); break;
+         case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
+         case FID(ENBL): m_d.m_enabled = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
    if (m_d.m_height > 1000.0f)
       m_d.m_height = 50.0f;
    if (m_d.m_rubberheight > 1000.f)
@@ -961,10 +944,7 @@ HRESULT Flipper::InitPostLoad()
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
    if (m_d.m_rubberwidth > 1000.f)
       m_d.m_rubberwidth = m_d.m_height - 16.0f;
-
-   return S_OK;
 }
-
 
 #pragma region ScriptProxy
 

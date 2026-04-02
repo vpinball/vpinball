@@ -27,6 +27,7 @@
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
+#include "DXGIRegistry.h"
 #endif
 
 #if defined(ENABLE_DX9)
@@ -68,7 +69,7 @@ public:
 class RenderDevice final
 {
 public:
-   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const bool isStereo, const bool isAnaglyph, const bool isVR, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    void AddWindow(VPX::Window* wnd);
@@ -221,6 +222,7 @@ public:
    void SetVisualLatencyCorrection(int latencyMs) { m_visualLatencyCorrection = latencyMs; }
 
 private:
+   const bool m_isAnaglyph;
    const bool m_isVR;
 
    bool m_useLowPrecision = false; // OpenGL ES use low precision float and needs some clamping to avoid artifacts, but the clamping causes artefacts if applied with VR scene scaling on other backends.
@@ -252,46 +254,32 @@ private:
 
 #if defined(ENABLE_BGFX)
 public:
+   void NextView();
+   void ResetActiveView();
+
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
-   void NextView()
-   {
-      if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
-      {
-         PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
-         SubmitRenderFrame();
-         SubmitAndFlipFrame();
-      }
-      m_activeViewId++;
-      bgfx::resetView(m_activeViewId);
-      bgfx::setViewMode(m_activeViewId, bgfx::ViewMode::Sequential);
-      bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
-      bgfx::touch(m_activeViewId);
-   }
-   void ResetActiveView()
-   {
-      RenderTarget::OnFrameFlushed();
-      m_activeViewId = 1; // view 0 & 1 are reserved for mipmap generation (so 1 is before the first available for rendering)
-   }
-   void SubmitAndFlipFrame()
-   {
-      ResetActiveView();
-      bgfx::frame(); // BGFX always flips backbuffer when its render queue is submitted
-   }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
-   int m_activeViewId = 0;
+   bgfx::ViewId m_activeViewId = 0;
    uint64_t m_bgfxState = 0;
 
-   bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled
+   bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
 private:
+   void SubmitAndFlipFrame(bool present);
+   bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
+   static colorFormat BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format);
+   static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
+
+   uint32_t m_lastPresentFrameIdx = 0;
+   float m_renderLatency = 0.f;
+
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
-   static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;
 
@@ -308,7 +296,7 @@ private:
       uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
       bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
       void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
-      void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override;
+      void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip) override;
       void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
       void captureEnd() override { }
       void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
@@ -337,6 +325,9 @@ private:
 
    void CaptureGLScreenshot();
 
+   #if !defined(__STANDALONE__)
+   DXGIRegistry m_DXGIRegistry;
+   #endif
 #elif defined(ENABLE_DX9)
 public:
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }

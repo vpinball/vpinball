@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "physics/collide.h"
+#include "collide.h"
 
 // Fake/artistic ball motion trail length, but also used for spin kill, so may not be lower than 10 (to keep 100ms of ball history at 10ms interval)
 #define MAX_BALL_TRAIL_POS 10
@@ -23,7 +23,7 @@ struct BallS
 {
    Vertex3Ds m_pos = Vertex3Ds(0.f, 0.f, 0.f);
    Vertex3Ds m_vel = Vertex3Ds(0.f, 0.f, 0.f); // ball velocity
-   float m_radius = 25.f;
+   float m_radius = DEFAULT_BALL_SIZE;
    float m_mass   = 1.f;
    vector<IFireEvents*>* m_vpVolObjs; // vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
    bool m_lockedInKicker = false;
@@ -86,5 +86,5 @@ public:
    const Vertex3Ds& GetOldPosition(uint64_t physicsTimeUs) const;
 
 private:
-   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin and for ball trails
+   Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin (see C_BALL_SPIN_HACK) and for ball trails
 };

@@ -54,50 +54,55 @@ void VPXLoadFileProgressBar::OperationStarted()
 
 void VPXLoadFileProgressBar::AboutToProcessTable(int elementCount)
 {
-   m_loadedElementCount = 0;
-   ::SendMessage(m_progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, elementCount));
 }
 
 
-void VPXLoadFileProgressBar::StepProgress(bool updateBar)
+void VPXLoadFileProgressBar::Update()
 {
-   m_loadedElementCount++;
-
-   if (updateBar && m_progressBar != nullptr) {
-      ::SendMessage(m_progressBar, PBM_SETPOS, m_loadedElementCount, 0);
+   if (m_progressBar) {
+      ::SendMessage(m_progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, m_totalItems + m_totalSounds + m_totalImages + m_totalFonts + m_totalCollections));
+      ::SendMessage(m_progressBar, PBM_SETPOS, m_itemsCount + m_soundCount + m_imageCount + m_fontCount + m_collectionCount, 0);
    }
 }
 
 
 void VPXLoadFileProgressBar::ItemHasBeenProcessed(int itemsCount, int totalItems)
 {
-   StepProgress();
+   m_itemsCount = itemsCount;
+   m_totalItems = totalItems;
+   Update();
 }
 
 
 void VPXLoadFileProgressBar::SoundHasBeenProcessed(int soundCount, int totalSounds)
 {
-   StepProgress();
+   m_soundCount = soundCount;
+   m_totalSounds = totalSounds;
+   Update();
 }
 
 
 void VPXLoadFileProgressBar::ImageHasBeenProcessed(int imageCount, int totalImages)
 {
-   // Only update item count. Since we know that mage are loaded in a multi-threaded
-   // environment, we prefere not to update the GUI progress bar to avoid any threading issues.
-   StepProgress(false);
+   m_imageCount = imageCount;
+   m_totalImages = totalImages;
+   Update();
 }
 
 
 void VPXLoadFileProgressBar::FontHasBeenProcessed(int fontCount, int totalFonts)
 {
-   StepProgress();
+   m_fontCount = fontCount;
+   m_totalFonts = totalFonts;
+   Update();
 }
 
 
 void VPXLoadFileProgressBar::CollectionHasBeenProcessed(int collectionCount, int totalCollection)
 {
-   StepProgress();
+   m_collectionCount = collectionCount;
+   m_totalCollections = totalCollection;
+   Update();
 }
 
 

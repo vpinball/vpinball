@@ -4,6 +4,27 @@
 #include "ui/win/resource.h"
 #include "DrawingOrderDialog.h"
 
+#include "parts/plunger.h"
+#include "parts/flipper.h"
+#include "parts/timer.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 DrawingOrderDialog::DrawingOrderDialog(bool select)
    : CDialog(IDD_DRAWING_ORDER)
    , m_drawingOrderSelect(select)
@@ -69,74 +90,74 @@ BOOL DrawingOrderDialog::OnInitDialog()
             if (pedit->GetItemType() == eItemSurface)
             {
                const Surface * const sur = (Surface*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(sur->m_d.m_heighttop).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Wall");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(sur->m_d.m_heighttop).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Wall");
             }
             else if (pedit->GetItemType() == eItemPrimitive)
             {
                const Primitive * const prim = (Primitive*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(prim->m_d.m_vPosition.z).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Primitive");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(prim->m_d.m_vPosition.z).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Primitive");
             }
             else if (pedit->GetItemType() == eItemRamp)
             {
                const Ramp * const ramp = (Ramp*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(ramp->m_d.m_heighttop).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Ramp");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(ramp->m_d.m_heighttop).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Ramp");
             }
             else if (pedit->GetItemType() == eItemFlasher)
             {
                const Flasher * const flasher = (Flasher*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flasher->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flasher");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(flasher->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Flasher");
             }
             else if (pedit->GetItemType() == eItemRubber)
             {
                const Rubber * const rubber = (Rubber*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(rubber->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Rubber");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(rubber->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Rubber");
             }
             else if (pedit->GetItemType() == eItemSpinner)
             {
                const Spinner * const spin = (Spinner*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(spin->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Spinner");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(spin->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Spinner");
             }
             else if (pedit->GetItemType() == eItemKicker)
             {
                const Kicker * const kick = (Kicker*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(kick->m_d.m_hitAccuracy).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Kicker");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(kick->m_d.m_hitAccuracy).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Kicker");
             }
             else if (pedit->GetItemType() == eItemLight)
             {
                //const Light * const light = (Light*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)"n.a.");
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Light");
+               ListView_SetItemText_Safe(hOrderList, i, 1, "N/A");
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Light");
             }
             else if (pedit->GetItemType() == eItemBumper)
             {
                //const Bumper * const bump = (Bumper*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)"n.a.");
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Bumper");
+               ListView_SetItemText_Safe(hOrderList, i, 1, "N/A");
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Bumper");
             }
             else if (pedit->GetItemType() == eItemFlipper)
             {
                const Flipper * const flip = (Flipper*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flip->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flipper");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(flip->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Flipper");
             }
             else if (pedit->GetItemType() == eItemGate)
             {
                const Gate * const gate = (Gate*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(gate->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Gate");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(gate->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Gate");
             }
             else if (pedit->GetItemType() == eItemPlunger)
             {
                const Plunger * const plung = (Plunger*)pedit;
-               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(plung->m_d.m_height).c_str());
-               ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Plunger");
+               ListView_SetItemText_Safe(hOrderList, i, 1, f2sz(plung->m_d.m_height).c_str());
+               ListView_SetItemText_Safe(hOrderList, i, 2, "Plunger");
             }
          }
       }
@@ -193,8 +214,8 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
          lv.iSubItem = 0;
          lv.pszText = text0;
          ListView_InsertItem(hOrderList, &lv);
-         ListView_SetItemText(hOrderList, idx - 1, 1, text1);
-         ListView_SetItemText(hOrderList, idx - 1, 2, text2);
+         ListView_SetItemText_Safe(hOrderList, idx - 1, 1, text1);
+         ListView_SetItemText_Safe(hOrderList, idx - 1, 2, text2);
          ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
          ListView_SetItemState(hOrderList, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
          ListView_SetItemState(hOrderList, idx - 1, LVIS_FOCUSED, LVIS_FOCUSED);
@@ -230,8 +251,8 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             lv.iSubItem = 0;
             lv.pszText = text0;
             ListView_InsertItem(hOrderList, &lv);
-            ListView_SetItemText(hOrderList, idx + 1, 1, text1);
-            ListView_SetItemText(hOrderList, idx + 1, 2, text2);
+            ListView_SetItemText_Safe(hOrderList, idx + 1, 1, text1);
+            ListView_SetItemText_Safe(hOrderList, idx + 1, 2, text2);
             ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);
@@ -259,8 +280,8 @@ void DrawingOrderDialog::UpdateDrawingOrder(IEditable *ptr, bool up)
             lv.iSubItem = 0;
             lv.pszText = text0;
             ListView_InsertItem(hOrderList, &lv);
-            ListView_SetItemText(hOrderList, idx + 1, 1, text1);
-            ListView_SetItemText(hOrderList, idx + 1, 2, text2);
+            ListView_SetItemText_Safe(hOrderList, idx + 1, 1, text1);
+            ListView_SetItemText_Safe(hOrderList, idx + 1, 2, text2);
             ListView_SetItemState(hOrderList, -1, 0, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
             ListView_SetItemState(hOrderList, idx + 1, LVIS_FOCUSED, LVIS_FOCUSED);

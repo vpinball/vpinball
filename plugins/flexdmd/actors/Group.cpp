@@ -6,6 +6,7 @@
 #include "Image.h"
 
 #include <algorithm>
+#include <format>
 
 namespace Flex {
 
@@ -78,7 +79,7 @@ Actor* Group::Get(const string& name, bool logMissing)
          }
          if (child->GetType() == Actor::AT_Group)
          {
-            if (Actor* found = static_cast<Group*>(child)->Get(name, logMissing); found)
+            if (Actor* found = static_cast<Group*>(child)->Get(name, false); found)
                return found;
          }
       }
@@ -120,7 +121,7 @@ Actor* Group::Get(const string& name, bool logMissing)
 
    if (logMissing)
    {
-      LOGW("Actor %s not found in children of %s", name.c_str(), GetName().c_str());
+      LOGW(std::format("Actor {} not found in children of {}", name, GetName()));
    }
 
    return nullptr;
@@ -208,7 +209,7 @@ void Group::RemoveActor(Actor* actor)
 
 void Group::RemoveAll()
 {
-   //LOGD("Remove all children: %s", GetName().c_str());
+   //LOGD("Remove all children: " + GetName());
    for (Actor* child : m_children)
    {
       child->SetParent(nullptr);

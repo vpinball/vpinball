@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ball.h"
+#include "light.h"
+
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #endif
@@ -18,9 +21,9 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 
 Ball::Ball() : m_id(GetNextBallID())
 {
-   wcsncpy_s(m_wzName, std::size(m_wzName), (L"LiveBall" + std::to_wstring(m_id)).c_str()); // Default name
-   m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
-   m_hitBall.m_d.m_radius = 25.f;
+   m_wzName = L"LiveBall" + std::to_wstring(m_id); // Default name
+   m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, DEFAULT_BALL_SIZE);
+   m_hitBall.m_d.m_radius = DEFAULT_BALL_SIZE;
    m_hitBall.m_d.m_mass = 1.f;
    m_hitBall.m_pBall = this;
    m_hitBall.m_editable = this;
@@ -36,18 +39,17 @@ Ball::~Ball()
 
 #pragma region Init
 
-Ball *Ball::CopyForPlay(PinTable *live_table) const
+Ball *Ball::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Ball, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Ball)
    dst->m_hitBall.m_d.m_pos = m_hitBall.m_d.m_pos;
    dst->m_hitBall.m_d.m_mass = m_hitBall.m_d.m_mass;
    dst->m_hitBall.m_d.m_radius = m_hitBall.m_d.m_radius;
    return dst;
 }
 
-HRESULT Ball::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Ball::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_hitBall.m_d.m_pos.x = x;
    m_hitBall.m_d.m_pos.y = y;
@@ -115,68 +117,54 @@ void Ball::WriteRegDefaults()
 #undef LinkProp
 }
 
-HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Ball::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-   bw.WriteVector3(FID(VCEN), m_hitBall.m_d.m_pos);
-   bw.WriteFloat(FID(RADI), m_hitBall.m_d.m_radius);
-   bw.WriteFloat(FID(MASS), m_hitBall.m_d.m_mass);
-   bw.WriteBool(FID(FREF), m_d.m_forceReflection);
-   bw.WriteBool(FID(DCMD), m_d.m_decalMode);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(DIMG), m_d.m_imageDecal);
-   bw.WriteFloat(FID(BISC), m_d.m_bulb_intensity_scale);
-   bw.WriteFloat(FID(PFRF), m_d.m_playfieldReflectionStrength);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteBool(FID(SPHR), m_d.m_pinballEnvSphericalMapping);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   ISelect::SaveData(pstm, hcrypthash);
-   bw.WriteTag(FID(ENDB));
-   return S_OK;
+   writer.WriteVector3(FID(VCEN), m_hitBall.m_d.m_pos);
+   writer.WriteFloat(FID(RADI), m_hitBall.m_d.m_radius);
+   writer.WriteFloat(FID(MASS), m_hitBall.m_d.m_mass);
+   writer.WriteBool(FID(FREF), m_d.m_forceReflection);
+   writer.WriteBool(FID(DCMD), m_d.m_decalMode);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(DIMG), m_d.m_imageDecal);
+   writer.WriteFloat(FID(BISC), m_d.m_bulb_intensity_scale);
+   writer.WriteFloat(FID(PFRF), m_d.m_playfieldReflectionStrength);
+   writer.WriteInt(FID(COLR), m_d.m_color);
+   writer.WriteBool(FID(SPHR), m_d.m_pinballEnvSphericalMapping);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   SaveSharedEditableFields(writer);
+   writer.EndObject();
 }
 
-HRESULT Ball::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Ball::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool Ball::LoadToken(const int id, BiffReader *const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
-   case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
-   case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;
-   case FID(FREF): pbr->GetBool(m_d.m_forceReflection); break;
-   case FID(DCMD): pbr->GetBool(m_d.m_decalMode); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(DIMG): pbr->GetString(m_d.m_imageDecal); break;
-   case FID(BISC): pbr->GetFloat(m_d.m_bulb_intensity_scale); break;
-   case FID(PFRF): pbr->GetFloat(m_d.m_playfieldReflectionStrength); break;
-   case FID(COLR): pbr->GetInt(m_d.m_color); break;
-   case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT Ball::InitPostLoad()
-{
-   return S_OK;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_hitBall.m_d.m_pos = reader.AsVector3(); break;
+         case FID(RADI): m_hitBall.m_d.m_radius = reader.AsFloat(); break;
+         case FID(MASS): m_hitBall.m_d.m_mass = reader.AsFloat(); break;
+         case FID(FREF): m_d.m_forceReflection = reader.AsBool(); break;
+         case FID(DCMD): m_d.m_decalMode = reader.AsBool(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(DIMG): m_d.m_imageDecal = reader.AsString(); break;
+         case FID(BISC): m_d.m_bulb_intensity_scale = reader.AsFloat(); break;
+         case FID(PFRF): m_d.m_playfieldReflectionStrength = reader.AsFloat(); break;
+         case FID(COLR): m_d.m_color = reader.AsInt(); break;
+         case FID(SPHR): m_d.m_pinballEnvSphericalMapping = reader.AsBool(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
 }
 
 #pragma endregion
@@ -284,7 +272,7 @@ static inline float map_bulblight_to_emission(const Light* const l) // magic map
 void Ball::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -487,7 +475,7 @@ void Ball::Render(const unsigned int renderMask)
          Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
          // Release on main thread as Ball methods are not multithreaded
-         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
+         g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)

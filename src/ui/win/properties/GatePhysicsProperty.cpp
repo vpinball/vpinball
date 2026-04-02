@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "parts/gate.h"
+
 #include "ui/win/properties/GatePhysicsProperty.h"
 
 GatePhysicsProperty::GatePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPGATE_PHYSICS, pvsel)

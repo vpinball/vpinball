@@ -3,38 +3,8 @@
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_common.txt")
 
-set(WINE_SOURCES
-   standalone/inc/wine/dlls/atl/atl.c
-   standalone/inc/wine/dlls/oleaut32/oleaut.c
-   standalone/inc/wine/dlls/oleaut32/variant.c
-   standalone/inc/wine/dlls/oleaut32/varformat.c
-   standalone/inc/wine/dlls/oleaut32/vartype.c
-   standalone/inc/wine/dlls/oleaut32/safearray.c
-   standalone/inc/wine/dlls/vbscript/compile.c
-   standalone/inc/wine/dlls/vbscript/global.c
-   standalone/inc/wine/dlls/vbscript/interp.c
-   standalone/inc/wine/dlls/vbscript/lex.c
-   standalone/inc/wine/dlls/vbscript/regexp.c
-   standalone/inc/wine/dlls/vbscript/utils.c
-   standalone/inc/wine/dlls/vbscript/vbdisp.c
-   standalone/inc/wine/dlls/vbscript/vbregexp.c
-   standalone/inc/wine/dlls/vbscript/vbscript.c
-   standalone/inc/wine/dlls/vbscript/vbscript_main.c
-   standalone/inc/wine/dlls/vbscript/parser.tab.c
-   standalone/inc/wine/dlls/scrrun/dictionary.c
-   standalone/inc/wine/dlls/scrrun/filesystem.c
-   standalone/inc/wine/dlls/scrrun/scrrun.c
-   standalone/inc/wine/dlls/kernelbase/locale.c
-   standalone/inc/wine/wine.c
-)
-
-set_source_files_properties(${WINE_SOURCES} PROPERTIES
-   COMPILE_OPTIONS "-Wno-format"
-)
-
 set(VPX_STANDALONE_SOURCES
    ${VPX_SOURCES}
-   ${WINE_SOURCES}
 
    standalone/vpinball_standalone_i.c
    standalone/vpinball_standalone_i.h

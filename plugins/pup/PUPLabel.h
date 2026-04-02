@@ -142,8 +142,8 @@ private:
 
    class Animation {
    public:
-      Animation(PUPLabel* label, int lengthMs, int foregroundColor, int flashingFreq);
-      Animation(PUPLabel* label, int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor);
 
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
 
@@ -154,7 +154,7 @@ private:
 
    private:
       const PUPLabel* m_label;
-      const int m_lengthMs;
+      const unsigned int m_lengthMs;
       const int m_foregroundColor;
       const uint64_t m_startTimestamp;
 

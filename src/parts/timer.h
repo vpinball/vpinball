@@ -93,7 +93,4 @@ public:
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal) { return put_TimerEnabled(newVal); }
 
    TimerData m_d;
-
-private:
-   PinTable *m_ptable = nullptr;
 };

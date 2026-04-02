@@ -230,7 +230,7 @@ float NudgeAccelerationFilter::Get(uint64_t timestampNs)
       {
          // sign change/zero crossing - note the time
          m_tzc = frameTime;
-         IF_DEBUG_NUDGE(notes += "zc ";)
+         IF_DEBUG_NUDGE(notes += "zc "sv;)
       }
       else if (fabsf(a) <= .01f)
       {
@@ -264,7 +264,7 @@ float NudgeAccelerationFilter::Get(uint64_t timestampNs)
       if (fabsf(m_sum) < .02f)
       {
          // bring the residual acceleration exactly to rest
-         IF_DEBUG_NUDGE(notes += "zero ";)
+         IF_DEBUG_NUDGE(notes += "zero "sv;)
             a -= m_sum;
          m_sum = 0.f;
 
@@ -276,7 +276,7 @@ float NudgeAccelerationFilter::Get(uint64_t timestampNs)
       {
          // bring the running total toward neutral
          const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0 / .02)))) * (m_sum < 0.0f ? -.02f : .02f);
-         IF_DEBUG_NUDGE(notes += "damp ";)
+         IF_DEBUG_NUDGE(notes += "damp "sv;)
             a -= corr;
          m_sum -= corr;
 

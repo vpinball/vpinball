@@ -25,7 +25,7 @@ public:
    const string& GetCharacter() const { return m_szCharacter; }
    void SetCharacter(const string& szCharacter);
    void InitSegments(const SegmentNumberType type, const float thickness);
-   void InitMatrix(const SDL_FPoint& location, Matrix* pMatrix);
+   void InitMatrix(const SDL_FPoint& location, const Matrix* pMatrix);
    static bool SetSegmentState(Segment* pSegment, const bool isOn);
    void GetSegmentRegions();
    void DisplayCharacter(const string& szCharacter);

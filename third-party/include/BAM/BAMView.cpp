@@ -133,7 +133,7 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
    // Get data from BAM Tracker
    if (BAM.IsBAMTrackerPresent())
    {
-      // we use Screen Width & Height as Native Resolution. Only aspect ration is important
+      // we use Screen Width & Height as Native Resolution. Only aspect ratio is important
       DisplayNativeWidth = BAM.GetScreenWidth(); // [mm]
       DisplayNativeHeight = BAM.GetScreenHeight(); // [mm]
    }
@@ -207,8 +207,7 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
 
 std::wstring GetFileNameForSettingsXML()
 {
-   const string path = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "BAMViewSettings.xml").string();
-   return MakeWString(path);
+   return g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "BAMViewSettings.xml").wstring();
 }
 
 std::string GetTableName()
@@ -238,10 +237,9 @@ bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
 
 std::string LoadFile(const std::wstring& path)
 {
-   HANDLE hFile;
    OVERLAPPED ol = {};
 
-   hFile = CreateFileW(path.c_str(), GENERIC_READ,
+   HANDLE hFile = CreateFileW(path.c_str(), GENERIC_READ,
       FILE_SHARE_READ, //FILE_SHARE_READ | FILE_FLAG_OVERLAPPED,
       NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -419,7 +417,7 @@ void LoadXML()
          g_TableSettings = LoadXML(ts);
          return;
       }
-      if (szName && "Default"s == szName)
+      if (szName && "Default"sv == szName)
       {
          g_DefaultSettings = LoadXML(ts);
       }

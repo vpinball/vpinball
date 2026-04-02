@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstdarg>
 #include <cstdlib>
+#include <format>
 
 #include <thread>
 #include <mutex>
@@ -18,6 +19,7 @@
 #include <string>
 using std::string;
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 #include <vector>
 using std::vector;
@@ -47,16 +49,16 @@ using std::vector;
 namespace PUP
 {
 
-LPI_USE();
-#define LOGD PUP::LPI_LOGD
-#define LOGI PUP::LPI_LOGI
-#define LOGW PUP::LPI_LOGW
-#define LOGE PUP::LPI_LOGE
+LPI_USE_CPP();
+#define LOGD PUP::LPI_LOGD_CPP
+#define LOGI PUP::LPI_LOGI_CPP
+#define LOGW PUP::LPI_LOGW_CPP
+#define LOGE PUP::LPI_LOGE_CPP
 
 #ifdef _DEBUG
-   #define NOT_IMPLEMENTED(...) { assert(false); LOGE(__VA_ARGS__); }
+   #define NOT_IMPLEMENTED(x) { assert(false); LOGE(x); }
 #else
-   #define NOT_IMPLEMENTED(...) LOGE(__VA_ARGS__)
+   #define NOT_IMPLEMENTED(x) LOGE(x)
 #endif
 
 PSC_USE_ERROR();

@@ -4,12 +4,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <format>
 
 #include "common.h"
 #include "plugins/VPXPlugin.h"
 #include <altsound.h>
 
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 #ifndef _MSC_VER
  #define strcpy_s(A, B, C) strncpy(A, C, B)
@@ -17,7 +19,7 @@ using namespace std::string_literals;
 
 namespace AltSound {
 
-LPI_IMPLEMENT
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 MSGPI_STRING_VAL_SETTING(altsoundFolderProp, "Folder", "AltSound Folder", "", true, "", 1024);
 
@@ -124,7 +126,7 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
     vpxApi->GetVpxInfo(&vpxInfo);
     AltSoundSetLogger(vpxInfo.prefPath, ALTSOUND_LOG_LEVEL_INFO, false);
 
-    LOGI("Initializing AltSound for game: %s, basePath: %s", gameId.c_str(), basePath.c_str());
+    LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, basePath));
 
     if (AltSoundInit(basePath, gameId, 44100, 2, 128)) {
         AltSoundSetAudioCallback(AudioCallback, nullptr);
@@ -141,9 +143,9 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
         audioSrcDef.sampleRate = 44100;
         msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
 
-        LOGI("AltSound initialized successfully for game: %s", gameId.c_str());
+        LOGI("AltSound initialized successfully for game: " + gameId);
     } else {
-        LOGE("Failed to initialize AltSound for game: %s", gameId.c_str());
+        LOGE("Failed to initialize AltSound for game: " + gameId);
     }
 }
 
@@ -186,11 +188,11 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
     std::filesystem::path basePath;
 
     // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
-    if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound" / msg->gameId); !path1.empty())
+    if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / msg->gameId); !path1.empty())
         basePath = tablePath.parent_path();
     // Priority 2: pinmame/altsound/<rom>
-    else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame" / "altsound" / msg->gameId); !path2.empty())
-        basePath = tablePath.parent_path() / "pinmame";
+    else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / msg->gameId); !path2.empty())
+        basePath = tablePath.parent_path() / "pinmame"sv;
     // Priority 3: global setting
     else
     {
@@ -200,9 +202,9 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
     }
 
     if (!basePath.empty()) {
-        std::filesystem::path altsoundGamePath = basePath / "altsound" / msg->gameId;
+        std::filesystem::path altsoundGamePath = basePath / "altsound"sv / msg->gameId;
         if (std::filesystem::exists(altsoundGamePath)) {
-            LOGI("Found altsound directory for game: %s at %s", msg->gameId, altsoundGamePath.c_str());
+            LOGI(std::format("Found altsound directory for game: {} at {}", msg->gameId, altsoundGamePath.string()));
             StartAltSound(msg->gameId, basePath.string(), msg->hardwareGen);
         }
     }
@@ -256,7 +258,7 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
     msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
     msgApi->SubscribeMsg(endpointId, onSoundCommandId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_SOUND_COMMAND), OnSoundCommand, nullptr);
 
-    LOGI("AltSound Plugin loaded successfully");
+    LOGI("AltSound Plugin loaded successfully"s);
 }
 
 MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
@@ -266,17 +268,17 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
     if (msgApi) {
         msgApi->FlushPendingCallbacks(endpointId);
         if (onControllerGameStartId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
+            msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
             msgApi->ReleaseMsgID(onControllerGameStartId);
             onControllerGameStartId = 0;
         }
         if (onSoundCommandId != 0) {
-            msgApi->UnsubscribeMsg(onSoundCommandId, OnSoundCommand);
+            msgApi->UnsubscribeMsg(onSoundCommandId, OnSoundCommand, nullptr);
             msgApi->ReleaseMsgID(onSoundCommandId);
             onSoundCommandId = 0;
         }
         if (onControllerGameEndId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
+            msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
             msgApi->ReleaseMsgID(onControllerGameEndId);
             onControllerGameEndId = 0;
         }
@@ -285,12 +287,12 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
             onAudioUpdateId = 0;
         }
         if (getAudioSrcId != 0) {
-            msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc);
+            msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
             msgApi->ReleaseMsgID(getAudioSrcId);
             getAudioSrcId = 0;
         }
         if (onAudioSrcChangedId != 0) {
-            msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged);
+            msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged, nullptr);
             msgApi->ReleaseMsgID(onAudioSrcChangedId);
             onAudioSrcChangedId = 0;
         }

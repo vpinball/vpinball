@@ -67,11 +67,12 @@ public:
    
    struct DisplayState
    {
-      DisplaySrcId *source = nullptr;
+      const DisplaySrcId *source = nullptr;
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
-   void SetDisplayFilter(std::function<bool(const DisplaySrcId& src)> filter);
+   void SetDisplayFilter(const std::function<bool(const DisplaySrcId& src)>& filter);
+   std::string DumpDisplaySources() const;
    
    struct SegDisplayState
    {
@@ -84,30 +85,34 @@ private:
    const MsgPluginAPI& m_msgAPI;
    const unsigned int m_endpointId;
 
-   const unsigned int m_getDevSrcMsgId, m_onDevChangedMsgId;
+   const unsigned int m_getDevSrcMsgId;
+   const unsigned int m_onDevChangedMsgId;
    static void OnDevSrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<DevSrcId> m_deviceSources;
 
-   const unsigned int m_getInputSrcMsgId, m_onInputChangedMsgId;
+   const unsigned int m_getInputSrcMsgId;
+   const unsigned int m_onInputChangedMsgId;
    static void OnInputSrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<InputSrcId> m_inputSources;
 
-   typedef std::function<float(const std::string &)> floatCacheLambda;
+   using floatCacheLambda = std::function<float(const std::string &)>;
    ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;
 
-   const unsigned int m_getSegSrcMsgId, m_onSegChangedMsgId;
+   const unsigned int m_getSegSrcMsgId;
+   const unsigned int m_onSegChangedMsgId;
    static void OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<SegSrcId> m_segSources;
 
-   typedef std::function<SegDisplayState(const std::string &)> segCacheLambda;
+   using segCacheLambda = std::function<SegDisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, segCacheLambda> m_segCache;
 
-   const unsigned int m_getDisplaySrcMsgId, m_onDisplayChangedMsgId;
+   const unsigned int m_getDisplaySrcMsgId;
+   const unsigned int m_onDisplayChangedMsgId;
    static void OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<DisplaySrcId> m_displaySources;
    std::function<bool(const DisplaySrcId& src)> m_displayFilter;
 
-   typedef std::function<DisplayState(const std::string &)> displayCacheLambda;
+   using displayCacheLambda = std::function<DisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;
 
    static std::string trim_string(const std::string &str);

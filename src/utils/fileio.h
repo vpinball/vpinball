@@ -3,104 +3,157 @@
 #pragma once
 #define FID(A) (int)((unsigned int)(#A[0])|((unsigned int)(#A[1])<<8)|((unsigned int)(#A[2])<<16)|((unsigned int)(#A[3])<<24))
 
-bool DirExists(const std::filesystem::path& dirPath);
-bool FileExists(const std::filesystem::path& filePath);
-string TitleFromFilename(const std::filesystem::path& filename);
-std::filesystem::path PathFromFilename(const std::filesystem::path& filename);
-
-class BiffReader;
-
-class ILoadable
+struct FontDesc
 {
-public:
-   virtual bool LoadToken(const int id, BiffReader * const pbr) = 0;
-};
+   uint8_t version = 1;
+   uint16_t charset = 0;
+   uint8_t attributes = 0;
+   uint16_t weight = 0;
+   uint32_t size = 0;
+   string name;
 
-class BiffWriter final
-{
-public:
-   BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash);
+   bool IsBold() const { return weight > 550; }
+   bool IsItalic() const { return (attributes & 0x02) != 0; }
+   bool IsUnderline() const { return (attributes & 0x04) != 0; }
+   bool IsStrikeThrough() const { return (attributes & 0x08) != 0; }
 
-   HRESULT WriteInt(const int id, const int value);
-   HRESULT WriteString(const int id, const string& szvalue);
-
-   HRESULT WriteWideString(const int id, const WCHAR * const wzvalue);
-   HRESULT WriteWideString(const int id, const std::basic_string<WCHAR>& wzvalue);
-   HRESULT WriteBool(const int id, const BOOL value);
-   HRESULT WriteFloat(const int id, const float value);
-   HRESULT WriteStruct(const int id, const void * const pvalue, const int size);
-   HRESULT WriteVector2(const int id, const Vertex2D& vec);
-   HRESULT WriteVector3(const int id, const Vertex3Ds& vec);
-   HRESULT WriteVector3Padded(const int id, const Vertex3Ds& vec);
-   HRESULT WriteTag(const int id);
-
-   HRESULT WriteBytes(const void *pv, const ULONG count, ULONG *foo);
-
-   HRESULT WriteRecordSize(const int size);
-
-   IStream *m_pistream;
-   HCRYPTHASH m_hcrypthash;
-};
-
-class BiffReader final
-{
-public:
-   BiffReader(IStream *pistream, ILoadable *piloadable, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
-
-   int GetBytesInRecordRemaining() const { return m_bytesinrecordremaining; }
-
-   HRESULT GetIntNoHash(int &value);
-   HRESULT GetInt(void * const value);
-   HRESULT GetInt(int &value);
-   HRESULT GetInt(uint32_t &value)
-   {
-      int val;
-      const HRESULT hr = GetInt(val);
-      value = val;
-      return hr;
-   }
 #ifndef __STANDALONE__
-   HRESULT GetInt(COLORREF &value)
+   FONTDESC ToOLEFontDesc() const
    {
-      int val;
-      const HRESULT hr = GetInt(val);
-      value = val;
-      return hr;
+      FONTDESC fd;
+      fd.cbSizeofstruct = sizeof(FONTDESC);
+      fd.lpstrName = MakeWide(name);
+      fd.cySize.Hi = 0;
+      fd.cySize.Lo = size;
+      fd.sWeight = weight;
+      fd.sCharset = charset;
+      fd.fItalic = (attributes & 0x02) ? TRUE : FALSE;
+      fd.fUnderline = (attributes & 0x04) ? TRUE : FALSE;
+      fd.fStrikethrough = (attributes & 0x08) ? TRUE : FALSE;
+      return fd;
+   }
+
+   LOGFONT ToLogFont() const
+   {
+      LOGFONT lf = {};
+      FONTDESC const oleFD = ToOLEFontDesc();
+      IFont *pIFont = nullptr;
+      OleCreateFontIndirect(const_cast<FONTDESC*>(&oleFD), IID_IFont, (void **)&pIFont);
+      if (pIFont)
+      {
+         HFONT hFont;
+         pIFont->get_hFont(&hFont);
+         GetObject(hFont, sizeof(LOGFONT), &lf);
+         pIFont->Release();
+      }
+      delete[] oleFD.lpstrName;
+      return lf;
+   }
+
+   void FromOLEFont(IFont *pIFont)
+   {
+      FONTDESC fd;
+      fd.cbSizeofstruct = sizeof(FONTDESC);
+      pIFont->get_Name((BSTR *)&fd.lpstrName);
+      pIFont->get_Size(&fd.cySize);
+      pIFont->get_Weight(&fd.sWeight);
+      pIFont->get_Charset(&fd.sCharset);
+      pIFont->get_Italic(&fd.fItalic);
+      pIFont->get_Underline(&fd.fUnderline);
+      pIFont->get_Strikethrough(&fd.fStrikethrough);
+      name = MakeString((BSTR)fd.lpstrName);
+      size = fd.cySize.Lo;
+      weight = fd.sWeight;
+      charset = fd.sCharset;
+      attributes = (fd.fItalic ? 0x02 : 0x00) | (fd.fUnderline ? 0x04 : 0x00) | (fd.fStrikethrough ? 0x08 : 0x00);
+      SysFreeString((BSTR)fd.lpstrName);
    }
 #endif
-   HRESULT GetString(string& szvalue);
-   HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
-   HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
-   HRESULT GetFloat(float &value);
-   HRESULT GetBool(BOOL &value);
-   HRESULT GetBool(bool &value)
-   {
-      BOOL val;
-      const HRESULT hr = GetBool(val);
-      value = !!val;
-      return hr;
-   }
-   HRESULT GetStruct(void *pvalue, const int size);
-   HRESULT GetVector2(Vertex2D& vec);
-   HRESULT GetVector3(Vertex3Ds& vec);
-   HRESULT GetVector3Padded(Vertex3Ds& vec);
-
-   HRESULT ReadBytes(void * const pv, const uint32_t count);
-
-   HRESULT Load(const std::function<bool(const int id, BiffReader *const pbr)>& processToken = nullptr);
-
-   IStream *m_pistream;
-   int m_version;
-
-   HCRYPTHASH m_hcrypthash;
-   HCRYPTKEY m_hcryptkey;
-
-private:
-   ILoadable *m_piloadable;
-   int m_bytesinrecordremaining;
 };
 
-class FastIStream;
+class IObjectReader
+{
+public:
+   virtual ~IObjectReader() = default;
+   virtual int GetVersion() const = 0;
+   virtual bool HasError() const = 0;
+
+   virtual bool AsBool() = 0;
+   virtual int AsInt() = 0;
+   virtual unsigned int AsUInt() = 0;
+   virtual float AsFloat() = 0;
+   virtual string AsString() = 0;
+   virtual wstring AsWideString() = 0;
+   virtual Vertex2D AsVector2() = 0;
+   virtual vec3 AsVector3() = 0;
+   virtual vec4 AsVector4() = 0;
+   virtual string AsScript(bool isScriptProtected) = 0;
+   virtual FontDesc AsFontDescriptor() = 0;
+   virtual void AsRaw(void *pvalue, const int size) = 0;
+   virtual void AsObject(const std::function<bool(const int fieldTag, IObjectReader &fieldReader)> &processField, bool isSkippable = false) = 0;
+};
+
+class IObjectWriter
+{
+public:
+   virtual ~IObjectWriter() = default;
+   virtual bool HasError() const = 0;
+
+   virtual void BeginObject(int objectId, bool isArray, bool isSkippable) = 0;
+   virtual void WriteBool(int fieldId, bool value) = 0;
+   virtual void WriteInt(int fieldId, int value) = 0;
+   virtual void WriteUInt(int fieldId, unsigned int value) = 0;
+   virtual void WriteFloat(int fieldId, float value) = 0;
+   virtual void WriteString(int fieldId, const string& value) = 0;
+   virtual void WriteWideString(int fieldId, const wstring& value) = 0;
+   virtual void WriteVector2(int fieldId, const Vertex2D& value) = 0;
+   virtual void WriteVector3(int fieldId, const vec3& value) = 0;
+   virtual void WriteVector4(int fieldId, const vec4& value) = 0;
+   virtual void WriteScript(int fieldId, const string &value) = 0;
+   virtual void WriteFontDescriptor(int fieldId, const FontDesc& value) = 0;
+   virtual void WriteRaw(int fieldId, const void* pvalue, const int size) = 0;
+   virtual void EndObject() = 0;
+};
+
+
+
+
+
+class FastIStream : public IStream
+{
+public:
+   FastIStream();
+   virtual ~FastIStream();
+
+   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
+   ULONG __stdcall AddRef() override;
+   ULONG __stdcall Release() override;
+   HRESULT __stdcall Read(void *pv, ULONG count, ULONG *foo) override;
+   HRESULT __stdcall Write(const void *pv, ULONG count, ULONG *foo) override;
+   HRESULT __stdcall Seek(union _LARGE_INTEGER, ULONG, union _ULARGE_INTEGER *) override;
+   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override { return S_OK; }
+   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override { return S_OK; }
+   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
+   HRESULT __stdcall Revert() override { return S_OK; }
+
+   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
+   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
+   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
+   HRESULT __stdcall Clone(struct IStream **) override { return S_OK; }
+
+   char *m_rg; // Data buffer
+   WCHAR *m_wzName;
+   unsigned int m_cSize; // Size of stream
+
+private:
+   void SetSize(const unsigned int i);
+
+   int m_cref;
+
+   unsigned int m_cMax; // Number of elements allocated
+   unsigned int m_cSeek; // Last element used
+};
+
 
 class FastIStorage : public IStorage
 {
@@ -137,37 +190,3 @@ private:
    WCHAR *m_wzName;
 };
 
-class FastIStream : public IStream
-{
-public:
-   FastIStream();
-   virtual ~FastIStream();
-
-   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
-   ULONG __stdcall AddRef() override;
-   ULONG __stdcall Release() override;
-   HRESULT __stdcall Read(void *pv, ULONG count, ULONG *foo) override;
-   HRESULT __stdcall Write(const void *pv, ULONG count, ULONG *foo) override;
-   HRESULT __stdcall Seek(union _LARGE_INTEGER, ULONG, union _ULARGE_INTEGER *) override;
-   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override { return S_OK; }
-   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override { return S_OK; }
-   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
-   HRESULT __stdcall Revert() override { return S_OK; }
-
-   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
-   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
-   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
-   HRESULT __stdcall Clone(struct IStream **) override { return S_OK; }
-
-   char  *m_rg;          // Data buffer
-   WCHAR *m_wzName;
-   unsigned int m_cSize; // Size of stream
-
-private:
-   void SetSize(const unsigned int i);
-
-   int m_cref;
-
-   unsigned int m_cMax;  // Number of elements allocated
-   unsigned int m_cSeek; // Last element used
-};

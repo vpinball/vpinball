@@ -1,43 +1,11 @@
 // license:GPLv3+
 
-// interface for the Primitive class.
-
 #pragma once
 
 #include "ui/win/resource.h"
 #include "unordered_dense.h"
-
-class Mesh final
-{
-public:
-   Vertex3Ds middlePoint;
-   struct VertData
-   {
-      float x, y, z;
-      float nx, ny, nz;
-   };
-   struct FrameData
-   {
-      vector<VertData> m_frameVerts;
-   };
-
-   vector<FrameData> m_animationFrames;
-   vector<Vertex3D_NoTex2> m_vertices;
-   vector<unsigned int> m_indices;
-   Vertex3Ds m_minAABound, m_maxAABound;
-   bool m_validBounds = false;
-
-   Mesh() { middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
-   void Clear();
-   bool LoadWavefrontObj(const string& fname, const bool flipTV, const bool convertToLeftHanded);
-   void SaveWavefrontObj(const string& fname, const string& description);
-   bool LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded);
-
-   size_t NumVertices() const    { return m_vertices.size(); }
-   size_t NumIndices() const     { return m_indices.size(); }
-   void UploadToVB(std::shared_ptr<VertexBuffer>, const float frame);
-   void UpdateBounds();
-};
+#include "math/Mesh.h"
+#include "math/MeshUtils.h"
 
 // Indices for RotAndTra:
 //     RotX = 0
@@ -49,7 +17,6 @@ public:
 //  ObjRotX = 6
 //  ObjRotY = 7
 //  ObjRotZ = 8
-
 class PrimitiveData final : public BaseProperty
 {
 public:
@@ -293,11 +260,10 @@ public:
    void ExportMeshDialog() final;
 
 #if (GET_PLATFORM_OS_ENUM==0) // Windows
-   bool IsPlayfield() const { return _wcsicmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return _wcsicmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
 #else // Linux and variants (POSIX.1-2008)
-   bool IsPlayfield() const { return wcscasecmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return wcscasecmp(m_wzName.c_str(), L"playfield_mesh") == 0; }
 #endif
-   bool IsBackglass() const { return StrCompareNoCase(m_d.m_szImage, "backglassimage"s); }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }
@@ -330,11 +296,9 @@ public:
 private:
    RenderDevice *m_rd = nullptr;
 
-   PinTable *m_ptable = nullptr;
    Light * m_lightmap = nullptr;
 
    bool m_useAsPlayfield = false;
-   bool m_isBackGlassImage = false;
 
    Matrix3D m_fullMatrix;
    Matrix3D m_physicMatrix;
@@ -361,7 +325,6 @@ private:
       const Vertex3Ds &vj, const bool isUI);
 
    void CalculateBuiltinOriginal();
-   static void WaitForMeshDecompression();
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 

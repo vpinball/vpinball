@@ -10,7 +10,15 @@
 #include <unordered_dense.h>
 
 namespace ScoreView {
-   
+
+LPI_USE_CPP();
+#ifndef LOGD
+#define LOGD LPI_LOGD_CPP
+#define LOGI LPI_LOGI_CPP
+#define LOGW LPI_LOGW_CPP
+#define LOGE LPI_LOGE_CPP
+#endif
+
 class ivec2 final
 {
 public:

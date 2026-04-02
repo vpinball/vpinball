@@ -45,7 +45,7 @@ std::filesystem::path find_case_insensitive_directory_path(const std::filesystem
          const auto& found = ent.path();
          if (found != path)
          {
-            LOGI("case insensitive directory match: requested \"%s\", actual \"%s\"", path.string().c_str(), found.string().c_str());
+            LOGI(std::format("Case insensitive directory match: requested \"{}\", actual \"{}\"", path.string(), found.string()));
          }
          return found;
       }

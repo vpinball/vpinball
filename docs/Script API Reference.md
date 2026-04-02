@@ -725,24 +725,7 @@ The following methods only applies to mesh primitives with an animation sequence
 | *Width | float |  Playfield width. default=1000
 | *Height | float |  Playfield height. default=2000
 | *GlassHeight | float |  Height of Glass above Playfield
-| *TableHeight | float | 
 | | | |
-| *Inclination | float |  Angle of Table (used for Display only). default=43
-| *Rotation | float |  Rotation of Table (used mainly for FS/Cab tables: 270)
-| *Scalex | float |  X Scale of Table
-| *Scaley | float |  Y Scale of Table
-| *Scalez | float |  Z Scale of Table
-| *Xlatex | float |  X Offset of Table
-| *Xlatey | float |  Y Offset of Table
-| *Xlatez | float |  Z Offset of Table
-| *Layback | float |  Skew of Table (used mainly for FS/Cab tables). default=0
-| *FieldOfView | float | Perspective of Table. default=45
-| | | |
-| *BackglassMode | int | Which Backglass mode is active (0=Desktop,1=Fullscreen,2=FullSingleScreen)
-| | | |
-| *MaxSeparation | float |  Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
-| *ZPD | float |  Reads the depth where the Stereo 3D should happen (ranges from 0..1)
-| *Offset | float |  Reads the constant offset for the Stereo 3D effect (ranges from 0..1)
 | *PlayfieldColor | OLECOLOR | 
 | *BackDropColor | OLECOLOR | 
 | BackdropImage | string | 
@@ -766,11 +749,8 @@ The following methods only applies to mesh primitives with an animation sequence
 | | | |
 | Image | string |  playfield image (this property may be written, but it will only be visually updated if the playfield is not statically rendered, using a non static playfield_mesh primitive)
 | | | |
-| *EnableAntialiasing | bool |  enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
-| *EnableFXAA | bool |  enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
 | *RenderEMReels | bool |  default=true
 | *RenderDecals | bool |  default=true
-| *TableAdaptiveVSync | int | sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
 | *BallReflection | | enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
 | PlayfieldReflectionStrength | int | defines the reflection strength of the (dynamic) table elements on the playfield (0-100)
 | BallPlayfieldReflectionScale | float | scale/dampen the contribution of the playfield to the ball reflections
@@ -779,8 +759,6 @@ The following methods only applies to mesh primitives with an animation sequence
 | *TrailStrength | int | defines the strength of the ball trail (0-100)
 | *DetailLevel | int | defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
 | | | |
-| PlungerNormalize | int | Mech-Plunger component adjustment or weak spring, aging. default=100
-| PlungerFilter | bool | default=false
 | *Accelerometer | bool |  
 | *AccelNormalMount | bool | 
 | *AccelerometerAngle | float | 
@@ -974,6 +952,28 @@ The following methods only applies to mesh primitives with an animation sequence
 
 ### 10.8.1
 - add `PreciseGameTime` (same as GameTime but using seconds and more precise for better emulation syncronization)
+- add `VPXActionKey` to the globals
+- add `SoundDone` event to Table
+- `TableHeight` will now do nothing anymore
+- `TableAdaptiveVSync` will now do nothing anymore
+- `MaxSeparation` will now do nothing anymore
+- `ZPD` will now do nothing anymore
+- `Offset` will now do nothing anymore
+- `PlungerFilter` will now do nothing anymore
+- `PlungerNormalize` will now do nothing anymore
+- `EnableAntialiasing` will now do nothing anymore
+- `EnableFXAA` will now do nothing anymore
+- `BackglassMode` should not be used anymore
+- `FieldOfView` should not be used anymore
+- `Inclination` should not be used anymore
+- `Layback` should not be used anymore
+- `Rotation` should not be used anymore
+- `Scalex` should not be used anymore
+- `Scaley` should not be used anymore
+- `Scalez` should not be used anymore
+- `Xlatex` should not be used anymore
+- `Xlatey` should not be used anymore
+- `Xlatez` should not be used anymore
 
 ### 10.8.0
 - add `LoadTexture` to the globals
@@ -988,9 +988,10 @@ The following methods only applies to mesh primitives with an animation sequence
 - add support for multiple custom DMDs by adding `DMDWidth`/`DMDHeight`/`DMDPixels`/`DMDColoredPixels` to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
 - add `Shadows` property to Light element
 - add `EnableDepthMask` to the primitive element
-- `YieldTime` will now do nothing anymore
+- add `Option` property to table to store options that are presented to the user in the Tweak mode
 - add global `FrameIndex`
- 
+- `YieldTime` will now do nothing anymore
+
 ### 10.7.4
 - add `Setting` property to the globals
 - document missing `GetTextFile`

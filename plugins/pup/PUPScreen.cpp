@@ -68,7 +68,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
-      LOGE("Failed to parse screen line, expected 8 columns but got %d: %s", parts.size(), line.c_str());
+      LOGE(std::format("Failed to parse screen line, expected 8 columns but got {}: {}", parts.size(), line));
       return nullptr;
    }
 
@@ -88,7 +88,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
    else if (StrCompareNoCase(parts[5], "Off"s))
       mode = PUPScreen::Mode::Off;
    else {
-      LOGE("Invalid screen mode: %s", parts[5].c_str());
+      LOGE("Invalid screen mode: " + parts[5]);
       mode = PUPScreen::Mode::Off;
    }
 
@@ -122,7 +122,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateDefault(PUPManager* manager, int scr
 void PUPScreen::LoadTriggers()
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   std::filesystem::path szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() / "triggers.pup");
+   std::filesystem::path szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() / "triggers.pup"sv);
    std::ifstream triggersFile;
    triggersFile.open(szPlaylistsPath, std::ifstream::in);
    if (triggersFile.is_open())
@@ -211,7 +211,7 @@ void PUPScreen::AddLabel(PUPLabel* pLabel)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (GetLabel(pLabel->GetName())) {
-      LOGE("Duplicate label: screen={%s}, label=%s", ToString(false).c_str(), pLabel->ToString().c_str());
+      LOGE(std::format("Duplicate label: screen={{{}}}, label={}", ToString(false), pLabel->ToString()));
       delete pLabel;
       return;
    }
@@ -299,7 +299,7 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
    PUPPlaylist* const pPlaylist = GetPlaylist(szPlaylist);
    if (!pPlaylist)
    {
-      LOGE("Playlist not found: screen={%s}, playlist=%s", ToString(false).c_str(), szPlaylist.c_str());
+      LOGE(std::format("Playlist not found: screen={{{}}}, playlist={}", ToString(false), szPlaylist));
       return;
    }
    Play(pPlaylist, szPlayFile, volume, priority, false, 0, false);
@@ -308,7 +308,7 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   //LOGD("play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d", ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
+   //LOGD(std::format("play, screen={{{}}}, playlist={{{}}}, playFile={}, volume={:.0f}, priority={}", ToString(false), pPlaylist->ToString(), szPlayFile.string(), volume, priority));
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    switch (pPlaylist->GetFunction())
    {
@@ -360,7 +360,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
       break;
 
    default:
-      LOGE("Invalid playlist function: %s", PUPPlaylist::ToString(pPlaylist->GetFunction()).c_str());
+      LOGE("Invalid playlist function: " + PUPPlaylist::ToString(pPlaylist->GetFunction()));
       break;
    }
 }

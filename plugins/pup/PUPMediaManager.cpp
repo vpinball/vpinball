@@ -9,7 +9,7 @@ namespace PUP {
 
 static string GetPlayerName(PUPScreen* pScreen, bool isMain)
 {
-   return "PUP.#"s.append(std::to_string(pScreen->GetScreenNum())).append(isMain ? ".Main" : ".Back");
+   return "PUP.#" + std::to_string(pScreen->GetScreenNum()) + (isMain ? ".Main" : ".Back");
 }
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
@@ -36,17 +36,17 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 {
    if (!background && skipSamePriority && IsMainPlaying() && priority <= m_pMainPlayer->priority)
    {
-      LOGE("Skipping same priority, screen={%s}, playlist={%s}, playFile=%s, priority=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), priority);
+      LOGE(std::format("Skipping same priority, screen={{{}}}, playlist={}, playFile={{{}}}, priority={}", m_pScreen->ToString(false), pPlaylist->ToString(), szPlayFile.string(), priority));
       return;
    }
 
    std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (szPath.empty()) {
-      LOGE("PlayFile not found: screen={%s}, playlist={%s}, playFile=%s", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str());
+      LOGE(std::format("PlayFile not found: screen={{{}}}, playlist={{{}}}, playFile={}", m_pScreen->ToString(false), pPlaylist->ToString(), szPlayFile.string()));
       return;
    }
 
-   LOGD("> Play screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d, length=%d, background=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.string().c_str(), volume, priority, length, background);
+   LOGD(std::format("> Play screen={{{}}}, playlist={{{}}}, playFile={}, path={}, volume={:.1f}, priority={}, length={}, background={}", m_pScreen->ToString(false), pPlaylist->ToString(), szPlayFile.string(), szPath.string(), volume, priority, length, background));
    if (background)
    {
       m_pBackgroundPlayer->player.Play(szPath, volume);
@@ -78,13 +78,13 @@ void PUPMediaManager::Resume()
 void PUPMediaManager::SetAsBackGround(bool isBackground)
 {
    if (isBackground) {
-      LOGD("Replacing background player, screen={%s}", m_pScreen->ToString(false).c_str());
+      LOGD("Replacing background player, screen={" + m_pScreen->ToString(false) + '}');
       std::swap(m_pMainPlayer, m_pBackgroundPlayer);
       m_pBackgroundPlayer->player.SetLoop(true);
       m_pMainPlayer->player.Stop();
    }
    else {
-      LOGD("Making background player the main player (no looping), screen={%s}", m_pScreen->ToString(false).c_str());
+      LOGD("Making background player the main player (no looping), screen={" + m_pScreen->ToString(false) + '}');
       std::swap(m_pMainPlayer, m_pBackgroundPlayer);
       m_pMainPlayer->player.SetLoop(false);
       m_pBackgroundPlayer->player.Stop();
@@ -117,11 +117,11 @@ void PUPMediaManager::Stop()
 void PUPMediaManager::Stop(int priority)
 {
    if (priority > m_pMainPlayer->priority) {
-      LOGD("Priority > main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
+      LOGD(std::format("Priority > main player priority: screen={{{}}}, priority={}", m_pScreen->ToString(false), priority));
       Stop();
    }
    else {
-      LOGD("Priority <= main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
+      LOGD(std::format("Priority <= main player priority: screen={{{}}}, priority={}", m_pScreen->ToString(false), priority));
    }
 }
 
@@ -129,11 +129,11 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 {
    std::filesystem::path szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && szPath == m_pMainPlayer->szPath) {
-      LOGD("Main player stopping playback: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
+      LOGD(std::format("Main player stopping playback: screen={{{}}}, path={}", m_pScreen->ToString(false), szPath.string()));
       Stop();
    }
    else {
-      LOGD("Main player playback stop requested but currently not playing: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
+      LOGD(std::format("Main player playback stop requested but currently not playing: screen={{{}}}, path={}", m_pScreen->ToString(false), szPath.string()));
    }
 }
 

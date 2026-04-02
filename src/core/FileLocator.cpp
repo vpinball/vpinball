@@ -19,7 +19,7 @@ std::filesystem::path FileLocator::EvaluateAppPath()
    std::filesystem::path appPath;
 #ifdef __ANDROID__
    // Android may not open files in the APK resources through fopen so we copy them outside of the apk in the internal storage
-   appPath = std::filesystem::path(SDL_GetAndroidInternalStoragePath()) / "";
+   appPath = std::filesystem::path(SDL_GetAndroidInternalStoragePath()) / ""sv;
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    // Pref path is hidden on iOS, so we use Documents to be able to access/drag'n drop through Finder via UIFileSharingEnabled info.plist key
    // FIXME still app path is for readonly files, so shouldn't it just be SDL_GetBasePath() ?
@@ -47,7 +47,7 @@ void FileLocator::SetupPrefPath()
 #endif
 
    // Preference are stored per minor version (grouping all minor revision together, as minor revisions are not allowed to need user setup changes)
-   const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
+   static const string versionPath(STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR));
    m_prefPath = basePrefPath / versionPath;
    if (DirExists(m_prefPath))
       return;
@@ -62,10 +62,10 @@ void FileLocator::SetupPrefPath()
 
    // The user may have enabled the legacy file layout mode (ini along exe) and deleted the preference folder after upgrading to this version
    // In this situation, we do not want to do anything else than recreating the pref folder (which we just did)
-   if (FileExists(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"))
+   if (FileExists(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv))
    {
       mINI::INIStructure m_ini;
-      if (mINI::INIFile(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini").read(m_ini) && m_ini.has("Version"s) && m_ini["Version"s].has("VPinball"s))
+      if (mINI::INIFile(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv).read(m_ini) && m_ini.has("Version"s) && m_ini["Version"s].has("VPinball"s))
       {
          const string existingVersionString = m_ini["Version"s]["VPinball"s];
          std::istringstream iss(existingVersionString);
@@ -116,15 +116,15 @@ void FileLocator::SetupPrefPath()
    }
 
    // If we did not find a setting file to migrate but we have an old setting file along the exe, use it for the migration
-   if (!FileExists(m_prefPath / "VPinballX.ini") && FileExists(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"))
+   if (!FileExists(m_prefPath / "VPinballX.ini"sv) && FileExists(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv))
    {
-      PLOGI << "Initializing preferences from old settings file: " << (GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini");
-      std::filesystem::copy_file(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini", m_prefPath / "VPinballX.ini");
+      PLOGI << "Initializing preferences from old settings file: " << (GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv);
+      std::filesystem::copy_file(GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv, m_prefPath / "VPinballX.ini"sv);
    }
 
    // If we did not find any settings file, migrate settings from Windows registry (used before 10.8)
 #ifdef _WIN32
-   if (!FileExists(m_prefPath / "VPinballX.ini"))
+   if (!FileExists(m_prefPath / "VPinballX.ini"sv))
    {
       PLOGI << "Initializing preferences from Window registry";
       mINI::INIStructure ini;
@@ -170,7 +170,7 @@ void FileLocator::SetupPrefPath()
          }
          RegCloseKey(hk);
       }
-      mINI::INIFile file(m_prefPath / "VPinballX.ini");
+      mINI::INIFile file(m_prefPath / "VPinballX.ini"sv);
       if (!file.write(ini, true))
       {
          PLOGE << "Failed to save imported settings.";
@@ -192,8 +192,8 @@ void FileLocator::SetPrefPath(const std::filesystem::path& path)
 
 void FileLocator::UpdateFileLayoutMode()
 {
-   std::filesystem::path defaultPath = m_prefPath / "VPinballX.ini";
-   std::filesystem::path appPath = m_appPath / "VPinballX.ini";
+   std::filesystem::path defaultPath = m_prefPath / "VPinballX.ini"sv;
+   std::filesystem::path appPath = m_appPath / "VPinballX.ini"sv;
    if (FileExists(defaultPath))
       m_fileLayoutMode = FileLayoutMode::AppPrefData;
    else if (FileExists(appPath))
@@ -210,19 +210,19 @@ std::filesystem::path FileLocator::GetAppPath(AppSubFolder sub, const std::files
    {
    // Readonly deployment files, always located along executable file
    case FileLocator::AppSubFolder::Root: path = m_appPath; break;
-   case FileLocator::AppSubFolder::Assets: path = m_appPath / "assets"; break;
-   case FileLocator::AppSubFolder::Plugins: path = m_appPath / "plugins"; break;
+   case FileLocator::AppSubFolder::Assets: path = m_appPath / "assets"sv; break;
+   case FileLocator::AppSubFolder::Plugins: path = m_appPath / "plugins"sv; break;
    case FileLocator::AppSubFolder::GLShaders: path = m_appPath / ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV)); break;
    case FileLocator::AppSubFolder::Docs:
       // A bit hacky as doc files have moved over time, so we check the various locations they may be in
       if (file.empty())
-         path = m_appPath / "docs";
+         path = m_appPath / "docs"sv;
       else if (FileExists(m_appPath / file))
          path = m_appPath;
-      else if (FileExists(m_appPath / "Doc" / file))
-         path = m_appPath / "Doc";
-      else if (FileExists(m_appPath / "docs" / file))
-         path = m_appPath / "docs";
+      else if (FileExists(m_appPath / "Doc"sv / file))
+         path = m_appPath / "Doc"sv;
+      else if (FileExists(m_appPath / "docs"sv / file))
+         path = m_appPath / "docs"sv;
       break;
 
    // Scripts are special as the file is searched through a few different paths
@@ -264,10 +264,10 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
       std::filesystem::path folder;
       switch (sub)
       {
-      case TableSubFolder::Music: return basePath / "music"; break;
-      case TableSubFolder::Cache: return basePath / "cache"; break;
-      case TableSubFolder::User: return basePath / "user"; break;
-      case TableSubFolder::AutoSave: return basePath / "autosave"; break;
+      case TableSubFolder::Music: return basePath / "music"sv; break;
+      case TableSubFolder::Cache: return basePath / "cache"sv; break;
+      case TableSubFolder::User: return basePath / "user"sv; break;
+      case TableSubFolder::AutoSave: return basePath / "autosave"sv; break;
       default: return basePath; break;
       }
    };
@@ -289,9 +289,9 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
                string type;
                switch (sub)
                {
-               case TableSubFolder::Music: type = "Music"s; break;
-               case TableSubFolder::Cache: type = "Cache"s; break;
-               case TableSubFolder::User: type = "User"s; break;
+               case TableSubFolder::Music: type = "Music"sv; break;
+               case TableSubFolder::Cache: type = "Cache"sv; break;
+               case TableSubFolder::User: type = "User"sv; break;
                }
                PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
             }
@@ -315,7 +315,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
          // Cache is stored inside preference directory with a sub folder per table title
          if (table != nullptr)
          {
-            path = GetAppPath(FileLocator::AppSubFolder::Preferences) / "Cache"s / table->m_title; // table's title is its file name without extension
+            path = GetAppPath(FileLocator::AppSubFolder::Preferences) / "Cache"sv / table->m_title; // table's title is its file name without extension
             if (searchForWriting && !DirExists(path))
                std::filesystem::create_directories(path);
          }
@@ -323,7 +323,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
 
       case TableSubFolder::User:
          // Shared user folder along the application path. This requires write access to the application path
-         path = GetAppPath(FileLocator::AppSubFolder::Root) / "user"s;
+         path = GetAppPath(FileLocator::AppSubFolder::Root) / "user"sv;
          if (searchForWriting && !DirExists(path))
          {
             std::filesystem::create_directories(path);
@@ -374,26 +374,26 @@ std::filesystem::path FileLocator::SearchScript(const PinTable* table, const std
       const auto tablePath = table->m_filename.parent_path();
       if (auto path = find_case_insensitive_file_path(tablePath / script); !path.empty())
          return path;
-      if (auto path = find_case_insensitive_file_path(tablePath / "user"s / script); !path.empty())
+      if (auto path = find_case_insensitive_file_path(tablePath / "user"sv / script); !path.empty())
          return path;
-      if (auto path = find_case_insensitive_file_path(tablePath / "scripts"s / script); !path.empty())
+      if (auto path = find_case_insensitive_file_path(tablePath / "scripts"sv / script); !path.empty())
          return path;
    }
 
    // Search in the application paths
    if (auto path = find_case_insensitive_file_path(m_appPath / script); !path.empty())
       return path;
-   if (auto path = find_case_insensitive_file_path(m_appPath / "user"s / script); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_appPath / "user"sv / script); !path.empty())
       return path;
-   if (auto path = find_case_insensitive_file_path(m_appPath / "scripts"s / script); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_appPath / "scripts"sv / script); !path.empty())
       return path;
 
    // Search in the preference paths
    if (auto path = find_case_insensitive_file_path(m_prefPath / script); !path.empty())
       return path;
-   if (auto path = find_case_insensitive_file_path(m_prefPath / "user"s / script); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_prefPath / "user"sv / script); !path.empty())
       return path;
-   if (auto path = find_case_insensitive_file_path(m_prefPath / "scripts"s / script); !path.empty())
+   if (auto path = find_case_insensitive_file_path(m_prefPath / "scripts"sv / script); !path.empty())
       return path;
 
    return std::filesystem::path();

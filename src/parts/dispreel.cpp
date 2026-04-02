@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "dispreel.h"
+
 #include "renderer/Shader.h"
 
 DispReel::~DispReel()
@@ -8,16 +10,15 @@ DispReel::~DispReel()
    assert(m_rd == nullptr);
 }
 
-DispReel *DispReel::CopyForPlay(PinTable *live_table) const
+DispReel *DispReel::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel)
    return dst;
 }
 
 // called whenever a new instance of this object is created along with the constructor
-HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT DispReel::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
@@ -342,7 +343,7 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
 void DispReel::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(m_backglass);
+   assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    TRACE_FUNCTION();
@@ -440,134 +441,82 @@ void DispReel::PutCenter(const Vertex2D& pv)
    m_d.m_v2.y = pv.y + getBoxHeight();
 }
 
-HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void DispReel::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VER1), m_d.m_v1);
-   bw.WriteVector2(FID(VER2), m_d.m_v2);
-   bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteBool(FID(TRNS), m_d.m_transparent);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteString(FID(SOUN), m_d.m_szSound);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteFloat(FID(WDTH), m_d.m_width);
-   bw.WriteFloat(FID(HIGH), m_d.m_height);
-   bw.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
-   bw.WriteFloat(FID(RSPC), m_d.m_reelspacing);
-   bw.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
-   bw.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
-   bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
-   bw.WriteBool(FID(UGRD), m_d.m_useImageGrid);
-   bw.WriteBool(FID(VISI), m_d.m_visible);
-   bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VER1), m_d.m_v1);
+   writer.WriteVector2(FID(VER2), m_d.m_v2);
+   writer.WriteInt(FID(CLRB), m_d.m_backcolor);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteBool(FID(TRNS), m_d.m_transparent);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteString(FID(SOUN), m_d.m_szSound);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteFloat(FID(WDTH), m_d.m_width);
+   writer.WriteFloat(FID(HIGH), m_d.m_height);
+   writer.WriteFloat(FID(RCNT), (float)m_d.m_reelcount);
+   writer.WriteFloat(FID(RSPC), m_d.m_reelspacing);
+   writer.WriteFloat(FID(MSTP), (float)m_d.m_motorsteps);
+   writer.WriteFloat(FID(RANG), (float)m_d.m_digitrange);
+   writer.WriteInt(FID(UPTM), m_d.m_updateinterval);
+   writer.WriteBool(FID(UGRD), m_d.m_useImageGrid);
+   writer.WriteBool(FID(VISI), m_d.m_visible);
+   writer.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
+   SaveSharedEditableFields(writer);
+   writer.EndObject();
 }
 
-HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void DispReel::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool DispReel::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch (id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
-   case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
-   case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
-   case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
-   case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(RCNT):
-   {
-      float reel;
-      pbr->GetFloat(reel);
-      m_d.m_reelcount = (int)reel;
-      break;
-   }
-   case FID(RSPC): pbr->GetFloat(m_d.m_reelspacing); break;
-   case FID(MSTP):
-   {
-      float motorsteps;
-      pbr->GetFloat(motorsteps);
-      m_d.m_motorsteps = (int)motorsteps;
-      break;
-   }
-   case FID(SOUN): pbr->GetString(m_d.m_szSound); break;
-   case FID(UGRD): pbr->GetBool(m_d.m_useImageGrid); break;
-   case FID(VISI): pbr->GetBool(m_d.m_visible); break;
-   case FID(GIPR): pbr->GetInt(m_d.m_imagesPerGridRow); break;
-   case FID(RANG):
-   {
-      float dig;
-      pbr->GetFloat(dig);
-      m_d.m_digitrange = (int)dig;
-      break;
-   }
-   case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
-   case FID(FONT): //!! deprecated, only here to support loading of old tables
-   {
-#ifndef __STANDALONE__
-      IFont *pIFont;
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-      fd.lpstrName = (LPOLESTR)(L"Times New Roman");
-      fd.cySize.int64 = 260000;
-      //fd.cySize.Lo = 0;
-      fd.sWeight = FW_BOLD;
-      fd.sCharset = 0;
-      fd.fItalic = 0;
-      fd.fUnderline = 0;
-      fd.fStrikethrough = 0;
-      OleCreateFontIndirect(&fd, IID_IFont, (void **)&pIFont);
-
-      IPersistStream * ips;
-      pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
-      ips->Load(pbr->m_pistream);
-
-      pIFont->Release();
-#else
-      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
-
-      unsigned char data[255];
-      pbr->ReadBytes(data, 3);
-      pbr->ReadBytes(data, 1); // Italic
-      pbr->ReadBytes(data, 2); // Weight
-      pbr->ReadBytes(data, 4); // Size
-      pbr->ReadBytes(data, 1); // nameLen
-      pbr->ReadBytes(data, data[0]); // name
-#endif
-      break;
-   }
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT DispReel::InitPostLoad()
-{
-   return S_OK;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VER1): m_d.m_v1 = reader.AsVector2(); break;
+         case FID(VER2): m_d.m_v2 = reader.AsVector2(); break;
+         case FID(WDTH): m_d.m_width = reader.AsFloat(); break;
+         case FID(HIGH): m_d.m_height = reader.AsFloat(); break;
+         case FID(CLRB): m_d.m_backcolor = reader.AsInt(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(TRNS): m_d.m_transparent = reader.AsBool(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(RCNT):
+         {
+            float reel;
+            reel = reader.AsFloat();
+            m_d.m_reelcount = (int)reel;
+            break;
+         }
+         case FID(RSPC): m_d.m_reelspacing = reader.AsFloat(); break;
+         case FID(MSTP):
+         {
+            float motorsteps;
+            motorsteps = reader.AsFloat();
+            m_d.m_motorsteps = (int)motorsteps;
+            break;
+         }
+         case FID(SOUN): m_d.m_szSound = reader.AsString(); break;
+         case FID(UGRD): m_d.m_useImageGrid = reader.AsBool(); break;
+         case FID(VISI): m_d.m_visible = reader.AsBool(); break;
+         case FID(GIPR): m_d.m_imagesPerGridRow = reader.AsInt(); break;
+         case FID(RANG):
+         {
+            float dig;
+            dig = reader.AsFloat();
+            m_d.m_digitrange = (int)dig;
+            break;
+         }
+         case FID(UPTM): m_d.m_updateinterval = reader.AsInt(); break;
+         case FID(FONT): reader.AsFontDescriptor(); break; //!! deprecated, only here to support loading of old tables
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
 }
 
 // The following methods provide the interface to the object through both the editor

@@ -11,16 +11,16 @@ PartGroupUIPart::PartGroupUIPart(PartGroup* partGroup)
    // Win32 UI does not manage PartGroup UI hidden/shown state, so we default to visible for inspection mode or if at least one child is visible
    if (partGroup->GetPTable()->m_liveBaseTable)
    {
-      partGroup->m_isVisible = true;
+      partGroup->m_uiVisible = true;
    }
    else
    {
-      partGroup->m_isVisible = false;
+      partGroup->m_uiVisible = false;
       for (const auto edit : partGroup->GetPTable()->GetParts())
       {
-         if (edit->GetISelect() && edit->GetISelect()->m_isVisible && edit->IsChild(partGroup))
+         if (edit->GetISelect() && edit->m_uiVisible && edit->IsChild(partGroup))
          {
-            partGroup->m_isVisible = true;
+            partGroup->m_uiVisible = true;
             break;
          }
       }

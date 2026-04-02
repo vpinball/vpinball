@@ -2,7 +2,9 @@
 
 // implementation of the HitTarget class.
 
-#include "core/stdafx.h" 
+#include "core/stdafx.h"
+#include "hittarget.h"
+
 #include "utils/objloader.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
@@ -22,9 +24,9 @@ HitTarget::~HitTarget()
    assert(m_rd == nullptr);
 }
 
-HitTarget *HitTarget::CopyForPlay(PinTable *live_table) const
+HitTarget *HitTarget::CopyForPlay() const
 {
-   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(HitTarget, live_table)
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(HitTarget)
    dst->m_hitEvent = m_hitEvent;
    return dst;
 }
@@ -106,9 +108,8 @@ void HitTarget::SetMeshType(const TargetType type)
     }
 }
 
-HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT HitTarget::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(false);
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
@@ -481,7 +482,7 @@ void HitTarget::UIRenderPass2(Sur * const psur)
        psur->Line(C->x, C->y, A->x, A->y);
     }
 
-    if (m_selectstate == eNotSelected)
+    if (m_selectstate == SelectState::NotSelected)
        return;
 
     const float radangle = ANGTORAD(m_d.m_rotZ-180.0f);
@@ -659,7 +660,7 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
 void HitTarget::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -770,107 +771,88 @@ void HitTarget::PutCenter(const Vertex2D& pv)
 // Save and Load
 //////////////////////////////
 
-HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void HitTarget::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   /*
-    * Someone decided that it was a good idea to write these vectors including
-    * the fourth padding float that they used to have, so now we have to write
-    * them padded to 4 floats to maintain compatibility.
-    */
-   bw.WriteVector3Padded(FID(VPOS), m_d.m_vPosition);
-   bw.WriteVector3Padded(FID(VSIZ), m_d.m_vSize);
-   bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteInt(FID(TRTY), m_d.m_targetType);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(TVIS), m_d.m_visible);
-   bw.WriteBool(FID(LEMO), m_d.m_legacy);
-   bw.WriteBool(FID(HTEV), m_d.m_hitEvent);
-   bw.WriteFloat(FID(THRS), m_d.m_threshold);
-   bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
-   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
-   bw.WriteFloat(FID(RFCT), m_d.m_friction);
-   bw.WriteFloat(FID(RSCT), m_d.m_scatter);
-   bw.WriteBool(FID(CLDR), m_d.m_collidable);
-   bw.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
-   bw.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-   bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
-   bw.WriteBool(FID(ISDR), m_d.m_isDropped);
-   bw.WriteFloat(FID(DRSP), m_d.m_dropSpeed);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteInt(FID(RADE), m_d.m_raiseDelay);
-   bw.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
-   bw.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector4(FID(VPOS), vec4(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z, 0.f));
+   writer.WriteVector4(FID(VSIZ), vec4(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z, 0.f));
+   writer.WriteFloat(FID(ROTZ), m_d.m_rotZ);
+   writer.WriteString(FID(IMAG), m_d.m_szImage);
+   writer.WriteInt(FID(TRTY), m_d.m_targetType);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(TVIS), m_d.m_visible);
+   writer.WriteBool(FID(LEMO), m_d.m_legacy);
+   writer.WriteBool(FID(HTEV), m_d.m_hitEvent);
+   writer.WriteFloat(FID(THRS), m_d.m_threshold);
+   writer.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   writer.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   writer.WriteFloat(FID(RFCT), m_d.m_friction);
+   writer.WriteFloat(FID(RSCT), m_d.m_scatter);
+   writer.WriteBool(FID(CLDR), m_d.m_collidable);
+   writer.WriteFloat(FID(DILT), m_d.m_disableLightingTop);
+   writer.WriteFloat(FID(DILB), m_d.m_disableLightingBelow);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   writer.WriteFloat(FID(PIDB), m_d.m_depthBias);
+   writer.WriteBool(FID(ISDR), m_d.m_isDropped);
+   writer.WriteFloat(FID(DRSP), m_d.m_dropSpeed);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteInt(FID(RADE), m_d.m_raiseDelay);
+   writer.WriteString(FID(MAPH), m_d.m_szPhysicsMaterial);
+   writer.WriteBool(FID(OVPH), m_d.m_overwritePhysics);
+   SaveSharedEditableFields(writer);
+   writer.EndObject();
 }
 
-HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void HitTarget::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-
-   UpdateStatusBarInfo();
-   return S_OK;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VPOS): m_d.m_vPosition = reader.AsVector4().xyz(); break;
+         case FID(VSIZ): m_d.m_vSize = reader.AsVector4().xyz(); break;
+         case FID(ROTZ): m_d.m_rotZ = reader.AsFloat(); break;
+         case FID(IMAG): m_d.m_szImage = reader.AsString(); break;
+         case FID(TRTY): m_d.m_targetType = static_cast<TargetType>(reader.AsInt()); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(TVIS): m_d.m_visible = reader.AsBool(); break;
+         case FID(LEMO): m_d.m_legacy = reader.AsBool(); break;
+         case FID(ISDR): m_d.m_isDropped = reader.AsBool(); break;
+         case FID(DRSP): m_d.m_dropSpeed = reader.AsFloat(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(HTEV): m_d.m_hitEvent = reader.AsBool(); break;
+         case FID(THRS): m_d.m_threshold = reader.AsFloat(); break;
+         case FID(ELAS): m_d.m_elasticity = reader.AsFloat(); break;
+         case FID(ELFO): m_d.m_elasticityFalloff = reader.AsFloat(); break;
+         case FID(RFCT): m_d.m_friction = reader.AsFloat(); break;
+         case FID(RSCT): m_d.m_scatter = reader.AsFloat(); break;
+         case FID(CLDR): m_d.m_collidable = reader.AsBool(); break;
+         case FID(DILI):
+         {
+            int tmp;
+            tmp = reader.AsInt();
+            m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp);
+            break;
+         } // Pre 10.8 compatible hacky loading!
+         case FID(DILT): m_d.m_disableLightingTop = reader.AsFloat(); break;
+         case FID(DILB): m_d.m_disableLightingBelow = reader.AsFloat(); break;
+         case FID(PIDB): m_d.m_depthBias = reader.AsFloat(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(RADE): m_d.m_raiseDelay = reader.AsInt(); break;
+         case FID(MAPH): m_d.m_szPhysicsMaterial = reader.AsString(); break;
+         case FID(OVPH): m_d.m_overwritePhysics = reader.AsBool(); break;
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
 }
 
-bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
-   case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
-   case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;
-   case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(TRTY): pbr->GetInt(&m_d.m_targetType); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
-   case FID(LEMO): pbr->GetBool(m_d.m_legacy); break;
-   case FID(ISDR): pbr->GetBool(m_d.m_isDropped); break;
-   case FID(DRSP): pbr->GetFloat(m_d.m_dropSpeed); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
-   case FID(THRS): pbr->GetFloat(m_d.m_threshold); break;
-   case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
-   case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
-   case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;
-   case FID(RSCT): pbr->GetFloat(m_d.m_scatter); break;
-   case FID(CLDR): pbr->GetBool(m_d.m_collidable); break;
-   case FID(DILI): { int tmp; pbr->GetInt(tmp); m_d.m_disableLightingTop = (tmp == 1) ? 1.f : dequantizeUnsigned<8>(tmp); break; } // Pre 10.8 compatible hacky loading!
-   case FID(DILT): pbr->GetFloat(m_d.m_disableLightingTop); break;
-   case FID(DILB): pbr->GetFloat(m_d.m_disableLightingBelow); break;
-   case FID(PIDB): pbr->GetFloat(m_d.m_depthBias); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(RADE): pbr->GetInt(m_d.m_raiseDelay); break;
-   case FID(MAPH): pbr->GetString(m_d.m_szPhysicsMaterial); break;
-   case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
-   default: ISelect::LoadToken(id, pbr); break;
-   }
-   return true;
-}
-
-HRESULT HitTarget::InitPostLoad()
-{
-   UpdateStatusBarInfo();
-   return S_OK;
-}
 
 //////////////////////////////
 // Standard methods

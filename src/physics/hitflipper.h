@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "collide.h"
+
 //#define DEBUG_FLIPPERS
 
 #ifdef __STANDALONE__

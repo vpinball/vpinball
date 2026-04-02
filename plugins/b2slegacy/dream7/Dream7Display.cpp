@@ -248,7 +248,7 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
    m_pMatrix->Multiply(styleMatrix);
 }
 
-SDL_FRect Dream7Display::GetBounds(Matrix* const pMatrix)
+SDL_FRect Dream7Display::GetBounds(const Matrix* const pMatrix)
 {
    // determine the bounds of the whole display
    vector<SDL_FPoint> points;

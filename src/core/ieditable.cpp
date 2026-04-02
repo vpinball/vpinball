@@ -15,7 +15,8 @@ IEditable::~IEditable()
 
 void IEditable::SetDirtyDraw()
 {
-   GetPTable()->SetDirtyDraw();
+   if (GetPTable())
+      GetPTable()->SetDirtyDraw();
 }
 
 void IEditable::Delete()
@@ -26,7 +27,7 @@ void IEditable::Delete()
 
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection * const pcollection = m_vCollection[i];
+      Collection *const pcollection = m_vCollection[i];
       pcollection->m_visel.find_erase(GetISelect());
    }
 }
@@ -41,10 +42,7 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
    if (m_partGroup != partGroup)
    {
       if (partGroup)
-      {
-         assert(GetPTable()->HasPart(partGroup));
          partGroup->AddRef();
-      }
       if (m_partGroup)
          m_partGroup->Release();
       m_partGroup = partGroup;
@@ -80,6 +78,62 @@ bool IEditable::IsChild(const PartGroup* group) const
    return parent == group;
 }
 
+void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
+{
+   switch (tag)
+   {
+   case FID(LOCK): m_uiLocked = reader.AsBool(); break;
+   case FID(LVIS): m_uiVisible = reader.AsBool(); break;
+   case FID(LAYR): // Old layer style (limited number of unnamed layers)
+   {
+      int layerIndex = reader.AsInt();
+      m_onLoadExpectedPartGroup = (layerIndex < 9 ? L"Layer_0" : L"Layer_") + std::to_wstring(layerIndex + 1);
+      break;
+   }
+   case FID(LANR): // 10.7 layers (limited number of named layers)
+   {
+      string layerName = reader.AsString();
+      std::ranges::transform(
+         layerName.begin(), layerName.end(), layerName.begin(), [](char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_'; });
+      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      break;
+   }
+   case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
+   {
+      string layerName = reader.AsString();
+      m_onLoadExpectedPartGroup = MakeWString(layerName);
+      break;
+   }
+   default:
+   {
+      PLOGE << "Unhandled token: " << (char)(tag & 0xFF) << (char)((tag >> 8) & 0xFF) << (char)((tag >> 16) & 0xFF) << (char)((tag >> 24) & 0xFF);
+   }
+   }
+}
+
+void IEditable::SaveSharedEditableFields(IObjectWriter& writer)
+{
+   writer.WriteBool(FID(LOCK), m_uiLocked);
+   writer.WriteBool(FID(LVIS), m_uiVisible);
+   if (GetPartGroup())
+   {
+      // Implement backwards 'readability' (file will open in previous versions, with unsupported content dropped)
+      const PartGroup* layer = GetPartGroup();
+      while (layer->GetPartGroup() != nullptr)
+         layer = layer->GetPartGroup();
+      int index = 0;
+      for (const auto edit : GetPTable()->GetParts())
+      {
+         if (edit == layer)
+            break;
+         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
+            index++;
+      }
+      writer.WriteInt(FID(LAYR), min(index, 11));
+      writer.WriteString(FID(LANR), layer->GetName());
+      writer.WriteString(FID(GRUP), GetPartGroup()->GetName());
+   }
+}
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
@@ -130,24 +184,22 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
    return hr;
 }
 
-void IEditable::RenderBlueprint(Sur *psur, const bool solid)
-{
-   UIRenderPass2(psur);
-}
-
 void IEditable::BeginUndo()
 {
-   GetPTable()->BeginUndo();
+   if (GetPTable())
+      GetPTable()->BeginUndo();
 }
 
 void IEditable::EndUndo()
 {
-   GetPTable()->EndUndo();
+   if (GetPTable())
+      GetPTable()->EndUndo();
 }
 
 void IEditable::MarkForUndo()
 {
-   GetPTable()->m_undo.MarkForUndo(this);
+   if (GetPTable())
+      GetPTable()->m_undo.MarkForUndo(this);
 }
 
 void IEditable::MarkForDelete()
@@ -161,7 +213,7 @@ void IEditable::Undelete()
 {
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {
-      Collection * const pcollection = m_vCollection[i];
+      Collection *const pcollection = m_vCollection[i];
       pcollection->m_visel.push_back(GetISelect());
    }
 }
@@ -174,34 +226,42 @@ string IEditable::GetName() const
    return string();
 }
 
-void IEditable::SetName(const string& name)
+const wstring& IEditable::GetWName() const
 {
-   IScriptable* scriptable = GetScriptable();
-   if (name.empty() || scriptable == nullptr || GetItemType() == eItemDecal)
+   const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
+   if (pscript)
+      return pscript->get_Name();
+   static const wstring emptyString;
+   return emptyString;
+}
+
+void IEditable::SetName(const wstring& name)
+{
+   IScriptable *const scriptable = GetScriptable();
+   if (name.empty() || scriptable == nullptr)
       return;
 
-   PinTable* const pt = GetPTable();
-   if (pt == nullptr)
-      return;
-
-   wstring newName = MakeWString(name);
-   if (newName.length() >= std::size(scriptable->m_wzName))
-      newName.erase(std::size(scriptable->m_wzName) - 1);
+   wstring newName = name;
+   if (newName.length() >= MAXNAMEBUFFER)
+      newName.erase(MAXNAMEBUFFER - 1);
 
    if (newName == scriptable->m_wzName)
       return;
-   
-   if (!pt->IsNameUnique(newName))
-   {
-      WCHAR uniqueName[std::size(scriptable->m_wzName)];
-      pt->GetUniqueName(newName, uniqueName, std::size(scriptable->m_wzName));
-      newName = uniqueName;
-   }
 
-   STARTUNDO
-   if (pt->HasPart(this))
-      pt->RenamePart(this, newName);
+   if (PinTable* const pt = GetPTable(); pt)
+   {
+      if (!pt->IsNameUnique(newName))
+         newName = pt->GetUniqueName(newName);
+
+      STARTUNDO
+      if (pt->HasPart(this))
+         pt->RenamePart(this, newName);
+      else
+         scriptable->m_wzName = newName;
+      STOPUNDO
+   }
    else
-      wcsncpy_s(scriptable->m_wzName, std::size(scriptable->m_wzName), newName.c_str());
-   STOPUNDO
+   {
+      scriptable->m_wzName = newName;
+   }
 }

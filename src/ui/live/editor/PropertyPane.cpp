@@ -51,21 +51,23 @@ void PropertyPane::PropertyLabel(const string& label)
    m_syncPos = ImVec2(pos.x + xWidth + xWidth, pos.y);
 }
 
-void PropertyPane::Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName)
+void PropertyPane::Header(const string& typeName, const std::function<wstring()>& getName, const std::function<void(const wstring&)>& setName)
 {
    ImGui::NewLine();
    LiveUI::CenteredText(typeName);
    ImGui::BeginDisabled(m_table->m_liveBaseTable); // Do not edit name of live objects as it would break the script
    PropertyLabel("Name"s);
-   if (string name = getName(); ImGui::InputText("##Name", &name))
-      setName(name);
+   const wstring wname = getName();
+   string name = MakeString(wname);
+   if ( ImGui::InputText("##Name", &name))
+      setName(wname);
    ImGui::EndDisabled();
    ImGui::Separator();
 }
 
 void PropertyPane::EditableHeader(const string& typeName, IEditable* editable)
 {
-   Header(typeName, [editable]() { return editable->GetName(); }, [editable](const string& v) { editable->SetName(v); });
+   Header(typeName, [editable]() { return editable->GetWName(); }, [editable](const wstring& v) { editable->SetName(v); });
 }
 
 void PropertyPane::Separator(const string& label) const

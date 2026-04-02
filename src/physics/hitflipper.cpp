@@ -23,6 +23,7 @@
 //   - flipper button press to coil drive is even shorter - again suggesting a faster sample rate of the button is better
 
 #include "core/stdafx.h"
+#include "parts/flipper.h"
 
 // Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
 
@@ -340,17 +341,10 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
       const float anglespd = fabsf(RADTOANG(m_angleSpeed));
       m_angularMomentum *= -0.3f; //!! make configurable?
       m_angleSpeed = m_angularMomentum / m_inertia;
-
       if (m_enableRotateEvent > 0)
-      {
          m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
-
-         g_pplayer->m_pininput.m_leftkey_down_usec_EOS = usec(); // debug only
-         g_pplayer->m_pininput.m_leftkey_down_frame_EOS = g_pplayer->m_overall_frames;
-      }
       else if (m_enableRotateEvent < 0)
          m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
-
       m_enableRotateEvent = 0;
    }
 }
@@ -774,7 +768,7 @@ float HitFlipper::HitTestFlipperFace(const BallS& ball, const float dtime, Colli
       dp = bffnd;                        // remember
    } //for loop
 
-   //+++ End time interation loop found time t soultion ++++++
+   //+++ End time interation loop found time t solution ++++++
 
    if (infNaN(t) || t < 0.f || t > dtime                             // time is outside this frame ... no collision
       ||

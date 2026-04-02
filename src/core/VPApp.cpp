@@ -34,7 +34,31 @@
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
 #include <filesystem>
+#include <libwinevbs/libwinevbs.h>
 #endif
+
+#include "parts/ball.h"
+#include "parts/timer.h"
+#include "parts/flipper.h"
+#include "parts/plunger.h"
+#include "parts/textbox.h"
+#include "parts/surface.h"
+#include "parts/dispreel.h"
+#include "parts/lightseq.h"
+#include "parts/bumper.h"
+#include "parts/trigger.h"
+#include "parts/light.h"
+#include "parts/kicker.h"
+#include "parts/decal.h"
+#include "parts/primitive.h"
+#include "parts/hittarget.h"
+#include "parts/gate.h"
+#include "parts/spinner.h"
+#include "parts/ramp.h"
+#include "parts/flasher.h"
+#include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 
 #ifndef OVERRIDE
 #ifndef __STANDALONE__
@@ -234,7 +258,7 @@ VPApp::VPApp()
    EditableRegistry::RegisterEditable<HitTarget>();
    EditableRegistry::RegisterEditable<PartGroup>();
 
-   VPXPluginAPIImpl::GetInstance();
+   g_pplayer->m_pluginAPI;
 }
 
 VPApp::~VPApp()
@@ -243,6 +267,8 @@ VPApp::~VPApp()
       m_module.RevokeClassObjects();
       m_module.Term();
       CoUninitialize();
+   #else
+      libwinevbs_shutdown();
    #endif
    g_pvp = nullptr;
    g_app = nullptr;
@@ -274,8 +300,8 @@ void VPApp::InitInstance()
    // Define settings location and load them
    if (m_iniFileName.empty())
    {
-      std::filesystem::path defaultPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini";
-      std::filesystem::path appPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini";
+      std::filesystem::path defaultPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini"sv;
+      std::filesystem::path appPath = m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv;
       if (FileExists(defaultPath))
          m_iniFileName = defaultPath;
       else if (FileExists(appPath))
@@ -293,6 +319,28 @@ void VPApp::InitInstance()
    // - if we don't have anything, then we use the default ('Table' layout mode)
 
    Logger::Init();
+
+#ifdef __STANDALONE__
+   libwinevbs_callbacks_t callbacks = {};
+   callbacks.log = [](libwinevbs_log_level_t level, const char* format, va_list args) {
+      va_list args_copy;
+      va_copy(args_copy, args);
+      int size = vsnprintf(nullptr, 0, format, args_copy);
+      va_end(args_copy);
+      if (size > 0) {
+         char* const buffer = new char[size + 1];
+         vsnprintf(buffer, size + 1, format, args);
+         switch (level) {
+         case LIBWINEVBS_LOG_DEBUG: PLOGD << buffer; break;
+         case LIBWINEVBS_LOG_ERROR: PLOGE << buffer; break;
+         default: PLOGI << buffer; break;
+         }
+         delete[] buffer;
+      }
+   };
+   libwinevbs_init(&callbacks);
+#endif
+
    Logger::SetupLogger(m_settings.GetEditor_EnableLog());
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;
@@ -300,14 +348,14 @@ void VPApp::InitInstance()
    PLOGI << "Application path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root);
    PLOGI << "Preference path: " << m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences);
    
-   Settings::SetRecentDir_ImportDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_LoadDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_FontDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_PhysicsDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_ImageDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_MaterialDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
-   Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / "").string());
+   Settings::SetRecentDir_ImportDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_LoadDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_FontDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_PhysicsDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_ImageDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_MaterialDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_SoundDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
+   Settings::SetRecentDir_POVDir_Default((m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Tables) / ""sv).string());
 
    m_securitylevel = g_app->m_settings.GetPlayer_SecurityLevel();
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
@@ -320,7 +368,8 @@ void VPApp::InitInstance()
 #ifndef __STANDALONE__
 BOOL VPApp::WinApp::OnIdle(LONG)
 {
-   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   if (g_pplayer)
+      g_pplayer->m_pluginManager.ProcessAsyncCallbacks();
    return FALSE;
 }
 BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)

@@ -23,11 +23,21 @@ class VPXLoadFileProgressBar final : public VPXFileFeedback
       void Done() override;
 
    private:
-      void StepProgress(bool updateBar = true);
+      void Update();
+
+      int m_itemsCount = 0;
+      int m_totalItems = 0;
+      int m_soundCount = 0;
+      int m_totalSounds = 0;
+      int m_imageCount = 0;
+      int m_totalImages = 0;
+      int m_fontCount = 0;
+      int m_totalFonts = 0;
+      int m_collectionCount = 0;
+      int m_totalCollections = 0;
 
       HINSTANCE m_app;
       HWND m_statusBar;
 
       HWND m_progressBar = nullptr;
-      int m_loadedElementCount = 0;
 };

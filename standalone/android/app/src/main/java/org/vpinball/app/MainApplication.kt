@@ -30,6 +30,7 @@ class MainApplication : Application() {
         System.loadLibrary("freeimage")
         System.loadLibrary("pinmame")
         System.loadLibrary("altsound")
+        System.loadLibrary("winevbs")
         System.loadLibrary("dmdutil")
         System.loadLibrary("dof")
         System.loadLibrary("pupdmd")

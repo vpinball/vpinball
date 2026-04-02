@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "trigger.h"
+#include "ball.h"
+
 #include "utils/objloader.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
@@ -16,9 +19,9 @@ Trigger::~Trigger()
    assert(m_rd == nullptr);
 }
 
-Trigger *Trigger::CopyForPlay(PinTable *live_table) const
+Trigger *Trigger::CopyForPlay() const
 {
-   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, live_table, m_vdpoint)
+   STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, m_vdpoint)
    return dst;
 }
 
@@ -142,9 +145,8 @@ void Trigger::InitShape(float x, float y)
    }
 }
 
-HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
+HRESULT Trigger::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
@@ -233,7 +235,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
 
       psur->Polygon(vvertex);
 
-      bool drawDragpoints = (m_selectstate != eNotSelected) || (m_vpinball->m_alwaysDrawDragPoints);
+      bool drawDragpoints = (m_selectstate != SelectState::NotSelected) || (m_vpinball->m_alwaysDrawDragPoints);
       // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
       if (!drawDragpoints)
       {
@@ -241,7 +243,7 @@ void Trigger::UIRenderPass2(Sur * const psur)
          for (size_t i = 0; i < m_vdpoint.size(); i++)
          {
             const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-            if (pdp->m_selectstate != eNotSelected)
+            if (pdp->m_selectstate != SelectState::NotSelected)
             {
                drawDragpoints = true;
                break;
@@ -540,7 +542,7 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 void Trigger::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
-   assert(!m_backglass);
+   assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -903,37 +905,28 @@ void Trigger::Translate(const Vertex2D &pvOffset)
    }
 }
 
-HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
+void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
 {
-   BiffWriter bw(pstm, hcrypthash);
-
-   bw.WriteVector2(FID(VCEN), m_d.m_vCenter);
-   bw.WriteFloat(FID(RADI), m_d.m_radius);
-   bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteFloat(FID(WITI), m_d.m_wireThickness);
-   bw.WriteFloat(FID(SCAX), m_d.m_scaleX);
-   bw.WriteFloat(FID(SCAY), m_d.m_scaleY);
-   bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
-   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(EBLD), m_d.m_enabled);
-   bw.WriteBool(FID(VSBL), m_d.m_visible);
-   bw.WriteFloat(FID(THOT), m_d.m_hit_height);
-   bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteInt(FID(SHAP), m_d.m_shape);
-   bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
-   bw.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
-
-   ISelect::SaveData(pstm, hcrypthash);
-
-   HRESULT hr;
-   if (FAILED(hr = SavePointData(pstm, hcrypthash)))
-      return hr;
-
-   bw.WriteTag(FID(ENDB));
-
-   return S_OK;
+   writer.WriteVector2(FID(VCEN), m_d.m_vCenter);
+   writer.WriteFloat(FID(RADI), m_d.m_radius);
+   writer.WriteFloat(FID(ROTA), m_d.m_rotation);
+   writer.WriteFloat(FID(WITI), m_d.m_wireThickness);
+   writer.WriteFloat(FID(SCAX), m_d.m_scaleX);
+   writer.WriteFloat(FID(SCAY), m_d.m_scaleY);
+   writer.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
+   writer.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   writer.WriteString(FID(SURF), m_d.m_szSurface);
+   writer.WriteString(FID(MATR), m_d.m_szMaterial);
+   writer.WriteBool(FID(EBLD), m_d.m_enabled);
+   writer.WriteBool(FID(VSBL), m_d.m_visible);
+   writer.WriteFloat(FID(THOT), m_d.m_hit_height);
+   writer.WriteWideString(FID(NAME), m_wzName);
+   writer.WriteInt(FID(SHAP), m_d.m_shape);
+   writer.WriteFloat(FID(ANSP), m_d.m_animSpeed);
+   writer.WriteBool(FID(REEN), m_d.m_reflectionEnabled);
+   SaveSharedEditableFields(writer);
+   SavePoints(writer);
+   writer.EndObject();
 }
 
 void Trigger::ClearForOverwrite()
@@ -941,55 +934,37 @@ void Trigger::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void Trigger::Load(IObjectReader& reader)
 {
    SetDefaults(false);
-
-   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
-
-   m_ptable = ptable;
-
-   br.Load();
-   return S_OK;
-}
-
-bool Trigger::LoadToken(const int id, BiffReader * const pbr)
-{
-   switch(id)
-   {
-   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
-   case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
-   case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
-   case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
-   case FID(WITI): pbr->GetFloat(m_d.m_wireThickness); break;
-   case FID(SCAX): pbr->GetFloat(m_d.m_scaleX); break;
-   case FID(SCAY): pbr->GetFloat(m_d.m_scaleY); break;
-   case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
-   case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
-   case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(EBLD): pbr->GetBool(m_d.m_enabled); break;
-   case FID(THOT): pbr->GetFloat(m_d.m_hit_height); break;
-   case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
-   case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
-   case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
-   case FID(ANSP): pbr->GetFloat(m_d.m_animSpeed); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   default:
-   {
-      if (id == FID(DPNT))
-         LoadPointToken(pbr);
-      ISelect::LoadToken(id, pbr);
-      break;
-   }
-   }
-   return true;
-}
-
-HRESULT Trigger::InitPostLoad()
-{
-   UpdateStatusBarInfo();
-   return S_OK;
+   reader.AsObject(
+      [this](int tag, IObjectReader& reader)
+      {
+         switch (tag)
+         {
+         case FID(PIID): reader.AsInt(); break;
+         case FID(VCEN): m_d.m_vCenter = reader.AsVector2(); break;
+         case FID(RADI): m_d.m_radius = reader.AsFloat(); break;
+         case FID(ROTA): m_d.m_rotation = reader.AsFloat(); break;
+         case FID(WITI): m_d.m_wireThickness = reader.AsFloat(); break;
+         case FID(SCAX): m_d.m_scaleX = reader.AsFloat(); break;
+         case FID(SCAY): m_d.m_scaleY = reader.AsFloat(); break;
+         case FID(MATR): m_d.m_szMaterial = reader.AsString(); break;
+         case FID(TMON): m_d.m_tdr.m_TimerEnabled = reader.AsBool(); break;
+         case FID(TMIN): m_d.m_tdr.m_TimerInterval = reader.AsInt(); break;
+         case FID(SURF): m_d.m_szSurface = reader.AsString(); break;
+         case FID(EBLD): m_d.m_enabled = reader.AsBool(); break;
+         case FID(THOT): m_d.m_hit_height = reader.AsFloat(); break;
+         case FID(VSBL): m_d.m_visible = reader.AsBool(); break;
+         case FID(REEN): m_d.m_reflectionEnabled = reader.AsBool(); break;
+         case FID(SHAP): m_d.m_shape = static_cast<TriggerShape>(reader.AsInt()); break;
+         case FID(ANSP): m_d.m_animSpeed = reader.AsFloat(); break;
+         case FID(NAME): m_wzName = reader.AsWideString(); break;
+         case FID(DPNT): LoadPointToken(reader); break;
+         default: LoadSharedEditableField(tag, reader); break;
+         }
+         return true;
+      });
 }
 
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)

@@ -84,7 +84,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbLit.r; }, //
-      [this, profile](Settings& settings) { return settings.GetDMD_ProfileDotTint(profile) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return settings.GetDMD_ProfileDotTint(profile) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbLit.r = v;
@@ -107,7 +107,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbLit.b; }, //
-      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 16) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbLit.b = v;
@@ -125,7 +125,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbUnlit.r; }, //
-      [this, profile](Settings& settings) { return settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbUnlit.r = v;
@@ -137,7 +137,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbUnlit.g; }, //
-      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 8) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbUnlit.g = v;
@@ -149,7 +149,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbUnlit.b; }, //
-      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 16) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbUnlit.b = v;
@@ -181,7 +181,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbLit.r; }, //
-      [this, profile](Settings& settings) { return settings.GetAlpha_ProfileColor(profile) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return settings.GetAlpha_ProfileColor(profile) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbLit.r = v;
@@ -192,7 +192,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbLit.g; }, //
-      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 8) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbLit.g = v;
@@ -204,7 +204,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbLit.b; }, //
-      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 16) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbLit.b = v;
@@ -233,7 +233,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbUnlit.g; }, //
-      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 8) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbUnlit.g = v;
@@ -245,7 +245,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return m_srgbUnlit.b; }, //
-      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 16) & 0xFF; }, //
+      [this, profile](const Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v)
       {
          m_srgbUnlit.b = v;

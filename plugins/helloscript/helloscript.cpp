@@ -44,10 +44,12 @@ MSGPI_EXPORT void MSGPIAPI HelloScriptPluginLoad(const uint32_t sessionId, const
    getScriptApiMsgId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiMsgId, &scriptApi);
    scriptApi->RegisterScriptClass(&helloScriptClass);
+   scriptApi->SubmitTypeLibrary(endpointId);
 }
 
 MSGPI_EXPORT void MSGPIAPI HelloScriptPluginUnload()
 {
+   scriptApi->UnregisterScriptClass(&helloScriptClass);
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
    vpxApi = nullptr;

@@ -34,11 +34,12 @@ BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> 
 
 void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 {
-   CComObject<PinTable> *const table = g_pvp->GetActiveTable();
-   if (table == nullptr)
+   PinTableWnd * const tableEditor = g_pvp->GetActiveTableEditor();
+   if (tableEditor == nullptr)
       return;
+   CComObject<PinTable> *const table = tableEditor->m_table;
 
-   const ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
+   const ViewSetup &viewSetup = table->mViewSetups[tableEditor->m_currentBackglassMode];
    if (dispid == IDC_BG_FSS || dispid == -1)
       PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->IsFSSEnabled());
    if (dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid == -1)
@@ -72,7 +73,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
       GetDlgItem(IDC_LAYBACK_EDIT).ShowWindow(isLegacy ? 1 : 0); // Layback edit
    }
    if (dispid == IDC_BG_COMBOBOX || dispid == -1)
-      PropertyDialog::UpdateComboBox(m_viewList, m_viewCombo, m_viewList[table->m_currentBackglassMode]);
+      PropertyDialog::UpdateComboBox(m_viewList, m_viewCombo, m_viewList[tableEditor->m_currentBackglassMode]);
    if (dispid == IDC_INCLINATION_EDIT || dispid == -1)
       PropertyDialog::SetFloatTextbox(m_inclinationEdit, viewSetup.mLookAt);
    if (dispid == IDC_FOV_EDIT || dispid == -1)
@@ -101,16 +102,17 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
 
 void BackglassCameraProperty::UpdateProperties(const int dispid)
 {
-   CComObject<PinTable> *const table = g_pvp->GetActiveTable();
-   if (table == nullptr)
+   PinTableWnd *const tableEditor = g_pvp->GetActiveTableEditor();
+   if (tableEditor == nullptr)
       return;
+   CComObject<PinTable> *const table = tableEditor->m_table;
 
-   ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
+   ViewSetup &viewSetup = table->mViewSetups[tableEditor->m_currentBackglassMode];
    switch (dispid)
    {
       case IDC_BG_FSS: CHECK_UPDATE_VALUE_SETTER(table->EnableFSS, table->IsFSSEnabled, PropertyDialog::GetCheckboxState, m_hFssModeCheck, table); break;
       case IDC_BG_OVERRIDE_COMBO: CHECK_UPDATE_COMBO_VALUE_SETTER(table->SetViewSetupOverride, table->GetViewSetupOverride, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_testOverrideCombo, m_overrideList), table); break;
-      case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_viewCombo, m_viewList), table); break;
+      case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(tableEditor->m_currentBackglassMode, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_viewCombo, m_viewList), table); break;
       case IDC_CAMERA_LAYOUT_MODE: CHECK_UPDATE_ITEM(viewSetup.mMode, (ViewLayoutMode)PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table); break;
       case IDC_INCLINATION_EDIT: CHECK_UPDATE_ITEM(viewSetup.mLookAt, PropertyDialog::GetFloatTextbox(m_inclinationEdit), table); break;
       case IDC_FOV_EDIT: CHECK_UPDATE_ITEM(viewSetup.mFOV, PropertyDialog::GetFloatTextbox(m_fovEdit), table); break;

@@ -20,11 +20,7 @@ class VPinballManager {
             let event = VPinballEvent(rawValue: value)
             switch event {
             case .extractScript,
-                 .loadingItems,
-                 .loadingSounds,
-                 .loadingImages,
-                 .loadingFonts,
-                 .loadingCollections,
+                 .loading,
                  .prerendering:
                 if let data = data {
                     let json = String(cString: UnsafePointer<CChar>(data))

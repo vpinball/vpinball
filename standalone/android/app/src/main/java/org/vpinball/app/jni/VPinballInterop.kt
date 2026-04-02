@@ -93,27 +93,19 @@ enum class VPinballStorageMode(override val text: String) : VPinballDisplayText 
 enum class VPinballEvent(val value: Int) {
     INIT_COMPLETE(0),
     EXTRACT_SCRIPT(1),
-    LOADING_ITEMS(2),
-    LOADING_SOUNDS(3),
-    LOADING_IMAGES(4),
-    LOADING_FONTS(5),
-    LOADING_COLLECTIONS(6),
-    PRERENDERING(7),
-    PLAYER_STARTED(8),
-    RUMBLE(9),
-    PLAYER_CLOSED(10),
-    WEB_SERVER(11),
-    COMMAND(12);
+    LOADING(2),
+    PRERENDERING(3),
+    PLAYER_STARTED(4),
+    RUMBLE(5),
+    PLAYER_CLOSED(6),
+    WEB_SERVER(7),
+    COMMAND(8);
 
     val text: String?
         get() =
             when (this) {
                 EXTRACT_SCRIPT -> "Extracting Script"
-                LOADING_ITEMS -> "Loading Items"
-                LOADING_SOUNDS -> "Loading Sounds"
-                LOADING_IMAGES -> "Loading Images"
-                LOADING_FONTS -> "Loading Fonts"
-                LOADING_COLLECTIONS -> "Loading Collections"
+                LOADING -> "Loading"
                 PRERENDERING -> "Prerendering Static Parts"
                 else -> null
             }

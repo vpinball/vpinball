@@ -67,7 +67,7 @@ void BitmapFont::Load(const string& filename)
    fontFile.open(filename, std::ifstream::in);
 
    if (!fontFile.is_open()) {
-      LOGE("Failed to open bitmap font file: %s", filename.c_str());
+      LOGE("Failed to open bitmap font file: " + filename);
       return;
    }
 

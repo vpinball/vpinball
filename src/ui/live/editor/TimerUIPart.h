@@ -14,8 +14,8 @@ public:
 
    IEditable* GetEditable() const override { return m_timer; }
 
-   const string& GetOutlinerPath() const { return m_outlinerPath; }
-   void SetOutlinerPath(const string& path) { m_outlinerPath = path; }
+   const string& GetOutlinerPath() const override { return m_outlinerPath; }
+   void SetOutlinerPath(const string& path) override { m_outlinerPath = path; }
 
    TransformMask GetTransform(Matrix3D& transform) override;
    void SetTransform(const vec3& pos, const vec3& scale, const vec3& rot) override;

@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <string>
 using namespace std::string_literals;
+using namespace std::string_view_literals;
 #include <cstring>
 #include <cstdint>
 #include <sstream>
@@ -26,8 +27,12 @@ using namespace std::string_literals;
 #include "usbalphanumeric.h"
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <locale>
 #endif
@@ -71,8 +76,8 @@ static unsigned int renderFrameId = 0;
 static uint8_t identifyFrame[128*32] = {};
 static unsigned int identifyFrameId = 0;
 
-LPI_USE();
-LPI_IMPLEMENT // Implement shared log support
+LPI_USE_CPP();
+LPI_IMPLEMENT_CPP // Implement shared log support
 
 typedef enum {
    Undefined,
@@ -545,7 +550,7 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
    };
    for (int i = 0; (dmdLayout == DmdLayouts::Undefined) && (i < 12); i++)
    {
-      if (layouts[i][1] == selectedSources.size())
+      if (layouts[i][1] == (int)selectedSources.size())
       {
          dmdLayout = static_cast<DmdLayouts>(layouts[i][0]);
          for (size_t j = 0; j < selectedSources.size(); j++)
@@ -565,7 +570,7 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
       for (size_t i = 0; i < selectedSources.size(); i++)
          ss << (i == 0 ? "" : ", ") << selectedSources[i].nElements;
       ss << ')';
-      LPI_LOGI("%s", ss.str().c_str());
+      LPI_LOGI_CPP(ss);
    }
    lock.unlock();
 
@@ -573,7 +578,7 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
    if (wasRendering != (!selectedSources.empty()))
    {
       if (wasRendering)
-         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
       StopRenderThread();
       if (!selectedSources.empty())
       {
@@ -617,9 +622,9 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
    {
       std::lock_guard lock(sourceMutex);
-      msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged);
+      msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged, nullptr);
       if (!selectedSources.empty())
-         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
       selectedSources.clear();
       msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }

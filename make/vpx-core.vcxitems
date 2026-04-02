@@ -838,7 +838,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/math/Mesh.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/Collection.cpp" />
@@ -853,13 +853,13 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/light.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/lightseq.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/pintable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/plunger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/primitive.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/ramp.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/spinner.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/surface.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/textbox.cpp" />
@@ -876,7 +876,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/MeshBuffer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderCommand.cpp" />
@@ -942,6 +941,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.cpp" />
@@ -1020,6 +1020,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/TriggerVisualsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/WallPhysicsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/WallVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffReader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BiffWriter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/bulb.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp" />
@@ -1593,10 +1595,12 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SensorMapping.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/Mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/MeshUtils.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/vector.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/ModelViewProj.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/ballMesh.h" />
@@ -1629,7 +1633,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerPlateMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h" />
@@ -1669,7 +1672,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/hittimer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/DXGIRegistry.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h" />
@@ -1692,6 +1695,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/ViewSetup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRGraphicBackend.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D11Backend.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRVulkanBackend.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
@@ -1742,6 +1748,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.h" />
@@ -1823,6 +1830,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/TriggerVisualsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/WallPhysicsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/WallVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffReader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BiffWriter.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/bulb.h" />

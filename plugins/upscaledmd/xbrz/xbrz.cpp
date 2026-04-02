@@ -155,10 +155,10 @@ float distYCbCr(uint32_t pix1, uint32_t pix2, float lumaWeight)
     //constexpr double k_r = 0.2126; //
     constexpr double k_b = 0.0593; //ITU-R BT.2020 conversion
     constexpr double k_r = 0.2627; //
-    constexpr double k_g = 1 - k_b - k_r;
+    constexpr double k_g = 1.0 - k_b - k_r;
 
-    constexpr float scale_b = 0.5 / (1 - k_b);
-    constexpr float scale_r = 0.5 / (1 - k_r);
+    constexpr float scale_b = (float)(0.5 / (1.0 - k_b));
+    constexpr float scale_r = (float)(0.5 / (1.0 - k_r));
 
     const float y   = (float)k_r * r_diff + (float)k_g * g_diff + (float)k_b * b_diff; //[!], analog YCbCr!
     const float c_b = scale_b * (b_diff - y);
@@ -186,10 +186,10 @@ float distYCbCrBuffered(uint32_t pix1, uint32_t pix2)
 
             constexpr double k_b = 0.0593; //ITU-R BT.2020 conversion
             constexpr double k_r = 0.2627; //
-            constexpr double k_g = 1 - k_b - k_r;
+            constexpr double k_g = 1.0 - k_b - k_r;
 
-            constexpr float scale_b = 0.5 / (1 - k_b);
-            constexpr float scale_r = 0.5 / (1 - k_r);
+            constexpr float scale_b = (float)(0.5 / (1.0 - k_b));
+            constexpr float scale_r = (float)(0.5 / (1.0 - k_r));
 
             const float y   = (float)k_r * r_diff + (float)k_g * g_diff + (float)k_b * b_diff; //[!], analog YCbCr!
             const float c_b = scale_b * (b_diff - y);

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/win/resource.h"
+#include "utils/fileio.h"
 
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
@@ -23,6 +24,7 @@ public:
    bool m_transparent;
    bool m_visible;
    bool m_isDMD;
+   FontDesc m_font;
 };
 
 class Textbox :
@@ -47,7 +49,7 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Textbox() { m_backglass = true; } // Textbox is always located on backdrop
+   Textbox() { m_desktopBackdrop = true; } // Textbox is always located on backdrop
    virtual ~Textbox();
 
    BEGIN_COM_MAP(Textbox)
@@ -81,24 +83,11 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   string GetFontName();
-   HFONT GetFont();
-
-   IFont *m_pIFont = nullptr;
-#ifdef __STANDALONE__
-   bool m_fontItalic;
-   bool m_fontUnderline;
-   bool m_fontStrikeThrough;
-   bool m_fontBold;
-   float m_fontSize;
-   string m_fontName;
-#endif
+   const string& GetFontName() const;
 
    TextboxData m_d;
 
 private:
-   PinTable *m_ptable = nullptr;
-   
    RenderDevice *m_rd = nullptr;
    bool m_textureDirty = true;
    std::shared_ptr<BaseTexture> m_texture = nullptr;
