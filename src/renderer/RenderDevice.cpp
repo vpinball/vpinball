@@ -326,17 +326,13 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 #endif
    }
 
-   // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
-   init.resolution.reset &= ~BGFX_RESET_VSYNC;
-
    // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
    // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
    // render queue from the CPU to the GPU.
    // Since VPX already splits the logic/prepare frame thread (CPU only) from the submit/flip (CPU-GPU)
    // we do not really need BGFX to create its additional thread. Calling bgfx::renderFrame allows
-   // to do so, ending up with this thread being the only BGFX thread.
+   // to do so, ending up with this thread being the only BGFX thread. It needs to be called before each bgfx::init
    // This is also required for OpenXR which needs all the GPU submission calls to be performed after WaitFrame (sync) and between Begin/EndFrame
-   bgfx::renderFrame();
 
    // We first run in headless mode to initialize the underlying backend and try to gather information to select a supported backbuffer format
    // This is needed to select a safe backbuffer format but will fail under OpenGL or Linux. For these, we start using BGRA8 which seems to be supported everywhere and adjust afterward
@@ -354,6 +350,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       init.platformData.nwh = nullptr;
       init.platformData.ndt = nullptr;
       init.platformData.context = nullptr;
+      bgfx::renderFrame();
       if (bgfx::init(init))
       {
          // Select the backbuffer color format, after initializing in headless mode to have access to the list of supported backbuffer format
@@ -374,6 +371,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
    init.resolution.reset &= ~BGFX_RESET_HDR10; // Handle HDR10 color space (actually BGFX select colorspace based on the backbuffer format and discard this flag)
    init.resolution.reset |= init.resolution.formatColor == bgfx::TextureFormat::RGB10A2 ? BGFX_RESET_HDR10 : 0;
+   bgfx::renderFrame();
    if (!bgfx::init(init))
    {
       PLOGE << "BGFX initialization failed";
@@ -522,6 +520,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
          rd->m_frameReadySem.wait();
          g_pplayer->m_renderProfiler->ExitProfileSection();
+
+         if (!rd->m_renderDeviceAlive)
+            break;
+
          if (!rd->m_framePending)
             continue;
 
