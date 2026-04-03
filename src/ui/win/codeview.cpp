@@ -971,12 +971,15 @@ void CodeViewer::Compile(const bool message)
 void CodeViewer::AddToDebugOutput(const string &szText)
 {
 #ifndef __STANDALONE__
-   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, szText.length(), (LPARAM)szText.c_str());
-   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
+   if (g_pplayer)
+   {
+      ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, szText.length(), (LPARAM)szText.c_str());
+      ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM) "\n");
 
-   const size_t pos = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
-   const size_t line = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_LINEFROMPOSITION, pos, 0);
-   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
+      const size_t pos = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
+      const size_t line = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_LINEFROMPOSITION, pos, 0);
+      ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
+   }
 #endif
 }
 
