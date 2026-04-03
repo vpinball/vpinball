@@ -147,7 +147,7 @@ public:
 
    void Flip();
    void WaitForVSync(const bool asynchronous);
-   float GetPredictedDisplayDelayInS() const;
+   float GetPredictedDisplayDelayInS() const; // Delay between when the frame is prepared and when it will be viewed by the player (including TV/display/headset latency)
 
    RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
@@ -273,7 +273,7 @@ private:
    void SubmitAndFlipFrame(bool present);
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
    static colorFormat BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format);
-   static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
+   static void RenderThread(RenderDevice* rd, bgfx::Init init);
 
    uint32_t m_lastPresentFrameIdx = 0;
    float m_renderLatency = 0.f;

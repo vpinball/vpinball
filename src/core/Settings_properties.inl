@@ -105,7 +105,7 @@ PropEnum(Player, SyncMode, "Synchronization"s,
 PropFloat(Player, MaxFramerate, "Limit Framerate"s,
    "-1 will limit FPS to the display refresh rate\n0 will not limit the display refresh rate\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
    1000.f, -1.f);
-PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Maximum number of 'frames in flight' (frames pushed to the GPU queue waiting for rendering).\nHigher values may lead to higher FPS, but at higher input latency.\nRecommended to be left at 0 (disabled/system default)"s, 0, 5, 0);
+PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Maximum number of 'frames in flight' (frames pushed to the GPU queue waiting for rendering).\nHigher values may lead to higher FPS, but at higher input latency.\nRecommended to be adjusted to the lowest value that allows a stable framerate"s, 1, 3, 1);
 PropInt(Player, VisualLatencyCorrection, "Visual Latency Correction"s,
    "Leave at -1 to get default latency correction based on display frequency.\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
    -1, 200, -1);

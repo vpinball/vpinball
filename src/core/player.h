@@ -134,7 +134,7 @@ public:
 
    void UpdateGameLogic();
 
-   VideoSyncMode GetVideoSyncMode() const { return m_videoSyncMode; }
+   VideoSyncMode GetVideoSyncMode() const { return m_playMode == Player::PlayMode::CaptureAttract ? VideoSyncMode::VSM_NONE : m_videoSyncMode; }
    void SetVideoSyncMode(VideoSyncMode mode) { m_videoSyncMode = mode; }
    float GetTargetRefreshRate() const { return m_maxFramerate; }
    void SetTargetRefreshRate(float v) { m_maxFramerate = v < 0.f ? m_playfieldWnd->GetRefreshRate() : v == 0.f ? 10000.f : v < 24.f ? 24.f : v; }

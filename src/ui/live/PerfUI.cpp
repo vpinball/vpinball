@@ -286,7 +286,9 @@ void PerfUI::RenderFPS()
 
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
    #ifdef ENABLE_BGFX
-      ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS());
+   const float visualLatency = m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS() // Time from frame submission to actual display
+      + 0.5f / m_player->GetTargetRefreshRate(); // finger to frame preparation latency average estimate as half of the frame time (since the input is not synced to the frame, it can happen at any time during the frame, so on average at mid frame)
+      ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * visualLatency);
    #else
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME));
    #endif

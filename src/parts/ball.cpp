@@ -467,9 +467,12 @@ void Ball::Render(const unsigned int renderMask)
    ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
    m_rd->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, rd = m_rd]()
+      [this, rotScale = rot * scale, ss, rd = m_rd, expectedDelay = m_rd->GetPredictedDisplayDelayInS(), scheduleTimestamp = usec()]()
       {
-         vec3 posl = m_hitBall.m_d.m_pos + rd->GetPredictedDisplayDelayInS() * m_hitBall.m_d.m_vel;
+         // Adjust ball position to latest physics position, extended by the velocity if we have a sensible predicted display time
+         vec3 posl = m_hitBall.m_d.m_pos;
+         if (const float elapsedSinceSchedule = static_cast<float>(usec() - scheduleTimestamp) / 1000000.0f; elapsedSinceSchedule < expectedDelay)
+            posl += (expectedDelay - elapsedSinceSchedule) * m_hitBall.m_d.m_vel;
          if (m_hitBall.m_d.m_lockedInKicker)
             posl.z -= m_hitBall.m_d.m_radius;
          Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
