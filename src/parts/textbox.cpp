@@ -685,7 +685,7 @@ TTF_Font* Textbox::LoadFont()
    std::erase(fontName, ' ');
 
    vector<string> styles;
-   if (m_d.m_font.IsBold() > 550 && m_d.m_font.IsItalic())
+   if (m_d.m_font.IsBold() && m_d.m_font.IsItalic())
       styles.push_back("-BoldItalic"s);
    if (m_d.m_font.IsBold())
       styles.push_back("-Bold"s);
