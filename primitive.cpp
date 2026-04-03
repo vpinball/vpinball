@@ -1192,13 +1192,14 @@ void Primitive::RenderObject()
          if (m_currentFrame != -1.0f && m_doAnimation)
          {
             m_currentFrame += m_speed*(diff_time_msec*(float)(60./1000.));
-            if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
+            const float maxFrame = (float)(m_mesh.m_animationFrames.size()-1);
+            if (m_currentFrame > maxFrame)
             {
                if (m_endless)
-                  m_currentFrame = 0.0f;
+                  m_currentFrame = fminf(m_currentFrame-maxFrame, maxFrame);
                else
                {
-                  m_currentFrame = (float)(m_mesh.m_animationFrames.size() - 1);
+                  m_currentFrame = maxFrame;
                   m_doAnimation = false;
                   m_vertexBufferRegenerate = false;
                }
@@ -1803,7 +1804,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
    {
    case WM_INITDIALOG:
    {
-      constexpr char nullstring[8] = { 0 };
+      static constexpr char nullstring[8] = {};
 
       prim = (Primitive*)lParam;
       SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, nullstring);
@@ -1829,7 +1830,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          {
          case IDOK:
          {
-            char szFileName[MAXSTRING] = { 0 };
+            char szFileName[MAXSTRING];
+            szFileName[0] = '\0';
 
             GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, MAXSTRING);
             if (szFileName[0] == '\0')
@@ -1993,7 +1995,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
    const int ret = GetOpenFileName(&ofn);
    if (ret == 0)
-       return false;
+      return false;
 
    string filename(ofn.lpstrFile);
    size_t index = filename.find_last_of('\\');
@@ -2156,7 +2158,6 @@ float Primitive::GetDepth(const Vertex3Ds& viewDir) const
 STDMETHODIMP Primitive::get_Sides(int *pVal)
 {
    *pVal = m_d.m_Sides;
-
    return S_OK;
 }
 
@@ -2169,9 +2170,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
    {
       m_d.m_Sides = newVal;
       if (!m_d.m_use3DMesh)
-      {
          m_vertexBufferRegenerate = true;
-      }
    }
 
    return S_OK;
@@ -2198,35 +2197,30 @@ STDMETHODIMP Primitive::put_Material(BSTR newVal)
 STDMETHODIMP Primitive::get_SideColor(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_SideColor;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
 {
    m_d.m_SideColor = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOF(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DrawTexturesInside(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_drawTexturesInside);
-
    return S_OK;
 }
 
@@ -2244,84 +2238,72 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_X(float *pVal)
 {
    *pVal = m_d.m_vPosition.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_X(float newVal)
 {
    m_d.m_vPosition.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Y(float *pVal)
 {
    *pVal = m_d.m_vPosition.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Y(float newVal)
 {
    m_d.m_vPosition.y = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Z(float *pVal)
 {
    *pVal = m_d.m_vPosition.z;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Z(float newVal)
 {
    m_d.m_vPosition.z = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_X(float *pVal)
 {
    *pVal = m_d.m_vSize.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Size_X(float newVal)
 {
    m_d.m_vSize.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_Y(float *pVal)
 {
    *pVal = m_d.m_vSize.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Size_Y(float newVal)
 {
    m_d.m_vSize.y = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Size_Z(float *pVal)
 {
    *pVal = m_d.m_vSize.z;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Size_Z(float newVal)
 {
    m_d.m_vSize.z = newVal;
-
    return S_OK;
 }
 
@@ -2344,7 +2326,6 @@ STDMETHODIMP Primitive::get_RotX(float *pVal)
 STDMETHODIMP Primitive::put_RotX(float newVal)
 {
    m_d.m_aRotAndTra[0] = newVal;
-
    return S_OK;
 }
 
@@ -2367,7 +2348,6 @@ STDMETHODIMP Primitive::get_RotY(float *pVal)
 STDMETHODIMP Primitive::put_RotY(float newVal)
 {
    m_d.m_aRotAndTra[1] = newVal;
-
    return S_OK;
 }
 
@@ -2390,7 +2370,6 @@ STDMETHODIMP Primitive::get_RotZ(float *pVal)
 STDMETHODIMP Primitive::put_RotZ(float newVal)
 {
    m_d.m_aRotAndTra[2] = newVal;
-
    return S_OK;
 }
 
@@ -2413,7 +2392,6 @@ STDMETHODIMP Primitive::get_TransX(float *pVal)
 STDMETHODIMP Primitive::put_TransX(float newVal)
 {
    m_d.m_aRotAndTra[3] = newVal;
-
    return S_OK;
 }
 
@@ -2436,7 +2414,6 @@ STDMETHODIMP Primitive::get_TransY(float *pVal)
 STDMETHODIMP Primitive::put_TransY(float newVal)
 {
    m_d.m_aRotAndTra[4] = newVal;
-
    return S_OK;
 }
 
@@ -2459,7 +2436,6 @@ STDMETHODIMP Primitive::get_TransZ(float *pVal)
 STDMETHODIMP Primitive::put_TransZ(float newVal)
 {
    m_d.m_aRotAndTra[5] = newVal;
-
    return S_OK;
 }
 
@@ -2482,7 +2458,6 @@ STDMETHODIMP Primitive::get_ObjRotX(float *pVal)
 STDMETHODIMP Primitive::put_ObjRotX(float newVal)
 {
    m_d.m_aRotAndTra[6] = newVal;
-
    return S_OK;
 }
 
@@ -2505,7 +2480,6 @@ STDMETHODIMP Primitive::get_ObjRotY(float *pVal)
 STDMETHODIMP Primitive::put_ObjRotY(float newVal)
 {
    m_d.m_aRotAndTra[7] = newVal;
-
    return S_OK;
 }
 
@@ -2528,7 +2502,6 @@ STDMETHODIMP Primitive::get_ObjRotZ(float *pVal)
 STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
 {
    m_d.m_aRotAndTra[8] = newVal;
-
    return S_OK;
 }
 
@@ -2548,21 +2521,18 @@ STDMETHODIMP Primitive::put_Opacity(float newVal)
 STDMETHODIMP Primitive::get_Color(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_color;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Color(OLE_COLOR newVal)
 {
    m_d.m_color = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_AddBlend(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_addBlend);
-
    return S_OK;
 }
 
@@ -2575,126 +2545,108 @@ STDMETHODIMP Primitive::put_AddBlend(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_EdgeFactorUI(float *pVal)
 {
    *pVal = m_d.m_edgeFactorUI;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_EdgeFactorUI(float newVal)
 {
    m_d.m_edgeFactorUI = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_CollisionReductionFactor(float *pVal)
 {
    *pVal = m_d.m_collision_reductionFactor;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_CollisionReductionFactor(float newVal)
 {
    m_d.m_collision_reductionFactor = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_staticRendering);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
    m_d.m_staticRendering = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_hitEvent);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    m_d.m_hitEvent = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Threshold(float *pVal)
 {
    *pVal = m_d.m_threshold;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Threshold(float newVal)
 {
    m_d.m_threshold = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_ElasticityFalloff(float *pVal)
 {
    *pVal = m_d.m_elasticityFalloff;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_ElasticityFalloff(float newVal)
 {
    m_d.m_elasticityFalloff = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Friction(float *pVal)
 {
    *pVal = m_d.m_friction;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Friction(float newVal)
 {
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_Scatter(float newVal)
 {
    m_d.m_scatter = newVal;
-
    return S_OK;
 }
 
@@ -2723,14 +2675,12 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
 STDMETHODIMP Primitive::get_IsToy(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_toy);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 {
    m_d.m_toy = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -2743,7 +2693,6 @@ STDMETHODIMP Primitive::get_BackfacesEnabled(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_BackfacesEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_backfacesEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -2756,63 +2705,54 @@ STDMETHODIMP Primitive::get_ObjectSpaceNormalMap(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_ObjectSpaceNormalMap(VARIANT_BOOL newVal)
 {
    m_d.m_objectSpaceNormalMap = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_disableLightingTop != 0.f);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 {
    m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_BlendDisableLighting(float *pVal)
 {
    *pVal = m_d.m_disableLightingTop;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_BlendDisableLighting(float newVal)
 {
    m_d.m_disableLightingTop = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_BlendDisableLightingFromBelow(float *pVal)
 {
    *pVal = m_d.m_disableLightingBelow;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_BlendDisableLightingFromBelow(float newVal)
 {
    m_d.m_disableLightingBelow = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -2836,36 +2776,33 @@ STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 
 STDMETHODIMP Primitive::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_overwritePhysics);
+   *pVal = FTOVB(m_d.m_overwritePhysics);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    m_d.m_overwritePhysics = VBTOb(newVal);
+   m_d.m_overwritePhysics = VBTOb(newVal);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_HitThreshold(float *pVal)
 {
    *pVal = m_currentHitThreshold;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_displayTexture);
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_DisplayTexture(VARIANT_BOOL newVal)
 {
    m_d.m_displayTexture = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -2912,7 +2849,6 @@ STDMETHODIMP Primitive::StopAnim()
 {
    m_doAnimation = false;
    m_vertexBufferRegenerate = false;
-
    return S_OK;
 }
 
@@ -2962,14 +2898,12 @@ void Primitive::SetDefaultPhysics(bool fromMouseClick)
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
-
    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_DepthBias(float newVal)
 {
    m_d.m_depthBias = newVal;
-
    return S_OK;
 }
 
