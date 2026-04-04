@@ -294,16 +294,18 @@ void PerfUI::RenderFPS()
    #endif
 
    bool hasFlipperLatency = false;
-   if (const uint64_t lastFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetLeftFlipperActionId()]->GetLastStateChange(); usec() < lastFlipChange + 1000000ULL)
+   const uint64_t lastLeftFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetLeftFlipperActionId()]->GetLastStateChange();
+   const uint64_t lastRightFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetRightFlipperActionId()]->GetLastStateChange();
+   if (const uint64_t now = usec(); now < lastLeftFlipChange + 1000000ULL && now > lastRightFlipChange + 1000000ULL)
    {
       for (const auto part : m_player->m_ptable->GetParts())
       {
          if (part->GetItemType() == eItemFlipper)
          {
-            if (auto flipper = (Flipper *)part; lastFlipChange < flipper->GetLastRotateTime())
+            if (auto flipper = (Flipper *)part; lastLeftFlipChange < flipper->GetLastRotateTime())
             {
-               const double prevAcqToAction = 1e-3 * (static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange) + m_player->m_pininput.m_leftFlipperLastChangePollDelay);
-               const double acqToAction = 1e-3 * static_cast<double>(flipper->GetLastRotateTime() - lastFlipChange);
+               const double prevAcqToAction = 1e-3 * (static_cast<double>(flipper->GetLastRotateTime() - lastLeftFlipChange) + m_player->m_pininput.m_leftFlipperLastChangePollDelay);
+               const double acqToAction = 1e-3 * static_cast<double>(flipper->GetLastRotateTime() - lastLeftFlipChange);
                ImGui::Text("Flipper latency: %3.1f - %3.1fms", acqToAction, prevAcqToAction);
                hasFlipperLatency = true;
                break;
