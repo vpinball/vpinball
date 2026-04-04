@@ -108,4 +108,10 @@ string lowerCase(string input);
 std::filesystem::path lowerCase(std::filesystem::path input);
 void SetThreadName(const string &name);
 
+void ClipDrawImage(VPXRenderContext2D* ctx, VPXTexture texture,
+   float tintR, float tintG, float tintB, float alpha,
+   float texX, float texY, float texW, float texH,
+   float pivotX, float pivotY, float rotation,
+   const SDL_FRect& dest, const SDL_Rect& clipRect);
+
 }

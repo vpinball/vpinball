@@ -446,8 +446,8 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
       return;
    }
 
-   pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color, 
-      static_cast<float>(Angle), (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, 
+   pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color,
+      static_cast<float>(Angle) / 10.0f, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign,
       static_cast<float>(xMargin), static_cast<float>(yMargin), PageNum, Visible));
 
    return;
@@ -484,7 +484,10 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    }
 
    pLabel->SetCaption(Caption);
-   pLabel->SetVisible(Visible);
+   // Animations override visibility in the renderer — a label with an active
+   // animation renders regardless of m_visible
+   if (!pLabel->IsAnimating())
+      pLabel->SetVisible(Visible);
    pLabel->SetSpecial(Special);
 }
 

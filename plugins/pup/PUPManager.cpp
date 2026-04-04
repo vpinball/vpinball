@@ -133,7 +133,17 @@ void PUPManager::SetGameDir(const string& szRomName)
 
 void PUPManager::LoadConfig(const string& szRomName)
 {
+   // Tables commonly call B2SInit multiple times
+   // Skip reload for the same ROM to avoid destroying screens and their labels
+   if (!m_szPath.empty() && lowerCase(szRomName) == lowerCase(m_szRomName))
+   {
+      LOGI("Same ROM, skipping re-init"s);
+      return;
+   }
+
    Unload();
+
+   m_szRomName = szRomName;
 
    SetGameDir(szRomName);
 
@@ -194,6 +204,7 @@ void PUPManager::Unload()
    m_playlists.clear();
 
    m_szPath.clear();
+   m_szRomName.clear();
 }
 
 void PUPManager::UnloadFonts()

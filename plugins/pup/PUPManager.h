@@ -99,6 +99,7 @@ private:
    float m_mainVolume = 1.f;
    std::filesystem::path m_szRootPath;
    std::filesystem::path m_szPath;
+   string m_szRomName;
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    vector<TTF_Font*> m_fonts;

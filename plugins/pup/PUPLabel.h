@@ -47,6 +47,7 @@ public:
    void SetSpecial(const string& szSpecial);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum);
    const string& GetName() const { return m_szName; }
+   bool IsAnimating() const { return m_animation != nullptr; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;
 
@@ -67,11 +68,20 @@ private:
    string m_szCaption;
    int m_pagenum;
    int m_shadowColor = 0;
-   int m_shadowState = 0;
+   int m_shadowType = 0;
    float m_xoffset = 0;
    float m_yoffset = 0;
    int m_outline = 0;
    bool m_bold = false;
+   bool m_italic = false;
+   float m_alpha = 1.0f;
+   bool m_useAbsolutePos = false;
+   float m_zoom = 100.0f;
+   int m_gradColor = 0;
+   int m_gradState = 0;
+   int m_filterMode = 0;
+   float m_autoFitWidth = 0;
+   float m_autoFitHeight = 0;
    PUPScreen* m_pScreen = nullptr;
    int m_anigif = 0;
 
@@ -144,12 +154,21 @@ private:
    public:
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod);
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int alphaStart, int alphaEnd, int pulseSpeed, bool screenFade);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float zoomStart, float zoomEnd, int zoomPulseSpeed);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float wiggleStart, float wiggleEnd, int wiggleSpeed, int dummy);
 
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
+      bool IsFade() const { return m_alphaStart != m_alphaEnd; }
+      bool IsZoom() const { return m_zoomStart != m_zoomEnd; }
+      bool IsWiggle() const { return m_wiggleStart != m_wiggleEnd; }
 
       bool m_visible = true;
       float m_xOffset = 0.f;
       float m_yOffset = 0.f;
+      float m_alpha = 1.f;
+      float m_zoom = 100.f;
+      float m_wiggle = 0.f;
       int m_color;
 
    private:
@@ -167,6 +186,28 @@ private:
       int m_motionLen = 0;
       int m_motionTween = 0;
       int m_motionColor = 0;
+   public:
+      int m_alphaFade = 0;
+   private:
+
+      int m_alphaStart = 255;
+      int m_alphaEnd = 255;
+      int m_pulseSpeed = 0;
+
+      float m_zoomStart = 100.f;
+      float m_zoomEnd = 100.f;
+      int m_zoomPulseSpeed = 0;
+
+      float m_wiggleStart = 0.f;
+      float m_wiggleEnd = 0.f;
+      int m_wiggleSpeed = 0;
+
+   public:
+      int m_delayShow = 0;
+      int m_numStart = INT_MIN;
+      int m_numEnd = INT_MAX;
+      int m_numFormat = 0;
+      string m_numText;
    };
 
    bool m_dirty = true;

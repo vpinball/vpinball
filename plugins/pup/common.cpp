@@ -245,6 +245,44 @@ bool StrCompareNoCase(const string& strA, const string& strB)
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+// We render all screens to a shared surface, so clip manually by adjusting texture source and destination rects
+#define PUP_CLIP_LABELS 1
+
+void ClipDrawImage(VPXRenderContext2D* ctx, VPXTexture texture,
+   float tintR, float tintG, float tintB, float alpha,
+   float texX, float texY, float texW, float texH,
+   float pivotX, float pivotY, float rotation,
+   const SDL_FRect& dest, const SDL_Rect& clipRect)
+{
+#if PUP_CLIP_LABELS
+   // TNA uses angle=1 (0.1) which prevents clipping. If rotation is near zero, clip anyway
+   if (fabsf(rotation) < 0.5f)
+   {
+      const float cl = fmaxf(dest.x, static_cast<float>(clipRect.x));
+      const float ct = fmaxf(dest.y, static_cast<float>(clipRect.y));
+      const float cr = fminf(dest.x + dest.w, static_cast<float>(clipRect.x + clipRect.w));
+      const float cb = fminf(dest.y + dest.h, static_cast<float>(clipRect.y + clipRect.h));
+      if (cl >= cr || ct >= cb)
+         return;
+
+      const float lf = (cl - dest.x) / dest.w;
+      const float tf = (ct - dest.y) / dest.h;
+      const float rf = (dest.x + dest.w - cr) / dest.w;
+      const float bf = (dest.y + dest.h - cb) / dest.h;
+
+      ctx->DrawImage(ctx, texture, tintR, tintG, tintB, alpha,
+         texX + lf * texW, texY + bf * texH, texW * (1.f - lf - rf), texH * (1.f - tf - bf),
+         pivotX, pivotY, rotation,
+         cl, ct, cr - cl, cb - ct);
+      return;
+   }
+#endif
+   ctx->DrawImage(ctx, texture, tintR, tintG, tintB, alpha,
+      texX, texY, texW, texH,
+      pivotX, pivotY, rotation,
+      dest.x, dest.y, dest.w, dest.h);
+}
+
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

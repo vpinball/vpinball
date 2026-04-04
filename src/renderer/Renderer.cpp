@@ -2983,7 +2983,7 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    rdl->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
    rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
    rdl->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-   rdl->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
+   rdl->m_basicShader->SetVector(SHADER_staticColor_Alpha, tintR, tintG, tintB, alpha);
    // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this assumes that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
    assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
    // Disable filtering and mipmap generation if they are not needed
@@ -3014,6 +3014,8 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    }
    rdl->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_with_texture);
    rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
+   if (alpha != 1.f || tintR != 1.f || tintG != 1.f || tintB != 1.f)
+      rdl->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
 }
 
 void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style, VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB,
