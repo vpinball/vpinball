@@ -27,7 +27,8 @@ public:
 
 private:
    void RenderFPS();
-   void RenderStats();
+   void RenderStats() const;
+   void RenderPlots();
 
    Player* const m_player;
    float m_uiScale = 1.0f;

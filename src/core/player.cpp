@@ -310,7 +310,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, VPXWindowId::VPXWINDOW_Playfield);
 
          const float pfRefreshRate = m_playfieldWnd->GetRefreshRate();
-         m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
+         m_maxFramerate = m_ptable->m_settings.GetPlayer_MaxFramerate();
          if (m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
             m_maxFramerate = 24.f;
          if (m_maxFramerate < 0.f) // Negative is display refresh rate
