@@ -968,7 +968,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
    assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
    #if defined(ENABLE_OPENGL)
-   if (m_techniques[m_state->m_technique] == nullptr)
+   if (m_techniques[technique] == nullptr)
    {
       m_state->m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique].name);
