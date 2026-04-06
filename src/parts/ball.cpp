@@ -477,7 +477,7 @@ void Ball::Render(const unsigned int renderMask)
          // - the time the display will need to actually show it (3ms is just a magic number here)
          if (g_pplayer->IsPlaying())
          {
-            const float delay = static_cast<float>(msec() - g_pplayer->m_time_msec) / 1000.f + rd->GetPredictedDisplayDelay() + 0.003f;
+            const float delay = static_cast<float>(usec() - g_pplayer->m_timeUpdateTimeStamp) / 1000000.f + rd->GetPredictedDisplayDelay() + 0.003f;
             posl += delay * m_hitBall.m_d.m_vel;
          }
          if (m_hitBall.m_d.m_lockedInKicker)

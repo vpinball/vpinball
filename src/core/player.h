@@ -114,9 +114,10 @@ public:
 
    ProgressDialog m_progressDialog;
 
-   double m_time_sec; // current physics time
-   uint32_t m_time_msec; // current physics time
-   uint32_t m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
+   uint64_t m_timeUpdateTimeStamp = 0; // Timestamp in computer time that correspond to last update of game time
+   double m_time_sec = 0.0; // current physics time
+   uint32_t m_time_msec = 0; // current physics time
+   uint32_t m_last_frame_time_msec = 0; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
 
    Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events

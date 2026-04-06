@@ -486,8 +486,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    PLOGI << "Initializing physics"; // For profiling
    m_progressDialog.SetProgress("Initializing Physics..."s, 30);
    // Need to set timecur here, for init functions that set timers
-   m_time_sec = 0.0;
-   m_time_msec = m_last_frame_time_msec = 0;
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);

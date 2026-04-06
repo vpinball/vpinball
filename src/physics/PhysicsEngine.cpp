@@ -583,6 +583,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
+      g_pplayer->m_timeUpdateTimeStamp = usec();
       g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_startTime_usec) / 1000000.0); // First iteration is done before precise time
       g_pplayer->m_time_msec = (uint32_t)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
 
