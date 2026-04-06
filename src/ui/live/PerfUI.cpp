@@ -98,13 +98,17 @@ void PerfUI::RenderFPS()
       const double frameLength = m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       const ImVec2 renderTextPos = ImGui::GetCursorScreenPos();
       #ifdef ENABLE_BGFX
-         const float visualLatency = m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS() // Time from frame submission to actual display
-            + 0.5f / m_player->GetTargetRefreshRate(); // finger to frame preparation latency average estimate as half of the frame time (since the input is not synced to the frame, it can happen at any time during the frame, so on average at mid frame)
-         ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, 1000.f * visualLatency);
-         ImGui::SameLine();
-         if (ImGui::IsMouseHoveringRect(renderTextPos, ImGui::GetCursorScreenPos() + ImVec2(0, ImGui::GetTextLineHeight())))
-            ImGui::SetTooltip("Latency is an (imprecise) evaluation of the average finger to photon latency\nIt includes median input latency, rendering latency and estimated display latency");
-         ImGui::NewLine();
+         if (const float latency = 1000.f * m_player->m_renderer->m_renderDevice->GetVisualLatency(); latency > 0.f)
+         {
+            ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, latency);
+            ImGui::SameLine();
+            if (ImGui::IsMouseHoveringRect(renderTextPos, ImGui::GetCursorScreenPos() + ImVec2(0, ImGui::GetTextLineHeight())))
+               ImGui::SetTooltip(
+                  "Latency is an (imprecise) evaluation of the average finger to photon latency\nIt includes median input latency, rendering latency and estimated display latency");
+            ImGui::NewLine();
+         }
+         else
+            ImGui::Text("Render: %5.1ffps", 1e6 / frameLength);
       #else
          ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME));
       #endif
@@ -161,7 +165,8 @@ void PerfUI::RenderStats() const
       "Custom 2"s,
       "Custom 3"s,
       // Render thread
-      "Render Wait"s, // PROFILE_RENDER_WAIT
+      "Wait for frame"s, // PROFILE_RENDER_WAIT
+      "Wait for swapchain"s, // PROFILE_RENDER_WAIT_SC
       #ifdef ENABLE_BGFX
       "Submit BGFX"s, // PROFILE_RENDER_SUBMIT
       "Submit GPU"s, // PROFILE_RENDER_FLIP
@@ -182,30 +187,32 @@ void PerfUI::RenderStats() const
       "Custom 2"s,
       "Custom 3"s,
       // Render thread
+      "(Wait for logic thread to prepare a frame)"s,
+      "(Wait for a free swapchain slot)"s,
       #ifdef ENABLE_BGFX
-      "(Wait for a swapchain slot and/or for a frame from logic thread)"s,
       "(Submit frame from VPX to BGFX)"s,
       "(Submit frame from BGFX to GPU)"s,
       "(Sleep to pace frames on chosen FPS)"s,
       #else
-      "(Wait for logic thread to prepare a frame)"s,
       "(Submit to driver next frame)"s,
       "(Wait for GPU and display sync to finish current frame)"s,
       "(Sleep to synchronise on user selected FPS)"s,
       #endif
    };
    static constexpr FrameProfiler::ProfileSection sections[] = {
-      FrameProfiler::PROFILE_RENDER_WAIT,
       FrameProfiler::PROFILE_RENDER_SLEEP,
+      FrameProfiler::PROFILE_RENDER_WAIT,
       FrameProfiler::PROFILE_RENDER_SUBMIT,
       FrameProfiler::PROFILE_RENDER_FLIP,
+      FrameProfiler::PROFILE_RENDER_WAIT_SC,
       FrameProfiler::PROFILE_PREPARE_FRAME,
    };
    static constexpr ImU32 cols[] = {
-      IM_COL32(192, 192, 192, 255), // Wait for Render Frame and/or for Swapchain
       IM_COL32(128, 128, 128, 255), // Sleep
+      IM_COL32(192,   0,   0, 255), // Wait for Render Frame (red as it is not uspposed ot ever happen)
       IM_COL32(  0, 128, 255, 255), // Submit (VPX->BGFX)
       IM_COL32(  0, 192, 192, 255), // Submit (BGFX->Driver)
+      IM_COL32(192, 192, 192, 255), // Wait for Swapchain slot
       IM_COL32(128, 255, 128, 255), // Prepare
    };
    const ImGuiContext &g = *GImGui;
@@ -231,19 +238,20 @@ void PerfUI::RenderStats() const
       for (const auto section : sections)
       {
          const FrameProfiler *profiler = (section == FrameProfiler::PROFILE_PREPARE_FRAME) ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
-         minTS = (profiler->GetPrevStart(section) == 0)  ? minTS : std::min(minTS, profiler->GetPrevStart(section));
+         minTS = (profiler->GetPrevStart(section) == 0) ? minTS : std::min(minTS, profiler->GetPrevStart(section));
          maxTS = (profiler->GetPrevStart(section) == 0) ? maxTS : std::max(maxTS, profiler->GetPrevEnd(section));
       }
 
-      const float elapse = static_cast<float>(m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
+      // Full scale is expected frame length + 1 display frame (to show when we miss)
+      const float elapse = static_cast<float>(m_player->m_renderer->m_renderDevice->GetTargetFrameLength()) + static_cast<float>(1000000. / (double)m_player->m_playfieldWnd->GetRefreshRate());
       const float width = inner_bb.Max.x - inner_bb.Min.x;
       for (int i = 0; i < std::size(sections); i++)
       {
          const FrameProfiler *const profiler = (sections[i] == FrameProfiler::PROFILE_PREPARE_FRAME) ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
          if (profiler->GetPrevStart(sections[i]) == 0)
             continue;
-         float start = static_cast<float>(profiler->GetPrevStart(sections[i]) - minTS) / elapse;
-         float end = static_cast<float>(profiler->GetPrevEnd(sections[i]) - minTS) / elapse;
+         const float start = static_cast<float>(profiler->GetPrevStart(sections[i]) - minTS) / elapse;
+         const float end = static_cast<float>(profiler->GetPrevEnd(sections[i]) - minTS) / elapse;
          #ifdef ENABLE_BGFX
             const float height = ((sections[i] == FrameProfiler::PROFILE_PREPARE_FRAME) ? 0.0f : blockHeight) - style.FramePadding.y;
          #else
@@ -311,10 +319,11 @@ void PerfUI::RenderStats() const
       const FrameProfiler* profiler = g_pplayer->m_renderProfiler;
       #ifdef ENABLE_BGFX
          PROF_ROW("Render Thread", FrameProfiler::PROFILE_FRAME)
-         PROF_ROW("> Wait", FrameProfiler::PROFILE_RENDER_WAIT)
-         PROF_ROW("> Sleep", FrameProfiler::PROFILE_RENDER_SLEEP)
+         PROF_ROW("> Wait Frame", FrameProfiler::PROFILE_RENDER_WAIT)
          PROF_ROW("> VPX -> BGFX", FrameProfiler::PROFILE_RENDER_SUBMIT)
          PROF_ROW("> BGFX -> GPU", FrameProfiler::PROFILE_RENDER_FLIP)
+         PROF_ROW("> Wait Swapchain", FrameProfiler::PROFILE_RENDER_WAIT_SC)
+         PROF_ROW("> Sleep", FrameProfiler::PROFILE_RENDER_SLEEP)
          if (hoveredRow == 2)
             ImGui::SetTooltip("Time spent waiting for:\n- the CPU to prepare a frame\n- a swapchain slot to be free\n- anticipating part of the sync sleep to reduce latency");
          else if (hoveredRow == 3)

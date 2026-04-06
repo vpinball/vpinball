@@ -22,116 +22,7 @@ extern marker_series series;
    #include "bx/os.h"
    #include <map>
    #include <vector>
-
-   #if BX_PLATFORM_WINDOWS
-      #define XR_USE_PLATFORM_WIN32
-      #define XR_USE_GRAPHICS_API_VULKAN
-      #define XR_USE_GRAPHICS_API_OPENGL
-      #define XR_USE_GRAPHICS_API_OPENGL_ES
-      #define XR_USE_GRAPHICS_API_D3D11
-      #define VK_USE_PLATFORM_WIN32_KHR
-      //#define XR_USE_GRAPHICS_API_D3D12
-   #elif BX_PLATFORM_ANDROID
-      #define XR_USE_PLATFORM_ANDROID
-      #define XR_USE_GRAPHICS_API_VULKAN
-      //#define XR_USE_GRAPHICS_API_OPENGL_ES
-   #endif
-
-   // OpenXR Dependencies
-
-   #ifdef XR_USE_PLATFORM_ANDROID
-   #include <android/native_window.h>
-   #include <android/window.h>
-   #include <android/native_window_jni.h>
-   #endif  // XR_USE_PLATFORM_ANDROID
-
-   #ifdef XR_USE_PLATFORM_WIN32
-
-   #include <winapifamily.h>
-   #if !(WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM))
-   // Enable desktop partition APIs, such as RegOpenKeyEx, LoadLibraryEx, PathFileExists etc.
-   #undef WINAPI_PARTITION_DESKTOP
-   #define WINAPI_PARTITION_DESKTOP 1
-   #endif
-
-   #ifndef NOMINMAX
-   #define NOMINMAX
-   #endif  // !NOMINMAX
-
-   #ifndef WIN32_LEAN_AND_MEAN
-   #define WIN32_LEAN_AND_MEAN
-   #endif  // !WIN32_LEAN_AND_MEAN
-
-   #include <windows.h>
-   #include <unknwn.h>
-
-   #endif  // XR_USE_PLATFORM_WIN32
-
-   #ifdef XR_USE_GRAPHICS_API_D3D11
-   #include <d3d11.h>
-   #endif  // XR_USE_GRAPHICS_API_D3D11
-
-   #ifdef XR_USE_GRAPHICS_API_D3D12
-   #include <d3d12.h>
-   #endif  // XR_USE_GRAPHICS_API_D3D12
-
-   #ifdef XR_USE_PLATFORM_XLIB
-   #include <X11/Xlib.h>
-   #include <X11/Xutil.h>
-   #endif  // XR_USE_PLATFORM_XLIB
-
-   #ifdef XR_USE_PLATFORM_XCB
-   #include <xcb/xcb.h>
-   #endif  // XR_USE_PLATFORM_XCB
-
-   #ifdef XR_USE_GRAPHICS_API_OPENGL
-   #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
-   #include <GL/glx.h>
-   #endif  // (XR_USE_PLATFORM_XLIB || XR_USE_PLATFORM_XCB)
-   #ifdef XR_USE_PLATFORM_XCB
-   #include <xcb/glx.h>
-   #endif  // XR_USE_PLATFORM_XCB
-   #ifdef XR_USE_PLATFORM_MACOS
-   #include <OpenCL/cl_gl_ext.h>
-   #endif  // XR_USE_PLATFORM_MACOS
-   #endif  // XR_USE_GRAPHICS_API_OPENGL
-
-   #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
-   #include <SDL3/SDL_egl.h>
-   #endif  // XR_USE_GRAPHICS_API_OPENGL_ES
-
-   #ifdef XR_USE_GRAPHICS_API_VULKAN
-   #include <vulkan/vulkan.h>
-   #ifdef XR_USE_PLATFORM_ANDROID
-   #include <vulkan/vulkan_android.h>
-   #endif  // XR_USE_PLATFORM_ANDROID
-   #endif  // XR_USE_GRAPHICS_API_VULKAN
-
-   #ifdef XR_USE_PLATFORM_WAYLAND
-   #include "wayland-client.h"
-   #endif  // XR_USE_PLATFORM_WAYLAND
-
-   #ifdef XR_USE_PLATFORM_EGL
-   #include <EGL/egl.h>
-   #endif  // XR_USE_PLATFORM_EGL
-
-   #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
-   #ifdef Success
-   #undef Success
-   #endif  // Success
-
-   #ifdef Always
-   #undef Always
-   #endif  // Always
-
-   #ifdef None
-   #undef None
-   #endif  // None
-   #endif // defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
-
-   #include <openxr/openxr.h>
-   #include <openxr/openxr_platform.h>
-
+   #include <time.h>
 
 static inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
 {
@@ -333,6 +224,8 @@ VRDevice::VRDevice(const Settings& settings)
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
       #if BX_PLATFORM_WINDOWS
          m_win32PerfCounterExtensionSupported = EnableExtensionIfSupported(XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME);
+      #elif BX_PLATFORM_ANDROID
+         m_convertTimespecTimeExtensionSupported = EnableExtensionIfSupported(XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME);
       #endif
       m_passthroughExtensionSupported = EnableExtensionIfSupported(XR_FB_PASSTHROUGH_EXTENSION_NAME);
       #ifdef DEBUG
@@ -354,6 +247,20 @@ VRDevice::VRDevice(const Settings& settings)
          return;
       }
 
+      #if BX_PLATFORM_WINDOWS
+      if (m_win32PerfCounterExtensionSupported)
+      {
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&m_xrConvertTimeToWin32PerformanceCounterKHR),
+            "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
+      }
+      #elif BX_PLATFORM_ANDROID
+      if (m_convertTimespecTimeExtensionSupported)
+      {
+         OPENXR_CHECK(
+            xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToTimespecTimeKHR", (PFN_xrVoidFunction*)&m_xrConvertTimeToTimespecTimeKHR),
+            "Failed to get xrConvertTimeToTimespecTimeKHR.");
+      }
+      #endif
       if (m_visibilityMaskExtensionSupported)
       {
          OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetVisibilityMaskKHR", (PFN_xrVoidFunction*)&xrGetVisibilityMaskKHR), "Failed to get xrGetVisibilityMaskKHR.");
@@ -1116,7 +1023,7 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
    }
 }
 
-void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vrRenderTarget)> submitFrame)
+void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame)
 {
    assert(m_session);
 
@@ -1149,18 +1056,29 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    RenderLayerInfo renderLayerInfo;
    renderLayerInfo.predictedDisplayTime = frameState.predictedDisplayTime;
 
-   #ifdef _MSC_VER
-   if (m_win32PerfCounterExtensionSupported)
+   m_predictedDisplayTimestamp = static_cast<float>(usec()) / 1000000.f;
+   #if BX_PLATFORM_WINDOWS
+   if (m_xrConvertTimeToWin32PerformanceCounterKHR)
    {
-      PFN_xrConvertTimeToWin32PerformanceCounterKHR xrConvertTimeToWin32PerformanceCounterKHR;
-      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&xrConvertTimeToWin32PerformanceCounterKHR), "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
-      LARGE_INTEGER now, displayTime;
-      xrConvertTimeToWin32PerformanceCounterKHR(m_xrInstance, frameState.predictedDisplayTime, &displayTime);
+      LARGE_INTEGER displayTime;
+      m_xrConvertTimeToWin32PerformanceCounterKHR(m_xrInstance, frameState.predictedDisplayTime, &displayTime);
+      LARGE_INTEGER now;
       QueryPerformanceCounter(&now);
       LARGE_INTEGER TimerFreq;
       QueryPerformanceFrequency(&TimerFreq);
-      m_predictedDisplayDelayInS = static_cast<float>(displayTime.QuadPart - now.QuadPart) / static_cast<float>(TimerFreq.QuadPart);
-      //PLOGD << "Delay " << m_predictedDisplayDelayInS;
+      m_predictedDisplayTimestamp += static_cast<float>(displayTime.QuadPart - now.QuadPart) / static_cast<float>(TimerFreq.QuadPart);
+   }
+   #elif BX_PLATFORM_ANDROID
+   if (m_xrConvertTimeToTimespecTimeKHR)
+   {
+      timespec displayTime;
+      m_xrConvertTimeToTimespecTimeKHR(m_xrInstance, frameState.predictedDisplayTime, &displayTime);
+      timespec now;
+      clock_gettime(CLOCK_MONOTONIC, &now);
+      time_t sec_diff = displayTime.tv_sec - now.tv_sec;
+      long nsec_diff = displayTime.tv_nsec - now.tv_nsec;
+      int64_t total_nsec = sec_diff * 1000000000LL + nsec_diff;
+      m_predictedDisplayTimestamp += static_cast<float>(total_nsec) / 1000000000.0f;
    }
    #endif
 

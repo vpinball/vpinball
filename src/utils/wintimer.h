@@ -44,19 +44,20 @@ public:
    {
       // Sections of a frame. Sum of the following sections should give the same as PROFILE_FRAME
       // Logic thread
-      PROFILE_MISC,          // Everything not covered below
-      PROFILE_SCRIPT,        // Time spent in script (all events)
-      PROFILE_PHYSICS,       // Time spent in the physics simulation
-      PROFILE_SLEEP,         // Time spent sleeping per frame
-      PROFILE_PREPARE_FRAME, // Time spent to build the render frame
-      PROFILE_CUSTOM1,       // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
-      PROFILE_CUSTOM2,       // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
-      PROFILE_CUSTOM3,       // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+      PROFILE_MISC,              // Everything not covered below
+      PROFILE_SCRIPT,            // Time spent in script (all events)
+      PROFILE_PHYSICS,           // Time spent in the physics simulation
+      PROFILE_SLEEP,             // Time spent sleeping per frame
+      PROFILE_PREPARE_FRAME,     // Time spent to build the render frame
+      PROFILE_CUSTOM1,           // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+      PROFILE_CUSTOM2,           // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
+      PROFILE_CUSTOM3,           // Use in conjunction with PROFILE_FUNCTION to perform custom profiling of sub sections of frames
       // Render thread
-      PROFILE_RENDER_WAIT,   // Time spent waiting for a frame to be ready to be submitted (when CPU bounded)
-      PROFILE_RENDER_SUBMIT, // Time spent to submit the render frame to the GPU
-      PROFILE_RENDER_FLIP,   // Time spent flipping the swap chain (flush the GPU render queue)
-      PROFILE_RENDER_SLEEP,  // Time spent sleeping per frame (for user setting FPS synchronization)
+      PROFILE_RENDER_WAIT,       // Time spent waiting for a frame to be prepared by the logic thread (only for BGFX backend)
+      PROFILE_RENDER_WAIT_SC,    // Time spent waiting for a swapchain slot (when GPU bounded, only for BGFX backend)
+      PROFILE_RENDER_SUBMIT,     // Time spent to submit to submit the frame to the GPU (DX9/OpenGL) or to BGFX (when using BGFX backend)
+      PROFILE_RENDER_FLIP,       // Time spent flipping the swap chain (flush the GPU render queue)
+      PROFILE_RENDER_SLEEP,      // Time spent sleeping per frame (for software FPS synchronization)
       // Dedicated counters
       PROFILE_FRAME,             // Overall frame length
       PROFILE_INPUT_POLL_PERIOD, // Time spent between 2 input processings (not tied to frame timings)
@@ -224,11 +225,6 @@ public:
       assert(m_threadLock == std::this_thread::get_id());
       //m_profileDataEnd[m_profileIndex][PROFILE_RENDER_SUBMIT] += us;
       m_profileData[m_profileIndex][PROFILE_RENDER_SUBMIT] += us;
-      /* if (m_profileDataStart[m_profileIndex][PROFILE_RENDER_SLEEP] != 0)
-      {
-         m_profileDataStart[m_profileIndex][PROFILE_RENDER_SLEEP] += us;
-         m_profileDataEnd[m_profileIndex][PROFILE_RENDER_SLEEP] += us;
-      }*/
       //m_profileDataStart[m_profileIndex][PROFILE_RENDER_FLIP] += us;
       m_profileData[m_profileIndex][PROFILE_RENDER_FLIP] -= us;
    }

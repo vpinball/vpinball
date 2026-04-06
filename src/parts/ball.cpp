@@ -467,15 +467,22 @@ void Ball::Render(const unsigned int renderMask)
    ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
    m_rd->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, rd = m_rd, expectedDelay = m_rd->GetPredictedDisplayDelayInS(), scheduleTimestamp = usec()]()
+      [this, rotScale = rot * scale, ss, rd = m_rd, scheduleTimestamp = usec()]()
       {
-         // Adjust ball position to latest physics position, extended by the velocity if we have a sensible predicted display time
+         // Adjust ball position to latest physics position
          vec3 posl = m_hitBall.m_d.m_pos;
-         if (const float elapsedSinceSchedule = static_cast<float>(usec() - scheduleTimestamp) / 1000000.0f; elapsedSinceSchedule < expectedDelay)
-            posl += (expectedDelay - elapsedSinceSchedule) * m_hitBall.m_d.m_vel;
+         // If playing also apply velocity extrapolation to account for:
+         // - the time elapsed since last physic,
+         // - the time between now and when it will be presented,
+         // - the time the display will need to actually show it (3ms is just a magic number here)
+         if (g_pplayer->IsPlaying())
+         {
+            const float delay = static_cast<float>(msec() - g_pplayer->m_time_msec) / 1000.f + rd->GetPredictedDisplayDelay() + 0.003f;
+            posl += delay * m_hitBall.m_d.m_vel;
+         }
          if (m_hitBall.m_d.m_lockedInKicker)
             posl.z -= m_hitBall.m_d.m_radius;
-         Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
+         const Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
          // Release on main thread as Ball methods are not multithreaded
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);

@@ -248,11 +248,6 @@ void GraphicSettingsPage::BuildPage()
       }));
 #endif
 
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_VisualLatencyCorrection, "%4d ms"s, //
-      [this]() { return m_player->m_renderer->m_renderDevice->GetVisualLatencyCorrection(); }, //
-      [this](int, int v) { m_player->m_renderer->m_renderDevice->SetVisualLatencyCorrection(v); }));
-
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 

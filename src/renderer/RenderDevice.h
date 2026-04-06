@@ -147,7 +147,9 @@ public:
 
    void Flip();
    void WaitForVSync(const bool asynchronous);
-   float GetPredictedDisplayDelayInS() const; // Delay between when the frame is prepared and when it will be viewed by the player (including TV/display/headset latency)
+   float GetVisualLatency() const; // Average delay between when the frame is prepared and when it will be viewed by the player (including TV/display/headset latency)
+   float GetPredictedDisplayDelay() const; // Delay between now (when called) and when the frame will be viewed by the player (including TV/display/headset latency)
+   unsigned int GetTargetFrameLength() const; // Target frame length in microseconds
 
    RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
@@ -218,9 +220,6 @@ public:
 
    void CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay = 3);
 
-   int GetVisualLatencyCorrection() const { return m_visualLatencyCorrection; }
-   void SetVisualLatencyCorrection(int latencyMs) { m_visualLatencyCorrection = latencyMs; }
-
 private:
    const bool m_isAnaglyph;
    const bool m_isVR;
@@ -244,13 +243,13 @@ private:
    std::shared_ptr<Sampler> m_SMAAsearchTexture = nullptr;
    std::shared_ptr<Sampler> m_SMAAareaTexture = nullptr;
 
-   int m_visualLatencyCorrection = -1;
-
    int m_screenshotFrameDelay = 0;
    bool m_screenshotSuccess = true;
    vector<VPX::Window*> m_screenshotWindow;
    vector<std::filesystem::path> m_screenshotFilename;
    std::function<void(bool)> m_screenshotCallback = [](bool) { };
+
+   uint64_t m_presentTimestampReference = 0;
 
 #if defined(ENABLE_BGFX)
 public:

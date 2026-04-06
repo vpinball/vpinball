@@ -2368,7 +2368,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          [this, pball, view, ss, vertices, balls]()
          {
             RenderTarget* tempRT = GetMotionBlurBufferTexture();
-            const vec3 posl = pball->GetPosition() + m_renderDevice->GetPredictedDisplayDelayInS() * pball->GetVelocity();
+            const vec3 posl = pball->GetPosition() + m_renderDevice->GetPredictedDisplayDelay() * pball->GetVelocity();
             const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
             const int nEyes = m_renderDevice->m_nEyes;
 

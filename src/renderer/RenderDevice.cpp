@@ -486,14 +486,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 
                // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
                {
-#if defined(__ANDROID__)
+                  #if defined(__ANDROID__)
                   void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
                   if (nwh == nullptr)
                   {
                      rd->m_framePending = true;
                      return;
                   }
-#endif
+                  #endif
                   BEGIN_SPAN(tagSpan, "VPX->BGFX")
                   std::lock_guard lock(rd->m_frameMutex);
                   g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
@@ -529,6 +529,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 #endif
    {
       uint64_t lastSubmitTimestamp = 0;
+      uint64_t lastSyncTimestamp = 0;
       bool gpuVSync = false;
       int framePacingFlushing = 0;
 
@@ -544,6 +545,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
       {
+         g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+
          // wait for a frame to be prepared by the logic thread
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
          rd->m_frameReadySem.wait();
@@ -622,10 +625,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
          #endif
         
          // Latency reduction by doing part of the software sleep before submitting to BGFX (as we update ball position before submitting)
-         if (const uint64_t avgSleepUs = static_cast<uint64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SLEEP)); avgSleepUs > 1000)
+         const int64_t latencySleepMargin = static_cast<int64_t>(0.2 * 1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate())); // 20% margin
+         if (const int64_t latencySleep = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SLEEP)) - latencySleepMargin; latencySleep > 0)
          {
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT); // Track in the wait state as it would break the 'Sleep' evaluation otherwise
-            uSleep(avgSleepUs - 1000);
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
+            uSleep(latencySleep);
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
@@ -645,67 +649,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             }
             std::lock_guard lock(rd->m_frameMutex);
             rd->SubmitRenderFrame();
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            END_SPAN(tagSpan)
-         }
-
-         g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
-
-         // Request next frame to be prepared by the logic thread
-         rd->m_framePending = false;
-
-         // Wait for an empty swapchain slot before submitting next frame to GPU
-         if (syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain)
-         {
-            BEGIN_SPAN(tagSpan, "WaitSC")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-            bgfx::waitForSwapchain();
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            rd->m_renderLatency = (static_cast<float>(usec() - lastSubmitTimestamp) / 1000000.0f) // Time spent since pushing data to the GPU until consumed by swapchain
-               + (static_cast<float>(init.resolution.maxFrameLatency - 1) / rd->m_outputWnd[0]->GetRefreshRate()); // Time that will be spent in the GPU queue before display (if any)
-            END_SPAN(tagSpan)
-         }
-
-         // Software FPS throttling
-         int targetFrameLength = 0;
-         if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
-         {
-            // We are using frame pacing, that is to say we aim at low latency by trying to push frames in sync with the display rate to avoid piling up frames in the GPU queue
-            targetFrameLength = static_cast<int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate());
-            if (!waitableSwapchain || init.resolution.maxFrameLatency != 1)
-            {
-               // We add a (very) small margin to be slightly above the frame rate and avoid pushing frames in the GPU queue
-               targetFrameLength += 10;
-            }
-         }
-         else if (!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f)
-         {
-            // The user has disabled VSync without an unbound FPS limit)
-            targetFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-         }
-         else if (useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate())
-         {
-            // The user has enabled VSync with a max FPS below the display FPS
-            // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-            targetFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000;
-         }
-         uint64_t now = usec();
-         if (targetFrameLength)
-         {
-            BEGIN_SPAN(tagSpan, "WaitSync")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-            if ((int64_t)(now - lastSubmitTimestamp) < (int64_t)targetFrameLength)
-            {
-               g_pplayer->m_curFrameSyncOnFPS = true;
-               uSleep(targetFrameLength - (now - lastSubmitTimestamp));
-               now = usec();
-            }
+            rd->m_framePending = false;
             g_pplayer->m_renderProfiler->ExitProfileSection();
             END_SPAN(tagSpan)
          }
 
          // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if the swapchain queue is filled
          {
+            const uint64_t now = usec();
             BEGIN_SPAN(tagSpan, "BGFX->GPU")
             lastSubmitTimestamp = now;
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
@@ -717,10 +668,69 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
                const uint64_t bgfxSubmit = ((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ULL) / stats->cpuTimerFreq;
                g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
             }
+            // If we have waited for a VSYNC, we can adjust the estimated present time to be just before the end of the wait
+            if (needsVSync && g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_FLIP) > 500)
+               rd->m_presentTimestampReference = usec() - 100;
             END_SPAN(tagSpan)
          }
 
-         g_pplayer->m_logicProfiler.OnPresented(usec());
+         // Wait for an empty swapchain slot before submitting next frame to GPU
+         if (syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain)
+         {
+            BEGIN_SPAN(tagSpan, "WaitSC")
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT_SC);
+            bgfx::waitForSwapchain();
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            const uint64_t now = usec();
+            rd->m_renderLatency = (static_cast<float>(now - lastSubmitTimestamp) / 1000000.0f) // Time spent since pushing data to the GPU until consumed by swapchain
+               + (static_cast<float>(init.resolution.maxFrameLatency - 1) / rd->m_outputWnd[0]->GetRefreshRate()); // Time that will be spent in the GPU queue before display (if any)
+            // If we have waited for the swapchain, we can adjust the estimated present time to be just before the end of the wait
+            if (g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_WAIT_SC) > 500)
+               rd->m_presentTimestampReference = now - 100;
+            END_SPAN(tagSpan)
+         }
+
+         // Push present event (used to evaluate input latency) as we have either waited for VSync or for swapchain
+         g_pplayer->m_logicProfiler.OnPresented(lastSyncTimestamp);
+
+         // Software FPS throttling
+         uint64_t targetFrameLength = 0;
+         if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
+         {
+            // We are using frame pacing, that is to say we aim at low latency by trying to push frames in sync with the display rate to avoid piling up frames in the GPU queue
+            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(rd->m_outputWnd[0]->GetRefreshRate()));
+            if (!waitableSwapchain || init.resolution.maxFrameLatency != 1)
+            {
+               // We add a (very) small margin to be slightly above the frame rate and avoid pushing frames in the GPU queue
+               targetFrameLength += 10;
+            }
+         }
+         else if (!needsVSync && g_pplayer->GetTargetRefreshRate() < 10000.f)
+         {
+            // The user has disabled VSync without an unbound FPS limit)
+            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate()));
+         }
+         else if (needsVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate())
+         {
+            // The user has enabled VSync with a max FPS below the display FPS
+            // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate())) - 2000;
+         }
+         if (targetFrameLength)
+         {
+            BEGIN_SPAN(tagSpan, "WaitSync")
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
+            uint64_t now = usec();
+            if (const uint64_t targetTimeStamp = lastSyncTimestamp + targetFrameLength; now < targetTimeStamp)
+               uSleep(targetTimeStamp - now);
+            lastSyncTimestamp = usec();
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            END_SPAN(tagSpan)
+         }
+         else
+         {
+            lastSyncTimestamp = usec();
+         }
 
          if (!rd->m_screenshotWindow.empty())
          {
@@ -983,9 +993,6 @@ RenderDevice::RenderDevice(
 
    // 0 means disable limiting of draw-ahead queue
    int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames();
-
-   // Visual latency reduction
-   m_visualLatencyCorrection = g_pplayer->m_ptable->m_settings.GetPlayer_VisualLatencyCorrection();
 
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
@@ -1771,34 +1778,93 @@ void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vect
    m_screenshotFrameDelay = frameDelay;
 }
 
-float RenderDevice::GetPredictedDisplayDelayInS() const
+float RenderDevice::GetVisualLatency() const
 {
-   // Use OpenXR display time prediction
+   // FIXME implement for VR using OpenXR predicted display time
    if (g_pplayer->m_vrDevice)
-      return g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
-
-   // User has defined a fixed latency (for example measuring with a highspeed camera, or using PresentMon and adding the TV/display latency)
-   if (m_visualLatencyCorrection >= 0)
-      return (float)m_visualLatencyCorrection * 1e-3f;
+   {
+      return 0.f;
+   }
 
    // Visual latency is the sum of these 3 estimates:
-   // - finger to frame preparation latency => (not applied here as we evaluate the delay bvetween frame preparation to frame presentation)
+   // - finger to frame preparation latency => average estimate as half of the frame time (since the input is not synced to the frame, it can happen at any time during the frame, so on average at mid frame
    // - render latency (frame preparation to frame presentation) => use BGFX estimate or estimate based on sync strategy (note that both ways are somewhat imprecise)
    // - display latency (frame presentation to display) => varies a lot between displays, from just a few ms on high end gaming monitor to ~15ms on TV with gaming mode (and even more on cheaper TV or without gaming mode)
-   float delay = 0.f;
-   #ifdef ENABLE_BGFX
-      if (m_renderLatency > 0.f)
-         delay += m_renderLatency;
-      else
-         delay += 2.f / g_pplayer->GetTargetRefreshRate();
-   #else
-      if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC || g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_ADAPTIVE_VSYNC)
-         delay += 5.f / g_pplayer->GetTargetRefreshRate();
-      else
-         delay += 2.f / g_pplayer->GetTargetRefreshRate();
-   #endif
+   float delay = 0.5f / g_pplayer->GetTargetRefreshRate();
+#ifdef ENABLE_BGFX
+   if (m_renderLatency > 0.f)
+      delay += m_renderLatency;
+   else
+      delay += 2.f / g_pplayer->GetTargetRefreshRate();
+#else
+   if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC || g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_ADAPTIVE_VSYNC)
+      delay += 5.f / g_pplayer->GetTargetRefreshRate();
+   else
+      delay += 2.f / g_pplayer->GetTargetRefreshRate();
+#endif
    delay += 0.005f; // basic display latency estimate
    return delay;
+}
+
+unsigned int RenderDevice::GetTargetFrameLength() const
+{
+   const VideoSyncMode syncMode = g_pplayer->GetVideoSyncMode();
+   if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
+   {
+      // Frame pacing targets the display refresh rate
+      return static_cast<unsigned int>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
+   }
+   else if (syncMode == VideoSyncMode::VSM_VSYNC || syncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC)
+   {
+      if (g_pplayer->GetTargetRefreshRate() < m_outputWnd[0]->GetRefreshRate())
+      {
+         // The user has enabled VSync with a max FPS below the display FPS
+         return static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+      }
+      else
+      {
+         // The user has enabled VSync with a max FPS above the display FPS => target is the display FPS
+         return static_cast<unsigned int>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
+      }
+   }
+   else if (g_pplayer->GetTargetRefreshRate() < 10000.f)
+   {
+      // The user has disabled VSync with a custom target FPS
+      return static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+   }
+   else
+   {
+      // Unbound target FPS without any synchronization (so aiming at the slowest possible frame time)
+      return 0;
+   }
+}
+
+float RenderDevice::GetPredictedDisplayDelay() const
+{
+   const uint64_t now = usec();
+   if (g_pplayer->m_vrDevice)
+   {
+      // Use OpenXR display time prediction
+      const float nowS = now / 1000000.f;
+      const float displayTimestamp = g_pplayer->m_vrDevice->GetPredictedDisplayTimestamp();
+      return nowS < displayTimestamp ? displayTimestamp - nowS : 0.f;
+   }
+   else if (const uint64_t targetFrameLength = GetTargetFrameLength(); targetFrameLength == 0)
+   {
+      // No synchronization (run as fast as possible), just disable predicted time correction
+      return 0.f;
+   }
+   else
+   {
+      // Frames are supposed to be displayed at a regular pace (usually corresponding to the display refresh rate),
+      // We evaluate the next frame presentation as the delay to next displayed frame (from a fixed reference) + an integral number of GPU queue frames
+      const int nFrameLatency = g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING ? 1 : g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames();
+      const uint64_t delayToNextPresent = targetFrameLength - ((now - m_presentTimestampReference) % targetFrameLength);
+      const uint64_t displayFrameLength = static_cast<uint64_t>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
+      const float delayToNextFrame = static_cast<float>(nFrameLatency * displayFrameLength + delayToNextPresent) / 1000000.f;
+      //PLOGD << std::format("Display Delay: {:5.3f}", delayToNextFrame * 1000.f);
+      return delayToNextFrame;
+   }
 }
 
 void RenderDevice::WaitForVSync(const bool asynchronous)
@@ -1823,10 +1889,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
       #endif
 #endif
       m_vsyncCount++;
-      //const uint64_t now = usec();
-      //static uint64_t lastUs = 0;
-      //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
-      //lastUs = now;
+      m_presentTimestampReference = usec();
    };
    if (asynchronous)
       std::thread(lambda).detach(); // Reuse thread ? (we always at most one running at a time)
