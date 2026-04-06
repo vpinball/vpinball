@@ -2273,6 +2273,9 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    return afterTonemapRT;
    #endif
 
+   // FIXME this is broken due to not supporting head movement (VR), display shifting (when nudging), latency correction (always)
+   return afterTonemapRT;
+
    // We do not support stereo VR yet
    if (m_stereo3D == STEREO_VR)
       return afterTonemapRT;
