@@ -1275,7 +1275,7 @@ void EditorUI::UpdateRendererInspectionModal()
       // Latency timing table
       if (ImGui::BeginTable("Latencies", 4, ImGuiTableFlags_Borders))
       {
-         const uint32_t period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
+         const uint32_t period = m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME);
          ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Min", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed);

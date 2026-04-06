@@ -84,7 +84,7 @@ void PerfUI::RenderFPS()
          color = IM_COL32(255, 0, 0, 128); // Red dot when running slower than expected
       else
       #endif
-      if ((m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100.) * m_player->GetTargetRefreshRate() > 1000000.)
+      if (m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) > m_player->m_renderer->m_renderDevice->GetTargetFrameLength() + 500)
          color = IM_COL32(255, 0, 0, 128); // Red dot when missing target refresh rate
       ImGui::GetWindowDrawList()->AddCircleFilled(
          ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetWindowWidth() - 5.f * m_uiScale - 2.f * ImGui::GetStyle().WindowPadding.x, ImGui::GetTextLineHeight() * 0.5f),
@@ -95,7 +95,7 @@ void PerfUI::RenderFPS()
    ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
    {
-      const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
+      const double frameLength = m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       const ImVec2 renderTextPos = ImGui::GetCursorScreenPos();
       #ifdef ENABLE_BGFX
          const float visualLatency = m_player->m_renderer->m_renderDevice->GetPredictedDisplayDelayInS() // Time from frame submission to actual display
@@ -106,7 +106,7 @@ void PerfUI::RenderFPS()
             ImGui::SetTooltip("Latency is an (imprecise) evaluation of the average finger to photon latency\nIt includes median input latency, rendering latency and estimated display latency");
          ImGui::NewLine();
       #else
-         ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME));
+         ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME));
       #endif
    }
 
@@ -235,7 +235,7 @@ void PerfUI::RenderStats() const
          maxTS = (profiler->GetPrevStart(section) == 0) ? maxTS : std::max(maxTS, profiler->GetPrevEnd(section));
       }
 
-      const float elapse = static_cast<float>(m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
+      const float elapse = static_cast<float>(m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
       const float width = inner_bb.Max.x - inner_bb.Min.x;
       for (int i = 0; i < std::size(sections); i++)
       {
@@ -287,7 +287,7 @@ void PerfUI::RenderStats() const
    // Timing table
    if (ImGui::BeginTable("Timings", 3, ImGuiTableFlags_Borders))
    {
-      const uint32_t period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
+      const uint32_t period = m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME);
       ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
       ImGui::TableSetupColumn(m_showAvgFPS ? "Avg Time" : "Time", ImGuiTableColumnFlags_WidthFixed);
       ImGui::TableSetupColumn(m_showAvgFPS ? "Avg Ratio" : "Ratio", ImGuiTableColumnFlags_WidthFixed);
@@ -325,22 +325,26 @@ void PerfUI::RenderStats() const
             ImGui::SetTooltip("Time spent submiting frame from BGFX to GPU");
          logicRow = 6;
          rowOffset = 2;
+
+         profiler = &m_player->m_logicProfiler;
+         PROF_ROW("Logic Thread", FrameProfiler::PROFILE_FRAME)
+         PROF_ROW("> Prepare", FrameProfiler::PROFILE_PREPARE_FRAME)
+         PROF_ROW("> Physics", FrameProfiler::PROFILE_PHYSICS)
+         PROF_ROW("> Script", FrameProfiler::PROFILE_SCRIPT)
+         PROF_ROW("> Sleep", FrameProfiler::PROFILE_SLEEP)
+         PROF_ROW("> Misc", FrameProfiler::PROFILE_MISC)
       #else
+         profiler = &m_player->m_logicProfiler;
          PROF_ROW("Frame", FrameProfiler::PROFILE_FRAME)
-         PROF_ROW("> Sleep", FrameProfiler::PROFILE_RENDER_SLEEP)
+         PROF_ROW("> Prepare", FrameProfiler::PROFILE_PREPARE_FRAME)
          PROF_ROW("> Submit", FrameProfiler::PROFILE_RENDER_SUBMIT)
          PROF_ROW("> Flip", FrameProfiler::PROFILE_RENDER_FLIP)
+         PROF_ROW("> Physics", FrameProfiler::PROFILE_PHYSICS)
+         PROF_ROW("> Script", FrameProfiler::PROFILE_SCRIPT)
+         PROF_ROW("> Sleep", FrameProfiler::PROFILE_SLEEP)
+         PROF_ROW("> Misc", FrameProfiler::PROFILE_MISC)
       #endif
 
-      profiler = &m_player->m_logicProfiler;
-      #ifdef ENABLE_BGFX
-         PROF_ROW("Logic Thread", FrameProfiler::PROFILE_FRAME)
-      #endif
-      PROF_ROW("> Prepare", FrameProfiler::PROFILE_PREPARE_FRAME)
-      PROF_ROW("> Physics", FrameProfiler::PROFILE_PHYSICS)
-      PROF_ROW("> Script", FrameProfiler::PROFILE_SCRIPT)
-      PROF_ROW("> Sleep", FrameProfiler::PROFILE_SLEEP)
-      PROF_ROW("> Misc", FrameProfiler::PROFILE_MISC)
       #ifdef DEBUG
       if (m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_CUSTOM1) > 0) { PROF_ROW("> Debug #1", FrameProfiler::PROFILE_CUSTOM1); ImGui::TableNextRow(); }
       if (m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_CUSTOM2) > 0) { PROF_ROW("> Debug #2", FrameProfiler::PROFILE_CUSTOM2); ImGui::TableNextRow(); }
@@ -348,7 +352,7 @@ void PerfUI::RenderStats() const
       #endif
 
       if ((hoveredRow == renderRow) || (hoveredRow == logicRow))
-         ImGui::SetTooltip("FPS: %4.1f (%4.1f average)", 1e6 / m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME), 1e6 / m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
+         ImGui::SetTooltip("FPS: %4.1f (%4.1f average)", 1e6 / m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME), 1e6 / m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
       else if (hoveredRow == 5 + rowOffset)
          ImGui::SetTooltip("Time spent preparing a frame for rendering");
       else if (hoveredRow == 6 + rowOffset)
@@ -389,7 +393,7 @@ void PerfUI::RenderPlots()
 
    m_plotFPS.SetRolling(m_showRollingFPS);
    m_plotFPSSmoothed.SetRolling(m_showRollingFPS);
-   m_plotFPSSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)); // Frame time in ms
+   m_plotFPSSmoothed.AddPoint(t, 1e-3f * static_cast<float>(m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME))); // Frame time in ms
    m_plotFPS.AddPoint(t, m_plotFPS.GetLast().y * 0.95f + m_plotFPSSmoothed.GetLast().y * 0.05f);
    if (m_plotFPS.HasData() && m_plotFPSSmoothed.HasData() && ImPlot::BeginPlot("##FPS", ImVec2(-1, 150), ImPlotFlags_None))
    {

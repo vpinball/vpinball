@@ -1873,7 +1873,7 @@ void Player::MultithreadedGameLoop()
       if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
-         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
+         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
          PrepareFrame();
          m_renderer->m_renderDevice->m_framePending = true;
          m_renderer->m_renderDevice->m_frameReadySem.post();
@@ -2010,7 +2010,7 @@ void Player::FramePacingGameLoop()
 
       UpdateGameLogic();
 
-      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
+      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
       PrepareFrame();
 
       UpdateGameLogic();
@@ -2165,7 +2165,7 @@ void Player::FinishFrame()
       m_renderer->m_gpu_profiler.EndFrame();
 
    // Update FPS counter
-   m_fps = (float) (1e6 / m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
+   m_fps = (float) (1e6 / m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
    #ifndef ACCURATETIMERS
       FireTimers(0);
