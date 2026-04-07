@@ -588,12 +588,6 @@ void Light::Render(const unsigned int renderMask)
    if (m_desktopBackdrop && !GetPTable()->GetDecalsEnabled())
       return;
 
-   // FIXME BGFX DX12 will crash on this
-#ifdef ENABLE_BGFX
-   if (bgfx::getRendererType() == bgfx::RendererType::Direct3D12)
-      return;
-#endif
-
    if (isLightBuffer)
    {
       if (!m_d.m_BulbLight || m_d.m_transmissionScale == 0.f || m_desktopBackdrop)

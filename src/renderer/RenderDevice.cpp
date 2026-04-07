@@ -1018,10 +1018,6 @@ RenderDevice::RenderDevice(
    }
    if (init.type == bgfx::RendererType::Noop)
       init.type = bgfx::RendererType::Count;
-   #ifndef _DEBUG // Disable Direct3D12 in release builds as it is not yet fully supported
-   if (init.type == bgfx::RendererType::Direct3D12)
-      init.type = bgfx::RendererType::Count;
-   #endif
    if (g_pplayer->m_vrDevice == nullptr)
    {
       PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';

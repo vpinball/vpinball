@@ -72,14 +72,13 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX11-Test.webp", imageName + "-Ref.webp"));
    }
 
-   /* Not stable yet
    if ((int)backends & (int)VPXBackends::BGFX_DX12) SUBCASE("BGFX-Direct3D12")
    {
       g_app->m_settings.SetPlayer_GfxBackend("Direct3D12"s, false);
       CaptureRender(tableFile, imageName + "-BGFX-DX12-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Direct3D12);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX12-Test.webp", imageName + "-Ref.webp"));
-   }*/
+   }
    
    #endif
 }
