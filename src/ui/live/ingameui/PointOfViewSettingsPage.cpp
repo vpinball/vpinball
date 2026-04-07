@@ -276,7 +276,6 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
-   Settings::SetPlayer_ScreenPlayerX_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerX());
    auto playerX = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.x; },
@@ -288,8 +287,8 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
          BuildPage();
       });
+   playerX->m_excludeFromDefault = true;
 
-   Settings::SetPlayer_ScreenPlayerY_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerY());
    auto playerY = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.y; },
@@ -301,8 +300,8 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
          BuildPage();
       });
+   playerY->m_excludeFromDefault = true;
 
-   Settings::SetPlayer_ScreenPlayerZ_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
    auto playerZ = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.z; },
@@ -314,6 +313,7 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
          BuildPage();
       });
+   playerZ->m_excludeFromDefault = true;
 
    auto viewX = std::make_unique<InGameUIItem>(
       SelectProp(Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX), VPUTOCM(1.f), "%4.1f cm"s, //
@@ -371,6 +371,8 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          GetCurrentViewSetup().mWindowTopZOfs = v;
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         m_player->m_ptable->GetViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          BuildPage(); // As it changes the real to virtual world scale
       });
@@ -381,6 +383,8 @@ void PointOfViewSettingsPage::BuildPage()
       [this](float, float v)
       {
          GetCurrentViewSetup().mWindowBottomZOfs = v;
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         m_player->m_ptable->GetViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
          BuildPage(); // As it changes the real to virtual world scale
       });

@@ -204,7 +204,14 @@ bool InGameUIItem::IsModified() const
       case PropertyDef::Type::Int: return GetIntValue() != dynamic_cast<IntPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
       case PropertyDef::Type::Enum: return GetIntValue() != dynamic_cast<EnumPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
       case PropertyDef::Type::Bool: return GetBoolValue() != m_getStoredBoolValue(settings);
-      case PropertyDef::Type::Float: return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings));
+      case PropertyDef::Type::Float:
+         if (const size_t dotPos = m_format.find('.'); dotPos != string::npos)
+         {
+            const float nDec = m_format[dotPos + 1] - '0';
+            const float threshold = 0.5f * powf(10.f, -nDec);
+            return fabs(GetFloatValue() - dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings))) * m_floatValueDisplayScale > threshold;
+         }
+         return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings));
       case PropertyDef::Type::String: return GetStringValue() != m_getStoredStringValue(settings);
       default: assert(false); return false;
       }
