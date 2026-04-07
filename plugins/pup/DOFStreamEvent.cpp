@@ -249,7 +249,7 @@ void DOFEventStream::StatePollingThread()
       if (m_dmdId.id.id != 0)
       {
          DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.id);
-         if (dmdFrame.frameId != m_lastDmdFrameId)
+         if (dmdFrame.frame && dmdFrame.frameId != m_lastDmdFrameId)
          {
             m_lastDmdFrameId = dmdFrame.frameId;
             const int dmdTrigger = m_processDmd(m_dmdId, static_cast<const uint8_t*>(dmdFrame.frame));
