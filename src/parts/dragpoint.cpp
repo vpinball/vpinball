@@ -409,11 +409,9 @@ void DragPoint::Delete()
 {
    if ((int)M_PIHDP->m_vdpoint.size() > M_PIHDP->GetMinimumPoints()) // Can't allow less points than the user can recover from
    {
-      GetIEditable()->BeginUndo();
-      GetIEditable()->MarkForUndo();
+      STARTUNDOSELECT
       RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
-      GetIEditable()->EndUndo();
-      GetPTable()->SetDirtyDraw();
+      STOPUNDOSELECT
       Release();
    }
 }
@@ -439,10 +437,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
    {
    case ID_POINTMENU_SMOOTH:
    {
-      IEditable * const pedit = GetIEditable();
-      pedit->BeginUndo();
-      pedit->MarkForUndo();
-
+      STARTUNDOSELECT
       m_smooth = !m_smooth;
       const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) - 1 + (int)M_PIHDP->m_vdpoint.size()) % (int)M_PIHDP->m_vdpoint.size();
       if (m_smooth && m_slingshot)
@@ -453,17 +448,12 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       {
          M_PIHDP->m_vdpoint[index2]->m_slingshot = false;
       }
-
-      pedit->EndUndo();
-      GetPTable()->SetDirtyDraw();
+      STOPUNDOSELECT
       break;
    }
    case ID_POINTMENU_SLINGSHOT:
    {
-      IEditable * const pedit = GetIEditable();
-      pedit->BeginUndo();
-      pedit->MarkForUndo();
-
+      STARTUNDOSELECT
       m_slingshot = !m_slingshot;
       if (m_slingshot)
       {
@@ -471,9 +461,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
          const int index2 = (FindIndexOf(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this) + 1) % M_PIHDP->m_vdpoint.size();
          M_PIHDP->m_vdpoint[index2]->m_smooth = false;
       }
-
-      pedit->EndUndo();
-      GetPTable()->SetDirtyDraw();
+      STOPUNDOSELECT
       break;
    }
    }

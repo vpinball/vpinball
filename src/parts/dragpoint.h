@@ -121,7 +121,7 @@ private:
 class IHaveDragPoints
 {
 public:
-   IHaveDragPoints() { }
+   IHaveDragPoints() = default;
 
    virtual ~IHaveDragPoints();
 

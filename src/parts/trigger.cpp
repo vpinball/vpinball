@@ -872,9 +872,9 @@ void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useEl
       IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
    else
    {
-      STARTUNDOSELECT
+      STARTUNDO
       m_d.m_rotation = ang;
-      STOPUNDOSELECT
+      STOPUNDO
       UpdateStatusBarInfo();
    }
 }
@@ -885,10 +885,10 @@ void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCe
       IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
    else
    {
-      STARTUNDOSELECT
+      STARTUNDO
       m_d.m_scaleX = scalex;
       m_d.m_scaleY = scaley;
-      STOPUNDOSELECT
+      STOPUNDO
       UpdateStatusBarInfo();
    }
 }
@@ -899,9 +899,9 @@ void Trigger::Translate(const Vertex2D &pvOffset)
       IHaveDragPoints::TranslatePoints(pvOffset);
    else
    {
-      STARTUNDOSELECT
+      STARTUNDO
       MoveOffset(pvOffset.x, pvOffset.y);
-      STOPUNDOSELECT
+      STOPUNDO
    }
 }
 
