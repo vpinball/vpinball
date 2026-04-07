@@ -4,7 +4,7 @@
 
 #include "renderer/Renderable.h"
 
-class Hitable : public Renderable
+class Hitable
 {
 public:
    virtual ItemTypeEnum HitableGetItemType() const = 0;

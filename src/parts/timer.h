@@ -37,6 +37,7 @@ class Timer :
    public IEditable,
    public IScriptable,
    public IFireEvents,
+   public IRenderable,
    public Hitable
    //public EditableImpl<Timer>
 {

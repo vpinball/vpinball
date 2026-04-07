@@ -125,8 +125,8 @@ void PinUndo::Undo(bool discard)
          pie->Load(reader);
          if (g_pplayer)
          {
-            if (pie->GetIHitable())
-               g_pplayer->m_renderer->ReinitRenderable(pie->GetIHitable());
+            if (pie->GetIRenderable())
+               g_pplayer->m_renderer->ReinitRenderable(pie->GetIRenderable());
             g_pplayer->m_physics->Update(pie);
          }
       }

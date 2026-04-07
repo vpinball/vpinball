@@ -396,9 +396,14 @@ public:
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
+   Hitable *GetIHitable() final { return nullptr; }
+   const Hitable *GetIHitable() const final { return nullptr; }
+   IRenderable *GetIRenderable() final { return nullptr; }
+   const IRenderable *GetIRenderable() const final { return nullptr; }
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final { }
+   void WriteRegDefaults() final { }
    IScriptable *GetScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetScriptable() const final { return (const IScriptable *)this; }
    void BeginUndo() final;

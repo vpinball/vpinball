@@ -75,6 +75,7 @@ class LightSeq :
    public IScriptable,
    public IFireEvents,
    public Hitable,
+   public IRenderable,
    public IPerPropertyBrowsing     // Ability to fill in dropdown(s) in property browser
    //public EditableImpl<LightSeq>
 {

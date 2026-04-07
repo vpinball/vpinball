@@ -4,6 +4,7 @@
 
 #include "gpuprofiler.h"
 #include "math/ModelViewProj.h"
+#include "renderer/Renderable.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
 #include "plugins/ControllerPlugin.h"
@@ -85,7 +86,7 @@ public:
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
    void DrawWireframe(IEditable* renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask);
 
-   void ReinitRenderable(Renderable* part) { m_renderableToInit.push_back(part); }
+   void ReinitRenderable(IRenderable* part) { m_renderableToInit.push_back(part); }
 
    RenderProbe::ReflectionMode GetMaxReflectionMode() const {
       // For dynamic mode, static reflections are not available so adapt the mode
@@ -301,7 +302,7 @@ private:
    bool m_noBackdrop = false;
    unsigned int m_visibilityMask = 0xFFFF;
 
-   vector<Renderable*> m_renderableToInit;
+   vector<IRenderable*> m_renderableToInit;
 
    bool m_dynamicAO;
    bool m_disableAO;

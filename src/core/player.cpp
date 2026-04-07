@@ -695,7 +695,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    for (IEditable *hitable : m_vhitables)
    {
       hitable->GetIHitable()->TimerSetup(m_vht);
-      hitable->GetIHitable()->RenderSetup(m_renderer->m_renderDevice);
+      hitable->GetIRenderable()->RenderSetup(m_renderer->m_renderDevice);
       if (hitable->GetItemType() == ItemTypeEnum::eItemBall)
          m_vball.push_back(static_cast<Ball *>(hitable));
    }
@@ -990,7 +990,7 @@ Player::~Player()
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
-      renderable->GetIHitable()->RenderRelease();
+      renderable->GetIRenderable()->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->GetIHitable()->TimerRelease();
    assert(m_vballDelete.empty());
@@ -1609,7 +1609,7 @@ public:
          const float diff_time_msec = (float)(m_player->m_time_msec - m_player->m_last_frame_time_msec);
          m_player->m_last_frame_time_msec = m_player->m_time_msec;
          for (IEditable *editable : m_player->m_ptable->GetParts())
-            if (Hitable *const ph = editable->GetIHitable(); ph)
+            if (IRenderable *const ph = editable->GetIRenderable(); ph)
                ph->UpdateAnimation(diff_time_msec);
          m_player->FireTimers(-1);
          m_player->FireTimers(-2);
@@ -2089,7 +2089,7 @@ void Player::PrepareFrame()
       m_last_frame_time_msec = m_time_msec;
       if (diff_time_msec > 0.f)
          for (IEditable* editable : m_ptable->GetParts())
-            if (Hitable *const ph = editable->GetIHitable(); ph)
+            if (IRenderable *const ph = editable->GetIRenderable(); ph)
                ph->UpdateAnimation(diff_time_msec);
    }
 

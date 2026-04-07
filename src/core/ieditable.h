@@ -5,6 +5,7 @@
 class HitTimer;
 class Hitable;
 class Collection;
+class IRenderable;
 class IScriptable;
 
 #define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
@@ -106,6 +107,8 @@ public:
 	virtual const ISelect *GetISelect() const {return static_cast<const ISelect*>(this);} \
 	virtual Hitable *GetIHitable() {return static_cast<Hitable *>(this);} \
 	virtual const Hitable *GetIHitable() const {return static_cast<const Hitable *>(this);} \
+	virtual IRenderable *GetIRenderable() { return static_cast<IRenderable *>(this); } \
+	virtual const IRenderable *GetIRenderable() const { return static_cast<const IRenderable *>(this); } \
 	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR * pbstr) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID * pclsid) { return ResultFromScode(E_NOTIMPL); } \
 	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut) {return GetPTable()->GetPredefinedStrings(dispID, pcaStringsOut, pcaCookiesOut, this);} \
@@ -201,34 +204,20 @@ public:
    IEditable();
    virtual ~IEditable();
 
-   virtual void ExportMesh(class ObjLoader& loader) {}
-
    virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
    virtual ULONG STDMETHODCALLTYPE Release() = 0;
 
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
-   // Report a change that would need the Win32 UI to be redrawn
-   // FIXME move to ISelect
-   virtual void SetDirtyDraw();
-
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
 
-   virtual Hitable *GetIHitable() { return nullptr; }
-   virtual const Hitable *GetIHitable() const { return nullptr; }
+   virtual Hitable *GetIHitable() = 0;
+   virtual const Hitable *GetIHitable() const = 0;
 
-   virtual void Save(IObjectWriter& writer, const bool saveForUndo) = 0;
-   virtual void ClearForOverwrite() { }
-   virtual void Load(IObjectReader &partReader) = 0;
-   wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
-protected:
-   void LoadSharedEditableField(const int id, IObjectReader &reader);
-   void SaveSharedEditableFields(IObjectWriter &writer);
-
-public:
-   virtual void SetDefaults(const bool fromMouseClick) = 0;
+   virtual IRenderable *GetIRenderable() = 0;
+   virtual const IRenderable *GetIRenderable() const = 0;
 
    virtual IScriptable *GetScriptable() = 0;
    virtual const IScriptable *GetScriptable() const = 0;
@@ -237,17 +226,34 @@ public:
 
    virtual ItemTypeEnum GetItemType() const = 0;
 
-   // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
-   virtual void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) {}
+   virtual void SetDefaults(const bool fromMouseClick) = 0;
+   virtual void WriteRegDefaults() = 0;
 
-   virtual void WriteRegDefaults() {}
+   virtual void Save(IObjectWriter &writer, const bool saveForUndo) = 0;
+   virtual void ClearForOverwrite() { }
+   virtual void Load(IObjectReader &partReader) = 0;
+
+   // if legacy_bounds != nullptr, can return pre-10.8 bounds, too (depending on which editable exactly)
+   virtual void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) { }
+
+   virtual void ExportMesh(class ObjLoader &loader) { }
+
+   // Shared implementation
+protected:
+   void LoadSharedEditableField(const int id, IObjectReader &reader);
+   void SaveSharedEditableFields(IObjectWriter &writer);
+
+public:
+   wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
+
+   // Report a change that would need the Win32 UI to be redrawn
+   // FIXME move to ISelect
+   virtual void SetDirtyDraw();
 
    virtual void BeginUndo();
    virtual void EndUndo();
    virtual void Delete();
    virtual void Uncreate();
-
-   // Shared implementation
 
    void MarkForUndo();
    void MarkForDelete();

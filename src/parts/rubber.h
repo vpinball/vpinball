@@ -34,6 +34,7 @@ class Rubber :
    public ISelect,
    public IEditable,
    public Hitable,
+   public IRenderable,
    public IScriptable,
    public IHaveDragPoints,
    public IFireEvents,

@@ -68,6 +68,7 @@ class Flasher :
    public ISelect,
    public IEditable,
    public Hitable,
+   public IRenderable,
    public IHaveDragPoints,
    public IScriptable,
    public IFireEvents,

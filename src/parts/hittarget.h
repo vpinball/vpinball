@@ -52,6 +52,7 @@ class HitTarget :
    public ISelect,
    public IEditable,
    public Hitable,
+   public IRenderable,
    public IScriptable,
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser

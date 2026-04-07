@@ -40,6 +40,7 @@ class Textbox :
    public IEditable,
    public IScriptable,
    public IFireEvents,
+   public IRenderable,
    public Hitable
 {
 public:

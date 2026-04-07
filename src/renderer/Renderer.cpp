@@ -1503,13 +1503,13 @@ void Renderer::DrawWireframe(IEditable* renderable, const vec4& fillColor, const
    m_render_mask = prevRenderMask;
 }
 
-void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
+void Renderer::RenderItem(IEditable* editable, bool isNoBackdrop)
 {
-   if ((isNoBackdrop && renderable->m_desktopBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
-      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
+   if ((isNoBackdrop && editable->m_desktopBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
+      || (editable->GetPartGroup() != nullptr && ((editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
       return;
 
-   const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+   const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
    if (m_mvpSpaceReference != spaceReference)
    {
       #if defined(ENABLE_XR)
@@ -1539,7 +1539,7 @@ void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
       UpdateBallShaderMatrix();
    }
 
-   renderable->GetIHitable()->Render(m_render_mask);
+   editable->GetIRenderable()->Render(m_render_mask);
 }
 
 

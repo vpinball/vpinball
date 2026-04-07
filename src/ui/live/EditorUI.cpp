@@ -837,7 +837,7 @@ void EditorUI::DeleteSelection()
          {
             if (edit->GetIHitable())
             {
-               edit->GetIHitable()->RenderRelease();
+               edit->GetIRenderable()->RenderRelease();
                edit->GetIHitable()->TimerRelease();
             }
             edit->Release();
@@ -974,7 +974,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    if (m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE)
    {
       m_selection.uiPart->SetTransform(pos, scale, rot);
-      m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIHitable());
+      m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
       m_player->m_physics->Update(m_selection.uiPart->GetEditable());
    }
 }
@@ -1189,7 +1189,7 @@ void EditorUI::UpdatePropertyUI()
                   m_selection.uiPart->UpdatePropertyPane(props);
                   if (props.GetModifiedField() > 0)
                   {
-                     m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIHitable());
+                     m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
                      m_player->m_physics->Update(m_selection.uiPart->GetEditable());
                   }
                   break;
@@ -1225,7 +1225,7 @@ void EditorUI::UpdatePropertyUI()
          }
          if (props.GetModifiedField() > 0)
          {
-            m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIHitable());
+            m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIRenderable());
             m_player->m_physics->Update(m_selection.uiPart->GetEditable());
          }
          break;

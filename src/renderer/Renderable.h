@@ -8,7 +8,7 @@ class RenderDevice;
 //
 // All functions may only be called after RenderSetup and before RenderRelease.
 // RenderRelease is guaranteed to be called before the object is disposed.
-class Renderable
+class IRenderable
 {
 public:
    virtual void RenderSetup(RenderDevice *device) = 0;
