@@ -676,6 +676,18 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
     ShowWindow();
 }
 
+void PropertyDialog::StartUndo(ISelect *const psel)
+{
+   psel->GetIEditable()->BeginUndo();
+   psel->GetIEditable()->MarkForUndo();
+}
+
+void PropertyDialog::EndUndo(ISelect *const psel)
+{
+   psel->GetIEditable()->EndUndo();
+   psel->GetPTable()->SetDirtyDraw();
+}
+
 BOOL PropertyDialog::PreTranslateMessage(MSG& msg)
 {
    if (!IsWindow())

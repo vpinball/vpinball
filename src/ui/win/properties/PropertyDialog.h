@@ -256,17 +256,9 @@ public:
     static void UpdateSoundComboBox(const PinTable *const ptable, const CComboBox &combo, const string &selectName);
     static void UpdateCollectionComboBox(const PinTable *const ptable, const CComboBox &combo, const char *selectName);
 
-    static void StartUndo(ISelect *const psel)
-    {
-        psel->GetIEditable()->BeginUndo();
-        psel->GetIEditable()->MarkForUndo();
-    }
+    static void StartUndo(ISelect *const psel);
 
-    static void EndUndo(ISelect *const psel)
-    {
-        psel->GetIEditable()->EndUndo();
-        psel->GetIEditable()->SetDirtyDraw();
-    }
+    static void EndUndo(ISelect *const psel);
 
     static bool GetCheckboxState(const HWND checkBoxHwnd)
     {

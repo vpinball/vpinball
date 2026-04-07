@@ -7,6 +7,12 @@ ISelect::ISelect()
 {
 }
 
+void ISelect::SetDirtyDraw()
+{
+   if (GetPTable())
+      GetPTable()->SetDirtyDraw();
+}
+
 void ISelect::SetObjectPos()
 {
    m_vpinball->ClearObjectPosCur();

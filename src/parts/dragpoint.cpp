@@ -374,13 +374,13 @@ const IEditable *DragPoint::GetIEditable() const
 void DragPoint::OnLButtonDown(int x, int y)
 {
    ISelect::OnLButtonDown(x, y);
-   GetIEditable()->SetDirtyDraw();
+   GetPTable()->SetDirtyDraw();
 }
 
 void DragPoint::OnLButtonUp(int x, int y)
 {
    ISelect::OnLButtonUp(x, y);
-   GetIEditable()->SetDirtyDraw();
+   GetPTable()->SetDirtyDraw();
 }
 
 void DragPoint::SetObjectPos()
@@ -413,7 +413,7 @@ void DragPoint::Delete()
       GetIEditable()->MarkForUndo();
       RemoveFromVectorSingle(M_PIHDP->m_vdpoint, (CComObject<DragPoint> *)this);
       GetIEditable()->EndUndo();
-      GetIEditable()->SetDirtyDraw();
+      GetPTable()->SetDirtyDraw();
       Release();
    }
 }
@@ -455,7 +455,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       }
 
       pedit->EndUndo();
-      pedit->SetDirtyDraw();
+      GetPTable()->SetDirtyDraw();
       break;
    }
    case ID_POINTMENU_SLINGSHOT:
@@ -473,7 +473,7 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       }
 
       pedit->EndUndo();
-      pedit->SetDirtyDraw();
+      GetPTable()->SetDirtyDraw();
       break;
    }
    }

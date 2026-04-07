@@ -13,12 +13,6 @@ IEditable::~IEditable()
    SetPartGroup(nullptr);
 }
 
-void IEditable::SetDirtyDraw()
-{
-   if (GetPTable())
-      GetPTable()->SetDirtyDraw();
-}
-
 void IEditable::Delete()
 {
    MarkForDelete();

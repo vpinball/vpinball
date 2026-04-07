@@ -27,7 +27,7 @@ public:
 
 #define STOPUNDO \
 	EndUndo(); \
-	SetDirtyDraw();
+	if (GetPTable()) GetPTable()->SetDirtyDraw();
 
 #define STARTUNDOSELECT \
 	GetIEditable()->BeginUndo(); \
@@ -35,7 +35,7 @@ public:
 
 #define STOPUNDOSELECT \
 	GetIEditable()->EndUndo(); \
-	GetIEditable()->SetDirtyDraw();
+	if (GetPTable()) GetPTable()->SetDirtyDraw();
 
 
 // Explanation for AllowedViews:
@@ -245,10 +245,6 @@ protected:
 
 public:
    wstring m_onLoadExpectedPartGroup; // Name of the part group, this object expects to be added to. Defined when loading a part (should be moved to the loading context)
-
-   // Report a change that would need the Win32 UI to be redrawn
-   // FIXME move to ISelect
-   virtual void SetDirtyDraw();
 
    virtual void BeginUndo();
    virtual void EndUndo();

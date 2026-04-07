@@ -48,6 +48,9 @@ class ISelect
 public:
    ISelect();
 
+   // Report a change that would need the Win32 UI to be redrawn
+   virtual void SetDirtyDraw();
+
    // Win32 editor rendering and picking
    virtual void SetSelectFormat(Sur *psur);
    virtual void SetMultiSelectFormat(Sur *psur);
