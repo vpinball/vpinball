@@ -23,6 +23,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
            : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
                                                 : m_b2s->m_backglassOnImage.m_image)
 {
+   m_backglassDmdOverlay.LoadSettings(false);
    m_scoreViewDmdOverlay.LoadSettings(true);
 
    const VPXTextureInfo* dmdTexInfo = nullptr;
@@ -426,7 +427,7 @@ bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx, B2SServer* server)
       return false;
 
    // Update to latest settings state
-   m_scoreViewDmdOverlay.LoadSettings(false);
+   m_scoreViewDmdOverlay.LoadSettings(true);
 
    ctx->srcWidth = m_dmdWidth;
    ctx->srcHeight = m_dmdHeight;
