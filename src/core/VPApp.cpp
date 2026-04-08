@@ -257,8 +257,6 @@ VPApp::VPApp()
    EditableRegistry::RegisterEditable<Trigger>();
    EditableRegistry::RegisterEditable<HitTarget>();
    EditableRegistry::RegisterEditable<PartGroup>();
-
-   g_pplayer->m_pluginAPI;
 }
 
 VPApp::~VPApp()

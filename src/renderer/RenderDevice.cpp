@@ -720,7 +720,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
          {
             BEGIN_SPAN(tagSpan, "WaitSync")
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-            uint64_t now = usec();
+            const uint64_t now = usec();
             if (const uint64_t targetTimeStamp = lastSyncTimestamp + targetFrameLength; now < targetTimeStamp)
                uSleep(targetTimeStamp - now);
             lastSyncTimestamp = usec();
@@ -1059,7 +1059,8 @@ RenderDevice::RenderDevice(
    init.platformData.nwh = wmInfo.info.vivante.window;
    #endif // BX_PLATFORM_
    #ifdef DEBUG
-   init.debug = true;
+   // Disable Direct3D12 debug layer as it crashes on some NVIDIA drivers
+   init.debug = true && (init.type != bgfx::RendererType::Direct3D12);
    //init.profile = true;
    #endif
 
@@ -1931,7 +1932,7 @@ void RenderDevice::SubmitAndFlipFrame(bool present)
          ++it;
       }
    }
-   uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
+   const uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
    if (present)
       m_lastPresentFrameIdx = frameIdx;
    ResetActiveView();
