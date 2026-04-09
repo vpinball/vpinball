@@ -93,6 +93,10 @@ inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
 #include "XRD3D11Backend.h"
 #endif
 
+#ifdef XR_USE_GRAPHICS_API_D3D12
+#include "XRD3D12Backend.h"
+#endif
+
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 #include "XRVulkanBackend.h"
 #endif
@@ -186,17 +190,20 @@ VRDevice::VRDevice(const Settings& settings)
       // VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point.
       // Renderer is determined at compile time based on platform: D3D11 for Windows, Vulkan for Android.
       #if BX_PLATFORM_WINDOWS
-         m_rendererType = bgfx::RendererType::Enum::Direct3D11;
          const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
-         #ifdef _DEBUG
          if (gfxBackend == "Vulkan"sv)
+         #ifdef _DEBUG
             m_rendererType = bgfx::RendererType::Enum::Vulkan;
          #else
-         if (gfxBackend != "Direct3D11"sv && gfxBackend != "Default"sv)
          {
-            PLOGI << "Renderer backend enforced to Direct3D11 as other backends are still experimental and not enabled in release builds";
+            PLOGI << "Renderer backend enforced to Direct3D11 as Vulkan is still experimental and not enabled in release builds";
+            m_rendererType = bgfx::RendererType::Enum::Direct3D11;
          }
          #endif
+         else if (gfxBackend == "Direct3D12"sv)
+            m_rendererType = bgfx::RendererType::Enum::Direct3D12;
+         else
+            m_rendererType = bgfx::RendererType::Enum::Direct3D11; // Default to Direct3D 11
       #elif BX_PLATFORM_ANDROID
          m_rendererType = bgfx::RendererType::Enum::Vulkan;
       #else
@@ -213,6 +220,9 @@ VRDevice::VRDevice(const Settings& settings)
       #endif
       #ifdef XR_USE_GRAPHICS_API_D3D11
          case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); break;
+      #endif
+      #ifdef XR_USE_GRAPHICS_API_D3D12
+         case bgfx::RendererType::Enum::Direct3D12: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D12_ENABLE_EXTENSION_NAME); break;
       #endif
       }
       assert(hasGraphicBackend);
@@ -676,6 +686,11 @@ void VRDevice::SetupHMD()
    {
       PLOGI << "Creating DX11 backend for OpenXR (before BGFX initialization)";
       m_backend = std::make_unique<XRD3D11Backend>(m_xrInstance, m_systemID);
+   }
+   if (m_rendererType == bgfx::RendererType::Direct3D12)
+   {
+      PLOGI << "Creating DX12 backend for OpenXR (before BGFX initialization)";
+      m_backend = std::make_unique<XRD3D12Backend>(m_xrInstance, m_systemID);
    }
    #endif
 

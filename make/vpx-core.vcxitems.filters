@@ -1301,6 +1301,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D11Backend.h">
       <Filter>renderer</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/XRD3D12Backend.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/XRVulkanBackend.h">
       <Filter>renderer</Filter>
     </ClInclude>

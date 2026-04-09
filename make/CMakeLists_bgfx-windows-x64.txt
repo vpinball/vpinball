@@ -60,6 +60,7 @@ add_executable(vpinball WIN32
    
    src/renderer/XRGraphicBackend.h
    src/renderer/XRD3D11Backend.h
+   src/renderer/XRD3D12Backend.h
    src/renderer/XRVulkanBackend.h
 
    src/utils/StackTrace.cpp
