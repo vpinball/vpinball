@@ -81,6 +81,7 @@ public:
    typedef int(CDECL* fn_av_image_get_buffer_size)(enum AVPixelFormat pix_fmt, int width, int height, int align);
    typedef void*(CDECL* fn_av_malloc)(size_t size) av_alloc_size(1);
    typedef int(CDECL* fn_av_samples_get_buffer_size)(int* linesize, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align);
+   typedef void(CDECL* fn_av_log_set_level)(int level);
 
    typedef void(CDECL* fn_swr_free)(struct SwrContext** s);
    typedef int(CDECL* fn_swr_alloc_set_opts2)(struct SwrContext** ps, const AVChannelLayout* out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, const AVChannelLayout* in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void* log_ctx);
@@ -122,6 +123,7 @@ public:
    fn_av_image_get_buffer_size _av_image_get_buffer_size = nullptr;
    fn_av_malloc _av_malloc = nullptr;
    fn_av_samples_get_buffer_size _av_samples_get_buffer_size = nullptr;
+   fn_av_log_set_level _av_log_set_level = nullptr;
 
    fn_swr_alloc_set_opts2 _swr_alloc_set_opts2 = nullptr;
    fn_swr_convert _swr_convert = nullptr;
@@ -210,6 +212,7 @@ private:
          _av_image_get_buffer_size = reinterpret_cast<fn_av_image_get_buffer_size>(GetProcAddress(hinstLib, "av_image_get_buffer_size"));
          _av_malloc = reinterpret_cast<fn_av_malloc>(GetProcAddress(hinstLib, "av_malloc"));
          _av_samples_get_buffer_size = reinterpret_cast<fn_av_samples_get_buffer_size>(GetProcAddress(hinstLib, "av_samples_get_buffer_size"));
+         _av_log_set_level = reinterpret_cast<fn_av_log_set_level>(GetProcAddress(hinstLib, "av_log_set_level"));
          isLoaded &= _av_get_bytes_per_sample && _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_free && _av_image_fill_arrays && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
       }
 
@@ -263,6 +266,7 @@ private:
       _av_image_get_buffer_size = &av_image_get_buffer_size;
       _av_malloc = &av_malloc;
       _av_samples_get_buffer_size = &av_samples_get_buffer_size;
+      _av_log_set_level = &av_log_set_level;
 
       _swr_alloc_set_opts2 = &swr_alloc_set_opts2;
       _swr_convert = &swr_convert;
@@ -274,6 +278,9 @@ private:
       _sws_getCachedContext = &sws_getCachedContext;
       _sws_scale = &sws_scale;
    #endif
+
+      if (_av_log_set_level)
+         _av_log_set_level(AV_LOG_ERROR);
    }
 
 };
