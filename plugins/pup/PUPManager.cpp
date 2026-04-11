@@ -576,7 +576,7 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
             for (const auto& trigger : triggers)
             {
                // Dispatch trigger action on main thread
-               m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
+               m_msgApi->RunOnMainThread(m_endpointId, 0.001, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
             }
             // Reset trigger condition values so the trigger can fire again
             // when the same B2SData event is sent repeatedly (e.g., D9=1 each ball)
