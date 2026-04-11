@@ -45,7 +45,7 @@ public:
    bool GetOnShowVisible() const { return m_onShowVisible; }
    void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
-   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum, float screenAlpha = 1.f);
    const string& GetName() const { return m_szName; }
    bool IsAnimating() const { return m_animation != nullptr; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
@@ -160,6 +160,7 @@ private:
 
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
       bool IsFade() const { return m_alphaStart != m_alphaEnd; }
+      bool IsScreenFade() const { return m_screenFade; }
       bool IsZoom() const { return m_zoomStart != m_zoomEnd; }
       bool IsWiggle() const { return m_wiggleStart != m_wiggleEnd; }
 
@@ -193,6 +194,7 @@ private:
       int m_alphaStart = 255;
       int m_alphaEnd = 255;
       int m_pulseSpeed = 0;
+      bool m_screenFade = false;
 
       float m_zoomStart = 100.f;
       float m_zoomEnd = 100.f;

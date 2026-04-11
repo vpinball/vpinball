@@ -442,15 +442,15 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
 
    switch (pass)
    {
-   case 0: m_background.Render(ctx, m_rect); break;
+   case 0: m_background.Render(ctx, m_rect, m_screenAlpha); break;
 
-   case 1: m_pMediaPlayerManager->Render(ctx); break;
+   case 1: m_pMediaPlayerManager->Render(ctx, m_screenAlpha); break;
 
-   case 2: m_overlay.Render(ctx, m_rect); break;
+   case 2: m_overlay.Render(ctx, m_rect, m_screenAlpha); break;
 
    case 3:
       for (PUPLabel* pLabel : m_labels)
-         pLabel->Render(ctx, m_rect, m_pagenum);
+         pLabel->Render(ctx, m_rect, m_pagenum, m_screenAlpha);
       break;
    }
 }

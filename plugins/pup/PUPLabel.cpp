@@ -591,7 +591,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    }
 }
 
-void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum)
+void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int pagenum, float screenAlpha)
 {
    std::lock_guard lock(m_mutex);
 
@@ -708,7 +708,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    {
       if (m_animation->Update(rect, dest))
       {
-         if (m_animation->IsFade())
+         if (m_animation->IsScreenFade() && m_pScreen)
+            m_pScreen->m_screenAlpha = m_animation->m_alpha;
+         else if (m_animation->IsFade())
             m_alpha = m_animation->m_alpha;
          if (m_animation->IsZoom())
             m_zoom = m_animation->m_zoom;
@@ -722,6 +724,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       }
       else
       {
+         if (m_animation->IsScreenFade() && m_pScreen)
+            m_pScreen->m_screenAlpha = m_animation->m_alpha;
+
          dest.x += m_animation->m_xOffset;
          dest.y += m_animation->m_yOffset;
          visible = m_animation->m_visible;
@@ -729,7 +734,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       }
    }
 
-   float alpha = m_animation ? m_animation->m_alpha : m_alpha;
+   float alpha = (m_animation ? m_animation->m_alpha : m_alpha) * screenAlpha;
 
    float zoom = m_animation ? m_animation->m_zoom : m_zoom;
    if (zoom != 100.0f)
@@ -1076,6 +1081,7 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
    , m_alphaStart(alphaStart)
    , m_alphaEnd(alphaEnd)
    , m_pulseSpeed(pulseSpeed)
+   , m_screenFade(screenFade)
 {
    m_alpha = static_cast<float>(m_alphaStart) / 255.0f;
 }

@@ -15,7 +15,8 @@ public:
    const std::filesystem::path& GetFile() const { return m_file; }
 
    void Load(const std::filesystem::path& szFile);
-   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect);
+   void Clear();
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float alpha = 1.f);
 
 private:
    std::filesystem::path m_file;

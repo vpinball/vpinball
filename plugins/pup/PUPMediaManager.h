@@ -28,7 +28,7 @@ public:
    void StopBackground();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
-   void Render(VPXRenderContext2D* const ctx);
+   void Render(VPXRenderContext2D* const ctx, float alpha = 1.f);
    bool IsMainPlaying();
    bool IsBackgroundPlaying();
 

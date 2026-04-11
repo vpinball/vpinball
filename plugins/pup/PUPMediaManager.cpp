@@ -265,10 +265,10 @@ bool PUPMediaManager::IsMainPlaying() { return m_player.IsPlaying(); }
 
 bool PUPMediaManager::IsBackgroundPlaying() { return m_bg.active && !m_bg.szPath.empty() && !m_playingMain && m_player.IsPlaying(); }
 
-void PUPMediaManager::Render(VPXRenderContext2D* const ctx)
+void PUPMediaManager::Render(VPXRenderContext2D* const ctx, float alpha)
 {
    if (m_player.IsPlaying())
-      m_player.Render(ctx, m_bounds);
+      m_player.Render(ctx, m_bounds, alpha);
 }
 
 }

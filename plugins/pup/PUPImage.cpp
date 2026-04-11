@@ -17,6 +17,16 @@ PUPImage::~PUPImage()
       DeleteTexture(m_pTexture);
 }
 
+void PUPImage::Clear()
+{
+   m_file.clear();
+   if (m_pTexture) {
+      DeleteTexture(m_pTexture);
+      m_pTexture = nullptr;
+   }
+   m_pSurface.reset();
+}
+
 void PUPImage::Load(const std::filesystem::path& szFile)
 {
    m_file = szFile;
@@ -31,7 +41,7 @@ void PUPImage::Load(const std::filesystem::path& szFile)
       m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(SDL_ConvertSurface(m_pSurface.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
 }
 
-void PUPImage::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect)
+void PUPImage::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float alpha)
 {
    // Update texture
    if (m_pTexture == nullptr && m_pSurface) {
@@ -40,10 +50,10 @@ void PUPImage::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect)
    }
 
    // Render image
-   if (m_pTexture)
+   if (m_pTexture && alpha > 0.f)
    {
       VPXTextureInfo* texInfo = GetTextureInfo(m_pTexture);
-      ctx->DrawImage(ctx, m_pTexture, 1.f, 1.f, 1.f, 1.f,
+      ctx->DrawImage(ctx, m_pTexture, 1.f, 1.f, 1.f, alpha,
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
          0.f, 0.f, 0.f, 
          static_cast<float>(rect.x), static_cast<float>(rect.y), static_cast<float>(rect.w), static_cast<float>(rect.h));

@@ -24,7 +24,7 @@ public:
    void SetVolume(float volume);
    void SetLoop(bool loop);
    void SetLength(int length);
-   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha = 1.f);
 
    void SetName(const string& name);
    void SetOnEndCallback(const std::function<void(PUPMediaPlayer*)>& onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }

@@ -332,9 +332,16 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         NOT_IMPLEMENTED("Set OS window z ordering is not implemented. szMsg=" + szMsg);
                         break;
                      case 22:
-                        // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 } AV: Alpha Value (0-255), AM: Alpha mode enabled 0/1?
-                        NOT_IMPLEMENTED(std::format("Set screen transparency not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                     {
+                        // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 }
+                        // AV: Alpha Value (0-255), AM: Alpha mode enabled (1) or disabled (0)
+                        int am = json["AM"s].as<int>(0);
+                        if (am)
+                           pScreen->m_screenAlpha = static_cast<float>(json["AV"s].as<int>(255)) / 255.f;
+                        else
+                           pScreen->m_screenAlpha = 1.f;
                         break;
+                     }
                      case 30:
                         // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
                         NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));

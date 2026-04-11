@@ -49,6 +49,8 @@ public:
 
    bool IsTransparent() const { return m_transparent; }
 
+   float m_screenAlpha = 1.0f;
+
    float GetVolume() const { return m_volume; }
    void SetMainVolume(float volume); // Set user defined global volume (allow to mute)
    void SetVolume(float volume); // Set default, and apply it to played media
