@@ -3,6 +3,8 @@
 #pragma once
 
 #include "common.h"
+#include <mutex>
+#include <atomic>
 
 namespace PUP {
 
@@ -22,6 +24,10 @@ private:
    std::filesystem::path m_file;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pSurface;
    VPXTexture m_pTexture = nullptr;
+
+   std::mutex m_loadMutex;
+   std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pendingSurface;
+   std::atomic<bool> m_loading { false };
 };
 
 }
