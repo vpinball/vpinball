@@ -105,6 +105,22 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
       m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, true); };
       break;
 
+   case PUPTrigger::Action::SplashReset:
+      m_action = [&]()
+      {
+         // Play splash video, background will restart from beginning when splash ends
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+      };
+      break;
+
+   case PUPTrigger::Action::SplashReturn:
+      m_action = [&]()
+      {
+         // Play splash video, background will resume from where it left off when splash ends
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+      };
+      break;
+
    case PUPTrigger::Action::SkipSamePriority:
       m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length, false); };
       break;

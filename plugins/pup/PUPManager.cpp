@@ -245,6 +245,15 @@ void PUPManager::LoadFonts()
    {
       LOGI("No FONTS folder found"s);
    }
+
+   if (m_vpxApi)
+   {
+      VPXInfo vpxInfo;
+      m_vpxApi->GetVpxInfo(&vpxInfo);
+      std::filesystem::path fallbackPath = std::filesystem::path(vpxInfo.path) / "assets" / "LiberationSans-Regular.ttf";
+      if (TTF_Font* pFont = TTF_OpenFont(fallbackPath.string().c_str(), 8))
+         AddFont(pFont, "LiberationSans-Regular.ttf");
+   }
 }
 
 void PUPManager::LoadPlaylists()
@@ -530,6 +539,16 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
                // Dispatch trigger action on main thread
                m_msgApi->RunOnMainThread(m_endpointId, 0.0, [](void* userData) { static_cast<PUPTrigger*>(userData)->Trigger()(); }, trigger);
             }
+            // Reset trigger condition values so the trigger can fire again
+            // when the same B2SData event is sent repeatedly (e.g., D9=1 each ball)
+            for (auto& trigger : triggers[0]->GetTriggers())
+            {
+               if (trigger.m_type == c && trigger.m_number == id)
+               {
+                  trigger.m_value = 0;
+                  break;
+               }
+            }
          }
       }
    }
@@ -609,56 +628,27 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       if (parent)
          screens.push_back(screen);
    }
-   #define LOG_RENDER 0
-   #if LOG_RENDER
-   std::stringstream renderLog;
-   renderLog << "Back [";
-   auto log = [&renderLog](std::shared_ptr<PUPScreen> screen, int pass)
+   // Render order — two layers per screen, popups on top:
+   //   Non-popup screens:
+   //     1. Video layer (passes 0-1): PuPFrames background + video/static image
+   //     2. Overlay layer (passes 2-3): PuPOverlays image + labels
+   //   Popup screens (ForcePop/ForcePopBack) render entirely on top:
+   //     3. All passes (0-3)
+
+   auto renderScreens = [&renderCtx, &screens](bool popup, int startPass, int endPass)
    {
-      if (pass == 0 && screen->HasUnderlay())
-         renderLog << screen->GetScreenNum() << "u ";
-      else if (pass == 1 && (!screen->IsPop() || screen->IsMainPlaying()))
-         renderLog << screen->GetScreenNum() << ' ';
-      else if (pass == 2 && screen->HasOverlay())
-         renderLog << screen->GetScreenNum() << "o ";
+      for (int pass = startPass; pass <= endPass; pass++)
+         std::ranges::for_each(screens,
+            [&renderCtx, pass, popup](const auto& screen)
+            {
+               if (screen->IsPop() == popup && screen->GetMode() != PUPScreen::Mode::Off)
+                  screen->Render(renderCtx, pass);
+            });
    };
-   #else
-   auto log = [](std::shared_ptr<PUPScreen> screen, int pass) { };
-   #endif
-   for (int pass = 0; pass < 3; pass++)
-      std::ranges::for_each(screens,
-         [&renderCtx, pass, &log](const auto& screen)
-         {
-            const bool isBack = screen->IsBackgroundPlaying() || screen->GetMode() == PUPScreen::Mode::ForceBack || screen->GetMode() == PUPScreen::Mode::ForcePopBack;
-            if (isBack)
-            {
-               log(screen, pass);
-               screen->Render(renderCtx, pass);
-            }
-         });
-   #if LOG_RENDER
-   renderLog << "] Front [";
-   #endif
-   for (int pass = 0; pass < 3; pass++)
-      std::ranges::for_each(screens,
-         [&renderCtx, pass, &log](const auto& screen)
-         {
-            const bool isBack = screen->IsBackgroundPlaying() || screen->GetMode() == PUPScreen::Mode::ForceBack || screen->GetMode() == PUPScreen::Mode::ForcePopBack;
-            if (!isBack && screen->GetMode() != PUPScreen::Mode::Off)
-            {
-               log(screen, pass);
-               screen->Render(renderCtx, pass);
-            }
-         });
-   #if LOG_RENDER
-   renderLog << ']';
-   LOGD("Render: " + renderLog.str());
-   #endif
-   std::ranges::for_each(screens,
-      [&renderCtx](const auto& screen)
-      {
-         screen->Render(renderCtx, 3);
-      });
+
+   renderScreens(false, 0, 1);
+   renderScreens(false, 2, 3);
+   renderScreens(true, 0, 3);
 
    // Set Game time after rendering to avoid updating while rendering if the decode thread are waiting for it
    if (me->m_vpxApi)

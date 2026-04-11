@@ -56,8 +56,16 @@ void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, i
 
 void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
 {
+   // Play next file from playlist (shuffled or in order) with default volume and no priority
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   NOT_IMPLEMENTED(std::format("Not implemented: screenNum={}, playlist={}", screenNum, playlist));
+   if (pScreen)
+   {
+      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
+      if (pPlaylist)
+         pScreen->Play(pPlaylist, ""s, pPlaylist->GetVolume(), 0, false, 0, false);
+      else
+         LOGE(std::format("Playlist not found: screenNum={}, playlist={}", screenNum, playlist));
+   }
 }
 
 void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int priority)
@@ -184,7 +192,8 @@ void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
 
 void PUPPinDisplay::SetBackGround(int screenNum, int mode)
 {
-   // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
+   // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.
+   LOGD(std::format("SetBackGround called: screenNum={}, mode={}", screenNum, mode));
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetAsBackGround(mode);
@@ -455,10 +464,8 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
    if (!pScreen)
       return;
 
-   if (!pScreen->IsLabelInit()) {
-      LOGE("LabelInit has not been called: screenNum=" + std::to_string(screenNum));
-      return;
-   }
+   if (!pScreen->IsLabelInit())
+      pScreen->SetLabelInit();
 
    pScreen->AddLabel(new PUPLabel(&m_pupManager, LabelName, FontName, static_cast<float>(Size), Color,
       static_cast<float>(Angle) / 10.0f, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign,
@@ -636,35 +643,53 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
-   // TODO handle seconds and Special
-   pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
 
-   //  'playtype for triggers
-   //  'ptNormal=0;
-   //  'ptLoop=1;
-   //  'ptSplashReset=2;
-   //  'ptSplashResume=3;
-   //  'ptStopScreen=4;
-   //  'ptStopFile=5;
-   //  'ptSetBG=6;
-   //  'ptPlaySSF=7;
-   //  'ptSkipSameP=8;
-   //  'ptCustomFunc=9;
-   //  'ptForcePlay=10;
-   //  'ptQueueSameP=11;
-   //  'ptQueueAlways=12;
+   // playtype: 0=Normal, 1=Loop, 2=SplashReset, 3=SplashResume, 4=StopScreen,
+   //           5=StopFile, 6=SetBG, 7=PlaySSF, 8=SkipSameP, 9=CustomFunc,
+   //           10=ForcePlay, 11=QueueSameP, 12=QueueAlways
    switch (playtype) {
-   case 0:
-      // Normal
+   case 0: // Normal
+      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
+      if (Seconds > 0)
+         pScreen->SetLength(Seconds);
       break;
    case 1: // Loop
+      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
       pScreen->SetLoop(1);
       break;
-   case 6: // SetBG
-      pScreen->SetAsBackGround(1);
+   case 2: // SplashReset
+   case 3: // SplashResume
+      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
+      if (Seconds > 0)
+         pScreen->SetLength(Seconds);
       break;
+   case 4: // StopScreen
+      pScreen->Stop(priority);
+      break;
+   case 5: // StopFile
+   {
+      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
+      if (pPlaylist)
+         pScreen->Stop(pPlaylist, playfilename);
+      break;
+   }
+   case 6: // SetBG
+   {
+      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
+      if (pPlaylist)
+         pScreen->Play(pPlaylist, playfilename, static_cast<float>(volume), priority, false, Seconds, true);
+      break;
+   }
+   case 8: // SkipSamePriority
+   {
+      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
+      if (pPlaylist)
+         pScreen->Play(pPlaylist, playfilename, static_cast<float>(volume), priority, true, Seconds, false);
+      break;
+   }
    default:
       NOT_IMPLEMENTED("Not implemented: playevent playtype=" + std::to_string(playtype));
+      break;
    }
 }
 
