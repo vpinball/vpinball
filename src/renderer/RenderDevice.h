@@ -22,7 +22,7 @@
 #if defined(ENABLE_BGFX)
 #include <thread>
 #include <mutex>
-#include "bx/semaphore.h"
+#include <semaphore>
 #endif
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
@@ -263,7 +263,8 @@ public:
    uint64_t m_bgfxState = 0;
 
    bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
-   bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
+   std::binary_semaphore m_rendererInitialized { 0 }; // Semaphore to signal when the renderer is initialized
+   std::binary_semaphore m_frameReadySem { 0 }; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;

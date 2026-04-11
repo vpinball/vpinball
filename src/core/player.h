@@ -147,13 +147,14 @@ public:
    FrameProfiler m_logicProfiler; // Frame timing profiler to be used when measuring timings from the game logic thread
    FrameProfiler* m_renderProfiler = nullptr; // Frame timing profiler to be used when measuring timings from the render thread (same as game logic profiler for single threaded mode)
 
+   void ProcessOSMessages(const bool isInitialized = true);
+
 private:
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameMsgId;
 
-   void ProcessOSMessages();
    void MultithreadedGameLoop();
    void FramePacingGameLoop();
    void GPUQueueStuffingGameLoop();

@@ -667,7 +667,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
       #ifdef ENABLE_BGFX
-      m_renderer->m_renderDevice->m_frameMutex.lock();
+      while (!m_renderer->m_renderDevice->m_frameMutex.try_lock())
+      {
+         g_pplayer->ProcessOSMessages();
+         Sleep(0);
+      }
       #endif
 
       // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
@@ -1456,7 +1460,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void Player::ProcessOSMessages()
+void Player::ProcessOSMessages(const bool isInitialized)
 {
    const uint64_t startTick = usec();
    SDL_Event e;
@@ -1562,6 +1566,9 @@ void Player::ProcessOSMessages()
          }
          break;
       }
+
+      if (!isInitialized)
+         continue;
 
       // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
       if (isPFWnd)
@@ -1834,7 +1841,7 @@ void Player::GameLoop()
 
    #ifdef ENABLE_BGFX
       // Flush any pending frame
-      m_renderer->m_renderDevice->m_frameReadySem.post();
+      m_renderer->m_renderDevice->m_frameReadySem.release();
 
       m_renderer->m_renderDevice->m_frameMutex.unlock();
       m_logicProfiler.SetThreadLock();
@@ -1876,7 +1883,7 @@ void Player::MultithreadedGameLoop()
          m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
          PrepareFrame();
          m_renderer->m_renderDevice->m_framePending = true;
-         m_renderer->m_renderDevice->m_frameReadySem.post();
+         m_renderer->m_renderDevice->m_frameReadySem.release();
          m_renderer->m_renderDevice->m_frameMutex.unlock();
       }
 #ifndef __LIBVPINBALL__

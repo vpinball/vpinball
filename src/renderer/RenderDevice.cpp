@@ -445,7 +445,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    int backBufferHeight = static_cast<int>(init.resolution.height);
 
    // Unlock requesting thread and start render loop
-   rd->m_frameReadySem.post();
+   rd->m_rendererInitialized.release();
 
 #ifdef __STANDALONE__
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -473,7 +473,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
                g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
                rd->m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
                rd->m_framePending = false;
-               rd->m_frameReadySem.wait();
+               rd->m_frameReadySem.acquire();
                rd->m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
                g_pplayer->m_renderProfiler->ExitProfileSection();
                END_SPAN(tagSpanFF)
@@ -549,7 +549,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 
          // wait for a frame to be prepared by the logic thread
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-         rd->m_frameReadySem.wait();
+         rd->m_frameReadySem.acquire();
          g_pplayer->m_renderProfiler->ExitProfileSection();
 
          if (!rd->m_renderDeviceAlive)
@@ -750,7 +750,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    }
 
    // Wait until main thread has released all native resources
-   rd->m_frameReadySem.wait();
+   rd->m_rendererInitialized.acquire();
    bgfx::shutdown();
 }
 
@@ -1066,10 +1066,14 @@ RenderDevice::RenderDevice(
 
    ResetActiveView();
 
+   m_frameMutex.lock();
    m_renderDeviceAlive = true;
    m_renderThread = std::thread(&RenderThread, this, init);
-   m_frameReadySem.wait();
-   m_frameMutex.lock();
+   while (!m_rendererInitialized.try_acquire())
+   {
+      g_pplayer->ProcessOSMessages(false);
+      Sleep(0);
+   }
 
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
@@ -1555,7 +1559,7 @@ RenderDevice::~RenderDevice()
    #if defined(ENABLE_BGFX)
       // Suspend rendering before deleting anything that could be used
       m_renderDeviceAlive = false;
-      m_frameReadySem.post();
+      m_frameReadySem.release();
    #endif
 
    m_quadMeshBuffer = nullptr;
@@ -1614,7 +1618,7 @@ RenderDevice::~RenderDevice()
       bgfx::destroy(prog);
 
    // Shutdown BGFX once all native resources have been cleaned up
-   m_frameReadySem.post();
+   m_rendererInitialized.release();
    if (m_renderThread.joinable())
       m_renderThread.join();
 
@@ -2089,11 +2093,10 @@ void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB
    std::shared_ptr<Sampler> sampler = m_texMan.LoadTexture(texture, linearRGB);
    #if defined(ENABLE_BGFX)
    // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
-   m_frameMutex.lock();
+   std::lock_guard lock(m_frameMutex);
    m_pendingTextureUploads.push_back(sampler);
    SubmitRenderFrame(); // Submit texture upload to render thread
    SubmitRenderFrame(); // Block until render thread has processed the pending texture uploads and mipmap generations
-   m_frameMutex.unlock();
    #endif
 }
 
@@ -2295,14 +2298,16 @@ void RenderDevice::SubmitRenderFrame()
    if (std::this_thread::get_id() != m_renderThread.get_id())
    {
       // post semaphore and wait for render thread to process frame
+      assert(!m_framePending);
       m_framePending = true;
       m_frameNoPresent = true;
       m_frameMutex.unlock(); // release the lock and wait for render thread to process the frame
-      m_frameReadySem.post();
-      while (m_framePending)
-         //YieldProcessor();
+      m_frameReadySem.release();
+      while (m_framePending || !m_frameMutex.try_lock())
+      {
+         g_pplayer->ProcessOSMessages();
          Sleep(0);
-      m_frameMutex.lock();
+      }
       return;
    }
    #endif
