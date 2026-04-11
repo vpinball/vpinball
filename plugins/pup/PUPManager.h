@@ -123,6 +123,7 @@ private:
 
    std::mutex m_eventMutex;
    std::unique_ptr<DOFEventStream> m_dofEventStream;
+
 };
 
 }

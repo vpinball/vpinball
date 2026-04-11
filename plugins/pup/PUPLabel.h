@@ -84,6 +84,11 @@ private:
    float m_autoFitHeight = 0;
    PUPScreen* m_pScreen = nullptr;
    int m_anigif = 0;
+   bool m_gifLoop = true;
+   int m_gifStart = -1;
+   int m_gifEnd = -1;
+   bool m_hideOnAnimEnd = false;
+   bool m_animating = false;
 
    PUP_LABEL_TYPE m_type = PUP_LABEL_TYPE_TEXT;
    std::filesystem::path m_szPath;
@@ -102,8 +107,6 @@ private:
       {
          if (m_pTexture)
             DeleteTexture(m_pTexture);
-         if (m_pAnimation)
-            IMG_FreeAnimation(m_pAnimation);
       }
 
       RenderState(RenderState&& other) noexcept
@@ -112,10 +115,11 @@ private:
          , m_prerenderedColor(other.m_prerenderedColor)
          , m_width(other.m_width)
          , m_height(other.m_height)
-         , m_pAnimation(other.m_pAnimation)
+         , m_pAnimation(std::move(other.m_pAnimation))
+         , m_accumulatedDelays(std::move(other.m_accumulatedDelays))
+         , m_totalDuration(other.m_totalDuration)
       {
          other.m_pTexture = nullptr;
-         other.m_pAnimation = nullptr;
       }
 
       RenderState& operator=(RenderState&& other) noexcept
@@ -124,18 +128,17 @@ private:
          {
             if (m_pTexture)
                DeleteTexture(m_pTexture);
-            if (m_pAnimation)
-               IMG_FreeAnimation(m_pAnimation);
 
             m_prerenderedHeight = other.m_prerenderedHeight;
             m_prerenderedColor = other.m_prerenderedColor;
             m_pTexture = other.m_pTexture;
-            m_pAnimation = other.m_pAnimation;
+            m_pAnimation = std::move(other.m_pAnimation);
+            m_accumulatedDelays = std::move(other.m_accumulatedDelays);
+            m_totalDuration = other.m_totalDuration;
             m_width = other.m_width;
             m_height = other.m_height;
 
             other.m_pTexture = nullptr;
-            other.m_pAnimation = nullptr;
          }
          return *this;
       }
@@ -144,8 +147,10 @@ private:
       int m_prerenderedHeight = 0; // Height used to evaluate text rendering
       int m_prerenderedColor = 0; // Color used for prerendering the text
       float m_width = 0; // Width of rendered text (unused for images)
-      float m_height = 0; // height of rendered text (unused for images)
-      IMG_Animation* m_pAnimation = nullptr;
+      float m_height = 0; // Height of rendered text (unused for images)
+      std::shared_ptr<IMG_Animation> m_pAnimation;
+      vector<int> m_accumulatedDelays;
+      int m_totalDuration = 0;
    };
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
    RenderState UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
