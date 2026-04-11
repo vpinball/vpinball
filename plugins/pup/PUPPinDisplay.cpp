@@ -286,9 +286,15 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                if (pScreen) {
                   int fn = json["FN"s].as<int>();
                   switch (fn) {
+                     case 2:
+                        // See pDisableLoopRefresh — form state flags (FF/FO), controls Windows form redraw
+                        // { "mt":301, "SN": XX, "FN": 2, "FF":0/1, "FO":0/1 }
+                        NOT_IMPLEMENTED(std::format("Loop refresh flags not implemented: screen={{{}}}, FF={}, FO={}", pScreen->ToString(false), json["FF"s].as<int>(0), json["FO"s].as<int>(0)));
+                        break;
                      case 3:
-                        // hide/show overlay text - { "mt":301, "SN": XX, "FN":3, "OT": 0 } - OT 0/1 overlay text on off bool
-                        NOT_IMPLEMENTED("Show/Hide screen not implemented. szMsg=" + szMsg);
+                        // See pDMDSetHUD — show/hide overlay window (overlay image + labels)
+                        // { "mt":301, "SN": XX, "FN":3, "OT": 0 } - OT 0/1
+                        pScreen->m_hudVisible = (json["OT"s].as<int>(0) != 0);
                         break;
                      case 4:
                         // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
@@ -379,8 +385,9 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         NOT_IMPLEMENTED(std::format("Slow PC mode is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;
                      case 46:
-                        // pad all text { "mt":301, "SN": XX, "FN":46, "PA":1 } - PA 0/1 = padd text bool
-                        NOT_IMPLEMENTED(std::format("Pad all text is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        // See pDMDAlwaysPAD — pad all text with space before/after for shadow clipping
+                        // { "mt":301, "SN": XX, "FN":46, "PA":1 } - PA 0/1 = pad text bool
+                        NOT_IMPLEMENTED(std::format("Pad text not implemented: screen={{{}}}, PA={}", pScreen->ToString(false), json["PA"s].as<int>(0)));
                         break;
                      case 50:
                         // pSetAspectRatio(PuPID, arWidth, arHeight) "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 50, ""WIDTH"": "&arWidth&", ""HEIGHT"": "&arHeight&" }"   
@@ -480,6 +487,10 @@ void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const strin
    if (!pScreen)
       return;
 
+   // See pDMDSetHUD — pBackground visibility controls the HUD layer
+   if (StrCompareNoCase(LabelName, "pBackground"s))
+      pScreen->m_hudVisible = Visible;
+
    PUPLabel* pLabel = pScreen->GetLabel(LabelName);
    if (!pLabel) {
       if (m_warnedLabels[screenNum].find(LabelName) == m_warnedLabels[screenNum].end())
@@ -524,7 +535,15 @@ void PUPPinDisplay::LabelInit(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
+   {
       pScreen->SetLabelInit();
+      // See pDMDSetHUD — pBackground label created automatically during LabelInit
+      if (!pScreen->GetLabel("pBackground"))
+      {
+         pScreen->AddLabel(new PUPLabel(&m_pupManager, "pBackground"s, "Liberation Sans"s, 50.f, 0xFF, 0.f,
+            PUP_LABEL_XALIGN_CENTER, PUP_LABEL_YALIGN_CENTER, 0.f, 0.f, -1, true));
+      }
+   }
 }
 
 const string& PUPPinDisplay::GetGetGame() const

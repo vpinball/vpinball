@@ -44,12 +44,13 @@ public:
    string ToString(bool full = true) const;
 
    Mode GetMode() const { return m_mode; }
-   void SetMode(Mode mode) { m_mode = mode; }
+   void SetMode(Mode mode);
    bool IsPop() const { return m_mode == PUPScreen::Mode::ForcePopBack || m_mode == PUPScreen::Mode::ForcePop; }
 
    bool IsTransparent() const { return m_transparent; }
 
    float m_screenAlpha = 1.0f;
+   bool m_hudVisible = true;
 
    float GetVolume() const { return m_volume; }
    void SetMainVolume(float volume); // Set user defined global volume (allow to mute)

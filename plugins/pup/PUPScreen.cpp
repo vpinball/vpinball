@@ -140,6 +140,17 @@ void PUPScreen::LoadTriggers()
    }
 }
 
+void PUPScreen::SetMode(Mode mode)
+{
+   if (mode == m_mode)
+      return;
+   bool wasVisible = (m_mode != Mode::Off && m_mode != Mode::MusicOnly);
+   m_mode = mode;
+   bool isVisible = (m_mode != Mode::Off && m_mode != Mode::MusicOnly);
+   if (wasVisible && !isVisible)
+      m_pMediaPlayerManager->Stop();
+}
+
 void PUPScreen::SetMainVolume(float volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -491,7 +502,10 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
          m_staticImage.Render(ctx, m_rect, m_screenAlpha);
       break;
 
-   case 2: m_overlay.Render(ctx, m_rect, m_screenAlpha); break;
+   case 2:
+      if (m_hudVisible)
+         m_overlay.Render(ctx, m_rect, m_screenAlpha);
+      break;
 
    case 3:
       for (PUPLabel* pLabel : m_labels)
