@@ -110,29 +110,35 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
             m_bitdepth = GetPixelFormatDepth(currentMode->format);
         }
       }
-      else {
-          for (int mode = 0; mode < nDisplayModes; mode++) {
-              const SDL_DisplayMode *const sdlMode = displayModes[mode];
-              const int bitdepth = GetPixelFormatDepth((sdlMode->format));
-              if ((sdlMode->w == settings.GetWindow_FSWidth(m_windowId)) && (sdlMode->h == settings.GetWindow_FSHeight(m_windowId)) //
-                      && (settings.GetWindow_FSRefreshRate(m_windowId) == 0) || (sdlMode->refresh_rate == settings.GetWindow_FSRefreshRate(m_windowId)) //
-                      && (settings.GetWindow_FSColorDepth(m_windowId) == 0) || (bitdepth == settings.GetWindow_FSColorDepth(m_windowId))) {
-                  fullscreenDisplayMode = sdlMode;
-                  m_screenwidth = sdlMode->w;
-                  m_screenheight = sdlMode->h;
-                  m_width = sdlMode->w;
-                  m_height = sdlMode->h;
-                  m_refreshrate = sdlMode->refresh_rate;
-                  m_bitdepth = bitdepth;
-                  break;
-              }
-          }
+      else
+      {
+         const int requestedW = settings.GetWindow_FSWidth(m_windowId);
+         const int requestedH = settings.GetWindow_FSHeight(m_windowId);
+         const float requestedHz = settings.GetWindow_FSRefreshRate(m_windowId);
+         const int requestedDepth = settings.GetWindow_FSColorDepth(m_windowId);
+         for (int mode = 0; mode < nDisplayModes; mode++)
+         {
+            const SDL_DisplayMode* const sdlMode = displayModes[mode];
+            const int bitdepth = GetPixelFormatDepth((sdlMode->format));
+            if ((sdlMode->w == requestedW) && (sdlMode->h == requestedH) //
+                  && ((requestedHz == 0.f) || (sdlMode->refresh_rate == requestedHz)) //
+                  && ((requestedDepth == 0) || (bitdepth == requestedDepth)))
+            {
+               fullscreenDisplayMode = sdlMode;
+               m_screenwidth = sdlMode->w;
+               m_screenheight = sdlMode->h;
+               m_width = sdlMode->w;
+               m_height = sdlMode->h;
+               m_refreshrate = sdlMode->refresh_rate;
+               m_bitdepth = bitdepth;
+               break;
+            }
+         }
       }
       if (fullscreenDisplayMode == nullptr)
       {
          PLOGE << "Requested fullscreen mode " << settings.GetWindow_Width(m_windowId) << 'x' << settings.GetWindow_Height(m_windowId) << " at "
-               << settings.GetWindow_FSRefreshRate(m_windowId) << "Hz, Bit depth: " << settings.GetWindow_FSColorDepth(m_windowId)
-               << " is not available. Switching to windowed mode.";
+               << settings.GetWindow_FSRefreshRate(m_windowId) << "Hz, Bit depth: " << settings.GetWindow_FSColorDepth(m_windowId) << " is not available. Switching to windowed mode.";
       }
    }
 
@@ -242,7 +248,11 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    // Switch to request fullscreen display mode (must be done after window creation)
    if (fullscreenDisplayMode)
+   {
       SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
+      SDL_SetWindowFullscreen(m_nwnd, true);
+      SDL_SyncWindow(m_nwnd);
+   }
    SDL_free(displayModes);
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
