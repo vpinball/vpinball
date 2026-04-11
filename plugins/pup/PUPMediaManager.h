@@ -3,6 +3,7 @@
 #pragma once
 
 #include "PUPMediaPlayer.h"
+#include <deque>
 
 namespace PUP {
 
@@ -24,40 +25,58 @@ public:
    void SetMaxLength(int length);
    void SetVolume(float volume);
    void Stop();
+   void StopBackground();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
    void Render(VPXRenderContext2D* const ctx);
-   bool IsMainPlaying() const;
-   bool IsBackgroundPlaying() const;
+   bool IsMainPlaying();
+   bool IsBackgroundPlaying();
 
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const std::filesystem::path& path);
 
+   void SetOnMainEndCallback(std::function<void()> callback) { m_onMainEndCallback = std::move(callback); }
+
 private:
    void OnPlayerEnd(PUPMediaPlayer* player);
+   void PlayBackground();
+   void PlayNextFromQueue();
+   void PlayImmediate(const std::filesystem::path& szPath, float volume, int priority, int length);
 
-   class PUPMediaManagerPlayer final
+   PUPMediaPlayer m_player; // Single player per screen, switches between main and background content
+
+   // Background config — stores what to play when main ends, not a running player
+   struct BackgroundConfig
    {
-   public:
-      explicit PUPMediaManagerPlayer(const string& name)
-         : player(name)
-      {
-      }
-      ~PUPMediaManagerPlayer() = default;
-
-      PUPMediaPlayer player;
       std::filesystem::path szPath;
       float volume = 1.0f;
-      int priority = 0;
+      bool active = false;
+      bool setViaSetBackGround = false;
    };
+   BackgroundConfig m_bg;
+
+   // Play queue — pending items played in order when current ends
+   struct PlayItem
+   {
+      std::filesystem::path szPath;
+      float volume;
+      int priority;
+      int length;
+      uint64_t expiry; // SDL_GetTicks() deadline, 0 = no expiry
+   };
+   std::deque<PlayItem> m_playQueue;
+
+   std::filesystem::path m_mainPath;
+   float m_mainVolume = 1.0f;
+   int m_mainPriority = 0;
+   bool m_playingMain = false;
+   bool m_shuttingDown = false;
+
+   std::function<void()> m_onMainEndCallback;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
 
-   std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
-   std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
-
    PUPScreen* const m_pScreen;
-
    SDL_Rect m_bounds;
 };
 

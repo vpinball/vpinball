@@ -41,8 +41,8 @@ private:
    string m_name;
    SDL_Rect m_bounds;
 
-   int m_pendingPlay = 0;
-   int m_pendingStop = 0;
+   std::atomic<int> m_pendingPlay = 0;
+   std::atomic<int> m_pendingStop = 0;
 
    std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
 
@@ -91,7 +91,7 @@ private:
 
    std::mutex m_mutex;
    std::thread m_thread;
-   bool m_running = false;
+   std::atomic<bool> m_running = false;
 
    const LibAV::LibAV& m_libAv;
 

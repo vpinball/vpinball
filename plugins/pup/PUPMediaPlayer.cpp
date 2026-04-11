@@ -37,8 +37,7 @@ PUPMediaPlayer::~PUPMediaPlayer()
 
 bool PUPMediaPlayer::IsPlaying()
 {
-   std::lock_guard lock(m_mutex);
-   return m_running || (m_pendingPlay > m_pendingStop);
+   return m_running.load(std::memory_order_relaxed) || (m_pendingPlay.load(std::memory_order_relaxed) > m_pendingStop.load(std::memory_order_relaxed));
 }
 
 void PUPMediaPlayer::SetName(const string& name)
@@ -86,23 +85,13 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
    {
       LOGD("> Playing filename=" + filename.string());
 
-      //Should we do the callback when we are switching from a video to another ?
-      //std::function<void(PUPMediaPlayer*)> onEndCallback = m_onEndCallback;
-      //m_onEndCallback = [](PUPMediaPlayer*) { };
+      auto savedCallback = m_onEndCallback;
+      m_onEndCallback = [](PUPMediaPlayer*) { };
       StopBlocking();
-      //m_onEndCallback = onEndCallback;
+      m_onEndCallback = savedCallback;
 
-      std::lock_guard lock(m_mutex);
-
-      m_filename = filename;
-      m_volume = volume;
-      m_loop = false;
-      m_paused = false;
-      m_syncOnGameTime = m_gameTime >= 0.0;
-      m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
-
-      // Open file
-      if (m_libAv._avformat_open_input(&m_pFormatContext, filename.string().c_str(), nullptr, nullptr) != 0)
+      AVFormatContext* pFormatContext = nullptr;
+      if (m_libAv._avformat_open_input(&pFormatContext, filename.string().c_str(), nullptr, nullptr) != 0)
       {
          LOGE("Unable to open: filename=" + filename.string());
          m_pendingPlay--;
@@ -110,68 +99,64 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       }
 
       // Retrieve stream information (some formats do not have these available in the header, so this is needed to read a few frames and get the info)
-      m_libAv._avformat_find_stream_info(m_pFormatContext, nullptr);
+      m_libAv._avformat_find_stream_info(pFormatContext, nullptr);
 
-      // Find video stream
-      for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)
+      int videoStream = -1;
+      int audioStream = -1;
+      AVCodecContext* pVideoContext = nullptr;
+      AVCodecContext* pAudioContext = nullptr;
+
+      for (unsigned int i = 0; i < pFormatContext->nb_streams; i++)
       {
-         if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && !(m_pFormatContext->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC))
+         if (pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && !(pFormatContext->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC))
          {
-            m_videoStream = i;
+            videoStream = i;
             break;
          }
       }
 
-      // Open video stream
-      if (m_videoStream >= 0)
+      if (videoStream >= 0)
       {
-         AVStream* pStream = m_pFormatContext->streams[m_videoStream];
-         AVCodecParameters* pCodecParameters = pStream->codecpar;
-         m_pVideoContext = OpenStream(m_pFormatContext, m_videoStream);
-         if (m_pVideoContext)
+         AVCodecParameters* pCodecParameters = pFormatContext->streams[videoStream]->codecpar;
+         pVideoContext = OpenStream(pFormatContext, videoStream);
+         if (pVideoContext)
          {
-            LOGD(std::format("Video stream: {} {}x{}", m_libAv._avcodec_get_name(m_pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height));
+            LOGD(std::format("Video stream: {} {}x{} file={}", m_libAv._avcodec_get_name(pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height, filename.string()));
          }
          else
          {
             LOGE("Unable to open video stream: filename=" + filename.string());
          }
       }
-      else
-      {
-         m_videoStream = -1;
-      }
 
-      // Find audio stream
-      if (m_videoStream >= 0)
+      if (videoStream >= 0)
       {
-         m_audioStream = m_libAv._av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStream, NULL, 0);
-         if (m_audioStream == AVERROR_DECODER_NOT_FOUND)
+         audioStream = m_libAv._av_find_best_stream(pFormatContext, AVMEDIA_TYPE_AUDIO, -1, videoStream, NULL, 0);
+         if (audioStream == AVERROR_DECODER_NOT_FOUND)
          {
             LOGE("No audio stream found: filename=" + filename.string());
+            audioStream = -1;
          }
       }
       else
       {
-         for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)
+         for (unsigned int i = 0; i < pFormatContext->nb_streams; i++)
          {
-            if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            if (pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
             {
-               m_audioStream = i;
+               audioStream = i;
                break;
             }
          }
       }
 
-      // Open audio stream
-      if (m_audioStream >= 0)
+      if (audioStream >= 0)
       {
-         AVStream* pStream = m_pFormatContext->streams[m_audioStream];
-         AVCodecParameters* pCodecParameters = pStream->codecpar;
-         m_pAudioContext = OpenStream(m_pFormatContext, m_audioStream);
-         if (m_pAudioContext)
+         AVCodecParameters* pCodecParameters = pFormatContext->streams[audioStream]->codecpar;
+         pAudioContext = OpenStream(pFormatContext, audioStream);
+         if (pAudioContext)
          {
-            LOGD(std::format("Audio stream: {} {} channels, {} Hz", m_libAv._avcodec_get_name(m_pAudioContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate));
+            LOGD(std::format("Audio stream: {} {} channels, {} Hz", m_libAv._avcodec_get_name(pAudioContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate));
          }
          else
          {
@@ -179,16 +164,30 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          }
       }
 
-      if (!m_pVideoContext && !m_pAudioContext)
+      if (!pVideoContext && !pAudioContext)
       {
          LOGE("No video or audio stream found: filename=" + filename.string());
-         StopBlocking();
+         m_libAv._avformat_close_input(&pFormatContext);
          m_pendingPlay--;
          return;
       }
 
-      m_running = true;
-      m_thread = std::thread(&PUPMediaPlayer::Run, this);
+      {
+         std::lock_guard lock(m_mutex);
+         m_filename = filename;
+         m_volume = volume;
+         m_loop = false;
+         m_paused = false;
+         m_syncOnGameTime = m_gameTime >= 0.0;
+         m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+         m_pFormatContext = pFormatContext;
+         m_videoStream = videoStream;
+         m_pVideoContext = pVideoContext;
+         m_audioStream = audioStream;
+         m_pAudioContext = pAudioContext;
+         m_running = true;
+         m_thread = std::thread(&PUPMediaPlayer::Run, this);
+      }
       m_pendingPlay--;
    });
 }
@@ -222,11 +221,6 @@ void PUPMediaPlayer::Stop()
 
 void PUPMediaPlayer::StopBlocking()
 {
-   if (IsPlaying())
-   {
-      LOGD("Stop: " + m_filename.string());
-   }
-
    // Stop decoder thread and flush queue
    std::unique_lock lock(m_mutex);
    m_running = false;
@@ -408,14 +402,13 @@ void PUPMediaPlayer::Run()
       const int rfRet = m_libAv._av_read_frame(m_pFormatContext, pPacket);
       if (rfRet == AVERROR_EOF)
       {
-         // End of stream, loop or stop
          if (!loop)
             break;
          if (m_pVideoContext)
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_videoStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek video stream. Aborting loop"s);
+               LOGE("Unable to seek video stream. Aborting loop: " + m_filename.filename().string());
                break;
             }
             m_libAv._avcodec_flush_buffers(m_pVideoContext);
@@ -424,18 +417,22 @@ void PUPMediaPlayer::Run()
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_audioStream, 0, 0) < 0)
             {
-               LOGE("Unable to seek audio stream. Aborting loop"s);
+               LOGE("Unable to seek audio stream: " + m_filename.filename().string());
             }
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
          m_playIndex++;
-         m_startTimestamp = m_syncOnGameTime ? m_gameTime : SDL_GetTicks();
+         m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+         {
+            std::lock_guard lock(m_mutex);
+            for (auto& frame : m_frames)
+               frame.valid = false;
+         }
          continue;
       }
       else if (rfRet < 0)
       {
-         // Error reading file, stop playing
-         LOGE("Error while reading video frame"s);
+         LOGE(std::format("Error reading frame: name={}, file={}, ret={}", m_name, m_filename.filename().string(), rfRet));
          break;
       }
 
@@ -484,13 +481,12 @@ void PUPMediaPlayer::Run()
 
    {
       std::lock_guard lock(m_mutex);
+      LOGD(std::format("Player stopped: name={}, file={}", m_name, m_filename.filename().string()));
       m_running = false;
       StopAudioStream(m_audioResId);
       m_audioResId.id = 0;
       m_onEndCallback(this);
    }
-
-   LOGD("Play done " + m_filename.string());
 }
 
 void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
