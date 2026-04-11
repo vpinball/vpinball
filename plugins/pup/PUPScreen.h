@@ -45,6 +45,7 @@ public:
 
    Mode GetMode() const { return m_mode; }
    void SetMode(Mode mode);
+
    bool IsPop() const { return m_mode == PUPScreen::Mode::ForcePopBack || m_mode == PUPScreen::Mode::ForcePop; }
 
    bool IsTransparent() const { return m_transparent; }
@@ -56,6 +57,7 @@ public:
    void SetMainVolume(float volume); // Set user defined global volume (allow to mute)
    void SetVolume(float volume); // Set default, and apply it to played media
    void SetVolumeCurrent(float volume); // Only modifiy volume of currently playing medias
+   void SetOnMainEndCallback(const std::function<void()>& callback);
 
    const std::unique_ptr<PUPCustomPos>& GetCustomPos() const { return m_pCustomPos; }
    void SetCustomPos(const string& szCustomPos);

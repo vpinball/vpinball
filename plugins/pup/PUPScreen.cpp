@@ -165,6 +165,11 @@ void PUPScreen::SetVolume(float volume)
    m_pMediaPlayerManager->SetVolume(m_mainVolume * m_volume);
 }
 
+void PUPScreen::SetOnMainEndCallback(const std::function<void()>& callback)
+{
+   m_pMediaPlayerManager->SetOnMainEndCallback(callback);
+}
+
 void PUPScreen::SetVolumeCurrent(float volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -277,7 +282,6 @@ void PUPScreen::SetPage(int pagenum, int seconds)
 
 uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval)
 {
-   // Note: this callback is called on SDL thread (so not API thread) so we need to sync against concurrent changes
    PUPScreen* me = static_cast<PUPScreen*>(param);
    std::lock_guard lock(me->m_screenMutex);
    SDL_RemoveTimer(me->m_pageTimer);

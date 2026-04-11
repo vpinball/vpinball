@@ -513,6 +513,45 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
    return -1;
 }
 
+void PUPManager::DuckAllExcept(int masterScreenNum, float duckLevel)
+{
+   m_duckMasterScreen = masterScreenNum;
+   m_preDuckVolumes.clear();
+   for (const auto& [key, screen] : m_screenMap)
+   {
+      if (key != masterScreenNum)
+      {
+         m_preDuckVolumes[key] = screen->GetVolume();
+         screen->SetVolume(duckLevel);
+      }
+   }
+   auto masterScreen = GetScreen(masterScreenNum);
+   if (masterScreen)
+   {
+      masterScreen->SetOnMainEndCallback([this]() {
+         Unduck();
+      });
+   }
+}
+
+void PUPManager::Unduck()
+{
+   for (const auto& [key, volume] : m_preDuckVolumes)
+   {
+      auto screen = GetScreen(key);
+      if (screen)
+         screen->SetVolume(volume);
+   }
+   m_preDuckVolumes.clear();
+   if (m_duckMasterScreen >= 0)
+   {
+      auto masterScreen = GetScreen(m_duckMasterScreen);
+      if (masterScreen)
+         masterScreen->SetOnMainEndCallback(nullptr);
+   }
+   m_duckMasterScreen = -1;
+}
+
 void PUPManager::QueueDOFEvent(char c, int id, int value)
 {
    //LOGD(std::format("DOF Event {}{:03} = {}", c, id, value));

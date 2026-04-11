@@ -383,12 +383,13 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         NOT_IMPLEMENTED(std::format("Safe loop mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;
                      case 42:
-                        // will temporary volume duck all pups (not masterid) till masterid currently playing video ends.  will auto-return all pups to normal.
-                        // VolLevel is number,  0 to mute 99 for 99%
-                        // ALL may be omitted, not sure how it affects
-                        // "{ ""mt"":301, ""SN"": "& MasterPuPID& ", ""FN"": 42, ""DV"": "&VolLevel&" , ""ALL"":1 }"                 
-                        NOT_IMPLEMENTED(std::format("Temporary volume ducking is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                     {
+                        // See PUPDMD AudioDuckPuP — temporarily duck all screens except master
+                        // "{ ""mt"":301, ""SN"": "& MasterPuPID& ", ""FN"": 42, ""DV"": "&VolLevel&" , ""ALL"":1 }"
+                        float duckLevel = static_cast<float>(json["DV"s].as<int>(50)) / 100.0f;
+                        m_pupManager.DuckAllExcept(sn, duckLevel);
                         break;
+                     }
                      case 45:
                         // slow pc mode { "mt":301, "SN":XX, "FN":45, "SP":1 } - SP 0/1 = slow pc mode bool
                         NOT_IMPLEMENTED(std::format("Slow PC mode is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));

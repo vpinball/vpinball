@@ -87,6 +87,9 @@ public:
 
    void QueueDOFEvent(char c, int id, int value);
 
+   void DuckAllExcept(int masterScreenNum, float duckLevel);
+   void Unduck();
+
 private:
    void UnloadFonts();
    void LoadFonts();
@@ -124,6 +127,8 @@ private:
    std::mutex m_eventMutex;
    std::unique_ptr<DOFEventStream> m_dofEventStream;
 
+   int m_duckMasterScreen = -1;
+   ankerl::unordered_dense::map<int, float> m_preDuckVolumes;
 };
 
 }
