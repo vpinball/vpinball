@@ -820,7 +820,7 @@ void VRDevice::CreateSession()
       OPENXR_CHECK(xrEnumerateSwapchainImages(swapchain.swapchain, swapchainImageCount, &swapchainImageCount, swapchainImages), "Failed to enumerate Swapchain Images.");
       m_backend->CreateImageViews(swapchain);
    }
-   m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size(), nullptr);
+   m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size());
 
    auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
    m_xrInputHandler = inputHandler.get();
@@ -835,8 +835,7 @@ void VRDevice::ReleaseSession()
    m_xrInputHandler = nullptr;
 
    // Destroy the swapchian render targets, and color/depth image views
-   for (auto& rt : m_swapchainRenderTargets)
-      delete rt;
+   m_swapchainRenderTargets.clear();
    for (const auto& imageView : m_colorSwapchainInfo.imageViews)
       bgfx::destroy(imageView);
    for (const auto& imageView : m_depthSwapchainInfo.imageViews)
@@ -1328,7 +1327,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // Prepare frame with the acquired views to limit position-visual latency (limit motion sickness)
          // This can't be done earlier since view acquisition is done for the predicted frame display time (which we have only after xrWaitFrame) 
          // and we also need OpenXR to selected color/depth render target from xrAcquireSwapchainImage
-         RenderTarget* vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()];
+         RenderTarget* vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()].get();
          if (vrRenderTarget == nullptr)
          {
             const uint16_t nViews = static_cast<uint16_t>(m_viewConfigurationViews.size());
@@ -1337,11 +1336,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             depthAttachment.init(m_depthSwapchainInfo.imageViews[depthImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
             const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
             const bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
-            vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
-               fbh, colorAttachment.handle, m_colorSwapchainInfo.format, depthAttachment.handle, m_depthSwapchainInfo.format,
-               "VRSwapchain [" + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
-               m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
-            m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()] = vrRenderTarget;
+            m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()]
+               = std::make_unique<RenderTarget>(rd, SurfaceType::RT_STEREO, fbh, colorAttachment.handle, m_colorSwapchainInfo.format, depthAttachment.handle, m_depthSwapchainInfo.format,
+                  std::format("VRSwapchain [{}/{}]", colorImageIndex, depthImageIndex), m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
+            vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()].get();
          }
          submitFrame(vrRenderTarget);
 

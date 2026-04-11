@@ -384,8 +384,13 @@ void PerfUI::RenderStats() const
 void PerfUI::RenderPlots()
 {
    const ImGuiIO &io = ImGui::GetIO();
-   constexpr ImGuiWindowFlags window_flags_plots
-      = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   ImGuiWindowFlags window_flags_plots
+      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   if (!m_player->m_renderer->m_vrApplyColorKey)
+   {
+      window_flags_plots |= ImGuiWindowFlags_NoBackground;
+   }
+
    ImGui::SetNextWindowSize(ImVec2(5.f * ImGui::CalcTextSize("1234567890").x, 500.f));
    if (m_player->m_vrDevice)
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
