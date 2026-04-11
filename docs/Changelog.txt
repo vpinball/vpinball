@@ -112,6 +112,8 @@ FEATURES:
   . (hacky) external window capture has been removed and replaced by the ability to use external plugin renderers in the 3D scene, using flashers. Tables using the
     legacy feature are automatically updated. This allows to use all plugins in 3D at full resolution (backglass, scoreview, PinUp player, dimmed segment, toppers,...).
   . New option to add a plugin rendered backglass flasher to handle non VR tables (there used to be a limited hacky fixed backglass image added on all tables with some hacks to allow VR tables to overwrite it)
+  . OpenXR controllers can be used as input, including thumbstick nudging and plunger.
+  . OpenXR controllers can be used to position the virtual table in the room.
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)

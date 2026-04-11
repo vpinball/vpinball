@@ -809,6 +809,15 @@ void InputManager::CreateInputActions()
    auto vrBack = addVRPositionAction("VRBack"s, "Move VR view to the back"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, -1.f, 0.f));
    auto vrLeft = addVRPositionAction("VRFront"s, "Move VR view to the left"s, SDL_SCANCODE_UNKNOWN, vec3(-1.f, 0.f, 0.f));
    auto vrRight = addVRPositionAction("VRBack"s, "Move VR view to the right"s, SDL_SCANCODE_UNKNOWN, vec3(1.f, -0.f, 0.f));
+   #ifdef ENABLE_XR
+   auto vrControllerCalibration = AddAction(std::make_unique<InputAction>(this, "VRControllerCalibration"s, "Align VR view using controllers"s, ""s,
+      [this](InputAction& action, bool wasPressed, bool isPressed)
+      {
+         if (isPressed && m_player->IsVR())
+            m_player->m_vrDevice->EnableControllerViewCentering(!m_player->m_vrDevice->IsControllerViewCenteringEnabled());
+      }));
+   m_vrControllerViewCenteringActionId = vrControllerCalibration->GetActionId();
+   #endif
 
    AddAction(std::make_unique<InputAction>(this, "GenTournament"s, "Create Tournament File"s, keyMapping(SDL_SCANCODE_LALT) + " & " + keyMapping(SDL_SCANCODE_1),
       [this](const InputAction&, bool, bool isPressed)

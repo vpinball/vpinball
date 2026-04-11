@@ -91,6 +91,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    : m_ptable(table)
    , m_playMode(playMode)
    , m_pluginAPI(m_pluginManager)
+   , m_osThreadId(std::this_thread::get_id())
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
@@ -669,7 +670,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       #ifdef ENABLE_BGFX
       while (!m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
-         g_pplayer->ProcessOSMessages();
+         ProcessOSMessages();
          Sleep(0);
       }
       #endif
@@ -1456,6 +1457,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::ProcessOSMessages(const bool isInitialized)
 {
+   assert(std::this_thread::get_id() == m_osThreadId);
    const uint64_t startTick = usec();
    SDL_Event e;
    bool isPFWnd = true;

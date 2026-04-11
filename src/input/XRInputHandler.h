@@ -38,8 +38,8 @@ public:
       , m_session(session)
    {
       XrActionSetCreateInfo actionSetInfo { XR_TYPE_ACTION_SET_CREATE_INFO };
-      CopyToXrBuffer(actionSetInfo.actionSetName, "universal_diagnostic_set"s);
-      CopyToXrBuffer(actionSetInfo.localizedActionSetName, "Universal Input Scanner"s);
+      CopyToXrBuffer(actionSetInfo.actionSetName, "vpx_generic_input"s);
+      CopyToXrBuffer(actionSetInfo.localizedActionSetName, "VPX Generic Input"s);
       xrCreateActionSet(m_instance, &actionSetInfo, &m_actionSet);
 
       m_joyId = m_pininput.RegisterDevice("OpenXR", InputManager::DeviceType::Joystick, "Controller");
@@ -63,7 +63,10 @@ public:
          { "/user/hand/left/input/thumbstick/x", XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/left/input/thumbstick/y", XR_ACTION_TYPE_FLOAT_INPUT },
          { "/user/hand/right/input/thumbstick/x", XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/right/input/thumbstick/y", XR_ACTION_TYPE_FLOAT_INPUT },
          { "/user/hand/left/input/trackpad/x", XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/left/input/trackpad/y", XR_ACTION_TYPE_FLOAT_INPUT },
-         { "/user/hand/right/input/trackpad/x", XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/right/input/trackpad/y", XR_ACTION_TYPE_FLOAT_INPUT }
+         { "/user/hand/right/input/trackpad/x", XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/right/input/trackpad/y", XR_ACTION_TYPE_FLOAT_INPUT },
+
+         // Poses
+         { "/user/hand/left/input/grip/pose", XR_ACTION_TYPE_POSE_INPUT }, { "/user/hand/right/input/grip/pose", XR_ACTION_TYPE_POSE_INPUT }
       };
 
       // Bind them
@@ -95,7 +98,8 @@ public:
          bindings.push_back({ tracker.action, xrPath });
          m_trackers.push_back(tracker);
 
-         m_pininput.RegisterElementName(m_joyId, type == XR_ACTION_TYPE_FLOAT_INPUT, tracker.pinInputId, name);
+         if (type != XR_ACTION_TYPE_POSE_INPUT)
+            m_pininput.RegisterElementName(m_joyId, type == XR_ACTION_TYPE_FLOAT_INPUT, tracker.pinInputId, name);
       }
 
       // Register these bindings for major profiles
@@ -126,7 +130,8 @@ public:
          success &= mapButton(ButtonMapping::Create(m_joyId, 17, 0.3f), m_pininput.GetRightFlipperActionId());
          success &= mapButton(ButtonMapping::Create(m_joyId, 16, 0.6f), m_pininput.GetStagedLeftFlipperActionId());
          success &= mapButton(ButtonMapping::Create(m_joyId, 17, 0.6f), m_pininput.GetStagedRightFlipperActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 13), m_pininput.GetLaunchBallActionId()); // Thumbstick click
+         success &= mapButton(ButtonMapping::Create(m_joyId, 12), m_pininput.GetVRControllerViewCenteringActionId()); // Left Thumbstick click
+         success &= mapButton(ButtonMapping::Create(m_joyId, 13), m_pininput.GetLaunchBallActionId()); // Right Thumbstick click
          success &= mapButton(ButtonMapping::Create(m_joyId, 4), m_pininput.GetLeftMagnaActionId()); // Squeeze
          success &= mapButton(ButtonMapping::Create(m_joyId, 5), m_pininput.GetRightMagnaActionId());
          success &= mapButton(ButtonMapping::Create(m_joyId, 11), m_pininput.GetAddCreditActionId(0)); // Right buttons
@@ -218,6 +223,17 @@ private:
          PLOGI << "Successfully defined " << acceptedBindings.size() << " OpenXR controller bindings for profile " << profile;
       }
    }
+
+public:
+   XrAction GetAction(const std::string& path) const
+   {
+      for (const auto& t : m_trackers)
+         if (t.path == path)
+            return t.action;
+      return XR_NULL_HANDLE;
+   }
+
+private:
 
    InputManager& m_pininput;
    XrInstance m_instance;

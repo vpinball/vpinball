@@ -44,6 +44,7 @@ public:
    unsigned int GetCoinDoorActionId() const { return m_coinDoorActionId; }
    unsigned int GetResetActionId() const { return m_resetActionId; }
    unsigned int GetServiceActionId(int idx) const { assert(0 <= idx && idx < 8); return m_serviceActionId[idx]; }
+   unsigned int GetVRControllerViewCenteringActionId() const { return m_vrControllerViewCenteringActionId; }
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
@@ -224,6 +225,7 @@ private:
    unsigned int m_coinDoorActionId;
    unsigned int m_resetActionId;
    unsigned int m_serviceActionId[8];
+   unsigned int m_vrControllerViewCenteringActionId;
    ankerl::unordered_dense::map<uint32_t, vector<ButtonMapping*>> m_buttonMappings;
    vector<InputAction*> m_onUpdateActions;
    ActionState m_inputActionstate {};

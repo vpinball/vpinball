@@ -142,6 +142,25 @@ VRSettingsPage::VRSettingsPage()
       Settings::m_propPlayerVR_ShrinkPreview, //
       [this]() { return m_player->m_renderer->m_vrPreviewShrink; }, //
       [this](bool v) { m_player->m_renderer->m_vrPreviewShrink = v; }));
+
+#ifdef ENABLE_XR
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positionning using controllers"s));
+
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_ControllerCabYOffset, 1.f, "%4.1f cm"s, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayerVR_ControllerCabYOffset(); }, //
+      [this](float, float v) { m_player->m_ptable->m_settings.SetPlayerVR_ControllerCabYOffset(v, false); }));
+
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_ControllerLockbarScale, 100.f, "%4.1f %%"s, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayerVR_ControllerLockbarScale(); }, //
+      [this](float, float v) { m_player->m_ptable->m_settings.SetPlayerVR_ControllerLockbarScale(v, false); }));
+
+   const auto& action = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetVRControllerViewCenteringActionId()];
+   AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
+#endif
 }
 
 void VRSettingsPage::ResetToDefaults()

@@ -154,6 +154,7 @@ private:
    float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameMsgId;
+   const std::thread::id m_osThreadId;
 
    void MultithreadedGameLoop();
    void FramePacingGameLoop();

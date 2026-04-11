@@ -207,6 +207,9 @@ public:
 
    Matrix3D* GetVisibilityMaskProjs() { return &m_nextProj[0]; }
 
+   void EnableControllerViewCentering(bool enable) { m_controllerViewCentering = enable; }
+   bool IsControllerViewCenteringEnabled() const { return m_controllerViewCentering; }
+
    enum class SwapchainType : uint8_t
    {
       COLOR,
@@ -253,6 +256,12 @@ private:
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
 
    XrSpace m_referenceSpace = XR_NULL_HANDLE;
+   
+   bool m_headsetViewCentering = false;
+   bool m_controllerViewCentering = false;
+   XrSpace m_leftControllerSpace = XR_NULL_HANDLE;
+   XrSpace m_rightControllerSpace = XR_NULL_HANDLE;
+
    struct RenderLayerInfo
    {
       XrTime predictedDisplayTime = 0;
@@ -294,7 +303,6 @@ private:
    bgfx::RendererType::Enum m_rendererType;
    std::unique_ptr<class XRGraphicBackend> m_backend;
 
-   bool m_recenterTable = false;
    float m_sceneSize = 0.f;
 
    XRInputHandler* m_xrInputHandler = nullptr;

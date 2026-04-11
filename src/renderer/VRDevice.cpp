@@ -417,6 +417,10 @@ VRDevice::VRDevice(const Settings& settings)
 VRDevice::~VRDevice()
 {
    #if defined(ENABLE_XR)
+      if (m_leftControllerSpace != XR_NULL_HANDLE)
+         OPENXR_CHECK(xrDestroySpace(m_leftControllerSpace), "Failed to destroy Left Controller Space.")
+      if (m_rightControllerSpace != XR_NULL_HANDLE)
+         OPENXR_CHECK(xrDestroySpace(m_rightControllerSpace), "Failed to destroy Right Controller Space.")
       // Destroy the reference XrSpace.
       OPENXR_CHECK(xrDestroySpace(m_referenceSpace), "Failed to destroy Space.")
 
@@ -825,6 +829,24 @@ void VRDevice::CreateSession()
    auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
    m_xrInputHandler = inputHandler.get();
    g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
+
+   XrAction leftPoseAction = m_xrInputHandler->GetAction("/user/hand/left/input/grip/pose");
+   if (leftPoseAction != XR_NULL_HANDLE)
+   {
+      XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
+      actionSpaceInfo.action = leftPoseAction;
+      actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+      OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_leftControllerSpace), "Failed to create Left Controller Action Space.");
+   }
+
+   XrAction rightPoseAction = m_xrInputHandler->GetAction("/user/hand/right/input/grip/pose");
+   if (rightPoseAction != XR_NULL_HANDLE)
+   {
+      XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
+      actionSpaceInfo.action = rightPoseAction;
+      actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+      OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_rightControllerSpace), "Failed to create Right Controller Action Space.");
+   }
 }
 
 void VRDevice::ReleaseSession()
@@ -1143,9 +1165,56 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          XrVector3f_Scale(&medianPoseInVPU.position , & medianPoseInVPU.position, 1.f / vpuToWorldScale); // Convert position from meters to VPU
          XrPosef_ToMatrix3D(&m_nextMedianView, &medianPoseInVPU);
 
-         if (m_recenterTable)
+         // Fixed value of 5 cm between playfield bottom and lockbar border
+         // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
+         constexpr float lockbarToPlayfield = 5.f;
+
+         // Continuous space positionning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
+         if (m_controllerViewCentering)
          {
-            m_recenterTable = false;
+            bool leftControllerActive = false;
+            XrSpaceLocation leftSpaceLocation { XR_TYPE_SPACE_LOCATION };
+            if (m_leftControllerSpace != XR_NULL_HANDLE && xrLocateSpace(m_leftControllerSpace, m_referenceSpace, renderLayerInfo.predictedDisplayTime, &leftSpaceLocation) == XR_SUCCESS)
+               leftControllerActive = leftSpaceLocation.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT;
+
+            bool rightControllerActive = false;
+            XrSpaceLocation rightSpaceLocation { XR_TYPE_SPACE_LOCATION };
+            if (m_rightControllerSpace != XR_NULL_HANDLE && xrLocateSpace(m_rightControllerSpace, m_referenceSpace, renderLayerInfo.predictedDisplayTime, &rightSpaceLocation) == XR_SUCCESS)
+               rightControllerActive = rightSpaceLocation.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT;
+
+            if (leftControllerActive && rightControllerActive)
+            {
+               const PinTable* const table = g_pplayer->m_ptable;
+
+               const vec3 rightPos = vec3(rightSpaceLocation.pose.position.x, rightSpaceLocation.pose.position.y, rightSpaceLocation.pose.position.z);
+               const vec3 leftPos = vec3(leftSpaceLocation.pose.position.x, leftSpaceLocation.pose.position.y, leftSpaceLocation.pose.position.z);
+               const vec3 centerPos = -(rightPos + leftPos) * 0.5f * 100.f;
+               const vec3 lockbarAxis = rightPos - leftPos;
+               const float lockbarAngle = atan2f(-lockbarAxis.z, lockbarAxis.x);
+               m_headsetViewCentering = false;
+               m_lockbarWidth = lockbarAxis.Length() * 100.f * table->m_settings.GetPlayerVR_ControllerLockbarScale();
+               
+               // Update fixed scaling, considering lockbar size to be the width of the playfield + 2"1/4
+               const float tableWidth = VPUTOCM(table->m_right - table->m_left) + 2.25f * 2.54f;
+               const float scale = clamp(m_lockbarWidth / tableWidth, 0.1f, 2.0f);
+
+               const float c = cosf(lockbarAngle);
+               const float s = sinf(lockbarAngle);
+               const float dx = centerPos.x;
+               const float dy = centerPos.z;
+               m_lockbarHeight = -centerPos.y;
+               m_orientation = RADTOANG(lockbarAngle);
+               m_tablePos.x = dx * c - dy * s;
+               m_tablePos.y = dx * s + dy * c + table->m_settings.GetPlayerVR_ControllerCabYOffset() + lockbarToPlayfield * scale;
+               m_tablePos.z = 0.f;
+               m_worldDirty = true;
+            }
+         }
+
+         // Space positionning based on head pose (not continuous)
+         if (m_headsetViewCentering)
+         {
+            m_headsetViewCentering = false;
             m_orientation = RADTOANG(atan2f(m_nextMedianView.m[0][2], m_nextMedianView.m[0][0]));
             m_tablePos.x = g_app->m_settings.GetPlayer_ScreenPlayerX() - VPUTOCM(medianPoseInVPU.position.x);
             m_tablePos.y = g_app->m_settings.GetPlayer_ScreenPlayerY() - VPUTOCM(medianPoseInVPU.position.z);
@@ -1191,10 +1260,6 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             // If user adjust the inclination, then the cab is rotated as it would in real life (still missing the legs stretching a bit using caster adjustments)
             const float groundToPlayfieldHeight = m_scale * table->m_groundToLockbarHeight - m_scale * table->m_glassBottomHeight;
             const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
-
-            // Fixed value of 5 cm between playfield bottom and lockbar border
-            // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
-            constexpr float lockbarToPlayfield = 5.f;
 
             // Before 10.8.1, there weren't multiple space reference, so room used to be inclined to compensate the playfield inclination.
             // This may leads to slight visual artefact for old VR room (that is to say very slightly inclined room).
@@ -1555,7 +1620,8 @@ void VRDevice::UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelVie
 void VRDevice::RecenterTable()
 {
    #ifdef ENABLE_XR
-      m_recenterTable = true;
+      m_headsetViewCentering = true;
+      m_controllerViewCentering = false;
 
    #elif defined(ENABLE_VR)
       float headX = 0.f, headY = 0.f;
