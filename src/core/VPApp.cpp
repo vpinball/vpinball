@@ -271,6 +271,8 @@ VPApp::~VPApp()
    g_pvp = nullptr;
    g_app = nullptr;
 
+   m_settings.Save();
+
    #ifdef _CRTDBG_MAP_ALLOC
       _CrtDumpMemoryLeaks();
    #endif
