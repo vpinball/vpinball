@@ -51,6 +51,8 @@ PUPScreen::~PUPScreen()
 {
    if (m_pageTimer)
       SDL_RemoveTimer(m_pageTimer);
+   if (m_imageTimer)
+      SDL_RemoveTimer(m_imageTimer);
 
    for (auto& [key, pPlaylist] : m_playlistMap)
       delete pPlaylist;
@@ -273,6 +275,16 @@ uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t 
    return interval;
 }
 
+uint32_t PUPScreen::ImageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval)
+{
+   PUPScreen* me = static_cast<PUPScreen*>(param);
+   std::lock_guard lock(me->m_screenMutex);
+   SDL_RemoveTimer(me->m_imageTimer);
+   me->m_imageTimer = 0;
+   me->m_staticImage.Clear();
+   return interval;
+}
+
 void PUPScreen::SetBounds(int x, int y, int w, int h)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -313,6 +325,26 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
    switch (pPlaylist->GetFunction())
    {
    case PUPPlaylist::Function::Default:
+   {
+      // PNGs/JPGs bypass FFmpeg — loaded as static image on the video layer.
+      // Persists until replaced by a new image or video play.
+      const string ext = extension_from_path(szPlayFile.string());
+      if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp")
+      {
+         if (background)
+         {
+            m_background.Load(pPlaylist->GetPlayFilePath(szPlayFile));
+            m_pMediaPlayerManager->StopBackground();
+         }
+         else
+         {
+            Stop();
+            m_staticImage.Load(pPlaylist->GetPlayFilePath(szPlayFile));
+            if (length > 0)
+               m_imageTimer = SDL_AddTimer(length * 1000, ImageTimerElapsed, this);
+         }
+         break;
+      }
       switch (m_mode)
       {
       case Mode::Off:
@@ -323,8 +355,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
          break;
 
       case Mode::ForcePopBack:
-         m_pManager->SendScreenToFront(this);
-         //m_pManager->SendScreenToBack(this);
+         m_pManager->SendScreenToBack(this);
          break;
 
       case Mode::ForceOn:
@@ -340,11 +371,12 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
          break;
 
       case Mode::Show:
-         // What should we do here ?
          break;
       }
+      m_staticImage.Clear();
       m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_mainVolume * (m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume), priority, skipSamePriority, length, background);
       break;
+   }
 
    case PUPPlaylist::Function::Frames:
       m_background.Load(pPlaylist->GetPlayFilePath(szPlayFile));
@@ -375,6 +407,9 @@ void PUPScreen::Stop()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_pMediaPlayerManager->Stop();
+   if (m_imageTimer)
+      SDL_RemoveTimer(m_imageTimer);
+   m_imageTimer = 0;
 }
 
 void PUPScreen::Stop(int priority)
@@ -411,6 +446,12 @@ void PUPScreen::SetLength(int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_pMediaPlayerManager->SetMaxLength(length);
+   if (length > 0 && !m_staticImage.GetFile().empty())
+   {
+      if (m_imageTimer)
+         SDL_RemoveTimer(m_imageTimer);
+      m_imageTimer = SDL_AddTimer(length * 1000, ImageTimerElapsed, this);
+   }
 }
 
 void PUPScreen::SetAsBackGround(int mode)
@@ -444,7 +485,11 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    {
    case 0: m_background.Render(ctx, m_rect, m_screenAlpha); break;
 
-   case 1: m_pMediaPlayerManager->Render(ctx, m_screenAlpha); break;
+   case 1:
+      m_pMediaPlayerManager->Render(ctx, m_screenAlpha);
+      if (!m_pMediaPlayerManager->IsMainPlaying() && !m_pMediaPlayerManager->IsBackgroundPlaying())
+         m_staticImage.Render(ctx, m_rect, m_screenAlpha);
+      break;
 
    case 2: m_overlay.Render(ctx, m_rect, m_screenAlpha); break;
 

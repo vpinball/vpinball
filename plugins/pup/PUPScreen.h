@@ -124,12 +124,15 @@ private:
    ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
    ankerl::unordered_dense::map<string, vector<PUPTrigger*>> m_triggerMap;
    PUPImage m_background;
+   PUPImage m_staticImage;
    PUPImage m_overlay;
    std::unique_ptr<PUPMediaManager> m_pMediaPlayerManager;
    bool m_labelInit = false;
    int m_pagenum = 0;
    int m_defaultPagenum = 0;
    SDL_TimerID m_pageTimer = 0;
+   SDL_TimerID m_imageTimer = 0;
+   static uint32_t ImageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval);
    PUPScreen* m_pParent = nullptr;
    vector<std::shared_ptr<PUPScreen>> m_children;
    const std::thread::id m_apiThread;
