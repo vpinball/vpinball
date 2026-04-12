@@ -1455,7 +1455,10 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::ProcessOSMessages(const bool isInitialized)
 {
-   assert(std::this_thread::get_id() == m_osThreadId);
+   // Only process OS messages on OS thread
+   if (std::this_thread::get_id() != m_osThreadId)
+      return;
+
    const uint64_t startTick = usec();
    SDL_Event e;
    bool isPFWnd = true;

@@ -771,6 +771,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    // Wait until main thread has released all native resources
    rd->m_rendererInitialized.acquire();
    bgfx::shutdown();
+   rd->m_renderDeviceAlive = true;
 }
 
 
@@ -1655,6 +1656,11 @@ RenderDevice::~RenderDevice()
 
    // Shutdown BGFX once all native resources have been cleaned up
    m_rendererInitialized.release();
+   while (!m_renderDeviceAlive)
+   {
+      g_pplayer->ProcessOSMessages(false);
+      Sleep(0);
+   }
    if (m_renderThread.joinable())
       m_renderThread.join();
 
