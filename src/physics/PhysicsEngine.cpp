@@ -427,7 +427,7 @@ void PhysicsEngine::ReadNudgeSettings(const Settings& settings)
    m_legacyNudgeStrength = settings.GetPlayer_LegacyNudgeStrength();
 }
 
-Vertex2D PhysicsEngine::GetScreenNudge() const
+Vertex2D PhysicsEngine::GetTableDisplacement() const
 {
    // in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
    if (m_legacyNudge)

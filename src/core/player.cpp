@@ -276,8 +276,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.GetPlayer_BAMHeadTracking();
    m_detectScriptHang = m_ptable->m_settings.GetPlayer_DetectHang();
 
-   m_NudgeShake = m_ptable->m_settings.GetPlayer_NudgeStrength();
-
    m_minphyslooptime = m_ptable->m_settings.GetPlayer_MinPhysLoopTime();
 
    PLOGI << "Creating main window"; // For profiling
@@ -2104,15 +2102,6 @@ void Player::PrepareFrame()
 
    // Check if we should turn animate the plunger light.
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
-
-   // Shake screen when nudging
-   if (m_NudgeShake > 0.0f && m_playMode != PlayMode::CaptureAttract)
-   {
-      Vertex2D offset = m_physics->GetScreenNudge();
-      m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
-   }
-   else
-      m_renderer->SetScreenOffset(0.f, 0.f);
 
    #if defined(ENABLE_DX9)
    // Kill the profiler so that it does not affect performance

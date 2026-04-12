@@ -69,6 +69,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
+   m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
 
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
@@ -1538,6 +1539,15 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
             break;
          }
       }
+      // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
+      if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass())
+      {
+         if (const auto nudge = g_pplayer->m_physics->GetTableDisplacement(); nudge.x != 0.f || nudge.y != 0.f)
+         {
+            const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(2.5f * 100.f * m_visualNudgeStrength * nudge.x, 2.5f * 100.f * m_visualNudgeStrength * nudge.y, 0.f);
+            m_mvp->SetView(nudgeMat * m_mvp->GetView());
+         }
+      }
       m_mvpSpaceReference = spaceReference;
       UpdateBasicShaderMatrix();
       UpdateBallShaderMatrix();
@@ -1848,8 +1858,8 @@ void Renderer::SetScreenOffset(const float x, const float y)
 {
    const float rotation = m_stereo3D == STEREO_VR ? 0.f : ANGTORAD(m_table->GetViewSetup().GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight()));
    const float c = cosf(-rotation), s = sinf(-rotation);
-   m_ScreenOffset.x = x * c - y * s;
-   m_ScreenOffset.y = x * s + y * c;
+   m_screenOffset.x = x * c - y * s;
+   m_screenOffset.y = x * s + y * c;
 }
 
 void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT)
@@ -2260,10 +2270,10 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
 
    const Vertex3D_TexelOnly shiftedVerts[4] =
    {
-      {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
-      { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
-      {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
-      { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
+      {  1.0f + m_screenOffset.x,  1.0f + m_screenOffset.y, 0.0f, 1.0f, 0.0f },
+      { -1.0f + m_screenOffset.x,  1.0f + m_screenOffset.y, 0.0f, 0.0f, 0.0f },
+      {  1.0f + m_screenOffset.x, -1.0f + m_screenOffset.y, 0.0f, 1.0f, 1.0f },
+      { -1.0f + m_screenOffset.x, -1.0f + m_screenOffset.y, 0.0f, 0.0f, 1.0f }
    };
    m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, shiftedVerts);
@@ -2425,8 +2435,8 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
       m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
       for (int i = 0; i < nQuads * 4; i++)
       {
-         quads[i].x += m_ScreenOffset.x;
-         quads[i].y += m_ScreenOffset.y;
+         quads[i].x += m_screenOffset.x;
+         quads[i].y += m_screenOffset.y;
       }
       for (int i = 0; i < nQuads; i++)
       {
@@ -2815,13 +2825,10 @@ void Renderer::RenderFrame()
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
 
    // Update camera point of view
-   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
    if (m_stereo3D == STEREO_VR)
    {
       g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
-      UpdateBasicShaderMatrix();
-      UpdateBallShaderMatrix();
    }
    else 
    #endif
@@ -2838,6 +2845,16 @@ void Renderer::RenderFrame()
       #endif
    }
    m_playfieldView = m_mvp->GetView();
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
+
+   // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
+   if (!m_disableStaticPrepass && m_visualNudgeStrength > 0.0f && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
+   {
+      const Vertex2D offset = m_visualNudgeStrength * g_pplayer->m_physics->GetTableDisplacement();
+      SetScreenOffset(offset.x, offset.y);
+   }
+   else
+      SetScreenOffset(0.f, 0.f);
 
    // Start from the prerendered parts/background or a clear background for VR & editor
    if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY || g_pplayer->m_liveUI->IsEditorViewMode())

@@ -319,7 +319,8 @@ public:
    vec4 m_vrColorKey = vec4(0.f, 0.f, 0.f, 0.f);
 
 private:
-   Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
+   float m_visualNudgeStrength; // whether to shake the table/screen during nudges and how much
+   Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
    Texture* m_tonemapLUT = nullptr;
 

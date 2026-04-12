@@ -168,12 +168,6 @@ public:
 #pragma endregion
 
 
-#pragma region Nudge
-public:
-   float m_NudgeShake; // whether to shake the screen during nudges and how much
-#pragma endregion
-
-
 #pragma region Physics
 public:
    Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass);
