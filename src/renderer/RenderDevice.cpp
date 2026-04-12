@@ -305,22 +305,35 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 #endif
 
    // Workflow and latency considerations:
-   // - The render process is the following:
-   //   . The game thread prepares a 'render frame' which is a snapshot of the game state when built
-   //   . The render thread takes this 'render frame', updates the ball position, and submit it to BGFX for encoding
-   //   . The render thread let BGFX push this encoded render frame to the GPU and present it to the player
+   // - Visual latency is finger to photon latency, defined by the following sequence:
+   //    >>> finger to game state, game state to GPU submit, GPU submit to rendered, rendered to displayed <<<
+   //   . finger to game state is continuously done on the main thread at a sub millisecond pace
+   //   . game state snapshot by the main thread is prepared when the render thread ask for it. It should be done as
+   //     late as possible but to limit stutter, we perform it while the previous frame is submitted to the GPU which
+   //     guarantee optimal parallelism between the CPU and GPU.
+   //   . submit to GPU (via BGFX) is performed as late as possible by first waiting for swapchain slot (equivalent to
+   //     VSync but handling late frame and compositor behavior), then sleeping based on previous frame timings (with
+   //     a small margin). We update ball position based on latest game state and expected time of display as this is 
+   //     the most latency sensitive part of the frame.
+   //   . rendered to displayed mostly depends on the operating system. On Windows, it mostly depends on the compositor
+   //     behavior. If the compositor is in the way, the rendered frame goes through the compositor queue for composition,
+   //     adding at least 1 frame of latency (PresentMon will report 'Composed Flip', documentation reports that the queue
+   //     is 1 to 3 frames). Fullscreen exclusive mode allows to fully avoid the compositor.
    // - The overall aim is to prepare the frame as late as possible, just before it is presented to the player, taking
    //   in account the latest game state. To reach this aim, we should never have multiple frames enqueued either 
-   //   waiting for rendering or waiting for presenting. This requires us to know when the swapchain has an empty slot.
+   //   waiting for rendering (GPU render queue defined by BGFX's maxLatency) or waiting for presenting (compositor queue
+   //   which is not directly exposed/controlled). This requires us to know when the swapchain has an empty slot.
    //   We modified BGFX to add support for managing swapchain latency:
    //   . For DirectX, we use the 'waitable' swapchain offered by DXGI, that is to say that DXGI allows us to wait for
    //     the swapchain queue to have at least one empty slot. This needs the swapchain queue to be limited to 1 frame
    //     (maxFrameLatency = 1) to avoid having more than 1 frame enqueued (beside the displayed frame) for lowest latency.
+   //     When running in fullscreen exclusive mode, there is no waitable support but the compostior is disabled so we
+   //     can simply run at the display refresh rate (eventually aligning to the display with a VSYNC to limit tearing).
    //   . For Vulkan, we use the vkWaitForPresentKHR extension which allows to wait for a specific presented frame to be 
    //     displayed. We wait for the last presented frame to be displayed before submitting the next one (in turn 
    //     enforcing a maxFrameLatency of 1).
-   //   . For Metal, we simply acquire a swapchain drawable that will release afterward as this calls is blocking until
-   //     a drawable is available.
+   //   . For Metal, we do not have yet a proper implementation are simply waiting for one of the command list to be 
+   //     available (so not waiting on the swapchain, which is wrong and will lead to queue frames).
    //   . OpenGL do not have support for latency management yet
    // - OpenXR offers its own frame display time prediction that we use when in VR mode.
 
