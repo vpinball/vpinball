@@ -451,10 +451,11 @@ void PointOfViewSettingsPage::BuildPage()
          AddItem(std::move(yScale));
          AddItem(std::move(wndTopZ));
          AddItem(std::move(wndBotZ));
+         AddItem(std::move(vpRotation));
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Global cabinet options"s));
          AddItem(std::move(playerX));
          AddItem(std::move(playerY));
          AddItem(std::move(playerZ));
-         AddItem(std::move(vpRotation));
       }
       else if (m_player->GetCabinetAutoFitMode() == 1)
       {
