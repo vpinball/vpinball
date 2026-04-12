@@ -125,6 +125,7 @@ void PUPManager::SetGameDir(const string& szRomName)
       return;
 
    m_szPath = path;
+   m_szRomName = szRomName;
    LOGI("PUP path: " + m_szPath.string());
 
    // Load Fonts
@@ -133,17 +134,22 @@ void PUPManager::SetGameDir(const string& szRomName)
 
 void PUPManager::LoadConfig(const string& szRomName)
 {
-   // Tables commonly call B2SInit multiple times
-   // Skip reload for the same ROM to avoid destroying screens and their labels
+   // Tables commonly call B2SInit multiple times, and some tables configure PuP
+   // entirely from script (PuPlayer.Init / playlistadd) before B2SInit ever fires.
+   // In both cases, if we already have state for this ROM, keep it — just make
+   // sure the manager is running and the initial DOF event has been queued.
    if (!m_szPath.empty() && lowerCase(szRomName) == lowerCase(m_szRomName))
    {
       LOGI("Same ROM, skipping re-init"s);
+      if (!IsRunning())
+      {
+         Start();
+         QueueDOFEvent('D', 0, 1);
+      }
       return;
    }
 
    Unload();
-
-   m_szRomName = szRomName;
 
    SetGameDir(szRomName);
 
