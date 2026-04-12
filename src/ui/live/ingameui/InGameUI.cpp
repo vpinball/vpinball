@@ -22,7 +22,7 @@
 #include "TableOptionsPage.h"
 #include "TableRulesPage.h"
 #include "VRSettingsPage.h"
-
+#include "SystemInfoPage.h"
 #include "parts/ball.h"
 
 
@@ -49,6 +49,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
    AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
+   AddPage("misc/systeminfo"s, []() { return std::make_unique<SystemInfoPage>(); });
 }
 
 void InGameUI::AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory)

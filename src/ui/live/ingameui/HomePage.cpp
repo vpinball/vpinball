@@ -132,21 +132,7 @@ void HomePage::BuildPage()
       AddItem(std::make_unique<InGameUIItem>("BAM Headtracking Settings"s, ""s, []() { ImGui::OpenPopup(ID_BAM_SETTINGS); }));
 #endif
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Device Info"s));
-
-   std::ostringstream info;
-   info << " Visual Pinball: " << VP_VERSION_STRING_FULL_LITERAL << "\n Logical CPU cores: " << g_app->GetLogicalNumberOfProcessors()
-        << ", GPU: " << g_pplayer->m_renderer->m_renderDevice->m_GPU_name << " (" << g_pplayer->m_renderer->m_renderDevice->m_driver_name << ')'
-        << "\n Display: HDR " << (g_pplayer->m_renderer->m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() ? "enabled" : "disabled")
-        << ", Refresh Rate: " << g_pplayer->m_playfieldWnd->GetRefreshRate() << " Hz"
-        << ", Resolution: " << g_pplayer->m_renderer->m_renderDevice->m_outputWnd[0]->GetPixelWidth() << 'x' << g_pplayer->m_renderer->m_renderDevice->m_outputWnd[0]->GetPixelHeight()
-        << ", Touch " << (g_pplayer->m_pininput.HasTouchInput() ? "enabled" : "disabled")
-        << "\n\n App Root: " << g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root)
-        << "\n Settings: " << g_app->GetSettingsFileName()
-        << "\n Scripts: " << g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts)
-        << "\n Table Path: " << g_app->m_fileLocator.GetTablePath(g_pplayer->m_ptable, FileLocator::TableSubFolder::Root, false);
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, info.str()));
+   AddItem(std::make_unique<InGameUIItem>("System Info"s, ""s, "misc/systeminfo"s));
 }
 
 void HomePage::Render(float elapsedMs)
