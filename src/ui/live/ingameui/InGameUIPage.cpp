@@ -556,6 +556,45 @@ void InGameUIPage::Render(float elapsedS)
    const ImVec2 itemPadding = style.ItemSpacing;
    ImGui::BeginChild("PageItems", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeight() * 3.f - itemPadding.y * 2.f), ImGuiChildFlags_None,
       ImGuiWindowFlags_NoBackground);
+
+   // Drag scroll for easier mobile navigation
+   if (g_isMobile)
+   {
+      constexpr float kDragThreshold  = 6.f;  // px before we commit to a drag
+      constexpr float kFriction       = 8.f;  // deceleration rate (higher = quicker stop)
+      constexpr float kVelocitySmooth = 0.2f; // EMA weight for velocity sampling
+
+      if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+      {
+         m_isDraggingScroll = false;
+         m_dragScrollStartPos = ImGui::GetMousePos();
+         m_dragScrollVelocity = 0.f;
+      }
+
+      const bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+      if (mouseDown && !m_isDraggingScroll && fabsf(ImGui::GetMousePos().y - m_dragScrollStartPos.y) > kDragThreshold)
+      {
+         // Start drag after threshold is passed to avoid interfering with clicks
+         m_isDraggingScroll = true;
+      }
+      else if (mouseDown && m_isDraggingScroll)
+      {
+         // Scroll by the raw finger delta and track velocity
+         const float dy = io.MouseDelta.y;
+         ImGui::SetScrollY(ImGui::GetScrollY() - dy);
+         const float frameVel = (elapsedS > 0.f) ? (-dy / elapsedS) : 0.f;
+         m_dragScrollVelocity = m_dragScrollVelocity * (1.f - kVelocitySmooth) + frameVel * kVelocitySmooth;
+      }
+      else if (!mouseDown && fabsf(m_dragScrollVelocity) > 0.5f)
+      {
+         // Inertial glide after finger lifts
+         ImGui::SetScrollY(ImGui::GetScrollY() + m_dragScrollVelocity * elapsedS);
+         m_dragScrollVelocity *= max(0.f, 1.f - kFriction * elapsedS);
+         if (fabsf(m_dragScrollVelocity) < 0.5f)
+            m_dragScrollVelocity = 0.f;
+      }
+   }
+
    float maxLabelWidth = 0.f;
    for (const auto& item : m_items)
       if (item->IsAdjustable())
@@ -642,7 +681,7 @@ void InGameUIPage::Render(float elapsedS)
          ImGui::SameLine(0.f, 10.f);
          ImGui::Text("%s", item->m_label.c_str());
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-         if (isMouseOver && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left))
+         if (isMouseOver && !m_isDraggingScroll && ImGui::IsMouseReleased(ImGuiMouseButton_::ImGuiMouseButton_Left))
          {
             m_selectedItem = i;
             AdjustItem(1.f, true);
@@ -876,6 +915,8 @@ void InGameUIPage::Render(float elapsedS)
       if (hovered)
          ImGui::PopStyleColor();
    }
+   if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && m_isDraggingScroll)
+      m_isDraggingScroll = false;
    ImGui::Dummy(ImVec2(0, 0));
    ImGui::EndChild();
 

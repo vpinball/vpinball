@@ -71,6 +71,9 @@ private:
    uint32_t m_pressStartMs = 0;
    string m_pressedItemLabel;
    float m_pressedItemScroll = 0.f;
+   bool m_isDraggingScroll = false;
+   float m_dragScrollVelocity = 0.f; // px/s, positive = scroll down
+   ImVec2 m_dragScrollStartPos = ImVec2(0.f, 0.f);
    vector<std::unique_ptr<InGameUIItem>> m_items;
    int m_selectedItem = 0;
    unsigned int m_resetNotifId = 0;
