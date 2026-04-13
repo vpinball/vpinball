@@ -649,6 +649,30 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          case TypeID::TYPEID_UINT16: COPY_ARRAY(uint16_t,     UI2); break;
          case TypeID::TYPEID_UINT32: COPY_ARRAY(uint32_t,     UI4); break;
          case TypeID::TYPEID_UINT64: COPY_ARRAY(uint64_t,     UI8); break;
+         case TypeID::TYPEID_STRING:
+         {
+            const char* const* pSrc = reinterpret_cast<const char* const*>(&sv.vArray->lengths[1]);
+            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
+            {
+               VariantInit(&pData[i]);
+               V_VT(&pData[i]) = VT_BSTR;
+               const int len = MultiByteToWideChar(CP_ACP, 0, pSrc[i], -1, nullptr, 0);
+               V_BSTR(&pData[i]) = SysAllocStringLen(nullptr, len - 1);
+               MultiByteToWideChar(CP_ACP, 0, pSrc[i], -1, V_BSTR(&pData[i]), len);
+            }
+            break;
+         }
+         case TypeID::TYPEID_BOOL:
+         {
+            const char* pSrc = reinterpret_cast<const char*>(&sv.vArray->lengths[1]);
+            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
+            {
+               VariantInit(&pData[i]);
+               V_VT(&pData[i]) = VT_BOOL;
+               V_BOOL(&pData[i]) = pSrc[i] ? VARIANT_TRUE : VARIANT_FALSE;
+            }
+            break;
+         }
          default: assert(false); // not yet implemented
          }
          #undef COPY_ARRAY
@@ -692,6 +716,39 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          case TypeID::TYPEID_UINT16: COPY_ARRAY(uint16_t,     UI2); break;
          case TypeID::TYPEID_UINT32: COPY_ARRAY(uint32_t,     UI4); break;
          case TypeID::TYPEID_UINT64: COPY_ARRAY(uint64_t,     UI8); break;
+         case TypeID::TYPEID_STRING:
+         {
+            const char* const* pSrc = reinterpret_cast<const char* const*>(&sv.vArray->lengths[2]);
+            for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++)
+            {
+               for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++)
+               {
+                  VariantInit(&varValue);
+                  V_VT(&varValue) = VT_BSTR;
+                  const char* str = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]];
+                  const int len = MultiByteToWideChar(CP_ACP, 0, str, -1, nullptr, 0);
+                  V_BSTR(&varValue) = SysAllocStringLen(nullptr, len - 1);
+                  MultiByteToWideChar(CP_ACP, 0, str, -1, V_BSTR(&varValue), len);
+                  SafeArrayPutElement(psa, ix, &varValue);
+                  VariantClear(&varValue);
+               }
+            }
+            break;
+         }
+         case TypeID::TYPEID_BOOL:
+         {
+            V_VT(&varValue) = VT_BOOL;
+            const char* pSrc = reinterpret_cast<const char*>(&sv.vArray->lengths[2]);
+            for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++)
+            {
+               for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++)
+               {
+                  V_BOOL(&varValue) = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]] ? VARIANT_TRUE : VARIANT_FALSE;
+                  SafeArrayPutElement(psa, ix, &varValue);
+               }
+            }
+            break;
+         }
          default: assert(false); // not yet implemented
          }
          #undef COPY_ARRAY
