@@ -1462,7 +1462,22 @@ void Player::ProcessOSMessages(const bool isInitialized)
    static Vertex2D dragStart;
    static int dragging = 0;
 #ifndef __LIBVPINBALL__
+   // On macOS, SDL_PollEvent triggers the Cocoa run loop (expensive kernel traps) on every call.
+   // Throttle the OS-level pump to ~500Hz and drain the SDL queue cheaply in between.
+   // We must still drain via SDL_PollEvent (not SDL_PeepEvents) so SDL_EVENT_POLL_SENTINEL
+   // is handled correctly and doesn't accumulate in the queue.
+   #if defined(__APPLE__)
+   {
+      static uint64_t lastPumpTick = 0;
+      if (startTick - lastPumpTick >= 2000u) { // 2ms = ~500Hz
+         SDL_PumpEvents();
+         lastPumpTick = startTick;
+      }
+   }
    while (SDL_PollEvent(&e) != 0)
+   #else
+   while (SDL_PollEvent(&e) != 0)
+   #endif
 #else
    while (VPinballLib::VPinballLib::Instance().PollAppEvent(e))
 #endif
