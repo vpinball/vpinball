@@ -283,6 +283,9 @@ private:
 
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
+#ifdef __APPLE__
+   void* m_nativeMetalLayer = nullptr; // CAMetalLayer created on main thread, passed to BGFX render thread
+#endif
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;
 

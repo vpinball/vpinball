@@ -9,11 +9,12 @@
 
 #include <thread>
 
-#ifdef __LIBVPINBALL__
 #ifdef __APPLE__
 #include <pthread.h>
 #include <sys/qos.h>
+extern "C" void* VPX_CreateMetalLayer(void* nsWindow);
 #endif
+#ifdef __LIBVPINBALL__
 #endif
 
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
@@ -552,7 +553,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       bool gpuVSync = false;
       int framePacingFlushing = 0;
 
+      // Waitable swapchain on macOS Metal is broken: nextDrawable() blocks ~1s because
+      // presented drawables are never retired (recently added BGFX feature, not yet working).
+      // Disable it on macOS and fall back to VSync-based frame pacing.
+#if BX_PLATFORM_OSX
+      const bool waitableSwapchain = false;
+#else
       const bool waitableSwapchain = (bgfx::getCaps()->supported & BGFX_CAPS_WAITABLE_SWAPCHAIN) != 0;
+#endif
       if (waitableSwapchain)
          bgfx::waitForSwapchain();
 
@@ -1013,6 +1021,18 @@ RenderDevice::RenderDevice(
    // 0 means disable limiting of draw-ahead queue
    int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames();
 
+#ifdef __APPLE__
+   // Create the CAMetalLayer on the MAIN THREAD (this constructor runs on the main thread).
+   // AppKit requires view/layer manipulation on the main thread; doing it on the render thread
+   // causes the layer to not be connected to the display compositor, so drawables are never
+   // retired and nextDrawable() times out every ~1 second (~2 FPS).
+   {
+      void* nsWindow = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()),
+         SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+      m_nativeMetalLayer = VPX_CreateMetalLayer(nsWindow);
+   }
+#endif
+
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
@@ -1066,7 +1086,13 @@ RenderDevice::RenderDevice(
       init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }
    #elif BX_PLATFORM_OSX
-   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
+   {
+      // Use the CAMetalLayer created on the main thread in the RenderDevice constructor.
+      // The layer must be created on the main thread so it's properly registered with
+      // Core Animation's display compositor; otherwise presented drawables are never
+      // retired and nextDrawable() times out at ~1 second every frame (~2 FPS).
+      init.platformData.nwh = m_nativeMetalLayer;
+   }
    #elif BX_PLATFORM_IOS
    init.platformData.nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
    #elif BX_PLATFORM_ANDROID

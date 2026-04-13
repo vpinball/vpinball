@@ -42,6 +42,7 @@ add_executable(vpinball
    src/input/OpenPinDevHandler.cpp
 
    standalone/macos/main.mm
+   standalone/macos/MetalLayerHelper.mm
 
    third-party/include/imgui/imgui_impl_sdl3.cpp
    third-party/include/imgui/imgui_impl_sdl3.h
