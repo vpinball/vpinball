@@ -268,10 +268,9 @@ void PerfUI::RenderStats() const
       }
       #ifdef ENABLE_BGFX
       {
-         const bgfx::Stats *stats = bgfx::getStats();
          const float height = blockHeight * 2.f - style.FramePadding.y;
          const uint64_t gpuStart = m_player->m_renderProfiler->GetPrevStart(FrameProfiler::PROFILE_RENDER_FLIP);
-         const uint64_t gpuEnd = gpuStart + (stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000000ULL / stats->gpuTimerFreq;
+         const uint64_t gpuEnd = gpuStart + m_player->m_renderer->m_renderDevice->m_lastGPUFrameLength;
          {
             const float start = static_cast<float>(gpuStart - minTS) / elapse;
             const float end = static_cast<float>(min(gpuEnd, maxTS) - minTS) / elapse;

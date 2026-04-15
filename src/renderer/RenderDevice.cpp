@@ -686,6 +686,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             END_SPAN(tagSpan)
          }
 
+         {
+            const bgfx::Stats* const stats = bgfx::getStats();
+            rd->m_lastGPUFrameLength = (stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000000ULL / stats->gpuTimerFreq;
+         }
+
          // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if the swapchain queue is filled
          {
             const uint64_t now = usec();

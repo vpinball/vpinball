@@ -272,6 +272,8 @@ public:
 
    std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
+   uint64_t m_lastGPUFrameLength = 0;
+
 private:
    void SubmitAndFlipFrame(bool present);
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
