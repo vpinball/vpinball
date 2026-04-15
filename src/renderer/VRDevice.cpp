@@ -76,11 +76,11 @@ inline static void XrQuaternionf_Lerp(XrQuaternionf* const result, const XrQuate
 inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
 {
    const bx::Quaternion orientation(pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w);
-   const bx::Quaternion invertOrientation = bx::invert(orientation);
+   const bx::Quaternion invertOrientation = bx::conjugate(orientation);
    bx::mtxFromQuaternion(&result->m[0][0], invertOrientation);
    result->Transpose();
    const bx::Quaternion position(pose->position.x, pose->position.y, pose->position.z, 0.f);
-   bx::Quaternion invertPosition = bx::invert(position);
+   bx::Quaternion invertPosition = bx::conjugate(position);
    invertPosition = bx::mul(invertPosition, orientation);
    invertPosition = bx::mul(invertOrientation, invertPosition);
    result->m[3][0] += invertPosition.x;
