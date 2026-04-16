@@ -204,7 +204,7 @@ Class cvpmTimer
 		On Error Resume Next
 		If aFast Then
 			If aEnabled Then mFastUpdates.Add aClass, 0 : Else mFastUpdates.Remove aClass
-			mFastTimer.TimerEnabled = mFastUpdates.Count > 0
+			If IsObject(mFastTimer) Then mFastTimer.TimerEnabled = mFastUpdates.Count > 0
 		Else
 			If aEnabled Then mSlowUpdates.Add aClass, 0 : Else mSlowUpdates.Remove aClass
 		End If
