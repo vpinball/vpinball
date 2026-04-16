@@ -257,6 +257,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    }
 
    LOGI("VNI: Loading PAL from " + palPath.string());
+
    if (!vniPath.empty())
       LOGI("VNI: Loading VNI from " + vniPath.string());
 

@@ -48,14 +48,15 @@ static DisplaySrcId dmdId = {};
 static Serum_Frame_Struc* pSerum = nullptr;
 static unsigned int lastRawFrameId = 0;
 
-MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cRZ, cROMc)", true, "", 1024);
+MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
 
 class ColorizationState final
 {
 public:
    ColorizationState(unsigned int width, unsigned int height)
       : m_colorFrame(pSerum->SerumVersion == SERUM_V1 ? new uint8_t[width * height * 3] : nullptr)
-      , m_width(width), m_height(height)
+      , m_width(width)
+      , m_height(height)
       , m_colorizedFrameFormat(pSerum->SerumVersion == SERUM_V1 ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_SRGB565)
       , m_colorizedframeId(static_cast<unsigned int>(std::rand()))
    {
@@ -327,28 +328,45 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    std::filesystem::path tablePath = tableInfo.path;
 
    std::filesystem::path serumPath = serumPathProp_Get();
-   const std::filesystem::path crz = msg->gameId + ".cRZ"s;
    const std::filesystem::path cromc = msg->gameId + ".cROMc"s;
+   const std::filesystem::path crz = msg->gameId + ".cRZ"s;
 
-   // Priority 1: serum/rom/rom.crz
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / crz); !path1.empty())
+   // Priority 1: serum/rom/rom.cromc or .crz
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / cromc); !path1.empty())
       serumPath = path1.parent_path().parent_path();
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / cromc); !path2.empty())
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / msg->gameId / crz); !path2.empty())
       serumPath = path2.parent_path().parent_path();
-
-   // Priority 2: pinmame/altcolor/rom/rom.crz
-   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / crz); !path3.empty())
+   // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / cromc); !path3.empty())
       serumPath = path3.parent_path().parent_path();
-   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / cromc); !path4.empty())
+   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / msg->gameId / crz); !path4.empty())
       serumPath = path4.parent_path().parent_path();
+   // Priority 3: global setting path
+   else if (!serumPath.empty())
+   {
+      if (find_case_insensitive_file_path(serumPath / msg->gameId / cromc).empty()
+         && find_case_insensitive_file_path(serumPath / msg->gameId / crz).empty())
+         serumPath.clear();
+   }
 
-   // Default to global user setup folder if no table specific file is found
+   if (serumPath.empty())
+   {
+      LOGI("Serum: No colorization file found for "s + msg->gameId);
+      return;
+   }
+
+   LOGI("Serum: Loading from " + serumPath.string() + " for "s + msg->gameId);
+
    pSerum = Serum_Load(serumPath.string().c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
    {
       isRunning = true;
       colorizeThread = std::thread(ColorizeThread);
+   }
+   else
+   {
+      LOGE("Serum: Failed to load colorization data");
    }
 }
 
