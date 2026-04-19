@@ -318,6 +318,12 @@ static void StopColorization()
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
+   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+   if (isRunning)
+   {
+      LOGW("Serum: Ignoring game start, already running"s);
+      return;
+   }
    StopColorization();
    // Setup Serum on the selected DMD
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);

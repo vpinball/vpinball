@@ -76,6 +76,7 @@ public:
    void SetGameDir(const string& szRomName);
    void LoadConfig(const string& szRomName);
    void Unload();
+   bool IsRunning() const { return m_dofEventStream != nullptr; }
    const std::filesystem::path& GetPath() const { return m_szPath; }
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
@@ -96,7 +97,6 @@ private:
    void LoadPlaylists();
 
    void Start();
-   bool IsRunning() const { return m_dofEventStream != nullptr; }
    void Stop();
 
    float m_mainVolume = 1.f;

@@ -194,6 +194,12 @@ static void StopColorization()
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
+   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+   if (isRunning)
+   {
+      LOGW("VNI: Ignoring game start, already running"s);
+      return;
+   }
    StopColorization();
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);

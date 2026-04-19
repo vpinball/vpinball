@@ -50,7 +50,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId;
-static unsigned int onGameStartId, onGameEndId;
+static unsigned int onControllerGameStartId, onGameEndId;
 
 // The pup manager holds the overall state. It may be automatically created due to a PinMAME start event, or explicitely created
 // through script interface. The script interface gives access to this context even when it has been created due to PinMAME.
@@ -218,8 +218,14 @@ void StopAudioStream(const CtlResId& id)
 // Game lifecycle
 //
 
-void onGameStart(const unsigned int eventId, void* userData, void* eventData)
+void OnControllerGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
+   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+   if (pupManager->IsRunning())
+   {
+      LOGW("PUP: Ignoring game start, already running"s);
+      return;
+   }
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
    pupManager->LoadConfig(msg->gameId);
@@ -252,7 +258,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), onGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
@@ -288,9 +294,9 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 
    msgApi->ReleaseMsgID(onAudioUpdateId);
 
-   msgApi->UnsubscribeMsg(onGameStartId, onGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);
-   msgApi->ReleaseMsgID(onGameStartId);
+   msgApi->ReleaseMsgID(onControllerGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
 
    scriptApi = nullptr;

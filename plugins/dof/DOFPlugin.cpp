@@ -199,11 +199,11 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
 
-   if (pollThread.joinable())
+   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+   if (isRunning)
    {
-      LOGE("DOFPlugin: Invalid state, game start happened while already running"s);
-      isRunning = false;
-      pollThread.join();
+      LOGW("DOFPlugin: Ignoring game start, already running"s);
+      return;
    }
 
    if (pDOF) {

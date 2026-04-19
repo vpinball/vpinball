@@ -178,6 +178,12 @@ static void StopAltSound()
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
+    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+    if (isRunning)
+    {
+        LOGW("AltSound: Ignoring game start, already running"s);
+        return;
+    }
     const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
     assert(msg != nullptr && msg->gameId != nullptr);
 
