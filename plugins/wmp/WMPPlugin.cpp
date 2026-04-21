@@ -105,8 +105,6 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPlug
    };
 
    scriptApi->SetCOMObjectOverride("WMPlayer.OCX", WMP_Core_SCD);
-
-   LOGI("WMP Plugin loaded successfully"s);
 }
 
 MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
@@ -128,6 +126,4 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
 
    vpxApi = nullptr;
    msgApi = nullptr;
-
-   LOGI("WMP Plugin unloaded"s);
 }

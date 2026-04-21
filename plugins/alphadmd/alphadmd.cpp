@@ -13,7 +13,7 @@ using namespace std::string_literals;
 using namespace std::string_view_literals;
 #include <cstring>
 #include <cstdint>
-#include <sstream>
+#include <format>
 #include <cassert>
 #include <cstdarg>
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
@@ -77,6 +77,11 @@ static uint8_t identifyFrame[128*32] = {};
 static unsigned int identifyFrameId = 0;
 
 LPI_USE_CPP();
+#define LOGD AlphaDMD::LPI_LOGD_CPP
+#define LOGI AlphaDMD::LPI_LOGI_CPP
+#define LOGW AlphaDMD::LPI_LOGW_CPP
+#define LOGE AlphaDMD::LPI_LOGE_CPP
+
 LPI_IMPLEMENT_CPP // Implement shared log support
 
 typedef enum {
@@ -95,6 +100,26 @@ typedef enum {
    Layout_4x6_2x2_1x6,
 } DmdLayouts;
 static DmdLayouts dmdLayout = DmdLayouts::Undefined;
+
+static const char* LayoutName(DmdLayouts layout)
+{
+   switch (layout)
+   {
+      case Layout_4x6_2x2:      return "4x6+2x2";
+      case Layout_4x7:          return "4x7";
+      case Layout_4x7_2x2:      return "4x7+2x2";
+      case Layout_6x4_2x2:      return "6x4+2x2";
+      case Layout_2x16_1x7:     return "2x16+1x7";
+      case Layout_2x16:         return "2x16";
+      case Layout_2x20:         return "2x20";
+      case Layout_2x7_2x2_1x16: return "2x7+2x2+1x16";
+      case Layout_1x7_2x16:     return "1x7+2x16";
+      case Layout_1x7_1x4_2x16: return "1x7+1x4+2x16";
+      case Layout_4x7_5x2:      return "4x7+5x2";
+      case Layout_4x6_2x2_1x6:  return "4x6+2x2+1x6";
+      default:                  return "Undefined";
+   }
+}
 
 // Number of segments corresponding to CTLPI_SEG_LAYOUT_xxx
 static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
@@ -563,14 +588,15 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
          }
       }
    }
-   if (dmdLayout == DmdLayouts::Undefined)
+   if (!selectedSources.empty())
    {
-      std::stringstream ss;
-      ss << "Unsupported segment layout (" << selectedSources.size() << " displays: ";
+      std::string elements;
       for (size_t i = 0; i < selectedSources.size(); i++)
-         ss << (i == 0 ? "" : ", ") << selectedSources[i].nElements;
-      ss << ')';
-      LPI_LOGI_CPP(ss);
+         elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
+      if (dmdLayout == DmdLayouts::Undefined)
+         LOGI(std::format("AlphaDMD: Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
+      else
+         LOGI(std::format("AlphaDMD: Matched layout {} ({} displays: {})", LayoutName(dmdLayout), selectedSources.size(), elements));
    }
    lock.unlock();
 
@@ -598,6 +624,7 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
 {
    msgApi = api;
    endpointId = sessionId;
+   LPISetup(endpointId, msgApi);
    dmd128Id = {
       .id = { { endpointId, 0 } },
       .groupId = { { endpointId, 0 } },
