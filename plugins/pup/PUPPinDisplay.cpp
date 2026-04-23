@@ -431,6 +431,21 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         // "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 53, ""XW"": "&fWidth&", ""YH"": "&fHeight&", ""FR"":1 }"
                         NOT_IMPLEMENTED(std::format("Experimental frame rescale is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;
+                     case 55:
+                        // Set media transition fade step, read from "FS" field.
+                        // { "mt":301, "SN": XX, "FN":55, "FS":<0..255> }
+                        //
+                        // Exposed in the Matrix tables via two helpers:
+                        //   Sub pTransitionFadeOff(PupID)  ' disable transition fade
+                        //       PuPlayer.SendMSG "{...""FN"":55,""FS"":255}"
+                        //   Sub pTransitionFadeON(PupID)   ' re-enable transition fade
+                        //       PuPlayer.SendMSG "{...""FN"":55,""FS"":10}"
+                        if (json["FS"s].exists()) {
+                           const int fs = json["FS"s].as<int>();
+                           if (fs >= 0)
+                              pScreen->SetFadeStep(fs);
+                        }
+                        break;
                      default:
                         NOT_IMPLEMENTED(std::format("Unknown function not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;

@@ -476,6 +476,12 @@ void PUPScreen::SetAsBackGround(int mode)
    m_pMediaPlayerManager->SetAsBackGround(mode != 0);
 }
 
+void PUPScreen::SetFadeStep(int step)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->SetFadeStep(step);
+}
+
 bool PUPScreen::IsMainPlaying() const {
    assert(std::this_thread::get_id() == m_apiThread);
    return m_pMediaPlayerManager->IsMainPlaying();

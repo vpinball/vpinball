@@ -99,6 +99,7 @@ public:
    void SetLoop(int state);
    void SetLength(int length);
    void SetAsBackGround(int mode);
+   void SetFadeStep(int step);
 
    bool HasUnderlay() const { return !m_background.GetFile().empty(); }
    bool IsBackgroundPlaying() const;

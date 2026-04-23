@@ -4,6 +4,7 @@
 #include "PUPScreen.h"
 
 #include <SDL3_image/SDL_image.h>
+#include <algorithm>
 
 namespace PUP {
 
@@ -83,6 +84,7 @@ void PUPMediaManager::PlayImmediate(const std::filesystem::path& szPath, float v
    m_mainVolume = volume;
    m_mainPriority = priority;
    m_playQueue.clear();
+   m_currentAlpha = (m_fadeStep < 255) ? m_fadeStep : 255;
 }
 
 // When main video ends, background config is loaded into the same player with loop enabled.
@@ -267,8 +269,19 @@ bool PUPMediaManager::IsBackgroundPlaying() { return m_bg.active && !m_bg.szPath
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx, float alpha)
 {
-   if (m_player.IsPlaying())
-      m_player.Render(ctx, m_bounds, alpha);
+   if (m_player.IsPlaying()) {
+      if (m_currentAlpha < 255) {
+         m_currentAlpha = std::min(255, m_currentAlpha + m_fadeStep);
+      }
+      m_player.Render(ctx, m_bounds, alpha * (static_cast<float>(m_currentAlpha) / 255.f));
+   }
+}
+
+void PUPMediaManager::SetFadeStep(int step)
+{
+   m_fadeStep = (step < 0) ? 255 : std::min(step, 255);
+   if (m_fadeStep >= 255)
+      m_currentAlpha = 255;
 }
 
 }

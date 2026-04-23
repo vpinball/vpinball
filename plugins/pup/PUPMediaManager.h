@@ -32,6 +32,8 @@ public:
    bool IsMainPlaying();
    bool IsBackgroundPlaying();
 
+   void SetFadeStep(int step);
+
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const std::filesystem::path& path);
 
@@ -78,6 +80,9 @@ private:
 
    PUPScreen* const m_pScreen;
    SDL_Rect m_bounds;
+
+   int m_fadeStep = 255;
+   int m_currentAlpha = 255;
 };
 
 }
