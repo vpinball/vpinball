@@ -55,6 +55,16 @@ public:
 
    float m_screenAlpha = 1.0f;
    bool m_hudVisible = true;
+   // Action queued by LabelShowPage, applied when the main media ends.
+   enum class HudReturn
+   {
+      None,
+      RestoreHud,    // "hidehudplay": re-show the HUD overlay
+      ReplayTrigger, // "returnplay":  re-fire m_lastPlayedTrigger
+   };
+   HudReturn m_hudReturn = HudReturn::None;
+   PUPTrigger* m_lastPlayedTrigger = nullptr;
+   void OnMainMediaEnd();
 
    float GetVolume() const { return m_volume; }
    void SetMainVolume(float volume); // Set user defined global volume (allow to mute)

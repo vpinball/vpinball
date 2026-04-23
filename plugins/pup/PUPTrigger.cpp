@@ -281,6 +281,12 @@ std::function<void()> PUPTrigger::Trigger() {
    return m_action;
 }
 
+void PUPTrigger::Invoke() {
+   // Remember this as the most recent trigger so LabelShowPage "returnplay" can replay it.
+   m_pScreen->m_lastPlayedTrigger = this;
+   Trigger()();
+}
+
 string PUPTrigger::ToString() const {
    return "active="s + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +

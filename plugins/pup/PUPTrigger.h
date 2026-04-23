@@ -64,6 +64,7 @@ public:
    bool IsResting() const;
 
    std::function<void()> Trigger();
+   void Invoke();
 
 private:
    PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction);

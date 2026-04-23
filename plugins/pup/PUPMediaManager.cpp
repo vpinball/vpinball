@@ -257,6 +257,7 @@ void PUPMediaManager::OnPlayerEnd(PUPMediaPlayer* player)
    }
    if (wasMain)
    {
+      m_pScreen->OnMainMediaEnd();
       if (m_onMainEndCallback)
          m_onMainEndCallback();
       PlayNextFromQueue();

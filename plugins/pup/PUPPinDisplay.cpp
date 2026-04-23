@@ -564,8 +564,24 @@ void PUPPinDisplay::LabelSetEx()
 void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const string& Special)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
-   if (pScreen)
-      pScreen->SetPage(PageNum, Seconds);
+   if (!pScreen)
+      return;
+   // Special values "hidehudplay" and "returnplay" are PuPDMD framework behaviors exposed via
+   // these helper subs (appear in Diehard/Matrix):
+   //   Sub PDMDSplashPagePlaying    'will hide HUD and show labelpage while current media is
+   //                                 playing and then autoreturn
+   //   Sub PDMDSplashPagePlayingHUD 'will show labelpage and auto return to def after current
+   //                                 video stopped
+   if (StrCompareNoCase(Special, "hidehudplay"s))
+   {
+      pScreen->m_hudReturn = PUPScreen::HudReturn::RestoreHud;
+      pScreen->m_hudVisible = false;
+   }
+   else if (StrCompareNoCase(Special, "returnplay"s))
+      pScreen->m_hudReturn = PUPScreen::HudReturn::ReplayTrigger;
+   else
+      pScreen->m_hudReturn = PUPScreen::HudReturn::None;
+   pScreen->SetPage(PageNum, Seconds);
 }
 
 void PUPPinDisplay::LabelInit(int screenNum)

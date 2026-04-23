@@ -166,6 +166,19 @@ void PUPScreen::SetVolume(float volume)
    m_pMediaPlayerManager->SetVolume(m_mainVolume * m_volume);
 }
 
+void PUPScreen::OnMainMediaEnd()
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   // Resolve whatever LabelShowPage queued when a splash page started.
+   // Clear state before any replay so a re-entrant trigger doesn't loop here.
+   const HudReturn action = m_hudReturn;
+   m_hudReturn = HudReturn::None;
+   if (action == HudReturn::RestoreHud)
+      m_hudVisible = true;
+   else if (action == HudReturn::ReplayTrigger && m_lastPlayedTrigger)
+      m_lastPlayedTrigger->Invoke();
+}
+
 void PUPScreen::SetOnMainEndCallback(const std::function<void()>& callback)
 {
    m_pMediaPlayerManager->SetOnMainEndCallback(callback);
