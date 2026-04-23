@@ -182,6 +182,7 @@ void PUPLabel::SetCaption(const string& szCaption)
       std::lock_guard lock(m_mutex);
       if (m_szCaption != szText)
       {
+         const bool wasImage = (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF);
          m_type = PUP_LABEL_TYPE_TEXT;
          m_szPath.clear();
 
@@ -191,24 +192,27 @@ void PUPLabel::SetCaption(const string& szCaption)
             std::filesystem::path fs_path(normalize_path_separators(szText));
             string playlistFolder = fs_path.parent_path().string();
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
+            std::filesystem::path szPath;
             if (pPlaylist)
+               szPath = pPlaylist->GetPlayFilePath(fs_path.filename());
+            if (!szPath.empty())
             {
-               std::filesystem::path szPath = pPlaylist->GetPlayFilePath(fs_path.filename());
-               if (!szPath.empty())
-               {
-                  m_szPath = szPath;
-                  m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
-               }
-               else
-               {
-                  LOGE(std::format("Image not found: screen={}, label={}, path={}", m_pScreen->GetScreenNum(), m_szName, szText));
-                  // we need to set a path otherwise the caption will be used as text
-                  m_szPath = szText;
-               }
+               m_szPath = szPath;
+               m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
             }
             else
             {
-               LOGE(std::format("Image playlist not found: screen={}, label={}, path={}, playlist={}", m_pScreen->GetScreenNum(), m_szName, szText, playlistFolder));
+               // Many tables use clear.png / clear1.png as a "clear this label" caption without
+               // ever shipping the file in the pup pack. Drop the caption so nothing renders, and
+               // if we had previously loaded an image, hide the label so a later valid image
+               // doesn't silently reappear.
+               LOGE(std::format("Image not found, hiding label: screen={}, label={}, path={}",
+                  m_pScreen->GetScreenNum(), m_szName, szText));
+               if (wasImage)
+                  m_visible = false;
+               m_szCaption.clear();
+               m_dirty = true;
+               return;
             }
          }
 
