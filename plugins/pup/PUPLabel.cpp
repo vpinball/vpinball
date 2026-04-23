@@ -394,8 +394,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "size")
          {
             // See pDMDLabelSetSizeText — height as percent of display height
-            m_size = static_cast<float>(json["size"s].as<double>());
-            m_dirty = true;
+            const float newSize = static_cast<float>(json["size"s].as<double>());
+            if (m_size != newSize)
+            {
+               m_size = newSize;
+               m_dirty = true;
+            }
          }
          else if (key == "xpos")
          {
@@ -409,28 +413,44 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "fname")
          {
             string szFont = value.as_str();
-            m_pFont = m_pManager->GetFont(szFont);
-            if (!m_pFont)
+            TTF_Font* newFont = m_pManager->GetFont(szFont);
+            if (!newFont)
                LOGE("Label font not found: name=" + m_szName + ", font=" + szFont);
-            m_dirty = true;
+            if (newFont != m_pFont)
+            {
+               m_pFont = newFont;
+               m_dirty = true;
+            }
          }
          else if (key == "fonth")
          {
-            m_size = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newSize = static_cast<float>(value.as<double>());
+            if (m_size != newSize)
+            {
+               m_size = newSize;
+               m_dirty = true;
+            }
          }
          else if (key == "color")
          {
             // See pDMDLabelSetColor
-            m_color = value.as<int>();
-            m_dirty = true;
+            const int newColor = value.as<int>();
+            if (m_color != newColor)
+            {
+               m_color = newColor;
+               m_dirty = true;
+            }
          }
          else if (key == "xalign")
          {
             // See PDMDLabelSetAlign — 0=left 1=center 2=right, 0=top 1=center 2=bottom
             // Dirty because TTF_SetFontWrapAlignment uses xAlign for multi-line text justification
-            m_xAlign = (PUP_LABEL_XALIGN)value.as<int>();
-            m_dirty = true;
+            const PUP_LABEL_XALIGN newXAlign = (PUP_LABEL_XALIGN)value.as<int>();
+            if (m_xAlign != newXAlign)
+            {
+               m_xAlign = newXAlign;
+               m_dirty = true;
+            }
          }
          else if (key == "yalign")
          {
@@ -456,8 +476,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          {
             // See pDMDLabelSetRotate — in tenths, so 900 is 90 degrees. rotate support for images too.
             // note images must be aligned center to rotate properly(default)
-            m_angle = static_cast<float>(value.as<double>() / 10.0);
-            m_dirty = true;
+            const float newAngle = static_cast<float>(value.as<double>() / 10.0);
+            if (m_angle != newAngle)
+            {
+               m_angle = newAngle;
+               m_dirty = true;
+            }
          }
          else if (key == "zoom")
          {
@@ -472,55 +496,91 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "gradstate")
          {
             // See pDMDLabelSetColorGradient — gradstate controls gradient blend (0=off, 1+=on)
-            m_gradState = value.as<int>();
-            m_dirty = true;
+            const int newGradState = value.as<int>();
+            if (m_gradState != newGradState)
+            {
+               m_gradState = newGradState;
+               m_dirty = true;
+            }
          }
          else if (key == "gradcolor")
          {
             // See pDMDLabelSetColorGradientPercent — end color of the vertical gradient
-            m_gradColor = value.as<int>();
-            m_dirty = true;
+            const int newGradColor = value.as<int>();
+            if (m_gradColor != newGradColor)
+            {
+               m_gradColor = newGradColor;
+               m_dirty = true;
+            }
          }
          else if (key == "grayscale")
          {
             // See pDMDLabelSetGrayScale — shortcut for filter mode 3 on images. 1=on, 0=off
-            m_filterMode = (value.as<int>() == 1) ? 3 : 0;
-            m_dirty = true;
+            const int newFilterMode = (value.as<int>() == 1) ? 3 : 0;
+            if (m_filterMode != newFilterMode)
+            {
+               m_filterMode = newFilterMode;
+               m_dirty = true;
+            }
          }
          else if (key == "filter")
          {
             // See pDMDLabelSetFilter — fmode 1=invertRGB, 2=invert, 3=grayscale, 4=invertalpha, 5=clear/blur
-            m_filterMode = value.as<int>();
-            m_dirty = true;
+            const int newFilterMode = value.as<int>();
+            if (m_filterMode != newFilterMode)
+            {
+               m_filterMode = newFilterMode;
+               m_dirty = true;
+            }
          }
          else if (key == "shadowstate")
          {
             // See pDMDLabelSetShadow / pDMDLabelSetBorder / pDMDLabelSetOutShadow
             // shadowstate is a simple on/off: 0 disables shadow, non-zero enables drop shadow (type 1)
-            m_shadowType = (value.as<int>() != 0) ? 1 : 0;
-            m_dirty = true;
+            const int newShadowType = (value.as<int>() != 0) ? 1 : 0;
+            if (m_shadowType != newShadowType)
+            {
+               m_shadowType = newShadowType;
+               m_dirty = true;
+            }
          }
          else if (key == "shadowcolor")
          {
-            m_shadowColor = value.as<int>();
-            m_dirty = true;
+            const int newShadowColor = value.as<int>();
+            if (m_shadowColor != newShadowColor)
+            {
+               m_shadowColor = newShadowColor;
+               m_dirty = true;
+            }
          }
          else if (key == "shadowtype")
          {
             // shadowtype sets the rendering mode directly: 0=none, 1=drop shadow, 2=border
-            m_shadowType = value.as<int>();
-            m_dirty = true;
+            const int newShadowType = value.as<int>();
+            if (m_shadowType != newShadowType)
+            {
+               m_shadowType = newShadowType;
+               m_dirty = true;
+            }
          }
          else if (key == "xoffset")
          {
             // See pDMDLabelSetShadow / pDMDLabelSetBorder — shadow displacement as % of font height
-            m_xoffset = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newXOffset = static_cast<float>(value.as<double>());
+            if (m_xoffset != newXOffset)
+            {
+               m_xoffset = newXOffset;
+               m_dirty = true;
+            }
          }
          else if (key == "yoffset")
          {
-            m_yoffset = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newYOffset = static_cast<float>(value.as<double>());
+            if (m_yoffset != newYOffset)
+            {
+               m_yoffset = newYOffset;
+               m_dirty = true;
+            }
          }
          else if (key == "anigif")
          {
@@ -588,50 +648,81 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "width")
          {
             // See pDMDLabelSetSizeImage — width/height as percent of display dimensions
-            m_imageWidth = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newWidth = static_cast<float>(value.as<double>());
+            if (m_imageWidth != newWidth)
+            {
+               m_imageWidth = newWidth;
+               m_dirty = true;
+            }
          }
          else if (key == "height")
          {
-            m_imageHeight = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newHeight = static_cast<float>(value.as<double>());
+            if (m_imageHeight != newHeight)
+            {
+               m_imageHeight = newHeight;
+               m_dirty = true;
+            }
          }
          else if (key == "autow")
          {
             // See pDMDLabelSetAutoSize — auto-shrink font to fit within specified dimensions
-            m_autoFitWidth = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newAutoW = static_cast<float>(value.as<double>());
+            if (m_autoFitWidth != newAutoW)
+            {
+               m_autoFitWidth = newAutoW;
+               m_dirty = true;
+            }
          }
          else if (key == "autoh")
          {
-            m_autoFitHeight = static_cast<float>(value.as<double>());
-            m_dirty = true;
+            const float newAutoH = static_cast<float>(value.as<double>());
+            if (m_autoFitHeight != newAutoH)
+            {
+               m_autoFitHeight = newAutoH;
+               m_dirty = true;
+            }
          }
          else if (key == "outline")
          {
             // See pDMDLabelSetBorder / pDMDLabelSetOutShadow — outline=1 upgrades shadow to border mode (type 2)
-            m_outline = value.as<int>();
-            if (m_outline == 1)
-               m_shadowType = 2;
-            m_dirty = true;
+            const int newOutline = value.as<int>();
+            const int newShadowType = (newOutline == 1) ? 2 : m_shadowType;
+            if (m_outline != newOutline || m_shadowType != newShadowType)
+            {
+               m_outline = newOutline;
+               m_shadowType = newShadowType;
+               m_dirty = true;
+            }
          }
          else if (key == "bold")
          {
-            m_bold = (value.as<int>() == 1);
-            m_dirty = true;
+            const bool newBold = (value.as<int>() == 1);
+            if (m_bold != newBold)
+            {
+               m_bold = newBold;
+               m_dirty = true;
+            }
          }
          else if (key == "italic")
          {
-            m_italic = (value.as<int>() == 1);
-            m_dirty = true;
+            const bool newItalic = (value.as<int>() == 1);
+            if (m_italic != newItalic)
+            {
+               m_italic = newItalic;
+               m_dirty = true;
+            }
          }
          else if (key == "v2")
          {
             // See pupCreateLabel / pupCreateLabelImage
             // v2 enables absolute positioning: xpos/ypos=0 means literally 0%,
             // disabling the default behavior where 0 maps to center/right/bottom edge
-            m_useAbsolutePos = true;
-            m_dirty = true;
+            if (!m_useAbsolutePos)
+            {
+               m_useAbsolutePos = true;
+               m_dirty = true;
+            }
          }
          else
          {
@@ -658,9 +749,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    if ((!m_visible && !m_animation) || pagenum != m_pagenum || m_szCaption.empty())
       return;
-   
+
    int fontColor = m_animation ? m_animation->m_color : m_color;
-   
+
    if (m_pendingTextureUpdate.valid())
    {
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
