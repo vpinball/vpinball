@@ -123,8 +123,7 @@ public:
 
 private:
    void LoadTriggers();
-
-   static uint32_t PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval);
+   void UpdateTimers();
 
    PUPManager* const m_pManager = nullptr;
    const int m_screenNum;
@@ -148,13 +147,11 @@ private:
    bool m_labelInit = false;
    int m_pagenum = 0;
    int m_defaultPagenum = 0;
-   SDL_TimerID m_pageTimer = 0;
-   SDL_TimerID m_imageTimer = 0;
-   static uint32_t ImageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval);
+   uint64_t m_pageExpiry = 0;
+   uint64_t m_imageExpiry = 0;
    PUPScreen* m_pParent = nullptr;
    vector<std::shared_ptr<PUPScreen>> m_children;
    const std::thread::id m_apiThread;
-   std::mutex m_screenMutex;
 };
 
 }
