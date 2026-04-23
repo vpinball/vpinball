@@ -228,6 +228,13 @@ void OnControllerGameStart(const unsigned int eventId, void* userData, void* eve
    }
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
+   // Early B2S broadcasts may fire with an empty gameId before the B2S name is committed;
+   // don't let those poison the manager state.
+   if (msg->gameId[0] == '\0')
+   {
+      LOGW("PUP: Ignoring game start with empty gameId"s);
+      return;
+   }
    pupManager->LoadConfig(msg->gameId);
 }
 

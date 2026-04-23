@@ -103,6 +103,14 @@ void PUPManager::SetGameDir(const string& szRomName)
 {
    assert(!IsRunning());
 
+   // Guard against empty rom names (can come from early B2S broadcasts before the B2S name is
+   // committed — see Monster Bash's pupvideos/mb_106b folder never being located otherwise).
+   // With an empty component, `pupvideos` / "" resolves to the pupvideos parent directory which
+   // then satisfies the directory-exists check in find_case_insensitive_directory_path and
+   // wrongly becomes m_szPath.
+   if (szRomName.empty())
+      return;
+
    std::filesystem::path path;
 
    // First search for pupvideos along the table file
