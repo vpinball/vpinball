@@ -48,6 +48,9 @@ public:
 
    bool IsPop() const { return m_mode == PUPScreen::Mode::ForcePopBack || m_mode == PUPScreen::Mode::ForcePop; }
 
+   bool IsTopmost() const { return m_topmost; }
+   void SetTopmost(bool topmost) { m_topmost = topmost; }
+
    bool IsTransparent() const { return m_transparent; }
 
    float m_screenAlpha = 1.0f;
@@ -117,6 +120,7 @@ private:
    const string m_screenDes;
 
    Mode m_mode;
+   bool m_topmost = false;
    bool m_transparent;
    float m_mainVolume = 1.f;
    float m_volume;

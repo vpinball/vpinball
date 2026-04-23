@@ -673,27 +673,25 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       if (parent)
          screens.push_back(screen);
    }
-   // Render order — two layers per screen, popups on top:
-   //   Non-popup screens:
-   //     1. Video layer (passes 0-1): PuPFrames background + video/static image
-   //     2. Overlay layer (passes 2-3): PuPOverlays image + labels
-   //   Popup screens (ForcePop/ForcePopBack) render entirely on top:
-   //     3. All passes (0-3)
-
-   auto renderScreens = [&renderCtx, &screens](bool popup, int startPass, int endPass)
+   // Render order — two tiers (non-topmost, topmost) mirroring Win32 HWND_TOPMOST behavior.
+   // Within each tier: non-popup video, non-popup overlay, popups.
+   auto renderScreens = [&renderCtx, &screens](bool popup, bool topmost, int startPass, int endPass)
    {
       for (int pass = startPass; pass <= endPass; pass++)
          std::ranges::for_each(screens,
-            [&renderCtx, pass, popup](const auto& screen)
+            [&renderCtx, pass, popup, topmost](const auto& screen)
             {
-               if (screen->IsPop() == popup && screen->GetMode() != PUPScreen::Mode::Off)
+               if (screen->IsPop() == popup && screen->IsTopmost() == topmost && screen->GetMode() != PUPScreen::Mode::Off)
                   screen->Render(renderCtx, pass);
             });
    };
 
-   renderScreens(false, 0, 1);
-   renderScreens(false, 2, 3);
-   renderScreens(true, 0, 3);
+   renderScreens(false, false, 0, 1);
+   renderScreens(false, false, 2, 3);
+   renderScreens(true, false, 0, 3);
+   renderScreens(false, true, 0, 1);
+   renderScreens(false, true, 2, 3);
+   renderScreens(true, true, 0, 3);
 
    // Set Game time after rendering to avoid updating while rendering if the decode thread are waiting for it
    if (me->m_vpxApi)

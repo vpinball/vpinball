@@ -306,13 +306,27 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         pScreen->m_hudVisible = (json["OT"s].as<int>(0) != 0);
                         break;
                      case 4:
+                     {
                         // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
-                        LOGD(std::format("Stay on top requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-                        pScreen->SetMode((json["FS"s].exists() && json["FS"s].as<int>() == 1) ? PUPScreen::Mode::ForceOn : PUPScreen::Mode::ForceBack);
+                        // FS=1 pins the screen above its siblings (ForceOn mode + topmost flag);
+                        // FS=0 releases it to render under other screens (ForceBack).
+                        const bool topmost = (json["FS"s].exists() && json["FS"s].as<int>() == 1);
+                        LOGD(std::format("Stay on top requested: screen={{{}}}, fn={}, topmost={}, szMsg={}", pScreen->ToString(false), fn, topmost, szMsg));
+                        pScreen->SetTopmost(topmost);
+                        pScreen->SetMode(topmost ? PUPScreen::Mode::ForceOn : PUPScreen::Mode::ForceBack);
+                        break;
+                     }
+                     case 5:
+                        // Bring this screen to the front of its siblings.
+                        // { "mt":301, "SN": XX, "FN":5 }
+                        LOGD(std::format("Bring screen to front requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        m_pupManager.SendScreenToFront(pScreen.get());
                         break;
                      case 6:
-                        // Bring screen to the front
-                        LOGD(std::format("Bring screen to front requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        // Enforce topmost — flip the screen's topmost flag on and raise it to front.
+                        // { "mt":301, "SN": XX, "FN":6 }
+                        LOGD(std::format("Enforce screen topmost requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        pScreen->SetTopmost(true);
                         m_pupManager.SendScreenToFront(pScreen.get());
                         break;
                      case 10:

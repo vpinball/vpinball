@@ -30,6 +30,7 @@ PUPScreen::PUPScreen(PUPManager* manager, PUPScreen::Mode mode, int screenNum, c
    : m_pManager(manager)
    , m_screenNum(screenNum)
    , m_mode(mode)
+   , m_topmost(mode == Mode::ForceOn || mode == Mode::ForcePop)
    , m_screenDes(szScreenDes)
    , m_transparent(transparent)
    , m_volume(volume)
