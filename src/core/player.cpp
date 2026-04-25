@@ -1577,6 +1577,11 @@ void Player::ProcessOSMessages(const bool isInitialized)
       if ((usec() - startTick) > 1000ull)
          break;
    }
+
+   #if defined(ENABLE_BGFX) && defined(_MSC_VER)
+   if (m_renderer)
+      m_renderer->m_renderDevice->OnInputSampled();
+   #endif
 };
 
 class AttractCapture

@@ -66,6 +66,11 @@ marker_series series;
 #define END_SPAN(name)
 #endif
 
+#ifdef _MSC_VER
+#include "PresentMon/PresentMonProvider.h"
+#include "PresentMon/PresentMonProvider.cpp"
+#endif
+
 // Define to 1 to get full BGFX log in debug build
 #define LOG_BGFX 0
 
@@ -483,6 +488,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #endif
 
+#ifdef _MSC_VER
+   rd->m_presentMonProvider = PresentMonProvider_Initialize();
+#endif
+
 #ifdef ENABLE_XR
    if (g_pplayer->m_vrDevice)
    {
@@ -573,6 +582,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       // Use highest priority for better timing and lower jitter (as we are doing software pacing)
       SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 #endif
+
+      bool firstFrame = true;
 
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
@@ -665,8 +676,19 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
+#ifdef _MSC_VER
+         if (rd->m_presentMonProvider && !firstFrame)
+            PresentMonProvider_Application_SleepEnd(rd->m_presentMonProvider, rd->m_frameIndex);
+         else
+            firstFrame = false;
+#endif
+
          // Lock prepared frame and let BGFX encode it
          {
+#ifdef _MSC_VER
+            if (rd->m_presentMonProvider)
+               PresentMonProvider_Application_SimulationStart(rd->m_presentMonProvider, rd->m_frameIndex);
+#endif
             BEGIN_SPAN(tagSpan, "VPX->BGFX")
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
@@ -684,6 +706,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             rd->m_framePending = false;
             g_pplayer->m_renderProfiler->ExitProfileSection();
             END_SPAN(tagSpan)
+#ifdef _MSC_VER
+            if (rd->m_presentMonProvider)
+               PresentMonProvider_Application_SimulationEnd(rd->m_presentMonProvider, rd->m_frameIndex);
+#endif
          }
 
          {
@@ -693,6 +719,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 
          // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if the swapchain queue is filled
          {
+#ifdef _MSC_VER
+            // We do not track Render Start/End as BGFX performs the 2 directly and only the Present event are mandatory for PresentMon
+            if (rd->m_presentMonProvider)
+               PresentMonProvider_Application_PresentStart(rd->m_presentMonProvider, rd->m_frameIndex);
+#endif
             const uint64_t now = usec();
             BEGIN_SPAN(tagSpan, "BGFX->GPU")
             lastSubmitTimestamp = now;
@@ -709,7 +740,18 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
             if (needsVSync && g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_FLIP) > 500)
                rd->m_presentTimestampReference = usec() - 100;
             END_SPAN(tagSpan)
+#ifdef _MSC_VER
+            if (rd->m_presentMonProvider)
+               PresentMonProvider_Application_PresentEnd(rd->m_presentMonProvider, rd->m_frameIndex);
+#endif
          }
+
+         rd->m_frameIndex++;
+
+#ifdef _MSC_VER
+         if (rd->m_presentMonProvider)
+            PresentMonProvider_Application_SleepStart(rd->m_presentMonProvider, rd->m_frameIndex);
+#endif
 
          // Wait for an empty swapchain slot before submitting next frame to GPU
          if (syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain)
@@ -790,8 +832,23 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    rd->m_rendererInitialized.acquire();
    bgfx::shutdown();
    rd->m_renderDeviceAlive = true;
+
+#ifdef _MSC_VER
+   if (rd->m_presentMonProvider)
+   {
+      PresentMonProvider_ShutDown(rd->m_presentMonProvider);
+      rd->m_presentMonProvider = nullptr;
+   }
+#endif
 }
 
+void RenderDevice::OnInputSampled()
+{
+#ifdef _MSC_VER
+   if (m_presentMonProvider)
+      PresentMonProvider_Application_InputSample(m_presentMonProvider, m_frameIndex, PresentMonProvider_Input_NotSpecified);
+#endif
+}
 
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];

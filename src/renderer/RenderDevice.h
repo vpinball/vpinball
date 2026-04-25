@@ -274,6 +274,12 @@ public:
 
    uint64_t m_lastGPUFrameLength = 0;
 
+#ifdef _MSC_VER
+   void OnInputSampled();
+   struct PresentMonProvider* m_presentMonProvider = nullptr;
+   uint32_t m_frameIndex = 0;
+#endif
+
 private:
    void SubmitAndFlipFrame(bool present);
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
