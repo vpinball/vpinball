@@ -282,6 +282,7 @@ private:
    unsigned int m_onAudioSrcChangedMsgId;
    unsigned int m_getAudioSrcMsgId;
    uint64_t m_activeAudioSourceId = 0;
+   ankerl::unordered_dense::set<uint64_t> m_overriddenAudioSourceIds;
    ankerl::unordered_dense::map<uint64_t, VPX::AudioPlayer::AudioStreamID> m_audioStreams;
 #pragma endregion
 

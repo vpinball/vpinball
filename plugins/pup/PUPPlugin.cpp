@@ -159,8 +159,24 @@ void DeleteTexture(VPXTexture texture)
 //
 
 static unsigned int onAudioUpdateId;
+static unsigned int onAudioSrcChangedId;
+static unsigned int getAudioSrcId;
 static vector<uint32_t> freeAudioStreamId;
 uint32_t nextAudioStreamId = 1;
+
+// PUP advertises itself as a parallel audio source (overrideId = 0) so the host
+// does not silence it when PinMAME or AltSound is the primary source.
+// PUP's per-video sub-streams allocate their own ids on top of this; this entry
+// is the umbrella registration that satisfies the CTLPI_AUDIO_GET_SRC_MSG contract.
+static AudioSrcId pupAudioSrcDef = {};
+
+static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData)
+{
+   GetAudioSrcMsg* msg = static_cast<GetAudioSrcMsg*>(msgData);
+   if (msg->count < msg->maxEntryCount)
+      memcpy(&msg->entries[msg->count], &pupAudioSrcDef, sizeof(AudioSrcId));
+   msg->count++;
+}
 
 CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
 {
@@ -269,6 +285,17 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+   onAudioSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG);
+   getAudioSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
+
+   pupAudioSrcDef.id.endpointId = endpointId;
+   pupAudioSrcDef.id.resId = nextAudioStreamId++;
+   pupAudioSrcDef.overrideId = { 0, 0 };
+   pupAudioSrcDef.type = CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
+   pupAudioSrcDef.format = CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
+   pupAudioSrcDef.sampleRate = 48000;
+   msgApi->SubscribeMsg(endpointId, getAudioSrcId, OnGetAudioSrc, nullptr);
+   msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
 
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
@@ -299,6 +326,10 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
    scriptApi->SetCOMObjectOverride("PinUpPlayer.PinDisplay", nullptr);
    UnregisterPUP_PinDisplay([](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); });
 
+   msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
+   msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
+   msgApi->ReleaseMsgID(getAudioSrcId);
+   msgApi->ReleaseMsgID(onAudioSrcChangedId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
 
    msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);

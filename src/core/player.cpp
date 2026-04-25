@@ -2307,7 +2307,9 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    if (me->m_activeAudioSourceId == 0)
       me->UpdateActiveAudioSource();
 
-   if (me->m_activeAudioSourceId != 0 && msg.id.id != me->m_activeAudioSourceId)
+   // Drop only sources that are explicitly overridden by another (e.g. PinMAME when AltSound is active).
+   // Non-overridden sources play in parallel — this lets supplemental plugins like PUP coexist with PinMAME.
+   if (me->m_overriddenAudioSourceIds.contains(msg.id.id))
       return;
 
    const auto &entry = me->m_audioStreams.find(msg.id.id);
@@ -2356,6 +2358,7 @@ void Player::UpdateActiveAudioSource()
    if (getSrcMsg.count == 0)
    {
       m_activeAudioSourceId = 0;
+      m_overriddenAudioSourceIds.clear();
       return;
    }
 
@@ -2388,19 +2391,28 @@ void Player::UpdateActiveAudioSource()
       }
    }
 
-   if (m_activeAudioSourceId != activeId)
+   m_activeAudioSourceId = activeId;
+
+   // Build the set of explicitly-overridden sources so OnAudioUpdated can silence them.
+   // Sources outside this set (the active one and any independent parallel sources like PUP) play together.
+   ankerl::unordered_dense::set<uint64_t> newOverridden;
+   for (const auto& src : sources)
+      if (src.overrideId.id != 0)
+         newOverridden.insert(src.overrideId.id);
+
+   for (const uint64_t id : newOverridden)
    {
-      if (m_activeAudioSourceId != 0)
+      if (!m_overriddenAudioSourceIds.contains(id))
       {
-         const auto &entry = m_audioStreams.find(m_activeAudioSourceId);
+         const auto &entry = m_audioStreams.find(id);
          if (entry != m_audioStreams.end() && m_audioPlayer->IsOpened(entry->second))
          {
             m_audioPlayer->CloseAudioStream(entry->second, false);
             m_audioStreams.erase(entry);
          }
       }
-      m_activeAudioSourceId = activeId;
    }
+   m_overriddenAudioSourceIds = std::move(newOverridden);
 }
 
 void Player::PauseMusic()
