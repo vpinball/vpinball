@@ -33,11 +33,11 @@ Record &operator<<(Record &record, const ImVec2 &pt) { return record << '(' << p
 }
 
 LiveUI::LiveUI(RenderDevice *const rd)
-   : m_inGameUI(*this) 
-   , m_editorUI(*this)
-   , m_ballControl(*this)
-   , m_rd(rd)
+   : m_ballControl(*this) 
+   , m_inGameUI(*this)
    , m_perfUI(g_pplayer)
+   , m_editorUI(*this)
+   , m_rd(rd)
 {
    m_player = g_pplayer;
    m_pininput = &(m_player->m_pininput);
@@ -225,7 +225,7 @@ void LiveUI::UpdateScale()
       // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
       if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
       {
-         m_uiScale = max(m_uiScale, static_cast<float>(m_player->m_playfieldWnd->GetWidth()) / 750.f);
+         m_uiScale = max(m_uiScale, static_cast<float>(min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight())) / 750.f);
       }
    }
    m_uiScale = min(m_uiScale, 10.f); // To avoid texture size overflows
