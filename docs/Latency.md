@@ -69,4 +69,34 @@ Note that with 'FastFlips' steps 5 and 6 are skipped, but all the others remain.
 ![Latency](img/Latency.svg)
 
 
+## Evaluating latency for a given setup
+
+### Input latency (finger to physics)
+
+The input latency has 2 causes:
+- hardware latency: delay between a button press and when it is reported to the operating system by the input hardware. VPX does not offer any way to measure/evaluate this.
+- software latency: delay between when an event is reported to the operating system and when it is processed by VPX. VPX displays the average and maximum values of this latency in the performance overlay.
+
+### Visual latency (finger to photon)
+
+The delay between when a game state is evaluated and when it is displayed on the screen depends on:
+- the display framerate, higher framerate giving more frames per second, and consequently lower latency,
+- the delay caused by the operating system window compositor, usually leading to 1 frame of latency (see below for Windows optimization),
+- VPX settings with values that will favor either lower latency (using `Frame Pacing` with a maximum of `1` frame of latency) or more stable framerate (using `Frame Pacing`/`Software VSync`/`VSync` with a maximum of `3` frames of latency)
+
+Under Windows, to optimize desktop composition latency, user may perform the following steps:
+- Run DXDiag, wait for the information collection, click 'Save All', open saved file, search for 'MPO Caps', validate that the flags corresponding to your display setting are presents, if not adjust your display settings accordingly:
+  - `RGB` if you are using RGB output
+  - `YUV` if you are using YUV output
+  - `HDR` if you are using HDR output
+  - `ROTATION` if your are using a non landscape oriented display
+- Install Intel's PresentMon (either the console or the GUI flavor)
+- Run a VPX table ensuring that the display is setup to cover the entire screen without anything overlapping
+- Run Intel PresentMon application:
+  - first, check that the present mode captured by present mode is one of the `Hardware flip` (note that if it is not and you used the GUI flavor of PresentMon, you should test again using the console flavor, as the GUI flavor consume some of the hardware multiplane overlay capabilities of your GPU eventually being the cause of a slow `Composed Flip`)
+  - when the present mode is right, you may check the `Instrumented Latency` which correspond to the game state to display latency, or the `Ms All Input To Photon Latency` which correspond to the latency between input event to display.
+
+When everything is optimized as stated above, on a powerful enough computer, the finger to display latency should stay below the length of a single frame (for example, on a 60Hz display, it should stay below 16.6ms).
+
+
 <sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>

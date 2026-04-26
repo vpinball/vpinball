@@ -66,7 +66,8 @@ marker_series series;
 #define END_SPAN(name)
 #endif
 
-#ifdef _MSC_VER
+#if BX_PLATFORM_WINDOWS
+#include "DXGIRegistry.h"
 #include "PresentMon/PresentMonProvider.h"
 #include "PresentMon/PresentMonProvider.cpp"
 #endif
@@ -316,19 +317,17 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    //   . game state snapshot by the main thread is prepared when the render thread ask for it. It should be done as
    //     late as possible but to limit stutter, we perform it while the previous frame is submitted to the GPU which
    //     guarantee optimal parallelism between the CPU and GPU.
-   //   . submit to GPU (via BGFX) is performed as late as possible by first waiting for swapchain slot (equivalent to
-   //     VSync but handling late frame and compositor behavior), then sleeping based on previous frame timings (with
-   //     a small margin). We update ball position based on latest game state and expected time of display as this is 
-   //     the most latency sensitive part of the frame.
+   //   . submit to GPU (via BGFX) is performed as late as possible after we have a free swapchain slot (to avoid 
+   //     increasing latency, see below), and at display pace using sleeping either against VBlank or based on previous
+   //     frame timings (with a small margin). We update ball position based on latest game state and expected time of 
+   //     display as this is the most latency sensitive part of the frame.
    //   . rendered to displayed mostly depends on the operating system. On Windows, it mostly depends on the compositor
    //     behavior. If the compositor is in the way, the rendered frame goes through the compositor queue for composition,
-   //     adding at least 1 frame of latency (PresentMon will report 'Composed Flip', documentation reports that the queue
-   //     is 1 to 3 frames). Fullscreen exclusive mode allows to fully avoid the compositor.
+   //     adding 1 frame of latency (PresentMon will report 'Composed Flip').
    // - The overall aim is to prepare the frame as late as possible, just before it is presented to the player, taking
    //   in account the latest game state. To reach this aim, we should never have multiple frames enqueued either 
-   //   waiting for rendering (GPU render queue defined by BGFX's maxLatency) or waiting for presenting (compositor queue
-   //   which is not directly exposed/controlled). This requires us to know when the swapchain has an empty slot.
-   //   We modified BGFX to add support for managing swapchain latency:
+   //   waiting for rendering (GPU render queue defined by BGFX's maxLatency) or waiting for presenting. This requires 
+   //   us to know when the swapchain has an empty slot. We modified BGFX to add support for managing swapchain latency:
    //   . For DirectX, we use the 'waitable' swapchain offered by DXGI, that is to say that DXGI allows us to wait for
    //     the swapchain queue to have at least one empty slot. This needs the swapchain queue to be limited to 1 frame
    //     (maxFrameLatency = 1) to avoid having more than 1 frame enqueued (beside the displayed frame) for lowest latency.
@@ -337,9 +336,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    //   . For Vulkan, we use the vkWaitForPresentKHR extension which allows to wait for a specific presented frame to be 
    //     displayed. We wait for the last presented frame to be displayed before submitting the next one (in turn 
    //     enforcing a maxFrameLatency of 1).
-   //   . For Metal, we do not have yet a proper implementation are simply waiting for one of the command list to be 
-   //     available (so not waiting on the swapchain, which is wrong and will lead to queue frames).
-   //   . OpenGL do not have support for latency management yet
+   //   . Metal & OpenGL do not have support for swapchain latency management yet
    // - OpenXR offers its own frame display time prediction that we use when in VR mode.
 
    init.resolution.numBackBuffers = 2; // Simple flip model with 2 buffers: one locked for the GPU (rendering), one locked for the swapchain (displayed or queued)
@@ -348,9 +345,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    init.resolution.reset |= BGFX_RESET_MAXANISOTROPY;
    //init.resolution.reset |= BGFX_RESET_FLUSH_AFTER_RENDER; // Not really needed as we are doing a present after submit which in turn triger sending the commands to the GPU
    init.resolution.reset |= BGFX_RESET_FLIP_AFTER_RENDER;
-   // Request a fullscreen swapchain to get independent flip and avoid compositor overhead (but not implemented on BGFX side, so noop)
-   if (rd->m_outputWnd[0]->IsFullScreen())
-      init.resolution.reset |= BGFX_RESET_FULLSCREEN;
+   // Fullscreen is mostly deprecated since Windows 10 (BGFX offers a reset flag, but it is not internally implemented). The clean solution is to use a window
+   // covering the entire screen and relying on Windows FSO (fullscreen optimization) which in turn, rely on GPU multiplane overlay capabilities to actually 
+   // achieve zero-overhead backbuffer flips.
+   //if (rd->m_outputWnd[0]->IsFullScreen())
+   //   init.resolution.reset |= BGFX_RESET_FULLSCREEN;
 
    const bool allowHDR10ColorSpace = true //
       && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract // Disable WCG colorspace as it causes issues with video recording for the time being
@@ -478,9 +477,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       rd->m_framePending = false; // Request first frame to be prepared as soon as possible
    }
 
-   int backBufferWidth = static_cast<int>(init.resolution.width);
-   int backBufferHeight = static_cast<int>(init.resolution.height);
-
    // Unlock requesting thread and start render loop
    rd->m_rendererInitialized.release();
 
@@ -488,367 +484,438 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #endif
 
-#ifdef _MSC_VER
-   rd->m_presentMonProvider = PresentMonProvider_Initialize();
-#endif
-
 #ifdef ENABLE_XR
    if (g_pplayer->m_vrDevice)
-   {
-      // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
-      while (rd->m_renderDeviceAlive)
-      {
-         // Process OpenXR events (headset status, ...)
-         g_pplayer->m_vrDevice->PollEvents();
-
-         // Let OpenXR throttle rendering, preparing frame on demand when view positions are acquired and predicted display time is defined
-         g_pplayer->m_vrDevice->RenderFrame(rd,
-            [rd](RenderTarget* vrRenderTarget)
-            {
-               // FIXME No VR target, we should still render to the preview window
-               if (vrRenderTarget == nullptr)
-                  return;
-
-               // Set acquired swapchain images as render target, request a new renderframe from GameLogic thread, and wait for it
-               BEGIN_SPAN(tagSpanFF, "vpxWaitFrame")
-               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-               rd->m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
-               rd->m_framePending = false;
-               rd->m_frameReadySem.acquire();
-               rd->m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
-               g_pplayer->m_renderProfiler->ExitProfileSection();
-               END_SPAN(tagSpanFF)
-               if (!rd->m_framePending)
-               {
-                  // Block rendering until we will acquire swapchain again
-                  rd->m_framePending = true;
-                  return;
-               }
-
-               // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
-               {
-                  #if defined(__ANDROID__)
-                  void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-                  if (nwh == nullptr)
-                  {
-                     rd->m_framePending = true;
-                     return;
-                  }
-                  #endif
-                  BEGIN_SPAN(tagSpan, "VPX->BGFX")
-                  std::lock_guard lock(rd->m_frameMutex);
-                  g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
-                  g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-                  rd->SubmitRenderFrame();
-                  g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
-                  g_pplayer->m_renderProfiler->ExitProfileSection();
-                  END_SPAN(tagSpan)
-               }
-
-               // Request BGFX to submit to GPU (calls bgfx::frame())
-               BEGIN_SPAN(tagSpan, "BGFX->GPU")
-               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-               rd->Flip();
-               if (rd->m_screenshotFrameDelay > 0)
-               {
-                  rd->m_screenshotFrameDelay--;
-                  if (rd->m_screenshotFrameDelay == 0)
-                     for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                        bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-               }
-               const bgfx::Stats* stats = bgfx::getStats();
-               const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
-               g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
-               g_pplayer->m_renderProfiler->ExitProfileSection();
-               g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
-               END_SPAN(tagSpan)
-            });
-      }
-      g_pplayer->m_vrDevice->ReleaseSession();
-   }
+      rd->BGFXOpenXRRenderLoop(init);
    else
 #endif
-   {
-      uint64_t lastSubmitTimestamp = 0;
-      uint64_t lastSyncTimestamp = 0;
-      bool gpuVSync = false;
-      int framePacingFlushing = 0;
-
-      const bool waitableSwapchain = (bgfx::getCaps()->supported & BGFX_CAPS_WAITABLE_SWAPCHAIN) != 0;
-      if (waitableSwapchain)
-         bgfx::waitForSwapchain();
-
-#if BX_PLATFORM_WINDOWS
-      // Use highest priority for better timing and lower jitter (as we are doing software pacing)
-      SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
-#endif
-
-      bool firstFrame = true;
-
-      // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
-      while (rd->m_renderDeviceAlive)
-      {
-         g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
-
-         // wait for a frame to be prepared by the logic thread
-         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
-         rd->m_frameReadySem.acquire();
-         g_pplayer->m_renderProfiler->ExitProfileSection();
-
-         if (!rd->m_renderDeviceAlive)
-            break;
-
-         if (!rd->m_framePending)
-            continue;
-
-         if (rd->m_frameNoPresent)
-         {
-            std::lock_guard lock(rd->m_frameMutex);
-            rd->SubmitRenderFrame();
-            rd->m_frameNoPresent = false;
-            rd->m_framePending = false;
-            rd->SubmitAndFlipFrame(false);
-            continue;
-         }
-
-         const VideoSyncMode syncMode = g_pplayer->GetVideoSyncMode();
-         const bool useVSync = syncMode != VideoSyncMode::VSM_NONE;
-         if (framePacingFlushing > 0)
-            framePacingFlushing--;
-         if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
-         {
-            if (waitableSwapchain)
-            {
-               // Perform a fixed pacing at the display rate and rely on swapchain synchronization to guarantee that we do not push more than one frame.
-               framePacingFlushing = 8;
-            }
-            else
-            {
-               // Evaluate number of 'frames in flight', that is to say frames that have been submitted to the GPU but not yet processed
-               // We target 2 frames in flight (one just submitted, one being processed). If we have more than 3 we are in a situation
-               // where the GPU is too much behind and we are piling up frames in the GPU queue, which is bad for latency. In this case,
-               // we start a flush sequence:
-               // - process a few frames without VSync to flush the queue (as they will be discarded or presented directly)
-               // - then process a few frame with VSync enabled, to measure the new number of frames in flights
-               // This is not really correct as gpuFrameNum is the last processed frame, not the last presented frame. Therefore
-               // if all frames are quickly processed, gpuFrameNum will be the same as m_lastPresentFrameIdx, but the present queue
-               // will be filled up anyway, leading to high latency. The user needs to limit the maximum number of prerendered frame to
-               // avoid this situation. Still, the tests seem to show that the estimate is good enough.
-               const uint32_t framesInFlight = rd->m_lastPresentFrameIdx - bgfx::getStats()->gpuFrameNum;
-               if (framesInFlight > 3)
-                  framePacingFlushing = 8;
-               if (framesInFlight <= bgfx::getStats()->maxGpuLatency)
-                  rd->m_renderLatency = framePacingFlushing || !useVSync ? -1.f : (static_cast<float>(framesInFlight) / rd->m_outputWnd[0]->GetRefreshRate());
-            }
-         }
-         else
-         {
-            rd->m_renderLatency = !useVSync ? -1.f : (static_cast<float>(rd->m_lastPresentFrameIdx - bgfx::getStats()->gpuFrameNum) / rd->m_outputWnd[0]->GetRefreshRate());
-         }
-         const bool needsVSync = useVSync // User has activated VSync or is using frame pacing
-            && (framePacingFlushing < 4); // Frame pacing use VSync synchronization (not catching up or using swapchain synchronization)
-         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
-
-         #if defined(__ANDROID__)
-            void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-            static void* prevNwh = nwh;
-            if (nwh != prevNwh)
-            {
-               prevNwh = nwh;
-               if (nwh == nullptr)
-                  continue;
-
-               bgfx::PlatformData pd = {};
-               pd.nwh = nwh;
-               bgfx::setPlatformData(pd);
-               gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
-            }
-            if (nwh == nullptr)
-               continue;
-         #endif
-        
-         // Latency reduction by doing part of the software sleep before submitting to BGFX (as we update ball position before submitting)
-         const int64_t latencySleepMargin = static_cast<int64_t>(0.2 * 1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate())); // 20% margin
-         if (const int64_t latencySleep = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SLEEP)) - latencySleepMargin; latencySleep > 0)
-         {
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-            uSleep(latencySleep);
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-         }
-
-#ifdef _MSC_VER
-         if (rd->m_presentMonProvider && !firstFrame)
-            PresentMonProvider_Application_SleepEnd(rd->m_presentMonProvider, rd->m_frameIndex);
-         else
-            firstFrame = false;
-#endif
-
-         // Lock prepared frame and let BGFX encode it
-         {
-#ifdef _MSC_VER
-            if (rd->m_presentMonProvider)
-               PresentMonProvider_Application_SimulationStart(rd->m_presentMonProvider, rd->m_frameIndex);
-#endif
-            BEGIN_SPAN(tagSpan, "VPX->BGFX")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-            const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
-            const int windowHeight = rd->m_outputWnd[0]->GetPixelHeight();
-            if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
-            {
-               gpuVSync = needsVSync;
-               backBufferWidth = windowWidth;
-               backBufferHeight = windowHeight;
-               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
-               rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
-            }
-            std::lock_guard lock(rd->m_frameMutex);
-            rd->SubmitRenderFrame();
-            rd->m_framePending = false;
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            END_SPAN(tagSpan)
-#ifdef _MSC_VER
-            if (rd->m_presentMonProvider)
-               PresentMonProvider_Application_SimulationEnd(rd->m_presentMonProvider, rd->m_frameIndex);
-#endif
-         }
-
-         {
-            const bgfx::Stats* const stats = bgfx::getStats();
-            rd->m_lastGPUFrameLength = (stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000000ULL / stats->gpuTimerFreq;
-         }
-
-         // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if the swapchain queue is filled
-         {
-#ifdef _MSC_VER
-            // We do not track Render Start/End as BGFX performs the 2 directly and only the Present event are mandatory for PresentMon
-            if (rd->m_presentMonProvider)
-               PresentMonProvider_Application_PresentStart(rd->m_presentMonProvider, rd->m_frameIndex);
-#endif
-            const uint64_t now = usec();
-            BEGIN_SPAN(tagSpan, "BGFX->GPU")
-            lastSubmitTimestamp = now;
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-            rd->Flip();
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            if (!(syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain))
-            {
-               const bgfx::Stats* const stats = bgfx::getStats();
-               const uint64_t bgfxSubmit = ((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ULL) / stats->cpuTimerFreq;
-               g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
-            }
-            // If we have waited for a VSYNC, we can adjust the estimated present time to be just before the end of the wait
-            if (needsVSync && g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_FLIP) > 500)
-               rd->m_presentTimestampReference = usec() - 100;
-            END_SPAN(tagSpan)
-#ifdef _MSC_VER
-            if (rd->m_presentMonProvider)
-               PresentMonProvider_Application_PresentEnd(rd->m_presentMonProvider, rd->m_frameIndex);
-#endif
-         }
-
-         rd->m_frameIndex++;
-
-#ifdef _MSC_VER
-         if (rd->m_presentMonProvider)
-            PresentMonProvider_Application_SleepStart(rd->m_presentMonProvider, rd->m_frameIndex);
-#endif
-
-         // Wait for an empty swapchain slot before submitting next frame to GPU
-         if (syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain)
-         {
-            BEGIN_SPAN(tagSpan, "WaitSC")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT_SC);
-            bgfx::waitForSwapchain();
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            const uint64_t now = usec();
-            rd->m_renderLatency = static_cast<float>((double)(now - lastSubmitTimestamp) / 1000000.0) // Time spent since pushing data to the GPU until consumed by swapchain
-               + static_cast<float>(init.resolution.maxFrameLatency - 1) / rd->m_outputWnd[0]->GetRefreshRate(); // Time that will be spent in the GPU queue before display (if any)
-            // If we have waited for the swapchain, we can adjust the estimated present time to be just before the end of the wait
-            if (g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_WAIT_SC) > 500)
-               rd->m_presentTimestampReference = now - 100;
-            END_SPAN(tagSpan)
-         }
-
-         // Push present event (used to evaluate input latency) as we have either waited for VSync or for swapchain
-         g_pplayer->m_logicProfiler.OnPresented(lastSyncTimestamp);
-
-         // Software FPS throttling
-         uint64_t targetFrameLength = 0;
-         if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
-         {
-            // We are using frame pacing, that is to say we aim at low latency by trying to push frames in sync with the display rate to avoid piling up frames in the GPU queue
-            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(rd->m_outputWnd[0]->GetRefreshRate()));
-            if (!waitableSwapchain || init.resolution.maxFrameLatency != 1)
-            {
-               // We add a (very) small margin to be slightly above the frame rate and avoid pushing frames in the GPU queue
-               targetFrameLength += 10;
-            }
-         }
-         else if (!needsVSync && g_pplayer->GetTargetRefreshRate() < 10000.f)
-         {
-            // The user has disabled VSync without an unbound FPS limit)
-            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate()));
-         }
-         else if (needsVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate())
-         {
-            // The user has enabled VSync with a max FPS below the display FPS
-            // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
-            targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate())) - 2000;
-         }
-         if (targetFrameLength)
-         {
-            BEGIN_SPAN(tagSpan, "WaitSync")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-            const uint64_t now = usec();
-            if (const uint64_t targetTimeStamp = lastSyncTimestamp + targetFrameLength; now < targetTimeStamp)
-               uSleep(targetTimeStamp - now);
-            lastSyncTimestamp = usec();
-            g_pplayer->m_renderProfiler->ExitProfileSection();
-            END_SPAN(tagSpan)
-         }
-         else
-         {
-            lastSyncTimestamp = usec();
-         }
-
-         if (!rd->m_screenshotWindow.empty())
-         {
-            rd->m_screenshotFrameDelay--;
-            if (rd->m_screenshotFrameDelay == 0)
-               for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                  bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-            else if (rd->m_screenshotFrameDelay < -60)
-            {
-               // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
-               PLOGE << "Screenshot capture timed out. Requesting it again";
-               for (size_t i = 0; i < rd->m_screenshotWindow.size(); i++)
-                  bgfx::requestScreenShot(rd->m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), rd->m_screenshotFilename[i].string().c_str());
-            }
-         }
-      }
-   }
+      rd->BGFXDesktopRenderLoop(init);
 
    // Wait until main thread has released all native resources
    rd->m_rendererInitialized.acquire();
    bgfx::shutdown();
    rd->m_renderDeviceAlive = true;
+}
 
-#ifdef _MSC_VER
-   if (rd->m_presentMonProvider)
+#ifdef ENABLE_XR
+void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
+{
+   // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
+   while (m_renderDeviceAlive)
    {
-      PresentMonProvider_ShutDown(rd->m_presentMonProvider);
-      rd->m_presentMonProvider = nullptr;
+      // Process OpenXR events (headset status, ...)
+      g_pplayer->m_vrDevice->PollEvents();
+
+      // Let OpenXR throttle rendering, preparing frame on demand when view positions are acquired and predicted display time is defined
+      g_pplayer->m_vrDevice->RenderFrame(this,
+         [this](RenderTarget* vrRenderTarget)
+         {
+            // FIXME No VR target, we should still render to the preview window
+            if (vrRenderTarget == nullptr)
+               return;
+
+            // Set acquired swapchain images as render target, request a new renderframe from GameLogic thread, and wait for it
+            BEGIN_SPAN(tagSpanFF, "vpxWaitFrame")
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
+            m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
+            m_framePending = false;
+            m_frameReadySem.acquire();
+            m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            END_SPAN(tagSpanFF)
+            if (!m_framePending)
+            {
+               // Block rendering until we will acquire swapchain again
+               m_framePending = true;
+               return;
+            }
+
+            // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
+            {
+#if defined(__ANDROID__)
+               void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+               if (nwh == nullptr)
+               {
+                  m_framePending = true;
+                  return;
+               }
+#endif
+               BEGIN_SPAN(tagSpan, "VPX->BGFX")
+               std::lock_guard lock(m_frameMutex);
+               g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
+               SubmitRenderFrame();
+               g_pplayer->m_vrDevice->UpdateVisibilityMask(this);
+               g_pplayer->m_renderProfiler->ExitProfileSection();
+               END_SPAN(tagSpan)
+            }
+
+            // Request BGFX to submit to GPU (calls bgfx::frame())
+            BEGIN_SPAN(tagSpan, "BGFX->GPU")
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
+            Flip();
+            if (m_screenshotFrameDelay > 0)
+            {
+               m_screenshotFrameDelay--;
+               if (m_screenshotFrameDelay == 0)
+                  for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+                     bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+            }
+            const bgfx::Stats* stats = bgfx::getStats();
+            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
+            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
+            END_SPAN(tagSpan)
+         });
+   }
+   g_pplayer->m_vrDevice->ReleaseSession();
+}
+#endif
+
+void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
+{
+   int backBufferWidth = static_cast<int>(init.resolution.width);
+   int backBufferHeight = static_cast<int>(init.resolution.height);
+   uint64_t lastSubmitTimestamp = 0;
+   uint64_t lastSyncTimestamp = 0;
+   bool bgfxVSync = false; // Is VSync requested on BGFX's Present operation (note that the VSync on Present will only block if the present queue is filled)
+   int framePacingFlushing = 0;
+   uint32_t lastFrameVSync = 0; // Id of the last frame when we performed a VBlank synchronization
+   bool directVBlank = false; // Use direct VBlank wait (through DXGI) instead of BGFX Present VSync ?
+   m_frameIndex = 0;
+
+   const bool waitableSwapchain = (bgfx::getCaps()->supported & BGFX_CAPS_WAITABLE_SWAPCHAIN) != 0;
+   if (waitableSwapchain)
+      bgfx::waitForSwapchain();
+
+#if BX_PLATFORM_WINDOWS
+   // Use highest priority for better timing and lower jitter (as we are doing software pacing)
+   SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+
+   m_presentMonProvider = PresentMonProvider_Initialize();
+   if (m_presentMonProvider)
+      PresentMonProvider_Application_SleepStart(m_presentMonProvider, m_frameIndex);
+
+   DXGIRegistry dxgiRegistry;
+   DXGIRegistry::Output* dxgiOutput = dxgiRegistry.GetForWindow((HWND)init.platformData.nwh);
+#endif
+
+   // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
+   while (m_renderDeviceAlive)
+   {
+      g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+
+      // wait for a frame to be prepared by the logic thread
+      g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
+      m_frameReadySem.acquire();
+      g_pplayer->m_renderProfiler->ExitProfileSection();
+
+      if (!m_renderDeviceAlive)
+         break;
+
+      if (!m_framePending)
+         continue;
+
+      if (m_frameNoPresent)
+      {
+         std::lock_guard lock(m_frameMutex);
+         SubmitRenderFrame();
+         m_frameNoPresent = false;
+         m_framePending = false;
+         SubmitAndFlipFrame(false);
+         continue;
+      }
+
+      // Toggle synchronisation against hardware VSync
+      bool needsVSync;
+      const VideoSyncMode syncMode = g_pplayer->GetVideoSyncMode();
+      {
+         if (syncMode != VideoSyncMode::VSM_FRAME_PACING)
+         {
+            // Use managed VSync setting
+            needsVSync = syncMode != VideoSyncMode::VSM_NONE;
+            m_renderLatency = !needsVSync ? -1.f : (static_cast<float>(m_lastPresentFrameIdx - bgfx::getStats()->gpuFrameNum) / m_outputWnd[0]->GetRefreshRate());
+            directVBlank = false;
+         }
+         else if (waitableSwapchain)
+         {
+            // Perform a fixed pacing at the display rate and rely on swapchain synchronization to guarantee that we do not push more than one frame.
+
+            // Periodically align to VBlank to prevent tearing, but only if we can do it without causing stutter (enough margin or no ball moving)
+            const int64_t displayFrameLength = static_cast<int64_t>(1000000. / static_cast<double>(m_outputWnd[0]->GetRefreshRate()));
+            const int64_t avgFrameLength = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
+            const bool shouldResync = lastFrameVSync + 1000 < m_frameIndex;
+            if (shouldResync && m_noMovingBalls)
+            {
+               needsVSync = true;
+            }
+            else if (shouldResync || m_noMovingBalls)
+            {
+               const int64_t displayFrameLength = static_cast<int64_t>(1000000. / static_cast<double>(m_outputWnd[0]->GetRefreshRate()));
+               const int64_t vpxToBGFX = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SUBMIT));
+               const int64_t renderLength = vpxToBGFX // VPX to BGFX submission
+                  + m_lastGPUFrameLength // GPU actual render length
+                  + 1000; // Magic value to account for the length of unmeasured operation (delay between submit and GPU start, present duration, ...)
+               needsVSync = renderLength < displayFrameLength;
+            }
+            else
+            {
+               needsVSync = false;
+            }
+#if BX_PLATFORM_WINDOWS
+            // Use direct VBlank alignment as toggling VSync on/off is only blocking after filling up the present queue (which we avoid)
+            directVBlank = dxgiOutput != nullptr;
+#endif
+         }
+         else
+         {
+            // Evaluate number of 'frames in flight', that is to say frames that have been submitted to the GPU but not yet processed
+            // We target 2 frames in flight (one just submitted, one being processed). If we have more than 3 we are in a situation
+            // where the GPU is too much behind and we are piling up frames in the GPU queue, which is bad for latency. In this case,
+            // we start a flush sequence:
+            // - process a few frames without VSync to flush the queue (as they will be discarded or presented directly)
+            // - then process a few frame with VSync enabled, to measure the new number of frames in flights
+            // This is not really correct as gpuFrameNum is the last processed frame, not the last presented frame. Therefore
+            // if all frames are quickly processed, gpuFrameNum will be the same as m_lastPresentFrameIdx, but the present queue
+            // will be filled up anyway, leading to high latency. The user needs to limit the maximum number of prerendered frame to
+            // avoid this situation. Still, the tests seem to show that the estimate is good enough.
+            if (framePacingFlushing > 0)
+               framePacingFlushing--;
+            const uint32_t framesInFlight = m_lastPresentFrameIdx - bgfx::getStats()->gpuFrameNum;
+            if (framesInFlight > 3)
+               framePacingFlushing = 8;
+            if (framesInFlight <= bgfx::getStats()->maxGpuLatency)
+               m_renderLatency = framePacingFlushing ? -1.f : (static_cast<float>(framesInFlight) / m_outputWnd[0]->GetRefreshRate());
+            needsVSync = framePacingFlushing < 4; // Frame pacing use VSync synchronization (not catching up or using swapchain synchronization)
+            directVBlank = false;
+         }
+         if (needsVSync)
+            lastFrameVSync = m_frameIndex;
+         g_pplayer->m_lastFrameSyncOnVBlank = needsVSync;
+      }
+         
+      // Handle backbuffer resize, surface lost and VSync toggling
+      {
+#if defined(__ANDROID__)
+         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+         static void* prevNwh = nwh;
+         if (nwh != prevNwh)
+         {
+            prevNwh = nwh;
+            if (nwh == nullptr)
+               continue;
+
+            bgfx::PlatformData pd = {};
+            pd.nwh = nwh;
+            bgfx::setPlatformData(pd);
+            bgfxVSync = !(needsVSync && !directVBlank); // Force reset by making VSync state appear changed
+         }
+         if (nwh == nullptr)
+            continue;
+#endif
+         const int windowWidth = m_outputWnd[0]->GetPixelWidth();
+         const int windowHeight = m_outputWnd[0]->GetPixelHeight();
+         if ((bgfxVSync != (needsVSync && !directVBlank)) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
+         {
+            bgfxVSync = needsVSync && !directVBlank;
+            backBufferWidth = windowWidth;
+            backBufferHeight = windowHeight;
+            bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
+            m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
+         }
+      }
+
+      // Latency reduction by performing part of the sleep before submitting to BGFX (as we update ball position when submitting)
+      {
+         const int64_t displayFrameLength = static_cast<int64_t>(1000000. / static_cast<double>(m_outputWnd[0]->GetRefreshRate()));
+         const int64_t latencySleepMargin = (displayFrameLength * 20) / 100; // 20% margin
+         int64_t latencySleep;
+         if (needsVSync)
+         {
+            // We do not have a direct measure of the sleep time (as it happens in the Present operation), estimate it from the render time against frame length
+            const int64_t vpxToBGFX = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SUBMIT));
+            const int64_t renderLength = vpxToBGFX // VPX to BGFX submission
+               + m_lastGPUFrameLength // GPU actual render length
+               + 1000; // Magic value to account for the length of unmeasured operation (delay between submit and GPU start, present duration, ...)
+            latencySleep = displayFrameLength - latencySleepMargin - renderLength;
+         }
+         else
+         {
+            // VSync may have been turned on/off making this measure imprecise but still a lower value than the the actual sleep (as the sleep time is 0 when VSync is on) so we can use it safely
+            latencySleep = static_cast<int64_t>(g_pplayer->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_RENDER_SLEEP)) - latencySleepMargin;
+         }
+         if (latencySleep > 0)
+         {
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
+            uSleep(latencySleep);
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+         }
+      }
+
+#if BX_PLATFORM_WINDOWS
+      if (m_presentMonProvider)
+      {
+         PresentMonProvider_Application_SleepEnd(m_presentMonProvider, m_frameIndex);
+         PresentMonProvider_Application_SimulationStart(m_presentMonProvider, m_frameIndex);
+      }
+#endif
+
+      // Lock prepared frame and let BGFX encode it (for PresentMon we consider this as the simulation since ball positions are updated here, this is not true for flipper bats though)
+      {
+         BEGIN_SPAN(tagSpan, "VPX->BGFX")
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
+         std::lock_guard lock(m_frameMutex);
+         SubmitRenderFrame();
+         m_framePending = false;
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+         END_SPAN(tagSpan)
+      }
+
+#if BX_PLATFORM_WINDOWS
+      if (m_presentMonProvider)
+      {
+         PresentMonProvider_Application_SimulationEnd(m_presentMonProvider, m_frameIndex);
+         // We do not track Render Start/End as BGFX performs the 2 directly and only the Present event is mandatory for PresentMon
+         PresentMonProvider_Application_PresentStart(m_presentMonProvider, m_frameIndex);
+      }
+#endif
+
+      // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if enabled and the swapchain queue is filled
+      {
+         const uint64_t now = usec();
+         BEGIN_SPAN(tagSpan, "BGFX->GPU")
+         lastSubmitTimestamp = now;
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
+         Flip();
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+         // Split time spent in Flip between GPU submission and time spent in GPU present
+         if (!(syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain))
+         {
+            const bgfx::Stats* const stats = bgfx::getStats();
+            const uint64_t bgfxSubmit = ((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ULL) / stats->cpuTimerFreq;
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
+         }
+         // If we have waited for a VSYNC, we can adjust the estimated present time to be just before the end of the wait
+         if (!directVBlank && needsVSync && g_pplayer->m_renderProfiler->Get(FrameProfiler::PROFILE_RENDER_FLIP) > 500)
+            m_presentTimestampReference = usec() - 100;
+         END_SPAN(tagSpan)
+      }
+
+#if BX_PLATFORM_WINDOWS
+      if (m_presentMonProvider)
+         PresentMonProvider_Application_PresentEnd(m_presentMonProvider, m_frameIndex);
+#endif
+
+      // Next frame starts here (Sleep / Logic Thread -> Render Thread / VPX -> BGFX / BGFX -> GPU / Present)
+      m_frameIndex++;
+
+#if BX_PLATFORM_WINDOWS
+      if (m_presentMonProvider)
+         PresentMonProvider_Application_SleepStart(m_presentMonProvider, m_frameIndex);
+
+      // Wait for next VBlank (we prefer using direct VBlank wait as SyncInterval on Present is non blocking unless present queue is filled, which usually happens after maxFrameLatency frames)
+      if (directVBlank && needsVSync)
+      {
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT_SC);
+         dxgiOutput->m_Output1->WaitForVBlank();
+         m_presentTimestampReference = usec() - 100;
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+      }
+#endif
+
+      // Ensure we have an empty swapchain slot before submitting next frame to GPU
+      if (syncMode == VideoSyncMode::VSM_FRAME_PACING && waitableSwapchain)
+      {
+         BEGIN_SPAN(tagSpan, "WaitSC")
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT_SC);
+         bgfx::waitForSwapchain();
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+         // Evaluate latency as the delay between when we submitted the frame data and when the swapchain has an empty slot (as this denotes that the Present operation has been performed)
+         const uint64_t now = usec();
+         m_renderLatency = static_cast<float>((double)(now - lastSubmitTimestamp) / 1000000.0) // Time spent since pushing data to the GPU until consumed by swapchain
+            + static_cast<float>(init.resolution.maxFrameLatency - 1) / m_outputWnd[0]->GetRefreshRate(); // Time that will be spent in the GPU queue before display (if any)
+         END_SPAN(tagSpan)
+      }
+
+      // Software FPS throttling
+      uint64_t targetFrameLength = 0;
+      if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
+      {
+         // We are using frame pacing, that is to say we aim at low latency by trying to push frames in sync with the display rate to avoid piling up frames in the GPU queue
+         targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(m_outputWnd[0]->GetRefreshRate()));
+         // We are relying on hardware VSync, only keep software throttling for unexpected situations where VSync led to a too short frame (should never happen)
+         if (needsVSync)
+            targetFrameLength -= 500;
+         // If we do not have a way to sync on the swapchain, we add a (very) small margin to be slightly above the frame rate and avoid pushing frames in the GPU queue
+         else if (!waitableSwapchain || init.resolution.maxFrameLatency != 1)
+            targetFrameLength += 10;
+      }
+      else if (!needsVSync && g_pplayer->GetTargetRefreshRate() < 10000.f)
+      {
+         // User has disabled VSync with a FPS bound, so apply it
+         targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate()));
+      }
+      else if (needsVSync && g_pplayer->GetTargetRefreshRate() < m_outputWnd[0]->GetRefreshRate())
+      {
+         // User has enabled VSync with a max FPS below the display FPS
+         // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+         targetFrameLength = static_cast<uint64_t>(1000000. / static_cast<double>(g_pplayer->GetTargetRefreshRate())) - 2000;
+      }
+      if (targetFrameLength)
+      {
+         BEGIN_SPAN(tagSpan, "WaitSync")
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
+         const uint64_t now = usec();
+         if (const uint64_t targetTimeStamp = lastSyncTimestamp + targetFrameLength; now < targetTimeStamp)
+            uSleep(targetTimeStamp - now);
+         g_pplayer->m_renderProfiler->ExitProfileSection();
+         END_SPAN(tagSpan)
+      }
+      lastSyncTimestamp = usec();
+
+      {
+         // Push present event (used to evaluate input latency) as we have either waited for VSync or performed software FPS throttling
+         g_pplayer->m_logicProfiler.OnPresented(lastSyncTimestamp);
+
+         // Also collect frame stats as the frame is likely rendered at this point
+         const bgfx::Stats* const stats = bgfx::getStats();
+         m_lastGPUFrameLength = (stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000000ULL / stats->gpuTimerFreq;
+      }
+
+      // Screenshot handling
+      if (!m_screenshotWindow.empty())
+      {
+         m_screenshotFrameDelay--;
+         if (m_screenshotFrameDelay == 0)
+            for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+               bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+         else if (m_screenshotFrameDelay < -60)
+         {
+            // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
+            PLOGE << "Screenshot capture timed out. Requesting it again";
+            for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+               bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+         }
+      }
+   }
+
+#if BX_PLATFORM_WINDOWS
+   if (m_presentMonProvider)
+   {
+      PresentMonProvider_ShutDown(m_presentMonProvider);
+      m_presentMonProvider = nullptr;
    }
 #endif
 }
 
+#if BX_PLATFORM_WINDOWS
 void RenderDevice::OnInputSampled()
 {
-#ifdef _MSC_VER
    if (m_presentMonProvider)
       PresentMonProvider_Application_InputSample(m_presentMonProvider, m_frameIndex, PresentMonProvider_Input_NotSpecified);
-#endif
 }
+#endif
 
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];

@@ -86,6 +86,8 @@ void PerfUI::RenderFPS()
       #endif
       if (m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) > m_player->m_renderer->m_renderDevice->GetTargetFrameLength() + 500)
          color = IM_COL32(255, 0, 0, 128); // Red dot when missing target refresh rate
+      else if (m_player->m_lastFrameSyncOnVBlank)
+         color = IM_COL32(0, 128, 255, 128); // Cyan when using VSync
       ImGui::GetWindowDrawList()->AddCircleFilled(
          ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetWindowWidth() - 5.f * m_uiScale - 2.f * ImGui::GetStyle().WindowPadding.x, ImGui::GetTextLineHeight() * 0.5f),
          5.f * m_uiScale, color);
@@ -97,21 +99,7 @@ void PerfUI::RenderFPS()
    {
       const double frameLength = m_player->m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       const ImVec2 renderTextPos = ImGui::GetCursorScreenPos();
-      #ifdef ENABLE_BGFX
-         if (const float latency = 1000.f * m_player->m_renderer->m_renderDevice->GetVisualLatency(); latency > 0.f)
-         {
-            ImGui::Text("Render: %5.1ffps (Latency %4.1fms)", 1e6 / frameLength, latency);
-            ImGui::SameLine();
-            if (ImGui::IsMouseHoveringRect(renderTextPos, ImGui::GetCursorScreenPos() + ImVec2(0, ImGui::GetTextLineHeight())))
-               ImGui::SetTooltip(
-                  "Latency is an (imprecise) evaluation of the average finger to photon latency\nIt includes median input latency, rendering latency and estimated display latency");
-            ImGui::NewLine();
-         }
-         else
-            ImGui::Text("Render: %5.1ffps", 1e6 / frameLength);
-      #else
-         ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME));
-      #endif
+      ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)", 1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME));
    }
 
    {
@@ -269,7 +257,8 @@ void PerfUI::RenderStats() const
       #ifdef ENABLE_BGFX
       {
          const float height = blockHeight * 2.f - style.FramePadding.y;
-         const uint64_t gpuStart = m_player->m_renderProfiler->GetPrevStart(FrameProfiler::PROFILE_RENDER_FLIP);
+         const uint64_t gpuStart = min(m_player->m_renderProfiler->GetPrevEnd(FrameProfiler::PROFILE_RENDER_FLIP),
+            m_player->m_renderProfiler->GetPrevStart(FrameProfiler::PROFILE_RENDER_FLIP) + 300); // 300us is a magic number for the delay between submission start to GPU processing
          const uint64_t gpuEnd = gpuStart + m_player->m_renderer->m_renderDevice->m_lastGPUFrameLength;
          {
             const float start = static_cast<float>(gpuStart - minTS) / elapse;
@@ -323,18 +312,20 @@ void PerfUI::RenderStats() const
          PROF_ROW("> Wait Frame", FrameProfiler::PROFILE_RENDER_WAIT)
          PROF_ROW("> VPX -> BGFX", FrameProfiler::PROFILE_RENDER_SUBMIT)
          PROF_ROW("> BGFX -> GPU", FrameProfiler::PROFILE_RENDER_FLIP)
-         PROF_ROW("> Wait Swapchain", FrameProfiler::PROFILE_RENDER_WAIT_SC)
+         PROF_ROW("> Wait GPU", FrameProfiler::PROFILE_RENDER_WAIT_SC)
          PROF_ROW("> Sleep", FrameProfiler::PROFILE_RENDER_SLEEP)
          if (hoveredRow == 2)
-            ImGui::SetTooltip("Time spent waiting for:\n- the CPU to prepare a frame\n- a swapchain slot to be free\n- anticipating part of the sync sleep to reduce latency");
+            ImGui::SetTooltip("Time spent waiting for the CPU to prepare a frame");
          else if (hoveredRow == 3)
-            ImGui::SetTooltip("Time spent sleeping to match desired framerate");
-         else if (hoveredRow == 4)
             ImGui::SetTooltip("Time spent submiting frame from VPX to BGFX");
-         else if (hoveredRow == 5)
+         else if (hoveredRow == 4)
             ImGui::SetTooltip("Time spent submiting frame from BGFX to GPU");
-         logicRow = 6;
-         rowOffset = 2;
+         else if (hoveredRow == 5)
+            ImGui::SetTooltip("Time spent waiting for the GPU\n(for VBlank or a free swapchain slot)");
+         else if (hoveredRow == 6)
+            ImGui::SetTooltip("Time spent sleeping to match desired framerate");
+         logicRow = 7;
+         rowOffset = 3;
 
          profiler = &m_player->m_logicProfiler;
          PROF_ROW("Logic Thread", FrameProfiler::PROFILE_FRAME)

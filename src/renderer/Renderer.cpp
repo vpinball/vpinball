@@ -2894,6 +2894,8 @@ void Renderer::RenderFrame()
       m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
    }
 
+   m_renderDevice->m_noMovingBalls = true;
+
    RenderDynamics();
 
    g_pplayer->m_liveUI->Render3D();

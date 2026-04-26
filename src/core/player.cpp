@@ -1578,7 +1578,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
          break;
    }
 
-   #if defined(ENABLE_BGFX) && defined(_MSC_VER)
+   #if BX_PLATFORM_WINDOWS
    if (m_renderer)
       m_renderer->m_renderDevice->OnInputSampled();
    #endif

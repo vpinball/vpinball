@@ -488,6 +488,9 @@ void Ball::Render(const unsigned int renderMask)
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
+   if (m_rd->m_noMovingBalls && m_hitBall.m_d.m_vel.LengthSquared() > 0.1f)
+      m_rd->m_noMovingBalls = false;
+
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
    if (g_pplayer->m_liveUI->IsShowingFPSDetails())
