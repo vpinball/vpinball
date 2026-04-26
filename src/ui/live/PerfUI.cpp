@@ -87,7 +87,9 @@ void PerfUI::RenderFPS()
       if (m_player->m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) > m_player->m_renderer->m_renderDevice->GetTargetFrameLength() + 500)
          color = IM_COL32(255, 0, 0, 128); // Red dot when missing target refresh rate
       else if (m_player->m_lastFrameSyncOnVBlank)
-         color = IM_COL32(0, 128, 255, 128); // Cyan when using VSync
+         color = IM_COL32(0, 255, 0, 128); // Green when using VSync
+      else
+         color = IM_COL32(0, 192, 255, 128); // Cyan when using sfotware display sync
       ImGui::GetWindowDrawList()->AddCircleFilled(
          ImGui::GetCursorScreenPos() + ImVec2(ImGui::GetWindowWidth() - 5.f * m_uiScale - 2.f * ImGui::GetStyle().WindowPadding.x, ImGui::GetTextLineHeight() * 0.5f),
          5.f * m_uiScale, color);
