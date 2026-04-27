@@ -2029,14 +2029,22 @@ float RenderDevice::GetPredictedDisplayDelay() const
    }
    else
    {
-      // Frames are supposed to be displayed at a regular pace (usually corresponding to the display refresh rate),
       // We evaluate the next frame presentation as the delay to next displayed frame (from a fixed reference) + an integral number of GPU queue frames
-      const int nFrameLatency = g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING ? 1 : g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames();
-      const uint64_t delayToNextPresent = targetFrameLength - ((now - m_presentTimestampReference) % targetFrameLength);
-      const uint64_t displayFrameLength = static_cast<uint64_t>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
-      const float delayToNextFrame = (float)(static_cast<double>(nFrameLatency * displayFrameLength + delayToNextPresent) / 1000000.);
-      //PLOGD << std::format("Display Delay: {:5.3f}", delayToNextFrame * 1000.f);
-      return delayToNextFrame;
+      uint64_t delayToNextFrame = targetFrameLength - ((now - m_presentTimestampReference) % targetFrameLength);
+      #ifdef ENABLE_BGFX
+      if (delayToNextFrame < m_lastGPUFrameLength)
+         delayToNextFrame += targetFrameLength;
+      #else
+      if (delayToNextFrame < g_pplayer->m_renderProfiler->GetAvg(FrameProfiler::ProfileSection::PROFILE_RENDER_SUBMIT))
+         delayToNextFrame += targetFrameLength;
+      #endif
+      if (g_pplayer->GetVideoSyncMode() != VideoSyncMode::VSM_FRAME_PACING && g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames() > 1)
+      {
+         const uint64_t displayFrameLength = static_cast<uint64_t>(1000000. / (double)m_outputWnd[0]->GetRefreshRate());
+         delayToNextFrame += (g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames() - 1) * displayFrameLength;
+      }
+      // PLOGI << std::format("Display Delay: {:5.3f}ms / Now: {:5.3f}ms / VSync: {:5.3f}ms", delayToNextFrame / 1000., now / 1000., m_presentTimestampReference / 1000.);
+      return static_cast<float>(static_cast<double>(delayToNextFrame) / 1000000.);
    }
 }
 

@@ -156,7 +156,7 @@ void PerfUI::RenderStats() const
       "Custom 3"s,
       // Render thread
       "Wait for frame"s, // PROFILE_RENDER_WAIT
-      "Wait for swapchain"s, // PROFILE_RENDER_WAIT_SC
+      "Wait GPU"s, // PROFILE_RENDER_WAIT_SC
       #ifdef ENABLE_BGFX
       "Submit BGFX"s, // PROFILE_RENDER_SUBMIT
       "Submit GPU"s, // PROFILE_RENDER_FLIP
@@ -323,7 +323,7 @@ void PerfUI::RenderStats() const
          else if (hoveredRow == 4)
             ImGui::SetTooltip("Time spent submiting frame from BGFX to GPU");
          else if (hoveredRow == 5)
-            ImGui::SetTooltip("Time spent waiting for the GPU\n(for VBlank or a free swapchain slot)");
+            ImGui::SetTooltip("Time spent waiting for the GPU\n(for a free swapchain slot)");
          else if (hoveredRow == 6)
             ImGui::SetTooltip("Time spent sleeping to match desired framerate");
          logicRow = 7;

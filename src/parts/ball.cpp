@@ -474,10 +474,10 @@ void Ball::Render(const unsigned int renderMask)
          // If playing also apply velocity extrapolation to account for:
          // - the time elapsed since last physic,
          // - the time between now and when it will be presented,
-         // - the time the display will need to actually show it (3ms is just a magic number here)
+         // - the time the display will need to actually show it (1ms is just a magic number here)
          if (g_pplayer->IsPlaying())
          {
-            const float delay = (float)(static_cast<double>(usec() - g_pplayer->m_timeUpdateTimeStamp) / 1000000.) + rd->GetPredictedDisplayDelay() + 0.003f;
+            const float delay = (float)(static_cast<double>(usec() - g_pplayer->m_timeUpdateTimeStamp) / 1000000.) + rd->GetPredictedDisplayDelay() + 0.001f;
             posl += delay * m_hitBall.m_d.m_vel;
          }
          if (m_hitBall.m_d.m_lockedInKicker)
