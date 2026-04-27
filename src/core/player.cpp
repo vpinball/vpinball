@@ -993,7 +993,7 @@ Player::~Player()
    {
       if (auto ph = editable->GetIRenderable(); ph)
          ph->RenderRelease();
-      editable->TimerRelease(/*m_vht*/); // as everything is killed, not necessary to remove from timer list
+      editable->TimerRelease(m_vht);
    }
    assert(m_vballDelete.empty());
    m_vball.clear();

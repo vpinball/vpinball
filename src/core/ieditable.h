@@ -330,7 +330,6 @@ public:
          RemoveFromVectorSingle(pvht, m_phittimer.get());
       m_phittimer = nullptr;
    }
-   void TimerRelease() { m_phittimer = nullptr; }
 
    // was: TimerDataRoot m_tdr: then it was limited to be used by a limited amount of table elements (most prominently not by decals and primitives though), could be changed/generalized nowadays
    int m_timerInterval = 100;

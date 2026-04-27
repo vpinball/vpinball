@@ -835,11 +835,13 @@ void EditorUI::DeleteSelection()
       if (edit->GetIHitable())
          m_player->m_physics->Remove(edit);
       m_table->RemovePart(edit);
-      m_renderer->m_renderDevice->AddEndOfFrameCmd([edit]()
+      m_renderer->m_renderDevice->AddEndOfFrameCmd([edit, player=m_player]()
          {
             if (edit->GetIRenderable())
                edit->GetIRenderable()->RenderRelease();
-            edit->TimerRelease(/*m_player->m_vht*/); // FIXME should release from timer list?!
+            if (edit->m_phittimer && edit->m_timerEnabled)
+               player->TimerStateChange(edit->m_phittimer.get(), false);
+            edit->m_phittimer = nullptr;
             edit->Release();
          });
    }

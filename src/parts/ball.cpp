@@ -33,7 +33,7 @@ Ball::~Ball()
 {
    if (m_rd)
       RenderRelease();
-   TimerRelease();
+   assert(m_phittimer == nullptr);
 }
 
 
