@@ -533,13 +533,14 @@ void main()
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, v_texcoord0).rgb; //!! offset?
 
+   result *= exposure;
+
    if (isHDR2020) // scale by 1/hdr_headroom (so everything that is within the displays range is now mapped to 0..1)
       result *= sceneLum_x_invDisplayMaxLum; // scale by scene luminance to get nits, then divide by display max luminance (in nits) to get a display-matching 0..1 range before tonemapping
 
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
    {
-      result *= exposure;
       #ifdef REINHARD
          result = ReinhardToneMap(result);       // linear sRGB -> linear sRGB
       #elif defined(FILMIC)

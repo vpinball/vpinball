@@ -42,6 +42,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
    m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
+   Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
    m_exposure = m_table->m_settings.GetTableOverride_Exposure();
    m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
    m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
