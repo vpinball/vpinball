@@ -103,10 +103,7 @@ void GraphicSettingsPage::BuildPage()
       vector<string> renderers;
       for (int i = 0; i < nRendererSupported; i++)
          if (supportedRenderers[i] != bgfx::RendererType::Noop)
-#ifdef _DEBUG
-            if (supportedRenderers[i] != bgfx::RendererType::Direct3D12)
-#endif
-               renderers.push_back(bgfxRendererNames[supportedRenderers[i]]);
+            renderers.push_back(bgfxRendererNames[supportedRenderers[i]]);
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
          [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Live
