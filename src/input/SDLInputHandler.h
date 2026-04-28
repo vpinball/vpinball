@@ -98,15 +98,30 @@ public:
 private:
    static string GetJoySettingId(SDL_Joystick* joy)
    {
-      if (const char* serial = SDL_GetJoystickSerial(joy); serial)
-         return "SDLJoy_"s + serial;
-      SDL_GUID guid = SDL_GetJoystickGUID(joy); // Stable class of the device. Always available but not unique to a single device.
-      uint16_t vendor, product, version, crc16;
-      SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, &crc16);
-      PLOGD << "Joystick '" << SDL_GetJoystickName(joy) << "' does not provide a serial number but a generic GUID. This may result in input conflicts.";
+      // We could also use SDL_GetJoystickSerial but it does not work as a stable unique id as:
+      // - it happens to not be unique as some manufacturers use a fake non unique serial number...
+      // - it is not supported by all drivers, so we need a fallback anyway (for example XBox controllers)
+
+      // Stable class of the device. Always available but not unique to a single device.
+      SDL_GUID guid = SDL_GetJoystickGUID(joy);
+
+      // SDL reports joystick in a stable order so we use the joystick index to distinguish between identical GUID.
+      // This is not fully satisfying as in a situation with 2 identical devices, when disconnecting the first VPX will
+      // wrongly identify the second as the first.
+      int idIndex = 1;
+      int joystickCount = 0;
+      SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
+      for (int i = 0; i < joystickCount; i++)
+      {
+         if (SDL_GetJoystickFromID(joystickIds[i]) == joy)
+            break;
+         if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
+            idIndex++;
+      }
+
       char strGuid[33];
       SDL_GUIDToString(guid, strGuid, 33);
-      return "SDLJoy_"s + strGuid;
+      return "SDLJoy_"s + strGuid + '_' + std::to_string(idIndex);
    }
 
    static string GetGamepadButtonName(SDL_Gamepad* gamepad, SDL_GamepadButton button)
@@ -211,12 +226,12 @@ private:
       if (!joystick)
          return;
 
-      PLOGI << "Joystick connected: " << SDL_GetJoystickName(joystick) << " (ID: " << id << ", Axes: " << SDL_GetNumJoystickAxes(joystick)
-            << ", Buttons: " << SDL_GetNumJoystickButtons(joystick) << ", Hats: " << SDL_GetNumJoystickHats(joystick) << ')';
-
       m_joysticks.emplace_back(joystick);
 
       string settingId = GetJoySettingId(joystick);
+      PLOGI << "Joystick connected: " << SDL_GetJoystickName(joystick) << " (SDL ID: " << id << ", Axes: " << SDL_GetNumJoystickAxes(joystick)
+            << ", Buttons: " << SDL_GetNumJoystickButtons(joystick) << ", Hats: " << SDL_GetNumJoystickHats(joystick) << ", VPX UID: " << settingId.c_str() << ')';
+
       string joyName; // Sadly, we do not have a way to easily give a user friendly name when there are multiple devices of the same class, so we use serial number
       if (const char* serial = SDL_GetJoystickSerial(joystick); serial)
       {
@@ -225,17 +240,21 @@ private:
       else
       {
          SDL_GUID guid = SDL_GetJoystickGUID(joystick);
-         uint16_t vendor, product, version, crc16;
-         SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, &crc16);
-         if (product)
+         
+         int idIndex = 1;
+         int joystickCount = 0;
+         SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
+         for (int i = 0; i < joystickCount; i++)
          {
-            joyName = std::format("{} #{:#06X}", SDL_GetJoystickName(joystick), product);
+            if (SDL_GetJoystickFromID(joystickIds[i]) == joystick)
+               break;
+            if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
+               idIndex++;
          }
-         else
-         {
-            joyName = SDL_GetJoystickName(joystick);
-         }
+
+         joyName = std::format("{} #{}", SDL_GetJoystickName(joystick), idIndex);
       }
+      
       uint16_t deviceId = m_pininput.RegisterDevice(settingId, InputManager::DeviceType::Joystick, joyName);
       m_joystickIds[id] = deviceId;
 
