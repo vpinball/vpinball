@@ -103,6 +103,7 @@ public:
    std::shared_ptr<BaseTexture> NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
    struct SDL_Surface* ToSDLSurface() const; // Create a new SDL_Surface initialized with this texture content
 
+   bool m_resizedOnLowMem = false;
    unsigned int m_realWidth, m_realHeight;
    const Format m_format;
 

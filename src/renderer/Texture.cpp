@@ -171,6 +171,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
    // check if Textures exceed the maximum texture dimension
    if (maxTexDim <= 0)
       maxTexDim = 65536;
+   const unsigned int initMaxTexDim = maxTexDim;
 
    const unsigned int pictureWidth  = FreeImage_GetWidth(dib);
    const unsigned int pictureHeight = FreeImage_GetHeight(dib);
@@ -307,11 +308,13 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
          maxTexDim /= 2;
          while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
             maxTexDim /= 2;
+
+         continue;
       }
    }
 
    assert(tex->data());
-
+   tex->m_resizedOnLowMem = maxTexDim != initMaxTexDim;
    tex->m_realWidth = pictureWidth;
    tex->m_realHeight = pictureHeight;
 

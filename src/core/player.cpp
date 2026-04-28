@@ -630,10 +630,9 @@ Player::Player(PinTable *const table, const PlayMode playMode)
                   }
                   if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
                   {
-                     const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
-                     PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
-                           << image->m_width << 'x' << image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
-                     if (isError)
+                     PLOG(buffer->m_resizedOnLowMem ? plog::Severity::error : plog::Severity::info) << "Image '" << image->m_name << "' was downsized from " << image->m_width << 'x' << image->m_height << " to " << buffer->width() << 'x' << buffer->height()
+                        << (buffer->m_resizedOnLowMem ? " due to low memory " : " due to user settings");
+                     if (buffer->m_resizedOnLowMem)
                         m_liveUI->PushNotification("Image '" + image->m_name + "' was downsized due to low memory", 5000);
                   }
                   //PLOGD << "Image '" << image->m_name << "' loaded to " << (uploaded ? "GPU" : "RAM");
