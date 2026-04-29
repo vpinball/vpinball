@@ -201,7 +201,14 @@ VRDevice::VRDevice(const Settings& settings)
          }
          #endif
          else if (gfxBackend == "Direct3D12"sv)
+         #if defined(_DEBUG) || defined(ENABLE_BGFX_DX12)
             m_rendererType = bgfx::RendererType::Enum::Direct3D12;
+         #else
+         {
+            PLOGI << "Renderer backend enforced to Direct3D11 as Direct3D12 is still experimental and not enabled in release builds";
+            m_rendererType = bgfx::RendererType::Enum::Direct3D11;
+         }
+         #endif
          else
             m_rendererType = bgfx::RendererType::Enum::Direct3D11; // Default to Direct3D 11
       #elif BX_PLATFORM_ANDROID

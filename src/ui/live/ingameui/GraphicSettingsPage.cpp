@@ -102,7 +102,11 @@ void GraphicSettingsPage::BuildPage()
          = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
       vector<string> renderers;
       for (int i = 0; i < nRendererSupported; i++)
+         #if defined(_DEBUG) || defined(ENABLE_BGFX_DX12)
          if (supportedRenderers[i] != bgfx::RendererType::Noop)
+         #else
+         if (supportedRenderers[i] != bgfx::RendererType::Noop && supportedRenderers[i] != bgfx::RendererType::Direct3D12)
+         #endif
             renderers.push_back(bgfxRendererNames[supportedRenderers[i]]);
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
