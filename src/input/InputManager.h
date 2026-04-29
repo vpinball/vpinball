@@ -33,6 +33,10 @@ public:
    unsigned int GetTiltActionId() const { return m_tiltActionId; }
    unsigned int GetLeftMagnaActionId() const { return m_leftMagnaActionId; }
    unsigned int GetRightMagnaActionId() const { return m_rightMagnaActionId; }
+   unsigned int GetUIUpActionId() const { return m_uiUpActionId; }
+   unsigned int GetUIDownActionId() const { return m_uiDownActionId; }
+   unsigned int GetUILeftActionId() const { return m_uiLeftActionId; }
+   unsigned int GetUIRightActionId() const { return m_uiRightActionId; }
    unsigned int GetExitGameActionId() const { return m_exitGameActionId; }
    unsigned int GetOpenInGameUIActionId() const { return m_openInGameUIActionId; }
    unsigned int GetLockbarActionId() const { return m_lockbarActionId; }
@@ -214,6 +218,10 @@ private:
    unsigned int m_tiltActionId;
    unsigned int m_leftMagnaActionId;
    unsigned int m_rightMagnaActionId;
+   unsigned int m_uiUpActionId;
+   unsigned int m_uiDownActionId;
+   unsigned int m_uiLeftActionId;
+   unsigned int m_uiRightActionId;
    unsigned int m_exitGameActionId;
    unsigned int m_openInGameUIActionId;
    unsigned int m_lockbarActionId;

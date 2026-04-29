@@ -677,6 +677,10 @@ void InputManager::CreateInputActions()
    m_stagedRightFlipperActionId = addFlipperKeyAction("RightStagedFlipper"s, "Right Staged Flipper"s, SDL_SCANCODE_RSHIFT); // SDL_SCANCODE_RALT
    m_leftMagnaActionId = addKeyAction("LeftMagna"s, "Left Magna"s, SDL_SCANCODE_LCTRL);
    m_rightMagnaActionId = addKeyAction("RightMagna"s, "Right Magna"s, SDL_SCANCODE_RCTRL);
+   m_uiUpActionId = addKeyAction("UIUp"s, "UI: Next Item"s, SDL_SCANCODE_LCTRL);
+   m_uiDownActionId = addKeyAction("UIDown"s, "UI: Previous Item"s, SDL_SCANCODE_RCTRL);
+   m_uiLeftActionId = addKeyAction("UILeft"s, "UI: Decrease/Cancel"s, SDL_SCANCODE_LSHIFT);
+   m_uiRightActionId = addKeyAction("UIRight"s, "UI: Increase/Confirm"s, SDL_SCANCODE_RSHIFT);
    m_launchBallActionId = addKeyAction("LaunchBall"s, "Launch Ball"s, SDL_SCANCODE_RETURN);
    m_leftNudgeActionId = addKeyAction("LeftNudge"s, "Left Nudge"s, SDL_SCANCODE_Z);
    m_rightNudgeActionId = addKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);

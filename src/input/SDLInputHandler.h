@@ -361,6 +361,18 @@ private:
                         success &= mapButton(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetServiceActionId(1));
                         success &= mapButton(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetServiceActionId(2));
                         success &= mapButton(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetServiceActionId(3));
+
+                        success &= mapButton(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetUIUpActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetUIDownActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, dpadLeftButton), m_pininput.GetUILeftActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetUIRightActionId());
+                     }
+                     else
+                     {
+                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickY, -0.3f), m_pininput.GetUIUpActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickY, 0.3f), m_pininput.GetUIDownActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickX, -0.3f), m_pininput.GetUILeftActionId());
+                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickX, 0.3f), m_pininput.GetUIRightActionId());
                      }
                      success &= mapPlunger(SensorMapping::Create(deviceId, rightStickY, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
                      success &= mapNudge(SensorMapping::Create(deviceId, leftStickX, SensorMapping::Type::Position), SensorMapping::Create(deviceId, leftStickY, SensorMapping::Type::Position));

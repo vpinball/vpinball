@@ -547,8 +547,12 @@ void InGameUIPage::Render(float elapsedS)
       ImGui::PopStyleColor();
    const bool backHovered = ImGui::IsItemHovered();
 
-   // As we may have changed the number of selectable items, ensure m_selectedItem is still valid
-   m_selectedItem = clamp(m_selectedItem, 0, static_cast<int>(m_items.size()) - 1);
+   // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
+   {
+      m_selectedItem = clamp(m_selectedItem, 0, static_cast<int>(m_items.size()) - 1);
+      while (!m_items[m_selectedItem]->IsSelectable())
+         m_selectedItem = (m_selectedItem + 1) % static_cast<int>(m_items.size());
+   }
 
    // Page items
    // Note that items may trigger state change which in turn may trigger a rebuild of the page (changing m_items)

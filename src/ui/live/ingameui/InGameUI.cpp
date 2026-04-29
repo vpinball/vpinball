@@ -193,14 +193,14 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    {
       ImVec2 delta = m_prevMousePos - ImGui::GetMousePos();
       m_useFlipperNav &= fabs(delta.x) <= 3.f && fabs(delta.y) <= 3.f;
-      m_prevMousePos = ImGui::GetMousePos();
    }
+   m_prevMousePos = ImGui::GetMousePos();
 
    // Allow pages to force flipper navigation (needed by anaglyph calibration)
    for (const auto &page : m_activePages)
       m_useFlipperNav |= page->IsFlipperNavNeeded();
 
-   if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetUIUpActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
@@ -209,7 +209,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
          GetActivePage()->SelectNextItem();
    }
 
-   if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetUIDownActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
@@ -218,14 +218,14 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
          GetActivePage()->SelectPrevItem();
    }
 
-   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
+   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetUILeftActionId(), m_prevActionState))
       GetActivePage()->AdjustItem(-1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetLeftFlipperActionId()))
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUILeftActionId()))
       GetActivePage()->AdjustItem(-1, false);
 
-   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
+   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetUIRightActionId(), m_prevActionState))
       GetActivePage()->AdjustItem(1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetRightFlipperActionId()))
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIRightActionId()))
       GetActivePage()->AdjustItem(1, false);
 
    if (state.IsKeyPressed(m_player->m_pininput.GetLaunchBallActionId(), m_prevActionState))

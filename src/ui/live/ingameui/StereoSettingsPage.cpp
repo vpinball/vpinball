@@ -466,10 +466,10 @@ void StereoSettingsPage::UpdateAnaglyphCalibrationModal()
       (int)(calibrationBrightness * 100.f));
    CenteredText(y + 1 * line_height, win_size.x, info.c_str());
    CenteredText(y + 3 * line_height, win_size.x, m_calibrationStep < 3 ? "Close your right eye" : "Close your left eye");
-   CenteredText(y + 5 * line_height, win_size.x, m_calibrationStep == 0 ? "Use Left Magna to exit calibration" : "Use Left Magna to move to previous step");
-   CenteredText(y + 6 * line_height, win_size.x, m_calibrationStep == 5 ? "Use Right Magna to exit calibration" : "Use Right Magna to move to next step");
-   CenteredText(y + 7 * line_height, win_size.x, "Use Left/Right Flipper to adjust face brightness until");
-   CenteredText(y + 8 * line_height, win_size.x, "Your eye does not favor or focus one face over the other.");
+   CenteredText(y + 5 * line_height, win_size.x, m_calibrationStep == 0 ? "Use 'UI Up' to exit calibration" : "Use 'UI Up' to move to previous step");
+   CenteredText(y + 6 * line_height, win_size.x, m_calibrationStep == 5 ? "Use 'UI Down' to exit calibration" : "Use 'UI Down' to move to next step");
+   CenteredText(y + 7 * line_height, win_size.x, "Use UI Increase/Decrease to adjust face brightness until");
+   CenteredText(y + 8 * line_height, win_size.x, "your eye does not favor or focus one face over the other.");
    ImGui::PopFont();
 
    line_height = ImGui::GetTextLineHeight();

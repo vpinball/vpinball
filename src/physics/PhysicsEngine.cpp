@@ -312,8 +312,15 @@ void PhysicsEngine::UpdateNudge(float dtime)
       m_tableVelOld = m_tableVel;
 
       // Simulate hardware nudge by getting the cabinet acceleration (optionally through velocity sensor) and applying it directly to the ball
-      Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
-      m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
+      if (g_pplayer && g_pplayer->m_liveUI->IsInGameUIOpened())
+      {
+         m_nudgeAcceleration.SetZero();
+      }
+      else
+      {
+         Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
+         m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
+      }
 
       // Evaluate visual table displacement due to sensor nudge
       // Always apply a damping factor to limit drifting when using a 'bad' nudge sensor
