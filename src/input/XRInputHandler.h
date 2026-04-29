@@ -42,7 +42,7 @@ public:
       CopyToXrBuffer(actionSetInfo.localizedActionSetName, "VPX Generic Input"s);
       xrCreateActionSet(m_instance, &actionSetInfo, &m_actionSet);
 
-      m_joyId = m_pininput.RegisterDevice("OpenXR", InputManager::DeviceType::Joystick, "Controller");
+      m_joyId = m_pininput.RegisterDevice("OpenXR", InputManager::DeviceType::Joystick, "VR Controller");
 
       // There is no way to enumerate and listen for change in OpenXR, so we do it the other way: we define all known input paths and listen for changes on all of them
       std::vector<std::pair<std::string, XrActionType>> allPaths = { // Common Buttons (Boolean)
