@@ -75,13 +75,9 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
       glassNotification(std::format("Missing glass position guessed to be {:.2f}cm / {:.2f}cm", VPUTOCM(bottomHeight), VPUTOCM(topHeight)));
    }
 
-   // Reset rotation against screen orientation
-   if (mMode != VLM_WINDOW)
-      mViewportRotation = 0.f;
-   mViewportRotation = GetRotation(static_cast<int>(1080.f * aspect), 1080);
-
    mMode = VLM_WINDOW;
    mViewHOfs = 0.f;
+   mViewportRotation = 0.f;
    mSceneScaleX = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
    mSceneScaleY = allowNonUniformStretch ? 1.f : mSceneScaleX;
    mWindowBottomZOfs = bottomHeight;
@@ -132,13 +128,17 @@ void ViewSetup::SetWindowAutofit(const PinTable* const table, const vec3& player
          mvp.GetModelViewProj(0).MultiplyVector(backTop);
          Vertex3Ds bottomDown(table->m_right * 0.5f, table->m_bottom, mWindowBottomZOfs);
          mvp.GetModelViewProj(0).MultiplyVector(bottomDown);
-         // PLOGD << "Vertical offset fitting: [" << posMin << " - " << posMax << "] " << defViewSetup.mViewVOfs << " => Flipper: " << bottomFlipper.y << ", BackTop: " << backTop.y;
-         const float delta = bottomFlipper.y - targetPos;
+         const float bottomFlipperY = aspect < 1.f ? bottomFlipper.y : - bottomFlipper.x;
+         const float bottomDownY = aspect < 1.f ? bottomDown.y : -bottomDown.x;
+         const float backTopY = aspect < 1.f ? backTop.y : -backTop.x;
+         const float delta = bottomFlipperY - targetPos;
+         //PLOGD << std::format("Vertical offset fitting: [{:6.3f} - {:6.3f}] {:6.3f} => Flipper: {:6.3f} / {:6.3f}, BackTop: {:6.3f}, BottomDown: {:6.3f}", posMin, posMax, mViewVOfs,
+         //   bottomFlipperY, targetPos, backTopY, bottomDownY).c_str();
          // Rule 1: limit the bottom gap to 5% of screen height
-         if (bottomDown.y > -1.0f + 0.05f / 2.f)
+         if (bottomDownY > -1.0f + 0.05f / 2.f)
             posMin = mViewVOfs;
          // Rule 2: don't create a gap at the top
-         else if (backTop.y < 1.0f)
+         else if (backTopY < 1.0f)
             posMax = mViewVOfs;
          // Rule 3: place flipper bat bottom at the user selected relative height position
          else if (fabs(delta) < 0.001f)
