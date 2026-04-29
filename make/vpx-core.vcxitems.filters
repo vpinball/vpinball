@@ -540,6 +540,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1428,6 +1431,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h">

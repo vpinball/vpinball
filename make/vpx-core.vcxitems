@@ -933,6 +933,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.cpp" />
@@ -1742,6 +1743,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.h" />

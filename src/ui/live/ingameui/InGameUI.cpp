@@ -11,6 +11,7 @@
 #include "DisplaySettingsPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
+#include "InputProfilePage.h"
 #include "InputSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
@@ -283,6 +284,15 @@ void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
 
    if (state.IsKeyDown(m_player->m_pininput.GetRightNudgeActionId()))
       m_player->m_ptable->GetViewSetup().mViewportRotation += 1.0f;
+}
+
+bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler)
+{
+   if (IsOpened())
+      return false;
+   m_pages["popup/new_input_profile"s] = [deviceName, handler]() { return std::make_unique<InputProfilePage>(deviceName, handler); };
+   Open("popup/new_input_profile"s);
+   return true;
 }
 
 }

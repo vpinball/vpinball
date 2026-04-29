@@ -544,11 +544,14 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
    if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
    {
       const uint64_t curPhysicsFrameTime = m_startTime_usec + (uint64_t)(g_pplayer->m_time_sec * 1000000.0);
-      const uint64_t timeShift = initial_time_usec - curPhysicsFrameTime;
-      m_startTime_usec += timeShift;
-      m_nextPhysicsFrameTime += timeShift;
-      m_curPhysicsFrameTime += timeShift;
-      g_pplayer->m_noTimeCorrect = false;
+      if (initial_time_usec > curPhysicsFrameTime)
+      {
+         const uint64_t timeShift = initial_time_usec - curPhysicsFrameTime;
+         m_startTime_usec += timeShift;
+         m_nextPhysicsFrameTime += timeShift;
+         m_curPhysicsFrameTime += timeShift;
+         g_pplayer->m_noTimeCorrect = false;
+      }
    }
 
    // Walk a single physics step forward

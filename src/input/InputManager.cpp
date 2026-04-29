@@ -491,7 +491,7 @@ void InputManager::ProcessInput()
                continue;
             }
             const uint16_t deviceId = device.m_id;
-            if (m_player->m_liveUI->ProposeInputLayout(device.m_name,
+            if (m_player->m_liveUI->m_inGameUI.ProposeInputLayout(device.m_name,
                    [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore)
                    {
                       if (isOk)

@@ -353,9 +353,6 @@ void LiveUI::RenderUI()
 
    ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
 
-   if (!m_deviceLayoutName.empty())
-      UpdateDeviceLayoutPopup();
-
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
 
@@ -569,52 +566,6 @@ void LiveUI::HideUI()
    m_player->m_ptable->m_settings.Save();
    g_app->m_settings.Save();
    m_player->SetPlayState(true);
-}
-
-bool LiveUI::ProposeInputLayout(const string &deviceName, const std::function<void(bool, bool)> &handler)
-{
-   if (!m_deviceLayoutName.empty())
-      return false;
-   m_deviceLayoutName = deviceName;
-   m_deviceLayoutHandler = handler;
-   m_deviceLayoutDontAskAgain = false;
-   return true;
-}
-
-void LiveUI::UpdateDeviceLayoutPopup()
-{
-   // FIXME add an UI for VR instead of applying blindly
-   if (m_player->IsVR())
-   {
-      m_deviceLayoutName.clear();
-      m_deviceLayoutHandler(true, false);
-      return;
-   }
-
-   if (!m_deviceLayoutName.empty())
-      ImGui::OpenPopup("Apply Device Layout ?");
-   ImGui::SetNextWindowSize(ImVec2(350.f * m_uiScale, 0.f));
-   if (ImGui::BeginPopupModal("Apply Device Layout ?"))
-   {
-      ImGui::TextWrapped("Device '%s' was detected. Would you like the default input layout to be applied ?", m_deviceLayoutName.c_str());
-      ImGui::Separator();
-      ImGui::Checkbox("Don't ask again", &m_deviceLayoutDontAskAgain);
-      ImGui::Separator();
-      if (ImGui::Button("Discard"))
-      {
-         m_deviceLayoutName.clear();
-         m_deviceLayoutHandler(false, m_deviceLayoutDontAskAgain);
-         ImGui::CloseCurrentPopup();
-      }
-      ImGui::SameLine(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().FramePadding.x * 2.f);
-      if (ImGui::Button("Apply"))
-      {
-         m_deviceLayoutName.clear();
-         m_deviceLayoutHandler(true, m_deviceLayoutDontAskAgain);
-         ImGui::CloseCurrentPopup();
-      }
-      ImGui::EndPopup();
-   }
 }
 
 extern ImGuiKey ImGui_ImplSDL3_KeyEventToImGuiKey(SDL_Keycode keycode, SDL_Scancode scancode);

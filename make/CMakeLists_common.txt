@@ -323,6 +323,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUIItem.cpp
    src/ui/live/ingameui/InGameUIPage.h
    src/ui/live/ingameui/InGameUIPage.cpp
+   src/ui/live/ingameui/InputProfilePage.h
+   src/ui/live/ingameui/InputProfilePage.cpp
    src/ui/live/ingameui/InputSettingsPage.h
    src/ui/live/ingameui/InputSettingsPage.cpp
    src/ui/live/ingameui/MiscSettingsPage.h
