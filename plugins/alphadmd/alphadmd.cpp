@@ -4,6 +4,7 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
 
+#include <array>
 #include <vector>
 #include <thread>
 #include <mutex>
