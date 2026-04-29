@@ -23,7 +23,11 @@ public:
    void Close(bool isBackwardAnimation) override;
    void Render(float elapsedS) override;
 
+   void ResetToStoredValues() override;
+   void ResetToDefaults() override;
+
 private:
+   void ResetARLock();
    void BuildPage();
    void BuildWindowPage();
    void BuildEmbeddedPage();
