@@ -16,8 +16,6 @@
 
 using namespace MsgPI;
 
-static unsigned int onPrepareFrameMsgId = 0;
-
 #ifdef ENABLE_BGFX
 bgfx::RendererType::Enum lastBgfxRenderer = bgfx::RendererType::Count;
 bgfx::RendererType::Enum GetLastRenderer()
@@ -125,9 +123,11 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    table->AddRef();
    table->LoadGameFromFilename((GetAssetPath() / tablePath).string());
    auto player = std::make_unique<Player>(table, Player::PlayMode::Play);
+   const unsigned int onPrepareFrameMsgId = player->m_pluginManager.GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    player->m_pluginManager.GetMsgAPI().SubscribeMsg(player->m_pluginAPI.GetVPXEndPointId(), onPrepareFrameMsgId, onPrepareFrame, &state);
    player->GameLoop();
    player->m_pluginManager.GetMsgAPI().UnsubscribeMsg(onPrepareFrameMsgId, onPrepareFrame, &state);
+   player->m_pluginManager.GetMsgAPI().ReleaseMsgID(onPrepareFrameMsgId);
    player = nullptr;
    table->Release();
 }
@@ -138,7 +138,6 @@ void ResetVPX()
    g_app->m_settings.Reset();
    Settings& settings = g_app->m_settings;
    settings.SetPlayerVR_AskToTurnOn(2, false);
-   settings.SetPlayer_PlayfieldFullScreen(0, false);
    settings.SetPlayer_PlayfieldWidth(1920, false);
    settings.SetPlayer_PlayfieldHeight(1080, false);
    settings.SetPlayer_NumberOfTimesToShowTouchMessage(0, false);
@@ -159,8 +158,6 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    const char* args[] = { "vpx-test.exe", "-ini", iniPath.c_str() };
    cmdLine.ProcessCommandLine(3, args);
    vpx.InitInstance();
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   onPrepareFrameMsgId = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
 
    // Initialize the doctest framework and run the tests
    doctest::Context context;
@@ -171,7 +168,6 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    int res = context.run();
 
    // Clean up
-   msgApi.ReleaseMsgID(onPrepareFrameMsgId);
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
    if (context.shouldExit())

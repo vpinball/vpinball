@@ -980,13 +980,7 @@ void RenderDevice::CaptureGLScreenshot()
       m_outputWnd[0]->GetBackBuffer()->Activate();
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glReadBuffer(GL_BACK);
-#ifdef __OPENGLES__
-      // OpenGL ES does not have GL_BGRA
       glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tex->data());
-      tex = tex->ToBGRA();
-#else
-      glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, tex->data());
-#endif
       tex->FlipY();
       success = tex->Save(screenshotFilename);
    }
