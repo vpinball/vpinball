@@ -2,9 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ThreadPool.h"
-#ifndef __STANDALONE__
-#include "BAM/BAMView.h"
-#endif
 #include "math/bluenoise.h"
 #include "math/math.h"
 #include "meshes/ballMesh.h"
@@ -171,10 +168,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(),
       0.f, 0.f);
    DisableBallLighting(m_table->m_settings.GetPlayer_DisableLightingForBalls());
-
-   #ifndef __STANDALONE__
-      BAMView::init();
-   #endif
 
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR) {
@@ -2835,18 +2828,6 @@ void Renderer::RenderFrame()
    }
    else 
    #endif
-   // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
-   if (g_pplayer->m_headTracking)
-   {
-      #ifndef __STANDALONE__
-      Matrix3D matView;
-      Matrix3D matProj[2];
-      BAMView::createProjectionAndViewMatrix(&matProj[0]._11, &matView._11);
-      m_mvp->SetView(matView);
-      for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
-         m_mvp->SetProj(eye, matProj[eye]);
-      #endif
-   }
    m_playfieldView = m_mvp->GetView();
    m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
 

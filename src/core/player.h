@@ -28,7 +28,6 @@ enum InfoMode
    IF_AO_ONLY,
    IF_LIGHT_BUFFER_ONLY,
    IF_RENDER_PROBES,
-   IF_BAM_MENU,
    IF_INVALID
 };
 
@@ -224,7 +223,6 @@ public:
    VPX::RenderOutput m_topperOutput;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
-   bool m_headTracking = false;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
    bool IsVR() const { return m_vrDevice != nullptr; }

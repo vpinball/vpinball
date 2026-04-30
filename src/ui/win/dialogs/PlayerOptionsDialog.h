@@ -17,8 +17,6 @@ private:
 
    CToolTip m_tooltip;
 
-   CButton m_bamHeadtracking; // TODO move to plugin
-
    bool oldScaleValue = false;
    float scaleRelative = 1.0f;
    float scaleAbsolute = 55.0f;

@@ -1053,7 +1053,6 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/glad/src/gl.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
@@ -1911,9 +1910,6 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_Tracker.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_ViewPortSetup.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/forsyth.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/freeimage.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/glad/include/glad/gl.h" />

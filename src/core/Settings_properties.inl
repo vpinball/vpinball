@@ -186,7 +186,6 @@ PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable mov
 PropBool(Player, DetectHang, "Detect Script Hang"s, ""s, false);
 PropInt(Player, SecurityLevel, "Security Level"s, ""s, 0, 4, DEFAULT_SECURITY_LEVEL);
 PropInt(Player, NumberOfTimesToShowTouchMessage, "NumberOfTimesToShowTouchMessage"s, "Number of times to re-display the touch display message"s, 0, 100, 10);
-PropBool(Player, BAMHeadTracking, "BAM Headtracking"s, "Enable headtracking using the external BAM application.\nThis feature is experimental and unsupported"s, false);
 PropBool(Player, Mirror, "Mirror"s, "Mirror the table (left <-> right)"s, false);
 PropEnum(Player, CacheMode, "Cache Mode"s, "Use cache to limit stutters and speedup loading"s, int, 1, "Disabled"s, "Preload Textures"s);
 PropEnum(Player, RumbleMode, "RumbleMode"s, "Use rumble motor(s) in attached input devices"s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);

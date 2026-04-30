@@ -14,8 +14,6 @@
 #include "PlumbOverlay.h"
 #include "BallControl.h"
 
-constexpr const char * const ID_BAM_SETTINGS = "Headtracking Settings";
-
 class LiveUI final
 {
 public:

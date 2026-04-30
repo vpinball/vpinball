@@ -76,9 +76,6 @@
     <Filter Include="third-party\tinyxml2">
       <UniqueIdentifier>{e926a8a0-9840-4ba3-881d-b65d8fa8a873}</UniqueIdentifier>
     </Filter>
-    <Filter Include="third-party\BAM">
-      <UniqueIdentifier>{c38add25-cdb8-4aea-810a-d2cd4dbd1010}</UniqueIdentifier>
-    </Filter>
     <Filter Include="third-party\hid">
       <UniqueIdentifier>{cf396ea5-cdf8-413a-898a-64af235ed010}</UniqueIdentifier>
     </Filter>
@@ -860,9 +857,6 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.cpp">
       <Filter>third-party</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.cpp">
-      <Filter>third-party\BAM</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_widgets.cpp">
       <Filter>third-party\imgui</Filter>
@@ -1765,15 +1759,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/stb_image.h">
       <Filter>third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_Tracker.h">
-      <Filter>third-party\BAM</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_ViewPortSetup.h">
-      <Filter>third-party\BAM</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.h">
-      <Filter>third-party\BAM</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/hidapi/hidapi.h">
       <Filter>third-party\hid</Filter>

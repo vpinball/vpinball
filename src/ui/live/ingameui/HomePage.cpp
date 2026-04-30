@@ -126,12 +126,6 @@ void HomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Legacy DOF & B2S Settings"s, ""s, "settings/misc"s));
 
-   // FIXME remove unsupported Win32 only legacy BAM headtracking
-#ifdef WIN32
-   if (m_player->m_headTracking)
-      AddItem(std::make_unique<InGameUIItem>("BAM Headtracking Settings"s, ""s, []() { ImGui::OpenPopup(ID_BAM_SETTINGS); }));
-#endif
-
    AddItem(std::make_unique<InGameUIItem>("System Info"s, ""s, "misc/systeminfo"s));
 }
 

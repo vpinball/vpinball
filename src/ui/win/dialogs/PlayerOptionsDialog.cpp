@@ -31,11 +31,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
       ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Table with generic fallback");
       ::SendMessage(hwndRumble, CB_SETCURSEL, rumbleMode, 0);
 
-      AttachItem(IDC_HEADTRACKING, m_bamHeadtracking);
-      AddToolTip(m_bamHeadtracking, "Enables BAM Headtracking. See https://www.ravarcade.pl for details.");
-
-      m_bamHeadtracking.SetCheck(settings.GetPlayer_BAMHeadTracking() ? BST_CHECKED : BST_UNCHECKED);
-
       const bool overwiteBallImage = settings.GetPlayer_OverwriteBallImage();
    }
 
@@ -111,8 +106,6 @@ void PlayerOptionsDialog::OnOK()
 
       const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
       settings.SetPlayer_RumbleMode(rumble, false);
-
-      settings.SetPlayer_BAMHeadTracking(m_bamHeadtracking.GetCheck() == BST_CHECKED, false);
    }
 
    // VR section

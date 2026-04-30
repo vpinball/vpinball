@@ -764,7 +764,6 @@
 #define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
-#define IDC_HEADTRACKING                560
 #define IDC_LIGHTHEIGHT                 564
 #define IDC_LIGHTRANGE                  565
 #define IDC_ENVEMISSIONSCALE            566

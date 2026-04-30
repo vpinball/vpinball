@@ -237,10 +237,6 @@ add_executable(vpinball WIN32
    src/ui/win/res/trigger.rgs
    src/ui/win/res/vpinball.rgs
 
-   third-party/include/BAM/BAMView.cpp
-   third-party/include/BAM/BAMView.h
-   third-party/include/BAM/BAM_Tracker.h
-   third-party/include/BAM/BAM_ViewPortSetup.h
    third-party/include/freeimage.h
    third-party/include/serial.cpp
    third-party/include/serial.h

@@ -6,10 +6,6 @@
 #include "ui/win/codeview.h"
 
 #ifndef __STANDALONE__
-#include "BAM/BAMView.h"
-#endif
-
-#ifndef __STANDALONE__
 #define SDL_MAIN_NOIMPL
 #include <SDL3/SDL_main.h>
 #endif
@@ -273,7 +269,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->m_settings.GetPlayer_Stereo3D();
    #endif
 
-   m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.GetPlayer_BAMHeadTracking();
    m_detectScriptHang = m_ptable->m_settings.GetPlayer_DetectHang();
 
    m_minphyslooptime = m_ptable->m_settings.GetPlayer_MinPhysLoopTime();
@@ -387,8 +382,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    #endif
 
-   // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
-   if (m_headTracking || (stereo3D == STEREO_VR))
+   // Disable static prerendering for VR
+   if (stereo3D == STEREO_VR)
       m_renderer->DisableStaticPrePass(true);
 
    m_renderer->m_renderDevice->m_vsyncCount = 1;

@@ -19,10 +19,6 @@
 #include "imgui/imgui_stdlib.h"
 #include "imgui_markdown/imgui_markdown.h"
 
-#ifndef __STANDALONE__
-#include "BAM/BAMView.h"
-#endif
-
 
 ImGui::MarkdownConfig LiveUI::markdown_config;
 
@@ -365,13 +361,7 @@ void LiveUI::RenderUI()
       ImGui::End();
    }
 
-   if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
-   { // BAM headtracking UI (aligned to desktop, using traditional mouse interaction) => hacky, remove and use plugin + plugin settings instead
-      #ifndef __STANDALONE__
-         BAMView::drawMenu();
-      #endif
-   }
-   else if (m_editorUI.IsOpened())
+   if (m_editorUI.IsOpened())
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
       SetupImGuiStyle(true);
       m_editorUI.RenderUI();

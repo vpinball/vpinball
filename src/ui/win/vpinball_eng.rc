@@ -427,12 +427,11 @@ BEGIN
     LTEXT           "Near Plane",IDC_NEAR_LABEL,122,96,48,10
     EDITTEXT        IDC_NEAR_PLANE,194,94,56,12,ES_RIGHT | ES_AUTOHSCROLL
 
-    GROUPBOX        "Miscellaneous Options",IDC_STATIC,6,116,254,48
-    CONTROL         "BAM Headtracking",IDC_HEADTRACKING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,125,129,10
+    GROUPBOX        "Miscellaneous Options",IDC_STATIC,6,116,254,36
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Tweak Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,137,235,10
-    COMBOBOX        IDC_COMBO_RUMBLE,160,149,77,64,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Controller Rumble Behavior",IDC_LABEL_RUMBLE,10,152,110,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,125,235,10
+    COMBOBOX        IDC_COMBO_RUMBLE,160,135,77,64,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Controller Rumble Behavior",IDC_LABEL_RUMBLE,10,140,110,8
 
     PUSHBUTTON      "&Cancel",IDCANCEL,172,170,40,14
     DEFPUSHBUTTON   "&OK",IDOK,215,170,40,14
