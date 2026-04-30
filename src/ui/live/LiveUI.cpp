@@ -291,6 +291,10 @@ void LiveUI::NewFrame()
    }
    const int width = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetWidth() : 1920;
    const int height = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetHeight() : 1080;
+   // On Quest VR the SDL window has no real surface, so DisplayFramebufferScale derived by ImGui_ImplSDL3_NewFrame
+   // can be 0 - guard against divide-by-zero producing NaN/Inf in DisplaySize.
+   if (io.DisplayFramebufferScale.x <= 0.f) io.DisplayFramebufferScale.x = 1.f;
+   if (io.DisplayFramebufferScale.y <= 0.f) io.DisplayFramebufferScale.y = 1.f;
    io.DisplaySize.x = static_cast<float>(width) / io.DisplayFramebufferScale.x;
    io.DisplaySize.y = static_cast<float>(height) / io.DisplayFramebufferScale.y;
    m_rotate = m_renderer->m_stereo3D == STEREO_VR

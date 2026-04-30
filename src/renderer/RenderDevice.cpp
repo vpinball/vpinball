@@ -528,14 +528,6 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
 
             // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
             {
-#if defined(__ANDROID__)
-               void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-               if (nwh == nullptr)
-               {
-                  m_framePending = true;
-                  return;
-               }
-#endif
                BEGIN_SPAN(tagSpan, "VPX->BGFX")
                std::lock_guard lock(m_frameMutex);
                g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
