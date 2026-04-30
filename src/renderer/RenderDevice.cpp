@@ -1158,7 +1158,7 @@ RenderDevice::RenderDevice(
          init.type = supportedRenderers[i];
    }
 #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
-   if (init.type = bgfx::RendererType::Direct3D12)
+   if (init.type == bgfx::RendererType::Direct3D12)
       init.type = bgfx::RendererType::Count;
 #endif
    if (init.type == bgfx::RendererType::Noop)
