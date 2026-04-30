@@ -331,6 +331,7 @@ SoundPlayer::~SoundPlayer()
    m_commandQueue.wait_until_nothing_in_flight();
    if (m_sound)
    {
+      m_sound->endCallback = nullptr;
       ma_sound_stop(m_sound.get());
       ma_sound_uninit(m_sound.get());
    }
