@@ -5,7 +5,6 @@
 #include "renderer/typedefs3D.h"
 #include "renderer/Window.h"
 
-class Renderer;
 #include "physics/PhysicsEngine.h"
 #include "ui/win/Debugger.h"
 #include "ui/live/LiveUI.h"
@@ -17,6 +16,7 @@ class Renderer;
 #include "core/ScriptInterpreter.h"
 #include "VPXPluginAPIImpl.h"
 
+class Renderer;
 class VRDevice;
 
 enum InfoMode

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Settings.h"
-#include "parts/Sound.h"
 
 #ifndef __STANDALONE__
    #include <wxx_dockframe.h>
@@ -18,7 +17,6 @@
    #include "dialogs/TableInfoDialog.h"
    #include "dialogs/DimensionDialog.h"
    #include "dialogs/MaterialDialog.h"
-   #include "dialogs/SoundDialog.h"
    #include "dialogs/AboutDialog.h"
    #include "dialogs/ToolbarDialog.h"
    #include "dialogs/LayersListDialog.h"

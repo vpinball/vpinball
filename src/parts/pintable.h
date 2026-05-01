@@ -44,6 +44,13 @@ struct WhereUsedInfo
    string whereUsedPropertyName; // Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
 };
 
+namespace VPX
+{
+class Sound;
+};
+class Texture;
+class Material;
+
 
 class VPXFileFeedback;
 namespace VPX::InGameUI { class InGameUIItem; }

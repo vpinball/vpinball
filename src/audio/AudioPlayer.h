@@ -3,6 +3,8 @@
 #pragma once
 
 #include "core/Settings.h"
+#include "parts/Sound.h"
+
 #include <SDL3/SDL_audio.h>
 
 struct ma_engine;
