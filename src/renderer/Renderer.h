@@ -27,8 +27,8 @@ public:
    int GetDisplayHeight() const; // Playfield display width, taking in consideration stretching applied by some stereo modes
    float GetDisplayAspectRatio() const;
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
-   ModelViewProj& GetMVP() { return *m_mvp; }
-   const ModelViewProj& GetMVP() const { return *m_mvp; }
+   ModelViewProj& GetMVP() { return m_mvp; }
+   const ModelViewProj& GetMVP() const { return m_mvp; }
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
 
@@ -290,7 +290,7 @@ private:
 
    PinTable* const m_table;
 
-   ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+   ModelViewProj m_mvp; // Store the active Model / View / Projection
    Matrix3D m_playfieldView; // Store the base playfield view matrix computed at beginning of frame render
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
 

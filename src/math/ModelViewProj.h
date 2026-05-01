@@ -12,6 +12,24 @@ public:
    void SetModel(const Matrix3D& Model) { MarkDirty(Model, m_matModel); m_matModel = Model; }
    void SetView(const Matrix3D& view) { MarkDirty(view, m_matView); m_matView = view; }
    void SetProj(const unsigned int index, const Matrix3D& proj) { MarkDirty(proj, m_matProj[index]); m_matProj[index] = proj; }
+   void Set(const ModelViewProj& mvp) {
+      assert(m_nEyes == mvp.m_nEyes);
+      m_flip = mvp.m_flip;
+      m_matModel = mvp.m_matModel;
+      m_matView = mvp.m_matView;
+      for (unsigned int i = 0; i < m_nEyes; i++)
+         m_matProj[i] = mvp.m_matProj[i];
+      m_dirty = mvp.m_dirty;
+      if (!mvp.m_dirty)
+      {
+         m_matModelView = mvp.m_matModelView;
+         m_matModelViewInverse = mvp.m_matModelViewInverse;
+         m_matModelViewInverseTranspose = mvp.m_matModelViewInverseTranspose;
+         for (unsigned int i = 0; i < m_nEyes; i++)
+            m_matModelViewProj[i] = mvp.m_matModelViewProj[i];
+         m_viewVec = mvp.m_viewVec;
+      }
+   }
 
    const Matrix3D& GetModel() const { return m_matModel; }
    const Matrix3D& GetView() const { return m_matView; }

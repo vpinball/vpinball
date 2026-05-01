@@ -35,6 +35,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    : m_sceneLighting(table) 
    , m_stereo3D(stereo3D)
    , m_table(table)
+   , m_mvp(stereo3D == STEREO_OFF ? 1 : 2)
 {
    m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
@@ -68,8 +69,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
    m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
-
-   m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
    #if defined(ENABLE_OPENGL)
    constexpr int MSAASamples[] = { 1, 4, 6, 8 };
@@ -334,7 +333,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
 Renderer::~Renderer()
 {
-   delete m_mvp;
    m_gpu_profiler.Shutdown();
    m_ballMeshBuffer = nullptr;
    #ifdef DEBUG_BALL_SPIN
@@ -971,13 +969,13 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    #elif defined(ENABLE_DX9)
    constexpr bool stereo = false;
    #endif
-   viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
+   viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
    SetupShaders();
 }
 
 Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point) const
 {
-   Matrix3D invMVP = m_mvp->GetModelViewProj(0);
+   Matrix3D invMVP = m_mvp.GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(
       2.0f * point.x / static_cast<float>(width)  - 1.0f,
@@ -1527,12 +1525,12 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
          case PartGroupData::SpaceReference::SR_CABINET:
          case PartGroupData::SpaceReference::SR_CABINET_FEET:
          case PartGroupData::SpaceReference::SR_ROOM:
-            m_mvp->SetView(g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView);
+            m_mvp.SetView(g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView);
             break;
 
          case PartGroupData::SpaceReference::SR_PLAYFIELD:
          default:
-            m_mvp->SetView(m_playfieldView);
+            m_mvp.SetView(m_playfieldView);
             break;
          }
       }
@@ -1542,7 +1540,7 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
          if (const auto nudge = g_pplayer->m_physics->GetTableDisplacement(); nudge.x != 0.f || nudge.y != 0.f)
          {
             const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(2.5f * 100.f * m_visualNudgeStrength * nudge.x, 2.5f * 100.f * m_visualNudgeStrength * nudge.y, 0.f);
-            m_mvp->SetView(nudgeMat * m_mvp->GetView());
+            m_mvp.SetView(nudgeMat * m_mvp.GetView());
          }
       }
       m_mvpSpaceReference = spaceReference;
@@ -2310,7 +2308,8 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_bloom, GetPreviousBackBufferTexture()->GetColorSampler());
    m_renderDevice->AddRenderTargetDependency(beforeTonemapRT);
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, beforeTonemapRT->GetColorSampler());
-   Matrix3D matProjInv[2], matProj[2];
+   Matrix3D matProj[2];
+   Matrix3D matProjInv[2];
    const int nEyes = m_renderDevice->m_nEyes;
    GetMVP().SetModel(Matrix3D::MatrixIdentity());
    for (int eye = 0; eye < nEyes; eye++)
@@ -2814,7 +2813,7 @@ void Renderer::RenderFrame()
    }
    else 
    #endif
-   m_playfieldView = m_mvp->GetView();
+   m_playfieldView = m_mvp.GetView();
    m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
 
    // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
