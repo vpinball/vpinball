@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "ViewSetup.h"
 #include "parts/flipper.h"
+#include "renderer/Renderer.h"
 
 ViewSetup::ViewSetup()
 {

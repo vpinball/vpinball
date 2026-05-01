@@ -9,6 +9,8 @@
 #include "vpinball.h"
 #endif
 
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)

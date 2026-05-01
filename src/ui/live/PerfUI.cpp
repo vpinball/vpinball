@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "renderer/Renderer.h"
 
 #include "PerfUI.h"
 #include "utils/wintimer.h"

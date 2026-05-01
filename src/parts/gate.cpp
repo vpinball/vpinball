@@ -9,6 +9,7 @@
 #include "meshes/gateLongPlateMesh.h"
 #include "meshes/gatePlateMesh.h"
 #include "meshes/gateWireRectangleMesh.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

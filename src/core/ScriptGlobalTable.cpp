@@ -8,6 +8,7 @@
 #include "core/VPXPluginAPIImpl.h"
 
 #include "parts/ball.h"
+#include "renderer/Renderer.h"
 
 #ifndef __STANDALONE__
 #include <atlsafe.h>

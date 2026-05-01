@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "TableMiscPage.h"
+#include "renderer/Renderer.h"
 
 namespace VPX::InGameUI
 {

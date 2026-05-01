@@ -31,6 +31,8 @@
 #include "renderer/VRDevice.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/RenderCommand.h"
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #ifdef _MSC_VER
 // Used to log which program steals the focus from VPX
 #include "psapi.h"

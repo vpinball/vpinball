@@ -3,8 +3,9 @@
 #pragma once
 
 #include "renderer/typedefs3D.h"
-#include "renderer/Renderer.h"
 #include "renderer/Window.h"
+
+class Renderer;
 #include "physics/PhysicsEngine.h"
 #include "ui/win/Debugger.h"
 #include "ui/live/LiveUI.h"

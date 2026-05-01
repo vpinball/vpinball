@@ -11,6 +11,8 @@
 #include "miniz/miniz.h"
 #include "progmesh.h"
 #include "ThreadPool.h"
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 
 

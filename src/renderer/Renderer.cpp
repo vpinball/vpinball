@@ -13,6 +13,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/light.h"
 #include "parts/ball.h"
+#include "renderer/trace.h"
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"

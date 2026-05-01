@@ -5,6 +5,7 @@
 
 //#include "forsyth.h"
 #include "utils/objloader.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "ui/win/DragPointDialogs.h"
 

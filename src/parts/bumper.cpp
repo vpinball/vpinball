@@ -8,6 +8,7 @@
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperCapMesh.h"
 #include "meshes/bumperSocketMesh.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

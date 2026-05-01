@@ -5,6 +5,8 @@
 
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

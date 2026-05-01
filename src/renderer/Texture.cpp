@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "Texture.h"
+#include "renderer/Renderer.h"
 
 #ifndef __STANDALONE__
 #include "FreeImage.h"

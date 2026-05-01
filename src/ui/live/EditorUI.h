@@ -36,7 +36,7 @@ private:
    Player *m_player;
    PinTable *m_table; // The table displayed by the player
    InputManager *m_pininput;
-   Renderer *m_renderer;
+   class Renderer *m_renderer;
    struct Selection
    {
       enum SelectionType

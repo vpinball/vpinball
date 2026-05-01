@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "EditorUI.h"
+#include "renderer/Renderer.h"
 #include "editor/EditableUIPart.h"
 #include "editor/BallUIPart.h"
 #include "editor/BumperUIPart.h"

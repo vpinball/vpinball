@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "textbox.h"
 
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
 

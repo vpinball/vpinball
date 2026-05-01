@@ -8,6 +8,8 @@
 #include "vpinball.h"
 #endif
 #include "meshes/ballMesh.h"
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"

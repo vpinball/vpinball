@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
+#include "renderer/Renderer.h"
 #include "StereoSettingsPage.h"
 
 namespace VPX::InGameUI

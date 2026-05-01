@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "LiveUI.h"
+#include "renderer/Renderer.h"
 
 #include "renderer/VRDevice.h"
 

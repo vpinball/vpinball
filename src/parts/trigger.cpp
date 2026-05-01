@@ -10,6 +10,7 @@
 #include "meshes/triggerButtonMesh.h"
 #include "meshes/triggerWireDMesh.h"
 #include "meshes/triggerInderMesh.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "ui/win/DragPointDialogs.h"
 

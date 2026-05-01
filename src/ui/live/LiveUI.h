@@ -3,6 +3,7 @@
 #pragma once
 
 #include "input/InputManager.h"
+#include "renderer/Renderer.h"
 
 #include "imgui/imgui.h"
 #include "imgui_markdown/imgui_markdown.h"

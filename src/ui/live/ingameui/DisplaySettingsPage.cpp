@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "DisplaySettingsPage.h"
+#include "renderer/Renderer.h"
 
 namespace VPX::InGameUI
 {

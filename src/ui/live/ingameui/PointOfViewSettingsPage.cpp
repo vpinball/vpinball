@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
+#include "renderer/Renderer.h"
 #include "PointOfViewSettingsPage.h"
 #include "core/TableDB.h"
 

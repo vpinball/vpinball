@@ -4,6 +4,8 @@
 #include "flasher.h"
 #include "light.h"
 
+#include "renderer/Renderer.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

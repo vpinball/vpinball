@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "renderer/trace.h"
 #include "plunger.h"
 #include "ball.h"
 

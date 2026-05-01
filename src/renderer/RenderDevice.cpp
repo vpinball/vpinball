@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "renderer/Renderer.h"
 
 #ifdef _MSC_VER
 #include "dwmapi.h"

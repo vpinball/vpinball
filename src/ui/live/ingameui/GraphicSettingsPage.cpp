@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "GraphicSettingsPage.h"
+#include "renderer/Renderer.h"
 
 namespace VPX::InGameUI
 {

@@ -13,6 +13,7 @@
 #include "meshes/kickerWilliams.h"
 #include "meshes/kickerGottlieb.h"
 #include "meshes/kickerT1Mesh.h"
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"

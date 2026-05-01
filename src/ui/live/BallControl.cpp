@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include "BallControl.h"
+#include "renderer/Renderer.h"
 
 #include "parts/ball.h"
 
