@@ -123,7 +123,9 @@ void InGameUI::Close()
 void InGameUI::Update()
 {
    const uint32_t now = msec();
-   const float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
+   float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
+   if (elapsed > 1.f)
+      elapsed = 0.f;
    m_lastRenderMs = now;
    if (m_activePages.empty())
       return;
