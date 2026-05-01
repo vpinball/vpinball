@@ -2422,8 +2422,8 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
                   vertices[i].x = cmdVerts[i].x + screenOffset.x - pad[i].x;
                   vertices[i].y = cmdVerts[i].y + screenOffset.y - pad[i].y;
                   vertices[i].z = cmdVerts[i].z;
-                  vertices[i].tu = cmdVerts[i].tu - pad[i].x * 0.5f;
-                  vertices[i].tv = cmdVerts[i].tv - pad[i].y * 0.5f;
+                  vertices[i].tu = vertices[i].x * 0.5f + 0.5f;
+                  vertices[i].tv = 0.5f - vertices[i].y * 0.5f;
                }
             });
       }
