@@ -35,7 +35,7 @@ private:
    void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
    void ListImages(HWND hwndListView);
-   int AddListImage(HWND hwndListView, const Texture *const ppi);
+   int AddListImage(HWND hwndListView, const class Texture *const ppi);
 
    void UpdateSizeText();
 

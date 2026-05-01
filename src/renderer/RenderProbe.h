@@ -2,6 +2,11 @@
 
 #pragma once
 
+class RenderTarget;
+class RenderPass;
+class RenderDevice;
+class RenderDeviceState;
+
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
 class RenderProbe final
 {

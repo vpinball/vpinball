@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Settings.h"
-#include "renderer/RenderDevice.h"
 #include "parts/Sound.h"
 
 #ifndef __STANDALONE__

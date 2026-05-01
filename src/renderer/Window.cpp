@@ -437,6 +437,13 @@ Window::DisplayConfig Window::GetDisplayConfig(const string& display)
    return selectedDisplay;
 }
 
+void Window::SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer)
+{
+   assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight));
+   m_backBuffer = rt;
+   m_wcgBackbuffer = wcgBackbuffer;
+}
+
 #if defined(_WIN32)
 HWND Window::GetNativeHWND() const
 {

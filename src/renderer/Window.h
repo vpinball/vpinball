@@ -7,6 +7,8 @@
 #include "core/Settings.h"
 #include "plugins/VPXPlugin.h"
 
+class RenderTarget;
+
 namespace VPX
 {
 
@@ -74,12 +76,7 @@ public:
    void RaiseAndFocus();
    bool IsFocused() const;
 
-   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false)
-   {
-      assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight));
-      m_backBuffer = rt;
-      m_wcgBackbuffer = wcgBackbuffer;
-   }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false);
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 

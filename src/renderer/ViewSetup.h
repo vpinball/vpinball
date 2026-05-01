@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "math/ModelViewProj.h"
+
 enum ViewSetupID
 {
    BG_DESKTOP = 0,
