@@ -268,45 +268,44 @@ void LiveUI::HandleSDLEvent(SDL_Event &e) const
 
 void LiveUI::NewFrame()
 {
+   ImGuiIO &io = ImGui::GetIO();
    UpdateScale();
    ImGui_ImplSDL3_NewFrame();
 
-   ImGuiIO &io = ImGui::GetIO();
-   switch (m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF)
+   // Adjust display size and scale eventually gathered in ImGui_ImplSDL3_NewFrame to our framebuffer rendering with rotation & stereo support
    {
-   // Render is a vertically squashed view which is stretched back by the display
-   case STEREO_TB:
-   case STEREO_INT:
-   case STEREO_FLIPPED_INT:
-      io.DisplayFramebufferScale.y *= 0.5f;
-      break;
+      const float renderWidth = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetWidth()) : 1920.f;
+      const float renderHeight = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetHeight()) : 1080.f;
 
-   // Render is a horizontally squashed view which is stretched back by the display
-   case STEREO_SBS:
-      io.DisplayFramebufferScale.x *= 0.5f;
-      break;
+      if (io.DisplayFramebufferScale.x <= 0.f)
+         io.DisplayFramebufferScale.x = 1.f;
+      if (io.DisplayFramebufferScale.y <= 0.f)
+         io.DisplayFramebufferScale.y = 1.f;
+      switch (m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF)
+      {
+      // Render is a vertically squashed view which is stretched back by the display
+      case STEREO_TB:
+      case STEREO_INT:
+      case STEREO_FLIPPED_INT: io.DisplayFramebufferScale.y *= 0.5f; break;
 
-   default:
-      break;
-   }
-   const int width = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetWidth() : 1920;
-   const int height = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetHeight() : 1080;
-   // On Quest VR the SDL window has no real surface, so DisplayFramebufferScale derived by ImGui_ImplSDL3_NewFrame
-   // can be 0 - guard against divide-by-zero producing NaN/Inf in DisplaySize.
-   if (io.DisplayFramebufferScale.x <= 0.f) io.DisplayFramebufferScale.x = 1.f;
-   if (io.DisplayFramebufferScale.y <= 0.f) io.DisplayFramebufferScale.y = 1.f;
-   io.DisplaySize.x = static_cast<float>(width) / io.DisplayFramebufferScale.x;
-   io.DisplaySize.y = static_cast<float>(height) / io.DisplayFramebufferScale.y;
-   m_rotate = m_renderer->m_stereo3D == STEREO_VR
-      ? 0 : ((int)(m_player->m_ptable->GetViewSetup().GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
-   if (m_rotate == 1 || m_rotate == 3)
-   {
-      const float size = io.DisplaySize.x;
-      io.DisplaySize.x = io.DisplaySize.y;
-      io.DisplaySize.y = size;
-      const float scale = io.DisplayFramebufferScale.x;
-      io.DisplayFramebufferScale.x = io.DisplayFramebufferScale.y;
-      io.DisplayFramebufferScale.y = scale;
+      // Render is a horizontally squashed view which is stretched back by the display
+      case STEREO_SBS: io.DisplayFramebufferScale.x *= 0.5f; break;
+
+      default: break;
+      }
+
+      io.DisplaySize.x = renderWidth / io.DisplayFramebufferScale.x;
+      io.DisplaySize.y = renderHeight / io.DisplayFramebufferScale.y;
+
+      if (m_renderer->m_stereo3D == STEREO_VR)
+         m_rotate = 0;
+      else
+         m_rotate = static_cast<int>(m_player->m_ptable->GetViewSetup().GetRotation(static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y)) / 90.0f);
+      if (m_rotate == 1 || m_rotate == 3)
+      {
+         std::swap(io.DisplaySize.x, io.DisplaySize.y);
+         std::swap(io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+      }
    }
 
    // Enable mouse capture when dragging (needed when dragging main windows)
@@ -327,7 +326,7 @@ void LiveUI::NewFrame()
       AddMousePosEvent(false, globalMouse.x - static_cast<float>(windowPos.x), globalMouse.y - static_cast<float>(windowPos.y));
    }
 
-   // We implement our own keyboard navigation using flipper keys
+   // We implement our own keyboard navigation using flipper keys/gamepad/VR controller
    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 
    ImGui::NewFrame();
