@@ -201,23 +201,40 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    // Allow pages to force flipper navigation (needed by anaglyph calibration)
    for (const auto &page : m_activePages)
       m_useFlipperNav |= page->IsFlipperNavNeeded();
+   const uint32_t flipperNavRepeat = m_flipperNavRepeatCount == 0 ? 500 : m_flipperNavRepeatCount == 1 ? 250 : 125;
 
    if (state.IsKeyPressed(m_player->m_pininput.GetUIUpActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
+      m_flipperNavStart = msec();
+      m_flipperNavRepeatCount = 0;
       GetActivePage()->SelectPrevItem();
       if (!wasFlipperNav)
          GetActivePage()->SelectNextItem();
+   }
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIUpActionId()) && (msec() - m_flipperNavStart) > flipperNavRepeat)
+   {
+      m_flipperNavStart = msec();
+      m_flipperNavRepeatCount++;
+      GetActivePage()->SelectPrevItem();
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetUIDownActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
+      m_flipperNavStart = msec();
+      m_flipperNavRepeatCount = 0;
       GetActivePage()->SelectNextItem();
       if (!wasFlipperNav)
          GetActivePage()->SelectPrevItem();
+   }
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIDownActionId()) && (msec() - m_flipperNavStart) > flipperNavRepeat)
+   {
+      m_flipperNavStart = msec();
+      m_flipperNavRepeatCount++;
+      GetActivePage()->SelectNextItem();
    }
 
    if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetUILeftActionId(), m_prevActionState))
