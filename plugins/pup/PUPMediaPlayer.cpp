@@ -88,7 +88,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       // Suppress end callback during play-to-play transition — the previous video
       // is being replaced, not ending naturally.
       auto savedCallback = m_onEndCallback;
-      m_onEndCallback = [](PUPMediaPlayer*) { };
+      m_onEndCallback = [](){};
       StopBlocking();
       m_onEndCallback = savedCallback;
 
@@ -487,7 +487,7 @@ void PUPMediaPlayer::Run()
       m_running = false;
       StopAudioStream(m_audioResId);
       m_audioResId.id = 0;
-      m_onEndCallback(this);
+      m_onEndCallback();
    }
 }
 

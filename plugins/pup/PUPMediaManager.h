@@ -3,6 +3,7 @@
 #pragma once
 
 #include "PUPMediaPlayer.h"
+
 #include <deque>
 
 namespace PUP {
@@ -17,7 +18,7 @@ public:
 
    void SetGameTime(double gameTime);
 
-   void Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
+   void Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
    void Pause();
    void Resume();
    void SetAsBackGround(bool isBackground);
@@ -40,14 +41,25 @@ public:
    void SetOnMainEndCallback(std::function<void()> callback) { m_onMainEndCallback = std::move(callback); }
 
 private:
-   void OnPlayerEnd(PUPMediaPlayer* player);
+   void OnPlayerEnd();
    void PlayBackground();
-   void PlayNextFromQueue();
-   void PlayImmediate(const std::filesystem::path& szPath, float volume, int priority, int length);
+   void StartCurrent();
 
-   PUPMediaPlayer m_player; // Single player per screen, switches between main and background content
+   PUPMediaPlayer m_player;
 
-   // Background config — stores what to play when main ends, not a running player
+   struct PlayItem
+   {
+      std::filesystem::path szPath;
+      float volume = 1.f;
+      int priority = 0;
+      int length = 0;
+      bool loop = false;
+   };
+
+   // Playback queue. front() is currently playing; the rest are pending.
+   // Splash actions push at front without popping; the displaced item resumes when the splash ends.
+   std::deque<PlayItem> m_queue;
+
    struct BackgroundConfig
    {
       std::filesystem::path szPath;
@@ -57,21 +69,6 @@ private:
    };
    BackgroundConfig m_bg;
 
-   // Play queue — pending items played in order when current ends
-   struct PlayItem
-   {
-      std::filesystem::path szPath;
-      float volume;
-      int priority;
-      int length;
-      uint64_t expiry; // SDL_GetTicks() deadline, 0 = no expiry
-   };
-   std::deque<PlayItem> m_playQueue;
-
-   std::filesystem::path m_mainPath;
-   float m_mainVolume = 1.0f;
-   int m_mainPriority = 0;
-   bool m_playingMain = false;
    bool m_shuttingDown = false;
 
    std::function<void()> m_onMainEndCallback;

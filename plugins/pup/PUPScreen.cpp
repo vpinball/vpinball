@@ -101,7 +101,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
 
    // Optional initial background playlist
    if (PUPPlaylist* const backgroundPlaylist = parts[2].empty() ? nullptr : screen->GetPlaylist(parts[2]); backgroundPlaylist)
-      screen->Play(backgroundPlaylist, parts[3], screen->GetVolume(), -1, false, 0, true);
+      screen->Play(backgroundPlaylist, parts[3], screen->GetVolume(), -1, PlayAction::SetBG, 0);
 
    return screen;
 }
@@ -324,7 +324,7 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
 
 void PUPScreen::SetGameTime(double gameTime) { m_pMediaPlayerManager->SetGameTime(gameTime); }
 
-void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority)
+void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    PUPPlaylist* const pPlaylist = GetPlaylist(szPlaylist);
@@ -333,14 +333,15 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
       LOGE(std::format("Playlist not found: screen={{{}}}, playlist={}", ToString(false), szPlaylist));
       return;
    }
-   Play(pPlaylist, szPlayFile, volume, priority, false, 0, false);
+   Play(pPlaylist, szPlayFile, volume, priority, action, 0);
 }
 
-void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background)
+void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    //LOGD(std::format("play, screen={{{}}}, playlist={{{}}}, playFile={}, volume={:.0f}, priority={}", ToString(false), pPlaylist->ToString(), szPlayFile.string(), volume, priority));
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
+   const bool background = (action == PlayAction::SetBG);
    switch (pPlaylist->GetFunction())
    {
    case PUPPlaylist::Function::Default:
@@ -392,7 +393,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
          break;
       }
       m_staticImage.Clear();
-      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_mainVolume * (m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume), priority, skipSamePriority, length, background);
+      m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_mainVolume * (m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume), priority, action, length);
       break;
    }
 

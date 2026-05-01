@@ -62,7 +62,7 @@ void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
       if (pPlaylist)
-         pScreen->Play(pPlaylist, ""s, pPlaylist->GetVolume(), 0, false, 0, false);
+         pScreen->Play(pPlaylist, ""s, pPlaylist->GetVolume(), 0, PlayAction::Normal, 0);
       else
          LOGE(std::format("Playlist not found: screenNum={}, playlist={}", screenNum, playlist));
    }
@@ -690,53 +690,36 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    if (!pScreen)
       return;
 
-   // playtype: 0=Normal, 1=Loop, 2=SplashReset, 3=SplashResume, 4=StopScreen,
-   //           5=StopFile, 6=SetBG, 7=PlaySSF, 8=SkipSameP, 9=CustomFunc,
-   //           10=ForcePlay, 11=QueueSameP, 12=QueueAlways
-   switch (playtype) {
-   case 0: // Normal
-      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
-      if (Seconds > 0)
-         pScreen->SetLength(Seconds);
-      break;
-   case 1: // Loop
-      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
-      pScreen->SetLoop(1);
-      break;
-   case 2: // SplashReset
-   case 3: // SplashResume
-      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
-      if (Seconds > 0)
-         pScreen->SetLength(Seconds);
-      break;
-   case 4: // StopScreen
+   if (playtype < static_cast<int>(PlayAction::Normal) || playtype > static_cast<int>(PlayAction::CustomFunction)) {
+      NOT_IMPLEMENTED("Not implemented: playevent playtype=" + std::to_string(playtype));
+      return;
+   }
+   const PlayAction action = static_cast<PlayAction>(playtype);
+
+   switch (action) {
+   case PlayAction::StopPlayer:
       pScreen->Stop(priority);
-      break;
-   case 5: // StopFile
+      return;
+   case PlayAction::StopFile:
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
       if (pPlaylist)
          pScreen->Stop(pPlaylist, playfilename);
-      break;
+      return;
    }
-   case 6: // SetBG
-   {
-      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
-      if (pPlaylist)
-         pScreen->Play(pPlaylist, playfilename, static_cast<float>(volume), priority, false, Seconds, true);
-      break;
-   }
-   case 8: // SkipSamePriority
-   {
-      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
-      if (pPlaylist)
-         pScreen->Play(pPlaylist, playfilename, static_cast<float>(volume), priority, true, Seconds, false);
-      break;
-   }
-   default:
+   case PlayAction::PlaySSF:
+   case PlayAction::CustomFunction:
       NOT_IMPLEMENTED("Not implemented: playevent playtype=" + std::to_string(playtype));
+      return;
+   default:
       break;
    }
+
+   pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority, action);
+   if (action == PlayAction::Loop)
+      pScreen->SetLoop(1);
+   else if (Seconds > 0)
+      pScreen->SetLength(Seconds);
 }
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int mode, const string& Special)

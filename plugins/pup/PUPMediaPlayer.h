@@ -27,7 +27,7 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha = 1.f);
 
    void SetName(const string& name);
-   void SetOnEndCallback(const std::function<void(PUPMediaPlayer*)>& onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }
+   void SetOnEndCallback(const std::function<void()>& onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);
 
@@ -44,7 +44,7 @@ private:
    std::atomic<int> m_pendingPlay = 0;
    std::atomic<int> m_pendingStop = 0;
 
-   std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
+   std::function<void()> m_onEndCallback = [](){};
 
    double GetPlayTime() const;
    bool m_syncOnGameTime = false;

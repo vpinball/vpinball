@@ -147,6 +147,18 @@ std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& 
       return m_szBasePath / GetNextPlayFile();
 }
 
+bool PUPPlaylist::IsResting() const
+{
+   if (m_restSeconds <= 0 || m_lastPlayed == 0)
+      return false;
+   return (SDL_GetTicks() - m_lastPlayed) < (uint64_t)m_restSeconds * 1000;
+}
+
+void PUPPlaylist::MarkPlayed()
+{
+   m_lastPlayed = SDL_GetTicks();
+}
+
 string PUPPlaylist::ToString() const {
    return "folder=" + m_szFolder.string() +
       ", description=" + m_szDescription +

@@ -73,7 +73,7 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
 }
 
 PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume,
-   int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction)
+   int priority, int length, int counter, int restSeconds, PlayAction playAction)
    : m_szDescript(szDescript)
    , m_szTrigger(szTrigger)
    , m_pScreen(pScreen)
@@ -89,52 +89,52 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
    , m_conditions(ParseConditions(szTrigger))
 {
    switch (m_playAction) {
-   case PUPTrigger::Action::Normal:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false); };
+   case PlayAction::Normal:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Normal, m_length); };
       break;
 
-   case PUPTrigger::Action::Loop:
+   case PlayAction::Loop:
       m_action = [&]()
       {
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::Loop, m_length);
          m_pScreen->SetLoop(true);
       };
       break;
 
-   case PUPTrigger::Action::SetBG:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, true); };
+   case PlayAction::SetBG:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SetBG, m_length); };
       break;
 
-   case PUPTrigger::Action::SplashReset:
+   case PlayAction::SplashReset:
       m_action = [&]()
       {
          // Play splash video, background will restart from beginning when splash ends
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SplashReset, m_length);
       };
       break;
 
-   case PUPTrigger::Action::SplashReturn:
+   case PlayAction::SplashReturn:
       m_action = [&]()
       {
          // Play splash video, background will resume from where it left off when splash ends
-         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length, false);
+         m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SplashReturn, m_length);
       };
       break;
 
-   case PUPTrigger::Action::SkipSamePriority:
-      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length, false); };
+   case PlayAction::SkipSamePriority:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, PlayAction::SkipSamePriority, m_length); };
       break;
 
-   case PUPTrigger::Action::StopPlayer:
+   case PlayAction::StopPlayer:
       m_action = [&]() { m_pScreen->Stop(m_priority); };
       break;
 
-   case PUPTrigger::Action::StopFile:
+   case PlayAction::StopFile:
       m_action = [&]() { m_pScreen->Stop(m_pPlaylist, m_szPlayFile); };
       break;
 
    default:
-      LOGE("Invalid play action: " + PUPTrigger::ToString(m_playAction));
+      LOGE("Invalid play action: " + PlayActionToString(m_playAction));
       m_action = [](){};
       break;
    }
@@ -188,27 +188,27 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       }
    }
 
-   PUPTrigger::Action playAction;
+   PlayAction playAction;
    if (StrCompareNoCase(triggerPlayAction, "Loop"s))
-      playAction = PUPTrigger::Action::Loop;
+      playAction = PlayAction::Loop;
    else if (StrCompareNoCase(triggerPlayAction, "SplashReset"s))
-      playAction = PUPTrigger::Action::SplashReset;
+      playAction = PlayAction::SplashReset;
    else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"s))
-      playAction = PUPTrigger::Action::SplashReturn;
+      playAction = PlayAction::SplashReturn;
    else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"s))
-      playAction = PUPTrigger::Action::StopPlayer;
+      playAction = PlayAction::StopPlayer;
    else if (StrCompareNoCase(triggerPlayAction, "StopFile"s))
-      playAction = PUPTrigger::Action::StopFile;
+      playAction = PlayAction::StopFile;
    else if (StrCompareNoCase(triggerPlayAction, "SetBG"s))
-      playAction = PUPTrigger::Action::SetBG;
+      playAction = PlayAction::SetBG;
    else if (StrCompareNoCase(triggerPlayAction, "PlaySSF"s))
-      playAction = PUPTrigger::Action::PlaySSF;
+      playAction = PlayAction::PlaySSF;
    else if (StrCompareNoCase(triggerPlayAction, "SkipSamePrty"s))
-      playAction = PUPTrigger::Action::SkipSamePriority;
+      playAction = PlayAction::SkipSamePriority;
    else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s))
-      playAction = PUPTrigger::Action::CustomFunction;
+      playAction = PlayAction::CustomFunction;
    else
-      playAction = PUPTrigger::Action::Normal;
+      playAction = PlayAction::Normal;
 
    std::istringstream stream(parts[3]);
    string triggerString;
@@ -299,18 +299,7 @@ string PUPTrigger::ToString() const {
       ", length=" + std::to_string(m_length) +
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
-      ", playAction=" + ToString(m_playAction);
+      ", playAction=" + PlayActionToString(m_playAction);
 }
-
-const string& PUPTrigger::ToString(Action value)
-{
-   static const string actionStrings[] = { "PUPTrigger::Normal"s, "PUPTrigger::Loop"s, "PUPTrigger::SplashReset"s, "PUPTrigger::SplashReturn"s, "PUPTrigger::StopPlayer"s,
-      "PUPTrigger::StopFile"s, "PUPTrigger::SetBG"s, "PUPTrigger::PlaySSF"s, "PUPTrigger::SkipSamePriority"s, "PUPTrigger::CustomFunction"s };
-   static const string error = "Unknown"s;
-   if ((int)value < 0 || (size_t)value >= std::size(actionStrings))
-      return error;
-   return actionStrings[(int)value];
-}
-
 
 }

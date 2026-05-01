@@ -99,8 +99,8 @@ public:
 
    void SetGameTime(double gameTime);
 
-   void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority);
-   void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, bool skipSamePriority, int length, bool background);
+   void Play(const string& szPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action = PlayAction::Normal);
+   void Play(PUPPlaylist* playlist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);

@@ -33,6 +33,8 @@ public:
    std::filesystem::path GetPlayFile(const std::filesystem::path& szFilename);
    const std::filesystem::path& GetNextPlayFile();
    std::filesystem::path GetPlayFilePath(const std::filesystem::path& szFilename);
+   bool IsResting() const;
+   void MarkPlayed();
    string ToString() const;
 
    static const string& ToString(Function value);
@@ -46,6 +48,7 @@ private:
    int m_priority;
    PUPPlaylist::Function m_function;
    int m_lastIndex;
+   uint64_t m_lastPlayed = 0;
    vector<std::filesystem::path> m_files;
    ankerl::unordered_dense::map<std::filesystem::path, std::filesystem::path> m_fileMap;
    std::filesystem::path m_szBasePath;
