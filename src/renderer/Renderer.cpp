@@ -2125,7 +2125,7 @@ void PrecompSplineTonemap(const float displayMaxLum, float out[6])
    out[5] = Qb;
 }
 
-ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT)
+void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT, bool isFullTonemap)
 {
    //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
    //const float jitter = (float)((msec() & 2047) / 1000.0);
@@ -2135,7 +2135,7 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
    // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
    RenderTarget* outputRT = tonemapRT;
    assert(outputRT != renderedRT);
-   m_renderDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, outputRT, false);
+   m_renderDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, outputRT, !isFullTonemap);
 
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -2235,6 +2235,7 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
 
    ShaderTechniques tonemapTechnique;
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
+   const bool filtered = useAA || (m_screenOffset.x != 0.f) || (m_screenOffset.y != 0.f);
    if (infoMode == IF_AO_ONLY)
       tonemapTechnique = SHADER_TECHNIQUE_fb_AO;
    else if (infoMode == IF_RENDER_PROBES)
@@ -2245,26 +2246,31 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
                        : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
                        : /*m_toneMapper == TM_WCG_SPLINE ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_wcgtonemap_AO : SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_wcgtonemap_AO : SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;
    else if (m_toneMapper == TM_REINHARD)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
    else if (m_toneMapper == TM_FILMIC)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter;
    else if (m_toneMapper == TM_NEUTRAL)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter;
    else if (m_toneMapper == TM_AGX)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter;
    else if (m_toneMapper == TM_AGX_PUNCHY)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
+      tonemapTechnique = useAO ? filtered ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
+                               : filtered ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
    else
       assert(!"unknown tonemapper");
+   m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
+}
 
+RenderTarget* Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT)
+{
+   SetupTonemapping(renderedRT, tonemapRT, true);
    const Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f + m_screenOffset.x,  1.0f + m_screenOffset.y, 0.0f, 1.0f, 0.0f },
@@ -2272,23 +2278,18 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
       {  1.0f + m_screenOffset.x, -1.0f + m_screenOffset.y, 0.0f, 1.0f, 1.0f },
       { -1.0f + m_screenOffset.x, -1.0f + m_screenOffset.y, 0.0f, 0.0f, 1.0f }
    };
-   m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, shiftedVerts);
-
-   return tonemapTechnique;
+   return tonemapRT;
 }
 
-RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT, ShaderTechniques tonemapTechnique)
+RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT)
 {
    #ifndef ENABLE_BGFX
    return afterTonemapRT;
    #endif
 
-   // FIXME this is broken due to not supporting head movement (VR), display shifting (when nudging), latency correction (always)
-   return afterTonemapRT;
-
-   // We do not support stereo VR yet
-   if (m_stereo3D == STEREO_VR)
+   // We do not support dynamic view point yet (i.e. MVP must be the same between the previosu render and this one)
+   if (m_disableStaticPrepass)
       return afterTonemapRT;
 
    if (m_motionBlurOff)
@@ -2311,9 +2312,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, beforeTonemapRT->GetColorSampler());
    Matrix3D matProjInv[2], matProj[2];
    const int nEyes = m_renderDevice->m_nEyes;
-   Matrix3D identity;
-   identity.SetIdentity();
-   GetMVP().SetModel(identity);
+   GetMVP().SetModel(Matrix3D::MatrixIdentity());
    for (int eye = 0; eye < nEyes; eye++)
    {
       matProj[eye] = GetMVP().GetProj(eye);
@@ -2322,8 +2321,10 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    }
    m_renderDevice->m_FBShader->SetMatrix(SHADER_matProjInv, &matProjInv[0], nEyes);
    m_renderDevice->m_FBShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   Vertex3D_TexelOnly quads[4 * 16];
-   Vertex3D_TexelOnly* updatedVertices[16];
+   std::array<Vertex3D_TexelOnly, 4*16> quads;
+   std::array<Vertex3D_TexelOnly*, 16> updatedVertices;
+   const float invX = static_cast<float>(1.0 / beforeTonemapRT->GetWidth());
+   const float invY = static_cast<float>(1.0 / beforeTonemapRT->GetHeight());
    int nQuads = 0;
    for (size_t i = 0; i < g_pplayer->m_vball.size() && nQuads < 16; i++)
    {
@@ -2337,60 +2338,50 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
       const vec3 posl = pball->m_hitBall.m_d.m_pos + 0.5f * pball->m_hitBall.m_d.m_vel;
       const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
       const vec3 delta = newPos - pball->m_lastRenderedPos;
-      const float deltaSquared = delta.Dot(delta);
-      if (deltaSquared < 0.01f || deltaSquared > 1000.f)
+      if (const float deltaSquared = delta.Dot(delta); deltaSquared < 0.01f || deltaSquared > 1000.f)
       {
          pball->m_lastRenderedPos = newPos;
          continue;
       }
 
-      // Compute a quad bound. This is fairly suboptimal and would benefit from a simple convex hull (at least from the 2 bounding rects)
-      float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX;
-      for (int eye = 0; eye < nEyes; eye++)
-         Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->GetRadius(), xMin, xMax, yMin, yMax);
-      const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
-      for (int eye = 0; eye < nEyes; eye++)
-         Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->GetRadius(), xMin, xMax, yMin, yMax);
-      const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
-      const int nSamples = max(2, static_cast<int>(0.5f * fullLen));
-      //xMin = yMin = -1.f; xMax = yMax = 1.f;
-
-      const Vertex3D_TexelOnly verts[4] =
-      {
-         { xMax, yMax, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
-         { xMin, yMax, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
-         { xMax, yMin, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMin * 0.5f },
-         { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
-      };
-      memcpy(quads + nQuads * 4, verts, sizeof(verts));
-
       vec4* balls = new vec4[MAX_BALL_SHADOW];
       balls[1] = vec4(pball->m_lastRenderedPos, pball->GetRadius());
-      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, static_cast<float>(1.0 / beforeTonemapRT->GetWidth()), static_cast<float>(1.0 / beforeTonemapRT->GetHeight()),
-         0.f /* unused */ ,static_cast<float>(min(32, nSamples)));
+
+      const Vertex3D_TexelOnly verts[4] = {};
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_motionblur);
       m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
 
       // Update drawn rect bounds and ball position to account for late adjustment
       ShaderState* ss = m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
-      Vertex3D_TexelOnly* vertices = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
-      updatedVertices[nQuads] = vertices;
+      updatedVertices[nQuads] = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
       m_renderDevice->AddBeginOfFrameCmd(
-         [this, pball, view, ss, vertices, balls]()
+         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], balls, whHeight = vec4(invX, invY, 0.f, 2.f)]()
          {
             RenderTarget* tempRT = GetMotionBlurBufferTexture();
             const vec3 posl = pball->GetPosition() + m_renderDevice->GetPredictedDisplayDelay() * pball->GetVelocity();
             const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
             const int nEyes = m_renderDevice->m_nEyes;
 
-            float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX;
+            // Compute a quad bound. This is fairly suboptimal and would benefit from a simple convex hull (at least from the 2 bounding rects)
+            float xMin = FLT_MAX;
+            float xMax = -FLT_MAX;
+            float yMin = FLT_MAX;
+            float yMax = -FLT_MAX;
             for (int eye = 0; eye < nEyes; eye++)
                Ball::m_ash.computeProjBounds(
                   GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
             const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
             for (int eye = 0; eye < nEyes; eye++)
                Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
+            const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
 
+            // Add a 1 pixel margin as the visual nudge may cause some sampling in here
+            xMin -= whHeight.x;
+            yMin -= whHeight.y;
+            xMax += whHeight.x;
+            yMax += whHeight.y;
+
+            //xMin = yMin = -1.f; xMax = yMax = 1.f;
             const Vertex3D_TexelOnly verts[4] =
             {
                { xMax, yMax, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
@@ -2398,7 +2389,11 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
                { xMax, yMin, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMin * 0.5f },
                { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
             };
-            memcpy(vertices, verts, sizeof(verts));
+            memcpy(cmdVerts, verts, sizeof(verts));
+
+            const int nSamples = clamp(static_cast<int>(0.5f * fullLen), 2, 32);
+            vec4 whHeightWithNSamples(whHeight.x, whHeight.y, 0.f, static_cast<float>(nSamples));
+            ss->SetVector(SHADER_w_h_height, &whHeightWithNSamples);
 
             pball->m_lastRenderedPos = newPos;
             balls[0] = vec4(newPos, pball->GetRadius());
@@ -2412,35 +2407,25 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    // Then copy back from temporary buffer, applying tonemap since destination buffer is the tonemapped one
    if (nQuads)
    {
-      m_renderDevice->SetRenderTarget("Ball Motion Blur - Copy"s, afterTonemapRT, true);
-      m_renderDevice->AddRenderTargetDependency(tempRT);
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, tempRT->GetColorSampler());
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, tempRT->GetColorSampler());
-      if (IsBloomEnabled())
-      {
-         m_renderDevice->AddRenderTargetDependency(GetBloomBufferTexture());
-         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_bloom, GetBloomBufferTexture()->GetColorSampler());
-      }
-      if (GetAOMode() == 2) // Dynamic AO ?
-      {
-         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao, GetAORenderTarget(1)->GetColorSampler());
-         m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
-      }
-      const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Deterministic jitter to ensure stable render for regression tests
-      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 
-         static_cast<float>(1.0 / tempRT->GetWidth()), static_cast<float>(1.0 / tempRT->GetHeight()), jitter, jitter);
-      m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
-      for (int i = 0; i < nQuads * 4; i++)
-      {
-         quads[i].x += m_screenOffset.x;
-         quads[i].y += m_screenOffset.y;
-      }
+      SetupTonemapping(tempRT, afterTonemapRT, false);
       for (int i = 0; i < nQuads; i++)
       {
-         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, quads + i * 4);
-         // Update drawn rect bounds and ball position to account for late adjustment
-         Vertex3D_TexelOnly* vertices = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
-         m_renderDevice->AddBeginOfFrameCmd([vertices, newVerts = updatedVertices[i]]() { memcpy(vertices, newVerts, 4 * sizeof(Vertex3D_TexelOnly)); });
+         // Update quad bound after late ball position adjustment in first draw command
+         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, quads.data() + i * 4);
+         m_renderDevice->AddBeginOfFrameCmd(
+            [vertices = static_cast<Vertex3D_TexelOnly*>(m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices()), cmdVerts = updatedVertices[i],
+               screenOffset = m_screenOffset, invX, invY]()
+            {
+               const Vertex2D pad[4] = { { invX, invY }, { -invX, invY }, { invX, -invY }, { -invX, -invY } }; // Remove padding added to support screenOffset filtering
+               for (int i = 0; i < 4; i++)
+               {
+                  vertices[i].x = cmdVerts[i].x + screenOffset.x - pad[i].x;
+                  vertices[i].y = cmdVerts[i].y + screenOffset.y - pad[i].y;
+                  vertices[i].z = cmdVerts[i].z;
+                  vertices[i].tu = cmdVerts[i].tu - pad[i].x * 0.5f;
+                  vertices[i].tv = cmdVerts[i].tv - pad[i].y * 0.5f;
+               }
+            });
       }
    }
 
@@ -2929,11 +2914,11 @@ void Renderer::RenderFrame()
    #endif
 
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
-   RenderTarget* const tonemapRT = (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer();
-   const ShaderTechniques tonemapTechnique = ApplyTonemapping(renderedRT, tonemapRT);
+   RenderTarget* const tonemapRT
+      = ApplyTonemapping(renderedRT, (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer());
 
    // Raytraced ball motion blur (BGFX only)
-   renderedRT = ApplyBallMotionBlur(renderedRT, tonemapRT, tonemapTechnique);
+   renderedRT = ApplyBallMotionBlur(renderedRT, tonemapRT);
 
    // Perform post processed anti aliasing
    renderedRT = ApplyPostProcessedAntialiasing(renderedRT, (hasSharpenPass || hasStereoPass || hasUpscalerPass) ? nullptr : m_renderDevice->GetOutputBackBuffer());

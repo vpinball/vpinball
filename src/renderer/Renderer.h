@@ -217,9 +217,10 @@ private:
    // Postprocess passes
    void UpdateAmbientOcclusion(RenderTarget* renderedRT);
    void UpdateBloom(RenderTarget* renderedRT);
+   void SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT, bool isFullTonemap);
+   RenderTarget* ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT);
    RenderTarget* ApplyAdditiveScreenSpaceReflection(RenderTarget* renderedRT);
-   ShaderTechniques ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT);
-   RenderTarget* ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT, ShaderTechniques tonemapTechnique);
+   RenderTarget* ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT);
    RenderTarget* ApplyPostProcessedAntialiasing(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
    RenderTarget* ApplySharpening(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
    RenderTarget* ApplyUpscaling(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);

@@ -147,6 +147,8 @@ FEATURES:
   Allow groups to have properties (VR space reference, view visibility, ...)
   Prepare for nesting groups (import/export, combined transforms, ...)
 
+- add 'raytraced' ball motion blur (BGFX only, not supported in VR or headtracking)
+
 - a new preliminary plugin architecture has been added to support adding functionality to VPX in a cross platform and reusable (across other applications of the pinball simulation ecosystem) way.
   This feature is still in early stage and should be considered as a 'feature preview' as it will most likely evolve more, and the programming interface is not yet fully stabilized, so breaking changes may still happen!
   The following plugins are included with VPX:
