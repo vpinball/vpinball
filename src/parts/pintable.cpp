@@ -38,6 +38,7 @@
 #include "ui/win/hitsur.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"

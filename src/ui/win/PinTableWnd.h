@@ -4,6 +4,8 @@
 
 #include "parts/pintable.h"
 
+class PinTableMDI;
+
 class PinTableWnd : public CWnd
 {
 public:

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class HitTargetVisualsProperty final : public BasePropertyDialog
 {
 public:

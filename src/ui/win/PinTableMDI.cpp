@@ -5,6 +5,8 @@
 #include "PinTableMDI.h"
 
 
+#include "ui/win/WinEditor.h"
+
 static CComObject<PinTable>* CreatePinTable()
 {
    CComObject<PinTable>* table;

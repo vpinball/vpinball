@@ -2,7 +2,12 @@
 
 #include "core/stdafx.h"
 #include "Texture.h"
+
+#include "math/math.h"
 #include "renderer/Renderer.h"
+#include "ui/win/WinEditor.h"
+#include "utils/BiffReader.h"
+#include "utils/lzwreader.h"
 
 #ifndef __STANDALONE__
 #include "FreeImage.h"
@@ -11,11 +16,6 @@
 #include <SDL3/SDL_surface.h>
 #include "standalone/FreeImage.h"
 #endif
-
-#include "math/math.h"
-
-#include "utils/BiffReader.h"
-#include "utils/lzwreader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar

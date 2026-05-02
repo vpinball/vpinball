@@ -7,6 +7,7 @@
 #include "light.h"
 #include "primitive.h"
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 
 LightSeq *LightSeq::CopyForPlay() const
 {

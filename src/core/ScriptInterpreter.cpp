@@ -1,9 +1,10 @@
 #include "core/stdafx.h"
 
-#include "core/vpversion.h"
-
 #include "ScriptInterpreter.h"
+
 #include "ScriptGlobalTable.h"
+#include "core/vpversion.h"
+#include "ui/win/WinEditor.h"
 
 #ifndef __STANDALONE__
 #include <initguid.h>

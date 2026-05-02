@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class TextboxVisualsProperty final : public BasePropertyDialog
 {
 public:

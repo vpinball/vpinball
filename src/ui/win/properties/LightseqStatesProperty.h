@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class LightseqStatesProperty final : public BasePropertyDialog
 {
 public:

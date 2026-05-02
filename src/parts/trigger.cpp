@@ -13,6 +13,7 @@
 #include "renderer/trace.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
 Trigger::~Trigger()

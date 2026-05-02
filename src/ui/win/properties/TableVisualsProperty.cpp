@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "ui/win/properties/TableVisualsProperty.h"
 
+#include "ui/win/WinEditor.h"
+
 TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
    m_reflectionStrengthEdit.SetDialog(this);

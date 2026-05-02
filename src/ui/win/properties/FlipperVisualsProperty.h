@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class FlipperVisualsProperty final : public BasePropertyDialog
 {
 public:

@@ -4,6 +4,7 @@
 #include "timer.h"
 
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 
 Timer::~Timer()
 {

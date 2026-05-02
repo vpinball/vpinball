@@ -18,6 +18,7 @@
 #include <fstream>
 
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/WinEditor.h"
 
 static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 

@@ -2,6 +2,11 @@
 
 #pragma once
 
+#include <wxx_dialog.h>
+#include <wxx_docking.h>
+#include <wxx_stdcontrols.h>
+
+
 #pragma region BasePropertyDialog
 
 class EditBox;

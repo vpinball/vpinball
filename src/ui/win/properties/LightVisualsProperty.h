@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class LightVisualsProperty final : public BasePropertyDialog
 {
 public:

@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "core/vpversion.h"
 #include "WebServer.h"
+#include "ui/win/WinEditor.h"
 
 #include "VPinballLib.h"
 #include "ZipUtils.h"

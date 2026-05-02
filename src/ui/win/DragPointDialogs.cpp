@@ -4,6 +4,9 @@
 
 #include "DragPointDialogs.h"
 
+
+#include "ui/win/WinEditor.h"
+
 namespace VPX::WinUI
 {
 

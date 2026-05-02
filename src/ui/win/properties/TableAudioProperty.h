@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class TableAudioProperty final : public BasePropertyDialog
 {
 public:

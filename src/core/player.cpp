@@ -26,6 +26,7 @@
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/worker.h"
+#include "ui/win/WinEditor.h"
 #include "unordered_dense.h"
 #include "utils/ushock_output.h"
 

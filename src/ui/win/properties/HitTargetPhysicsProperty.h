@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class HitTargetPhysicsProperty final : public BasePropertyDialog
 {
 public:

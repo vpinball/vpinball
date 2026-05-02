@@ -1,9 +1,8 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/spinner.h"
-
 #include "ui/win/properties/SpinnerVisualsProperty.h"
+#include "parts/spinner.h"
 
 SpinnerVisualsProperty::SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPSPINNER_VISUALS, pvsel)
 {

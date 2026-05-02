@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/decal.h"
-
 #include "ui/win/properties/DecalVisualsProperty.h"
+
+#include "parts/decal.h"
+#include "ui/win/WinEditor.h"
+
 
 DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDECAL_VISUALS, pvsel), m_font(nullptr)
 {

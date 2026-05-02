@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "ui/win/properties/TableLightsProperty.h"
 
+#include "ui/win/WinEditor.h"
+
 TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {
     m_lightEmissionScaleEdit.SetDialog(this);

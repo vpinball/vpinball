@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "PartGroup.h"
 
+#include "ui/win/WinEditor.h"
 
 PartGroup *PartGroup::CopyForPlay() const
 {

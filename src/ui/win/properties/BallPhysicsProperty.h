@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class BallPhysicsProperty final : public BasePropertyDialog
 {
 public:

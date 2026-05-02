@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class DragpointVisualsProperty final : public BasePropertyDialog
 {
 public:

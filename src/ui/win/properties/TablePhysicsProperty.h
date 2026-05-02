@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class TablePhysicsProperty final : public BasePropertyDialog
 {
 public:

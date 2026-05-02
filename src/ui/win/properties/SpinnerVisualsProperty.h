@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class SpinnerVisualsProperty final : public BasePropertyDialog
 {
 public:

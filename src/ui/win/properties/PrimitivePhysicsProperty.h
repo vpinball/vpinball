@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class PrimitivePhysicsProperty final : public BasePropertyDialog
 {
 public:

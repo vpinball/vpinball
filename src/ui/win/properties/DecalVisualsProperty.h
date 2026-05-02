@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class DecalVisualsProperty final : public BasePropertyDialog
 {
 public:

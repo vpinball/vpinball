@@ -1,10 +1,14 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/resource.h"
 #include "RenderProbeDialog.h"
 
-RenderProbeDialog::RenderProbeDialog() : CDialog(IDD_RENDERPROBE), hListHwnd(nullptr)
+#include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
+
+RenderProbeDialog::RenderProbeDialog()
+   : CDialog(IDD_RENDERPROBE)
+   , hListHwnd(nullptr)
 {
 }
 

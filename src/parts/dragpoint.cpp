@@ -4,6 +4,7 @@
 #include "dragpoint.h"
 
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
 bool      DragPoint::m_pointCopied = false;

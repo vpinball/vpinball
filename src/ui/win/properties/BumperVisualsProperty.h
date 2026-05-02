@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class BumperVisualsProperty final : public BasePropertyDialog
 {
 public:

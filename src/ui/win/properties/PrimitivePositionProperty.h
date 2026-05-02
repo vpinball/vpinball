@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class PrimitivePositionProperty final : public BasePropertyDialog
 {
 public:

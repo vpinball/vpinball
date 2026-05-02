@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "ui/win/properties/BackglassVisualsProperty.h"
+#include "ui/win/WinEditor.h"
 
 BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
 {

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class TableVisualsProperty final : public BasePropertyDialog
 {
 public:

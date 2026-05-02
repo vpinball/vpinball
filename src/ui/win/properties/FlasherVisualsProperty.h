@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class FlasherVisualsProperty final : public BasePropertyDialog
 {
 public:

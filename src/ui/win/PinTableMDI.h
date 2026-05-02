@@ -2,6 +2,10 @@
 
 #pragma once
 
+#ifndef __STANDALONE__
+#include <wxx_mdi.h>
+#endif
+
 #include "PinTableWnd.h"
 
 // Multiple Document Interface child window that contains a PinTable view

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class GatePhysicsProperty final : public BasePropertyDialog
 {
 public:

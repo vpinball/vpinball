@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <wxx_docking.h>
+
+
 class ToolbarDialog final : public CDialog
 {
 public:

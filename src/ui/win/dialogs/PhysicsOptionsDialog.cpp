@@ -1,11 +1,14 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/resource.h"
+#include "PhysicsOptionsDialog.h"
+
 #include <fstream>
 #include <sstream>
-#include "PhysicsOptionsDialog.h"
+
 #include "tinyxml2/tinyxml2.h"
+#include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
 
 constexpr unsigned int num_physicsoptions = 8;
 static string physicsoptions[num_physicsoptions];

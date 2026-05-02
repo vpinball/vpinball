@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "vpversion.h"
+#include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 

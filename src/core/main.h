@@ -265,8 +265,6 @@ class SCNotification final { };
 
 #include "extern.h"
 
-#include "ui/win/WinEditor.h"
-
 #include "core/VPApp.h"
 
 #include "parts/pintable.h"

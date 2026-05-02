@@ -1,8 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/resource.h"
 #include "NotesDialog.h"
+
+#include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
 
 LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {

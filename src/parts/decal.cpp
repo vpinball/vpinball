@@ -5,14 +5,11 @@
 #include "core/stdafx.h" 
 #include "decal.h"
 
-#ifndef __STANDALONE__
-#include "vpinball.h"
-#endif
-
-#include "ui/win/sur.h"
 #include "renderer/Renderer.h"
-#include "renderer/trace.h"
 #include "renderer/Shader.h"
+#include "renderer/trace.h"
+#include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 

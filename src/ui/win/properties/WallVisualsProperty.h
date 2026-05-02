@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class WallVisualsProperty final : public BasePropertyDialog
 {
 public:

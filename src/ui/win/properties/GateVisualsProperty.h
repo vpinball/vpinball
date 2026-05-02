@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class GateVisualsProperty final : public BasePropertyDialog
 {
 public:

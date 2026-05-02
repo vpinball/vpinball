@@ -4,6 +4,7 @@
 
 #include "core/stdafx.h" 
 
+#include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
 
 void Mesh::Clear()

@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "ui/win/properties/TableAudioProperty.h"
 
+#include "ui/win/WinEditor.h"
+
 TableAudioProperty::TableAudioProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_AUDIO, pvsel)
 {
    m_soundEffectVolEdit.SetDialog(this);

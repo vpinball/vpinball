@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class DispreelStateProperty final : public BasePropertyDialog
 {
 public:

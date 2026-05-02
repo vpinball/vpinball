@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class BackglassVisualsProperty final : public BasePropertyDialog
 {
 public:

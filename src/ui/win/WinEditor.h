@@ -7,6 +7,7 @@
 #include "core/Settings.h"
 
 #ifndef __STANDALONE__
+   #include <wxx_docking.h>
    #include <wxx_dockframe.h>
    #include "dialogs/ImageDialog.h"
    #include "dialogs/SoundDialog.h"

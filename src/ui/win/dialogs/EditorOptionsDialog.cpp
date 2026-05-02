@@ -7,6 +7,7 @@
 
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
 
 
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)

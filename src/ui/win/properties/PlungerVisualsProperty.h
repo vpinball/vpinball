@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class PlungerVisualsProperty final : public BasePropertyDialog
 {
 public:

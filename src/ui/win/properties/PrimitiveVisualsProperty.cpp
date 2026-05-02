@@ -1,10 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ui/win/properties/PrimitiveVisualsProperty.h"
+
 #include "parts/primitive.h"
 #include "parts/light.h"
-
-#include "ui/win/properties/PrimitiveVisualsProperty.h"
+#include "ui/win/WinEditor.h"
 
 PrimitiveVisualsProperty::PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_VISUALS, pvsel)
 {

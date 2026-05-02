@@ -3,7 +3,8 @@
 #pragma once
 
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
-#include "properties/PropertyDialog.h"
+
+#include "ui/win/properties/PropertyDialog.h"
 
 class EditorOptionsDialog final : public CDialog
 {

@@ -10,6 +10,8 @@
 #include "standalone/PoleStorage.h"
 #endif
 
+#include "ui/win/WinEditor.h"
+
 #include <charconv>
 #include <iomanip>
 #include <filesystem>

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class RampPhysicsProperty final : public BasePropertyDialog
 {
 public:

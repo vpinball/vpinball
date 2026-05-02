@@ -5,6 +5,7 @@
 
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
+#include "ui/win/WinEditor.h"
 
 typedef struct _tagSORTDATA
 {

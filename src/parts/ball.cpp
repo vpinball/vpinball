@@ -4,9 +4,6 @@
 #include "ball.h"
 
 #include "light.h"
-#ifndef __STANDALONE__
-#include "vpinball.h"
-#endif
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/RenderCommand.h"
@@ -14,6 +11,7 @@
 #include "plugins/MsgPluginManager.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 
 
 const AntiStretchHelper Ball::m_ash;

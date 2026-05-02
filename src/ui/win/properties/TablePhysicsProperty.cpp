@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "ui/win/properties/TablePhysicsProperty.h"
 
+#include "ui/win/WinEditor.h"
+
 TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {
     m_gravityConstantEdit.SetDialog(this);

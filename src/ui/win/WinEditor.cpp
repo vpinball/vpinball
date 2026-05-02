@@ -3,55 +3,50 @@
 // implementation of the VPinball class.
 
 #include "core/stdafx.h"
-#include "ui/VPXFileFeedback.h"
-#include "ui/win/resource.h"
-#ifndef __STANDALONE__
-#include "ui/win/dialogs/PlayerOptionsDialog.h"
-#include "dialogs/DrawingOrderDialog.h"
-#endif
+#include "WinEditor.h"
 
-#ifdef __STANDALONE__
+#include <filesystem>
+
+
+#include "core/vpversion.h"
+#include "parts/bumper.h"
+#include "parts/decal.h"
+#include "parts/dispreel.h"
+#include "parts/flasher.h"
+#include "parts/flipper.h"
+#include "parts/gate.h"
+#include "parts/hittarget.h"
+#include "parts/kicker.h"
+#include "parts/light.h"
+#include "parts/lightseq.h"
+#include "parts/PartGroup.h"
+#include "parts/plunger.h"
+#include "parts/primitive.h"
+#include "parts/ramp.h"
+#include "parts/rubber.h"
+#include "parts/spinner.h"
+#include "parts/surface.h"
+#include "parts/textbox.h"
+#include "parts/timer.h"
+#include "parts/trigger.h"
+#include "ui/VPXFileFeedback.h"
+#include "ui/win/codeview.h"
+#include "ui/win/PinTableMDI.h"
+#include "ui/win/resource.h"
+#include "ui/win/worker.h"
+
+#ifndef __STANDALONE__
 #include <iostream>
+#include "FreeImage.h"
+#include "dialogs/DrawingOrderDialog.h"
+#include "ui/win/dialogs/PlayerOptionsDialog.h"
+#else
+#include "standalone/FreeImage.h"
 #endif
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"
 #endif
-
-#include <filesystem>
-#ifndef __STANDALONE__
-#include "FreeImage.h"
-#else
-#include "standalone/FreeImage.h"
-#endif
-#include "core/vpversion.h"
-
-#include "ui/win/PinTableMDI.h"
-
-#include "ui/win/worker.h"
-
-#include "ui/win/codeview.h"
-
-#include "parts/plunger.h"
-#include "parts/flipper.h"
-#include "parts/timer.h"
-#include "parts/textbox.h"
-#include "parts/surface.h"
-#include "parts/dispreel.h"
-#include "parts/lightseq.h"
-#include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/light.h"
-#include "parts/kicker.h"
-#include "parts/decal.h"
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
-#include "parts/gate.h"
-#include "parts/spinner.h"
-#include "parts/ramp.h"
-#include "parts/flasher.h"
-#include "parts/rubber.h"
-#include "parts/PartGroup.h"
 
 
 #if defined(IMSPANISH)

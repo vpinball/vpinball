@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "LayersListDialog.h"
 
+#include "ui/win/WinEditor.h"
+
 #define WM_TREE_SEL_CHANGED (WM_USER + 1)
 
 LayersListDialog::LayersListDialog()

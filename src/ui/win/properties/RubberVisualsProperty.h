@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PropertyDialog.h"
+
 class RubberVisualsProperty final : public BasePropertyDialog
 {
 public:

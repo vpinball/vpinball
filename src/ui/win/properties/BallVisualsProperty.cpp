@@ -1,9 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/ball.h"
-
 #include "ui/win/properties/BallVisualsProperty.h"
+
+#include "parts/ball.h"
+#include "ui/win/WinEditor.h"
 
 BallVisualsProperty::BallVisualsProperty(const VectorProtected<ISelect> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_VISUALS, pvsel)

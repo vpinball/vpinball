@@ -10,6 +10,7 @@
 #include "ui/win/paintsur.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/sur.h"
+#include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
