@@ -46,7 +46,7 @@ generate_commit_report() {
 }
 
 generate_commit_report "vpinball/libaltsound" "master"
-generate_commit_report "jsm174/libdof" "master"
+generate_commit_report "vpinball/libdof" "master"
 generate_commit_report "ppuc/libserum_concentrate" "main"
 generate_commit_report "ppuc/libzedmd" "main"
 generate_commit_report "vpinball/libdmdutil" "master"

@@ -31,7 +31,7 @@ The version used for these libraries is defined by the SHA of the head commit in
 
 ### libdof
 
-- Upstream: https://github.com/jsm174/libdof
+- Upstream: https://github.com/vpinball/libdof
 - License: GPLv3+
 
 ### libserum
