@@ -334,8 +334,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       if (iter == STATIC_PRERENDER_ITERATIONS - 1)
          m_rd->Clear(clearType::TARGET, 0x00000000);
       m_rd->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      m_rd->m_FBShader->SetVector(
-         SHADER_w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()), (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
+      m_rd->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()),
+         (float)((double)STATIC_PRERENDER_ITERATIONS), 0.0f);
       m_rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
       m_rd->DrawFullscreenTexturedQuad(m_rd->m_FBShader);
       m_rd->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);

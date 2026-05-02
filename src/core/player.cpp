@@ -1555,7 +1555,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
          continue;
 
       // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
-      if (isPFWnd)
+      if (isPFWnd && m_liveUI)
          m_liveUI->HandleSDLEvent(e);
 
       m_pininput.HandleSDLEvent(e);

@@ -21,5 +21,8 @@ SAMPLER2DSTEREO(tex_fb_unfiltered,  0); // Framebuffer (unfiltered)
 
 void main()
 {
-	gl_FragColor = vec4(texStereo(tex_fb_unfiltered, v_texcoord0).rgb * (1. / w_h_height.z), 1.0);
+	if (w_h_height.w == 0.f)
+		gl_FragColor = vec4(texStereo(tex_fb_unfiltered, v_texcoord0).rgb * (1. / w_h_height.z), 1.0);
+	else /* if (w_h_height.w == 1.f) */
+		gl_FragColor = vec4(FBGamma(texStereo(tex_fb_unfiltered, v_texcoord0).rgb), 1.0);
 }

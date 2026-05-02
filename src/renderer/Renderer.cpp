@@ -1655,7 +1655,7 @@ void Renderer::RenderStaticPrepass()
          m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 
             (float)(1.0 / (double)renderRT->GetWidth()), (float)(1.0 / (double)renderRT->GetHeight()),
-            (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
+            (float)((double)STATIC_PRERENDER_ITERATIONS), 0.0f);
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderRT->GetColorSampler());
          m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
          m_renderDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
@@ -2604,10 +2604,12 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
    if (m_stereo3D == STEREO_VR)
    {
    #if defined(ENABLE_XR) || defined(ENABLE_VR)
-      int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
+      int w = renderedRT->GetWidth();
+      int h = renderedRT->GetHeight();
 
       #if defined(ENABLE_XR)
-         // Rendering is already directly being performed to the swapchain image, so nothing to do except for depth buffer
+         assert(outputBackBuffer == m_renderDevice->m_outputWnd[0]->GetBackBuffer()); // XR swapchain
+         // Rendering is already directly being performed to the XR swapchain image, so nothing to do except for depth buffer
          // TODO we should directly use the swapchain depth buffer too to avoid the copy
          // FIXME this will not work as the current backbuffer is declared as not having a depth buffer (even if it has like here), beside BGFX does not support blitting depth to the default backbuffer
          if (g_pplayer->m_vrDevice->UseDepthBuffer())
@@ -2620,6 +2622,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          // FIXME no preview for Vulkan (as we are not creating the desktop swapchain)
          if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
             return outputBackBuffer;
+
       #elif defined(ENABLE_VR)
          // Copy each eye to the HMD texture
          assert(renderedRT != outputBackBuffer);
@@ -2668,6 +2671,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
       #if defined(ENABLE_XR)
+      
          Vertex3D_TexelOnly verts[4] =
          {
             { -1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
@@ -2675,10 +2679,9 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             { -1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
             {  1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
          };
-         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-         m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade, 0.f, 0.f, 0.f, 0.f);
-         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*/ /*203.f*/ 350.f / 10000.f, 0.f); 
-         m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_agxtonemap);
+         m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
          if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
          {
             m_renderDevice->m_FBShader->SetInt(SHADER_layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
@@ -2704,7 +2707,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
             // color key after blending).
             m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
-            m_renderDevice->AddRenderTargetDependency(previewRT);
+            m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
             Matrix3D matWorldViewProj[2];
             matWorldViewProj[0].SetIdentity();
             matWorldViewProj[1].SetIdentity();

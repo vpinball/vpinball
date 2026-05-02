@@ -365,10 +365,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
       // Note that this is needed for native VR (running directly on the headset)
       if (init.type == bgfx::RendererType::Vulkan)
          init.platformData.nwh = nullptr;
-      // FIXME We need to set the backbuffer size to the eye size for bgfx::clear to work.
-      // This is not clean and should be fixed as this is also the size of the desktop swapchain
-      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth()));
-      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight()));
 #endif
    }
 
@@ -498,6 +494,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
 {
    // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
+   m_frameIndex = 0;
    while (m_renderDeviceAlive)
    {
       // Process OpenXR events (headset status, ...)
@@ -543,6 +540,7 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
             BEGIN_SPAN(tagSpan, "BGFX->GPU")
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             Flip();
+            m_frameIndex++;
             if (m_screenshotFrameDelay > 0)
             {
                m_screenshotFrameDelay--;
@@ -1091,6 +1089,7 @@ RenderDevice::RenderDevice(
 {
    // Main render target (playfield window or VR target)
    m_outputWnd.push_back(wnd);
+   VPX::Window* swapchainWnd = wnd;
 
    // Create preview in the render device as it holds the desktop swapchain (not really clean and should be refactored for all windows to be added/removed by the client)
    if (isVR && !g_isAndroid)
@@ -1107,6 +1106,7 @@ RenderDevice::RenderDevice(
       previewWnd->Show();
       previewWnd->RaiseAndFocus();
       m_outputWnd.push_back(previewWnd);
+      swapchainWnd = previewWnd;
    }
 
    assert(!isVR || m_nEyes == 2);
@@ -1169,29 +1169,29 @@ RenderDevice::RenderDevice(
 
    init.callback = &m_bgfxCallback;
    init.fallback = true;
-   init.resolution.width = wnd->GetPixelWidth();
-   init.resolution.height = wnd->GetPixelHeight();
+   init.resolution.width = swapchainWnd->GetPixelWidth();
+   init.resolution.height = swapchainWnd->GetPixelHeight();
    init.platformData.context = nullptr;
    init.platformData.backBuffer = nullptr;
    init.platformData.backBufferDS = nullptr;
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    if (SDL_GetCurrentVideoDriver() == "x11"sv) {
-      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-      init.platformData.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+      init.platformData.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
    }
    else if (SDL_GetCurrentVideoDriver() == "wayland"sv) {
       init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
-      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-      init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+      init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }
    #elif BX_PLATFORM_OSX
-   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
+   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(swapchainWnd->GetCore(), "Metal"));
    #elif BX_PLATFORM_IOS
    init.platformData.nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
    #elif BX_PLATFORM_ANDROID
-   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(swapchainWnd->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = m_outputWnd[0]->GetNativeHWND();
+   init.platformData.nwh = swapchainWnd->GetNativeHWND();
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;

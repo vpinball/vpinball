@@ -629,7 +629,7 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
       };
       Shader* shader = m_rd->m_FBShader;
       shader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      shader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
+      shader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 0.f);
       shader->SetInt(SHADER_layer, srcLayer);
       shader->SetTexture(SHADER_tex_fb_unfiltered, GetColorSampler());
       shader->Begin();
