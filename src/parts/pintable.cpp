@@ -36,6 +36,7 @@
 #include "ui/win/codeview.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/hitsur.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"

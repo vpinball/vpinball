@@ -4,20 +4,16 @@
 
 #pragma once
 
-#include "unordered_dense.h"
 
 #include <atomic>
-#include "utils/hash.h"
+
+#include "core/pinundo.h"
+#include "parts/pinbinary.h"
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
-
-#include "input/InputManager.h"
-
-#include "ui/win/PinTableMDI.h"
-
+#include "unordered_dense.h"
 #include "utils/fileio.h"
-
-#include "parts/pinbinary.h"
+#include "utils/hash.h"
 
 #ifdef __STANDALONE__
 #include <iostream>

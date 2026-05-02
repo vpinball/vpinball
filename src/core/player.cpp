@@ -2,57 +2,47 @@
 
 #include "core/stdafx.h"
 
-#include "ui/win/worker.h"
-#include "ui/win/codeview.h"
-
-#ifndef __STANDALONE__
-#define SDL_MAIN_NOIMPL
-#include <SDL3/SDL_main.h>
-#endif
-
-#include "imgui/imgui_impl_sdl3.h"
-
-#ifdef __STANDALONE__
-#include "unordered_dense.h"
-#endif
-
-#ifdef __LIBVPINBALL__
-#include "lib/src/VPinballLib.h"
-#endif
-
 #include <iomanip>
 #include <ctime>
 #include <fstream>
 #include <sstream>
 #include <array>
 #include <filesystem>
-#include "renderer/Shader.h"
-#include "renderer/Anaglyph.h"
-#include "renderer/VRDevice.h"
-#include "renderer/typedefs3D.h"
-#include "renderer/RenderCommand.h"
+
+#include "core/VPXPluginAPIImpl.h"
+#include "parts/ball.h"
+#include "parts/flasher.h"
+#include "parts/light.h"
+#include "parts/primitive.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
+#include "renderer/Shader.h"
 #include "renderer/trace.h"
+#include "renderer/typedefs3D.h"
+#include "renderer/VRDevice.h"
+#include "ThreadPool.h"
+#include "tinyxml2/tinyxml2.h"
+#include "ui/win/codeview.h"
+#include "ui/win/PinTableWnd.h"
+#include "ui/win/worker.h"
+#include "unordered_dense.h"
+#include "utils/ushock_output.h"
+
 #ifdef _MSC_VER
 // Used to log which program steals the focus from VPX
 #include "psapi.h"
 #pragma comment(lib, "Psapi")
 #endif
-#include "tinyxml2/tinyxml2.h"
-#include "ThreadPool.h"
 
-#include "plugins/MsgPlugin.h"
-#include "plugins/VPXPlugin.h"
-#include "core/VPXPluginAPIImpl.h"
+#ifndef __STANDALONE__
+#define SDL_MAIN_NOIMPL
+#include <SDL3/SDL_main.h>
+#endif
 
-#include "input/ScanCodes.h"
-
-#include "parts/ball.h"
-#include "parts/light.h"
-#include "parts/flasher.h"
-#include "parts/primitive.h"
-
-#include "utils/ushock_output.h"
+#ifdef __LIBVPINBALL__
+#include "lib/src/VPinballLib.h"
+#endif
 
 // MSVC Concurrency Viewer support
 // This requires to add the MSVC Concurrency SDK to the project

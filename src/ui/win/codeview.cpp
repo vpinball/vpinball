@@ -1,4 +1,5 @@
 #include "core/stdafx.h"
+#include "codeview.h"
 
 #ifndef __STANDALONE__
 #include "scilexer.h"
@@ -16,7 +17,7 @@
 
 #include <fstream>
 
-#include "codeview.h"
+#include "ui/win/PinTableWnd.h"
 
 static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 

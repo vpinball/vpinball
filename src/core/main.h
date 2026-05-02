@@ -255,8 +255,6 @@ class SCNotification final { };
 
 #include "utils/eventproxy.h"
 
-#include "pinundo.h"
-
 #include "iselect.h"
 
 #include "core/Scriptable.h"

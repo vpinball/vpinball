@@ -4,12 +4,13 @@
 
 #include "PinTableWnd.h"
 
-#include "ui/win/paintsur.h"
-#include "ui/win/worker.h"
 #include "ui/win/codeview.h"
-#include "ui/win/sur.h"
-#include "ui/win/hitsur.h"
 #include "ui/win/hitrectsur.h"
+#include "ui/win/hitsur.h"
+#include "ui/win/paintsur.h"
+#include "ui/win/PinTableMDI.h"
+#include "ui/win/sur.h"
+#include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/VPXLoadFileProgressBar.h"

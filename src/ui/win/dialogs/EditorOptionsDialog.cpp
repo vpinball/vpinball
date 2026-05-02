@@ -1,10 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/resource.h"
 #include "EditorOptionsDialog.h"
 
 #include <filesystem>
+
+#include "ui/win/PinTableWnd.h"
+#include "ui/win/resource.h"
+
 
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
 {

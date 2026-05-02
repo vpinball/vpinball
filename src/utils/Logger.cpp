@@ -21,6 +21,7 @@
 #endif
 
 #include "ui/win/codeview.h"
+#include "ui/win/PinTableWnd.h"
 
 class DebugAppender final : public plog::IAppender
 {
