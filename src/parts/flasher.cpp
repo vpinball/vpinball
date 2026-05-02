@@ -2,16 +2,16 @@
 
 #include "core/stdafx.h"
 #include "flasher.h"
-#include "light.h"
 
 #include "core/VPXPluginAPIImpl.h"
-#include "renderer/Renderer.h"
-#include "renderer/trace.h"
-#include "renderer/Shader.h"
+#include "light.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/sur.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/sur.h"
 
 
 Flasher::~Flasher()

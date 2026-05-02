@@ -2,9 +2,10 @@
 
 #include "core/stdafx.h"
 #include "dispreel.h"
-#include "ui/win/sur.h"
-#include "renderer/trace.h"
+
 #include "renderer/Shader.h"
+#include "renderer/trace.h"
+#include "ui/win/sur.h"
 
 DispReel::~DispReel()
 {

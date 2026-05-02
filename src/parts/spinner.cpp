@@ -5,9 +5,9 @@
 
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
-#include "renderer/trace.h"
-#include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
 #include "ui/win/sur.h"
 #include "utils/objloader.h"

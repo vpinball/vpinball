@@ -4,11 +4,11 @@
 #include "ramp.h"
 
 //#include "forsyth.h"
-#include "utils/objloader.h"
-#include "renderer/trace.h"
 #include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 
 Ramp::~Ramp()

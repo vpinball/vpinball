@@ -4,14 +4,13 @@
 #include "flipper.h"
 
 #include "meshes/flipperBase.h"
-#include "utils/objloader.h"
-#include "renderer/Renderer.h"
-#include "renderer/trace.h"
-#include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "core/VPXPluginAPIImpl.h"
 #include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 static constexpr float vertsTipBottomf[13 * 3] =
 {

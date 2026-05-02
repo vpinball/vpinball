@@ -3,61 +3,49 @@
 #include "core/stdafx.h"
 #include "pintable.h"
 
-#include "core/vpversion.h"
-#include "parts/Sound.h"
-#include "ui/win/resource.h"
-#include "utils/hash.h"
 #include <algorithm>
-#include "utils/objloader.h"
-#include "tinyxml2/tinyxml2.h"
 #include <fstream>
 #include <sstream>
-#include "renderer/Shader.h"
+
+#include "core/ScriptGlobalTable.h"
+#include "core/vpversion.h"
+#include "parts/ball.h"
+#include "parts/bumper.h"
+#include "parts/decal.h"
+#include "parts/dispreel.h"
+#include "parts/flasher.h"
+#include "parts/flipper.h"
+#include "parts/gate.h"
+#include "parts/hittarget.h"
+#include "parts/kicker.h"
+#include "parts/light.h"
+#include "parts/PartGroup.h"
+#include "parts/plunger.h"
+#include "parts/primitive.h"
+#include "parts/ramp.h"
+#include "parts/rubber.h"
+#include "parts/Sound.h"
+#include "parts/spinner.h"
+#include "parts/surface.h"
+#include "parts/textbox.h"
+#include "parts/timer.h"
+#include "parts/trigger.h"
+#include "ThreadPool.h"
+#include "tinyxml2/tinyxml2.h"
 #include "ui/VPXFileFeedback.h"
+#include "ui/win/codeview.h"
+#include "ui/win/DragPointDialogs.h"
+#include "ui/win/hitsur.h"
+#include "ui/win/resource.h"
+#include "utils/BiffReader.h"
+#include "utils/BiffWriter.h"
+#include "utils/hash.h"
+#include "utils/objloader.h"
+#include "utils/ushock_output.h"
+
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/VPXLoadFileProgressBar.h"
 #include "ui/win/dialogs/VPXSaveFileProgressBar.h"
-#include "FreeImage.h"
-#endif
-#include "ThreadPool.h"
-#include "core/VPXPluginAPIImpl.h"
-#include "core/ScriptGlobalTable.h"
-
-#include "ui/win/DragPointDialogs.h"
-#include "ui/win/codeview.h"
-#include "ui/win/hitsur.h"
-
-#include "ui/live/ingameui/InGameUIItem.h"
-
-#include "utils/BiffReader.h"
-#include "utils/BiffWriter.h"
-
-#include "utils/ushock_output.h"
-
-#include "parts/ball.h"
-#include "parts/plunger.h"
-#include "parts/flipper.h"
-#include "parts/timer.h"
-#include "parts/textbox.h"
-#include "parts/surface.h"
-#include "parts/dispreel.h"
-#include "parts/lightseq.h"
-#include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/light.h"
-#include "parts/kicker.h"
-#include "parts/decal.h"
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
-#include "parts/gate.h"
-#include "parts/spinner.h"
-#include "parts/ramp.h"
-#include "parts/flasher.h"
-#include "parts/rubber.h"
-#include "parts/PartGroup.h"
-
-#ifdef __STANDALONE__
-#include "mINI/ini.h"
 #endif
 
 #define HASHLENGTH 16

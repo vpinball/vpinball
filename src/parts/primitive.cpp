@@ -5,16 +5,15 @@
 #include "core/stdafx.h" 
 #include "primitive.h"
 
-#include "light.h"
 #include "forsyth.h"
-#include "utils/objloader.h"
+#include "light.h"
 #include "miniz/miniz.h"
 #include "progmesh.h"
-#include "ThreadPool.h"
 #include "renderer/Renderer.h"
-#include "renderer/trace.h"
 #include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 
 Primitive::~Primitive()

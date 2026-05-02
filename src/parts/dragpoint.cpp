@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "dragpoint.h"
+
 #include "ui/win/sur.h"
 
 Vertex3Ds DragPoint::m_copyPoint;

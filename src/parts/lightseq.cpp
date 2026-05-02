@@ -3,9 +3,9 @@
 #include "core/stdafx.h"
 #include "lightseq.h"
 
+#include "flasher.h"
 #include "light.h"
 #include "primitive.h"
-#include "flasher.h"
 #include "ui/win/sur.h"
 
 LightSeq *LightSeq::CopyForPlay() const

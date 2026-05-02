@@ -5,14 +5,14 @@
 
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
-#include "renderer/Renderer.h"
-#include "renderer/trace.h"
-#include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
+#include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "utils/bulb.h"
-#include "ui/win/sur.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/sur.h"
+#include "utils/bulb.h"
 
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove

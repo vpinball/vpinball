@@ -2,17 +2,15 @@
 
 #include "core/stdafx.h"
 #include "ball.h"
-#include "light.h"
 
+#include "light.h"
 #ifndef __STANDALONE__
 #include "vpinball.h"
 #endif
-#include "meshes/ballMesh.h"
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
-#include "renderer/VRDevice.h"
 #include "plugins/MsgPluginManager.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "ui/win/sur.h"

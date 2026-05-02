@@ -2,11 +2,10 @@
 
 #include "core/stdafx.h"
 #include "plunger.h"
-#include "ball.h"
 
-#include "renderer/trace.h"
+#include "ball.h"
 #include "renderer/Shader.h"
-#include "core/VPXPluginAPIImpl.h"
+#include "renderer/trace.h"
 #include "ui/win/sur.h"
 
 Plunger::~Plunger()
