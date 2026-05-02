@@ -419,11 +419,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    m_rd->m_basicShader->SetTextureNull(SHADER_tex_reflection);
 
    // Flip camera
-   Matrix3D viewMat = g_pplayer->m_renderer->GetMVP().GetView();
-   Matrix3D initialViewMat;
-   memcpy(&initialViewMat.m[0][0], &viewMat.m[0][0], 4 * 4 * sizeof(float));
-   viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
-   g_pplayer->m_renderer->GetMVP().SetView(viewMat);
+   g_pplayer->m_renderer->GetMVP().SetReflection(Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w));
 
    if (render_static || render_dynamic)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
@@ -438,8 +434,8 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
       g_pplayer->m_renderer->DrawDynamics(true);
 
    // Restore initial render states and camera
+   g_pplayer->m_renderer->GetMVP().SetReflection(Matrix3D::MatrixIdentity());
    g_pplayer->m_renderer->m_render_mask = prevRenderMask;
    m_rd->CopyRenderAndShaderStates(false, *m_rdState);
    m_rd->SetDefaultRenderState();
-   g_pplayer->m_renderer->GetMVP().SetView(initialViewMat);
 }
