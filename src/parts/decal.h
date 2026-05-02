@@ -5,6 +5,7 @@
 #pragma once
 
 #include "physics/hittimer.h"
+#include "utils/eventproxy.h"
 #include "utils/fileio.h"
 
 class DecalData final : public BaseProperty

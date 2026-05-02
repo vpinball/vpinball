@@ -9,6 +9,7 @@ class Collection;
 class IHitable;
 class IRenderable;
 class IScriptable;
+class EventProxyBase;
 
 #define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
 

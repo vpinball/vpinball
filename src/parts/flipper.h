@@ -6,6 +6,7 @@
 
 #include "physics/hitflipper.h"
 #include "ui/win/resource.h"  
+#include "utils/eventproxy.h"
 
 class FlipperData final : public BaseProperty
 {

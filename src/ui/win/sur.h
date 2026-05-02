@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "math/MeshUtils.h"
+
 #define RoundToInt lround
 
 #define SCALEXf(x) RoundToInt(((x) - m_offx)*m_zoom)

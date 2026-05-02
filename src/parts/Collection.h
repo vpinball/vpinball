@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/eventproxy.h"
+#include "utils/vector.h"
 
 class Collection :
    public IDispatchImpl<ICollection, &IID_ICollection, &LIBID_VPinballLib>,

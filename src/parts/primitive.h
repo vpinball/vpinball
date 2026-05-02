@@ -2,10 +2,11 @@
 
 #pragma once
 
-#include "ui/win/resource.h"
-#include "unordered_dense.h"
 #include "math/Mesh.h"
 #include "math/MeshUtils.h"
+#include "ui/win/resource.h"
+#include "unordered_dense.h"
+#include "utils/eventproxy.h"
 
 // Indices for RotAndTra:
 //     RotX = 0

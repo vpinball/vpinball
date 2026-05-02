@@ -1,17 +1,15 @@
 #pragma once
 
-#ifndef __STANDALONE__
-#include <commdlg.h>
-#endif
 #include <atlcom.h>
 #include "codeviewedit.h"
+#include "core/ScriptInterpreter.h"
+#include "utils/vectorsort.h"
 
 #ifndef __STANDALONE__
+#include <commdlg.h>
 #include "dialogs/ScriptErrorDialog.h"
 #include "scintilla.h"
 #endif
-
-#include "core/ScriptInterpreter.h"
 
 #ifndef OVERRIDE
 #ifndef __STANDALONE__

@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include "ui/win/resource.h"
+#include "parts/timer.h"
 #include "physics/hitable.h"
 #include "physics/hitball.h"
 #include "renderer/Renderable.h"
-#include "parts/timer.h"
+#include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 class HitBall;
 

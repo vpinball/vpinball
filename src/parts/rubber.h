@@ -5,8 +5,10 @@
 #pragma once
 
 #include "dragpoint.h"
-#include "ui/win/resource.h"
 #include "unordered_dense.h"
+#include "math/MeshUtils.h"
+#include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 class RubberData final : public BaseProperty
 {

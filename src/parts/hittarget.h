@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "ui/win/resource.h"
 #include "unordered_dense.h"
+#include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 // Indices for RotAndTra:
 //     RotX = 0

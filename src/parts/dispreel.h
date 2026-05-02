@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 // data in this class is persisted with the table
 class DispReelData final : public BaseProperty

@@ -6,6 +6,7 @@
 
 #include "dragpoint.h"
 #include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 class TriggerData final : public BaseProperty
 {

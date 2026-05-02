@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "math/MeshUtils.h"
 #include "ui/win/resource.h"
 
 class IHaveDragPoints;

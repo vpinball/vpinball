@@ -12,8 +12,10 @@
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
 #include "unordered_dense.h"
+#include "utils/eventproxy.h"
 #include "utils/fileio.h"
 #include "utils/hash.h"
+#include "utils/vector.h"
 
 #ifdef __STANDALONE__
 #include <iostream>

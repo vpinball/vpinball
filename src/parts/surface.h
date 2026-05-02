@@ -5,7 +5,9 @@
 #pragma once
 
 #include "dragpoint.h"
+#include "math/MeshUtils.h"
 #include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 class SurfaceData final : public BaseProperty
 {

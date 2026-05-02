@@ -187,14 +187,11 @@ class SCNotification final { };
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/bbox.h"
-#include "math/MeshUtils.h"
 
 #include "ui/win/resource.h"
 
 #include "dispid.h"
 
-#include "utils/vector.h"
-#include "utils/vectorsort.h"
 #include "utils/color.h"
 
 #ifndef __STANDALONE__
@@ -206,8 +203,6 @@ class SCNotification final { };
 #include "core/Settings.h"
 
 #include "utils/wintimer.h"
-
-#include "utils/eventproxy.h"
 
 #include "iselect.h"
 

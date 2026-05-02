@@ -4,6 +4,7 @@
 #include "trigger.h"
 
 #include "ball.h"
+#include "math/MeshUtils.h"
 #include "meshes/triggerButtonMesh.h"
 #include "meshes/triggerInderMesh.h"
 #include "meshes/triggerSimpleMesh.h"

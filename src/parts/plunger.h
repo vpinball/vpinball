@@ -6,6 +6,7 @@
 
 #include "physics/hitplunger.h"
 #include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 constexpr int MAXTIPSHAPE = 256;
 

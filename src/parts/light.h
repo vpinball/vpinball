@@ -5,8 +5,9 @@
 #pragma once
 
 #include "dragpoint.h"
-#include "ui/win/resource.h"
 #include "renderer/RenderDevice.h"
+#include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 enum ShadowMode : int // has to be int for loading
 {

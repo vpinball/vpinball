@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/win/resource.h"
+#include "utils/eventproxy.h"
 
 class LightSeqData final
 {
