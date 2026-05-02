@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "gate.h"
 
-#include "utils/objloader.h"
 #include "meshes/gateBracketMesh.h"
 #include "meshes/gateWireMesh.h"
 #include "meshes/gateLongPlateMesh.h"
@@ -13,6 +12,8 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
+#include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 Gate::~Gate()
 {

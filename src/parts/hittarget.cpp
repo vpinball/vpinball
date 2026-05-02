@@ -1,11 +1,8 @@
 // license:GPLv3+
 
-// implementation of the HitTarget class.
-
 #include "core/stdafx.h"
 #include "hittarget.h"
 
-#include "utils/objloader.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
 #include "meshes/dropTargetT4Mesh.h"
@@ -19,6 +16,8 @@
 #include "renderer/Shader.h"
 #include "renderer/VertexBuffer.h"
 #include "renderer/IndexBuffer.h"
+#include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 HitTarget::~HitTarget()
 {

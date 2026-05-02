@@ -1,7 +1,6 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "paintsur.h"
 
 #include <WinGDI.h> // for AlphaBlend()

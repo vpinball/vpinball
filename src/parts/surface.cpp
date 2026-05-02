@@ -10,6 +10,7 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/sur.h"
 
 
 Surface::~Surface()

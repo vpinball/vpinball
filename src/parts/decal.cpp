@@ -9,6 +9,7 @@
 #include "vpinball.h"
 #endif
 
+#include "ui/win/sur.h"
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/Shader.h"

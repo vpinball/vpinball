@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ui/win/sur.h"
 
 ISelect::ISelect()
    : m_vpinball(g_pvp)

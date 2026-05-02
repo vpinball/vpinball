@@ -7,6 +7,7 @@
 #include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
+#include "ui/win/sur.h"
 
 Textbox::~Textbox()
 {

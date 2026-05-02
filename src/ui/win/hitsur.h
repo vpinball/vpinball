@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "sur.h"
+
 class HitSur : public Sur
 {
 public:

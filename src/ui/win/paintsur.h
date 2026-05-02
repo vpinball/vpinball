@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "sur.h"
+
 class PaintSur final : public Sur
 {
 public:

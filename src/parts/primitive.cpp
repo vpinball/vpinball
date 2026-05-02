@@ -4,8 +4,8 @@
 
 #include "core/stdafx.h" 
 #include "primitive.h"
-#include "light.h"
 
+#include "light.h"
 #include "forsyth.h"
 #include "utils/objloader.h"
 #include "miniz/miniz.h"
@@ -14,6 +14,7 @@
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/Shader.h"
+#include "ui/win/sur.h"
 
 
 Primitive::~Primitive()

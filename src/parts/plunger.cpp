@@ -1,11 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "renderer/trace.h"
 #include "plunger.h"
 #include "ball.h"
 
+#include "renderer/trace.h"
 #include "renderer/Shader.h"
+#include "core/VPXPluginAPIImpl.h"
+#include "ui/win/sur.h"
 
 Plunger::~Plunger()
 {

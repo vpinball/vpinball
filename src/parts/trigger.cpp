@@ -2,9 +2,8 @@
 
 #include "core/stdafx.h"
 #include "trigger.h"
-#include "ball.h"
 
-#include "utils/objloader.h"
+#include "ball.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
 #include "meshes/triggerButtonMesh.h"
@@ -13,7 +12,8 @@
 #include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "ui/win/DragPointDialogs.h"
-
+#include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 Trigger::~Trigger()
 {

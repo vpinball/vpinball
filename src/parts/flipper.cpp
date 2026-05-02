@@ -10,6 +10,8 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
+#include "core/VPXPluginAPIImpl.h"
+#include "ui/win/sur.h"
 
 static constexpr float vertsTipBottomf[13 * 3] =
 {

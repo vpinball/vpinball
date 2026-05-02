@@ -11,6 +11,7 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 #include "utils/bulb.h"
+#include "ui/win/sur.h"
 #include "ui/win/DragPointDialogs.h"
 
 

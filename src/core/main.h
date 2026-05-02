@@ -275,8 +275,6 @@ class SCNotification final { };
 
 #include "parts/pintable.h"
 
-#include "ui/win/sur.h"
-
 #include "physics/hitable.h"
 
 #include "core/player.h"

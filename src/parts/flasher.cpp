@@ -4,12 +4,13 @@
 #include "flasher.h"
 #include "light.h"
 
+#include "core/VPXPluginAPIImpl.h"
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
-#include "core/VPXPluginAPIImpl.h"
+#include "ui/win/sur.h"
 #include "ui/win/DragPointDialogs.h"
 
 

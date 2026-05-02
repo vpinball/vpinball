@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "bumper.h"
 
-#include "utils/objloader.h"
 #include "meshes/bumperBaseMesh.h"
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperCapMesh.h"
@@ -12,6 +11,8 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
+#include "ui/win/sur.h"
+#include "utils/objloader.h"
 
 Bumper::~Bumper()
 {

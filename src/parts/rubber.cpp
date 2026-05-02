@@ -8,6 +8,7 @@
 #include "renderer/trace.h"
 #include "renderer/Shader.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/sur.h"
 
 
 Rubber::~Rubber()

@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "timer.h"
 
+#include "ui/win/sur.h"
+
 Timer::~Timer()
 {
 }

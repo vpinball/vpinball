@@ -15,6 +15,7 @@
 #include "renderer/VRDevice.h"
 #include "plugins/MsgPluginManager.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "ui/win/sur.h"
 
 
 const AntiStretchHelper Ball::m_ash;
