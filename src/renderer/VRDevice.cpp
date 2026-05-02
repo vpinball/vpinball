@@ -834,10 +834,7 @@ void VRDevice::CreateSession()
    m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size());
 
    auto inputHandler = std::make_unique<XRInputHandler>(g_pplayer->m_pininput, m_xrInstance, m_session);
-   m_xrInputHandler = inputHandler.get();
-   g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
-
-   XrAction leftPoseAction = m_xrInputHandler->GetAction("/user/hand/left/input/grip/pose");
+   XrAction leftPoseAction = inputHandler->GetAction("/user/hand/left/input/grip/pose");
    if (leftPoseAction != XR_NULL_HANDLE)
    {
       XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
@@ -845,8 +842,7 @@ void VRDevice::CreateSession()
       actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
       OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_leftControllerSpace), "Failed to create Left Controller Action Space.");
    }
-
-   XrAction rightPoseAction = m_xrInputHandler->GetAction("/user/hand/right/input/grip/pose");
+   XrAction rightPoseAction = inputHandler->GetAction("/user/hand/right/input/grip/pose");
    if (rightPoseAction != XR_NULL_HANDLE)
    {
       XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
@@ -854,6 +850,8 @@ void VRDevice::CreateSession()
       actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
       OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_rightControllerSpace), "Failed to create Right Controller Action Space.");
    }
+   m_xrInputHandler = inputHandler.get();
+   g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
 }
 
 void VRDevice::ReleaseSession()

@@ -159,8 +159,11 @@ void InputManager::AddInputHandler(std::unique_ptr<InputHandler> handler)
 
 std::unique_ptr<InputManager::InputHandler> InputManager::RemoveInputHandler(InputHandler* handler)
 {
-
-   return nullptr;
+   const auto& it = std::ranges::find_if(m_inputHandlers, [handler](const auto& ih) { return ih.get() == handler; });
+   assert(it != m_inputHandlers.end());
+   std::unique_ptr<InputManager::InputHandler> ownedHandler = std::move(*it);
+   m_inputHandlers.erase(it);
+   return ownedHandler;
 }
 
 
