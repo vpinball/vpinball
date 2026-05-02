@@ -17,7 +17,7 @@ namespace Serum {
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
+#include <Windows.h>
 #include <locale>
 void SetThreadName(const std::string& name)
 {

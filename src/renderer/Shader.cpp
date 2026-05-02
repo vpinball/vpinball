@@ -1427,11 +1427,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       {
          const bool aIsSampler = ShaderUniform::coreUniforms[a].type == ShaderUniformType::SUT_Sampler;
          const bool bIsSampler = ShaderUniform::coreUniforms[b].type == ShaderUniformType::SUT_Sampler;
-         if (aIsSampler && !bIsSampler)
-            return true;
-         if (!aIsSampler && bIsSampler)
-            return false;
-         return false;
+         return aIsSampler && !bIsSampler;
       });
 }
 

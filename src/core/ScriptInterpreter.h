@@ -92,7 +92,7 @@ private:
       IDispatch *m_pdisp = nullptr;
       bool m_global = false;
    };
-   ankerl::unordered_dense::map<std::wstring, std::unique_ptr<ScriptItem>> m_vcvd;
+   ankerl::unordered_dense::map<std::wstring, std::unique_ptr<ScriptItem>> m_scriptItemMap;
 
    bool m_hasError = false;
    void HandleScriptError(IActiveScriptError *pScriptError, IActiveScriptErrorDebug *pScriptDebugError);

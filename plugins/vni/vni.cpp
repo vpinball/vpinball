@@ -6,6 +6,7 @@
 #include <cstring>
 #include <mutex>
 #include <thread>
+#include <random>
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
@@ -36,6 +37,8 @@ static DisplaySrcId dmdId = {};
 
 static Vni_Context* pVni = nullptr;
 
+static std::minstd_rand std_rand;
+
 MSGPI_STRING_VAL_SETTING(vniPathProp, "VniPath", "VNI Path", "Folder that contains VNI colorization files (PAL, VNI)", true, "", 1024);
 
 class ColorizationState final
@@ -44,7 +47,7 @@ public:
    ColorizationState(unsigned int width, unsigned int height)
       : m_colorFrame(new uint8_t[width * height * 3])
       , m_width(width), m_height(height)
-      , m_colorizedframeId(static_cast<unsigned int>(std::rand()))
+      , m_colorizedframeId(std_rand())
    {
       assert(m_width > 0);
       assert(m_height > 0);

@@ -290,7 +290,7 @@ void ClipDrawImage(VPXRenderContext2D* ctx, VPXTexture texture,
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
+#include <Windows.h>
 #include <locale>
 void SetThreadName(const string& name)
 {

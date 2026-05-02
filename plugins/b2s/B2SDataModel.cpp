@@ -11,7 +11,7 @@
 
 namespace B2S {
 
-static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const std::string& nodePath)
+static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const std::string& nodePath) noexcept
 {
    const tinyxml2::XMLNode* node = &doc;
    size_t pos = 0;
@@ -30,7 +30,7 @@ static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const s
    return node ? node->ToElement() : nullptr;
 }
 
-static string GetStringAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const string& defVal)
+static string GetStringAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const string& defVal) noexcept
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
@@ -41,18 +41,18 @@ static string GetStringAttribute(const tinyxml2::XMLNode& doc, const std::string
    return defVal;
 }
 
-static int GetIntAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const int& defVal)
+static int GetIntAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const int& defVal) noexcept
 {
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
    return node ? node->IntAttribute(attributeName.c_str(), defVal) : defVal;
 }
 
-static bool GetBoolAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const bool& defVal)
+static bool GetBoolAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const bool& defVal) noexcept
 {
    return GetIntAttribute(doc, nodePath, attributeName, defVal ? 1 : 0) != 0;
 }
 
-static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const vec4& defVal)
+static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const vec4& defVal) noexcept
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
@@ -75,7 +75,7 @@ static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& n
    return defVal;
 }
 
-static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName)
+static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName) noexcept
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
@@ -101,7 +101,7 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
    return nullptr;
 }
 
-static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName)
+static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName) noexcept
 {
    if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
@@ -115,13 +115,13 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
    return nullptr;
 }
 
-static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath)
+static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath) noexcept
 {
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
    return B2SImage(*node);
 }
 
-template <class T> static vector<T> GetList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName)
+template <class T> static vector<T> GetList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName) noexcept
 {
    vector<T> list;
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
@@ -132,7 +132,7 @@ template <class T> static vector<T> GetList(const tinyxml2::XMLNode& doc, const 
    return list;
 }
 
-template <class T> static vector<std::unique_ptr<T>> GetPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName)
+template <class T> static vector<std::unique_ptr<T>> GetPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName) noexcept
 {
    vector<std::unique_ptr<T>> list;
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
@@ -143,7 +143,7 @@ template <class T> static vector<std::unique_ptr<T>> GetPtrList(const tinyxml2::
    return list;
 }
 
-template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD)
+template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD) noexcept
 {
    vector<T> list;
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
@@ -158,7 +158,7 @@ template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc
    return list;
 }
 
-template <class T> static vector<std::unique_ptr<T>> GetFilteredPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD)
+template <class T> static vector<std::unique_ptr<T>> GetFilteredPtrList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName, bool isDMD) noexcept
 {
    vector<std::unique_ptr<T>> list;
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
@@ -173,7 +173,7 @@ template <class T> static vector<std::unique_ptr<T>> GetFilteredPtrList(const ti
    return list;
 }
 
-static std::vector<std::string> GetStringList(const std::string& str, char delimiter)
+static std::vector<std::string> GetStringList(const std::string& str, char delimiter) noexcept
 {
    std::vector<std::string> tokens;
    std::istringstream tokenStream(str);
@@ -183,20 +183,20 @@ static std::vector<std::string> GetStringList(const std::string& str, char delim
    return tokens;
 }
 
-static bool StartsWithCaseInsensitive(const std::string& str, const std::string& prefix)
+static bool StartsWithCaseInsensitive(const std::string_view& str, const std::string_view& prefix) noexcept
 {
    if (prefix.length() > str.length()) return false;
    return std::equal(prefix.begin(), prefix.end(), str.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-B2SSound::B2SSound(const tinyxml2::XMLNode& root)
+B2SSound::B2SSound(const tinyxml2::XMLNode& root) noexcept
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_wav(GetSoundAttribute(root, ""s, "Value"s))
 {
 }
 
 
-B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
+B2SBulb::B2SBulb(const tinyxml2::XMLNode& root) noexcept
    : m_id(GetIntAttribute(root, ""s, "RomID"s, 0))
    , m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_b2sId(GetIntAttribute(root, ""s, "B2SID"s, -1))
@@ -243,7 +243,7 @@ B2SBulb::~B2SBulb()
 }
 
 
-B2SImage::B2SImage(const tinyxml2::XMLNode& root)
+B2SImage::B2SImage(const tinyxml2::XMLNode& root) noexcept
    : m_image(GetTextureAttribute(root, ""s, "Value"s))
    , m_filename(GetStringAttribute(root, ""s, "FileName"s, ""s))
    , m_romId(GetIntAttribute(root, ""s, "RomID"s, 0))
@@ -257,7 +257,7 @@ B2SImage::~B2SImage()
 }
 
 
-B2SReelImage::B2SReelImage(const tinyxml2::XMLNode& root)
+B2SReelImage::B2SReelImage(const tinyxml2::XMLNode& root) noexcept
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_countOfIntermediate(GetIntAttribute(root, ""s, "CountOfIntermediates"s, 0))
    , m_image(GetTextureAttribute(root, ""s, "Image"s))
@@ -270,7 +270,7 @@ B2SReelImage::~B2SReelImage()
 }
 
 
-B2SReel::B2SReel(const tinyxml2::XMLNode& root)
+B2SReel::B2SReel(const tinyxml2::XMLNode& root) noexcept
    : m_images(GetNode(root, "Reels"s) ? GetPtrList<B2SReelImage>(*GetNode(root, "Reels"s), "Images"s, "Image"s) : vector<std::unique_ptr<B2SReelImage>>())
 {
 }
@@ -305,7 +305,7 @@ B2SReelImage* B2SReel::GetImage(const string& name, int index) const
 }
 
 
-B2SScore::B2SScore(const tinyxml2::XMLNode& root)
+B2SScore::B2SScore(const tinyxml2::XMLNode& root) noexcept
    : m_id(GetIntAttribute(root, ""s, "ID"s, 0))
    , m_b2sStartDigit(GetIntAttribute(root, ""s, "B2SStartDigit"s, 0))
    , m_b2sScoreType(static_cast<B2SScoreType>(GetIntAttribute(root, ""s, "B2SScoreType"s, 0)))
@@ -338,7 +338,7 @@ B2SScore::B2SScore(const tinyxml2::XMLNode& root)
 {
 }
 
-B2SScores::B2SScores(const tinyxml2::XMLNode& root, const bool isDMD)
+B2SScores::B2SScores(const tinyxml2::XMLNode& root, const bool isDMD) noexcept
    : m_reelCountOfIntermediates(GetIntAttribute(root, "Scores"s, "ReelCountOfIntermediates"s, 0))
    , m_reelRollingDirection(GetStringAttribute(root, "Scores"s, "ReelRollingDirection"s, "Up"s) == "Up"s ? B2SReelRollingDirection::Up : B2SReelRollingDirection::Down)
    , m_reelRollingInterval(GetIntAttribute(root, "Scores"s, "ReelRollingInterval"s, 0))
@@ -347,7 +347,7 @@ B2SScores::B2SScores(const tinyxml2::XMLNode& root, const bool isDMD)
 }
 
 
-B2SAnimationStep::B2SAnimationStep(const tinyxml2::XMLNode& root)
+B2SAnimationStep::B2SAnimationStep(const tinyxml2::XMLNode& root) noexcept
    : m_step(GetIntAttribute(root, ""s, "Step"s, 0))
    , m_on(GetStringList(GetStringAttribute(root, ""s, "On"s, ""s), ','))
    , m_waitLoopsAfterOn(GetIntAttribute(root, ""s, "WaitLoopsAfterOn"s, 0))
@@ -358,7 +358,7 @@ B2SAnimationStep::B2SAnimationStep(const tinyxml2::XMLNode& root)
 }
 
 
-B2SAnimation::B2SAnimation(const tinyxml2::XMLNode& root)
+B2SAnimation::B2SAnimation(const tinyxml2::XMLNode& root) noexcept
    : m_name(GetStringAttribute(root, ""s, "Name"s, ""s))
    , m_dualMode(static_cast<B2SDualMode>(GetIntAttribute(root, ""s, "DualMode"s, 0)))
    , m_interval(GetIntAttribute(root, ""s, "Interval"s, 0))
@@ -402,7 +402,7 @@ void B2SAnimation::Update(float elapsedInS)
    } */
 }
 
-B2STable::B2STable(const tinyxml2::XMLNode& root)
+B2STable::B2STable(const tinyxml2::XMLNode& root) noexcept
    : m_version(GetStringAttribute(root, ""s, "Version"s, ""s))
    , m_name(GetStringAttribute(root, "Name"s, "Value"s, ""s))
    , m_tableType(GetIntAttribute(root, "TableType"s, "Value"s, 0))

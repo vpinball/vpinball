@@ -6,6 +6,7 @@
 #include <cstring>
 #include <mutex>
 #include <thread>
+#include <random>
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
@@ -48,6 +49,8 @@ static DisplaySrcId dmdId = {};
 static Serum_Frame_Struc* pSerum = nullptr;
 static unsigned int lastRawFrameId = 0;
 
+static std::minstd_rand std_rand;
+
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
 
 class ColorizationState final
@@ -58,7 +61,7 @@ public:
       , m_width(width)
       , m_height(height)
       , m_colorizedFrameFormat(pSerum->SerumVersion == SERUM_V1 ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_SRGB565)
-      , m_colorizedframeId(static_cast<unsigned int>(std::rand()))
+      , m_colorizedframeId(std_rand())
    {
       assert(m_width > 0);
       assert(m_height > 0);

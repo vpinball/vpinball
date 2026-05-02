@@ -1079,17 +1079,17 @@ Vertex2D InputManager::GetNudge() const
    return nudge / weight;
 }
 
-void InputManager::SetPlungerPos(bool override, const float pos)
+void InputManager::SetPlungerPos(bool overrideInput, const float pos)
 {
    // FIXME
 }
 
-void InputManager::SetPlungerSpeed(bool override, const float speed)
+void InputManager::SetPlungerSpeed(bool overrideInput, const float speed)
 {
    // FIXME
 }
 
-void InputManager::SetNudge(bool override, const float nudgeAccelerationX, const float nudgeAccelerationY)
+void InputManager::SetNudge(bool overrideInput, const float nudgeAccelerationX, const float nudgeAccelerationY)
 {
    // FIXME
 }

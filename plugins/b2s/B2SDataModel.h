@@ -20,7 +20,7 @@ enum class B2SRomIDType
 class B2SImage final
 {
 public:
-   explicit B2SImage(const tinyxml2::XMLNode& root);
+   explicit B2SImage(const tinyxml2::XMLNode& root) noexcept;
    ~B2SImage();
 
 public:
@@ -37,7 +37,7 @@ public:
 class B2SReelImage final
 {
 public:
-   explicit B2SReelImage(const tinyxml2::XMLNode& image);
+   explicit B2SReelImage(const tinyxml2::XMLNode& image) noexcept;
    ~B2SReelImage();
 
 public:
@@ -50,7 +50,7 @@ public:
 class B2SReel final
 {
 public:
-   explicit B2SReel(const tinyxml2::XMLNode& root);
+   explicit B2SReel(const tinyxml2::XMLNode& root) noexcept;
 
    B2SReelImage* GetImage(const string& name, int index) const;
 
@@ -76,7 +76,7 @@ enum class B2SScoreType
 class B2SScore final
 {
 public:
-   explicit B2SScore(const tinyxml2::XMLNode& root);
+   explicit B2SScore(const tinyxml2::XMLNode& root) noexcept;
 
 public:
    const int m_id;
@@ -117,7 +117,7 @@ enum class B2SReelRollingDirection
 class B2SScores final
 {
 public:
-   explicit B2SScores(const tinyxml2::XMLNode& root, const bool isDMD);
+   explicit B2SScores(const tinyxml2::XMLNode& root, const bool isDMD) noexcept;
 
 public:
    const int m_reelCountOfIntermediates;
@@ -170,7 +170,7 @@ enum class B2SDualMode2
 class B2SBulb final
 {
 public:
-   explicit B2SBulb(const tinyxml2::XMLNode& root);
+   explicit B2SBulb(const tinyxml2::XMLNode& root) noexcept;
    ~B2SBulb();
 
 public:
@@ -217,7 +217,7 @@ public:
 class B2SSound final
 {
 public:
-   explicit B2SSound(const tinyxml2::XMLNode& root);
+   explicit B2SSound(const tinyxml2::XMLNode& root) noexcept;
 
 public:
    const string m_name;
@@ -238,7 +238,7 @@ enum class B2SDMDType
 class B2SAnimationStep final
 {
 public:
-   explicit B2SAnimationStep(const tinyxml2::XMLNode& root);
+   explicit B2SAnimationStep(const tinyxml2::XMLNode& root) noexcept;
 
 public:
    const int m_step;
@@ -282,7 +282,7 @@ enum class B2SAnimationStopBehaviour
 class B2SAnimation final
 {
 public:
-   explicit B2SAnimation(const tinyxml2::XMLNode& root);
+   explicit B2SAnimation(const tinyxml2::XMLNode& root) noexcept;
 
    void Update(float elapsedInS);
 
@@ -317,7 +317,7 @@ private:
 class B2STable final
 {
 public:
-   explicit B2STable(const tinyxml2::XMLNode& root); // Create from the root 'DirectB2SData' node
+   explicit B2STable(const tinyxml2::XMLNode& root) noexcept; // Create from the root 'DirectB2SData' node
 
 public:
    const string m_version;

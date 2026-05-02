@@ -21,7 +21,7 @@ using namespace std::string_view_literals;
    #ifdef __STANDALONE__
       #define __WINE_WINCON_H
    #endif
-   #include <windows.h>
+   #include <Windows.h>
 #endif
 
 #if !defined(GET_PLATFORM_BITS_ENUM)

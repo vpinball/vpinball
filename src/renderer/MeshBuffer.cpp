@@ -78,34 +78,20 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
 
 std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices, const vector<Vertex3D_NoTex2>& vertices) const
 {
-   union idStruct
-   {
-      uint64_t id;
-      struct
-      {
-         uint32_t edge1;
-         uint32_t edge2;
-      } edges;
-   };
    struct Edge
    {
       int state; // 0 = one edge, 1 = multiple colinear edges, 2 multiple non colinear edges
       vec3 normal;
    };
    ankerl::unordered_dense::map<uint64_t, Edge> edges;
-   auto pushEdge = [&](unsigned int i1, unsigned int i2, const vec3& normal) {
-      idStruct id;
+   auto pushEdge = [&](uint32_t i1, uint32_t i2, const vec3& normal)
+   {
+      uint64_t id; // First (smaller) edge is hight 32 bit, then lowest 32 bit is second (bigger) edge
       if (i1 < i2)
-      {
-         id.edges.edge1 = i1;
-         id.edges.edge2 = i2;
-      }
+         id = (static_cast<uint64_t>(i1) << 32) | i2;
       else
-      {
-         id.edges.edge1 = i2;
-         id.edges.edge2 = i1;
-      }
-      if (auto it = edges.find(id.id); it != edges.end())
+         id = (static_cast<uint64_t>(i2) << 32) | i1;
+      if (auto it = edges.find(id); it != edges.end())
       {
          if (it->second.state < 2)
          {
@@ -118,7 +104,7 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
       }
       else
       {
-         edges[id.id] = { 0, normal }; // Edge: render
+         edges[id] = { 0, normal }; // Edge: render
       }
    };
    for (size_t i = 0; i < indices.size(); i += 3)
@@ -148,10 +134,8 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
    {
       if (state.state != 1)
       {
-         idStruct id;
-         id.id = edge;
-         edgeIndices.push_back(id.edges.edge1);
-         edgeIndices.push_back(id.edges.edge2);
+         edgeIndices.push_back(edge >> 32);
+         edgeIndices.push_back(edge & 0xFFFFFFFF);
       }
    }
    return std::make_unique<MeshBuffer>(m_vb, std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices), true);

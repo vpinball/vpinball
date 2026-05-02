@@ -114,9 +114,9 @@ public:
    Vertex2D GetNudge() const;
 
    // Allow to override local state for remote control support
-   void SetPlungerPos(bool override, const float pos);
-   void SetPlungerSpeed(bool override, const float speed);
-   void SetNudge(bool override, const float nudgeAccelerationX, const float nudgeAccelerationY);
+   void SetPlungerPos(bool overrideInput, const float pos);
+   void SetPlungerSpeed(bool overrideInput, const float speed);
+   void SetNudge(bool overrideInput, const float nudgeAccelerationX, const float nudgeAccelerationY);
 
    ///// Input devices
    enum class DeviceType

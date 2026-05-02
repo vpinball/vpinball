@@ -46,8 +46,8 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
-      , m_library(library)
       , m_directory(directory)
+      , m_library(library)
       , m_endpointId(endpointId)
       , m_loadPlugin(nullptr)
       , m_unloadPlugin(nullptr)
@@ -60,11 +60,12 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
-      , m_library()
       , m_directory()
+      , m_library()
       , m_endpointId(endpointId)
       , m_loadPlugin(loadPlugin)
       , m_unloadPlugin(unloadPlugin) { }
+   MsgPlugin(MsgPlugin&) = delete;
    ~MsgPlugin();
 
    void Load(const MsgPluginAPI* msgAPI);
