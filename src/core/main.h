@@ -263,8 +263,6 @@ class SCNotification final { };
 
 #include "core/Scriptable.h"
 
-#include "parts/Collection.h"
-
 #include "core/ieditable.h"
 
 #include "extern.h"

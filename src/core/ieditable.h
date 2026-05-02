@@ -306,30 +306,8 @@ private:
 
 #pragma region Script events
 public:
-   void TimerSetup(vector<HitTimer *> &pvht)
-   {
-      m_singleEvents = true;
-      for (size_t i = 0; i < m_vCollection.size(); i++)
-      {
-         Collection *const pcol = m_vCollection[i];
-         if (pcol->m_fireEvents)
-         {
-            m_vEventCollection.push_back(pcol);
-            m_viEventCollection.push_back(m_viCollection[i]);
-         }
-         if (pcol->m_stopSingleEvents)
-            m_singleEvents = false;
-      }
-      m_phittimer = std::make_unique<HitTimer>(GetName(), m_timerInterval, GetIFireEvents());
-      if (m_timerEnabled)
-         pvht.push_back(m_phittimer.get());
-   }
-   void TimerRelease(vector<HitTimer *> &pvht)
-   {
-      if (m_timerEnabled)
-         RemoveFromVectorSingle(pvht, m_phittimer.get());
-      m_phittimer = nullptr;
-   }
+   void TimerSetup(vector<HitTimer *> &pvht);
+   void TimerRelease(vector<HitTimer *> &pvht);
 
    // was: TimerDataRoot m_tdr: then it was limited to be used by a limited amount of table elements (most prominently not by decals and primitives though), could be changed/generalized nowadays
    int m_timerInterval = 100;

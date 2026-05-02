@@ -2,6 +2,7 @@
 
 #include "fonts/IconsForkAwesome.h"
 #include "parts/pintable.h"
+#include "parts/Collection.h"
 
 namespace VPX::EditorUI
 {

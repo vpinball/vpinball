@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "ieditable.h"
+
+#include "parts/Collection.h"
 
 IEditable::IEditable()
 {
@@ -176,6 +179,32 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
    STOPUNDO
 
    return hr;
+}
+
+void IEditable::TimerSetup(vector<HitTimer *> &pvht)
+{
+   m_singleEvents = true;
+   for (size_t i = 0; i < m_vCollection.size(); i++)
+   {
+      Collection *const pcol = m_vCollection[i];
+      if (pcol->m_fireEvents)
+      {
+         m_vEventCollection.push_back(pcol);
+         m_viEventCollection.push_back(m_viCollection[i]);
+      }
+      if (pcol->m_stopSingleEvents)
+         m_singleEvents = false;
+   }
+   m_phittimer = std::make_unique<HitTimer>(GetName(), m_timerInterval, GetIFireEvents());
+   if (m_timerEnabled)
+      pvht.push_back(m_phittimer.get());
+}
+
+void IEditable::TimerRelease(vector<HitTimer *> &pvht)
+{
+   if (m_timerEnabled)
+      RemoveFromVectorSingle(pvht, m_phittimer.get());
+   m_phittimer = nullptr;
 }
 
 void IEditable::BeginUndo()
