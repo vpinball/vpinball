@@ -2,18 +2,21 @@
 
 #pragma once
 
-#include "renderer/typedefs3D.h"
-#include "renderer/Window.h"
+#ifndef __STANDALONE__
+#include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox
+#endif
 
-#include "physics/PhysicsEngine.h"
-#include "ui/win/Debugger.h"
-#include "ui/live/LiveUI.h"
-#include "input/InputManager.h"
-#include "plugins/ControllerPlugin.h"
-#include "plugins/VPXPlugin.h"
-#include "plugins/ResURIResolver.h"
 #include "audio/AudioPlayer.h"
 #include "core/ScriptInterpreter.h"
+#include "input/InputManager.h"
+#include "physics/PhysicsEngine.h"
+#include "plugins/ControllerPlugin.h"
+#include "plugins/ResURIResolver.h"
+#include "plugins/VPXPlugin.h"
+#include "renderer/typedefs3D.h"
+#include "renderer/Window.h"
+#include "ui/live/LiveUI.h"
+#include "ui/win/Debugger.h"
 #include "VPXPluginAPIImpl.h"
 
 class Renderer;

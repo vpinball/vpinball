@@ -26,6 +26,18 @@
 
    #define OVERRIDE override
 #else
+   class ImageDialog final { };
+   class SoundDialog final { };
+   class EditorOptionsDialog final { };
+   class CollectionManagerDialog final { };
+   class PhysicsOptionsDialog final { };
+   class TableInfoDialog final { };
+   class DimensionDialog final { };
+   class RenderProbeDialog final { };
+   class MaterialDialog final { };
+   class AboutDialog final { };
+   class ToolbarDialog final { };
+   class NotesDialog final { };
    #define OVERRIDE
 #endif
 

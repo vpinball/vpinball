@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <wxx_listview.h>		// Add CListView
 #include "core/TableDB.h"
 
 class DimensionDialog final : public CDialog

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <wxx_listview.h> // Add CListView
+
 class TableInfoDialog final : public CDialog
 {
 public:
