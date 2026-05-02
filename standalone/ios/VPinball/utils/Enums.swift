@@ -42,7 +42,7 @@ enum Link {
         case .libserum:
             return URL(string: "https://github.com/PPUC/libserum")!
         case .libdof:
-            return URL(string: "https://github.com/jsm174/libdof")!
+            return URL(string: "https://github.com/vpinball/libdof")!
         case .libvni:
             return URL(string: "https://github.com/PPUC/libvni")!
         case .libwinevbs:
@@ -130,7 +130,7 @@ enum Credit {
         case .libvni:
             return "mkalkbrenner, freezy, jsm174"
         case .libwinevbs:
-            return "jsm174"
+            return "jsm174, francisdb"
         case .artwork:
             return "smillard316 (Table placeholder), adam.co (App icon enhancements), twostraws (Shimmer metal shader)"
         default:

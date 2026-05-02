@@ -17,7 +17,7 @@ enum class Link(val url: String) {
     LIBDMDUTIL("https://github.com/vpinball/libdmdutil"),
     LIBZEDMD("https://github.com/PPUC/libzedmd"),
     LIBSERUM("https://github.com/PPUC/libserum"),
-    LIBDOF("https://github.com/jsm174/libdof"),
+    LIBDOF("https://github.com/vpinball/libdof"),
     LIBVNI("https://github.com/PPUC/libvni"),
     LIBWINEVBS("https://github.com/vpinball/libwinevbs"),
     THIRDPARTY("https://github.com/vpinball/vpinball/blob/master/third-party/README.md");
@@ -45,7 +45,7 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
     LIBSERUM("libserum", "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc", Link.LIBSERUM),
     LIBDOF("libdof", "jsm174, dekay", Link.LIBDOF),
     LIBVNI("libvni", "mkalkbrenner, freezy, jsm174", Link.LIBVNI),
-    LIBWINEVBS("libwinevbs", "jsm174", Link.LIBWINEVBS),
+    LIBWINEVBS("libwinevbs", "jsm174, francisdb", Link.LIBWINEVBS),
     ARTWORK("Artwork", "smillard316 (Table placeholder), adam.co (App icon enhancements)"),
     OTHER("Other third party libraries", link = Link.THIRDPARTY),
 }
