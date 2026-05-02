@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ui/win/resource.h"
+#include "utils/fileio.h"
 #include "timer.h"
 
 class PartGroupData final

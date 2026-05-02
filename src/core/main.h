@@ -255,8 +255,6 @@ class SCNotification final { };
 
 #include "utils/eventproxy.h"
 
-#include "utils/fileio.h"
-
 #include "pinundo.h"
 
 #include "iselect.h"
@@ -265,6 +263,8 @@ class SCNotification final { };
 
 #include "core/ieditable.h"
 
+#include "physics/hitable.h"
+
 #include "extern.h"
 
 #include "ui/win/WinEditor.h"
@@ -272,8 +272,6 @@ class SCNotification final { };
 #include "core/VPApp.h"
 
 #include "parts/pintable.h"
-
-#include "physics/hitable.h"
 
 #include "core/player.h"
 

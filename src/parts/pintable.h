@@ -15,6 +15,8 @@
 
 #include "ui/win/PinTableMDI.h"
 
+#include "utils/fileio.h"
+
 #include "parts/pinbinary.h"
 
 #ifdef __STANDALONE__

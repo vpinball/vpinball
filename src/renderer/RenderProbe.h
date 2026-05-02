@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "utils/fileio.h"
+
 class RenderTarget;
 class RenderPass;
 class RenderDevice;

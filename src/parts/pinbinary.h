@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "utils/fileio.h"
+
 class PinBinary
 {
 public:

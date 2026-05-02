@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "utils/fileio.h"
+
 // only used for backward compatibility loading and saving (VPX version < 10.8)
 struct SaveMaterial //!! could still squeeze some stuff in here, due to implicit padding after the bool & unsigned chars!
 {

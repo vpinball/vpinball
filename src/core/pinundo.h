@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "utils/fileio.h"
+
 #define MAXUNDO 16
 
 class IEditable;

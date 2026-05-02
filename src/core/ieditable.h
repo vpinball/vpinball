@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "utils/fileio.h"
+
 class HitTimer;
 class Collection;
 class IHitable;
