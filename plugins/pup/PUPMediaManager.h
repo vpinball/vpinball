@@ -69,8 +69,6 @@ private:
    };
    BackgroundConfig m_bg;
 
-   bool m_shuttingDown = false;
-
    std::function<void()> m_onMainEndCallback;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;

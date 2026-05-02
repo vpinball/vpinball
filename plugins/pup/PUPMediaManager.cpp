@@ -13,17 +13,15 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    , m_pScreen(pScreen)
    , m_bounds()
 {
-   m_player.SetOnEndCallback([this]() { OnPlayerEnd(); });
 }
 
-PUPMediaManager::~PUPMediaManager()
-{
-   m_shuttingDown = true;
-}
+PUPMediaManager::~PUPMediaManager() = default;
 
 void PUPMediaManager::SetGameTime(double gameTime)
 {
    m_player.SetGameTime(gameTime);
+   if (!m_queue.empty() && !m_player.IsPlaying())
+      OnPlayerEnd();
 }
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
@@ -251,26 +249,21 @@ void PUPMediaManager::SetMask(const std::filesystem::path& path)
    m_player.SetMask(m_mask);
 }
 
-// Player end of stream. Pop the head; if more pending, play next; otherwise fall back to bg.
+// Called from SetGameTime (API thread) when the player has stopped while the queue still has a head.
+// Pop the head; if more pending, play next; otherwise fall back to bg.
 void PUPMediaManager::OnPlayerEnd()
 {
-   if (m_shuttingDown)
-      return;
-   const bool wasMain = !m_queue.empty();
-   LOGD(std::format("ON END: screen={}, wasMain={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), wasMain, m_queue.size(), m_bg.active));
-   if (wasMain)
+   LOGD(std::format("ON END: screen={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), m_queue.size(), m_bg.active));
+   m_queue.pop_front();
+   if (!m_queue.empty())
    {
-      m_queue.pop_front();
-      if (!m_queue.empty())
-      {
-         StartCurrent();
-         return;
-      }
-      m_pScreen->OnMainMediaEnd();
-      if (m_onMainEndCallback)
-         m_onMainEndCallback();
-      PlayBackground();
+      StartCurrent();
+      return;
    }
+   m_pScreen->OnMainMediaEnd();
+   if (m_onMainEndCallback)
+      m_onMainEndCallback();
+   PlayBackground();
 }
 
 bool PUPMediaManager::IsMainPlaying() { return !m_queue.empty() && m_player.IsPlaying(); }
