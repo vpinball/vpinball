@@ -118,7 +118,7 @@ void EditorUI::Close()
 void EditorUI::ResetCameraFromPlayer()
 {
    // Try to setup editor camera to match the used one, but only mostly since the EditorUI does not have some view setup features like off-center, ...
-   m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
+   m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView(0) * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
 
 void EditorUI::Render3D()
@@ -352,7 +352,7 @@ void EditorUI::RenderUI()
    if (m_camMode == ViewMode::PreviewCam)
    {
       m_renderer->InitLayout();
-      m_camView = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
+      m_camView = RH2LH * m_renderer->GetMVP().GetView(0) * YAxis;
       m_camProj = YAxis * m_renderer->GetMVP().GetProj(0);
    }
    else
@@ -362,7 +362,8 @@ void EditorUI::RenderUI()
       // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
       const Matrix3D view = RH2LH * m_camView * YAxis;
       const Matrix3D proj = YAxis * m_camProj;
-      m_renderer->GetMVP().SetView(view);
+      m_renderer->GetMVP().SetView(0, view);
+      m_renderer->GetMVP().SetView(1, view);
       m_renderer->GetMVP().SetProj(0, proj);
       m_renderer->GetMVP().SetProj(1, proj);
 

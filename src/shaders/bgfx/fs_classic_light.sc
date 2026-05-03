@@ -2,10 +2,10 @@
 
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 #ifdef STEREO
-	$input v_eye
+    $input v_eye
 #endif
 #ifdef CLIP
-	$input v_clipDistance
+    $input v_clipDistance
 #endif
 
 #include "common.sh"
@@ -35,13 +35,20 @@ uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
 uniform vec4 lightingOff; // single float, passed as vec4 (BGFX does not support float/int/bool uniforms)
 
-uniform mat4 matView;
+#ifdef STEREO
+    uniform mat4 matView[2];
+    // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+    #define mView                      matView[int(round(v_eye))]
+#else
+    uniform mat4 matView;
+    #define mView                      matView
+#endif
 
 #include "material.sh"
 #include "ball_shadows.sh"
 
 uniform vec4 u_basic_shade_mode;
-#define doMetal       	    (u_basic_shade_mode.x != 0.0)
+#define doMetal             (u_basic_shade_mode.x != 0.0)
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
 
@@ -73,7 +80,11 @@ EARLY_DEPTH_STENCIL void main()
         const vec3 specular = cClearcoat_EdgeAlpha.rgb*0.08;
         const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        #ifdef STEREO
+           color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal, v_eye); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        #else
+           color.rgb = lightLoop(v_worldPos, normalize(v_normal), normalize(/*camera=0,0,0,1*/-v_worldPos), diffuse, glossy, specular, edge, doMetal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        #endif
         color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;

@@ -2,10 +2,10 @@
 
 $input v_worldPos, v_normal, v_texcoord0
 #ifdef STEREO
-	$input v_eye
+    $input v_eye
 #endif
 #ifdef CLIP
-	$input v_clipDistance
+    $input v_clipDistance
 #endif
 
 
@@ -13,18 +13,29 @@ $input v_worldPos, v_normal, v_texcoord0
 
 #define NUM_BALL_LIGHTS 8
 
-uniform mat4 matView;
-uniform mat4 matWorldView;
-uniform mat4 matWorldViewInverse;
 #ifdef STEREO
-	uniform mat4 matWorldViewProj[2];
-	uniform mat4 matProj[2];
-	// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
-	#define mProj matProj[int(round(v_eye))]
+    uniform mat4 matView[2];
+    uniform mat4 matWorldView[2];
+    uniform mat4 matWorldViewInverse[2];
+    uniform mat4 matWorldViewProj[2];
+    uniform mat4 matProj[2];
+    // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+    #define mView             matView[int(round(v_eye))]
+    #define mWorldView        matWorldView[int(round(v_eye))]
+    #define mWorldViewInverse matWorldViewInverse[int(round(v_eye))]
+    #define mWorldViewProj    matWorldViewProj[int(round(v_eye))]
+    #define mProj             matProj[int(round(v_eye))]
 #else
-	uniform mat4 matWorldViewProj;
-	uniform mat4 matProj;
-	#define mProj matProj
+    uniform mat4 matView;
+    uniform mat4 matWorldView;
+    uniform mat4 matWorldViewInverse;
+    uniform mat4 matWorldViewProj;
+    uniform mat4 matProj;
+    #define mView             matView
+    #define mWorldView        matWorldView
+    #define mWorldViewInverse matWorldViewInverse
+    #define mWorldViewProj    matWorldViewProj
+    #define mProj             matProj
 #endif
 
 SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)
@@ -44,7 +55,11 @@ uniform vec4  invTableRes_reflection;
 uniform vec4  w_h_disableLighting; 
 #define disableLighting (w_h_disableLighting.z != 0.)
 
+#ifdef STEREO
+vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal, const float v_eye)
+#else
 vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal)
+#endif
 {
    // N and V must be already normalized by the caller
 
@@ -68,10 +83,14 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
 
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
       for(int i = 0; i < NUM_LIGHTS + NUM_BALL_LIGHTS; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+          #ifdef STEREO
+             color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, v_eye); // no clearcoat needed as only pointlights so far
+          #else
+             color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+          #endif
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(matView, vec4(N, 0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
+      color += DoEnvmapDiffuse(normalize(mul(mView, vec4(N, 0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
@@ -100,8 +119,8 @@ void main()
     #ifdef EQUIRECTANGULAR
         // Equirectangular Map Reflections
         // trafo back to world for lookup into world space envmap
-        // matView is always an orthonormal matrix, so no need to normalize after transform
-        const vec3 rv = /*normalize*/(mul(vec4(-R,0.0), matView).xyz);
+        // mView is always an orthonormal matrix, so no need to normalize after transform
+        const vec3 rv = /*normalize*/(mul(vec4(-R,0.0), mView).xyz);
         const vec2 uv = ray_to_equirectangular_uv(rv);
         ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
     #else
@@ -138,13 +157,13 @@ void main()
 
     // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
     // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
-    //const vec3 playfield_normal = normalize(mul(vec4(0.,0.,1.,0.), matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(vec4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    const vec3 playfield_normal = mul(matWorldView, vec4(0.,0.,1.,0.)).xyz;
-    //const vec3 playfield_normal = matWorldView[2].xyz;
+    //const vec3 playfield_normal = normalize(mul(vec4(0.,0.,1.,0.), mWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(vec4(0.,0.,1.,0.), mWorldViewInverseTranspose), but optimized to save one matrix
+    const vec3 playfield_normal = mul(mWorldView, vec4(0.,0.,1.,0.)).xyz;
+    //const vec3 playfield_normal = mWorldView[2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
-    const vec3 playfield_p0 = mul(matWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
-    //const vec3 playfield_p0 = matWorldView[3].xyz;
+    const vec3 playfield_p0 = mul(mWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
+    //const vec3 playfield_p0 = mWorldView[3].xyz;
     const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
     const vec3 playfield_hit = v_worldPos.xyz - t * R;
 
@@ -165,7 +184,7 @@ void main()
     ); // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
-    // const vec2 uv = mul(matWorldViewInverse, vec4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
+    // const vec2 uv = mul(mWorldViewInverse, vec4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
     BRANCH if (!(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
             && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
@@ -189,6 +208,10 @@ void main()
        specular *= vec3(1.,1.,1.)-decalColor; // see above
     #endif
 
-    gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    #ifdef STEREO
+       gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false, v_eye);
+    #else
+       gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    #endif
     gl_FragColor.a = cBase_Alpha.a;
 }

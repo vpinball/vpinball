@@ -329,30 +329,30 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
    return shaderTechniqueNames[technique].name;
 }
 
-static unsigned int GetUniformStateSize(ShaderUniformType type)
+static unsigned int GetUniformStateSize(ShaderUniformType type, const int count)
 {
    switch (type)
    {
-   case SUT_Bool: return sizeof(bool);
-   case SUT_Int: return sizeof(int);
-   case SUT_Float: return sizeof(float);
-   case SUT_Float2: return 2 * sizeof(float);
-   case SUT_Float3: return 3 * sizeof(float);
-   case SUT_Float4: return 4 * sizeof(float);
-   case SUT_Float4v: return 4 * sizeof(float);
-   case SUT_Float3x4: return 16 * sizeof(float);
-   case SUT_Float4x3: return 16 * sizeof(float);
-   case SUT_Float4x4: return 16 * sizeof(float);
-   case SUT_DataBlock: return 1;
-   case SUT_Sampler: return sizeof(int);
+   case SUT_Bool: return count * sizeof(bool);
+   case SUT_Int: return count * sizeof(int);
+   case SUT_Float: return count * sizeof(float);
+   case SUT_Float2: return count * 2 * sizeof(float);
+   case SUT_Float3: return count * 3 * sizeof(float);
+   case SUT_Float4: return count * 4 * sizeof(float);
+   case SUT_Float4v: return count * 4 * sizeof(float);
+   case SUT_Float3x4: return count * 16 * sizeof(float);
+   case SUT_Float4x3: return count * 16 * sizeof(float);
+   case SUT_Float4x4: return count * 16 * sizeof(float);
+   case SUT_DataBlock: return count;
+   case SUT_Sampler: assert(count == 1); return sizeof(int);
    default: assert(false); return 0;
    }
 }
 
 #define SHADER_UNIFORM(type, name, count) \
-   { type, #name, count, count * GetUniformStateSize(type), 0, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+   { type, #name, count, GetUniformStateSize(type, count), 0, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
 #define SHADER_SAMPLER(name, tex_unit, default_clampu, default_clampv, default_filter) \
-   { SUT_Sampler, #name, 1, GetUniformStateSize(SUT_Sampler), tex_unit, default_clampu, default_clampv, default_filter }
+   { SUT_Sampler, #name, 1, GetUniformStateSize(SUT_Sampler, 1), tex_unit, default_clampu, default_clampv, default_filter }
 ShaderUniform ShaderUniform::coreUniforms[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
    SHADER_UNIFORM(SUT_Int, layer, 1),
@@ -360,13 +360,13 @@ ShaderUniform ShaderUniform::coreUniforms[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4x4, matProj, 2), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matProjInv, 2), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 2), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 6 * 16 * 4), // OpenGL only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 5 * 16 * 4), // OpenGL only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, (5 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, (4 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorld, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x3, matView, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1), // DX9 & BGFX only
+   SHADER_UNIFORM(SUT_Float4x3, matView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 2), // DX9 & BGFX only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
@@ -531,16 +531,20 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    #endif
 {
    const int nEyes = m_isStereo ? 2 : 1;
-   ShaderUniform::coreUniforms[SHADER_matProj].count = nEyes;
-   ShaderUniform::coreUniforms[SHADER_matProjInv].count = nEyes;
-   ShaderUniform::coreUniforms[SHADER_matWorldViewProj].count = nEyes;
-   ShaderUniform::coreUniforms[SHADER_basicMatrixBlock].count = (4 + nEyes) * 16 * 4;
-   ShaderUniform::coreUniforms[SHADER_ballMatrixBlock].count = (3 + nEyes) * 16 * 4;
-   ShaderUniform::coreUniforms[SHADER_matProj].stateSize = ShaderUniform::coreUniforms[SHADER_matProj].count * GetUniformStateSize(ShaderUniform::coreUniforms[SHADER_matProj].type);
-   ShaderUniform::coreUniforms[SHADER_matProjInv].stateSize = ShaderUniform::coreUniforms[SHADER_matProjInv].count * GetUniformStateSize(ShaderUniform::coreUniforms[SHADER_matProjInv].type);
-   ShaderUniform::coreUniforms[SHADER_matWorldViewProj].stateSize = ShaderUniform::coreUniforms[SHADER_matWorldViewProj].count * GetUniformStateSize(ShaderUniform::coreUniforms[SHADER_matWorldViewProj].type);
-   ShaderUniform::coreUniforms[SHADER_basicMatrixBlock].stateSize = ShaderUniform::coreUniforms[SHADER_basicMatrixBlock].count * GetUniformStateSize(ShaderUniform::coreUniforms[SHADER_basicMatrixBlock].type);
-   ShaderUniform::coreUniforms[SHADER_ballMatrixBlock].stateSize = ShaderUniform::coreUniforms[SHADER_ballMatrixBlock].count * GetUniformStateSize(ShaderUniform::coreUniforms[SHADER_ballMatrixBlock].type);
+   auto updateCount = [](ShaderUniforms uniform, int count)
+   {
+      ShaderUniform::coreUniforms[uniform].count = count;
+      ShaderUniform::coreUniforms[uniform].stateSize = GetUniformStateSize(ShaderUniform::coreUniforms[uniform].type, count);
+   };
+   updateCount(SHADER_matView, nEyes);
+   updateCount(SHADER_matWorldView, nEyes);
+   updateCount(SHADER_matWorldViewInverse, nEyes);
+   updateCount(SHADER_matWorldViewInverseTranspose, nEyes);
+   updateCount(SHADER_matProj, nEyes);
+   updateCount(SHADER_matProjInv, nEyes);
+   updateCount(SHADER_matWorldViewProj, nEyes);
+   updateCount(SHADER_basicMatrixBlock, (nEyes * 4 + 1) * 16 * 4);
+   updateCount(SHADER_ballMatrixBlock, (nEyes * 4) * 16 * 4);
 
    #if defined(ENABLE_BGFX)
       for (int i = 0; i < SHADER_TECHNIQUE_COUNT; i++)

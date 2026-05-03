@@ -354,10 +354,10 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 6 * 16 * 4), // OpenGL only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 5 * 16 * 4), // OpenGL only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorld, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x3, matView, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 1), // DX9 & BGFX only
+   SHADER_UNIFORM(SUT_Float4x3, matView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 2), // DX9 & BGFX only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
@@ -489,7 +489,7 @@ struct ShaderUniform
 public:
    ShaderUniformType type;
    string name;
-   unsigned int count;
+   uint16_t count;
    unsigned int stateSize;
    unsigned int tex_unit;
    SamplerAddressMode default_clampu;

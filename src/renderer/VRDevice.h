@@ -161,18 +161,17 @@ private:
    float m_predictedDisplayTimestamp = 0.f;
 
    bool m_worldDirty = true;
-   Matrix3D m_pfWorld;
-   Matrix3D m_pfMatView;
-   Matrix3D m_pfMatProj[2];
-   Matrix3D m_cabWorld;
-   Matrix3D m_cabMatView;
-   Matrix3D m_cabMatProj[2];
-   Matrix3D m_feetWorld;
-   Matrix3D m_feetMatView;
-   Matrix3D m_feetMatProj[2];
-   Matrix3D m_roomWorld;
-   Matrix3D m_roomMatView;
-   Matrix3D m_roomMatProj[2];
+   struct Viewpoint
+   {
+      Matrix3D m_toWorld; // Matrix to transform from this viewpoint to world coordinates
+      Matrix3D m_view[2];
+   };
+   Viewpoint m_pfWorld;
+   Viewpoint m_cabWorld;
+   Viewpoint m_feetWorld;
+   Viewpoint m_roomWorld;
+   Matrix3D m_roomProj[2];
+   Matrix3D m_sceneProj[2];
 
 #ifdef ENABLE_VR
 public:
@@ -282,8 +281,6 @@ private:
    PFN_xrConvertTimeToTimespecTimeKHR m_xrConvertTimeToTimespecTimeKHR = nullptr;
    #endif
 
-   Matrix3D m_nextMedianView;
-   Matrix3D m_nextView[2];
    Matrix3D m_nextProj[2];
 
    bool m_debugUtilsExtensionSupported = false;

@@ -81,11 +81,11 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 
 //
 
-float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal) 
+float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal, const float eye) 
 { 
    //!! do in vertex shader?! or completely before?!
-   //const float3 lightDir = mul_w1(lightPos[i].xyz, matView) - pos;
-   const float3 lightDir = (matView * float4(lightPos[i].xyz, 1.0)).xyz - pos;
+   //const float3 lightDir = mul_w1(lightPos[i].xyz, matView[int(eye)]) - pos;
+   const float3 lightDir = (matView[int(eye)] * float4(lightPos[i].xyz, 1.0)).xyz - pos;
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    float3 Out = float3(0.0,0.0,0.0);
@@ -97,12 +97,12 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    BRANCH if (NdotL > 0.0)
    {
-	 const float3 H = normalize(L + V); // half vector
-	 const float NdotH = dot(N, H);
-	 const float LdotH = dot(L, H);
-	 const float VdotH = dot(V, H);
-	 if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
-		Out += FresnelSchlick(glossy, LdotH, edge) * (((glossyPower + 1.0) / (8.0*VdotH)) * pow(NdotH, glossyPower));
+     const float3 H = normalize(L + V); // half vector
+     const float NdotH = dot(N, H);
+     const float LdotH = dot(L, H);
+     const float VdotH = dot(V, H);
+     if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
+        Out += FresnelSchlick(glossy, LdotH, edge) * (((glossyPower + 1.0) / (8.0*VdotH)) * pow(NdotH, glossyPower));
    }
 
    //float fAtten = saturate( 1.0 - dot(lightDir/cAmbient_LightRange.w, lightDir/cAmbient_LightRange.w) );
@@ -158,7 +158,7 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
 //   Glossy is performed with a very crude approximation of the BRDF and the roughness parameter (simple mip-mapping of the envmap).
 //   Specular just does a plain lookup in the envmap.
 // - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables feature wrong normals, or for transparents with 2 pass rendering)
-float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
+float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal, const float eye) // input vectors (N,V) are normalized for BRDF evals
 {
    float3 color = float3(0.0, 0.0, 0.0);
 
@@ -192,25 +192,25 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       BRANCH if (fDisableLighting_top_below.x == 1.0)
          color += float(iLightPointNum) * diffuse; // Old bug kept for backward compatibility: when lighting is disabled, it results to applying it twice
       else for (int i = 0; i < iLightPointNum; i++)
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, eye); // no clearcoat needed as only pointlights so far
    }
 
    // Environment IBL
    BRANCH if (!is_metal && (diffuseMax > 0.0))
       // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
       // matView is always an orthonormal matrix, so no need to normalize after transform
-      color += DoEnvmapDiffuse(/*normalize*/((float4(N,0.0) * matView).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+      color += DoEnvmapDiffuse(/*normalize*/((float4(N,0.0) * matView[int(eye)]).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
-	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
-	   // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-	   // matView is always an orthonormal matrix, so no need to normalize after transform
-	   R = /*normalize*/((float4(R,0.0) * matView).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-	   const float2 Ruv = ray_to_equirectangular_uv(R);
-	   if (glossyMax > 0.0)
-		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
-	   if (specularMax > 0.0)
-		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
+       float3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
+       // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+       // matView is always an orthonormal matrix, so no need to normalize after transform
+       R = /*normalize*/((float4(R,0.0) * matView[int(eye)]).xyz); // trafo back to world for lookup into world space envmap // actually: mul(vec4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+       const float2 Ruv = ray_to_equirectangular_uv(R);
+       if (glossyMax > 0.0)
+          color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
+       if (specularMax > 0.0)
+          color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
    }
 
    return /*Gamma(ToneMap(*/color/*))*/;

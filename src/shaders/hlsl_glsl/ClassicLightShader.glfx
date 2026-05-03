@@ -46,10 +46,10 @@ void main()
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex0, tc);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // No need to use a dedicated 'normal' matrix and normalize since the matWorldView is orthonormal (world is identity and view is always orthonormal) and we normalize in fragment shader
-   //VS_VARYING(normal, normalize((matWorldViewInverseTranspose * vNormal).xyz));
-   VS_VARYING(normal, (matWorldView * float4(vNormal, 0.0)).xyz);
+   //VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs] * vNormal).xyz));
+   VS_VARYING(normal, (matWorldView[eye_vs] * float4(vNormal, 0.0)).xyz);
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
@@ -89,6 +89,7 @@ in vec2 tex0;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
+flat in float eye;
 
 void main()
 {
@@ -107,7 +108,7 @@ void main()
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal, eye); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
         color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
@@ -130,6 +131,7 @@ in vec2 tex0;
 in vec3 worldPos;
 in vec3 tablePos;
 in vec3 normal;
+flat in float eye;
 
 void main()
 {
@@ -154,7 +156,7 @@ void main()
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+        color.xyz = lightLoop(worldPos, normalize(normal), normalize(/*camera=0,0,0,1*/-worldPos), diffuse, glossy, specular, edge, is_metal, eye); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     }
     color.a = cBase_Alpha.a;
 

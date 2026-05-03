@@ -12,10 +12,10 @@
 
 layout(std140) uniform basicMatrixBlock {
 	mat4 matWorld;
-	mat4 matView;
-	mat4 matWorldView;
-	mat3x4 matWorldViewInverseTranspose;
-	vec4 unusedFillerFormatWorldViewInverseTranspose;
+	mat4 matView[N_EYES];
+	mat4 matWorldView[N_EYES];
+	mat3x4 matWorldViewInverseTranspose[N_EYES];
+	vec4 unusedFillerFormatWorldViewInverseTranspose[N_EYES];
 	mat4 matWorldViewProj[N_EYES];
 };
 
@@ -115,12 +115,12 @@ mat3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
    return mat3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
 }
 
-float3 normal_map(const float3 N, const float3 V, const float2 uv)
+float3 normal_map(const float3 N, const float3 V, const float2 uv, const float eye)
 {
    const float3 tn = texture(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
    BRANCH if (objectSpaceNormalMap)
    { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize((matWorldViewInverseTranspose * float3(tn.x, tn.y, -tn.z)).xyz);
+      return normalize((matWorldViewInverseTranspose[int(eye)] * float3(tn.x, tn.y, -tn.z)).xyz);
    }
    else
    { // Tangent space
@@ -143,7 +143,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N, const float 
 float3 compute_refraction(const float3 pos, const float2 screenSpace, const float3 N, const float3 V, const float eye)
 {
    // Compute refracted visible position then project from world view position to probe UV
-   // const float4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
+   // const float4x4 matProj = mul(inverse4x4(matWorldView[int(eye)]), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const float3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const float3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
    const float4 proj = matProj[int(eye)] * float4(refracted_pos, 1.0);
@@ -202,9 +202,9 @@ void main()
    VS_VARYING(tablePos, table_pos);
    VS_VARYING(tex01, tc);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
@@ -226,9 +226,9 @@ void main()
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 
@@ -485,7 +485,7 @@ void main()
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    const float3 N = normalize(normal);
 
-   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal), cBase_Alpha.a);
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), cBase_Alpha.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
@@ -545,9 +545,9 @@ void main()
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, V, tex01);
+      N = normal_map(N, V, tex01, eye);
 
-   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
@@ -609,9 +609,9 @@ void main() {
    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos);
    float3 N = normalize(normal);
    BRANCH if (doNormalMapping)
-      N = normal_map(N, V, tex01);
+      N = normal_map(N, V, tex01, eye);
 
-   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal), pixel.a);
+   color = float4(lightLoop(worldPos, N, V, diffuse, glossy, specular, edge, is_metal, eye), pixel.a);
 
    BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
    {
@@ -767,9 +767,9 @@ void main()
    #endif
    VS_VARYING(tablePos, table_pos);
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   VS_VARYING(worldPos, (matWorldView * pos).xyz);
+   VS_VARYING(worldPos, (matWorldView[eye_vs] * pos).xyz);
    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-   VS_VARYING(normal, normalize((matWorldViewInverseTranspose*vNormal).xyz));
+   VS_VARYING(normal, normalize((matWorldViewInverseTranspose[eye_vs]*vNormal).xyz));
    VS_CLIP_DISTANCE(vec4(table_pos.xyz, 1.0));
 }
 

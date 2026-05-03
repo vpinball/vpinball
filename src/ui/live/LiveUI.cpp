@@ -432,8 +432,11 @@ void LiveUI::RenderUI()
    }
    const float right = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.y : io.DisplaySize.x;
    const float bottom = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
-   const Matrix3D matProj = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
-   m_rd->m_uiShader->SetMatrix(SHADER_matWorldView, &matProj);
+   Matrix3D matView[2];
+   matView[0] = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
+   if (m_rd->m_nEyes == 2)
+      matView[1] = matView[0];  
+   m_rd->m_uiShader->SetMatrix(SHADER_matWorldView, &matView[0], m_rd->m_nEyes);
    m_rd->m_uiShader->SetVector(SHADER_staticColor_Alpha,
       m_player->m_vrDevice ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f, // Stereo offset for VR (fake depth)
       0.f, // Unused

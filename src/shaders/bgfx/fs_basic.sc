@@ -2,10 +2,10 @@
 
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 #ifdef STEREO
-	$input v_eye
+    $input v_eye
 #endif
 #ifdef CLIP
-	$input v_clipDistance
+    $input v_clipDistance
 #endif
 
 #include "common.sh"
@@ -24,17 +24,29 @@ SAMPLER2DSTEREO(tex_reflection, 5); // reflections
 SAMPLER2DSTEREO(tex_refraction, 6); // refractions
 SAMPLER2DSTEREO(tex_probe_depth, 7); // refractions depth probe
 
-uniform mat4 matWorldView;
-uniform mat4 matWorldViewInverseTranspose;
-uniform mat4 matWorld;
-uniform mat4 matView;
 #ifdef STEREO
-	uniform mat4 matProj[2];
-	// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
-	#define mProj matProj[int(round(v_eye))]
+    uniform mat4 matView[2];
+    uniform mat4 matWorldView[2];
+    uniform mat4 matWorldViewInverseTranspose[2];
+    uniform mat4 matWorldViewProj[2];
+    uniform mat4 matProj[2];
+    // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+    #define mView                      matView[int(round(v_eye))]
+    #define mWorldView                 matWorldView[int(round(v_eye))]
+    #define mWorldViewInverseTranspose matWorldViewInverseTranspose[int(round(v_eye))]
+    #define mWorldViewProj             matWorldViewProj[int(round(v_eye))]
+    #define mProj                      matProj[int(round(v_eye))]
 #else
-	uniform mat4 matProj;
-	#define mProj matProj
+    uniform mat4 matView;
+    uniform mat4 matWorldView;
+    uniform mat4 matWorldViewInverseTranspose;
+    uniform mat4 matWorld;
+    uniform mat4 matProj;
+    #define mView                      matView
+    #define mWorldView                 matWorldView
+    #define mWorldViewInverseTranspose matWorldViewInverseTranspose
+    #define mWorldViewProj             matWorldViewProj
+    #define mProj                      matProj
 #endif
 
 uniform vec4 objectSpaceNormalMap; // float extended to vec4 for BGFX FIXME float uniforms are not supported: group or declare as vec4
@@ -94,7 +106,11 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
    return mat3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
 }
 
+#ifdef STEREO
+vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv, const float v_eye)
+#else
 vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
+#endif
 {
    vec3 tn;
    if (noMipMaps)
@@ -104,7 +120,7 @@ vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 
    BRANCH if (objectSpaceNormalMap.x != 0.0)
    { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize(mul(matWorldViewInverseTranspose, vec4(tn.x, tn.y, -tn.z, 0.0)).xyz);
+      return normalize(mul(mWorldViewInverseTranspose, vec4(tn.x, tn.y, -tn.z, 0.0)).xyz);
    }
    else
    { // Tangent space
@@ -173,23 +189,23 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
 
 #ifdef REFL
-	#ifndef CLIP
-	EARLY_DEPTH_STENCIL
-	#endif
-	void main() {
-		// Reflection only pass variant of the basic material shading
-		#ifdef CLIP
-		if (v_clipDistance < 0.0)
-		   discard;
-		#endif
-		vec3 N = normalize(v_normal);
-		#ifdef STEREO
-		vec3 color = compute_reflection(gl_FragCoord.xy, N, v_eye);
-		#else
-		vec3 color = compute_reflection(gl_FragCoord.xy, N);
-		#endif
-		gl_FragColor = vec4(color.rgb * staticColor_Alpha.rgb, staticColor_Alpha.a);
-	}
+    #ifndef CLIP
+    EARLY_DEPTH_STENCIL
+    #endif
+    void main() {
+        // Reflection only pass variant of the basic material shading
+        #ifdef CLIP
+        if (v_clipDistance < 0.0)
+           discard;
+        #endif
+        vec3 N = normalize(v_normal);
+        #ifdef STEREO
+        vec3 color = compute_reflection(gl_FragCoord.xy, N, v_eye);
+        #else
+        vec3 color = compute_reflection(gl_FragCoord.xy, N);
+        #endif
+        gl_FragColor = vec4(color.rgb * staticColor_Alpha.rgb, staticColor_Alpha.a);
+    }
 
 #else
    #if !defined(AT) && !defined(CLIP)
@@ -231,12 +247,20 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       vec3 N = normalize(v_normal);
       #ifdef TEX
          BRANCH if (doNormalMapping)
-             N = normal_map(N, -V, v_texcoord0);
+            #ifdef STEREO
+               N = normal_map(N, -V, v_texcoord0, v_eye);
+            #else
+               N = normal_map(N, -V, v_texcoord0);
+            #endif
       #endif
 
       //color = vec4((N+1.0)*0.5,1.0); return; // visualize normals
 
-      color = vec4(lightLoop(v_worldPos, N, V, diffuse, glossy, specular, edge, doMetal), pixel.a);
+      #ifdef STEREO
+         color = vec4(lightLoop(v_worldPos, N, V, diffuse, glossy, specular, edge, doMetal, v_eye), pixel.a);
+      #else
+         color = vec4(lightLoop(v_worldPos, N, V, diffuse, glossy, specular, edge, doMetal), pixel.a);
+      #endif
 
       BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
       {
@@ -257,9 +281,9 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
       BRANCH if (doReflections)
          #ifdef STEREO
-			color.rgb += compute_reflection(gl_FragCoord.xy, N, v_eye);
+            color.rgb += compute_reflection(gl_FragCoord.xy, N, v_eye);
          #else
-			color.rgb += compute_reflection(gl_FragCoord.xy, N);
+            color.rgb += compute_reflection(gl_FragCoord.xy, N);
          #endif
 
       BRANCH if (doRefractions)

@@ -555,7 +555,11 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    }
 
    // Define the view matrix. This matrix MUST be orthonormal (orthogonal axis with a unit length) or shading will be broken
-   mvp.SetView(lookat);
+   mvp.SetView(0, lookat);
+   // TODO this is wrong: each eye should have a different view for a lightly different shading
+   // VPX used to only support 1 view matrix so we have this hack. Clean it
+   if (mvp.m_nEyes > 1)
+      mvp.SetView(1, lookat);
 
    // Apply non uniform scene scaling after shading, in the projection matrix
    Matrix3D invLookAt(lookat);
@@ -583,7 +587,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       const float yOfs = ofs * sinf(rotation);
 
       // Compute the view orthonormal basis
-      const Matrix3D invView(mvp.GetView());
+      const Matrix3D invView(mvp.GetView(0)); // TODO apply eyeShift to view, not projection, as this is now supported by VPX
       const vec3 right = invView.GetOrthoNormalRight();
 
       // Left eye
@@ -607,12 +611,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    {
       // To be backward compatible while having a well behaving view matrix, we compute a view without the layback (which is meaningful with regards to what was used before).
       // We use it for rendering computation. It is reverted by the projection matrix which then apply the old transformation, including layback.
-      Matrix3D invView(mvp.GetView());
-      invView.Invert();
-      const Matrix3D tmp = invView * layback * mvp.GetView();
-      mvp.SetProj(0, tmp * mvp.GetProj(0));
-      if (stereo) // Real stereo is not really supported for legacy camera mode (it used to be only fake parallax stereo)
-         mvp.SetProj(1, tmp * mvp.GetProj(1));
+      for (unsigned int eye = 0; eye < mvp.m_nEyes; eye++)
+         mvp.SetProj(eye, Matrix3D::MatrixInverse(mvp.GetView(eye)) * layback * mvp.GetView(eye) * mvp.GetProj(eye));
    }
 
    if (!stereo && mvp.m_nEyes > 1)

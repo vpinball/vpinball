@@ -11,9 +11,9 @@
 uniform mat4 orientation;
 
 layout(std140) uniform ballMatrixBlock {
-	mat4 matView;
-	mat4 matWorldView;
-	mat4 matWorldViewInverse;
+	mat4 matView[N_EYES];
+	mat4 matWorldView[N_EYES];
+	mat4 matWorldViewInverse[N_EYES];
 	mat4 matWorldViewProj[N_EYES];
 };
 
@@ -72,6 +72,8 @@ VS_OUT(vec4, worldPos_t0y);
 
 void main()
 {
+    VS_EYE;
+	
     // apply spinning and move the ball to it's actual position
     float4 pos = vec4(vPosition, 1.0);
     pos.xyz = (orientation * pos).xyz;
@@ -79,11 +81,10 @@ void main()
     // apply spinning to the normals too to get the sphere mapping effect
     const float3 nspin = (orientation * vec4(vNormal,0.0)).xyz;
     // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore matWorldView is not orthonormal
-    const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    const float3 normal = normalize((vec4(nspin, 0.0) * matWorldViewInverse[eye_vs]).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 
-    const float3 p = (matWorldView * pos).xyz;
+    const float3 p = (matWorldView[eye_vs] * pos).xyz;
 
-    VS_EYE;
     VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
     VS_VARYING(normal_t0x, float4(normal,tex0.x));
     VS_VARYING(worldPos_t0y, float4(p,tex0.y));
@@ -144,7 +145,7 @@ void main()
 
 ////FRAGMENT
 
-float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
+float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal, const float eye)
 {
    // N and V must be already normalized by the caller
    // N = normalize(N);
@@ -167,10 +168,10 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
       for(int i = 0; i < iLightPointBallsNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, eye); // no clearcoat needed as only pointlights so far
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize((matView * vec4(N,0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
+      color += DoEnvmapDiffuse(normalize((matView[int(eye)] * vec4(N,0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(vec4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
@@ -200,7 +201,7 @@ void main()
     { // Equirectangular Map Reflections
       // trafo back to world for lookup into world space envmap
       // matView is always an orthonormal matrix, so no need to normalize after transform
-      const float3 rv = /*normalize*/((float4(-R,0.0) * matView).xyz);
+      const float3 rv = /*normalize*/((float4(-R,0.0) * matView[int(eye)]).xyz);
       const float2 uv = ray_to_equirectangular_uv(rv);
       ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
     }
@@ -238,13 +239,13 @@ void main()
 
     // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
     // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
-    //const float3 playfield_normal = normalize((float4(0.,0.,1.,0.) * matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    //const float3 playfield_normal = (matWorldView * float4(0.,0.,1.,0.)).xyz;
-    const float3 playfield_normal = matWorldView[2].xyz;
+    //const float3 playfield_normal = normalize((float4(0.,0.,1.,0.) * matWorldViewInverse[int(eye)]).xyz); //!! normalize necessary? // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose[int(eye)]), but optimized to save one matrix
+    //const float3 playfield_normal = (matWorldView[int(eye)] * float4(0.,0.,1.,0.)).xyz;
+    const float3 playfield_normal = matWorldView[int(eye)][2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
-    //const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView);
-    const float3 playfield_p0 = matWorldView[3].xyz;
+    //const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView[int(eye)]);
+    const float3 playfield_p0 = matWorldView[int(eye)][3].xyz;
     const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
     const float3 playfield_hit = worldPos_t0y.xyz - t * R;
 
@@ -260,7 +261,7 @@ void main()
     ); // a bit of supersampling, not strictly needed, but a bit better and not that costly
 
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
-    // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
+    // const float2 uv = (matWorldViewInverse[int(eye)] * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
     BRANCH if (!(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
             && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
@@ -282,7 +283,7 @@ void main()
     if(!%PARAM1%) // decalMode
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-    color.rgb = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+    color.rgb = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false, eye);
     color.a = cBase_Alpha.a;
 }
 

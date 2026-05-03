@@ -10,6 +10,7 @@
 #include "miniz/miniz.h"
 #include "progmesh.h"
 #include "renderer/Renderer.h"
+#include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "ui/win/sur.h"
@@ -1097,10 +1098,12 @@ void Primitive::Render(const unsigned int renderMask)
       }
    }
 
+   // set transform
+   g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
+
    if (isUIPass)
    {
       // FIXME use correct point for depth sorting
-      g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
       if (renderMask & Renderer::UI_FILL)
          m_rd->DrawMesh(
             m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
@@ -1152,9 +1155,6 @@ void Primitive::Render(const unsigned int renderMask)
    {
       m_rd->m_basicShader->SetMaterial(mat, alpha != 100.f);
    }
-
-   // set transform
-   g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
 
    // Check if this primitive is used as a lightmap and should be convoluted with the light shadows
    const bool lightmap = m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS;
@@ -1221,8 +1221,8 @@ void Primitive::Render(const unsigned int renderMask)
             reflection_probe->ExtendAreaOfInterest(xMin, xMax, yMin, yMax);
             m_rd->AddRenderTargetDependency(reflections);
             Vertex3Ds plane_normal = reflection_probe->GetReflectionPlaneNormal();
-            const Matrix3D matWorldViewInverseTranspose = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose();
-            plane_normal = matWorldViewInverseTranspose.MultiplyVectorNoTranslate(plane_normal);
+            // In stereo, using a single view (from left eye) is ok enough as this is just to weight the probe
+            plane_normal = g_pplayer->m_renderer->GetMVP().GetModelViewInverseTranspose(0).MultiplyVectorNoTranslate(plane_normal);
             Vertex3Ds n(plane_normal.x, plane_normal.y, plane_normal.z);
             n.Normalize();
             m_rd->m_basicShader->SetVector(SHADER_mirrorNormal_factor, n.x, n.y, n.z, m_d.m_reflectionStrength);

@@ -2600,10 +2600,10 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const V
       // This happens during startup for offscreen rendering (somewhat hacky)
       depth = 0.f;
    else if (g_pplayer->m_renderer->GetShadeMode() != Renderer::ShadeMode::Default)
-      // Used by the new wireframe renderer: sort along view vector
+      // Used by the new wireframe renderer: sort along the left eye view vector
       //depth = isTranparentPass ? g_pplayer->m_renderer->GetMVP().GetModelView().MultiplyVectorNoPerspective(center).z : -g_pplayer->m_renderer->GetMVP().GetModelView().MultiplyVectorNoPerspective(center).z;
       // back to front
-      depth = g_pplayer->m_renderer->GetMVP().GetModelView().MultiplyVectorNoPerspective(center).z;
+      depth = g_pplayer->m_renderer->GetMVP().GetModelView(0).MultiplyVectorNoPerspective(center).z;
    else
       // Legacy sorting order (only along negative z axis, which is reversed for reflections).
       // This is completely wrong, but needed to preserve backward compatibility. We should sort along the view axis (especially for reflection probes)

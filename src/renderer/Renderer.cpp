@@ -1065,64 +1065,109 @@ void Renderer::SetupShaders()
 
 void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
-   struct
-   {
-      Matrix3D matWorld;
-      Matrix3D matView;
-      Matrix3D matWorldView;
-      Matrix3D matWorldViewInverseTranspose;
-      Matrix3D matWorldViewProj[2];
-   } matrices;
-   GetMVP().SetModel(objectTrafo);
-   matrices.matWorld = GetMVP().GetModel();
-   matrices.matView = GetMVP().GetView();
-   matrices.matWorldView = GetMVP().GetModelView();
-   matrices.matWorldViewInverseTranspose = GetMVP().GetModelViewInverseTranspose();
-   const int nEyes = m_renderDevice->m_nEyes;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
+   m_mvp.SetModel(objectTrafo);
 
 #if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorld, &matrices.matWorld);
-   m_renderDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
-   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
-   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorld, &m_mvp.GetModel());
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &m_mvp.GetModelViewInverseTranspose(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
+
 #elif defined(ENABLE_OPENGL)
-   m_renderDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-   m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   if (m_mvp.m_nEyes == 2)
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView[2];
+         Matrix3D matWorldView[2];
+         Matrix3D matWorldViewInverseTranspose[2];
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      matrices.matWorld = m_mvp.GetModel();
+      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      {
+         matrices.matView[eye] = m_mvp.GetView(eye);
+         matrices.matWorldView[eye] = m_mvp.GetModelView(eye);
+         matrices.matWorldViewInverseTranspose[eye] = m_mvp.GetModelViewInverseTranspose(eye);
+         matrices.matWorldViewProj[eye] = m_mvp.GetModelViewProj(eye);
+      }
+      m_renderDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+      m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], m_mvp.m_nEyes);
+      m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], m_mvp.m_nEyes);
+      m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], m_mvp.m_nEyes);
+   }
+   else
+   {
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj;
+      } matrices;
+      matrices.matWorld = m_mvp.GetModel();
+      matrices.matView = m_mvp.GetView(0);
+      matrices.matWorldView = m_mvp.GetModelView(0);
+      matrices.matWorldViewInverseTranspose = m_mvp.GetModelViewInverseTranspose(0);
+      matrices.matWorldViewProj = m_mvp.GetModelViewProj(0);
+      m_renderDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+      m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj, m_mvp.m_nEyes);
+      m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj, m_mvp.m_nEyes);
+      m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj, m_mvp.m_nEyes);
+   }
 #endif
 }
 
 void Renderer::UpdateBallShaderMatrix()
 {
-   struct
-   {
-      Matrix3D matView;
-      Matrix3D matWorldView;
-      Matrix3D matWorldViewInverse;
-      Matrix3D matWorldViewProj[2];
-   } matrices;
-   GetMVP().SetModel(Matrix3D::MatrixIdentity());
-   matrices.matView = GetMVP().GetView();
-   matrices.matWorldView = GetMVP().GetModelView();
-   matrices.matWorldViewInverse = GetMVP().GetModelViewInverse();
-   const int nEyes = m_renderDevice->m_nEyes;
-   for (int eye = 0; eye < nEyes; eye++)
-      matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
+   m_mvp.SetModel(Matrix3D::MatrixIdentity());
 
 #if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
-   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
-   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
-   m_renderDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &m_mvp.GetModelViewInverse(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
+
 #elif defined(ENABLE_OPENGL)
-   m_renderDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
+   if (m_mvp.m_nEyes == 2)
+   {
+      struct
+      {
+         Matrix3D matView[2];
+         Matrix3D matWorldView[2];
+         Matrix3D matWorldViewInverse[2];
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      {
+         matrices.matView[eye] = m_mvp.GetView(eye);
+         matrices.matWorldView[eye] = m_mvp.GetModelView(eye);
+         matrices.matWorldViewInverse[eye] = m_mvp.GetModelViewInverse(eye);
+         matrices.matWorldViewProj[eye] = m_mvp.GetModelViewProj(eye);
+      }
+      m_renderDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView[0].m[0][0]);
+   }
+   else
+   {
+      struct
+      {
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverse;
+         Matrix3D matWorldViewProj;
+      } matrices;
+      matrices.matView = m_mvp.GetView(0);
+      matrices.matWorldView = m_mvp.GetModelView(0);
+      matrices.matWorldViewInverse = m_mvp.GetModelViewInverse(0);
+      matrices.matWorldViewProj = m_mvp.GetModelViewProj(0);
+      m_renderDevice->m_ballShader->SetUniformBlock(SHADER_ballMatrixBlock, &matrices.matView.m[0][0]);
+   }
 #endif
 }
 
@@ -1217,7 +1262,7 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vert
       m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glassTex);
    float parallaxU = 0.f, parallaxV = 0.f;
    if (!isBackdrop && (vertices != nullptr))
-   { // (fake) depth by applying some parallax mapping
+   { // (fake) depth by applying some parallax mapping (i stereo based on left eye view)
       const Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
       const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
       const Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
@@ -1231,7 +1276,7 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vert
       const float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
       Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
       Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
-      const Matrix3D& mv = GetMVP().GetModelView();
+      const Matrix3D& mv = GetMVP().GetModelView(0);
       tangent = mv.MultiplyVectorNoTranslate(tangent);
       bitangent = mv.MultiplyVectorNoTranslate(bitangent);
       Vertex3Ds eye = (v1 + v2) * 0.5f; // Assume a rectangle shape, use opposite corners to get its center
@@ -1515,9 +1560,7 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
    {
       #if defined(ENABLE_XR)
       if (m_stereo3D == STEREO_VR)
-      {
-         g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, GetMVP());
-      }
+         g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, m_mvp);
       else
       #endif
       {
@@ -1526,12 +1569,14 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
          case PartGroupData::SpaceReference::SR_CABINET:
          case PartGroupData::SpaceReference::SR_CABINET_FEET:
          case PartGroupData::SpaceReference::SR_ROOM:
-            m_mvp.SetView(g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView);
+            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+               m_mvp.SetView(eye, g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView[eye]);
             break;
 
          case PartGroupData::SpaceReference::SR_PLAYFIELD:
          default:
-            m_mvp.SetView(m_playfieldView);
+            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+               m_mvp.SetView(eye, m_playfieldView[eye]);
             break;
          }
       }
@@ -1541,7 +1586,8 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
          if (const auto nudge = g_pplayer->m_physics->GetTableDisplacement(); nudge.x != 0.f || nudge.y != 0.f)
          {
             const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(2.5f * 100.f * m_visualNudgeStrength * nudge.x, 2.5f * 100.f * m_visualNudgeStrength * nudge.y, 0.f);
-            m_mvp.SetView(nudgeMat * m_mvp.GetView());
+            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+               m_mvp.SetView(eye, nudgeMat * m_mvp.GetView(eye));
          }
       }
       m_mvpSpaceReference = spaceReference;
@@ -2287,8 +2333,12 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    return afterTonemapRT;
    #endif
 
-   // We do not support dynamic view point yet (i.e. MVP must be the same between the previosu render and this one)
+   // We do not support dynamic view point yet (i.e. MVP must be the same between the previous render and this one)
    if (m_disableStaticPrepass)
+      return afterTonemapRT;
+
+   // We do not support stereo mode yet
+   if (m_stereo3D != STEREO_OFF)
       return afterTonemapRT;
 
    if (m_motionBlurOff)
@@ -2334,7 +2384,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
 
       // Discard stable balls or balls that have moved too much (which means the ball was likely created/moved)
       // We assume that velocity won't change before rendering (which is wrong) but extend it by a magic factor of 10
-      const Matrix3D view = GetMVP().GetView();
+      const Matrix3D view = GetMVP().GetView(0);
       const vec3 posl = pball->m_hitBall.m_d.m_pos + 0.5f * pball->m_hitBall.m_d.m_vel;
       const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
       const vec3 delta = newPos - pball->m_lastRenderedPos;
@@ -2810,14 +2860,9 @@ void Renderer::RenderFrame()
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
 
    // Update camera point of view
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
-   {
-      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
-   }
-   else 
-   #endif
-   m_playfieldView = m_mvp.GetView();
+   // FIXME this may lead to view drift if nudging and the mvp has not been initialized per frame
+   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+      m_playfieldView[eye] = m_mvp.GetView(eye);
    m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
 
    // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
