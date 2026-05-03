@@ -13,43 +13,8 @@ namespace VPX::InGameUI
 InputProfilePage::InputProfilePage(const string& deviceName, const std::function<void(bool, bool)>& handler)
    : InGameUIPage("Apply Device Layout"s, ""s, SaveMode::None)
    , m_handler(handler)
-   , m_deviceName(deviceName)
 {
-   BuildPage();
-}
-
-void InputProfilePage::Open(bool isBackwardAnimation)
-{
-   m_elapsed = 5.f;
-   InGameUIPage::Open(isBackwardAnimation);
-   BuildPage();
-}
-
-
-void InputProfilePage::Render(float elapsedS)
-{
-#if (defined(__ANDROID__) && defined(ENABLE_XR))
-   // Automatically apply input profile on standalone VR as there are no other default input device to actually select it
-   if (m_player->IsVR())
-   {
-      m_elapsed -= elapsedS;
-      BuildPage();
-      if (m_elapsed <= 0.f)
-      {
-         m_handler(true, m_dontAskAgain);
-         if (m_player->m_liveUI->m_inGameUI.IsOpened())
-            m_player->m_liveUI->m_inGameUI.NavigateBack();
-      }
-   }
-#endif
-   InGameUIPage::Render(elapsedS);
-}
-
-
-void InputProfilePage::BuildPage()
-{
-   ClearItems();
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Device '" + m_deviceName + "' was detected."));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Device '" + deviceName + "' was detected."));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Would you like the default input layout to be applied ?"s));
 
@@ -71,14 +36,6 @@ void InputProfilePage::BuildPage()
          m_handler(false, m_dontAskAgain);
          m_player->m_liveUI->m_inGameUI.NavigateBack();
       }));
-
-#if (defined(__ANDROID__) && defined(ENABLE_XR))
-   // Automatically apply input profile on standalone VR as there are no other default input device
-   if (m_player->IsVR() && m_elapsed > 0.f)
-   {
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, std::format("Layout will be automatically applied in {:3.1f}s", m_elapsed)));
-   }
-#endif
 }
 
 }

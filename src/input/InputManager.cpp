@@ -487,13 +487,22 @@ void InputManager::ProcessInput()
       {
          if (device.m_hasPendingLayoutApply)
          {
+            const uint16_t deviceId = device.m_id;
             const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, "Device." + device.m_settingsId + ".NoAutoLayout").value();
             if (g_app->m_settings.GetBool(noAutoLayoutId))
             {
                device.m_hasPendingLayoutApply = false;
                continue;
             }
-            const uint16_t deviceId = device.m_id;
+
+            // For VR controllers, the propose-layout dialog isn't reachable in the headset before the VR controller is registered, so auto-apply
+            if (device.m_type == DeviceType::VRController)
+            {
+               ApplyDefaultDeviceMapping(deviceId);
+               device.m_hasPendingLayoutApply = false;
+               continue;
+            }
+
             if (m_player->m_liveUI->m_inGameUI.ProposeInputLayout(device.m_name,
                    [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore)
                    {
