@@ -16,17 +16,21 @@ uniform mat4 orientation;
     uniform vec4 layer;
     uniform mat4 matWorldView[2];
     uniform mat4 matWorldViewInverse[2];
-    uniform mat4 matWorldViewProj[2];
+    uniform mat4 matRotViewProj[2];
+    uniform vec4 cameraPosWorld[2];
     #define mWorldView        matWorldView[gl_InstanceID]
     #define mWorldViewInverse matWorldViewInverse[gl_InstanceID]
-    #define mWorldViewProj    matWorldViewProj[gl_InstanceID]
+    #define mRotViewProj      matRotViewProj[gl_InstanceID]
+    #define cCameraPosWorld   cameraPosWorld[gl_InstanceID].xyz
 #else
     uniform mat4 matWorldView;
     uniform mat4 matWorldViewInverse;
-    uniform mat4 matWorldViewProj;
+    uniform mat4 matRotViewProj;
+    uniform vec4 cameraPosWorld;
     #define mWorldView        matWorldView
     #define mWorldViewInverse matWorldViewInverse
-    #define mWorldViewProj    matWorldViewProj
+    #define mRotViewProj      matRotViewProj
+    #define cCameraPosWorld   cameraPosWorld.xyz
 #endif
 #ifdef CLIP
     uniform vec4 clip_plane;
@@ -34,7 +38,7 @@ uniform mat4 orientation;
 
 void main()
 {
-    // apply spinning and move the ball to it's actual position
+    // apply spinning and move the ball to it's actual position (orientation contains rot * scale * translate)
     vec4 pos = vec4(a_position, 1.0);
     vec4 tpos = mul(orientation, pos);
     pos.xyz = tpos.xyz;
@@ -53,5 +57,7 @@ void main()
         gl_Layer = gl_InstanceID;
         v_eye = layer.x + gl_InstanceID;
     #endif
-    gl_Position = mul(mWorldViewProj, pos);
+    // Camera-relative clip transform: subtract camera world pos on the GPU to keep magnitudes small.
+    vec3 wpos_rel = tpos.xyz - cCameraPosWorld;
+    gl_Position = mul(mRotViewProj, vec4(wpos_rel, 1.0));
 }

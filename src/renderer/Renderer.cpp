@@ -1067,7 +1067,26 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
    m_mvp.SetModel(objectTrafo);
 
-#if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
+#if defined(ENABLE_BGFX)
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorld, &m_mvp.GetModel());
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &m_mvp.GetModelViewInverseTranspose(0), m_mvp.m_nEyes);
+
+   // Camera-relative uniforms. The shader subtracts cameraPosWorld from the world
+   // position on the GPU, then applies (viewRotation x proj). This avoids Adreno (Quest) f32
+   // precision loss in mul(matWorldViewProj, pos) where the camera-translation column dominates the
+   // CPU-composed mvp entries; the cancellation now happens at full f32 precision per-vertex.
+   m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &m_mvp.GetRotViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &m_mvp.GetCameraPos(0), m_mvp.m_nEyes);
+   m_renderDevice->m_lightShader->SetMatrix(SHADER_matRotViewProj, &m_mvp.GetRotViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_lightShader->SetVector(SHADER_cameraPosWorld, &m_mvp.GetCameraPos(0), m_mvp.m_nEyes);
+   m_renderDevice->m_flasherShader->SetMatrix(SHADER_matRotViewProj, &m_mvp.GetRotViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_flasherShader->SetVector(SHADER_cameraPosWorld, &m_mvp.GetCameraPos(0), m_mvp.m_nEyes);
+   m_renderDevice->m_DMDShader->SetMatrix(SHADER_matRotViewProj, &m_mvp.GetRotViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_DMDShader->SetVector(SHADER_cameraPosWorld, &m_mvp.GetCameraPos(0), m_mvp.m_nEyes);
+
+#elif defined(ENABLE_DX9)
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorld, &m_mvp.GetModel());
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
@@ -1128,7 +1147,14 @@ void Renderer::UpdateBallShaderMatrix()
 {
    m_mvp.SetModel(Matrix3D::MatrixIdentity());
 
-#if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
+#if defined(ENABLE_BGFX)
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &m_mvp.GetModelViewInverse(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetMatrix(SHADER_matRotViewProj, &m_mvp.GetRotViewProj(0), m_mvp.m_nEyes);
+   m_renderDevice->m_ballShader->SetVector(SHADER_cameraPosWorld, &m_mvp.GetCameraPos(0), m_mvp.m_nEyes);
+
+#elif defined(ENABLE_DX9)
    m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &m_mvp.GetModelViewProj(0), m_mvp.m_nEyes);
    m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
    m_renderDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &m_mvp.GetModelViewInverse(0), m_mvp.m_nEyes);
@@ -1184,11 +1210,30 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
 
+#if defined(ENABLE_BGFX)
+   const vec4 cameraPosWorld[2] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
    if (basic)
    {
-   #if defined(ENABLE_BGFX)
-      m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-   #elif defined(ENABLE_OPENGL)
+      m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+   }
+   if (light)
+   {
+      m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+   }
+   if (flasherDMD)
+   {
+      m_renderDevice->m_flasherShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_flasherShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+      m_renderDevice->m_DMDShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+   }
+
+#else
+   if (basic)
+   {
+#if defined(ENABLE_OPENGL)
       struct
       {
          Matrix3D matWorld;
@@ -1200,19 +1245,22 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
       memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
       memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
       m_renderDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-   #elif defined(ENABLE_DX9)
+
+#elif defined(ENABLE_DX9)
       m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
-   #endif
+
+#endif
    }
 
    if (light)
       m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-   
+
    if (flasherDMD)
    {
       m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
       m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    }
+#endif
 }
 
 void Renderer::UpdateStereoShaderState()
@@ -2761,7 +2809,9 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             Matrix3D matWorldViewProj[2];
             matWorldViewProj[0].SetIdentity();
             matWorldViewProj[1].SetIdentity();
-            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], 2);
+            const vec4 cameraPos[2] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
+            m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPos[0], 2);
+            m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], 2);
             m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &m_vrColorKey);
             m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
             static constexpr Vertex3D_NoTex2 ckVerts[4] =
@@ -3204,24 +3254,31 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    const int eyes = m_stereo3D != StereoMode::STEREO_OFF ? 2 : 1;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
-#if defined(ENABLE_OPENGL)
+#if defined(ENABLE_BGFX)
+   const vec4 cameraPosWorld[2] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
+   rd->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+   rd->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+   rd->m_DMDShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+   rd->m_DMDShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+#elif defined(ENABLE_OPENGL)
    struct
    {
       Matrix3D matWorld;
-      Matrix3D matView;
-      Matrix3D matWorldView;
-      Matrix3D matWorldViewInverseTranspose;
+      Matrix3D matView[2];
+      Matrix3D matWorldView[2];
+      Matrix3D matWorldViewInverseTranspose[2];
       Matrix3D matWorldViewProj[2];
    } matrices;
    memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
    memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
    rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-#else
+   rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+#elif defined(ENABLE_DX9)
    rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
 #endif
    rd->m_basicShader->SetFloat(SHADER_alphaTestValue, -1.0f);
    rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-   rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, -1.0f);
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)

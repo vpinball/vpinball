@@ -17,24 +17,20 @@ $input v_worldPos, v_normal, v_texcoord0
     uniform mat4 matView[2];
     uniform mat4 matWorldView[2];
     uniform mat4 matWorldViewInverse[2];
-    uniform mat4 matWorldViewProj[2];
     uniform mat4 matProj[2];
     // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
     #define mView             matView[int(round(v_eye))]
     #define mWorldView        matWorldView[int(round(v_eye))]
     #define mWorldViewInverse matWorldViewInverse[int(round(v_eye))]
-    #define mWorldViewProj    matWorldViewProj[int(round(v_eye))]
     #define mProj             matProj[int(round(v_eye))]
 #else
     uniform mat4 matView;
     uniform mat4 matWorldView;
     uniform mat4 matWorldViewInverse;
-    uniform mat4 matWorldViewProj;
     uniform mat4 matProj;
     #define mView             matView
     #define mWorldView        matWorldView
     #define mWorldViewInverse matWorldViewInverse
-    #define mWorldViewProj    matWorldViewProj
     #define mProj             matProj
 #endif
 

@@ -10,11 +10,15 @@ $output v_texcoord0, v_texcoord1
 
 #ifdef WORLD
 	#ifdef STEREO
-		uniform mat4 matWorldViewProj[2];
-		#define mvp matWorldViewProj[gl_InstanceID]
+		uniform mat4 matRotViewProj[2];
+		uniform vec4 cameraPosWorld[2];
+		#define mRotViewProj    matRotViewProj[gl_InstanceID]
+		#define cCameraPosWorld cameraPosWorld[gl_InstanceID].xyz
 	#else
-		uniform mat4 matWorldViewProj;
-		#define mvp matWorldViewProj
+		uniform mat4 matRotViewProj;
+		uniform vec4 cameraPosWorld;
+		#define mRotViewProj    matRotViewProj
+		#define cCameraPosWorld cameraPosWorld.xyz
 	#endif
 	#ifdef CLIP
 		uniform vec4 clip_plane;
@@ -37,7 +41,9 @@ void main()
 		gl_Layer = gl_InstanceID;
 	#endif
 	#ifdef WORLD
-		gl_Position = mul(mvp, pos);
+		// Camera-relative clip transform: subtract camera world pos on the GPU to keep magnitudes small.
+		vec3 wpos_rel = a_position.xyz - cCameraPosWorld;
+		gl_Position = mul(mRotViewProj, vec4(wpos_rel, 1.0));
 		#ifdef CLIP
 			v_clipDistance = dot(clip_plane, pos);
 		#endif

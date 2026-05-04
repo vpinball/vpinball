@@ -46,31 +46,32 @@
 enum ShaderTechniques
 {
    SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission,
-      SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange,
-      SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal,
-      SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission,
-      SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange,
-      SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal,
-      SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_SphericalMap, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission,
-      SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange,
-      SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal,
-      SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_SphericalMap_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
+   SHADER_TECHNIQUE(RenderBall, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
       SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
       SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
       SHADER_tex_ball_decal, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_Debug, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_orientation, SHADER_clip_plane),
-   SHADER_TECHNIQUE(
-      RenderBallTrail, SHADER_layer, SHADER_matWorldViewProj, SHADER_cBase_Alpha, SHADER_fenvEmissionScale_TexWidth, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(RenderBall_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
+      SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
+      SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
+      SHADER_tex_ball_decal, SHADER_clip_plane),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
+      SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
+      SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
+      SHADER_tex_ball_decal, SHADER_clip_plane),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView,
+      SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below,
+      SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting,
+      SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal, SHADER_clip_plane),
+   SHADER_TECHNIQUE(RenderBall_Debug, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_orientation, SHADER_clip_plane),
+   SHADER_TECHNIQUE(RenderBallTrail, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_cBase_Alpha, SHADER_fenvEmissionScale_TexWidth, SHADER_w_h_disableLighting,
+      SHADER_tex_ball_color, SHADER_clip_plane),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_with_texture, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness,
-      SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env,
-      SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor, SHADER_objectSpaceNormalMap,
-      SHADER_tex_base_color, SHADER_tex_base_transmission, SHADER_tex_base_normalmap, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_with_texture, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
+      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
+      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
+      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
+      SHADER_objectSpaceNormalMap, SHADER_tex_base_color, SHADER_tex_base_transmission, SHADER_tex_base_normalmap, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth,
+      SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_normal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
@@ -87,10 +88,10 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal),
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal_isMetal),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_with_texture_at, SHADER_layer, SHADER_alphaTestValue, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
-      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
-      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
+   SHADER_TECHNIQUE(basic_with_texture_at, SHADER_layer, SHADER_alphaTestValue, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView,
+      SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission,
+      SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange,
+      SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
       SHADER_objectSpaceNormalMap, SHADER_tex_base_color, SHADER_tex_base_transmission, SHADER_tex_base_normalmap, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth,
       SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_with_texture_at_isMetal),
@@ -109,11 +110,11 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal),
    SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal_isMetal),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_without_texture, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness,
-      SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env,
-      SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor, SHADER_tex_base_transmission,
-      SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_without_texture, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
+      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
+      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
+      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
+      SHADER_tex_base_transmission, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refl),
    SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
@@ -123,81 +124,72 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
 
    // Unshaded
-   SHADER_TECHNIQUE(unshaded_without_texture, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_staticColor_Alpha,
-      SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_with_texture, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_staticColor_Alpha,
-      SHADER_tex_base_color, SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_without_texture_shadow, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+   SHADER_TECHNIQUE(unshaded_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+      SHADER_staticColor_Alpha, SHADER_clip_plane),
+   SHADER_TECHNIQUE(unshaded_with_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+      SHADER_staticColor_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(unshaded_without_texture_shadow, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_with_texture_shadow, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+   SHADER_TECHNIQUE(unshaded_with_texture_shadow, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(basic_reflection_only, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_staticColor_Alpha,
-      SHADER_w_h_height, SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_reflection_only, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+      SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
 
    SHADER_TECHNIQUE(vr_mask, SHADER_matWorldViewProj, SHADER_staticColor_Alpha),
 
-   SHADER_TECHNIQUE(
-      bg_decal_without_texture, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_cBase_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(bg_decal_with_texture, SHADER_layer, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_cBase_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(bg_decal_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+      SHADER_cBase_Alpha, SHADER_clip_plane),
+   SHADER_TECHNIQUE(bg_decal_with_texture, SHADER_layer, SHADER_alphaTestValue, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView,
+      SHADER_matWorldViewInverseTranspose, SHADER_cBase_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(kickerBoolean, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness,
-      SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env,
-      SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor, SHADER_tex_base_transmission,
-      SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
-   SHADER_TECHNIQUE(kickerBoolean_isMetal, SHADER_layer, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness,
-      SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env,
-      SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor, SHADER_tex_base_transmission,
-      SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(kickerBoolean, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
+      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
+      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
+      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
+      SHADER_tex_base_transmission, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(kickerBoolean_isMetal),
 
-   SHADER_TECHNIQUE(light_with_texture, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
+   SHADER_TECHNIQUE(light_with_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
       SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
       SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_tex_light_color, SHADER_clip_plane),
-   SHADER_TECHNIQUE(light_without_texture, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
-      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_clip_plane),
-   SHADER_TECHNIQUE(light_with_texture_isMetal, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
-      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_tex_light_color, SHADER_clip_plane),
-   SHADER_TECHNIQUE(light_without_texture_isMetal, SHADER_layer, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
-      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_clip_plane),
+   SHADER_TECHNIQUE(light_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
+      SHADER_matWorldViewInverseTranspose, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below,
+      SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode,
+      SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_clip_plane),
+   SHADER_TECHNIQUE(light_with_texture_isMetal),
+   SHADER_TECHNIQUE(light_without_texture_isMetal),
 
    SHADER_TECHNIQUE(basic_DMD, SHADER_glassPad, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
+   SHADER_TECHNIQUE(
+      basic_DMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
 
    SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
       SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea,
+   SHADER_TECHNIQUE(display_DMD_world, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea,
       SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex, SHADER_clip_plane),
    SHADER_TECHNIQUE(display_Seg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha,
       SHADER_w_h_height, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_Seg_world, SHADER_matWorldViewProj, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
+   SHADER_TECHNIQUE(display_Seg_world, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
       SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_clip_plane),
    SHADER_TECHNIQUE(display_CRT, SHADER_vRes_Alpha_time, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity,
       SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_displayProperties),
-   SHADER_TECHNIQUE(display_CRT_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
-      SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_displayProperties, SHADER_clip_plane),
+   SHADER_TECHNIQUE(display_CRT_world, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness,
+      SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_displayProperties, SHADER_clip_plane),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_glassPad, SHADER_glassArea, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_u_basic_shade_mode),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_glassPad, SHADER_glassArea, SHADER_vColor_Intensity),
-   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_vColor_Intensity, SHADER_tex_sprite,
+   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vColor_Intensity, SHADER_tex_sprite,
       SHADER_u_basic_shade_mode, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(basic_noLight, SHADER_matWorldViewProj, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_alphaTestValueAB_filterMode_addBlend,
-      SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_tex_flasher_A, SHADER_tex_flasher_B, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_noLight, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha,
+      SHADER_alphaTestValueAB_filterMode_addBlend, SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_tex_flasher_A, SHADER_tex_flasher_B, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(
-      bulb_light, SHADER_matWorldViewProj, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_clip_plane),
-   SHADER_TECHNIQUE(bulb_light_with_ball_shadows, SHADER_matWorldViewProj, SHADER_balls, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power,
+   SHADER_TECHNIQUE(bulb_light, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power,
       SHADER_lightColor_intensity, SHADER_clip_plane),
+   SHADER_TECHNIQUE(bulb_light_with_ball_shadows, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_balls, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange,
+      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_clip_plane),
 
    SHADER_TECHNIQUE(
       fb_rhtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
@@ -358,6 +350,8 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 2), // DX9 & BGFX only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x4, matRotViewProj, 2), // BGFX only, view rotation x proj (camera-relative path), +1 for stereo
+   SHADER_UNIFORM(SUT_Float4v, cameraPosWorld, 2), // BGFX only, camera world position (camera-relative path), +1 for stereo
    SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
    SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
@@ -539,6 +533,7 @@ public:
    #endif
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1);
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector);
+   void SetVector(const ShaderUniforms uniformName, const vec4* const pVector, const unsigned int count);
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w);
    vec4 GetVector(const ShaderUniforms uniformName) const;
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count);

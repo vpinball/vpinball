@@ -47,6 +47,8 @@ public:
    const Matrix3D& GetModelViewInverseTranspose(const unsigned int eye) const { Update(); return m_matModelViewInverseTranspose[eye]; }
    const Matrix3D& GetModelViewProj(const unsigned int eye) const { Update(); return m_matModelViewProj[eye]; }
    const Vertex3Ds& GetViewVec(const unsigned int eye) const { Update(); return m_viewVec[eye]; }
+   const Matrix3D& GetRotViewProj(const unsigned int eye) const { Update(); return m_matRotViewProj[eye]; }
+   const vec4& GetCameraPos(const unsigned int eye) const { Update(); return m_cameraPos[eye]; }
 
    const unsigned int m_nEyes;
 
@@ -71,14 +73,21 @@ private:
          {
             m_matReflectedView[eye] = m_matReflection * m_matView[eye];
             m_matModelView[eye] = m_matModel * m_matReflectedView[eye];
+            m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[eye];
+
             m_matModelViewInverse[eye] = Matrix3D::MatrixInverse(m_matModelView[eye]);
             m_matModelViewInverseTranspose[eye] = m_matModelViewInverse[eye];
             m_matModelViewInverseTranspose[eye].Transpose();
-            m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[eye];
+
             const Matrix3D viewRot = Matrix3D::MatrixInverse(m_matReflectedView[eye]).GetRotationPart();
             m_viewVec[eye] = viewRot * Vertex3Ds { 0.f, 0.f, 1.f };
             m_viewVec[eye].NormalizeSafe();
+
+            const Vertex3Ds camPos = Matrix3D::MatrixInverse(m_matReflectedView[eye]).GetOrthoNormalPos();
+            m_cameraPos[eye] = vec4(camPos.x, camPos.y, camPos.z, 0.f);
+            m_matRotViewProj[eye] = m_matReflectedView[eye].GetRotationPart() * GetProj(eye);
          }
+
          // Flip is a clipspace flip, applied after projection
          switch (m_flip)
          {
@@ -104,15 +113,17 @@ private:
 
    Matrix3D m_matModel { Matrix3D::MatrixIdentity() };
    Matrix3D m_matReflection { Matrix3D::MatrixIdentity() };
-   Matrix3D m_matView[6];
-   Matrix3D m_matProj[6];
+   Matrix3D m_matView[2];
+   Matrix3D m_matProj[2];
 
    mutable bool m_dirty = true;
    FlipMode m_flip = NONE;
-   mutable Matrix3D m_matReflectedView[6];
-   mutable Matrix3D m_matModelView[6];
-   mutable Matrix3D m_matModelViewInverse[6];
-   mutable Matrix3D m_matModelViewInverseTranspose[6];
-   mutable Matrix3D m_matModelViewProj[6];
-   mutable Vertex3Ds m_viewVec[6];
+   mutable Matrix3D m_matReflectedView[2];
+   mutable Matrix3D m_matModelView[2];
+   mutable Matrix3D m_matModelViewInverse[2];
+   mutable Matrix3D m_matModelViewInverseTranspose[2];
+   mutable Matrix3D m_matModelViewProj[2];
+   mutable Matrix3D m_matRotViewProj[2];
+   mutable vec4 m_cameraPos[2];
+   mutable Vertex3Ds m_viewVec[2];
 };

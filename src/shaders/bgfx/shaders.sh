@@ -30,19 +30,21 @@ process_shader() {
     local defines=("$@")
 
     local outputs=(
-        'mtl '
+        'mtl'
         'essl'
         'glsl'
-        'dx11'
-        'spv '
+        'dxbc'
+        'dxil'
+        'spv'
     )
 
     local targets=(
-        '--platform osx     -p metal -O 3'
-        '--platform windows -p 320_es    '
-        '--platform windows -p 440       '
-        '--platform windows -p s_5_0 -O 3'
-        '--platform windows -p spirv     '
+        '--platform osx     -p metal'      # Metal
+        '--platform android -p 320_es    ' # OpenGL ES
+        '--platform linux   -p 440       ' # OpenGL
+        '--platform windows -p s_5_0 -O 3' # DirectX 11
+        '--platform windows -p s_6_0 -O 3' # DirectX 12
+        '--platform linux   -p spirv     ' # Vulkan
     )
 
     local shaderc="./shaderc"
@@ -230,7 +232,7 @@ if [ "$gen_antialiasing" = true ]; then
         process_shader "fs_pp_nfaa.sc" "antialiasing.h" "fs_pp_nfaa${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa_edge.sc" "antialiasing.h" "fs_pp_dlaa_edge${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa.sc" "antialiasing.h" "fs_pp_dlaa${st_output[$k]}" "fragment" "${stereo[$k]}"
-        process_shader "fs_pp_faaa.sc" "antialiasing.h" "fs_pp_dlaa${st_output[$k]}" "fragment" "${stereo[$k]}"
+        process_shader "fs_pp_faaa.sc" "antialiasing.h" "fs_pp_faaa${st_output[$k]}" "fragment" "${stereo[$k]}"
         for variant in "FXAA1" "FXAA2" "FXAA3"; do
             variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
             process_shader "fs_pp_fxaa.sc" "antialiasing.h" "fs_pp_${variant_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant"
