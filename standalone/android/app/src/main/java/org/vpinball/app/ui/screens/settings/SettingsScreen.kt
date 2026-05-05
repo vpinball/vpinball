@@ -292,18 +292,20 @@ fun SettingsScreen(
                     }
                 }
 
-                item {
-                    SectionHeader(title = "Miscellaneous")
+                if (!BuildConfig.IS_QUEST) {
+                    item {
+                        SectionHeader(title = "Miscellaneous")
 
-                    RoundedCard {
-                        SwitchRow(
-                            label = "Force VR Rendering Mode",
-                            isChecked = viewModel.renderingModeOverride,
-                            onCheckedChange = { viewModel.handleRenderingModeOverride(value = it) },
-                            description =
-                                "Provide table scripts with `RenderingMode=2` " +
-                                    "so backbox and cabinet are rendered. Useful for tables that do not provide FSS support.",
-                        )
+                        RoundedCard {
+                            SwitchRow(
+                                label = "Force VR Rendering Mode",
+                                isChecked = viewModel.renderingModeOverride,
+                                onCheckedChange = { viewModel.handleRenderingModeOverride(value = it) },
+                                description =
+                                    "Provide table scripts with `RenderingMode=2` " +
+                                        "so backbox and cabinet are rendered. Useful for tables that do not provide FSS support.",
+                            )
+                        }
                     }
                 }
 
