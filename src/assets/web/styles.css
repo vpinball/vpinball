@@ -406,7 +406,10 @@ body {
 
 .file-list-container {
   flex: 1;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
   background-color: var(--card-background);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -419,9 +422,7 @@ body {
   background-color: var(--background-color);
   border-bottom: 1px solid var(--border-color);
   font-weight: 600;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  flex: none;
 }
 
 .file-list-header a {
@@ -442,6 +443,9 @@ body {
 
 .file-list {
   list-style-type: none;
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 
 .file-item {
@@ -804,37 +808,27 @@ body {
   border-left: 1px solid #e5e5e5 !important;
 }
 
-.drop-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(253, 52, 35, 0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
+body.dragging-files .file-list {
+  outline: 2px dashed var(--primary-color);
+  outline-offset: -4px;
 }
 
-.drop-message {
-  background-color: white;
-  padding: 2rem;
-  border-radius: var(--radius);
-  text-align: center;
-  box-shadow: var(--shadow-lg);
+body.dragging-files .file-list:has(.file-item.drag-over) {
+  outline: none;
 }
 
-.drop-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 1rem;
+.file-list.drag-over {
+  background-color: rgba(253, 52, 35, 0.12);
 }
 
-.drop-icon svg {
-  width: 100%;
-  height: 100%;
-  fill: var(--primary-color);
+.file-item.drag-over {
+  background-color: rgba(253, 52, 35, 0.18);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.file-item.dragging {
+  opacity: 0.4;
 }
 
 .log-viewer {

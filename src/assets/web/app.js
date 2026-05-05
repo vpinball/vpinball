@@ -411,7 +411,11 @@ function createFileListItem(file, subdirectory) {
   listItem.className = "file-item";
   listItem.style.cursor = "pointer";
 
+  const sourcePath = _directory ? `${_directory}/${file.name}` : file.name;
+  setupFileDragSource(listItem, sourcePath);
+
   if (file.isDir) {
+    setupDropTarget(listItem, () => subdirectory);
     listItem.onclick = (e) => {
       if (e.target.tagName !== 'BUTTON' && !e.target.closest('.action-icon')) {
         navigateToPath(subdirectory);
@@ -456,6 +460,7 @@ function createFileListItem(file, subdirectory) {
   const link = document.createElement("a");
   link.href = "#";
   link.textContent = file.name;
+  link.draggable = false;
 
   if (file.isDir) {
     link.onclick = (e) => {
@@ -537,6 +542,7 @@ function createParentDirItem(parentDirectory) {
   const listItem = document.createElement("li");
   listItem.className = "file-item";
   listItem.style.cursor = "pointer";
+  setupDropTarget(listItem, () => parentDirectory);
   listItem.onclick = (e) => {
     if (e.target.tagName !== 'BUTTON' && !e.target.closest('.action-icon')) {
       navigateToPath(parentDirectory);
@@ -1331,7 +1337,7 @@ async function calculateTotalBytesInEntry(entry) {
   return 0;
 }
 
-async function handleFileEntry(fileEntry) {
+async function handleFileEntry(fileEntry, baseDir = _directory) {
   return new Promise((resolve, reject) => {
     fileEntry.file((file) => {
       if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
@@ -1342,7 +1348,7 @@ async function handleFileEntry(fileEntry) {
 
       const reader = new FileReader();
       reader.onload = () => {
-        const filePath = _directory ? `${_directory}/${file.name}` : file.name;
+        const filePath = baseDir ? `${baseDir}/${file.name}` : file.name;
         const data = new Uint8Array(reader.result);
 
         if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
@@ -1365,49 +1371,49 @@ async function handleFileEntry(fileEntry) {
   });
 }
 
-async function handleDirectoryEntry(directoryEntry, basePath = '') {
+async function handleDirectoryEntry(directoryEntry, basePath = '', baseDir = _directory) {
   const reader = directoryEntry.createReader();
   const allEntries = [];
-  
-  const dirPath = _directory ? `${_directory}/${basePath}` : basePath;
+
+  const dirPath = baseDir ? `${baseDir}/${basePath}` : basePath;
   await createDirectory(dirPath);
-  
+
   return new Promise((resolve, reject) => {
     function readEntries() {
       reader.readEntries(async (entries) => {
         if (entries.length === 0) {
           try {
-            await processEntriesSequentially(allEntries, basePath);
+            await processEntriesSequentially(allEntries, basePath, baseDir);
             resolve();
           } catch (error) {
             reject(error);
           }
           return;
         }
-        
+
         allEntries.push(...entries);
         readEntries();
       }, reject);
     }
-    
+
     readEntries();
   });
 }
 
-async function processEntriesSequentially(entries, basePath) {
+async function processEntriesSequentially(entries, basePath, baseDir = _directory) {
   const directories = entries.filter(entry => entry.isDirectory);
   const files = entries.filter(entry => entry.isFile);
-  
+
   for (const entry of directories) {
     const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
-    await handleDirectoryEntry(entry, entryPath);
+    await handleDirectoryEntry(entry, entryPath, baseDir);
   }
-  
+
   for (const entry of files) {
     const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
-    
-    await handleFileEntrySequential(entry, entryPath);
-    
+
+    await handleFileEntrySequential(entry, entryPath, baseDir);
+
     if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
       UploadProgress.completedFiles++;
       UploadProgress.updateOverallProgress();
@@ -1415,7 +1421,7 @@ async function processEntriesSequentially(entries, basePath) {
   }
 }
 
-async function handleFileEntrySequential(fileEntry, entryPath) {
+async function handleFileEntrySequential(fileEntry, entryPath, baseDir = _directory) {
   return new Promise((resolve, reject) => {
     fileEntry.file((file) => {
       if (UIState.isUploadingFolder && UploadProgress.totalFiles > 1) {
@@ -1425,7 +1431,7 @@ async function handleFileEntrySequential(fileEntry, entryPath) {
 
       const reader = new FileReader();
       reader.onload = () => {
-        const filePath = _directory ? `${_directory}/${entryPath}` : entryPath;
+        const filePath = baseDir ? `${baseDir}/${entryPath}` : entryPath;
         const data = new Uint8Array(reader.result);
 
         sendChunkSequential(filePath, data, 0, 1024 * 512, "main-status", file.size)
@@ -1532,135 +1538,248 @@ async function createDirectory(dirPath) {
   });
 }
 
+const VPX_INTERNAL_MIME = "application/x-vpx-source";
+let _activeDragSource = null;
+
+function isExternalFileDrag(e) {
+  return e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files');
+}
+
+function isInternalMoveDrag(e) {
+  return e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes(VPX_INTERNAL_MIME);
+}
+
+async function uploadDataTransferToDir(dataTransfer, targetDir) {
+  const items = dataTransfer.items;
+  if (items && items.length > 0) {
+    UIState.isUploadingFolder = true;
+    showStatusMessage("main-status", "Analyzing files... Please wait.", "info", true);
+
+    UploadProgress.reset();
+    const allEntries = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file') {
+        const entry = item.webkitGetAsEntry();
+        if (entry) allEntries.push(entry);
+      }
+    }
+
+    for (const entry of allEntries) {
+      UploadProgress.totalFiles += await countFilesInEntry(entry);
+      UploadProgress.totalBytes += await calculateTotalBytesInEntry(entry);
+    }
+
+    if (UploadProgress.totalFiles === 1) {
+      showStatusMessage("main-status", "Starting file upload...", "info", true);
+      UIState.isUploadingFolder = false;
+    } else {
+      showStatusMessage("main-status", `Found ${UploadProgress.totalFiles} files. Starting upload...`, "info", true);
+    }
+
+    try {
+      for (const entry of allEntries) {
+        if (entry.isFile) {
+          await handleFileEntry(entry, targetDir);
+        } else if (entry.isDirectory) {
+          await handleDirectoryEntry(entry, entry.name, targetDir);
+        }
+      }
+
+      UIState.isUploadingFolder = false;
+
+      if (UploadProgress.totalFiles > 1) {
+        showStatusMessage("main-status", `✓ Successfully uploaded ${UploadProgress.totalFiles} files!`, "success", true);
+      } else {
+        showStatusMessage("main-status", "✓ Upload completed successfully!", "success", true);
+      }
+    } catch (error) {
+      UIState.isUploadingFolder = false;
+      showStatusMessage("main-status", `✗ Upload failed: ${error.message}`, "error", true);
+    }
+
+    setTimeout(() => {
+      showStatusMessage("main-status", "Refreshing...", "info");
+      navigateToPath(_directory);
+    }, 3000);
+  } else {
+    const files = dataTransfer.files;
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = () => {
+          const filePath = targetDir ? `${targetDir}/${file.name}` : file.name;
+          const data = new Uint8Array(reader.result);
+          sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
+            navigateToPath(_directory);
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+  }
+}
+
+async function moveFileToDir(sourcePath, targetDir) {
+  const fileName = sourcePath.includes('/') ? sourcePath.substring(sourcePath.lastIndexOf('/') + 1) : sourcePath;
+  const destPath = targetDir ? `${targetDir}/${fileName}` : fileName;
+
+  if (sourcePath === destPath) return;
+
+  showStatusMessage("main-status", `Moving ${fileName}...`, "info", true);
+  try {
+    const response = await fetch(`/move?q=${encodeURIComponent(sourcePath)}&dest=${encodeURIComponent(destPath)}`, { method: "POST" });
+    if (response.ok) {
+      showStatusMessage("main-status", `✓ Moved ${fileName}`, "success", true);
+      navigateToPath(_directory);
+    } else if (response.status === 409) {
+      showStatusMessage("main-status", `✗ ${fileName} already exists in target folder`, "error", true);
+    } else {
+      showStatusMessage("main-status", `✗ Failed to move ${fileName}`, "error", true);
+    }
+  } catch (error) {
+    showStatusMessage("main-status", `✗ Move failed: ${error.message}`, "error", true);
+  }
+}
+
+function setupDropTarget(element, getTargetDir, options = {}) {
+  const { acceptInternalMove = true } = options;
+  const resolveTargetDir = typeof getTargetDir === "function" ? getTargetDir : () => getTargetDir;
+  let counter = 0;
+
+  const accepts = (e) => isExternalFileDrag(e) || (acceptInternalMove && isInternalMoveDrag(e));
+
+  const onDragEnter = (e) => {
+    if (!accepts(e)) return;
+    if (acceptInternalMove && isInternalMoveDrag(e) && _activeDragSource &&
+        isSelfOrAncestorMove(_activeDragSource, resolveTargetDir())) return;
+    e.preventDefault();
+    e.stopPropagation();
+    counter++;
+    element.classList.add("drag-over");
+  };
+
+  const onDragOver = (e) => {
+    if (!accepts(e)) return;
+    if (acceptInternalMove && isInternalMoveDrag(e) && _activeDragSource &&
+        isSelfOrAncestorMove(_activeDragSource, resolveTargetDir())) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = isInternalMoveDrag(e) ? "move" : "copy";
+  };
+
+  const onDragLeave = (e) => {
+    if (!accepts(e)) return;
+    counter--;
+    if (counter <= 0) {
+      counter = 0;
+      element.classList.remove("drag-over");
+    }
+  };
+
+  const onDrop = async (e) => {
+    if (!accepts(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    counter = 0;
+    element.classList.remove("drag-over");
+
+    const targetDir = resolveTargetDir();
+
+    if (acceptInternalMove && isInternalMoveDrag(e)) {
+      const sourcePath = e.dataTransfer.getData(VPX_INTERNAL_MIME);
+      if (sourcePath && !isSelfOrAncestorMove(sourcePath, targetDir)) {
+        await moveFileToDir(sourcePath, targetDir);
+      }
+      return;
+    }
+
+    await uploadDataTransferToDir(e.dataTransfer, targetDir);
+  };
+
+  EventManager.addEventListener(element, "dragenter", onDragEnter);
+  EventManager.addEventListener(element, "dragover", onDragOver);
+  EventManager.addEventListener(element, "dragleave", onDragLeave);
+  EventManager.addEventListener(element, "drop", onDrop);
+}
+
+function isSelfOrAncestorMove(sourcePath, targetDir) {
+  const parent = sourcePath.includes('/') ? sourcePath.substring(0, sourcePath.lastIndexOf('/')) : '';
+  if (parent === (targetDir || '')) return true;
+  if (targetDir === sourcePath) return true;
+  if (targetDir && targetDir.startsWith(sourcePath + '/')) return true;
+  return false;
+}
+
+function setupFileDragSource(element, sourcePath) {
+  element.draggable = true;
+
+  EventManager.addEventListener(element, "dragstart", (e) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData(VPX_INTERNAL_MIME, sourcePath);
+    _activeDragSource = sourcePath;
+    element.classList.add("dragging");
+  });
+
+  EventManager.addEventListener(element, "dragend", () => {
+    _activeDragSource = null;
+    element.classList.remove("dragging");
+  });
+}
+
 function setupDragAndDrop() {
-  const dropOverlay = DOMCache.get("drop-overlay");
   let dragCounter = 0;
 
   const dragEnterHandler = (e) => {
-    if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
-      e.preventDefault();
-      dragCounter++;
-      dropOverlay.style.display = "flex";
-    }
-  };
-
-  const dragLeaveHandler = (e) => {
-    if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
-      dragCounter--;
-      if (dragCounter <= 0) {
-        dragCounter = 0;
-        dropOverlay.style.display = "none";
-      }
-    }
+    if (!isExternalFileDrag(e)) return;
+    e.preventDefault();
+    dragCounter++;
+    document.body.classList.add("dragging-files");
   };
 
   const dragOverHandler = (e) => {
+    if (!isExternalFileDrag(e)) return;
     e.preventDefault();
+    e.dataTransfer.dropEffect = "none";
   };
 
-  const dropHandler = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter = 0;
-    dropOverlay.style.display = "none";
-
-    const items = e.dataTransfer.items;
-    if (items && items.length > 0) {
-      UIState.isUploadingFolder = true;
-      showStatusMessage("main-status", "Analyzing files... Please wait.", "info", true);
-      
-      UploadProgress.reset();
-      const allEntries = [];
-      
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.kind === 'file') {
-          const entry = item.webkitGetAsEntry();
-          if (entry) {
-            allEntries.push(entry);
-          }
-        }
-      }
-      
-      for (const entry of allEntries) {
-        UploadProgress.totalFiles += await countFilesInEntry(entry);
-        UploadProgress.totalBytes += await calculateTotalBytesInEntry(entry);
-      }
-
-      if (UploadProgress.totalFiles === 1) {
-        showStatusMessage("main-status", "Starting file upload...", "info", true);
-        UIState.isUploadingFolder = false;
-      } else {
-        showStatusMessage("main-status", `Found ${UploadProgress.totalFiles} files. Starting upload...`, "info", true);
-      }
-      
-      try {
-        for (let i = 0; i < allEntries.length; i++) {
-          const entry = allEntries[i];
-          if (entry.isFile) {
-            await handleFileEntry(entry);
-          } else if (entry.isDirectory) {
-            await handleDirectoryEntry(entry, entry.name);
-          }
-        }
-
-        UIState.isUploadingFolder = false;
-
-        if (UploadProgress.totalFiles > 1) {
-          showStatusMessage("main-status", `✓ Successfully uploaded ${UploadProgress.totalFiles} files!`, "success", true);
-        } else {
-          showStatusMessage("main-status", "✓ Upload completed successfully!", "success", true);
-        }
-
-        setTimeout(() => {
-          showStatusMessage("main-status", "Refreshing...", "info");
-          navigateToPath(_directory);
-        }, 3000);
-        
-      } catch (error) {
-        UIState.isUploadingFolder = false;
-        showStatusMessage("main-status", `✗ Upload failed: ${error.message}`, "error", true);
-        
-        setTimeout(() => {
-          showStatusMessage("main-status", "Refreshing...", "info");
-          navigateToPath(_directory);
-        }, 3000);
-      }
-    } else {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const reader = new FileReader();
-          reader.onload = () => {
-            const filePath = _directory ? `${_directory}/${file.name}` : file.name;
-            const data = new Uint8Array(reader.result);
-            sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
-              navigateToPath(_directory);
-            });
-          };
-          reader.readAsArrayBuffer(file);
-        }
-      }
+  const dragLeaveHandler = (e) => {
+    if (!isExternalFileDrag(e)) return;
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      document.body.classList.remove("dragging-files");
     }
   };
 
-  EventManager.addEventListener(document, "dragenter", dragEnterHandler);
-  EventManager.addEventListener(document, "dragleave", dragLeaveHandler);
-  EventManager.addEventListener(dropOverlay, "dragover", dragOverHandler);
-  EventManager.addEventListener(dropOverlay, "drop", dropHandler);
+  const dropHandler = (e) => {
+    if (!isExternalFileDrag(e)) return;
+    dragCounter = 0;
+    document.body.classList.remove("dragging-files");
+  };
+
+  EventManager.addEventListener(document, "dragenter", dragEnterHandler, true);
+  EventManager.addEventListener(document, "dragover", dragOverHandler, true);
+  EventManager.addEventListener(document, "dragleave", dragLeaveHandler, true);
+  EventManager.addEventListener(document, "drop", dropHandler, true);
+
+  const fileList = DOMCache.get("file-list");
+  if (fileList) {
+    setupDropTarget(fileList, () => _directory, { acceptInternalMove: false });
+  }
 
   window.cleanupDragAndDrop = () => {
     EventManager.removeEventListener(document, "dragenter", dragEnterHandler);
+    EventManager.removeEventListener(document, "dragover", dragOverHandler);
     EventManager.removeEventListener(document, "dragleave", dragLeaveHandler);
-    EventManager.removeEventListener(dropOverlay, "dragover", dragOverHandler);
-    EventManager.removeEventListener(dropOverlay, "drop", dropHandler);
+    EventManager.removeEventListener(document, "drop", dropHandler);
   };
 }
 
 function toggleLogViewer() {
   const logViewer = DOMCache.get('log-viewer');
-  const dropOverlay = DOMCache.get('drop-overlay');
   const computedStyle = window.getComputedStyle(logViewer);
   const isVisible = computedStyle.display === 'flex' || logViewer.style.display === 'flex';
 
@@ -1672,9 +1791,7 @@ function toggleLogViewer() {
       DOMCache.get('log-status').textContent = 'Disconnected';
     }
   } else {
-    if (dropOverlay) {
-      dropOverlay.style.display = 'none';
-    }
+    document.body.classList.remove('dragging-files');
     logViewer.style.display = 'flex';
     connectToLogStream();
   }

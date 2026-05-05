@@ -77,6 +77,8 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          webServer->LogStream(c, hm);
       else if (mg_match(hm->uri, mg_str("/rename"), NULL))
          webServer->Rename(c, hm);
+      else if (mg_match(hm->uri, mg_str("/move"), NULL))
+         webServer->Move(c, hm);
       else {
          struct mg_http_serve_opts opts = {};
 
@@ -459,6 +461,50 @@ void WebServer::Rename(struct mg_connection *c, struct mg_http_message* hm)
    }
 
    std::error_code ec;
+   std::filesystem::rename(oldFile, newFile, ec);
+   if (ec)
+      mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+   else {
+      SetLastUpdate();
+      mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
+   }
+}
+
+void WebServer::Move(struct mg_connection *c, struct mg_http_message* hm)
+{
+   string q;
+   if (!ValidatePathParameter(c, hm, "q", q))
+      return;
+
+   string dest;
+   if (!ValidatePathParameter(c, hm, "dest", dest))
+      return;
+
+   string oldPath = BuildTablePath(q.c_str());
+   string newPath = BuildTablePath(dest.c_str());
+
+   std::filesystem::path oldFile(oldPath);
+   std::filesystem::path newFile(newPath);
+
+   if (!std::filesystem::exists(oldFile)) {
+      mg_http_reply(c, STATUS_NOT_FOUND, "", RESPONSE_NOT_FOUND);
+      return;
+   }
+
+   if (std::filesystem::exists(newFile)) {
+      mg_http_reply(c, STATUS_CONFLICT, "", RESPONSE_CONFLICT);
+      return;
+   }
+
+   std::error_code ec;
+   if (!newFile.parent_path().empty() && !std::filesystem::exists(newFile.parent_path())) {
+      std::filesystem::create_directories(newFile.parent_path(), ec);
+      if (ec) {
+         mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+         return;
+      }
+   }
+
    std::filesystem::rename(oldFile, newFile, ec);
    if (ec)
       mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
