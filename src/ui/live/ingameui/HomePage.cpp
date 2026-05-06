@@ -63,7 +63,7 @@ void HomePage::BuildPage()
             m_player->m_liveUI->OpenEditorUI();
          }));
 
-   if (isTouch)
+   if (isTouch && !m_player->m_vrDevice)
       AddItem(std::make_unique<InGameUIItem>(g_app->m_settings.GetPlayer_TouchOverlay() ? "Disable Touch Overlay"s : "Enable Touch Overlay"s, ""s,
          [this]()
          {

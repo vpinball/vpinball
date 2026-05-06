@@ -513,6 +513,9 @@ void LiveUI::UpdateTouchUI()
    if (!m_player->m_pininput.HasTouchInput())
       return;
 
+   if (m_player->m_vrDevice)
+      return;
+
    if (!m_showTouchOverlay)
       return;
 
