@@ -50,7 +50,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    mv SDL-${SDL_SHA} SDL
    cd SDL
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
@@ -65,7 +65,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL_image
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLIMAGE_SAMPLES=OFF \
@@ -84,7 +84,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL_ttf
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLTTF_SAMPLES=OFF \
@@ -119,7 +119,7 @@ if [ "${FREEIMAGE_EXPECTED_SHA}" != "${FREEIMAGE_FOUND_SHA}" ]; then
    mv freeimage-${FREEIMAGE_SHA} freeimage
    cd freeimage
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -155,7 +155,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    cd bgfx.cmake
    rm -rf bgfx
    mv ../bgfx-${BGFX_PATCH_SHA} bgfx
-   cmake -G "Visual Studio 17 2022" \
+   cmake -G "Visual Studio 18 2026" \
       -S. \
       -A Win32 \
       -DBGFX_LIBRARY_TYPE=STATIC \
@@ -193,7 +193,7 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd pinmame
    cp cmake/libpinmame/CMakeLists.txt .
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -227,7 +227,7 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    mv OpenXR-SDK-Source-${OPENXR_SHA} openxr
    cd openxr
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_TESTS=OFF \
       -DDYNAMIC_LOADER=ON \
@@ -261,7 +261,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    cd libdmdutil
    ./platforms/win/x86/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -295,7 +295,7 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -330,7 +330,7 @@ if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
    cd libdof
    ./platforms/win/x86/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -470,7 +470,7 @@ cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/serum.dll ../../../thi
 cp libdmdutil/libdmdutil/third-party/include/serum.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party/include
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x86/libserialport.lib ../../../third-party/build-libs/windows-x86
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/libserialport.dll ../../../third-party/runtime-libs/windows-x86
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/libserialport-0.dll ../../../third-party/runtime-libs/windows-x86
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x86/pupdmd.lib ../../../third-party/build-libs/windows-x86
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/pupdmd.dll ../../../third-party/runtime-libs/windows-x86
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
@@ -509,6 +509,8 @@ cp "${MSYS2_PATH}/mingw32/bin/libiconv-2.dll" ../../../third-party/runtime-libs/
 cp "${MSYS2_PATH}/mingw32/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x86
+cp "${MSYS2_PATH}/mingw32/bin/libgcc_s_dw2-1.dll" ../../../third-party/runtime-libs/windows-x86
+cp "${MSYS2_PATH}/mingw32/bin/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-x86
 
 cp libzip/libzip/build/lib/libzip.dll ../../../third-party/runtime-libs/windows-x86
 cp libzip/libzip/build/zipconf.h ../../../third-party/include

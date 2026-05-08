@@ -51,18 +51,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: windows-2025, type: BGFX, platform: windows, arch: x64, config: Release }
-          - { os: windows-2025, type: BGFX, platform: windows, arch: x64, config: Debug }
-          - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Release }
-          - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Debug }
+          - { os: windows-2025-vs2026, type: BGFX, platform: windows, arch: x64, config: Release }
+          - { os: windows-2025-vs2026, type: BGFX, platform: windows, arch: x64, config: Debug }
+          - { os: windows-2025-vs2026, type: BGFX, platform: windows, arch: x86, config: Release }
+          - { os: windows-2025-vs2026, type: BGFX, platform: windows, arch: x86, config: Debug }
           - { os: macos-15, type: BGFX, platform: macos, arch: arm64, config: Release }
           - { os: macos-15, type: BGFX, platform: macos, arch: x64, config: Release }
           - { os: ubuntu-24.04, type: BGFX, platform: linux, arch: x64, config: Release }
           - { os: windows-2025, type: BGFX, platform: windows-mingw, arch: x64, config: Release }
-          - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Release }
-          - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Release }
-          - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Debug }
-          - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Debug }
+          - { os: windows-2025-vs2026, type: GL, platform: windows, arch: x64, config: Release }
+          - { os: windows-2025-vs2026, type: GL, platform: windows, arch: x86, config: Release }
+          - { os: windows-2025-vs2026, type: GL, platform: windows, arch: x64, config: Debug }
+          - { os: windows-2025-vs2026, type: GL, platform: windows, arch: x86, config: Debug }
           - { os: macos-15, type: GL, platform: macos, arch: arm64, config: Release }
           - { os: macos-15, type: GL, platform: macos, arch: x64, config: Release }
           - { os: ubuntu-24.04, type: GL, platform: linux, arch: x64, config: Release }
@@ -148,9 +148,9 @@ jobs:
             "
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             if [[ "${{ matrix.arch }}" == "x64" ]]; then
-              cmake -G "Visual Studio 17 2022" -A x64 -B build
+              cmake -G "Visual Studio 18 2026" -A x64 -B build
             else
-              cmake -G "Visual Studio 17 2022" -A Win32 -B build
+              cmake -G "Visual Studio 18 2026" -A Win32 -B build
             fi
             cmake --build build --config ${{ matrix.config }}
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
@@ -236,7 +236,7 @@ jobs:
 
   build-dx:
     name: Build VPinballX-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     needs: [ version ]
     strategy:
       fail-fast: false
@@ -250,7 +250,7 @@ jobs:
       - uses: microsoft/setup-msbuild@v3
       - if: (matrix.platform == 'windows')
         run: |
-          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm"
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm autoconf automake libtool"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
           else
@@ -295,9 +295,9 @@ jobs:
         run : |
           cp make/CMakeLists_dx9-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
-            cmake -G "Visual Studio 17 2022" -A x64 -B build
+            cmake -G "Visual Studio 18 2026" -A x64 -B build
           else
-            cmake -G "Visual Studio 17 2022" -A Win32 -B build
+            cmake -G "Visual Studio 18 2026" -A Win32 -B build
           fi
           cmake --build build --config ${{ matrix.config }}
       - name: Stage artifacts

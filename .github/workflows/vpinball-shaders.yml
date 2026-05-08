@@ -41,7 +41,7 @@ jobs:
 
   shaders:
     name: Shaders
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     needs: [ version ]
     steps:
       - uses: actions/checkout@v6
@@ -73,7 +73,7 @@ jobs:
           mv ../bgfx-${BGFX_PATCH_SHA} bgfx
 
           cmake \
-             -G "Visual Studio 17 2022" \
+             -G "Visual Studio 18 2026" \
              -S. \
              -DBGFX_BUILD_TOOLS=ON \
              -DBGFX_BUILD_TOOLS_SHADER=ON \

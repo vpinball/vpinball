@@ -95,17 +95,23 @@ if(BUILD_SHARED AND NOT (PluginPlatform STREQUAL "windows" AND NOT MSVC))
             add_custom_command(TARGET DOFPlugin POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/dof64.dll" "${PLUGINS_DIR}/dof/dof64.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libusb64-1.0.dll" "${PLUGINS_DIR}/dof/libusb64-1.0.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libserialport64.dll" "${PLUGINS_DIR}/dof/libserialport64.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libserialport64-0.dll" "${PLUGINS_DIR}/dof/libserialport64-0.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/hidapi64.dll" "${PLUGINS_DIR}/dof/hidapi64.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libftdi164.dll" "${PLUGINS_DIR}/dof/libftdi164.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/dof/libgcc_s_seh-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libstdc++-6.dll" "${PLUGINS_DIR}/dof/libstdc++-6.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/dof/libwinpthread-1.dll"
             )
          elseif (PluginArch STREQUAL "x86")
             add_custom_command(TARGET DOFPlugin POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/dof.dll" "${PLUGINS_DIR}/dof/dof.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libusb-1.0.dll" "${PLUGINS_DIR}/dof/libusb-1.0.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libserialport.dll" "${PLUGINS_DIR}/dof/libserialport.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libserialport-0.dll" "${PLUGINS_DIR}/dof/libserialport-0.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/hidapi.dll" "${PLUGINS_DIR}/dof/hidapi.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libftdi1.dll" "${PLUGINS_DIR}/dof/libftdi1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libgcc_s_dw2-1.dll" "${PLUGINS_DIR}/dof/libgcc_s_dw2-1.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libstdc++-6.dll" "${PLUGINS_DIR}/dof/libstdc++-6.dll"
+               COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}/libwinpthread-1.dll" "${PLUGINS_DIR}/dof/libwinpthread-1.dll"
             )
          endif()
       elseif(PluginPlatform STREQUAL "windows-mingw")
