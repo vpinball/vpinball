@@ -487,25 +487,26 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
    SoundPlayer* me = static_cast<SoundPlayer*>(pUserData);
    if (me->m_loopCount == 0)
    {
-      g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(
-         g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0,
-         [](void* callbackInfo)
-         {
-            string* callbackId = static_cast<string*>(callbackInfo);
-            if (g_pplayer != nullptr)
+      if (g_pplayer)
+         g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(
+            g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0,
+            [](void* callbackInfo)
             {
-               if (callbackId->empty())
-                  g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
-               else
+               string* callbackId = static_cast<string*>(callbackInfo);
+               if (g_pplayer != nullptr)
                {
-                  CComVariant rgvar[1] = { CComVariant(callbackId->c_str()) };
-                  DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-                  g_pplayer->m_ptable->FireDispID(DISPID_GameEvents_SoundDone, &dispparams);
+                  if (callbackId->empty())
+                     g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
+                  else
+                  {
+                     CComVariant rgvar[1] = { CComVariant(callbackId->c_str()) };
+                     DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+                     g_pplayer->m_ptable->FireDispID(DISPID_GameEvents_SoundDone, &dispparams);
+                  }
                }
-            }
-            delete callbackId;
-         },
-         new string(me->m_callbackId));
+               delete callbackId;
+            },
+            new string(me->m_callbackId));
       return;
    }
    if (me->m_loopCount > 0)
