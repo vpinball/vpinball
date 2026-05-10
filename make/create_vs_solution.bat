@@ -25,6 +25,7 @@ if "%vsv%" == "2022" copy /V /Y "VisualPinball.sln" "../.build/vsproject/VisualP
 if "%vsv%" == "2026" copy /V /Y "VisualPinball.slnx" "../.build/vsproject/VisualPinball.slnx"
 copy /V /Y "vpx.vcxproj" "../.build/vsproject/vpx.vcxproj"
 copy /V /Y "vpx.vcxproj.filters" "../.build/vsproject/vpx.vcxproj.filters"
+copy /V /Y "vpx-configurations.vcxitems" "../.build/vsproject/vpx-configurations.vcxitems"
 copy /V /Y "vpx-core.vcxitems" "../.build/vsproject/vpx-core.vcxitems"
 copy /V /Y "vpx-core.vcxitems.filters" "../.build/vsproject/vpx-core.vcxitems.filters"
 copy /V /Y "vpx-test.vcxproj" "../.build/vsproject/vpx-test.vcxproj"
