@@ -123,6 +123,11 @@ public:
       return SensorMapping(eventManager, mappingHandler, m_deviceId, m_axisId, m_type, m_deadZone, m_scale, m_limit);
    }
 
+   SensorMapping WithScale(float scale) const
+   {
+      return SensorMapping(m_eventManager, m_mappingHandler, m_deviceId, m_axisId, m_type, m_deadZone, scale, m_limit);
+   }
+
    void SetAxisPosition(uint64_t timestampNs, float value)
    {
       int updateDelayMs = static_cast<int>(timestampNs - m_rawValueTimestampNs) / 1000000;

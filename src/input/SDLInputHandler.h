@@ -249,25 +249,36 @@ private:
       {
          UNKNOWN,
          PINSCAPE,
-         ARCADE2TV_XR_DONGLE_2,
-      } identified = UNKNOWN;
+         ARCADE2TV_XR_PINBALL,
+         SKIP,
+      } identified;
       const int nAxis = SDL_GetNumJoystickAxes(joystick);
       string joyName; // Sadly, we do not have a way to easily give a user friendly name when there are multiple devices of the same class, so we use serial number
+      constexpr SDL_GUID arcade2TVGUIDs[] = { 
+         { { 0x03, 0x00, 0xfa, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Dongle Arcade mode P1 (green) & Pinball mode (purple)
+         { { 0x03, 0x00, 0xba, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Dongle Arcade mode P2 (green)
+         { { 0x03, 0x00, 0xfa, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x40, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Wired Arcade mode P1 (green) & Pinball mode (purple)
+         { { 0x03, 0x00, 0xba, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x40, 0x03, 0x78, 0x01 } }, // Arcade2TV-XR Wired Arcade mode P2 (green) & Pinball mode (purple)
+      };
       if (sdlJoyName.starts_with("mjrnet Pinscape Controller"s) && nAxis >= 6)
       { // Pinscape & Pinscape Pico
          identified = PINSCAPE;
          joyName = std::format("{} #{}", sdlJoyName, nameIndex);
       }
-      else if (SDL_GUID arcade2TVGUIDs[] = { { { 0x03, 0x00, 0xfa, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } },
-                  { { 0x03, 0x00, 0xba, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } } };
-         SDL_memcmp(&guid, &arcade2TVGUIDs[0], sizeof(guid)) == 0 && !IsJoystickPresent(arcade2TVGUIDs[1]))
-      { // Arcade2TV-XR using Dongle V2 in pinball mode (purple) or arcade mode (green, player #1), reported as vid: 0x045e, pid: 0x028e, that is to say 'Xbox 360 Controller (wired, standard)'
-         // Sadly, they report the same USB VID/PID for both mode, so we rely on the fact that the second controller is not present to detect pinball (purple) mode
-         identified = ARCADE2TV_XR_DONGLE_2;
+      else if ((SDL_memcmp(&guid, &arcade2TVGUIDs[0], sizeof(guid)) == 0) || (SDL_memcmp(&guid, &arcade2TVGUIDs[2], sizeof(guid)) == 0))
+      { // Arcade2TV-XR Pinball mode (purple) reported as vid: 0x045e, pid: 0x028e, that is to say 'Xbox 360 Controller (wired, standard)'
+         // Sadly, Arcade mode's left stick (green) is reported with the same USB VID/PID. We just assume that the player will use the Pinball mode for pinball play
+         identified = ARCADE2TV_XR_PINBALL;
          joyName = std::format("Arcade2TV-XR #{}", idIndex);
+      }
+      else if ((SDL_memcmp(&guid, &arcade2TVGUIDs[1], sizeof(guid)) == 0) || (SDL_memcmp(&guid, &arcade2TVGUIDs[3], sizeof(guid)) == 0))
+      { // Arcade2TV-XR right stick in Arcade mode (green) but also reported (but inactive) in wired Pinball mode (purple). Just skip proposing a gamepad layout for it
+         identified = SKIP;
+         joyName = std::format("Arcade2TV-XR Right #{}", idIndex);
       }
       else
       {
+         identified = UNKNOWN;
          joyName = std::format("{} #{}", sdlJoyName, nameIndex);
       }
 
@@ -322,6 +333,10 @@ private:
 
       switch (identified)
       {
+      case SKIP:
+         // Skip the device layout proposal
+         break;
+
       case PINSCAPE:
          // mjrnet Pinscape Controller. Obviously not a gamepad, but has defaults plunger / nudge setup layout that we can name and propose
          // We only register the 6 predefined axis. The other ports are all generic and based on user configuration
@@ -345,7 +360,7 @@ private:
             });
          break;
 
-      case ARCADE2TV_XR_DONGLE_2:
+      case ARCADE2TV_XR_PINBALL:
          // Pinball or arcade mode => propose the default Pinball layout
          // The mapping is quite a mess with mapping overlays. Try to make it somewhat readable (buttons are labeled in this order: 1,2,3 / 4,5,6 / 7,8
          m_pininput.RegisterElementName(deviceId, true, 0x0200, "Left Stick X / Nudge X");
@@ -380,22 +395,27 @@ private:
                success &= mapButton(ButtonMapping::Create(deviceId, 5), m_pininput.GetStagedRightFlipperActionId());
                success &= mapButton(ButtonMapping::Create(deviceId, 2), m_pininput.GetLeftMagnaActionId()); // Left Top row (can't use right most button due to overlay...)
                success &= mapButton(ButtonMapping::Create(deviceId, 3), m_pininput.GetAddCreditActionId(0));
-               //success &= mapButton(ButtonMapping::Create(deviceId, 1), m_pininput.); // Left Middle row (can't use left most & right most buttons due to overlays...)
-               //success &= mapButton(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.); // Left Bottom row
-               //success &= mapButton(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.);
-               success &= mapButton(ButtonMapping::Create(deviceId, 11), m_pininput.GetStartActionId()); // 1 player button
+               success &= mapButton(ButtonMapping::Create(deviceId, 1), m_pininput.GetVRViewUpActionId()); // Left Middle row (can't use left most & right most buttons due to overlays...)
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.GetVRViewCenterActionId()); // Left Bottom row
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.GetVRViewDownActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 10), m_pininput.GetStartActionId()); // 1 player button
                success &= mapButton(ButtonMapping::Create(deviceId, 7), m_pininput.GetExitGameActionId()); // 2 player button
-               success &= mapButton(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId()); // Right Top row
-               success &= mapButton(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId()); // Right Middle row
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0102), m_pininput.GetVolumeUpActionId()); // Right Top row
+               success &= mapButton(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0103), m_pininput.GetVolumeDownActionId()); // Right Middle row
+               success &= mapButton(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0101), m_pininput.GetOpenInGameUIActionId()); // Right Bottom row
                success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
                success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, 0.9f), m_pininput.GetUIUpActionId());
                success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
                success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
-               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration).WithScale(0.2f),
+                  SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration).WithScale(0.2f));
                success &= mapPlunger(SensorMapping::Create(deviceId, 0x0204, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
-               // For controller view alignment
-               // ControllerCabYOffset = -22.437504
-               // ControllerLockbarScale = 1.663047
+               // The automatic setup also needs for controller view alignment
+               // - ControllerCabYOffset = -22.5
+               // - ControllerLockbarScale = 1.66
+               // and nudge needs the filter to be enabled (8 bit accelerometer without automatic calibration)
                return success;
             });
          break;
