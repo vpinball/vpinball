@@ -333,6 +333,7 @@ void VPApp::InitInstance()
          vsnprintf(buffer, size + 1, format, args);
          switch (level) {
          case LIBWINEVBS_LOG_DEBUG: PLOGD << buffer; break;
+         case LIBWINEVBS_LOG_WARN:  PLOGW << buffer; break;
          case LIBWINEVBS_LOG_ERROR: PLOGE << buffer; break;
          default: PLOGI << buffer; break;
          }
