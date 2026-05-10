@@ -138,10 +138,10 @@ public:
          success &= mapButton(ButtonMapping::Create(m_joyId, 10), m_pininput.GetStartActionId());
          success &= mapButton(ButtonMapping::Create(m_joyId, 8), m_pininput.GetOpenInGameUIActionId()); // Left buttons
          success &= mapButton(ButtonMapping::Create(m_joyId, 9), m_pininput.GetExitGameActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId()); // Left stick
+         success &= mapButton(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
          success &= mapButton(ButtonMapping::Create(m_joyId, 21, 0.9f), m_pininput.GetUIUpActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 20, -0.9f, true), m_pininput.GetUILeftActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 20, 0.9f), m_pininput.GetUIRightActionId());
+         success &= mapButton(ButtonMapping::Create(m_joyId, 22, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
+         success &= mapButton(ButtonMapping::Create(m_joyId, 22, 0.9f), m_pininput.GetUIRightActionId());
          auto plungerMapping = SensorMapping::Create(m_joyId, 23, SensorMapping::Type::Position); // Right stick
          plungerMapping.SetScale(-1.f);
          success &= mapPlunger(plungerMapping, SensorMapping::Type::Position, true);

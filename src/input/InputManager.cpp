@@ -480,9 +480,8 @@ void InputManager::ProcessInput()
    }
 
    // Perform pending device auto detection (deferred until in game UI is available)
-   if (m_hasPendingLayoutApply && m_player->m_liveUI)
+   if (m_hasPendingLayoutApply && m_player->m_liveUI && !m_player->m_liveUI->IsOpened())
    {
-      m_hasPendingLayoutApply = false;
       for (auto& device : m_inputDevices)
       {
          if (device.m_hasPendingLayoutApply)
@@ -510,12 +509,19 @@ void InputManager::ProcessInput()
                          ApplyDefaultDeviceMapping(deviceId);
                       if (isDontAskAnymore)
                          g_app->m_settings.Set(noAutoLayoutId, true, false);
+                      m_hasPendingLayoutApply = false;
+                      for (auto& device : m_inputDevices)
+                      {
+                         if (device.m_id != deviceId)
+                            m_hasPendingLayoutApply |= device.m_hasPendingLayoutApply;
+                         else
+                            device.m_hasPendingLayoutApply = false;
+                      }
                    }))
             {
-               device.m_hasPendingLayoutApply = false;
-               m_hasPendingLayoutApply = true; // As only one UI interaction may be done at a given time
-               break;
+               m_hasPendingLayoutApply = false;
             }
+            break;
          }
       }
    }

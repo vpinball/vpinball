@@ -96,34 +96,6 @@ public:
    }
 
 private:
-   static string GetJoySettingId(SDL_Joystick* joy)
-   {
-      // We could also use SDL_GetJoystickSerial but it does not work as a stable unique id as:
-      // - it happens to not be unique as some manufacturers use a fake non unique serial number...
-      // - it is not supported by all drivers, so we need a fallback anyway (for example XBox controllers)
-
-      // Stable class of the device. Always available but not unique to a single device.
-      SDL_GUID guid = SDL_GetJoystickGUID(joy);
-
-      // SDL reports joystick in a stable order so we use the joystick index to distinguish between identical GUID.
-      // This is not fully satisfying as in a situation with 2 identical devices, when disconnecting the first VPX will
-      // wrongly identify the second as the first.
-      int idIndex = 1;
-      int joystickCount = 0;
-      SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
-      for (int i = 0; i < joystickCount; i++)
-      {
-         if (SDL_GetJoystickFromID(joystickIds[i]) == joy)
-            break;
-         if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
-            idIndex++;
-      }
-
-      char strGuid[33];
-      SDL_GUIDToString(guid, strGuid, 33);
-      return "SDLJoy_"s + strGuid + '_' + std::to_string(idIndex);
-   }
-
    static string GetGamepadButtonName(SDL_Gamepad* gamepad, SDL_GamepadButton button)
    {
       switch (SDL_GetGamepadButtonLabel(gamepad, button))
@@ -216,6 +188,18 @@ private:
       return 0xFFFF;
    }
 
+   static bool IsJoystickPresent(const SDL_GUID& guid)
+   {
+      int joystickCount = 0;
+      SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
+      for (int i = 0; i < joystickCount; i++)
+      {
+         if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
+            return true;
+      }
+      return false;
+   }
+
    void OnJoystickAdded(SDL_JoystickID id)
    {
       auto existing = std::ranges::find_if(m_joysticks, [id](const auto& joy) { return SDL_GetJoystickID(joy) == id; });
@@ -228,82 +212,212 @@ private:
 
       m_joysticks.emplace_back(joystick);
 
-      string settingId = GetJoySettingId(joystick);
-      PLOGI << "Joystick connected: " << SDL_GetJoystickName(joystick) << " (SDL ID: " << id << ", Axes: " << SDL_GetNumJoystickAxes(joystick)
-            << ", Buttons: " << SDL_GetNumJoystickButtons(joystick) << ", Hats: " << SDL_GetNumJoystickHats(joystick) << ", VPX UID: " << settingId.c_str() << ')';
+      // Stable class of the device. Always available but not unique to a single device.
+      // We could also use SDL_GetJoystickSerial but it does not work as a stable unique id as:
+      // - it happens to not be unique as some manufacturers use a fake non unique serial number...
+      // - it is not supported by all drivers, so we need a fallback anyway (for example XBox controllers)
+      SDL_GUID guid = SDL_GetJoystickGUID(joystick);
 
-      string joyName; // Sadly, we do not have a way to easily give a user friendly name when there are multiple devices of the same class, so we use serial number
-      if (const char* serial = SDL_GetJoystickSerial(joystick); serial)
+      // SDL reports joystick in a stable order so we use the joystick index to distinguish between identical GUID.
+      // This is not fully satisfying as in a situation with 2 identical devices, when disconnecting the first VPX will
+      // wrongly identify the second as the first.
+      int idIndex = 1;
+      int nameIndex = 1;
+      int joystickCount = 0;
+      const string sdlJoyName = SDL_GetJoystickName(joystick);
+      SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
+      for (int i = 0; i < joystickCount; i++)
       {
-         joyName = string(SDL_GetJoystickName(joystick)) + ' ' + serial;
+         if (SDL_GetJoystickFromID(joystickIds[i]) == joystick)
+            break;
+         if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
+            idIndex++;
+         if (string otherName = SDL_GetJoystickNameForID(joystickIds[i]); otherName == sdlJoyName)
+            nameIndex++;
+      }
+      char strGuid[33];
+      SDL_GUIDToString(guid, strGuid, 33);
+      const string settingId = "SDLJoy_"s + strGuid + '_' + std::to_string(idIndex);
+
+      // We used to detect and auto setup the following hardwares but this has not been readded due to hardware not being
+      // available for testing and because the ingame UI allows easy setup:
+      // . Microsoft's Sidewinder: date back from 1996, more or less a digital gamepad (see https://en.wikipedia.org/wiki/Microsoft_SideWinder)
+      // . UltraCade's UltraPin: date back from 2000 (see https://en.wikipedia.org/wiki/UltraPin)
+      // . Pinball Wizard from NanoTech: created around 2008 (see https://www.nanotechgaming.com/pinball-wizard.php)
+      // . VirtuaPin: seems to be a KL25z based hardware alike Pinscape controller (see https://virtuapin.net/)
+      enum
+      {
+         UNKNOWN,
+         PINSCAPE,
+         ARCADE2TV_XR_DONGLE_2,
+      } identified = UNKNOWN;
+      const int nAxis = SDL_GetNumJoystickAxes(joystick);
+      string joyName; // Sadly, we do not have a way to easily give a user friendly name when there are multiple devices of the same class, so we use serial number
+      if (sdlJoyName.starts_with("mjrnet Pinscape Controller"s) && nAxis >= 6)
+      { // Pinscape & Pinscape Pico
+         identified = PINSCAPE;
+         joyName = std::format("{} #{}", sdlJoyName, nameIndex);
+      }
+      else if (SDL_GUID arcade2TVGUIDs[] = { { { 0x03, 0x00, 0xfa, 0x67, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } },
+                  { { 0x03, 0x00, 0xba, 0x66, 0x5e, 0x04, 0x00, 0x00, 0x8e, 0x02, 0x00, 0x00, 0x02, 0x03, 0x78, 0x01 } } };
+         SDL_memcmp(&guid, &arcade2TVGUIDs[0], sizeof(guid)) == 0 && !IsJoystickPresent(arcade2TVGUIDs[1]))
+      { // Arcade2TV-XR using Dongle V2 in pinball mode (purple) or arcade mode (green, player #1), reported as vid: 0x045e, pid: 0x028e, that is to say 'Xbox 360 Controller (wired, standard)'
+         // Sadly, they report the same USB VID/PID for both mode, so we rely on the fact that the second controller is not present to detect pinball (purple) mode
+         identified = ARCADE2TV_XR_DONGLE_2;
+         joyName = std::format("Arcade2TV-XR #{}", idIndex);
       }
       else
       {
-         SDL_GUID guid = SDL_GetJoystickGUID(joystick);
-         
-         int idIndex = 1;
-         int joystickCount = 0;
-         SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
-         for (int i = 0; i < joystickCount; i++)
-         {
-            if (SDL_GetJoystickFromID(joystickIds[i]) == joystick)
-               break;
-            if (SDL_GUID other = SDL_GetJoystickGUIDForID(joystickIds[i]); SDL_memcmp(&guid, &other, sizeof(SDL_GUID)) == 0)
-               idIndex++;
-         }
-
-         joyName = std::format("{} #{}", SDL_GetJoystickName(joystick), idIndex);
+         joyName = std::format("{} #{}", sdlJoyName, nameIndex);
       }
-      
+
+      PLOGI << "Joystick connected: " << joyName.c_str() << " (SDL ID: " << id << ", Axes: " << SDL_GetNumJoystickAxes(joystick)
+            << ", Buttons: " << SDL_GetNumJoystickButtons(joystick) << ", Hats: " << SDL_GetNumJoystickHats(joystick) << ", VPX UID: " << settingId.c_str() << ')';
+
       uint16_t deviceId = m_pininput.RegisterDevice(settingId, InputManager::DeviceType::Joystick, joyName);
       m_joystickIds[id] = deviceId;
 
       // Register all axis to allow selection in the UI (they will optionally be overriden if identified below)
-      const int nAxis = SDL_GetNumJoystickAxes(joystick);
       for (int axis = 0; axis < nAxis; axis++)
          m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(axis), "Axis #" + std::to_string(axis));
 
-      // We are using the gamepad API the opposite of its intent: it is designed to be used when a game expects some standard layout and
-      // matches them against the actual joystick. In our case, we don't care about standard layout as we use non standard devices, but
-      // we are interested on the button binding for better button naming (if available) and for generic gamepad layout detection
-      if (SDL_IsGamepad(id))
+      // If the device is recognized as a gamepad, we can get better names for buttons and axis based on the gamepad bindings
+      if (SDL_Gamepad* gamepad = SDL_IsGamepad(id) ? SDL_OpenGamepad(id) : nullptr; gamepad)
       {
-         if (SDL_Gamepad* gamepad = SDL_OpenGamepad(id); gamepad)
+         int nBindings;
+         if (SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gamepad, &nBindings); bindings)
+         {
+            for (int i = 0; i < nBindings; i++)
+            {
+               if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON)
+               {
+                  const string name = GetGamepadButtonName(gamepad, bindings[i]->output.button);
+                  if (!name.empty())
+                     m_pininput.RegisterElementName(deviceId, false, static_cast<uint16_t>(bindings[i]->input.button), name);
+               }
+               else if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_HAT && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON)
+               {
+                  const string name = GetGamepadButtonName(gamepad, bindings[i]->output.button);
+                  if (!name.empty())
+                  {
+                     switch (bindings[i]->input.hat.hat_mask)
+                     {
+                     case SDL_HAT_LEFT: m_pininput.RegisterElementName(deviceId, false, 0x0100 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
+                     case SDL_HAT_RIGHT: m_pininput.RegisterElementName(deviceId, false, 0x0101 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
+                     case SDL_HAT_UP: m_pininput.RegisterElementName(deviceId, false, 0x0102 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
+                     case SDL_HAT_DOWN: m_pininput.RegisterElementName(deviceId, false, 0x0103 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
+                     }
+                  }
+               }
+               else if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_AXIS)
+               {
+                  const string name = GetGamepadAxisName(gamepad, bindings[i]->output.axis.axis);
+                  if (!name.empty())
+                     m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(bindings[i]->input.axis.axis), name);
+               }
+            }
+         }
+         SDL_CloseGamepad(gamepad);
+      }
+
+      switch (identified)
+      {
+      case PINSCAPE:
+         // mjrnet Pinscape Controller. Obviously not a gamepad, but has defaults plunger / nudge setup layout that we can name and propose
+         // We only register the 6 predefined axis. The other ports are all generic and based on user configuration
+         // Note: the default mapping we propose only maps the plunger and nudge acceleration, leaving the users to decide if they want to use velocities as well (with a recent enough firmware)
+         m_pininput.RegisterElementName(deviceId, true, 0x0200, "Nudge X Acceleration"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0201, "Nudge Y Acceleration"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Plunger Position"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0203, "Nudge X Velocity"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Nudge Y Velocity"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger Velocity"s);
+         m_pininput.RegisterDefaultMapping(deviceId,
+            [this, deviceId]( //
+               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+               const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+            {
+               bool success = true;
+               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               success &= mapPlunger(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
+               return success;
+            });
+         break;
+
+      case ARCADE2TV_XR_DONGLE_2:
+         // Pinball or arcade mode => propose the default Pinball layout
+         // The mapping is quite a mess with mapping overlays. Try to make it somewhat readable (buttons are labeled in this order: 1,2,3 / 4,5,6 / 7,8
+         m_pininput.RegisterElementName(deviceId, true, 0x0200, "Left Stick X / Nudge X");
+         m_pininput.RegisterElementName(deviceId, true, 0x0201, "Left Stick Y / Nudge Y");
+         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Left But. 7 / Left But. 8");
+         m_pininput.RegisterElementName(deviceId, true, 0x0203, "Right Stick X");
+         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Right Stick Y / Plunger");
+         m_pininput.RegisterElementName(deviceId, true, 0x0205, "No idea...");
+         m_pininput.RegisterElementName(deviceId, false, 0x0002, "Left But. 1");
+         m_pininput.RegisterElementName(deviceId, false, 0x0003, "Left But. 2");
+         m_pininput.RegisterElementName(deviceId, false, 0x0004, "Left Flipper / Left But. 3");
+         m_pininput.RegisterElementName(deviceId, false, 0x0000, "Left & Right But. 4");
+         m_pininput.RegisterElementName(deviceId, false, 0x0001, "Left But. 5");
+         m_pininput.RegisterElementName(deviceId, false, 0x0005, "Right Flipper / Left But. 6");
+         m_pininput.RegisterElementName(deviceId, false, 0x0006, "Right But. 1");
+         m_pininput.RegisterElementName(deviceId, false, 0x0102, "Right But. 2"); // Hat Up
+         m_pininput.RegisterElementName(deviceId, false, 0x0008, "Right But. 3");
+         m_pininput.RegisterElementName(deviceId, false, 0x0103, "Right But. 5"); // Hat Down
+         m_pininput.RegisterElementName(deviceId, false, 0x0009, "Right But. 6");
+         m_pininput.RegisterElementName(deviceId, false, 0x0100, "Right But. 7"); // Hat Left
+         m_pininput.RegisterElementName(deviceId, false, 0x0101, "Right But. 8"); // Hat Right
+         m_pininput.RegisterDefaultMapping(deviceId,
+            [this, deviceId]( //
+               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+               const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+            {
+               bool success = true;
+               success &= mapButton(ButtonMapping::Create(deviceId, 4), m_pininput.GetLeftFlipperActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 4), m_pininput.GetStagedLeftFlipperActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 5), m_pininput.GetRightFlipperActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 5), m_pininput.GetStagedRightFlipperActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 2), m_pininput.GetLeftMagnaActionId()); // Left Top row (can't use right most button due to overlay...)
+               success &= mapButton(ButtonMapping::Create(deviceId, 3), m_pininput.GetAddCreditActionId(0));
+               //success &= mapButton(ButtonMapping::Create(deviceId, 1), m_pininput.); // Left Middle row (can't use left most & right most buttons due to overlays...)
+               //success &= mapButton(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.); // Left Bottom row
+               //success &= mapButton(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.);
+               success &= mapButton(ButtonMapping::Create(deviceId, 11), m_pininput.GetStartActionId()); // 1 player button
+               success &= mapButton(ButtonMapping::Create(deviceId, 7), m_pininput.GetExitGameActionId()); // 2 player button
+               success &= mapButton(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId()); // Right Top row
+               success &= mapButton(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId()); // Right Middle row
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, 0.9f), m_pininput.GetUIUpActionId());
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
+               success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
+               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               success &= mapPlunger(SensorMapping::Create(deviceId, 0x0204, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
+               // For controller view alignment
+               // ControllerCabYOffset = -22.437504
+               // ControllerLockbarScale = 1.663047
+               return success;
+            });
+         break;
+
+      case UNKNOWN:
+      default:
+         // Propose a generic gamepad layout:
+         // . Flippers: Left/Right Triggers (axis mapped as buttons with thresholds for flipper/staged flipper)
+         // . Magnas: Left/Right Shoulders
+         // . Coin: Y (north)
+         // . Start: B (east)
+         // . Launch Ball: A (south)
+         // . Nudge: Left Stick
+         // . Plunger: Right Stick
+         // . Digital Pad: PinMAME Operator Menu
+         // . Exit Interactive: Back
+         // . In Game UI: Start
+         if (SDL_Gamepad* gamepad = SDL_IsGamepad(id) ? SDL_OpenGamepad(id) : nullptr; gamepad)
          {
             int nBindings;
             if (SDL_GamepadBinding** bindings = SDL_GetGamepadBindings(gamepad, &nBindings); bindings)
             {
-               for (int i = 0; i < nBindings; i++)
-               {
-                  if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON)
-                  {
-                     const string name = GetGamepadButtonName(gamepad, bindings[i]->output.button);
-                     if (!name.empty())
-                        m_pininput.RegisterElementName(deviceId, false, static_cast<uint16_t>(bindings[i]->input.button), name);
-                  }
-                  else if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_HAT && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON)
-                  {
-                     const string name = GetGamepadButtonName(gamepad, bindings[i]->output.button);
-                     if (!name.empty())
-                     {
-                        switch (bindings[i]->input.hat.hat_mask)
-                        {
-                        case SDL_HAT_LEFT: m_pininput.RegisterElementName(deviceId, false, 0x0100 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
-                        case SDL_HAT_RIGHT: m_pininput.RegisterElementName(deviceId, false, 0x0101 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
-                        case SDL_HAT_UP: m_pininput.RegisterElementName(deviceId, false, 0x0102 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
-                        case SDL_HAT_DOWN: m_pininput.RegisterElementName(deviceId, false, 0x0103 | static_cast<uint16_t>(bindings[i]->input.hat.hat * 4), name); break;
-                        }
-                     }
-                  }
-                  else if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_AXIS)
-                  {
-                     const string name = GetGamepadAxisName(gamepad, bindings[i]->output.axis.axis);
-                     if (!name.empty())
-                        m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(bindings[i]->input.axis.axis), name);
-                  }
-               }
-               
-               // Uses these mappings to optionally identify a suitable gamepad layout
                const uint16_t leftTrigger = GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFT_TRIGGER, bindings, nBindings);
                const uint16_t rightTrigger = GetGamepadAxis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, bindings, nBindings);
                const uint16_t leftStickX = GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFTX, bindings, nBindings);
@@ -320,28 +434,14 @@ private:
                const uint16_t dpadRightButton = GetGamepadButton(SDL_GAMEPAD_BUTTON_DPAD_RIGHT, bindings, nBindings);
                const uint16_t dpadUpButton = GetGamepadButton(SDL_GAMEPAD_BUTTON_DPAD_UP, bindings, nBindings);
                const uint16_t dpadDownButton = GetGamepadButton(SDL_GAMEPAD_BUTTON_DPAD_DOWN, bindings, nBindings);
-            
-               // Generic gamepad layout:
-               // . Flippers: Left/Right Triggers (axis mapped as buttons with thresholds for flipper/staged flipper)
-               // . Magnas: Left/Right Shoulders
-               // . Coin: Y (north)
-               // . Start: B (east)
-               // . Launch Ball: A (south)
-               // . Nudge: Left Stick
-               // . Plunger: Right Stick
-               // . Digital Pad: PinMAME Operator Menu
-               // . Exit Interactive: Back
-               // . In Game UI: Start
                if (leftTrigger != 0xFFFF && rightTrigger != 0xFFFF && leftShoulder != 0xFFFF && rightShoulder != 0xFFFF && northButton != 0xFFFF && eastButton != 0xFFFF
                   && southButton != 0xFFFF && backButton != 0xFFFF && startButton != 0xFFFF && leftStickX != 0xFFFF && leftStickY != 0xFFFF && rightStickY != 0xFFFF)
                {
-                  auto defaultMapping = [this, deviceId,
-                     leftTrigger, rightTrigger, leftShoulder, rightShoulder, leftStickX, leftStickY, rightStickY,
-                     southButton, northButton, eastButton, backButton, startButton,
-                     dpadLeftButton, dpadRightButton, dpadUpButton, dpadDownButton]( //
-                     const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-                     const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-                     const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+                  auto defaultMapping = [this, deviceId, leftTrigger, rightTrigger, leftShoulder, rightShoulder, leftStickX, leftStickY, rightStickY, southButton, northButton, eastButton,
+                                             backButton, startButton, dpadLeftButton, dpadRightButton, dpadUpButton, dpadDownButton]( //
+                                             const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+                                             const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+                                             const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
                   {
                      bool success = true;
                      success &= mapButton(ButtonMapping::Create(deviceId, leftTrigger, -0.3f), m_pininput.GetLeftFlipperActionId());
@@ -375,7 +475,8 @@ private:
                         success &= mapButton(ButtonMapping::Create(deviceId, leftStickX, 0.3f), m_pininput.GetUIRightActionId());
                      }
                      success &= mapPlunger(SensorMapping::Create(deviceId, rightStickY, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
-                     success &= mapNudge(SensorMapping::Create(deviceId, leftStickX, SensorMapping::Type::Position), SensorMapping::Create(deviceId, leftStickY, SensorMapping::Type::Position));
+                     success &= mapNudge(
+                        SensorMapping::Create(deviceId, leftStickX, SensorMapping::Type::Position), SensorMapping::Create(deviceId, leftStickY, SensorMapping::Type::Position));
                      return success;
                   };
                   m_pininput.RegisterDefaultMapping(deviceId, defaultMapping);
@@ -384,37 +485,7 @@ private:
             }
             SDL_CloseGamepad(gamepad);
          }
-      }
-
-      // We used to detect and auto setup the following hardwares but this has not been readded due to hardware not being
-      // available for testing and because the ingame UI allows easy setup:
-      // . Microsoft's Sidewinder: date back from 1996, more or less a digital gamepad (see https://en.wikipedia.org/wiki/Microsoft_SideWinder)
-      // . UltraCade's UltraPin: date back from 2000 (see https://en.wikipedia.org/wiki/UltraPin)
-      // . Pinball Wizard from NanoTech: created around 2008 (see https://www.nanotechgaming.com/pinball-wizard.php)
-      // . VirtuaPin: seems to be a KL25z based hardware alike Pinscape controller (see https://virtuapin.net/)
-
-      // mjrnet Pinscape Controller. Obviously not a gamepad, but has defaults plunger / nudge setup layout that we can name and propose
-      if (joyName.starts_with("mjrnet Pinscape Controller"s) && nAxis >= 6)
-      {
-         // We only register the 6 predefined axis. The other ports are all generic and based on user configuration
-         // Note: the default mapping we propose only maps the plunger and nudge acceleration, leaving the users to decide if they want to use velocities as well (with a recent enough firmware)
-         m_pininput.RegisterElementName(deviceId, true, 0x0200, "Nudge X Acceleration"s);
-         m_pininput.RegisterElementName(deviceId, true, 0x0201, "Nudge Y Acceleration"s);
-         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Plunger Position"s);
-         m_pininput.RegisterElementName(deviceId, true, 0x0203, "Nudge X Velocity"s);
-         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Nudge Y Velocity"s);
-         m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger Velocity"s);
-         auto defaultMapping = [this, deviceId]( //
-            const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-            const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-            const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
-         {
-            bool success = true;
-            success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
-            success &= mapPlunger(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
-            return success;
-         };
-         m_pininput.RegisterDefaultMapping(deviceId, defaultMapping);
+         break;
       }
    }
 
