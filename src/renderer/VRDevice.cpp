@@ -123,7 +123,6 @@ VRDevice::VRDevice(const Settings& settings)
    #if defined(ENABLE_VR)
       m_slope = settings.GetPlayerVR_Slope();
    #endif
-   m_worldDirty = true;
 
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
@@ -1238,8 +1237,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // playfield is inclined at a fixed slope that should be defined with the table (it corresponds to the cabinet design),
          // then player adjust the play angle by adjusting the feet casters, so the whole cab rotates.
          const PinTable* const table = g_pplayer->m_ptable;
-         const float liveSlope = table->GetPlayfieldSlope();
-         if (m_worldDirty || m_slope != liveSlope)
+         if (const float liveSlope = table->GetPlayfieldSlope(); m_worldDirty || m_slope != liveSlope)
          {
             m_worldDirty = false;
             m_slope = liveSlope;
@@ -1539,19 +1537,19 @@ void VRDevice::UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelVie
    using enum PartGroupData::SpaceReference;
 
    #ifdef ENABLE_XR
-      const Viewpoint* viewpoint = nullptr;
+      const Matrix3D* viewpoint = nullptr;
       const Matrix3D* proj = nullptr;
       switch (spaceRef)
       {
-      case SR_PLAYFIELD: viewpoint = &m_pfWorld; proj = m_sceneProj; break;
-      case SR_CABINET: viewpoint = &m_cabWorld; proj = m_sceneProj; break;
-      case SR_CABINET_FEET: viewpoint = &m_feetWorld; proj = m_sceneProj; break;
-      case SR_ROOM: viewpoint = &m_roomWorld; proj = m_roomProj; break;
+      case SR_PLAYFIELD: viewpoint = m_pfWorld.m_view; proj = m_sceneProj; break;
+      case SR_CABINET: viewpoint = m_cabWorld.m_view; proj = m_sceneProj; break;
+      case SR_CABINET_FEET: viewpoint = m_feetWorld.m_view; proj = m_sceneProj; break;
+      case SR_ROOM: viewpoint = m_roomWorld.m_view; proj = m_roomProj; break;
       default: assert(false); return;
       }
       for (unsigned int eye = 0; eye < 2; eye++)
       {
-         mvp.SetView(eye, viewpoint->m_view[eye]);
+         mvp.SetView(eye, viewpoint[eye]);
          mvp.SetProj(eye, proj[eye]);
       }
 

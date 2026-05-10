@@ -74,18 +74,19 @@ private:
             m_matReflectedView[eye] = m_matReflection * m_matView[eye];
             m_matModelView[eye] = m_matModel * m_matReflectedView[eye];
             m_matModelViewProj[eye] = m_matModelView[eye] * m_matProj[eye];
-
             m_matModelViewInverse[eye] = Matrix3D::MatrixInverse(m_matModelView[eye]);
             m_matModelViewInverseTranspose[eye] = m_matModelViewInverse[eye];
             m_matModelViewInverseTranspose[eye].Transpose();
 
-            const Matrix3D viewRot = Matrix3D::MatrixInverse(m_matReflectedView[eye]).GetRotationPart();
+            const Matrix3D invReflectedView = Matrix3D::MatrixInverse(m_matReflectedView[eye]);
+
+            const Vertex3Ds camPos = invReflectedView.GetOrthoNormalPos();
+            m_cameraPos[eye] = vec4(camPos.x, camPos.y, camPos.z, 0.f);
+            m_matRotViewProj[eye] = m_matReflectedView[eye].GetRotationPart() * m_matProj[eye];
+
+            const Matrix3D viewRot = invReflectedView.GetRotationPart();
             m_viewVec[eye] = viewRot * Vertex3Ds { 0.f, 0.f, 1.f };
             m_viewVec[eye].NormalizeSafe();
-
-            const Vertex3Ds camPos = Matrix3D::MatrixInverse(m_matReflectedView[eye]).GetOrthoNormalPos();
-            m_cameraPos[eye] = vec4(camPos.x, camPos.y, camPos.z, 0.f);
-            m_matRotViewProj[eye] = m_matReflectedView[eye].GetRotationPart() * GetProj(eye);
          }
 
          // Flip is a clipspace flip, applied after projection
