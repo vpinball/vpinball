@@ -22,7 +22,7 @@ public:
    void Update();
    void Close();
 
-   bool ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler);
+   bool ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool, bool)>& handler);
 
    void AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory);
    void Navigate(const string &path, bool isBack = false);

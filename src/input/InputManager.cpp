@@ -234,7 +234,7 @@ void InputManager::RegisterDefaultMapping(uint16_t deviceId,
    m_hasPendingLayoutApply |= m_inputDevices[deviceId].m_hasPendingLayoutApply;
 }
 
-void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
+void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId, bool overwriteSensors)
 {
    assert(deviceId < m_inputDevices.size());
    auto mapButton = [this](const vector<ButtonMapping>& mapping, unsigned int actionId)
@@ -242,33 +242,41 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
       m_inputActions[actionId]->AddMapping(mapping);
       return true;
    };
-   auto mapPlunger = [this](const SensorMapping& sensorPos, SensorMapping::Type type, bool isLinear)
+   auto mapPlunger = [this, overwriteSensors](const SensorMapping& sensorPos, SensorMapping::Type type, bool isLinear)
    {
       const std::unique_ptr<PhysicsSensor>& plungerPos = type == SensorMapping::Type::Position ? GetPlungerPositionSensor() : GetPlungerVelocitySensor();
+      if (plungerPos->IsMapped() && !overwriteSensors)
+      {
+         m_player->m_liveUI->PushNotification("Plunger sensor mapping was not applied as it was already defined"s, 5000);
+         return false;
+      }
       plungerPos->SetMapping(sensorPos);
       return true;
    };
-   auto mapNudge = [this](const SensorMapping& sensorX, const SensorMapping& sensorY)
+   auto mapNudge =
+      [this, overwriteSensors](const SensorMapping& sensorX, const SensorMapping& sensorY)
    {
-      int map = -1;
-      for (int i = 0; i < 2; i++)
+      if (overwriteSensors)
       {
-         const std::unique_ptr<PhysicsSensor>& nudgeX = GetNudgeXSensor(i);
-         const std::unique_ptr<PhysicsSensor>& nudgeY = GetNudgeYSensor(i);
-         if (nudgeX->IsMapped() && nudgeY->IsMapped())
+         for (int i = 0; i < 2; i++)
          {
-            if (nudgeX->GetMapping().IsSame(sensorX) && nudgeY->GetMapping().IsSame(sensorY))
-               return true;
+            GetNudgeXSensor(i)->ClearMapping();
+            GetNudgeYSensor(i)->ClearMapping();
          }
-         else if (map == -1)
-            map = i;
       }
-      if (map == -1)
-         return false; // No free nudge sensor available
-      const std::unique_ptr<PhysicsSensor>& nudgeX = GetNudgeXSensor(map);
-      const std::unique_ptr<PhysicsSensor>& nudgeY = GetNudgeYSensor(map);
-      nudgeX->SetMapping(sensorX);
-      nudgeY->SetMapping(sensorY);
+      else
+      {
+         for (int i = 0; i < 2; i++)
+         {
+            if (GetNudgeXSensor(i)->IsMapped() || GetNudgeYSensor(i)->IsMapped())
+            {
+               m_player->m_liveUI->PushNotification("Nudge sensor mapping was not applied as it was already defined"s, 5000);
+               return false;
+            }
+         }
+      }
+      GetNudgeXSensor(0)->SetMapping(sensorX);
+      GetNudgeYSensor(0)->SetMapping(sensorY);
       return true;
    };
    m_inputDevices[deviceId].m_defaultMapping(mapButton, mapPlunger, mapNudge);
@@ -497,16 +505,16 @@ void InputManager::ProcessInput()
             // For VR controllers, the propose-layout dialog isn't reachable in the headset before the VR controller is registered, so auto-apply
             if (device.m_type == DeviceType::VRController)
             {
-               ApplyDefaultDeviceMapping(deviceId);
+               ApplyDefaultDeviceMapping(deviceId, false);
                device.m_hasPendingLayoutApply = false;
                continue;
             }
 
             if (m_player->m_liveUI->m_inGameUI.ProposeInputLayout(device.m_name,
-                   [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore)
+                   [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore, bool overwriteSensors)
                    {
                       if (isOk)
-                         ApplyDefaultDeviceMapping(deviceId);
+                         ApplyDefaultDeviceMapping(deviceId, overwriteSensors);
                       if (isDontAskAnymore)
                          g_app->m_settings.Set(noAutoLayoutId, true, false);
                       m_hasPendingLayoutApply = false;
@@ -831,6 +839,9 @@ void InputManager::CreateInputActions()
    auto vrBack = addVRPositionAction("VRBack"s, "Move VR view to the back"s, SDL_SCANCODE_UNKNOWN, vec3(0.f, -1.f, 0.f));
    auto vrLeft = addVRPositionAction("VRFront"s, "Move VR view to the left"s, SDL_SCANCODE_UNKNOWN, vec3(-1.f, 0.f, 0.f));
    auto vrRight = addVRPositionAction("VRBack"s, "Move VR view to the right"s, SDL_SCANCODE_UNKNOWN, vec3(1.f, -0.f, 0.f));
+   m_vrViewCenterActionId = vrCenter->GetActionId();
+   m_vrViewUpActionId = vrUp;
+   m_vrViewDownActionId = vrDown;
    #ifdef ENABLE_XR
    auto vrControllerCalibration = AddAction(std::make_unique<InputAction>(this, "VRControllerCalibration"s, "Align VR view using controllers"s, ""s,
       [this](InputAction& action, bool wasPressed, bool isPressed)
@@ -1092,7 +1103,7 @@ Vertex2D InputManager::GetNudge() const
       nudge.y += dy * cna - dx * sna;
       weight += 1.f;
    }
-   if (weight < 1.f)
+   if (weight <= 1.f)
       return nudge;
    return nudge / weight;
 }

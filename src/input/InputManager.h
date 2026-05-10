@@ -49,6 +49,9 @@ public:
    unsigned int GetResetActionId() const { return m_resetActionId; }
    unsigned int GetServiceActionId(int idx) const { assert(0 <= idx && idx < 8); return m_serviceActionId[idx]; }
    unsigned int GetVRControllerViewCenteringActionId() const { return m_vrControllerViewCenteringActionId; }
+   unsigned int GetVRViewCenterActionId() const { return m_vrViewCenterActionId; }
+   unsigned int GetVRViewUpActionId() const { return m_vrViewUpActionId; }
+   unsigned int GetVRViewDownActionId() const { return m_vrViewDownActionId; }
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
@@ -233,6 +236,9 @@ private:
    unsigned int m_coinDoorActionId;
    unsigned int m_resetActionId;
    unsigned int m_serviceActionId[8];
+   unsigned int m_vrViewCenterActionId;
+   unsigned int m_vrViewUpActionId;
+   unsigned int m_vrViewDownActionId;
    unsigned int m_vrControllerViewCenteringActionId;
    ankerl::unordered_dense::map<uint32_t, vector<ButtonMapping*>> m_buttonMappings;
    vector<InputAction*> m_onUpdateActions;
@@ -282,7 +288,7 @@ private:
    bool m_hasPendingLayoutApply = false;
    void LoadDevicesFromSettings();
    void SaveDevicesToSettings() const;
-   void ApplyDefaultDeviceMapping(uint16_t deviceId);
+   void ApplyDefaultDeviceMapping(uint16_t deviceId, bool overwriteSensors);
 
    int m_buttonCaptureState = 0;
    vector<ButtonMapping> m_buttonCapture;

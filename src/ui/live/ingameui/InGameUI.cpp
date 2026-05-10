@@ -307,7 +307,7 @@ void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
       m_player->m_ptable->GetViewSetup().mViewportRotation += 1.0f;
 }
 
-bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler)
+bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool, bool)>& handler)
 {
    if (IsOpened())
       return false;
