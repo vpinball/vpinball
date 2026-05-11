@@ -1098,7 +1098,7 @@ RenderDevice::RenderDevice(
 #ifdef ENABLE_BGFX
       // Color and depth format are likely wrong => use the ones selected by the OpenXR backend
       RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, bgfx::TextureFormat::RGBA8, BGFX_INVALID_HANDLE,
-         bgfx::TextureFormat::D24, "BackBuffer", previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
+         bgfx::TextureFormat::D32F, "BackBuffer", previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
 #else
       RenderTarget* backbuffer = new RenderTarget(this, SurfaceType::RT_DEFAULT, previewWnd->GetPixelWidth(), previewWnd->GetPixelHeight(), colorFormat::RGBA8);
 #endif
@@ -1580,13 +1580,6 @@ RenderDevice::RenderDevice(
       memset(surf->data(), 0, 4);
       m_nullTexture = std::make_shared<Sampler>(this, "Null"s, surf, false);
    }
-
-   // alloc float buffer for rendering
-   #if defined(ENABLE_OPENGL)
-   int maxSamples;
-   glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-   nMSAASamples = min(maxSamples, nMSAASamples); // unused
-   #endif
 
    // create default vertex declarations for shaders
    #if defined(ENABLE_BGFX)

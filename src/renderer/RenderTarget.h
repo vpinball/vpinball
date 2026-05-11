@@ -43,6 +43,7 @@ public:
 #if defined(ENABLE_BGFX)
    bgfx::FrameBufferHandle GetCoreFrameBuffer() const { return m_framebuffer; }
    bgfx::TextureFormat::Enum GetCoreColorFormat() const { return m_colorFormat; }
+   void ResolveMSAADepth();
    static void OnFrameFlushed() { current_render_target = nullptr; current_render_layer = 0; }
 #elif defined(ENABLE_OPENGL)
    GLuint GetCoreFrameBuffer() const { return m_framebuffer; }
@@ -72,12 +73,17 @@ private:
    static int current_render_layer;
 
 #if defined(ENABLE_BGFX)
-   bgfx::FrameBufferHandle m_framebuffer = BGFX_INVALID_HANDLE;
    bgfx::TextureHandle m_color_tex = BGFX_INVALID_HANDLE;
    bgfx::TextureFormat::Enum m_colorFormat = bgfx::TextureFormat::Count;
    bgfx::TextureHandle m_depth_tex = BGFX_INVALID_HANDLE;
    bgfx::TextureFormat::Enum m_depthFormat = bgfx::TextureFormat::Count;
+   bgfx::TextureHandle m_msaaResolveDepthTex = BGFX_INVALID_HANDLE;
+   std::shared_ptr<Sampler> m_msaa_depth_sampler;
+   bgfx::TextureHandle m_msaaDepthResolveColorTex = BGFX_INVALID_HANDLE;
+   bgfx::FrameBufferHandle m_msaaDepthResolveFramebuffer = BGFX_INVALID_HANDLE;
    bgfx::FrameBufferHandle m_framebuffer_layers[6];
+   bgfx::FrameBufferHandle m_framebuffer = BGFX_INVALID_HANDLE;
+   bool m_needResolve = false;
 #elif defined(ENABLE_OPENGL)
    GLuint m_framebuffer = 0;
    GLenum m_texTarget = 0;

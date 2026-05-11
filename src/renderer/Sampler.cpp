@@ -185,6 +185,11 @@ Sampler::~Sampler()
 
 bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
 {
+#ifdef ENABLE_BGFX
+   if (m_msaaDepthResolve)
+      m_msaaDepthResolve->ResolveMSAADepth();
+#endif
+
    // Handle texture initial creation loading and updates on BGFX API thread
    assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    if (m_textureUpdate == nullptr)

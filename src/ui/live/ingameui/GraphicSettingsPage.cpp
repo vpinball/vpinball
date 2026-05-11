@@ -265,7 +265,7 @@ void GraphicSettingsPage::BuildPage()
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MSAASamples, //

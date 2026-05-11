@@ -71,12 +71,14 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
    m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
 
-   #if defined(ENABLE_OPENGL)
-   constexpr int MSAASamples[] = { 1, 4, 6, 8 };
+   #if defined(ENABLE_BGFX)
+   constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
    const int nMSAASamples = MSAASamples[m_table->m_settings.GetPlayer_MSAASamples()];
-   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
-   // BGFX MSAA is likely possible but not yet implemented
+   #elif defined(ENABLE_OPENGL)
+   constexpr int MSAASamples[] = { 1, 4, 6, 8, 16 };
+   int nMSAASamples = MSAASamples[m_table->m_settings.GetPlayer_MSAASamples()];
+   #elif defined(ENABLE_DX9)
+   // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable
    constexpr int nMSAASamples = 1;
    #endif
    const bool useNvidiaApi = m_table->m_settings.GetPlayer_UseNVidiaAPI();
@@ -140,26 +142,37 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    #if defined(ENABLE_BGFX)
       constexpr colorFormat renderFormat = colorFormat::RGB16F;
+
    #elif defined(ENABLE_OPENGL)
       #ifndef __OPENGLES__
          constexpr colorFormat renderFormat = colorFormat::RGB16F;
       #else
          constexpr colorFormat renderFormat = colorFormat::RGBA16F;
       #endif
+      int maxSamples;
+      glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+      nMSAASamples = min(maxSamples, nMSAASamples);
+
    #elif defined(ENABLE_DX9)
       constexpr colorFormat renderFormat = colorFormat::RGBA16F;
+
    #endif
    const SurfaceType rtType = m_stereo3D == STEREO_OFF || !m_renderDevice->SupportLayeredRendering() ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
 
+   #ifdef ENABLE_BGFX
+   // BGFX handles MSAA internally and provides the resolved texture directly, so just create one render target for the back buffer
+   m_pOffscreenBackBufferTexture1 = new RenderTarget(m_renderDevice, rtType, "BackBuffer1"s, renderWidthAA, renderHeightAA, renderFormat, true, nMSAASamples, "Fatal Error: unable to create offscreen back buffer");
+   #else
    // MSAA render target which is resolved to the non MSAA render target
    if (nMSAASamples > 1) 
       m_pOffscreenMSAABackBufferTexture = new RenderTarget(m_renderDevice, rtType, "MSAABackBuffer"s, renderWidthAA, renderHeightAA, renderFormat, true, nMSAASamples, "Fatal Error: unable to create MSAA render buffer!");
 
    // Either the main render target for non MSAA, or the buffer where the MSAA render is resolved
    m_pOffscreenBackBufferTexture1 = new RenderTarget(m_renderDevice, rtType, "BackBuffer1"s, renderWidthAA, renderHeightAA, renderFormat, true, 1, "Fatal Error: unable to create offscreen back buffer");
+   #endif
 
    // Second render target to swap, allowing to read previous frame render for ball reflection and motion blur
-   m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, true);
+   m_pOffscreenBackBufferTexture2 = m_pOffscreenBackBufferTexture1->Duplicate("BackBuffer2"s, false);
 
    // Initialize shaders
    m_renderDevice->m_basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
@@ -2952,6 +2965,15 @@ void Renderer::RenderFrame()
       }
       #endif
    }
+   #ifdef ENABLE_BGFX
+   else if (GetMSAABackBufferTexture()->IsMSAA())
+   {
+      // Static prepass is not compatible with MSAA as BGFX does not allow to blit between MSAA textures (the blit happens on the resolved textures)
+      m_renderDevice->SetRenderTarget("Render MSAA Scene"s, GetMSAABackBufferTexture());
+      DrawBackground();
+      m_renderDevice->SetRenderTarget("Render MSAA Scene"s, GetMSAABackBufferTexture(), true, true); // Force new pass to avoid sorting scene calls with background calls
+   }
+   #endif
    else
    {
       RenderStaticPrepass(); // Update statically prerendered parts if needed

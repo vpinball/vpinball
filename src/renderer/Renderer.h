@@ -39,7 +39,15 @@ public:
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
-   bool IsUsingStaticPrepass() const { return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR); }
+   bool IsUsingStaticPrepass() const
+   {
+      #ifdef ENABLE_BGFX
+      // Static prepass is not compatible with MSAA as BGFX does not allow to blit between MSAA textures
+      return !GetMSAABackBufferTexture()->IsMSAA() && (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR);
+      #else
+      return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR);
+      #endif
+   }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
    enum class ShadeMode

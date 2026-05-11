@@ -46,6 +46,7 @@ public:
    bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
+   class RenderTarget* m_msaaDepthResolve = nullptr;
 
 #elif defined(ENABLE_OPENGL)
    Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture);

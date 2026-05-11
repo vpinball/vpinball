@@ -276,6 +276,9 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(fb_mirror, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered),
    SHADER_TECHNIQUE(fb_copy, SHADER_layer, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(SSReflection, SHADER_layer, SHADER_w_h_height, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_tex_ao_dither),
+#ifdef ENABLE_BGFX
+   SHADER_TECHNIQUE(fb_resolve_depth_msaa, SHADER_layer, SHADER_tex_depth),
+#endif
 
    SHADER_TECHNIQUE(NFAA, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
    SHADER_TECHNIQUE(DLAA_edge, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
@@ -583,6 +586,8 @@ private:
 
 public:
    bgfx::ProgramHandle GetCore() const;
+   bgfx::UniformHandle GetUniformHandle(ShaderUniforms uniformName) const { return m_uniformHandles[uniformName]; }
+   bgfx::ProgramHandle GetProgramHandle(ShaderTechniques techniqueName) const { return m_techniques[techniqueName]; }
 
 #elif defined(ENABLE_OPENGL)
    class ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)

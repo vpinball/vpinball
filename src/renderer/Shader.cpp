@@ -274,6 +274,9 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(fb_mirror, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered),
    SHADER_TECHNIQUE(fb_copy, SHADER_layer, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(SSReflection, SHADER_layer, SHADER_w_h_height, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_tex_ao_dither),
+#ifdef ENABLE_BGFX
+   SHADER_TECHNIQUE(fb_resolve_depth_msaa, SHADER_layer, SHADER_tex_depth),
+#endif
 
    SHADER_TECHNIQUE(NFAA, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
    SHADER_TECHNIQUE(DLAA_edge, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
@@ -1223,6 +1226,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          default: break;
          }
          const bgfx::TextureHandle texHandle = const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE && filter != SF_BILINEAR);
+         assert(bgfx::isValid(texHandle));
          if (!bgfx::isValid(texHandle))
          {
             bgfx::setTexture(ShaderUniform::coreUniforms[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));
@@ -1400,7 +1404,8 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
                 || technique == SHADER_TECHNIQUE_display_DMD_world
                 || technique == SHADER_TECHNIQUE_SMAA_ColorEdgeDetection
                 || technique == SHADER_TECHNIQUE_SMAA_BlendWeightCalculation
-                || technique == SHADER_TECHNIQUE_SMAA_NeighborhoodBlending)
+                || technique == SHADER_TECHNIQUE_SMAA_NeighborhoodBlending
+                || technique == SHADER_TECHNIQUE_fb_resolve_depth_msaa)
          )
       {
          for (const auto uniform : uniforms)
@@ -1546,6 +1551,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_copy),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_msaa_depth),
       // Motion Blur as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_motionblur),
       // Anti-Aliasing as post-processes
@@ -1725,6 +1731,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_copy, STEREO(vs_postprocess), STEREO(fs_pp_copy));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_SSReflection, STEREO(vs_postprocess), STEREO(fs_pp_ssr));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_irradiance, STEREO(vs_postprocess), STEREO(fs_pp_irradiance));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_resolve_depth_msaa, STEREO(vs_postprocess), STEREO(fs_pp_msaa_depth));
 
       // Postprocessed motion blur
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));

@@ -165,6 +165,8 @@ public:
       #endif
    }
 
+   std::shared_ptr<MeshBuffer> GetQuadMeshBuffer() const { return m_quadMeshBuffer; }
+
    void SetClipPlane(const vec4& plane);
 
    // Active (live on GPU) render state

@@ -26,7 +26,7 @@ function Process-Shader {
 
    $outputs = @('mtl', 'essl', 'glsl', 'dxbc', 'dxil', 'spv')
    $targets = @(
-      '--platform osx     -p metal',      # Metal      '--platform ios -p metal'
+      '--platform osx     -p metal21-11', # Metal      '--platform ios -p metal'
       '--platform android -p 320_es    ', # OpenGL ES  '--platform android -p 320_es'
       '--platform linux   -p 440       ', # OpenGL     '--platform linux -p440'
       '--platform windows -p s_5_0 -O 3', # DirectX 11 '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
@@ -212,6 +212,7 @@ if ($gen_postprocess)
 	for($k = 0; $k -lt 2; $k++)
 	{
 	  Process-Shader "vs_postprocess.sc" "postprocess.h" ("vs_postprocess" + $stOutput[$k]) "vertex" @($stereo[$k])
+	  Process-Shader "fs_pp_msaa_depth.sc" "postprocess.h" ("fs_pp_msaa_depth" + $stOutput[$k]) "fragment" @($stereo[$k])
 	  Process-Shader "fs_pp_mirror.sc" "postprocess.h" ("fs_pp_mirror" + $stOutput[$k]) "fragment" @($stereo[$k])
 	  Process-Shader "fs_pp_copy.sc" "postprocess.h" ("fs_pp_copy" + $stOutput[$k]) "fragment" @($stereo[$k])
 	  Process-Shader "fs_pp_bloom.sc" "postprocess.h" ("fs_pp_bloom" + $stOutput[$k]) "fragment" @($stereo[$k])
