@@ -203,6 +203,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          // FIXME this is not correct as we may be running something else than the player (extract vbs, ...)
          exit(1);
       }
+      if (const char* const drv = SDL_GetCurrentVideoDriver()) {
+         PLOGI << "SDL video driver: " << drv;
+      }
 
       // Run the application
       if (cmdLine.m_command)
