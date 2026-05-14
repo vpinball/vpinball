@@ -1841,6 +1841,10 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
             // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
             parts = GetParts();
+            vector<string> functions;
+            vector<string> identifiers;
+            ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
+            const wstring lowerCaseScript = lowerCase(MakeWString(m_script_text));
             for (auto part : parts)
             {
                if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
@@ -1848,12 +1852,22 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   wstring layerName = requestedLayerName;
                   auto partGroupF = std::ranges::find_if(m_vedit,
                      [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
-                  // Part group was not found and the name is in use: find a suitable one
-                  while (partGroupF == m_vedit.end() && !IsNameUnique(layerName))
+                  // If part group was not already added, we need to check if the name is conflicting with other editables, collections or script declarations
+                  int renameIndex = 1;
+                  bool layerPostpend = false;
+                  while (partGroupF == m_vedit.end())
                   {
-                     if (!layerName.ends_with(L"_Layer"))
+                     bool nameIsUnique = true
+                        && IsNameUnique(layerName)
+                        && std::ranges::find(functions, MakeString(lowerCase(layerName))) == functions.end()
+                        && std::ranges::find(identifiers, MakeString(lowerCase(layerName))) == identifiers.end();
+                     if (nameIsUnique)
+                        break;
+
+                     // Postpend "layer" to keep alphabetic order of layer
+                     if (!layerPostpend && !layerName.ends_with(L"_Layer"))
                      {
-                        // Postpend "layer" to keep alphabetic order of layer
+                        layerPostpend = true; 
                         layerName += L"_Layer";
                      }
                      else
@@ -1867,14 +1881,17 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                            std::wstring numberStr = layerName.substr(lastNonDigit);
                            const int number = std::stoi(numberStr);
                            layerName.resize(lastNonDigit); // base
-                           layerName += std::to_wstring(number+1);
+                           renameIndex = max(renameIndex, number + 1);
                         }
                         else
                         {
                            // If not, add it
-                           layerName += L"_001";
+                           layerName += L"_";
                         }
+                        layerName += std::format(L"{:3d}", renameIndex);
+                        renameIndex += 1;
                      }
+
                      partGroupF = std::ranges::find_if(m_vedit,
                         [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
                   }
@@ -4521,18 +4538,14 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    return nullptr;
 }
 
-string PinTable::AuditTable(bool log) const
+void PinTable::ParseScript(const string& script, vector<string>& functions, vector<string>& identifiers, const std::function<void(const string&, int)>& onDuplicate) const
 {
-   // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
-   std::stringstream ss;
-
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
    const char *const szText = m_script_text.c_str();
    const char *wordStart = nullptr;
    const char *wordPos = szText;
    string inClass;
    bool nextIsFunc = false, nextIsEnd = false, nextIsClass = false, isInString = false, isInComment = false;
-   vector<string> functions, identifiers;
    int line = 0;
    while (wordPos[0] != '\0')
    {
@@ -4548,8 +4561,8 @@ string PinTable::AuditTable(bool log) const
          if (wordPos[0] == '\'')
             isInComment = true;
          // Split identifiers (eventually class/function identifier)
-         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\t' || wordPos[0] == '\n' || wordPos[0] == '.' 
-               || wordPos[0] == ':' || wordPos[0] == '('  || wordPos[0] == ')'  || wordPos[0] == '['  || wordPos[0] == ']')
+         else if (wordPos[0] == ' ' || wordPos[0] == '\r' || wordPos[0] == '\t' || wordPos[0] == '\n' || wordPos[0] == '.' || wordPos[0] == ':' || wordPos[0] == '(' || wordPos[0] == ')'
+            || wordPos[0] == '[' || wordPos[0] == ']')
          {
             if (wordStart)
             {
@@ -4582,7 +4595,7 @@ string PinTable::AuditTable(bool log) const
                      {
                         //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << "\r\n";
                         if (FindIndexOf(functions, inClass + '.' + word) != -1)
-                           ss << ". Error: Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
+                           onDuplicate(word, line);
                         else
                            functions.push_back(inClass + '.' + word);
                      }
@@ -4608,6 +4621,17 @@ string PinTable::AuditTable(bool log) const
 
       wordPos++;
    }
+}
+
+string PinTable::AuditTable(bool log) const
+{
+   // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
+   std::stringstream ss;
+
+   vector<string> functions;
+   vector<string> identifiers;
+   ParseScript(m_script_text, functions, identifiers,
+      [&ss](const string &functionName, int line) { ss << ". Error: Duplicate declaration of '" << functionName << "' in script at line " << line << "\r\n"; });
 
    if (FindIndexOf(identifiers, "execute"s) != -1)
       ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely cause stutters during play.\r\n";

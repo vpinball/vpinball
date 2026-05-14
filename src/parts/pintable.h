@@ -363,6 +363,7 @@ public:
    void ShowWhereMaterialsUsed(vector<WhereUsedInfo> &);
    void ShowWhereMaterialUsed(vector<WhereUsedInfo> &, Material *const ppi);
 
+   void ParseScript(const string &script, vector<string> &functions, vector<string> &identifiers, const std::function<void(const string &, int)>& onDuplicate) const;
    string AuditTable(bool log) const;
 
    void ListCustomInfo(HWND hwndListView);
