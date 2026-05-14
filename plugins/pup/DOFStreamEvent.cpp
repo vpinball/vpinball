@@ -142,7 +142,7 @@ void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData,
    {
       GetDevSrcMsg getSrcMsg = { 1, 0, &me->m_pmDevSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcId, pinmameEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_pmDevSrc.deviceDefs)
+      if (getSrcMsg.count && me->m_pmDevSrc.deviceDefs && me->m_pmDevSrc.nDevices <= 65536u)
       {
          // Copy device definitions
          DeviceDef* devices = new DeviceDef[me->m_pmDevSrc.nDevices];
@@ -162,7 +162,7 @@ void DOFEventStream::OnDevSrcChanged(const unsigned int eventId, void* userData,
    {
       GetDevSrcMsg getSrcMsg = { 1, 0, &me->m_b2sDevSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcId, b2sEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_b2sDevSrc.deviceDefs)
+      if (getSrcMsg.count && me->m_b2sDevSrc.deviceDefs && me->m_b2sDevSrc.nDevices <= 65536u)
       {
          // Copy device definitions and register state change listener
          DeviceDef* devices = new DeviceDef[me->m_b2sDevSrc.nDevices];
@@ -204,7 +204,7 @@ void DOFEventStream::OnInputSrcChanged(const unsigned int eventId, void* userDat
    {
       GetInputSrcMsg getSrcMsg = { 1, 0, &me->m_pmInputSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getInputSrcId, pinmameEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_pmInputSrc.inputDefs)
+      if (getSrcMsg.count && me->m_pmInputSrc.inputDefs && me->m_pmInputSrc.nInputs <= 65536u)
       {
          // Copy device definitions
          DeviceDef* devices = new DeviceDef[me->m_pmInputSrc.nInputs];
@@ -223,7 +223,7 @@ void DOFEventStream::OnInputSrcChanged(const unsigned int eventId, void* userDat
    {
       GetInputSrcMsg getSrcMsg = { 1, 0, &me->m_b2sInputSrc };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getInputSrcId, b2sEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_b2sInputSrc.inputDefs)
+      if (getSrcMsg.count && me->m_b2sInputSrc.inputDefs && me->m_b2sInputSrc.nInputs <= 65536u)
       {
          // Copy device definitions
          DeviceDef* devices = new DeviceDef[me->m_b2sInputSrc.nInputs];
