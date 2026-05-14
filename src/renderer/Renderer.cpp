@@ -1219,8 +1219,8 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
    }
    if (light)
    {
-      m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
-      m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
+      m_renderDevice->m_lightShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_lightShader->SetVector(SHADER_cameraPosWorld, &cameraPosWorld[0], eyes);
    }
    if (flasherDMD)
    {
