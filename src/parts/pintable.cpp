@@ -7,10 +7,13 @@
 #include <fstream>
 #include <sstream>
 
+#include "core/editablereg.h"
 #include "core/ScriptGlobalTable.h"
+#include "core/VPApp.h"
 #include "core/vpversion.h"
 #include "parts/ball.h"
 #include "parts/bumper.h"
+#include "parts/Collection.h"
 #include "parts/decal.h"
 #include "parts/dispreel.h"
 #include "parts/flasher.h"
@@ -30,9 +33,11 @@
 #include "parts/textbox.h"
 #include "parts/timer.h"
 #include "parts/trigger.h"
+#include "renderer/Renderer.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
 #include "ui/VPXFileFeedback.h"
+#include "ui/live/LiveUI.h"
 #include "ui/win/codeview.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/hitsur.h"

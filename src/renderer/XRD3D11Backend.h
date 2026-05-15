@@ -9,6 +9,8 @@
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
 
+#include "bx/os.h"
+
 #define D3D11_CHECK(x, y)                                                                                                                                                                    \
    {                                                                                                                                                                                         \
       const HRESULT result = (x);                                                                                                                                                            \

@@ -1,8 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "CabinetRender.h"
+
+#include "imgui/imgui.h"
+#include "parts/pintable.h"
 
 namespace VPX::InGameUI
 {

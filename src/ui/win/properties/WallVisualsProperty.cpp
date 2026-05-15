@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/WallVisualsProperty.h"
+#include "WallVisualsProperty.h"
 
 #include "parts/surface.h"
+#include "ui/win/resource.h"
+
 
 WallVisualsProperty::WallVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {

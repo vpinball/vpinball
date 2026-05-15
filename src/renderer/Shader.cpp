@@ -2,13 +2,15 @@
 
 #include "core/stdafx.h"
 #include "Shader.h"
+
+#include "core/VPApp.h"
+#include "core/vpversion.h"
 #include "typedefs3D.h"
-#include "RenderDevice.h"
+#include "renderer/RenderDevice.h"
+#include "utils/color.h"
 
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
-
-#include "core/vpversion.h"
 
 #if defined(ENABLE_BGFX)
 #ifdef __STANDALONE__

@@ -2,9 +2,15 @@
 
 #include "core/stdafx.h"
 #include "VRDevice.h"
-#include "core/vpversion.h"
 
+#include "core/VPApp.h"
+#include "core/vpversion.h"
 #include "parts/primitive.h"
+#include "renderer/MeshBuffer.h"
+#include "renderer/IndexBuffer.h"
+#include "renderer/RenderTarget.h"
+#include "renderer/Sampler.h"
+#include "renderer/VertexBuffer.h"
 
 // MSVC Concurrency Viewer support
 // This requires to add the MSVC Concurrency SDK to the project
@@ -16,10 +22,14 @@ extern marker_series series;
 #endif
 
 #if defined(ENABLE_XR) && defined(ENABLE_BGFX)
-   #include "bgfx/platform.h"
    #include "bgfx/bgfx.h"
+   #ifdef _far
+      #undef _far
+   #endif
+   #ifdef _near
+      #undef _near
+   #endif
    #include "bx/math.h"
-   #include "bx/os.h"
    #include <map>
    #include <vector>
    #include <time.h>

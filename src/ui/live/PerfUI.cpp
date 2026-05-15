@@ -1,14 +1,17 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "renderer/Renderer.h"
-
 #include "PerfUI.h"
+
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "parts/flipper.h"
+#include "renderer/Renderer.h"
 #include "utils/wintimer.h"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "implot/implot.h"
-#include "parts/flipper.h"
 
 
 PerfUI::PerfUI(Player *const player)

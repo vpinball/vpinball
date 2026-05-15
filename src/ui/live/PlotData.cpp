@@ -1,9 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "PlotData.h"
 
+#include "imgui/imgui.h"
 
 PlotData::PlotData()
    : m_maxSize(500)

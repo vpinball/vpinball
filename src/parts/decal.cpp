@@ -5,11 +5,13 @@
 #include "core/stdafx.h" 
 #include "decal.h"
 
+#include "core/VPApp.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
 

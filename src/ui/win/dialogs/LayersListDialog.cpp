@@ -3,7 +3,14 @@
 #include "core/stdafx.h"
 #include "LayersListDialog.h"
 
+#include "core/editablereg.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "parts/PartGroup.h"
+#include "parts/pintable.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 #define WM_TREE_SEL_CHANGED (WM_USER + 1)
 

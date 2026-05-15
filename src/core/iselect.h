@@ -102,6 +102,9 @@ public:
 
    virtual void SetDefaultPhysics(const bool fromMouseClick) {}
 
+   HRESULT Helper_GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
+   HRESULT Helper_GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
+
    virtual IEditable *GetIEditable() = 0;
    virtual const IEditable *GetIEditable() const = 0;
 

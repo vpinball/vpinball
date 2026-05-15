@@ -11,6 +11,7 @@
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "ui/live/LiveUI.h"
 
 #include "utils/ushock_output.h"
 

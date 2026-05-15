@@ -3,7 +3,9 @@
 #include "core/stdafx.h"
 #include "ieditable.h"
 
+#include "parts/pintable.h"
 #include "parts/Collection.h"
+#include "parts/PartGroup.h"
 
 IEditable::IEditable()
 {

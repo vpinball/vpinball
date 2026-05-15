@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "utils/Logger.h"
+
 #include <cfloat>
 
 // 2D vector

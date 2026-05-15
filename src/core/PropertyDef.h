@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include "core/def.h"
+
+#include <cmath>
 #include <string>
 #include <vector>
-#include "core/def.h"
 
 namespace VPX::Properties
 {

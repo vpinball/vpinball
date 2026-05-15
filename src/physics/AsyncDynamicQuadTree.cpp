@@ -1,9 +1,14 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "quadtree.h"
 #include "AsyncDynamicQuadTree.h"
+
+#include "parts/pintable.h"
+#include "physics/quadtree.h"
+#include "physics/hitable.h"
+
 #include <algorithm>
+
 
 AsyncDynamicQuadTree::AsyncDynamicQuadTree(PhysicsEngine* const physics, PinTable* const table, bool isUI)
    : m_physics(physics)

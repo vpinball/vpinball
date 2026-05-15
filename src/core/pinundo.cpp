@@ -1,7 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+
+#include "pinundo.h"
+
 #include "vpversion.h"
+#include "parts/pintable.h"
+#include "ui/live/LiveUI.h"
 #include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"

@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "dragpoint.h"
 
+#include "parts/pintable.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 

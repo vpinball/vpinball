@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "RenderProbeDialog.h"
 
+#include "core/VPApp.h"
+#include "parts/pintable.h"
+#include "renderer/RenderProbe.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 

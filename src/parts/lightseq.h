@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "parts/pintable.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 

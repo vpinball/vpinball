@@ -2,6 +2,9 @@
 
 #include "core/stdafx.h"
 #include "TableDB.h"
+
+#include "core/VPApp.h"
+
 #include <charconv>
 #include <iostream>
 #include <fstream>

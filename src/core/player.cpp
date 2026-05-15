@@ -9,6 +9,8 @@
 #include <array>
 #include <filesystem>
 
+#include "core/editablereg.h"
+#include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/ball.h"
 #include "parts/flasher.h"
@@ -21,6 +23,8 @@
 #include "renderer/trace.h"
 #include "renderer/typedefs3D.h"
 #include "renderer/VRDevice.h"
+#include "ui/live/LiveUI.h"
+#include "ui/live/ingameui/HomePage.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
 #include "ui/win/codeview.h"

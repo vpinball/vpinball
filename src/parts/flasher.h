@@ -1,12 +1,16 @@
 // license:GPLv3+
 
-// Definition of the Flasher class
-
 #pragma once
 
-#include "dragpoint.h"
+#include "parts/dragpoint.h"
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
+
+class MeshBuffer;
 
 class FlasherData final
 {

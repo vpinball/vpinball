@@ -1,8 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "InGameUIItem.h"
+
+#include "core/player.h"
+#include "core/VPApp.h"
+#include "parts/pintable.h"
+
 
 using namespace VPX::Properties;
 

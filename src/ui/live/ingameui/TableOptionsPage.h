@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "InGameUIPage.h"
+#include "parts/pintable.h"
+
 namespace VPX::InGameUI
 {
 

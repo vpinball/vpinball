@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "renderer/Renderer.h"
 
+#include "parts/Collection.h"
+
 #ifdef _MSC_VER
 #include "dwmapi.h"
 #pragma comment(lib, "Dwmapi.lib")

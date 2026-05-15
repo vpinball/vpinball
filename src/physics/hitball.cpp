@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "parts/ball.h"
 
+#include "ui/live/LiveUI.h"
+
 HitBall::HitBall()
 {
    m_coll.m_ball = this;   // TODO: this needs to move somewhere else

@@ -5,6 +5,8 @@
 #pragma once
 
 #include "core/Settings.h"
+#include "ui/win/resource.h"
+#include "utils/vector.h"
 
 #ifndef __STANDALONE__
    #include <wxx_docking.h>

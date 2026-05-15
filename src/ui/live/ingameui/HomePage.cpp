@@ -1,10 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "renderer/Renderer.h"
-
 #include "HomePage.h"
+
 #include "core/TournamentFile.h"
+#include "core/VPApp.h"
+#include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
+
 
 namespace VPX::InGameUI
 {

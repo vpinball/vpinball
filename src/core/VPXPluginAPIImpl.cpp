@@ -2,8 +2,11 @@
 
 #include "core/stdafx.h"
 #include "VPXPluginAPIImpl.h"
+
+#include "core/VPApp.h"
 #include "parts/flasher.h"
 #include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // General information API

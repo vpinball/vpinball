@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "TableMiscPage.h"
+
+#include "core/VPApp.h"
 #include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
+
 
 namespace VPX::InGameUI
 {

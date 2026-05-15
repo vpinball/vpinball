@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "ui/win/PinTableWnd.h"
+
 class SearchSelectDialog final : public CDialog
 {
 public:

@@ -1,6 +1,8 @@
 #include "core/stdafx.h"
-
 #include "FlasherUIPart.h"
+
+#include "utils/color.h"
+
 
 namespace VPX::EditorUI
 {

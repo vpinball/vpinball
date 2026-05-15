@@ -1,11 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/FlasherVisualsProperty.h"
+#include "FlasherVisualsProperty.h"
 
 #include "parts/flasher.h"
 #include "parts/light.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel)
    : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)

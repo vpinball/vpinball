@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "Anaglyph.h"
 
+#include "utils/color.h"
+
+
 Anaglyph::Anaglyph()
 {
 }

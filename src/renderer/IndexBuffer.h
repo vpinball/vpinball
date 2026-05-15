@@ -92,6 +92,7 @@ protected:
 
 
 
+class RenderDevice;
 class SharedIndexBuffer;
 class VertexBuffer;
 

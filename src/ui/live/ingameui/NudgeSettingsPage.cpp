@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "implot/implot.h"
-
 #include "NudgeSettingsPage.h"
+
+#include "parts/pintable.h"
+#include "implot/implot.h"
+#include "ui/live/LiveUI.h"
+
 
 namespace VPX::InGameUI
 {

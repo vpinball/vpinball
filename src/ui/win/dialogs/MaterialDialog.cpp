@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "MaterialDialog.h"
 
+#include "core/VPApp.h"
+#include "parts/Material.h"
+#include "parts/pintable.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 

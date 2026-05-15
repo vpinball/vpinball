@@ -3,8 +3,10 @@
 #include "core/stdafx.h"
 #include "flasher.h"
 
+#include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
-#include "light.h"
+#include "parts/Collection.h"
+#include "parts/light.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
@@ -13,6 +15,7 @@
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+#include "utils/color.h"
 
 
 Flasher::~Flasher()

@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/hittarget.h"
+#include "HitTargetVisualsProperty.h"
 
-#include "ui/win/properties/HitTargetVisualsProperty.h"
+#include "parts/Collection.h"
+#include "parts/hittarget.h"
+#include "ui/win/resource.h"
+
 
 HitTargetVisualsProperty::HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel):BasePropertyDialog(IDD_PROPHITTARGET_VISUALS, pvsel)
 {

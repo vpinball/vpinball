@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "ImageDialog.h"
 
+#include "core/VPApp.h"
 #include "parts/bumper.h"
 #include "parts/decal.h"
 #include "parts/dispreel.h"
@@ -24,6 +25,7 @@
 #include "parts/trigger.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 typedef struct _tagSORTDATA
 {

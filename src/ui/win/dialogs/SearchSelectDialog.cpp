@@ -3,7 +3,9 @@
 #include "core/stdafx.h"
 #include "SearchSelectDialog.h"
 
+#include "core/VPApp.h"
 #include "parts/bumper.h"
+#include "parts/Collection.h"
 #include "parts/decal.h"
 #include "parts/dispreel.h"
 #include "parts/flasher.h"

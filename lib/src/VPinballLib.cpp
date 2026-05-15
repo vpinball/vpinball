@@ -1,12 +1,15 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "VPinballLib.h"
 
+#include "core/extern.h"
 #include "core/AppCommands.h"
 #include "core/TableDB.h"
+#include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
-#include "core/extern.h"
-#include "VPinballLib.h"
+#include "parts/pintable.h"
+#include "renderer/Renderer.h"
 #include "VPXProgress.h"
 #include "WebServer.h"
 

@@ -6,6 +6,8 @@
 
 #include "FileLocator.h"
 
+#include "parts/pintable.h"
+
 FileLocator::FileLocator()
    : m_appPath(EvaluateAppPath())
 {

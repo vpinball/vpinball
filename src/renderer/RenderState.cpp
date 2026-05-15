@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "RenderState.h"
 
+#include "renderer/RenderDevice.h"
+
+
 #define RENDER_STATE(name, bitpos, bitsize)                                                    \
    constexpr uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                      \
    constexpr uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos); \

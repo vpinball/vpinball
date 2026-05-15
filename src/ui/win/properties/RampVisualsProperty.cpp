@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/ramp.h"
+#include "RampVisualsProperty.h"
 
-#include "ui/win/properties/RampVisualsProperty.h"
+#include "parts/ramp.h"
+#include "ui/win/resource.h"
+
 
 RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {

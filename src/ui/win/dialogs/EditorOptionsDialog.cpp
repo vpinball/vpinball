@@ -5,6 +5,7 @@
 
 #include <filesystem>
 
+#include "core/VPApp.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"

@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "ScriptErrorDialog.h"
 
+#include "ui/win/resource.h"
+
+
 ScriptErrorDialog::ScriptErrorDialog(const wstring &message) :
 	CDialog(IDD_SCRIPT_ERROR),
 	initMessage(message)

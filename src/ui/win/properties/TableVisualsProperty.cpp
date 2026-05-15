@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/TableVisualsProperty.h"
+#include "TableVisualsProperty.h"
 
+#include "parts/pintable.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {

@@ -1,8 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "FlipperPhysicsProperty.h"
+
+#include "parts/Collection.h"
 #include "parts/flipper.h"
-#include "ui/win/properties/FlipperPhysicsProperty.h"
+#include "ui/win/resource.h"
+
 
 FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {

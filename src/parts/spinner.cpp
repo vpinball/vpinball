@@ -3,15 +3,19 @@
 #include "core/stdafx.h"
 #include "spinner.h"
 
+#include "core/VPApp.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
+#include "parts/Collection.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
+
 
 Spinner::~Spinner()
 {

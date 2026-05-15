@@ -3,6 +3,9 @@
 #include "fonts/IconsForkAwesome.h"
 #include "parts/pintable.h"
 #include "parts/Collection.h"
+#include "parts/Material.h"
+#include "renderer/Texture.h"
+#include "imgui/imgui.h"
 
 namespace VPX::EditorUI
 {

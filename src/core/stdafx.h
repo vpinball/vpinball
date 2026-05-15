@@ -93,10 +93,8 @@
 
 #define NUM_ASSIGN_LAYERS       20
 
-//VR Support
+// VR Support
 
-// No VR support for DX9, BGFX is in progress, Metal VR support under BGFX is still to be implemented
-//#if !defined(__STANDALONE__) && (defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)) && !defined(__APPLE__)
 #if !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
 #define ENABLE_VR
 #endif

@@ -10,6 +10,7 @@
 #include "core/VPXPluginAPIImpl.h"
 
 #include "core/AppCommands.h"
+#include "core/VPApp.h"
 
 #include "ui/win/resource.h"
 #include <initguid.h>

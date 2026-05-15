@@ -9,9 +9,10 @@
 #include "renderer/Texture.h"
 #include "plugins/ControllerPlugin.h"
 #include "parts/PartGroup.h"
+#include "renderer/RenderProbe.h"
 
 class Renderable;
-
+class PinTable;
 class Renderer final
 {
 public:
@@ -96,22 +97,8 @@ public:
 
    void ReinitRenderable(IRenderable* part) { if (part) m_renderableToInit.push_back(part); }
 
-   RenderProbe::ReflectionMode GetMaxReflectionMode() const {
-      // For dynamic mode, static reflections are not available so adapt the mode
-      return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
-   }
-   int GetAOMode() const // 0=Off, 1=Static, 2=Dynamic
-   {
-      // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
-      if (m_disableAO || !m_table->m_enableAO || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
-         return 0;
-      // The existing implementation suffers from high temporal artefacts that make it unsuitable for dynamic camera situations
-      if (m_stereo3D == STEREO_VR)
-         return 0;
-      if (m_dynamicAO)
-         return 2;
-      return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only, and we are running without it, disable AO
-   }
+   RenderProbe::ReflectionMode GetMaxReflectionMode() const;
+   int GetAOMode() const; // 0=Off, 1=Static, 2=Dynamic
 
    bool UseAnisoFiltering() const;
    void SetAnisoFiltering(bool enable);

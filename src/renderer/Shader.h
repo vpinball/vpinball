@@ -39,6 +39,11 @@
 #endif
 
 #include <string>
+#include "Sampler.h"
+
+class Material;
+class Texture;
+class ITexManCacheable;
 
 // Declaration of all available techniques (shader program)
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)

@@ -4,6 +4,7 @@
 
 #ifndef __STANDALONE__
 #include <wxx_stdcontrols.h> // Add CButton, CEdit, CListBox
+#include <wxx_commondlg.h> // Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog
 #endif
 
 class DebuggerDialog final : public CDialog

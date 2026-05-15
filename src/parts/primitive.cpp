@@ -1,14 +1,11 @@
 // license:GPLv3+
 
-// implementation of the Primitive class.
-
 #include "core/stdafx.h" 
 #include "primitive.h"
 
-#include "forsyth.h"
-#include "light.h"
-#include "miniz/miniz.h"
-#include "progmesh.h"
+#include "core/VPApp.h"
+#include "parts/light.h"
+#include "parts/Collection.h"
 #include "renderer/Renderer.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
@@ -16,6 +13,11 @@
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
+#include "utils/color.h"
+
+#include "forsyth.h"
+#include "progmesh.h"
+#include "miniz/miniz.h"
 
 
 Primitive::~Primitive()

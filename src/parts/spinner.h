@@ -4,8 +4,13 @@
 
 #pragma once
 
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
+class MeshBuffer;
 
 class SpinnerData final : public BaseProperty
 {

@@ -4,7 +4,11 @@
 #include "surface.h"
 
 //#include "forsyth.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "core/iselect.h"
+
+
 class IHitable // used for Collision Detection and/or UI Picking
 {
 public:

@@ -12,6 +12,8 @@
 #include <vulkan/vulkan_android.h>
 #endif
 
+#include "bx/os.h"
+
 class LibVulkan
 {
 public:

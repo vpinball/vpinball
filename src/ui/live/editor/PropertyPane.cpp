@@ -1,7 +1,8 @@
 #include "core/stdafx.h"
-
 #include "PropertyPane.h"
+
 #include "imgui/imgui_stdlib.h"
+#include "ui/live/LiveUI.h"
 
 namespace VPX::EditorUI
 {

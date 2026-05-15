@@ -3,6 +3,7 @@
 #include <atlcom.h>
 #include "codeviewedit.h"
 #include "core/ScriptInterpreter.h"
+#include "utils/vector.h"
 #include "utils/vectorsort.h"
 
 #ifndef __STANDALONE__

@@ -1,9 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/kicker.h"
+#include "KickerPhysicsProperty.h"
 
-#include "ui/win/properties/KickerPhysicsProperty.h"
+#include "parts/Collection.h"
+#include "parts/kicker.h"
+#include "renderer/Texture.h"
+#include "ui/win/resource.h"
+
 
 KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
 {

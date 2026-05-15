@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/primitive.h"
+#include "PrimitivePhysicsProperty.h"
 
-#include "ui/win/properties/PrimitivePhysicsProperty.h"
+#include "parts/Collection.h"
+#include "parts/primitive.h"
+#include "ui/win/resource.h"
+
 
 PrimitivePhysicsProperty::PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_PHYSICS, pvsel)
 {

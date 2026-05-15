@@ -1,10 +1,14 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "InputManager.h"
+
+#include "core/player.h"
+#include "core/TournamentFile.h"
+#include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "renderer/VRDevice.h"
-#include "core/TournamentFile.h"
-#include "core/player.h"
+#include "ui/live/LiveUI.h"
 
 #include "ScanCodes.h"
 

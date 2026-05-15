@@ -12,6 +12,10 @@
 #include <cassert>
 #include "core/vpversion.h"
 
+#ifdef ENABLE_BGFX
+#include "bx/readerwriter.h"
+#endif
+
 namespace
 {
    static string s_miniDumpFileName = "crash.dmp"s;

@@ -7,7 +7,8 @@
 
 #include <filesystem>
 
-
+#include "core/editablereg.h"
+#include "core/VPApp.h"
 #include "core/vpversion.h"
 #include "parts/bumper.h"
 #include "parts/decal.h"

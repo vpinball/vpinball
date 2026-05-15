@@ -1,10 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/primitive.h"
-
-#include "utils/hash.h"
 #include "objloader.h"
+
+#include "parts/Material.h"
+#include "parts/primitive.h"
+#include "utils/color.h"
+#include "utils/hash.h"
+
 
 // not thread safe!
 

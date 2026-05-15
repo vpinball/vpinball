@@ -11,6 +11,8 @@
 
 #include "core/VPApp.h"
 #include "core/AppCommands.h"
+#include "renderer/Renderer.h"
+#include "renderer/Texture.h"
 
 #include "plugins/MsgPluginManager.h"
 

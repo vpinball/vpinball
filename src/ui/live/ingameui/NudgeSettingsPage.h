@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "../PlotData.h"
+#include "InGameUIPage.h"
+#include "ui/live/PlotData.h"
 
 namespace VPX::InGameUI
 {

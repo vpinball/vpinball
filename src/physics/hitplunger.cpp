@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "parts/plunger.h"
 
+#include "ui/live/LiveUI.h"
+
 #define PLUNGERHEIGHT 50.0f
 
 constexpr float PlungerMoverObject::m_mass = 30.0f;

@@ -1,10 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "VRSettingsPage.h"
+
 #include "renderer/VRDevice.h"
 #include "parts/flasher.h"
+#include "ui/live/LiveUI.h"
+#include "utils/color.h"
+
 
 namespace VPX::InGameUI
 {

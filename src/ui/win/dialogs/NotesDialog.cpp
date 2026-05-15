@@ -3,8 +3,10 @@
 #include "core/stdafx.h"
 #include "NotesDialog.h"
 
+#include "parts/pintable.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 LRESULT NotesEdit::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {

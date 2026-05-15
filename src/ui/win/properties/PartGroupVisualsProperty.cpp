@@ -1,7 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/PartGroupVisualsProperty.h"
+#include "PartGroupVisualsProperty.h"
+
+#include "parts/Collection.h"
+#include "parts/PartGroup.h"
+#include "ui/win/resource.h"
+
 
 PartGroupVisualsProperty::PartGroupVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
 {

@@ -2,6 +2,9 @@
 
 #include "core/stdafx.h"
 #include "Window.h"
+
+#include "core/VPApp.h"
+#include "parts/Collection.h"
 #include "renderer/Renderer.h"
 
 #include <SDL3/SDL_video.h>

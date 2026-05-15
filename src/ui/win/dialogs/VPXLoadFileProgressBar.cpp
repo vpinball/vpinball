@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "VPXLoadFileProgressBar.h"
 
+#include "ui/win/resource.h"
+
 
 VPXLoadFileProgressBar::VPXLoadFileProgressBar(HINSTANCE app, HWND statusBar)
    : m_app{app},

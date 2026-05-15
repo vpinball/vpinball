@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "parts/Collection.h"
 #include "parts/timer.h"
 #include "physics/hitable.h"
 #include "physics/hitball.h"
@@ -10,6 +11,7 @@
 #include "utils/eventproxy.h"
 
 class HitBall;
+class ITexManCacheable;
 
 // Helper class used for projecting sphere points, which is then used to compensate for projection stretch if anti-ball-stretch is enabled
 class AntiStretchHelper final

@@ -2,7 +2,12 @@
 
 #pragma once
 
+#if defined(ENABLE_BGFX)
+#include "bgfx/bgfx.h"
+#endif
+
 #include "typedefs3D.h"
+#include "Sampler.h"
 class RenderDevice;
 class RenderPass;
 

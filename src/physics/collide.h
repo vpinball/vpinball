@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "core/ieditable.h"
+
+
 enum eObjType : unsigned char
 {
    eNull,

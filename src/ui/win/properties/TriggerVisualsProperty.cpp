@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/trigger.h"
+#include "TriggerVisualsProperty.h"
 
-#include "ui/win/properties/TriggerVisualsProperty.h"
+#include "parts/trigger.h"
+#include "ui/win/resource.h"
+
 
 TriggerVisualsProperty::TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTRIGGER_VISUALS, pvsel)
 {

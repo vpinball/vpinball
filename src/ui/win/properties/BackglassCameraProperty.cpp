@@ -4,7 +4,9 @@
 #include "ui/win/properties/BackglassCameraProperty.h"
 
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {

@@ -1,6 +1,9 @@
 #include "core/stdafx.h"
-
 #include "Collection.h"
+
+#include "core/VPApp.h"
+#include "parts/pintable.h"
+
 
 Collection::Collection()
 {

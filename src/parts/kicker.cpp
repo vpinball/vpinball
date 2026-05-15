@@ -3,7 +3,7 @@
 #include "core/stdafx.h"
 #include "kicker.h"
 
-#include "ball.h"
+#include "core/VPApp.h"
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerGottlieb.h"
 #include "meshes/kickerHitMesh.h"
@@ -12,12 +12,18 @@
 #include "meshes/kickerT1Mesh.h"
 #include "meshes/kickerWilliams.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/MeshBuffer.h"
+#include "renderer/RenderDevice.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
+#include "parts/ball.h"
+#include "parts/PartGroup.h"
+#include "ui/live/LiveUI.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
+
 
 Kicker::~Kicker()
 {
