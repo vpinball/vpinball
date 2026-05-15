@@ -6,6 +6,13 @@
 
 #include "FileLocator.h"
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#if defined(TARGET_OS_OSX) && TARGET_OS_OSX
+#include <mach-o/dyld.h>
+#endif
+#endif
+
 FileLocator::FileLocator()
    : m_appPath(EvaluateAppPath())
 {
@@ -26,6 +33,25 @@ std::filesystem::path FileLocator::EvaluateAppPath()
    appPath = SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS);
 #else
    appPath = SDL_GetBasePath();
+#if defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX
+   uint32_t exePathSize = 0;
+   _NSGetExecutablePath(nullptr, &exePathSize);
+   if (exePathSize > 0)
+   {
+      std::string exePath(exePathSize, '\0');
+      if (_NSGetExecutablePath(exePath.data(), &exePathSize) == 0)
+      {
+         // Get the canonical path, to be able to support users creating a symlink to the executable from another location,
+         // but still have the app working properly with files located with the real executable path. On macOS, the executable
+         // is located in 'AppBundle/Contents/MacOS/', but resources are located in 'AppBundle/Contents/Resources/'.
+         std::filesystem::path canonicalPath = std::filesystem::canonical(exePath).parent_path();
+         if (canonicalPath.filename() == "MacOS" && canonicalPath.parent_path().filename() == "Contents")
+         {
+            appPath = canonicalPath.parent_path() / "Resources";
+         }
+      }
+   }
+#endif
 #endif
    return appPath;
 }
