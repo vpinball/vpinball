@@ -55,6 +55,7 @@ public:
 
    float m_screenAlpha = 1.0f;
    bool m_hudVisible = true;
+   bool m_padTextAlways = false;
    // Action queued by LabelShowPage, applied when the main media ends.
    enum class HudReturn
    {

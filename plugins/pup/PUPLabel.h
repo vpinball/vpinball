@@ -3,6 +3,7 @@
 #pragma once
 
 #include "common.h"
+#include "PUPFont.h"
 
 #include <climits>
 #include <future>
@@ -56,7 +57,7 @@ private:
    class PUPManager* const m_pManager;
    const string m_szName;
 
-   TTF_Font* m_pFont;
+   PUPFont* m_pFont;
    float m_size;
    int m_color;
    float m_angle;
@@ -116,6 +117,8 @@ private:
          , m_prerenderedColor(other.m_prerenderedColor)
          , m_width(other.m_width)
          , m_height(other.m_height)
+         , m_logicalHeight(other.m_logicalHeight)
+         , m_baselineOffset(other.m_baselineOffset)
          , m_pAnimation(std::move(other.m_pAnimation))
          , m_accumulatedDelays(std::move(other.m_accumulatedDelays))
          , m_totalDuration(other.m_totalDuration)
@@ -138,6 +141,8 @@ private:
             m_totalDuration = other.m_totalDuration;
             m_width = other.m_width;
             m_height = other.m_height;
+            m_logicalHeight = other.m_logicalHeight;
+            m_baselineOffset = other.m_baselineOffset;
 
             other.m_pTexture = nullptr;
          }
@@ -149,12 +154,14 @@ private:
       int m_prerenderedColor = 0; // Color used for prerendering the text
       float m_width = 0; // Width of rendered text (unused for images)
       float m_height = 0; // Height of rendered text (unused for images)
+      float m_logicalHeight = 0; // Windows-equivalent text-box height for alignment
+      float m_baselineOffset = 0; // Y shift to align SDL_ttf baseline with Windows GDI baseline
       std::shared_ptr<IMG_Animation> m_pAnimation;
       vector<int> m_accumulatedDelays;
       int m_totalDuration = 0;
    };
    RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
-   RenderState UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
+   RenderState UpdateLabelTexture(int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
 
    class Animation {
    public:

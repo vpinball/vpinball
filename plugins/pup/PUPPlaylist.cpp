@@ -99,7 +99,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 
    if (!hasFiles) {
       // TODO add to a pup pack audit, we log as info as not a big deal.
-      LOGI("Playlist folder " + szFolderPath.string() + " is empty");
+      LOGW("Playlist folder " + szFolderPath.string() + " is empty");
    }
 
    PUPPlaylist* pPlaylist = new PUPPlaylist(

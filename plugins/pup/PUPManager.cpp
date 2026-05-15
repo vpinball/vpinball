@@ -223,11 +223,9 @@ void PUPManager::Unload()
 
 void PUPManager::UnloadFonts()
 {
-   for (auto& pFont : m_fonts)
-      TTF_CloseFont(pFont);
-   m_fonts.clear();
    m_fontMap.clear();
    m_fontFilenameMap.clear();
+   m_fonts.clear();
 }
 
 void PUPManager::LoadFonts()
@@ -243,9 +241,9 @@ void PUPManager::LoadFonts()
             std::filesystem::path szFontPath = entry.path();
             if (lowerCase(szFontPath.extension()) == ".ttf")
             {
-               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.string().c_str(), 8))
+               if (TTF_Font* pTTFFont = TTF_OpenFont(szFontPath.string().c_str(), 8))
                {
-                  AddFont(pFont, entry.path().filename().string());
+                  AddFont(std::make_unique<PUPFont>(pTTFFont, szFontPath), entry.path().filename().string());
                }
                else
                {
@@ -265,8 +263,8 @@ void PUPManager::LoadFonts()
       VPXInfo vpxInfo;
       m_vpxApi->GetVpxInfo(&vpxInfo);
       std::filesystem::path fallbackPath = std::filesystem::path(vpxInfo.path) / "assets" / "LiberationSans-Regular.ttf";
-      if (TTF_Font* pFont = TTF_OpenFont(fallbackPath.string().c_str(), 8))
-         AddFont(pFont, "LiberationSans-Regular.ttf");
+      if (TTF_Font* pTTFFont = TTF_OpenFont(fallbackPath.string().c_str(), 8))
+         AddFont(std::make_unique<PUPFont>(pTTFFont, fallbackPath), "LiberationSans-Regular.ttf");
    }
 }
 
@@ -395,39 +393,39 @@ std::shared_ptr<PUPScreen> PUPManager::GetScreen(int screenNum, bool logMissing)
    return nullptr;
 }
 
-bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
+bool PUPManager::AddFont(std::unique_ptr<PUPFont> pFont, const string& szFilename)
 {
-   if (!pFont)
+   if (!pFont || !pFont->GetTTFFont())
       return false;
 
-   m_fonts.push_back(pFont);
+   TTF_Font* const pTTFFont = pFont->GetTTFFont();
 
-   const string szFamilyName = TTF_GetFontFamilyName(pFont);
-
+   const string szFamilyName = TTF_GetFontFamilyName(pTTFFont);
    const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, ' '));
-   m_fontMap[szNormalizedFamilyName] = pFont;
+   m_fontMap[szNormalizedFamilyName] = pFont.get();
 
-   const string szStyleName = TTF_GetFontStyleName(pFont);
+   const string szStyleName = TTF_GetFontStyleName(pTTFFont);
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
       const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, ' '));
-      m_fontMap[szNormalizedFullName] = pFont;
+      m_fontMap[szNormalizedFullName] = pFont.get();
    }
 
    const string szNormalizedFilename = lowerCase(szFilename.substr(0, szFilename.length() - 4));
-   m_fontFilenameMap[szNormalizedFilename] = pFont;
+   m_fontFilenameMap[szNormalizedFilename] = pFont.get();
 
-   LOGI(std::format("Font added: familyName={}, styleName={}, filename={}", szFamilyName, szStyleName, szFilename));
+   LOGI(std::format("Font added: familyName={}, styleName={}, filename={}, winScale={}, winAscentRatio={}", szFamilyName, szStyleName, szFilename, pFont->GetWinScale(), pFont->GetWinAscentRatio()));
 
+   m_fonts.push_back(std::move(pFont));
    return true;
 }
 
-TTF_Font* PUPManager::GetFont(const string& szFont)
+PUPFont* PUPManager::GetFont(const string& szFont)
 {
    string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, ' '));
 
-   ankerl::unordered_dense::map<string, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
+   auto it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
       return it->second;
    it = m_fontFilenameMap.find(lowerCase(szFont));

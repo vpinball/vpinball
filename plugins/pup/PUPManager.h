@@ -23,6 +23,8 @@
 
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include "PUPFont.h"
+
 #define PUP_SCREEN_TOPPER             0
 #define PUP_SETTINGS_TOPPERX          320
 #define PUP_SETTINGS_TOPPERY          30
@@ -99,8 +101,8 @@ public:
    std::shared_ptr<PUPScreen> GetScreen(int screenNum, bool logMissing = false) const;
    void SendScreenToBack(const PUPScreen* screen);
    void SendScreenToFront(const PUPScreen* screen);
-   bool AddFont(TTF_Font* pFont, const string& szFilename);
-   TTF_Font* GetFont(const string& szFont);
+   bool AddFont(std::unique_ptr<PUPFont> pFont, const string& szFilename);
+   PUPFont* GetFont(const string& szFont);
 
    void QueueDOFEvent(char c, int id, int value);
 
@@ -121,9 +123,9 @@ private:
    string m_szRomName;
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
-   vector<TTF_Font*> m_fonts;
-   ankerl::unordered_dense::map<string, TTF_Font*> m_fontMap;
-   ankerl::unordered_dense::map<string, TTF_Font*> m_fontFilenameMap;
+   vector<std::unique_ptr<PUPFont>> m_fonts;
+   ankerl::unordered_dense::map<string, PUPFont*> m_fontMap;
+   ankerl::unordered_dense::map<string, PUPFont*> m_fontFilenameMap;
    vector<PUPPlaylist*> m_playlists;
 
    const uint32_t m_endpointId;

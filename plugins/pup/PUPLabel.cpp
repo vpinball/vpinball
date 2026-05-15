@@ -413,7 +413,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          else if (key == "fname")
          {
             string szFont = value.as_str();
-            TTF_Font* newFont = m_pManager->GetFont(szFont);
+            PUPFont* newFont = m_pManager->GetFont(szFont);
             if (!newFont)
                LOGE("Label font not found: name=" + m_szName + ", font=" + szFont);
             if (newFont != m_pFont)
@@ -877,18 +877,24 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
          yposPercent = 1.0f;
    }
 
-   dest.y += static_cast<float>(rect.h) * yposPercent;
+   const float yPosOffset = static_cast<float>(rect.h) * yposPercent;
+   dest.y += yPosOffset;
 
+   const float alignHeight = (m_type == PUP_LABEL_TYPE_TEXT && m_renderState.m_logicalHeight > 0) ? m_renderState.m_logicalHeight : height;
+   float alignOffset = 0.f;
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
-      dest.y -= (height / 2.f);
+      alignOffset = -(alignHeight / 2.f);
    else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
-      dest.y -= height;
+      alignOffset = -alignHeight;
+   dest.y += alignOffset;
+
+   if (m_type == PUP_LABEL_TYPE_TEXT)
+      dest.y += m_renderState.m_baselineOffset;
 
    if (m_shadowType == 2)
    {
       const float fontHeight = (m_size / 100.0f) * static_cast<float>(rect.h);
       dest.x += static_cast<float>(static_cast<int>(fontHeight * (m_xoffset / 100.0f))) * -2.f;
-      dest.y += static_cast<float>(static_cast<int>(fontHeight * (m_yoffset / 100.0f))) * -2.f;
    }
 
    bool visible = true;
@@ -1010,7 +1016,7 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    return rs;
 }
 
-PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset)
+PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset)
 {
    SetThreadName("PUPLabel.Upd." + m_szName);
 
@@ -1026,19 +1032,46 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
    // FIXME TTF_STYLE_BOLD gives bad results (test with Blood Machines, during Bonus sequence)
    // style |= m_bold ? TTF_STYLE_BOLD : 0;
    if (m_italic) style |= TTF_STYLE_ITALIC;
-   TTF_SetFontSize(pFont, fontHeight);
+
+   const PUPFont::SizeMetrics metrics = pFont->Apply(fontHeight);
+   TTF_Font* const pTTFFont = pFont->GetTTFFont();
+
+   const float shadowTop = (m_shadowType == 2) ? static_cast<float>(SDL_max(1, static_cast<int>(SDL_max(std::abs(fontHeight * (m_xoffset / 100.0f)), std::abs(fontHeight * (m_yoffset / 100.0f)))) - 2)) : 0.f;
+   rs.m_baselineOffset = metrics.winAscent - metrics.sdlAscent - shadowTop;
+
    // FIXME TTF_SetFontOutline does not gives clean outlines
-   // TTF_SetFontOutline(pFont, m_outline);
-   TTF_SetFontOutline(pFont, 0);
-   TTF_SetFontStyle(pFont, style);
-   TTF_SetFontHinting(pFont, TTF_HINTING_NORMAL);
-   TTF_SetFontWrapAlignment(pFont,
+   // TTF_SetFontOutline(pTTFFont, m_outline);
+   TTF_SetFontOutline(pTTFFont, 0);
+   TTF_SetFontStyle(pTTFFont, style);
+   TTF_SetFontHinting(pTTFFont, TTF_HINTING_NORMAL);
+   TTF_SetFontWrapAlignment(pTTFFont,
       m_xAlign == PUP_LABEL_XALIGN_CENTER ? TTF_HORIZONTAL_ALIGN_CENTER :
       m_xAlign == PUP_LABEL_XALIGN_RIGHT  ? TTF_HORIZONTAL_ALIGN_RIGHT :
                                              TTF_HORIZONTAL_ALIGN_LEFT);
 
    string text = szCaption;
-   std::replace_if(text.begin(), text.end(), [pFont](char c) { return c != '\n' && !TTF_FontHasGlyph(pFont, c); }, ' ');
+   if (m_pScreen && m_pScreen->m_padTextAlways)
+   {
+      // FN=46 / pDMDAlwaysPAD: ensure caption and each newline are bracketed by spaces.
+      if (text.empty() || text.front() != ' ')
+         text.insert(0, " ");
+      if (text.back() != ' ')
+         text += ' ';
+      for (size_t pos = text.find('\n'); pos != string::npos; pos = text.find('\n', pos + 2))
+      {
+         if (pos > 0 && text[pos - 1] != ' ')
+         {
+            text.insert(pos, " ");
+            pos++;
+         }
+         if (pos + 1 >= text.size() || text[pos + 1] != ' ')
+            text.insert(pos + 1, " ");
+      }
+   }
+   std::replace_if(text.begin(), text.end(), [pTTFFont](char c) { return c != '\n' && !TTF_FontHasGlyph(pTTFFont, c); }, ' ');
+
+   const int lineCount = 1 + static_cast<int>(std::count(text.begin(), text.end(), '\n'));
+   rs.m_logicalHeight = fontHeight * static_cast<float>(lineCount);
 
    // See pDMDLabelSetAutoSize — shrink font until text fits within autow/autoh dimensions
    const float maxW = (m_autoFitWidth > 0) ? (m_autoFitWidth / 100.0f) * static_cast<float>(outHeight) * (16.0f / 9.0f) : 0;
@@ -1046,7 +1079,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
    float adjustedHeight = fontHeight;
 
    SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), 255 };
-   SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), textColor, 0);
+   SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), textColor, 0);
    if (!pTextSurface)
    {
       LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
@@ -1060,9 +1093,41 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       if (maxH > 0 && pTextSurface->h > maxH) fits = false;
       if (fits || adjustedHeight < 4.f) break;
       adjustedHeight -= 2.f;
-      TTF_SetFontSize(pFont, adjustedHeight);
+      pFont->Apply(adjustedHeight);
       SDL_DestroySurface(pTextSurface);
-      pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), textColor, 0);
+      pTextSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), textColor, 0);
+   }
+
+   {
+      SDL_Surface* pConverted = SDL_ConvertSurface(pTextSurface, SDL_PIXELFORMAT_RGBA32);
+      if (pConverted)
+      {
+         SDL_DestroySurface(pTextSurface);
+         pTextSurface = pConverted;
+      }
+   }
+
+   if (m_gradState > 0)
+   {
+      SDL_LockSurface(pTextSurface);
+      uint32_t* const pixels = (uint32_t*)pTextSurface->pixels;
+      const int pitch = pTextSurface->pitch / 4;
+      const int h = pTextSurface->h;
+      for (int y = 0; y < h; y++)
+      {
+         const float t = (float)y / (float)(h > 1 ? h - 1 : 1);
+         const uint8_t gr = GetRValue(m_color) + static_cast<uint8_t>(t * (GetRValue(m_gradColor) - GetRValue(m_color)));
+         const uint8_t gg = GetGValue(m_color) + static_cast<uint8_t>(t * (GetGValue(m_gradColor) - GetGValue(m_color)));
+         const uint8_t gb = GetBValue(m_color) + static_cast<uint8_t>(t * (GetBValue(m_gradColor) - GetBValue(m_color)));
+         for (int x = 0; x < pTextSurface->w; x++)
+         {
+            uint32_t& px = pixels[y * pitch + x];
+            const uint8_t a = (px >> 24) /*& 0xFF*/;
+            if (a > 0)
+               px = (a << 24) | (gb << 16) | (gg << 8) | gr;
+         }
+      }
+      SDL_UnlockSurface(pTextSurface);
    }
 
    const int xoffset = static_cast<int>(fontHeight * (offset.x / 100.0f));
@@ -1072,59 +1137,33 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
 
    if (shadowstate == 2 && (absxoff != 0 || absyoff != 0))
    {
-      // See pDMDLabelSetBorder — border/outline mode: render shadow text at offsets around
-      // all edges to form a border, then render foreground text centered on top
-      SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + absxoff * 2, pTextSurface->h + absyoff * 2, SDL_PIXELFORMAT_RGBA32);
-      if (!pMergedSurface)
+      // See pDMDLabelSetBorder — render foreground text inside a true outline glyph
+      // produced by TTF_SetFontOutline.
+      const int outline = SDL_max(1, SDL_max(absxoff, absyoff) - 2);
+      const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
+      TTF_SetFontOutline(pTTFFont, outline);
+      SDL_Surface* pOutlineSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0);
+      TTF_SetFontOutline(pTTFFont, 0);
+
+      if (!pOutlineSurface)
       {
-         LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
+         LOGE("Unable to render outline: label=" + m_szName + ", error=" + SDL_GetError());
          SDL_DestroySurface(pTextSurface);
          return rs;
       }
 
-      const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
-      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), shadowColor, 0);
-      if (pShadowSurface)
+      SDL_Surface* pMergedSurface = SDL_ConvertSurface(pOutlineSurface, SDL_PIXELFORMAT_RGBA32);
+      SDL_DestroySurface(pOutlineSurface);
+      if (!pMergedSurface)
       {
-         const int offsets[][2] = {
-            {0, 0}, {absxoff, 0}, {absxoff * 2, 0},
-            {0, absyoff}, {absxoff * 2, absyoff},
-            {0, absyoff * 2}, {absxoff, absyoff * 2}, {absxoff * 2, absyoff * 2}
-         };
-         for (const auto& off : offsets)
-         {
-            SDL_Rect r = { off[0], off[1], pShadowSurface->w, pShadowSurface->h };
-            SDL_BlitSurface(pShadowSurface, nullptr, pMergedSurface, &r);
-         }
-         SDL_DestroySurface(pShadowSurface);
+         LOGE("Unable to convert outline: label=" + m_szName + ", error=" + SDL_GetError());
+         SDL_DestroySurface(pTextSurface);
+         return rs;
       }
 
-      SDL_Rect textRect = { absxoff, absyoff, pTextSurface->w, pTextSurface->h };
+      SDL_Rect textRect = { outline, outline, pTextSurface->w, pTextSurface->h };
       SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
       SDL_DestroySurface(pTextSurface);
-
-      if (m_gradState > 0)
-      {
-         SDL_LockSurface(pMergedSurface);
-         uint32_t* const pixels = (uint32_t*)pMergedSurface->pixels;
-         const int pitch = pMergedSurface->pitch / 4;
-         const int h = pMergedSurface->h;
-         for (int y = 0; y < h; y++)
-         {
-            const float t = (float)y / (float)(h > 1 ? h - 1 : 1);
-            const uint8_t gr = GetRValue(m_color) + static_cast<uint8_t>(t * (GetRValue(m_gradColor) - GetRValue(m_color)));
-            const uint8_t gg = GetGValue(m_color) + static_cast<uint8_t>(t * (GetGValue(m_gradColor) - GetGValue(m_color)));
-            const uint8_t gb = GetBValue(m_color) + static_cast<uint8_t>(t * (GetBValue(m_gradColor) - GetBValue(m_color)));
-            for (int x = 0; x < pMergedSurface->w; x++)
-            {
-               uint32_t& px = pixels[y * pitch + x];
-               const uint8_t a = (px >> 24) /*& 0xFF*/;
-               if (a > 0)
-                  px = (a << 24) | (gb << 16) | (gg << 8) | gr;
-            }
-         }
-         SDL_UnlockSurface(pMergedSurface);
-      }
 
       if (m_filterMode > 0)
          ApplyFilter(pMergedSurface, m_filterMode);
@@ -1161,7 +1200,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
    {
       // See pDMDLabelSetShadow — drop shadow: render shadow text at offset, foreground at origin
       const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
-      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pFont, text.c_str(), text.length(), shadowColor, 0);
+      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0);
       if (pShadowSurface)
       {
          SDL_Rect shadowRect = { (xoffset < 0) ? 0 : xoffset, (yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
@@ -1183,30 +1222,6 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, nullptr);
    }
    SDL_DestroySurface(pTextSurface);
-
-   // See pDMDLabelSetColorGradient — apply vertical gradient from color to gradcolor
-   if (m_gradState > 0)
-   {
-      SDL_LockSurface(pMergedSurface);
-      uint32_t* const pixels = (uint32_t*)pMergedSurface->pixels;
-      const int pitch = pMergedSurface->pitch / 4;
-      const int h = pMergedSurface->h;
-      for (int y = 0; y < h; y++)
-      {
-         const float t = (float)y / (float)(h > 1 ? h - 1 : 1);
-         const uint8_t gr = GetRValue(m_color) + static_cast<uint8_t>(t * (GetRValue(m_gradColor) - GetRValue(m_color)));
-         const uint8_t gg = GetGValue(m_color) + static_cast<uint8_t>(t * (GetGValue(m_gradColor) - GetGValue(m_color)));
-         const uint8_t gb = GetBValue(m_color) + static_cast<uint8_t>(t * (GetBValue(m_gradColor) - GetBValue(m_color)));
-         for (int x = 0; x < pMergedSurface->w; x++)
-         {
-            uint32_t& px = pixels[y * pitch + x];
-            const uint8_t a = (px >> 24) /*& 0xFF*/;
-            if (a > 0)
-               px = (a << 24) | (gb << 16) | (gg << 8) | gr;
-         }
-      }
-      SDL_UnlockSurface(pMergedSurface);
-   }
 
    if (m_filterMode > 0)
       ApplyFilter(pMergedSurface, m_filterMode);

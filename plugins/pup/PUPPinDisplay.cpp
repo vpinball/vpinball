@@ -409,9 +409,10 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         NOT_IMPLEMENTED(std::format("Slow PC mode is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;
                      case 46:
-                        // See pDMDAlwaysPAD — pad all text with space before/after for shadow clipping
+                        // See pDMDAlwaysPAD — when enabled, treat leading/trailing whitespace in label captions
+                        // as shadow-clearance padding rather than rendering it as advance-width glyphs.
                         // { "mt":301, "SN": XX, "FN":46, "PA":1 } - PA 0/1 = pad text bool
-                        NOT_IMPLEMENTED(std::format("Pad text not implemented: screen={{{}}}, PA={}", pScreen->ToString(false), json["PA"s].as<int>(0)));
+                        pScreen->m_padTextAlways = (json["PA"s].as<int>(0) != 0);
                         break;
                      case 50:
                         // pSetAspectRatio(PuPID, arWidth, arHeight) "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 50, ""WIDTH"": "&arWidth&", ""HEIGHT"": "&arHeight&" }"   
