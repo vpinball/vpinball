@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/DispreelVisualsProperty.h"
+#include "DispreelVisualsProperty.h"
 
+#include "parts/Collection.h"
 #include "parts/dispreel.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
 

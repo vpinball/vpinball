@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/bumper.h"
+#include "BumperVisualsProperty.h"
 
-#include "ui/win/properties/BumperVisualsProperty.h"
+#include "parts/bumper.h"
+#include "parts/Collection.h"
+#include "ui/win/resource.h"
+
 
 BumperVisualsProperty::BumperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_VISUALS, pvsel)
 {

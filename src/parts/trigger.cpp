@@ -3,19 +3,23 @@
 #include "core/stdafx.h"
 #include "trigger.h"
 
-#include "ball.h"
+#include "core/VPApp.h"
 #include "math/MeshUtils.h"
 #include "meshes/triggerButtonMesh.h"
 #include "meshes/triggerInderMesh.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
 #include "meshes/triggerWireDMesh.h"
+#include "parts/ball.h"
+#include "parts/Collection.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
+
 
 Trigger::~Trigger()
 {

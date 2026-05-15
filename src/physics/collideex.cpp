@@ -1,12 +1,16 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/surface.h"
+
+#include "imgui/imgui.h"
 #include "parts/bumper.h"
-#include "parts/trigger.h"
-#include "parts/hittarget.h"
+#include "parts/Collection.h"
 #include "parts/gate.h"
+#include "parts/hittarget.h"
 #include "parts/spinner.h"
+#include "parts/surface.h"
+#include "parts/trigger.h"
+
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Bumper/BumperCollider.cs
 

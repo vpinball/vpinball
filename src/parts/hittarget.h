@@ -1,12 +1,16 @@
 // license:GPLv3+
 
-// interface for the HitTarget class.
-
 #pragma once
 
-#include "unordered_dense.h"
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/MeshBuffer.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
+#include "unordered_dense.h"
+
 
 // Indices for RotAndTra:
 //     RotX = 0

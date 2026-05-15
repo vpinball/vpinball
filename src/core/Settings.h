@@ -2,14 +2,12 @@
 
 #pragma once
 
-#define MINI_CASE_SENSITIVE
-#include "mINI/ini.h"
+#include "core/PropertyRegistry.h"
+#include "core/LayeredINIPropertyStore.h"
+#include "core/vpversion.h"
+#include "renderer/typedefs3D.h"
+
 #include "unordered_dense.h"
-
-#include "PropertyRegistry.h"
-#include "LayeredINIPropertyStore.h"
-
-#include "vpversion.h"
 
 
 // This class holds the settings registry.

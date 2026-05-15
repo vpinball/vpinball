@@ -1,6 +1,7 @@
 #pragma once
 
 class Ball;
+class Collection;
 
 class EventProxyBase
 {

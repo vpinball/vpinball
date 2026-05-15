@@ -5,8 +5,11 @@
 
 #include <iostream>
 
-#include "core/TournamentFile.h"
 #include "extern.h"
+#include "core/TournamentFile.h"
+#include "core/VPApp.h"
+#include "parts/Material.h"
+#include "parts/pintable.h"
 #include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
 

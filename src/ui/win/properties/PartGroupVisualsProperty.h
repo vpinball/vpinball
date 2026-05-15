@@ -3,6 +3,7 @@
 #pragma once
 
 #include "PropertyDialog.h"
+#include "parts/PartGroup.h"
 
 class PartGroupVisualsProperty final : public BasePropertyDialog
 {

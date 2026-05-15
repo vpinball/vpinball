@@ -1,9 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "renderer/Renderer.h"
 #include "PointOfViewSettingsPage.h"
+
+#include "core/player.h"
 #include "core/TableDB.h"
+#include "parts/pintable.h"
+#include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
 
 #include <regex>
 
@@ -14,6 +18,8 @@ PointOfViewSettingsPage::PointOfViewSettingsPage()
    : InGameUIPage("Point of View Table Override"s, "Point of view's settings page:\nOptions to override the table's rendering's point of view"s, SaveMode::Table)
 {
 }
+
+ViewSetup& PointOfViewSettingsPage::GetCurrentViewSetup() const { return m_player->m_ptable->GetViewSetup(); }
 
 void PointOfViewSettingsPage::Open(bool isBackwardAnimation)
 {

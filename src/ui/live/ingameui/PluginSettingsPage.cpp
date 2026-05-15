@@ -1,11 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "PluginSettingsPage.h"
 
-#include "plugins/MsgPluginManager.h"
+#include "core/player.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "plugins/MsgPluginManager.h"
+#include "ui/live/LiveUI.h"
 
 using namespace MsgPI;
 

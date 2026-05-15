@@ -2,7 +2,9 @@
 
 #include "core/stdafx.h"
 #include "codeviewedit.h"
+
 #include "codeview.h"
+#include "core/VPApp.h"
 
 UserData::UserData()
    : m_lineNum(0),

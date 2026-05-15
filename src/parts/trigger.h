@@ -4,9 +4,14 @@
 
 #pragma once
 
-#include "dragpoint.h"
+#include "parts/dragpoint.h"
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
+class MeshBuffer;
 
 class TriggerData final : public BaseProperty
 {

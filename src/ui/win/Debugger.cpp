@@ -1,9 +1,14 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "Debugger.h"
+
+#include "core/VPApp.h"
+#include "ui/live/BallControl.h"
+#include "ui/live/LiveUI.h"
 #include "ui/win/resource.h"
 #include "ui/win/codeview.h"
-#include "Debugger.h"
+
 
 #define RECOMPUTEBUTTONCHECK (WM_USER+100)
 #define RESIZE_FROM_EXPAND   (WM_USER+101)

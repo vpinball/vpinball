@@ -25,6 +25,7 @@
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
+
 DrawingOrderDialog::DrawingOrderDialog(bool select)
    : CDialog(IDD_DRAWING_ORDER)
    , m_drawingOrderSelect(select)

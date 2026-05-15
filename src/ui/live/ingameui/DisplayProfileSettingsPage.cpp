@@ -1,11 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "DisplayProfileSettingsPage.h"
-#include "renderer/Renderer.h"
 
 #include "renderer/RenderCommand.h"
+#include "renderer/Renderer.h"
+#include "utils/color.h"
+
 
 namespace VPX::InGameUI
 {

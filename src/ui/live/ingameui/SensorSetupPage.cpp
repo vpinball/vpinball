@@ -1,8 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "SensorSetupPage.h"
+
+#include "parts/Collection.h"
 #include "renderer/VRDevice.h"
 
 namespace VPX::InGameUI

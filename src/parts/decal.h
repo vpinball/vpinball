@@ -4,9 +4,14 @@
 
 #pragma once
 
+#include "parts/Collection.h"
+#include "parts/pintable.h"
+#include "renderer/Renderable.h"
 #include "physics/hittimer.h"
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
+
+class MeshBuffer;
 
 class DecalData final : public BaseProperty
 {

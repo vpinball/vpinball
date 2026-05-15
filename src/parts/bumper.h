@@ -2,8 +2,15 @@
 
 #pragma once
 
+#include "parts/Collection.h"
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/Renderable.h"
+#include "renderer/Texture.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
+class MeshBuffer;
 
 class BumperData final : public BaseProperty
 {

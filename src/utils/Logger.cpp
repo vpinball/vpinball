@@ -20,6 +20,7 @@
 #endif
 #endif
 
+#include "core/VPApp.h"
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"

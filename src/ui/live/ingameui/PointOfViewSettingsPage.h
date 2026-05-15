@@ -4,6 +4,7 @@
 
 #include "InGameUIPage.h"
 #include "CabinetRender.h"
+#include "renderer/ViewSetup.h"
 
 namespace VPX::InGameUI
 {
@@ -27,7 +28,7 @@ private:
    void UpdateDefaults();
    void BuildPage();
 
-   ViewSetup& GetCurrentViewSetup() const { return m_player->m_ptable->GetViewSetup(); }
+   ViewSetup& GetCurrentViewSetup() const;
 
    bool m_opened = false;
    bool m_lockScale = true;

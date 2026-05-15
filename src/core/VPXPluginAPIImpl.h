@@ -12,6 +12,8 @@
 
 #include "unordered_dense.h"
 
+class BaseTexture;
+
 // VPX serves as a plugin host, using the generic messaging plugin API
 // 
 // It provides the following features:

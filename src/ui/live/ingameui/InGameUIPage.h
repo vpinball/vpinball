@@ -3,6 +3,9 @@
 #pragma once
 
 #include "InGameUIItem.h"
+#include "imgui/imgui.h"
+
+class Player;
 
 namespace VPX::InGameUI
 {

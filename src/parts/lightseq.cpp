@@ -3,9 +3,11 @@
 #include "core/stdafx.h"
 #include "lightseq.h"
 
-#include "flasher.h"
-#include "light.h"
-#include "primitive.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "parts/flasher.h"
+#include "parts/light.h"
+#include "parts/primitive.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 

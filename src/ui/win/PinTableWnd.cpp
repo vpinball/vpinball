@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "PinTableWnd.h"
 
+#include "core/editablereg.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "renderer/Texture.h"
 #include "ui/win/codeview.h"
 #include "ui/win/hitrectsur.h"
 #include "ui/win/hitsur.h"

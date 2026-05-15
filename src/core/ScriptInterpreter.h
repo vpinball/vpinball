@@ -4,6 +4,10 @@
 #include <activdbg.h>
 #include <atlcom.h>
 
+#include "core/Scriptable.h"
+
+class PinTable;
+
 enum SecurityLevelEnum
 {
    eSecurityNone = 0,

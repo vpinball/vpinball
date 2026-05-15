@@ -1,8 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "AudioSettingsPage.h"
+
+#include "parts/pintable.h"
 
 namespace VPX::InGameUI
 {

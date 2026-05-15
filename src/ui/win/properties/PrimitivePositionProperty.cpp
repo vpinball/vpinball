@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/primitive.h"
+#include "PrimitivePositionProperty.h"
 
-#include "ui/win/properties/PrimitivePositionProperty.h"
+#include "parts/Collection.h"
+#include "parts/primitive.h"
+#include "ui/win/resource.h"
+
 
 PrimitivePositionProperty::PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPRIMITIVE_POSITION, pvsel)
 {

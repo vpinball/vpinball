@@ -1,11 +1,14 @@
 // license:GPLv3+
 
-// Definition of the Gate class
-
 #pragma once
 
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/MeshBuffer.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
+
 
 class GateData final : public BaseProperty
 {

@@ -2,10 +2,12 @@
 
 #include "core/stdafx.h"
 #include "RenderProbe.h"
-#include "RenderCommand.h"
-#include "Shader.h"
-#include "renderer/Renderer.h"
+
 #include "math/bluenoise.h"
+#include "parts/Collection.h"
+#include "renderer/RenderCommand.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
 
 const string RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 

@@ -3,8 +3,9 @@
 #pragma once
 
 #include <iomanip>
+
+#include "math/vector.h"
 #include "renderer/typedefs3D.h"
-#include <math/vector.h>
 
 #if !defined(ENABLE_DX9)
 class alignas(16) D3DMATRIX {

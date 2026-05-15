@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "collide.h"
+#include "math/bbox.h"
+#include "physics/collide.h"
 
 //#define DISABLE_ZTEST // z values of the BBox of (objects within) a node can be constant over some traversal levels (as its a quadtree and not an octree!), so we could also just ignore z tests overall. This can lead to performance benefits on some tables ("flat" ones) and performance penalties on others (e.g. when a ball moves under detailed meshes)
 

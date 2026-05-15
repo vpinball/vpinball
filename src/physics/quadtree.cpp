@@ -2,10 +2,15 @@
 
 #include "core/stdafx.h"
 #include "quadtree.h"
+
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "parts/hittarget.h"
+#include "parts/primitive.h"
+#include "physics/hitable.h"
+
 #include "ThreadPool.h"
 
-#include "parts/primitive.h"
-#include "parts/hittarget.h"
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    #define QUADTREE_SSE_LEAFTEST

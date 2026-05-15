@@ -1,19 +1,17 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "LiveUI.h"
-#include "renderer/Renderer.h"
 
-#include "renderer/VRDevice.h"
-
+#include "core/VPApp.h"
+#include "core/VPXPluginAPIImpl.h"
 #include "fonts/DroidSans.h"
 #include "fonts/DroidSansBold.h"
 #include "fonts/IconsForkAwesome.h"
 #include "fonts/ForkAwesome.h"
-
 #include "plugins/VPXPlugin.h"
-#include "core/VPXPluginAPIImpl.h"
+#include "renderer/Renderer.h"
+#include "renderer/VRDevice.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl3.h"

@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "hittarget.h"
 
+#include "core/VPApp.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
 #include "meshes/dropTargetT4Mesh.h"
@@ -12,13 +13,16 @@
 #include "meshes/hitTargetRoundMesh.h"
 #include "meshes/hitTargetT1SlimMesh.h"
 #include "meshes/hitTargetT2SlimMesh.h"
+#include "parts/Collection.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
+
 
 HitTarget::~HitTarget()
 {

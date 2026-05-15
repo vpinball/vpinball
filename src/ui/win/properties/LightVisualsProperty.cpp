@@ -5,6 +5,8 @@
 
 #include "parts/light.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/resource.h"
+
 
 LightVisualsProperty::LightVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPLIGHT_VISUALS, pvsel)
 {

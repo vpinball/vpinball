@@ -1,11 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "DragPointDialogs.h"
 
-
+#include "core/VPApp.h"
+#include "parts/pintable.h"
 #include "ui/win/WinEditor.h"
+
 
 namespace VPX::WinUI
 {

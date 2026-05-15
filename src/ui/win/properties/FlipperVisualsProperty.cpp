@@ -1,8 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "FlipperVisualsProperty.h"
+
+#include "parts/Collection.h"
 #include "parts/flipper.h"
-#include "ui/win/properties/FlipperVisualsProperty.h"
+#include "ui/win/resource.h"
+
 
 FlipperVisualsProperty::FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_VISUALS, pvsel)
 {

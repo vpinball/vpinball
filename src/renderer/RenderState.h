@@ -2,6 +2,8 @@
 
 #pragma once
 
+class RenderDevice;
+
 class RenderState final
 {
 public:

@@ -1,8 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "CabinetSettingsPage.h"
+
+#include "core/player.h"
+#include "renderer/Renderer.h"
+#include "ui/live/LiveUI.h"
 
 namespace VPX::InGameUI
 {

@@ -4,6 +4,10 @@
 
 #include "TournamentFile.h"
 
+#include "core/extern.h"
+#include "core/VPApp.h"
+#include "ui/live/LiveUI.h"
+#include "utils/hash.h"
 #ifndef __STANDALONE__
 #include "FreeImage.h"
 #else

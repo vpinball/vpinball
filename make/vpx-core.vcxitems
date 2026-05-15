@@ -911,6 +911,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitrectsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/paintsur.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/ProgressDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXSaveFileProgressBar.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/AboutDialog.cpp" />
@@ -1721,6 +1722,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/hitrectsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/hitsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/paintsur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/ProgressDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/sur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.h" />

@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "TableInfoDialog.h"
 
+#include "parts/pintable.h"
+#include "renderer/Texture.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 

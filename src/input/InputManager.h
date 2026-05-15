@@ -4,8 +4,9 @@
 
 #include <SDL3/SDL.h>
 
-#include "InputAction.h"
-#include "PhysicsSensor.h"
+#include "input/InputAction.h"
+#include "input/PhysicsSensor.h"
+#include "math/vector.h"
 
 
 class InputManager final

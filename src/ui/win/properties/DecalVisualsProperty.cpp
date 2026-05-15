@@ -1,9 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/DecalVisualsProperty.h"
+#include "DecalVisualsProperty.h"
 
 #include "parts/decal.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
 

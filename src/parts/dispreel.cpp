@@ -3,10 +3,16 @@
 #include "core/stdafx.h"
 #include "dispreel.h"
 
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+#include "utils/color.h"
+
 
 DispReel::~DispReel()
 {

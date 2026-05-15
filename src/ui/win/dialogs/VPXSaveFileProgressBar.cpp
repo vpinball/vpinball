@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "VPXSaveFileProgressBar.h"
 
+#include "ui/win/resource.h"
+
 
 VPXSaveFileProgressBar::VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CWnd* parent)
    : m_app(app)

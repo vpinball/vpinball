@@ -4,9 +4,16 @@
 
 #include "math/Mesh.h"
 #include "math/MeshUtils.h"
+#include "parts/pintable.h"
+#include "physics/hitable.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
-#include "unordered_dense.h"
 #include "utils/eventproxy.h"
+
+#include "unordered_dense.h"
+
+
+class MeshBuffer;
 
 // Indices for RotAndTra:
 //     RotX = 0

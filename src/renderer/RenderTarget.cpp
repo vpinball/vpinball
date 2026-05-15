@@ -2,11 +2,13 @@
 
 #include "core/stdafx.h"
 #include "RenderTarget.h"
-#include "RenderDevice.h"
-#include "VRDevice.h"
+
+#include "parts/Collection.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/VRDevice.h"
 
 #if defined(ENABLE_OPENGL)
-#include "Shader.h"
+#include "renderer/Shader.h"
 #endif
 
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)

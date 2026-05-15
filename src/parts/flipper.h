@@ -1,12 +1,16 @@
 // license:GPLv3+
 
-// Definition of the Flipper class
-
 #pragma once
 
+#include "parts/pintable.h"
+#include "physics/hitable.h"
 #include "physics/hitflipper.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"  
 #include "utils/eventproxy.h"
+
+
+class MeshBuffer;
 
 class FlipperData final : public BaseProperty
 {

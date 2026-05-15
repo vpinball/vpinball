@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "InGameUIPage.h"
+
 namespace VPX::InGameUI
 {
 

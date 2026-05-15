@@ -1,6 +1,9 @@
 #include "core/stdafx.h"
-
 #include "worker.h"
+
+#include "core/VPApp.h"
+#include "ui/win/resource.h"
+
 
 HANDLE g_hWorkerStarted;
 

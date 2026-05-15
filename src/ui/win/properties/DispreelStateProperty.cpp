@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/dispreel.h"
+#include "DispreelStateProperty.h"
 
-#include "ui/win/properties/DispreelStateProperty.h"
+#include "parts/Collection.h"
+#include "parts/dispreel.h"
+#include "ui/win/resource.h"
+
 
 DispreelStateProperty::DispreelStateProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_STATE, pvsel)
 {

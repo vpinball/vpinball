@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "math/bbox.h"
 #include "physics/hitball.h"
 #include "physics/collide.h"
 

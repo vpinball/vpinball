@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/TablePhysicsProperty.h"
+#include "TablePhysicsProperty.h"
 
+#include "parts/pintable.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_PHYSICS, pvsel)
 {

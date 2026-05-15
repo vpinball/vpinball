@@ -4,11 +4,16 @@
 
 #pragma once
 
+#include "parts/pintable.h"
+#include "physics/hitable.h"
 #include "physics/hitplunger.h"
+#include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 constexpr int MAXTIPSHAPE = 256;
+
+class MeshBuffer;
 
 class PlungerData final : public BaseProperty
 {

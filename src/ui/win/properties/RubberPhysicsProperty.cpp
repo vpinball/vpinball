@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/rubber.h"
+#include "RubberPhysicsProperty.h"
 
-#include "ui/win/properties/RubberPhysicsProperty.h"
+#include "parts/rubber.h"
+#include "ui/win/resource.h"
+
 
 RubberPhysicsProperty::RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRUBBER_PHYSICS, pvsel)
 {

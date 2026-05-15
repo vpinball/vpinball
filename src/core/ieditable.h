@@ -2,14 +2,18 @@
 
 #pragma once
 
+#include "core/iselect.h"
+#include "ui/win/resource.h"
 #include "utils/fileio.h"
 
-class HitTimer;
-class Collection;
 class IHitable;
 class IRenderable;
 class IScriptable;
+
+class Collection;
 class EventProxyBase;
+class HitTimer;
+class PinTable;
 
 #define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
 
@@ -44,6 +48,8 @@ public:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).
 // If you want to allow an element to be pasted only into the table view, use 1,
 // for only backglass view, use 2, and for both, use 3.
+#define VIEW_PLAYFIELD 1
+#define VIEW_BACKGLASS 2
 
 // declare and implement some methods for an IEditable which supports scripting
 #define STANDARD_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \

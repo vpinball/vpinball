@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ui/win/properties/WallPhysicsProperty.h"
+#include "WallPhysicsProperty.h"
 
+#include "parts/Collection.h"
 #include "parts/surface.h"
+#include "ui/win/resource.h"
+
 
 WallPhysicsProperty::WallPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_PHYSICS, pvsel)
 {

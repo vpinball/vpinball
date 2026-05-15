@@ -1,8 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "renderer/Renderer.h"
 #include "SystemInfoPage.h"
+
+#include "core/VPApp.h"
+#include "renderer/Renderer.h"
+
 
 namespace VPX::InGameUI
 {

@@ -3,8 +3,12 @@
 #include "core/stdafx.h"
 #include "ramp.h"
 
-//#include "forsyth.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "renderer/RenderDevice.h"
+#include "renderer/Renderer.h"
 #include "renderer/Shader.h"
+#include "renderer/Texture.h"
 #include "renderer/trace.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"

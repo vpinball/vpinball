@@ -4,6 +4,9 @@
 
 #include "InGameUIPage.h"
 #include "CabinetRender.h"
+#include "core/player.h"
+#include "parts/pintable.h"
+#include "renderer/ViewSetup.h"
 
 namespace VPX::InGameUI
 {

@@ -25,6 +25,9 @@
 #include "core/stdafx.h"
 #include "parts/flipper.h"
 
+#include "ui/live/LiveUI.h"
+#include "imgui/imgui.h"
+
 // Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,

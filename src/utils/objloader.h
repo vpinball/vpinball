@@ -5,6 +5,9 @@
 #include "unordered_dense.h"
 
 #include "math/Mesh.h"
+#include "utils/hash.h"
+
+class Material;
 
 class ObjLoader final
 {

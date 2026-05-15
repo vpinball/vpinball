@@ -1,19 +1,28 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "ThreadPool.h"
+#include "Renderer.h"
+
+#include "core/VPApp.h"
+#include "core/VPXPluginAPIImpl.h"
 #include "math/bluenoise.h"
 #include "math/math.h"
 #include "meshes/ballMesh.h"
+#include "parts/ball.h"
+#include "parts/Collection.h"
+#include "parts/light.h"
+#include "parts/pintable.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
-#include "core/VPXPluginAPIImpl.h"
-#include "parts/light.h"
-#include "parts/ball.h"
 #include "renderer/trace.h"
+#include "ui/live/LiveUI.h"
+#include "utils/color.h"
+
+#include "ThreadPool.h"
+
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"
@@ -3475,4 +3484,23 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
    }
 
    UpdateBasicShaderMatrix();
+}
+
+RenderProbe::ReflectionMode Renderer::GetMaxReflectionMode() const
+{
+   // For dynamic mode, static reflections are not available so adapt the mode
+   return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
+}
+
+int Renderer::GetAOMode() const // 0=Off, 1=Static, 2=Dynamic
+{
+   // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
+   if (m_disableAO || !m_table->m_enableAO || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
+      return 0;
+   // The existing implementation suffers from high temporal artefacts that make it unsuitable for dynamic camera situations
+   if (m_stereo3D == STEREO_VR)
+      return 0;
+   if (m_dynamicAO)
+      return 2;
+   return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only, and we are running without it, disable AO
 }

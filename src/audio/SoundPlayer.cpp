@@ -2,8 +2,10 @@
 
 #include "core/stdafx.h"
 #include "SoundPlayer.h"
+
 #include "plugins/MsgPluginManager.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "parts/pintable.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM

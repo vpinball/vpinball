@@ -1,7 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "iselect.h"
 
+#include "core/editablereg.h"
+#include "core/VPApp.h"
+#include "parts/Collection.h"
+#include "parts/PartGroup.h"
+#include "parts/pintable.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 

@@ -4,8 +4,18 @@
 
 #ifdef ENABLE_VR
    #include <openvr.h>
+   class Sampler;
+
 #elif defined(ENABLE_XR)
-   #include "bgfx/platform.h"
+   #include "bx/platform.h"
+
+   #if defined(__ANDROID__) && BX_PLATFORM_WINDOWS
+      // Our setup may lead to this incorrect double definition, so fix it
+      #undef BX_PLATFORM_WINDOWS
+      #define BX_PLATFORM_WINDOWS 0
+      #undef BX_PLATFORM_ANDROID
+      #define BX_PLATFORM_ANDROID 1
+   #endif
 
    #if BX_PLATFORM_WINDOWS
       #define XR_USE_PLATFORM_WIN32
@@ -120,6 +130,10 @@
 
    #include "input/XRInputHandler.h"
 #endif
+
+#include "parts/PartGroup.h"
+
+class MeshBuffer;
 
 class VRDevice final
 {

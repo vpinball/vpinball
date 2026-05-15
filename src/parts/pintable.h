@@ -8,6 +8,7 @@
 #include <atomic>
 
 #include "core/pinundo.h"
+#include "parts/Collection.h"
 #include "parts/pinbinary.h"
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
@@ -22,8 +23,7 @@
 class Light;
 #endif
 
-#define VIEW_PLAYFIELD 1
-#define VIEW_BACKGLASS 2
+
 
 #define MIN_ZOOM 0.126f // purposely make them offset from powers to 2 to account for roundoff error
 #define MAX_ZOOM 63.9f
@@ -50,7 +50,7 @@ class Sound;
 };
 class Texture;
 class Material;
-
+class Collection;
 
 class VPXFileFeedback;
 namespace VPX::InGameUI { class InGameUIItem; }

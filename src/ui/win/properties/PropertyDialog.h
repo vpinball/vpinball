@@ -2,15 +2,20 @@
 
 #pragma once
 
+#include "ui/win/resource.h"
+
 #include <wxx_dialog.h>
 #include <wxx_docking.h>
 #include <wxx_stdcontrols.h>
+
+#include "utils/vector.h"
 
 
 #pragma region BasePropertyDialog
 
 class EditBox;
 class ComboBox;
+class Texture;
 
 class BasePropertyDialog: public CDialog
 {

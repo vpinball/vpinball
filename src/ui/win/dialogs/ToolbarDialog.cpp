@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "ToolbarDialog.h"
 
+#include "core/editablereg.h"
+#include "parts/pintable.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
 ToolbarDialog::ToolbarDialog() : CDialog(IDD_TOOLBAR)

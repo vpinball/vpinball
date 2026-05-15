@@ -1,9 +1,12 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "parts/bumper.h"
+#include "BumperPhysicsProperty.h"
 
-#include "ui/win/properties/BumperPhysicsProperty.h"
+#include "parts/bumper.h"
+#include "parts/Collection.h"
+#include "ui/win/resource.h"
+
 
 BumperPhysicsProperty::BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {

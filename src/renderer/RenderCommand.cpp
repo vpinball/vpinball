@@ -2,7 +2,10 @@
 
 #include "core/stdafx.h"
 #include "RenderCommand.h"
-#include "VRDevice.h"
+
+#include "parts/Collection.h"
+#include "renderer/Renderer.h"
+#include "renderer/VRDevice.h"
 
 #include <iomanip>
 

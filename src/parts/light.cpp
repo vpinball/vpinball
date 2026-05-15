@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "light.h"
 
+#include "core/VPApp.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/IndexBuffer.h"
@@ -14,6 +15,7 @@
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/bulb.h"
+#include "utils/color.h"
 
 
 #define NUM_RGB_BLINK_PATTERN 33 //!! remove

@@ -9,6 +9,7 @@
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 #include "utils/fileio.h"
+#include "parts/pintable.h"
 
 class TimerData final
 {

@@ -5,10 +5,13 @@
 
 #include <fstream>
 #include <sstream>
-
 #include "tinyxml2/tinyxml2.h"
+
+#include "core/VPApp.h"
+#include "parts/pintable.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
+
 
 constexpr unsigned int num_physicsoptions = 8;
 static string physicsoptions[num_physicsoptions];

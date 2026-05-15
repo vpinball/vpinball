@@ -1,14 +1,15 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "InGameUIPage.h"
+
+#include "core/VPApp.h"
+#include "fonts/IconsForkAwesome.h"
+#include "ui/live/LiveUI.h"
+#include "ui/live/ingameui/SensorSetupPage.h"
 
 #include "imgui/imgui_internal.h"
 #include "imgui/imgui_stdlib.h"
-
-#include "SensorSetupPage.h"
-#include "fonts/IconsForkAwesome.h"
 
 namespace VPX::InGameUI
 {

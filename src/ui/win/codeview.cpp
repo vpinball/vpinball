@@ -17,6 +17,7 @@
 
 #include <fstream>
 
+#include "core/VPApp.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
 

@@ -2,8 +2,13 @@
 
 #include "core/stdafx.h"
 #include "AboutDialog.h"
+
+#include "core/VPApp.h"
 #include "core/vpversion.h"
+#include "ui/win/resource.h"
+
 #include <fstream>
+
 
 AboutDialog::AboutDialog() : CDialog(IDD_ABOUT)
 {

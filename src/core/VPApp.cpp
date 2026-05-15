@@ -1,13 +1,13 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "VPApp.h"
 
-#include "core/VPApp.h"
-
-#include "vpversion.h"
-
-#include "plugins/VPXPlugin.h"
+#include "core/editablereg.h"
+#include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "parts/Collection.h"
+#include "plugins/VPXPlugin.h"
 
 #ifdef CRASH_HANDLER
 #include "utils/StackTrace.h"

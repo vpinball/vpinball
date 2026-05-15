@@ -1,9 +1,11 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-
 #include "EditorUI.h"
-#include "renderer/Renderer.h"
+
+#include "core/TableDB.h"
+#include "core/VPXPluginAPIImpl.h"
+
 #include "editor/EditableUIPart.h"
 #include "editor/BallUIPart.h"
 #include "editor/BumperUIPart.h"
@@ -27,14 +29,16 @@
 #include "editor/TimerUIPart.h"
 #include "editor/TriggerUIPart.h"
 
-#include "renderer/VRDevice.h"
-#include "renderer/Shader.h"
-#include "renderer/Anaglyph.h"
-
-#include "core/TableDB.h"
-
 #include "plugins/VPXPlugin.h"
-#include "core/VPXPluginAPIImpl.h"
+
+#include "renderer/Anaglyph.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
+#include "renderer/VRDevice.h"
+
+#include "ui/live/LiveUI.h"
+
+#include "utils/color.h"
 
 #include "imgui/imgui.h"
 

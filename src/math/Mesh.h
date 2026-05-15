@@ -2,6 +2,8 @@
 
 #pragma once
 
+class VertexBuffer;
+
 class Mesh final
 {
 public:

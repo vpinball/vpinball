@@ -3,15 +3,18 @@
 #include "core/stdafx.h"
 #include "ball.h"
 
-#include "light.h"
+#include "core/VPApp.h"
+#include "core/VPXPluginAPIImpl.h"
+#include "parts/light.h"
+#include "plugins/MsgPluginManager.h"
 #include "renderer/Renderer.h"
 #include "renderer/trace.h"
 #include "renderer/RenderCommand.h"
 #include "renderer/Shader.h"
-#include "plugins/MsgPluginManager.h"
-#include "core/VPXPluginAPIImpl.h"
+#include "ui/live/LiveUI.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+#include "utils/color.h"
 
 
 const AntiStretchHelper Ball::m_ash;

@@ -4,6 +4,7 @@
 #include "PropertyDialog.h"
 
 #include "parts/bumper.h"
+#include "parts/Collection.h"
 #include "parts/decal.h"
 #include "parts/dispreel.h"
 #include "parts/flasher.h"
@@ -66,6 +67,7 @@
 #include "ui/win/properties/TriggerVisualsProperty.h"
 #include "ui/win/properties/WallPhysicsProperty.h"
 #include "ui/win/properties/WallVisualsProperty.h"
+#include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
 
