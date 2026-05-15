@@ -1153,8 +1153,9 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);
 
    // Write the version to the registry.  This will be read later by the front end.
+   // FIXME This is deprecated and we should update the info file along the table instead (frontend are not supposed to read internal settings file, table informations should be stored in a distributed db along table)
+   if (string optId = trim_string(m_tableName); !optId.empty() && !m_version.empty())
    {
-      string optId = trim_string(m_tableName);
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
       const auto propId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, true, m_version));
