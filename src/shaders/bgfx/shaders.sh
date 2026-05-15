@@ -39,7 +39,7 @@ process_shader() {
     )
 
     local targets=(
-        '--platform osx     -p metal'      # Metal
+        '--platform osx     -p metal21-11' # Metal
         '--platform android -p 320_es    ' # OpenGL ES
         '--platform linux   -p 440       ' # OpenGL
         '--platform windows -p s_5_0 -O 3' # DirectX 11
@@ -208,6 +208,7 @@ if [ "$gen_postprocess" = true ]; then
     echo "// Postprocess Shaders" > "../bgfx_postprocess.h"
     for k in 0 1; do
         process_shader "vs_postprocess.sc" "postprocess.h" "vs_postprocess${st_output[$k]}" "vertex" "${stereo[$k]}"
+        process_shader "fs_pp_msaa_depth.sc" "postprocess.h" "fs_pp_msaa_depth${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_mirror.sc" "postprocess.h" "fs_pp_mirror${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_copy.sc" "postprocess.h" "fs_pp_copy${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_bloom.sc" "postprocess.h" "fs_pp_bloom${st_output[$k]}" "fragment" "${stereo[$k]}"
