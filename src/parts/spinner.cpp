@@ -36,59 +36,57 @@ void Spinner::UpdateStatusBarInfo()
    m_vpinball->SetStatusBarUnitInfo(tbuf, true);
 }
 
-float Spinner::GetAngleMax() const
-{
-   return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : // player active value
-                        m_d.m_angleMax;
-}
+float Spinner::GetAngleMax() const { return m_phitspinner ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : m_d.m_angleMax; }
 
 void Spinner::SetAngleMax(const float angle)
 {
-    float newVal = angle;
+   float newVal = angle;
 
-    if (g_pplayer)
-    {
-        if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
-        {
-            if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-            else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+   if (m_phitspinner)
+   {
+      if (m_d.m_angleMin != m_d.m_angleMax) // allow only if in limited angle mode
+      {
+         if (newVal > m_d.m_angleMax)
+            newVal = m_d.m_angleMax;
+         else if (newVal < m_d.m_angleMin)
+            newVal = m_d.m_angleMin;
 
-            newVal = ANGTORAD(newVal);
+         newVal = ANGTORAD(newVal);
 
-            if (m_phitspinner->m_spinnerMover.m_angleMin < newVal)  // Min is smaller???
-                m_phitspinner->m_spinnerMover.m_angleMax = newVal;  // yes set new max
-            else m_phitspinner->m_spinnerMover.m_angleMin = newVal; // no set new minumum
-        }
-    }
-    else
-        m_d.m_angleMax = newVal;
+         if (m_phitspinner->m_spinnerMover.m_angleMin < newVal) // Min is smaller???
+            m_phitspinner->m_spinnerMover.m_angleMax = newVal; // yes set new max
+         else
+            m_phitspinner->m_spinnerMover.m_angleMin = newVal; // no set new minumum
+      }
+   }
+   else
+      m_d.m_angleMax = newVal;
 }
 
-float Spinner::GetAngleMin() const
-{
-    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) : // player active value
-                        m_d.m_angleMin;
-}
+float Spinner::GetAngleMin() const { return m_phitspinner ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) : m_d.m_angleMin; }
 
 void Spinner::SetAngleMin(const float angle)
 {
-    float newVal = angle;
-    if (g_pplayer)
-    {
-        if (m_d.m_angleMin != m_d.m_angleMax)	// allow only if in limited angle mode
-        {
-            if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-            else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+   float newVal = angle;
+   if (m_phitspinner)
+   {
+      if (m_d.m_angleMin != m_d.m_angleMax) // allow only if in limited angle mode
+      {
+         if (newVal > m_d.m_angleMax)
+            newVal = m_d.m_angleMax;
+         else if (newVal < m_d.m_angleMin)
+            newVal = m_d.m_angleMin;
 
-            newVal = ANGTORAD(newVal);
+         newVal = ANGTORAD(newVal);
 
-            if (m_phitspinner->m_spinnerMover.m_angleMax > newVal)  // max is bigger
-                m_phitspinner->m_spinnerMover.m_angleMin = newVal;  // then set new minumum
-            else m_phitspinner->m_spinnerMover.m_angleMax = newVal; // else set new max
-        }
-    }
-    else
-        m_d.m_angleMin = newVal;
+         if (m_phitspinner->m_spinnerMover.m_angleMax > newVal) // max is bigger
+            m_phitspinner->m_spinnerMover.m_angleMin = newVal; // then set new minumum
+         else
+            m_phitspinner->m_spinnerMover.m_angleMax = newVal; // else set new max
+      }
+   }
+   else
+      m_d.m_angleMin = newVal;
 }
 
 HRESULT Spinner::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
@@ -201,10 +199,9 @@ void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       m_d.m_angleMin = angleMin;
       m_d.m_angleMax = angleMax;
 
-      HitSpinner *const phitspinner = new HitSpinner(this, height);
-      m_phitspinner = phitspinner;
+      m_phitspinner = new HitSpinner(this, height);
 
-      physics->AddCollider(phitspinner, isUI);
+      physics->AddCollider(m_phitspinner, isUI);
 
       if (m_d.m_showBracket)
       {
@@ -570,14 +567,14 @@ STDMETHODIMP Spinner::put_Height(float newVal)
 
 STDMETHODIMP Spinner::get_Damping(float *pVal)
 {
-   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitspinner->m_spinnerMover.m_damping,(float)(1.0/PHYS_FACTOR));
+   *pVal = m_phitspinner ? powf(m_phitspinner->m_spinnerMover.m_damping, (float)(1.0 / PHYS_FACTOR)) : m_d.m_damping;
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Damping(float newVal)
 {
    const float tmp = saturate(newVal);
-   if (g_pplayer)
+   if (m_phitspinner)
       m_phitspinner->m_spinnerMover.m_damping = powf(tmp, (float)PHYS_FACTOR);
    else
       m_d.m_damping = tmp;
@@ -673,7 +670,7 @@ STDMETHODIMP Spinner::get_AngleMax(float *pVal)
 
 STDMETHODIMP Spinner::put_AngleMax(float newVal)
 {
-   if (g_pplayer && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
+   if (m_phitspinner && (m_d.m_angleMin == m_d.m_angleMax)) // allow only if in limited angle mode
       return E_FAIL;
 
    SetAngleMax(newVal);
@@ -682,14 +679,13 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
 
 STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 {
-   *pVal = (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) :	//player active value
-                         m_d.m_angleMin;
+   *pVal = m_phitspinner ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) : m_d.m_angleMin;
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_AngleMin(float newVal)
 {
-   if (g_pplayer && (m_d.m_angleMin != m_d.m_angleMax))	// allow only if in limited angle mode
+   if (m_phitspinner && (m_d.m_angleMin != m_d.m_angleMax)) // allow only if in limited angle mode
       return E_FAIL;
 
    SetAngleMin(newVal);
@@ -698,15 +694,14 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
 
 STDMETHODIMP Spinner::get_Elasticity(float *pVal)
 {
-   *pVal = (g_pplayer) ? m_phitspinner->m_spinnerMover.m_elasticity :	//player active value
-                         m_d.m_elasticity;
+   *pVal = m_phitspinner ? m_phitspinner->m_spinnerMover.m_elasticity : m_d.m_elasticity;
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Elasticity(float newVal)
 {
-   if (g_pplayer)
-      m_phitspinner->m_spinnerMover.m_elasticity = newVal;	//player active value
+   if (m_phitspinner)
+      m_phitspinner->m_spinnerMover.m_elasticity = newVal; //player active value
    else
       m_d.m_elasticity = newVal;
 
@@ -715,13 +710,13 @@ STDMETHODIMP Spinner::put_Elasticity(float newVal)
 
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((g_pplayer) ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible);
+   *pVal = FTOVB(m_phitspinner ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible);
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
 {
-   if (g_pplayer)
+   if (m_phitspinner)
       m_phitspinner->m_spinnerMover.m_visible = VBTOb(newVal);// && m_d.m_visible;
    else
       m_d.m_visible = VBTOb(newVal);

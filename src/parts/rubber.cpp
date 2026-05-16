@@ -1070,21 +1070,18 @@ STDMETHODIMP Rubber::put_Scatter(float newVal)
 
 STDMETHODIMP Rubber::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((!g_pplayer) ? m_d.m_collidable : m_vhoCollidable[0]->m_enabled);
+   *pVal = FTOVB(m_vhoCollidable.empty() ? m_d.m_collidable : m_vhoCollidable[0]->m_enabled);
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
    const bool val = VBTOb(newVal);
-   if (!g_pplayer)
+   if (m_vhoCollidable.empty())
       m_d.m_collidable = val;
-   else
-   {
-       if (!m_vhoCollidable.empty() && m_vhoCollidable[0]->m_enabled != val)
-           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
-               m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
-   }
+   else if (m_vhoCollidable[0]->m_enabled != val)
+      for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+         m_vhoCollidable[i]->m_enabled = val; //copy to hit checking on entities composing the object
 
    return S_OK;
 }
@@ -1097,7 +1094,7 @@ STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 {
-   if (g_pplayer && m_d.m_staticRendering)
+   if (m_d.m_staticRendering && !m_vhoCollidable.empty())
       ShowError("Rubber is static! Visible property not supported!");
    m_d.m_visible = VBTOb(newVal);
 
