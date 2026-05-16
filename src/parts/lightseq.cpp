@@ -139,9 +139,8 @@ void LightSeq::RenderOutline(Sur * const psur)
 
 #pragma region Rendering
 
-void LightSeq::RenderSetup(RenderDevice *device)
+void LightSeq::RenderSetup(Renderer *renderer)
 {
-   // zero pointers as a safe guard
    m_pcollection = nullptr;
    m_pgridData = nullptr;
    // no animation in progress

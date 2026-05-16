@@ -23,7 +23,7 @@
 
 Trigger::~Trigger()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Trigger *Trigger::CopyForPlay() const
@@ -408,10 +408,10 @@ void Trigger::TriggerAnimationUnhit()
 
 #pragma region Rendering
 
-void Trigger::RenderSetup(RenderDevice *device)
+void Trigger::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
    m_hitEvent = false;
    m_unhitEvent = false;
    m_doAnimation = false;
@@ -470,15 +470,15 @@ void Trigger::RenderSetup(RenderDevice *device)
    }
 
    GenerateMesh();
-   std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices, indices);
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_triggerVertices, true);
+   std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices, indices);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, (float *)m_triggerVertices, true);
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, triggerIndexBuffer, true);
 }
 
 void Trigger::RenderRelease()
 {
-   assert(m_rd != nullptr);
-   m_rd = nullptr;
+   assert(m_renderer != nullptr);
+   m_renderer = nullptr;
    m_meshBuffer = nullptr;
    delete[] m_triggerVertices;
    m_triggerVertices = nullptr;
@@ -488,7 +488,7 @@ void Trigger::RenderRelease()
 
 void Trigger::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    float animLimit;
    switch (m_d.m_shape)
    {
@@ -548,7 +548,7 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
 
 void Trigger::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -580,11 +580,11 @@ void Trigger::Render(const unsigned int renderMask)
       m_meshBuffer->m_vb->Unlock();
    }
 
-   m_rd->ResetRenderState();
+   m_renderer->m_renderDevice->ResetRenderState();
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
-      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
-   m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
+   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }
 
 #pragma endregion

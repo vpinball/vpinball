@@ -136,7 +136,7 @@ public:
    RampData m_d;
 
 private:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
 
    int m_rampVertex;
    float *m_rgheightInit = nullptr;

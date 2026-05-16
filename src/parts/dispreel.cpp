@@ -16,7 +16,7 @@
 
 DispReel::~DispReel()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 DispReel *DispReel::CopyForPlay() const
@@ -155,10 +155,10 @@ void DispReel::UIRenderPass2(Sur * const psur)
 
 #pragma region Rendering
 
-void DispReel::RenderSetup(RenderDevice *device)
+void DispReel::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    // get the render sizes of the objects (reels and frame)
    m_renderwidth = max(0.0f, m_d.m_width / (float)EDITOR_BG_WIDTH);
@@ -246,15 +246,15 @@ void DispReel::RenderSetup(RenderDevice *device)
 
 void DispReel::RenderRelease()
 {
-   assert(m_rd != nullptr);
-   m_rd = nullptr;
+   assert(m_renderer != nullptr);
+   m_renderer = nullptr;
 }
 
 // Called each frame. Checks to see if the update interval has expired and if so, handles the rolling
 // of the reels according to the number of motor steps queued up for each reel
 void DispReel::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    bool animated = false;
    while (g_pplayer->m_time_msec >= m_timeNextUpdate)
    {
@@ -336,7 +336,7 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
 
 void DispReel::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -351,23 +351,23 @@ void DispReel::Render(const unsigned int renderMask)
    if (!pin)
       return;
 
-   m_rd->ResetRenderState();
+   m_renderer->m_renderDevice->ResetRenderState();
 
-   m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
-   m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-   m_rd->EnableAlphaBlend(false);
+   m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+   m_renderer->m_renderDevice->EnableAlphaBlend(false);
 
-   m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
+   m_renderer->m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD);
 
    const vec4 c = convertColor(0xFFFFFFFF, 1.f);
-   m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
+   m_renderer->m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
-   m_rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
+   m_renderer->m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
 
-   m_rd->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, false, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
+   m_renderer->m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, false, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
    // set up all the reel positions within the object frame
    const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
@@ -396,13 +396,13 @@ void DispReel::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * m_renderheight + y1)*2.0f;
       }
 
-      m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
+      m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_DMDShader, vertices);
 
       // move to the next reel
       x1 += renderspacingx + m_renderwidth;
    }
 
-   m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+   m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
 }
 
 #pragma endregion

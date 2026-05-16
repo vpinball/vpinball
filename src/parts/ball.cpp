@@ -33,7 +33,7 @@ Ball::Ball() : m_id(GetNextBallID())
 
 Ball::~Ball()
 {
-   if (m_rd)
+   if (m_renderer)
       RenderRelease();
    assert(m_phittimer == nullptr);
 }
@@ -219,10 +219,10 @@ void Ball::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 #pragma region Rendering
 
-void Ball::RenderSetup(RenderDevice *device)
+void Ball::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    if (m_d.m_useTableRenderSettings)
    {
@@ -233,9 +233,9 @@ void Ball::RenderSetup(RenderDevice *device)
       m_d.m_imageDecal = m_ptable->m_ballImageDecal;
    }
 
-   if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_ballImage)
+   if (m_d.m_useTableRenderSettings && m_renderer->m_overwriteBallImages && m_renderer->m_ballImage)
    {
-      m_pinballEnv = g_pplayer->m_renderer->m_ballImage.get();
+      m_pinballEnv = m_renderer->m_ballImage.get();
       m_d.m_pinballEnvSphericalMapping = true;
    }
    else if (m_d.m_szImage.empty())
@@ -246,8 +246,8 @@ void Ball::RenderSetup(RenderDevice *device)
    else
       m_pinballEnv = m_ptable->GetImage(m_d.m_szImage) ? m_ptable->GetImage(m_d.m_szImage) : nullptr;
 
-   if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_decalImage)
-      m_pinballDecal = g_pplayer->m_renderer->m_decalImage.get();
+   if (m_d.m_useTableRenderSettings && m_renderer->m_overwriteBallImages && m_renderer->m_decalImage)
+      m_pinballDecal = m_renderer->m_decalImage.get();
    else if (m_d.m_imageDecal.empty())
       m_pinballDecal = nullptr;
    else
@@ -256,13 +256,13 @@ void Ball::RenderSetup(RenderDevice *device)
 
 void Ball::RenderRelease()
 {
-   assert(m_rd != nullptr);
-   m_rd = nullptr;
+   assert(m_renderer != nullptr);
+   m_renderer = nullptr;
 }
 
 void Ball::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
 }
 
@@ -273,7 +273,7 @@ static inline float map_bulblight_to_emission(const Light* const l) // magic map
 
 void Ball::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -298,23 +298,23 @@ void Ball::Render(const unsigned int renderMask)
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, g_pplayer->m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_renderer->m_ballMeshBuffer->m_ib->m_count);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
       // FIXME render wireframe
       return;
    }
 
-   m_rd->ResetRenderState();
+   m_renderer->m_renderDevice->ResetRenderState();
    
    // Set the render state to something that will always display for debug mode
-   m_rd->SetRenderState(RenderState::ZENABLE, g_pplayer->m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, g_pplayer->m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
-   m_rd->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
+   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
       1.0f / (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left),
       1.0f / (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top), 
       saturate(g_pplayer->m_ptable->m_ballPlayfieldReflectionStrength * m_d.m_playfieldReflectionStrength), 0.f);
 
    // collect the x nearest lights that can reflect on balls
-   vector<Light*>& reflectedLights = g_pplayer->m_renderer->m_ballReflectedLights;
+   vector<Light*>& reflectedLights = m_renderer->m_ballReflectedLights;
    std::ranges::sort(reflectedLights.begin(), reflectedLights.end(), [this](const Light* const pLight1, const Light* const pLight2) {
       const float dist1 = Vertex3Ds(pLight1->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight1->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight1->m_d.m_meshRadius + pLight1->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       const float dist2 = Vertex3Ds(pLight2->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight2->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight2->m_d.m_meshRadius + pLight2->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
@@ -336,9 +336,9 @@ void Ball::Render(const unsigned int renderMask)
    constexpr int lightStride = 6, lightOfs = 3;
    #endif
    vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission, 1.f);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_sceneLighting.GetGlobalEmissionScale();
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_sceneLighting.GetGlobalEmissionScale();
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
    for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
    {
       const int pPos = i2 * lightStride, pEm = pPos + lightOfs;
@@ -370,10 +370,10 @@ void Ball::Render(const unsigned int renderMask)
       }
    }
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   m_rd->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-   m_rd->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
    #elif defined(ENABLE_DX9)
-   m_rd->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
    #endif
 
    // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
@@ -384,26 +384,26 @@ void Ball::Render(const unsigned int renderMask)
        Roughness = min(max(dist*0.006f, 0.4f), Roughness);
    }
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   m_rd->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
+   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
 
    // ************************* draw the ball itself ****************************
    Vertex2D antiStretch(1.f, 1.f);
-   if (g_pplayer->m_renderer->m_ballAntiStretch)
+   if (m_renderer->m_ballAntiStretch)
    {
       // To evaluate projection stretch, we project a few points and compute projected bounds then apply opposite stretching on YZ axis.
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections
       // and tests did not show a real performance impact (likely because VPX is mainly GPU bound, not CPU)
       // Note that this will only work if view is screen aligned (x axis is left-right, yz is top-down). If view has some free rotation this will fail.
-      const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0);
+      const Matrix3D &mvp = m_renderer->GetMVP().GetModelViewProj(0);
       bool invalid = false;
       float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
       invalid = m_ash.computeProjBounds(mvp, m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight, m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
       if (!invalid)
       {
          // compute size of the rendered ball on viewport, then apply reversed viewport rotation, then compute stretch correction
-         const int w = m_rd->GetCurrentRenderTarget()->GetWidth();
-         const int h = m_rd->GetCurrentRenderTarget()->GetHeight();
-         const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->GetViewSetup().GetRotation(g_pplayer->m_renderer->m_stereo3D, w, h));
+         const int w = m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth();
+         const int h = m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight();
+         const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->GetViewSetup().GetRotation(m_renderer->m_stereo3D, w, h));
          const float c = cosf(viewportRot), s = sinf(viewportRot);
          const float rx = (xMax - xMin) * (float)w;
          const float ry = (yMax - yMin) * (float)h;
@@ -418,17 +418,17 @@ void Ball::Render(const unsigned int renderMask)
    }
 
    const vec4 diffuse = convertColor(m_d.m_color, 1.0f);
-   m_rd->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
+   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
    if (diffuse.w < 1.0f)
    {
-      m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-      m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-      m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-      m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
    }
    else
    {
-      m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    }
 
    Matrix3D rot(m_hitBall.m_orientation.m_d[0][0], m_hitBall.m_orientation.m_d[1][0], m_hitBall.m_orientation.m_d[2][0], 0.0f,
@@ -438,27 +438,27 @@ void Ball::Render(const unsigned int renderMask)
    const Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
    //const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
    //const Matrix3D m3D_full = rot * scale * trans;
-   //m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
+   //m_renderer->m_renderDevice->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
-   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
    if (!m_pinballEnv)
    {
       sphericalMapping = false; // Environment texture is an equirectangular map
-      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, g_pplayer->m_renderer->GetBallEnvironment());
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, m_renderer->GetBallEnvironment());
    }
    else
    {
       sphericalMapping = m_d.m_pinballEnvSphericalMapping;
-      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, m_pinballEnv);
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, m_pinballEnv);
    }
    if (m_pinballDecal)
-      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_decal, m_pinballDecal);
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_decal, m_pinballDecal);
    else
-      m_rd->m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
-   m_rd->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap
+      m_renderer->m_renderDevice->m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
+   m_renderer->m_renderDevice->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap
                                                      : m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
-   m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_renderer->m_ballMeshBuffer->m_ib->m_count);
+   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
 
    // Update render command with the ball position at the render frame submission time
    // This creates a little asynchronism between ball position and the rest of the frame, but slightly reduce latency and increase 
@@ -466,10 +466,10 @@ void Ball::Render(const unsigned int renderMask)
    // The command is executed on the render thread, while the game thread is performing continuous physics. therefore the ball object
    // may be modified while the update command is executed.
    // Note that this code must be kept in sync with the ball motion blur code
-   ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
+   ShaderState *ss = m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it and keep a reference on the renderdevice
-   m_rd->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, rd = m_rd, scheduleTimestamp = usec()]()
+   m_renderer->m_renderDevice->AddBeginOfFrameCmd(
+      [this, rotScale = rot * scale, ss, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
       {
          // Adjust ball position to latest physics position
          vec3 posl = m_hitBall.m_d.m_pos;
@@ -490,30 +490,30 @@ void Ball::Render(const unsigned int renderMask)
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
 
-   if (m_rd->m_noMovingBalls && m_hitBall.m_d.m_vel.LengthSquared() > 0.1f)
-      m_rd->m_noMovingBalls = false;
+   if (m_renderer->m_renderDevice->m_noMovingBalls && m_hitBall.m_d.m_vel.LengthSquared() > 0.1f)
+      m_renderer->m_renderDevice->m_noMovingBalls = false;
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
    if (g_pplayer->m_liveUI->IsShowingFPSDetails())
    {
-      const float pointSize = 5.f * (float)m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
+      const float pointSize = 5.f * (float)m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
       // this is buggy as we set the point size directly while the render command is used later on, but this is the only place where point rendering is used so it's ok for now
       #if defined(ENABLE_BGFX)
       // FIXME BGFX implement point rendering for ball debug
       #elif defined(ENABLE_OPENGL)
       glPointSize(pointSize);
       #elif defined(ENABLE_DX9)
-      CHECKD3D(m_rd->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(pointSize)));
+      CHECKD3D(m_renderer->m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(pointSize)));
       #endif
-      m_rd->ResetRenderState();
-      m_rd->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_Debug);
-      m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_renderer->m_ballDebugPoints, RenderDevice::POINTLIST, 0, g_pplayer->m_renderer->m_ballDebugPoints->m_vb->m_count);
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_Debug);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballDebugPoints, RenderDevice::POINTLIST, 0, m_renderer->m_ballDebugPoints->m_vb->m_count);
    }
    #endif
 
    // ball trails (except in reflection passes)
-   if (g_pplayer->m_renderer->m_trailForBalls && g_pplayer->m_renderer->m_ballTrailStrength > 0.f && !isReflectionPass)
+   if (m_renderer->m_trailForBalls && m_renderer->m_ballTrailStrength > 0.f && !isReflectionPass)
    {
       Vertex3D_NoTex2 vertices[MAX_BALL_TRAIL_POS * 2];
       unsigned int nVertices = 0;
@@ -532,7 +532,7 @@ void Ball::Render(const unsigned int renderMask)
             continue; // Too small => discard
 
          const float length = sqrtf(ls);
-         const float bc = g_pplayer->m_renderer->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
+         const float bc = m_renderer->m_ballTrailStrength * powf(1.f - 1.f / max(length, 1.0f), 64.0f); //!! 64=magic alpha falloff
          const float r = min(m_hitBall.m_d.m_radius*0.9f, 2.0f*m_hitBall.m_d.m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
          if (bc <= 0.f && r <= 1e-3f)
             continue; // Fully faded out or radius too small => discard
@@ -587,22 +587,22 @@ void Ball::Render(const unsigned int renderMask)
             nVertices += 2;
          }
       }
-      if (nVertices > 0 && g_pplayer->m_renderer->m_ballTrailMeshBufferPos + nVertices <= g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->m_count)
+      if (nVertices > 0 && m_renderer->m_ballTrailMeshBufferPos + nVertices <= m_renderer->m_ballTrailMeshBuffer->m_vb->m_count)
       {
          Vertex3D_NoTex2 *bufvb;
-         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->Lock(bufvb, g_pplayer->m_renderer->m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2));
+         m_renderer->m_ballTrailMeshBuffer->m_vb->Lock(bufvb, m_renderer->m_ballTrailMeshBufferPos * sizeof(Vertex3D_NoTex2), nVertices * sizeof(Vertex3D_NoTex2));
          memcpy(bufvb, vertices, nVertices * sizeof(Vertex3D_NoTex2));
-         g_pplayer->m_renderer->m_ballTrailMeshBuffer->m_vb->Unlock();
-         m_rd->ResetRenderState();
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         m_rd->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
-         m_rd->DrawMesh(m_rd->m_ballShader, true, pos, 0.f, g_pplayer->m_renderer->m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, g_pplayer->m_renderer->m_ballTrailMeshBufferPos, nVertices);
-         g_pplayer->m_renderer->m_ballTrailMeshBufferPos += nVertices;
+         m_renderer->m_ballTrailMeshBuffer->m_vb->Unlock();
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+         m_renderer->m_renderDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, true, pos, 0.f, m_renderer->m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, m_renderer->m_ballTrailMeshBufferPos, nVertices);
+         m_renderer->m_ballTrailMeshBufferPos += nVertices;
       }
    }
 }

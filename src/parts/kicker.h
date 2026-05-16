@@ -100,7 +100,7 @@ public:
 private:
    void GenerateMesh(Vertex3D_NoTex2 *const buf) const;
 
-   RenderDevice* m_rd = nullptr;
+   Renderer* m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_plateMeshBuffer;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<MeshBuffer> m_plateMeshEdgeBuffer;

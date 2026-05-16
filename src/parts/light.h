@@ -143,7 +143,7 @@ public:
    float GetCurrentHeight() const { return m_desktopBackdrop ? 0.0f : m_initSurfaceHeight + m_d.m_height; }
 
 protected:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
 
 public:
    float GetDepth(const Vertex3Ds& viewDir) const final;

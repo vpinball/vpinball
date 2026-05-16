@@ -233,7 +233,7 @@ private:
    static unsigned int GetNextBallID();
 
    const unsigned int m_id; // unique ID for each ball
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    ITexManCacheable *m_pinballEnv = nullptr;
    ITexManCacheable *m_pinballDecal = nullptr;
    bool m_antiStretch = false;

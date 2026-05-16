@@ -2903,7 +2903,7 @@ void Renderer::RenderFrame()
    for (auto renderable : m_renderableToInit)
    {
       renderable->RenderRelease();
-      renderable->RenderSetup(m_renderDevice);
+      renderable->RenderSetup(this);
    }
    m_renderableToInit.clear();
 

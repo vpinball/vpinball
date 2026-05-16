@@ -87,7 +87,7 @@ public:
 private:
    void GetTextSize(int * const px, int * const py);
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<BaseTexture> m_textImg = nullptr;
    float m_leading = 0.0f, m_descent = 0.0f;

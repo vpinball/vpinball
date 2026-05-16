@@ -20,7 +20,7 @@
 
 Flasher::~Flasher()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
+   assert(m_renderer == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Flasher *Flasher::CopyForPlay() const
@@ -285,7 +285,7 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const int cvertex = (int)vvertex.size();
       Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
       
-      assert(m_rd != nullptr); // as m_min, m_max are only defined between RenderSetup/RenderRelease
+      assert(m_renderer != nullptr); // as m_min, m_max are only defined between RenderSetup/RenderRelease
 
       const float height = m_d.m_height;
       const float centerX = m_minx + (m_maxx - m_minx)*0.5f;
@@ -894,8 +894,8 @@ void Flasher::ResetVideoCap()
    m_isVideoCap = false;
    if (m_videoCapTex)
    {
-      //  m_rd->m_flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
-      m_rd->m_texMan.UnloadTexture(m_videoCapTex.get());
+      //  m_renderer->m_renderDevice->m_flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_videoCapTex.get());
       m_videoCapTex = nullptr;
    }
 }
@@ -984,7 +984,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         GlobalUnlock(hDIB);
         GlobalFree(hDIB);
 
-        m_rd->m_texMan.SetDirty(m_videoCapTex.get());
+        m_renderer->m_renderDevice->m_texMan.SetDirty(m_videoCapTex.get());
     }
 
     ReleaseDC(m_videoCapHwnd, hdcWindow);
@@ -1027,10 +1027,10 @@ void Flasher::setInPlayState(const bool newVal)
 
 #pragma region Rendering
 
-void Flasher::RenderSetup(RenderDevice *device)
+void Flasher::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
@@ -1119,14 +1119,14 @@ void Flasher::RenderSetup(RenderDevice *device)
 
    m_dynamicVertexBufferRegenerate = true;
 
-   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, vtri, true);
-   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
+   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, vtri, true);
+   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, nullptr, true);
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 }
 
 void Flasher::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    ResetVideoCap();
    m_centerClean = false;
    m_meshBuffer = nullptr;
@@ -1138,7 +1138,7 @@ void Flasher::RenderRelease()
    m_dmdFrame = nullptr;
    m_dmdSize = int2(0, 0);
    m_lightmap = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Flasher::UpdateAnimation(const float diff_time_msec)
@@ -1147,7 +1147,7 @@ void Flasher::UpdateAnimation(const float diff_time_msec)
 
 void Flasher::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
@@ -1208,12 +1208,12 @@ void Flasher::Render(const unsigned int renderMask)
    const Vertex3Ds pos(0.5f * (m_minx + m_maxx), 0.5f * (m_miny + m_maxy), m_d.m_height);
 
    if (m_desktopBackdrop)
-      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(m_d.m_renderMode == FlasherData::EXT_RENDER, false, true);
+      m_renderer->UpdateDesktopBackdropShaderMatrix(m_d.m_renderMode == FlasherData::EXT_RENDER, false, true);
 
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
       if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
       {
          vector<unsigned int> indices(m_numVertices * 2);
@@ -1222,17 +1222,17 @@ void Flasher::Render(const unsigned int renderMask)
             indices[i * 2] = i;
             indices[i * 2 + 1] = (i + 1) % m_numVertices;
          }
-         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
       if (m_desktopBackdrop)
-         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+         m_renderer->UpdateBasicShaderMatrix();
       return;
    }
 
-   m_rd->ResetRenderState();
-   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderer->m_renderDevice->ResetRenderState();
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    const vec4 color = convertColor(m_d.m_color, alpha * m_d.m_intensity_scale / 100.0f);
    const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
@@ -1243,19 +1243,19 @@ void Flasher::Render(const unsigned int renderMask)
          Texture *const pinA = m_ptable->GetImage(m_d.m_szImageA);
          Texture *const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-         m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
 
          vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
-         m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
+         m_renderer->m_renderDevice->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
 
          float flasherMode;
          if ((pinA || m_isVideoCap) && !pinB)
          {
             flasherMode = 0.f;
             if (m_isVideoCap)
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
             else
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
 
             if (!m_d.m_addBlend)
                flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
@@ -1263,7 +1263,7 @@ void Flasher::Render(const unsigned int renderMask)
          else if (!(pinA || m_isVideoCap) && pinB)
          {
             flasherMode = 0.f;
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
+            m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
 
             if (!m_d.m_addBlend)
                flasherData.x = pinB->m_alphaTestValue;
@@ -1272,10 +1272,10 @@ void Flasher::Render(const unsigned int renderMask)
          {
             flasherMode = 1.f;
             if (m_isVideoCap)
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
             else
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
+            m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
 
             if (!m_d.m_addBlend)
             {
@@ -1286,22 +1286,22 @@ void Flasher::Render(const unsigned int renderMask)
          else
             flasherMode = 2.f;
 
-         m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
-         m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
 
          // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
          if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-            m_rd->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
+            m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
-         m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
-         m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
-         m_rd->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
          break;
       }
 
@@ -1325,18 +1325,18 @@ void Flasher::Render(const unsigned int renderMask)
          {
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             if (m_d.m_modulate_vs_add < 1.f)
-               m_rd->EnableAlphaBlend(m_d.m_addBlend);
+               m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);
             else
-               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-            g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
             // There we shift the depthbias to reproduce this behavior for backward compatibility.
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
 
@@ -1350,17 +1350,17 @@ void Flasher::Render(const unsigned int renderMask)
                display.state.frame);
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             if (m_d.m_modulate_vs_add < 1.f)
-               m_rd->EnableAlphaBlend(m_d.m_addBlend);
+               m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);
             else
-               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
-            g_pplayer->m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
 
@@ -1369,20 +1369,20 @@ void Flasher::Render(const unsigned int renderMask)
          {
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
-            m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-            m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
             const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
-            g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
+            m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
                m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(),
                vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
                vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
 
@@ -1391,39 +1391,39 @@ void Flasher::Render(const unsigned int renderMask)
          {
             const float width = m_maxx - m_minx;
             const float height = m_maxy - m_miny;
-            m_rd->ResetRenderState();
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            m_renderer->m_renderDevice->ResetRenderState();
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             // Draw a solid black background using the common flasher mesh and transform
-            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
-            m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
-            m_rd->DrawMesh(m_rd->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), m_d.m_depthBias - m_d.m_height, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-            m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+            m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
+            m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), m_d.m_depthBias - m_d.m_height, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
             // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
             if (m_desktopBackdrop)
-               g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true, //
+               m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true, //
                   Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
                   * Matrix3D::MatrixScale(width, height, 0.f) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height (and a z scale at 0)
                   * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) //
                   * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f));
             else
-               g_pplayer->m_renderer->UpdateBasicShaderMatrix( //
+               m_renderer->UpdateBasicShaderMatrix( //
                   Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
                   * Matrix3D::MatrixScale(width, height, 0.f) //
                   * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
                   * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height));
             VPXRenderContext2D &context
-               = g_pplayer->m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height);
+               = m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height);
             for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
                if (renderer.Render(&context, renderer.context))
                   break;
-            g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+            m_renderer->UpdateBasicShaderMatrix();
          }
          break;
       }
 
 
    if (m_desktopBackdrop)
-      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+      m_renderer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion

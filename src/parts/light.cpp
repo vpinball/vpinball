@@ -35,7 +35,7 @@ constexpr inline float clampLightState(const float state)
 
 Light::~Light()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
+   assert(m_renderer == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Light *Light::CopyForPlay() const
@@ -358,10 +358,10 @@ void Light::UpdateAnimation(const float diff_time_msec)
       FireGroupEvent(DISPID_AnimateEvents_Animate);
 }
 
-void Light::RenderSetup(RenderDevice *device)
+void Light::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    bulb_init();
 
@@ -391,8 +391,8 @@ void Light::RenderSetup(RenderDevice *device)
       // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
       const float bulb_z = m_surfaceHeight;
 
-      std::shared_ptr<IndexBuffer> bulbLightIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbLightNumFaces, bulbLightIndices);
-      std::shared_ptr<VertexBuffer> bulbLightVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbLightNumVertices);
+      std::shared_ptr<IndexBuffer> bulbLightIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bulbLightNumFaces, bulbLightIndices);
+      std::shared_ptr<VertexBuffer> bulbLightVBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bulbLightNumVertices);
       m_bulbLightMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
@@ -410,8 +410,8 @@ void Light::RenderSetup(RenderDevice *device)
       }
       bulbLightVBuffer->Unlock();
 
-      std::shared_ptr<IndexBuffer> bulbSocketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbSocketNumFaces, bulbSocketIndices);
-      std::shared_ptr<VertexBuffer> bulbSocketVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbSocketNumVertices);
+      std::shared_ptr<IndexBuffer> bulbSocketIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bulbSocketNumFaces, bulbSocketIndices);
+      std::shared_ptr<VertexBuffer> bulbSocketVBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bulbSocketNumVertices);
       m_bulbSocketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
       bulbSocketVBuffer->Lock(buf);
@@ -460,8 +460,8 @@ void Light::RenderSetup(RenderDevice *device)
       return;
    }
 
-   std::shared_ptr<VertexBuffer> customMoverVBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_vvertex.size(), nullptr, true);
-   std::shared_ptr<IndexBuffer> customMoverIBuffer = std::make_shared<IndexBuffer>(m_rd, (unsigned int)vtri.size(), false, IndexBuffer::FMT_INDEX16);
+   std::shared_ptr<VertexBuffer> customMoverVBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, (unsigned int)m_vvertex.size(), nullptr, true);
+   std::shared_ptr<IndexBuffer> customMoverIBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, (unsigned int)vtri.size(), false, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
@@ -472,13 +472,13 @@ void Light::RenderSetup(RenderDevice *device)
 
 void Light::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_vvertex.clear();
    m_lightmapMeshBuffer = nullptr;
    m_lightmapMeshEdgeBuffer = nullptr;
    m_bulbSocketMeshBuffer = nullptr;
    m_bulbLightMeshBuffer = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Light::UpdateMeshBuffer()
@@ -499,8 +499,8 @@ void Light::UpdateMeshBuffer()
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
 
       Vertex3D_NoTex2 *buf;
       m_lightmapMeshBuffer->m_vb->Lock(buf);
@@ -548,7 +548,7 @@ void Light::UpdateMeshBuffer()
 
 void Light::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isLightBuffer = renderMask & Renderer::LIGHT_BUFFER;
@@ -564,11 +564,11 @@ void Light::Render(const unsigned int renderMask)
       UpdateMeshBuffer();
 
       if (m_desktopBackdrop)
-         g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
+         m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
       const vec3 pos = m_desktopBackdrop ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
       if (renderMask & Renderer::UI_FILL)
       {
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
       }
       if (renderMask & Renderer::UI_EDGES && m_lightmapMeshEdgeBuffer == nullptr)
       {
@@ -579,15 +579,15 @@ void Light::Render(const unsigned int renderMask)
             indices[i * 2] = i;
             indices[i * 2 + 1] = (i + 1) % numVertices;
          }
-         m_lightmapMeshEdgeBuffer = std::make_shared<MeshBuffer>(m_lightmapMeshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+         m_lightmapMeshEdgeBuffer = std::make_shared<MeshBuffer>(m_lightmapMeshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_lightmapMeshEdgeBuffer->m_ib->m_count);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_lightmapMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_lightmapMeshEdgeBuffer->m_ib->m_count);
 
       // FIXME render bulb
 
       if (m_desktopBackdrop)
-         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+         m_renderer->UpdateBasicShaderMatrix();
       return;
    }
 
@@ -601,9 +601,9 @@ void Light::Render(const unsigned int renderMask)
       // Compute projected bounds
       const float radius = m_d.m_falloff;
       float xMin = 1.f, yMin = 1.f, xMax = -1.f, yMax = -1.f;
-      for (int eye = 0; eye < m_rd->m_nEyes; eye++)
+      for (int eye = 0; eye < m_renderer->m_renderDevice->m_nEyes; eye++)
       {
-         const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(eye);
+         const Matrix3D &mvp = m_renderer->GetMVP().GetModelViewProj(eye);
          for (int i = 0; i < 4; i++)
          {
             Vertex3Ds p;
@@ -630,7 +630,7 @@ void Light::Render(const unsigned int renderMask)
             }
          }
       }
-      RenderPass *pass = m_rd->GetCurrentPass();
+      RenderPass *pass = m_renderer->m_renderDevice->GetCurrentPass();
       if (pass->m_areaOfInterest.x == FLT_MAX)
       {
          pass->m_areaOfInterest.x = xMin;
@@ -671,10 +671,10 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0;
-         m_rd->ResetRenderState();
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->m_basicShader->SetMaterial(&mat, false);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(&mat, false);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
       }
       if ((!isDynamicOnly && m_d.m_staticBulbMesh) || (!isStaticOnly && !m_d.m_staticBulbMesh))
       {
@@ -690,11 +690,11 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0xFFFFFF;
-         m_rd->ResetRenderState();
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
-         m_rd->m_basicShader->SetMaterial(&mat, false);
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(&mat, false);
          const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
-         m_rd->DrawMesh(m_rd->m_basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
       }
    }
 
@@ -733,21 +733,21 @@ void Light::Render(const unsigned int renderMask)
          lightColor2_falloff_power.z *= tint[2] / tint2700[2];
       }
 
-      m_rd->ResetRenderState();
+      m_renderer->m_renderDevice->ResetRenderState();
       if (m_desktopBackdrop)
       {
-         m_rd->SetRenderStateDepthBias(0.0f);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_renderer->m_renderDevice->SetRenderStateDepthBias(0.0f);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       }
       else
       {
-         m_rd->SetRenderStateDepthBias(-1.0f);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+         m_renderer->m_renderDevice->SetRenderStateDepthBias(-1.0f);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
 
-      const float xmult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
-      const float ymult = m_desktopBackdrop ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+      const float xmult = m_desktopBackdrop ? ((float)m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_desktopBackdrop ? ((float)m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
       if (m_desktopBackdrop)
       {
@@ -761,29 +761,29 @@ void Light::Render(const unsigned int renderMask)
       if (m_d.m_showBulbMesh && !isLightBuffer) 
       {
          RenderState tmp_state;
-         m_rd->CopyRenderStates(true, tmp_state);
+         m_renderer->m_renderDevice->CopyRenderStates(true, tmp_state);
 
-         m_rd->m_lightShader->SetLightData(center_range);
-         m_rd->m_lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-         m_rd->m_lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
+         m_renderer->m_renderDevice->m_lightShader->SetLightData(center_range);
+         m_renderer->m_renderDevice->m_lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+         m_renderer->m_renderDevice->m_lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
-         m_rd->EnableAlphaBlend(false, false, false);
-         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the light contribution
-         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
+         m_renderer->m_renderDevice->EnableAlphaBlend(false, false, false);
+         //m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the light contribution
+         m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+         m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
 
          lightColor_intensity.w = m_currentIntensity * 0.02f; //!! make configurable?
          //lightColor_intensity.w = m_currentIntensity * 0.5f;
-         if (m_d.m_BulbLight && g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
+         if (m_d.m_BulbLight && m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
             lightColor_intensity.w *= m_d.m_transmissionScale;
-         m_rd->m_lightShader->SetLightColorIntensity(lightColor_intensity);
-         m_rd->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
+         m_renderer->m_renderDevice->m_lightShader->SetLightColorIntensity(lightColor_intensity);
+         m_renderer->m_renderDevice->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
 
          const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
-            m_rd->DrawMesh(m_rd->m_lightShader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_lightShader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 
-         m_rd->CopyRenderStates(false, tmp_state);
+         m_renderer->m_renderDevice->CopyRenderStates(false, tmp_state);
       }
 
       if (isReflectionPass && (renderMask & Renderer::DISABLE_LIGHTMAPS) != 0)
@@ -792,11 +792,11 @@ void Light::Render(const unsigned int renderMask)
       // Lazily update the position of the vertex buffer (done here instead of setup since this halo height is a dynamic property of bulb lights)
       UpdateMeshBuffer();
 
-      Shader *const shader = m_d.m_BulbLight ? m_rd->m_lightShader : m_rd->m_basicShader;
+      Shader *const shader = m_d.m_BulbLight ? m_renderer->m_renderDevice->m_lightShader : m_renderer->m_renderDevice->m_basicShader;
       shader->SetLightData(center_range);
       shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       lightColor_intensity.w = m_currentIntensity;
-      if (g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
+      if (m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
          lightColor_intensity.w *= m_d.m_transmissionScale;
       shader->SetLightColorIntensity(lightColor_intensity);
 
@@ -812,9 +812,9 @@ void Light::Render(const unsigned int renderMask)
             // Also see below if changing again
             if (!m_desktopBackdrop)
             {
-               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-               m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
-               m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
             }
          }
          else
@@ -822,10 +822,10 @@ void Light::Render(const unsigned int renderMask)
       }
       else
       {
-         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);  // add the lightcontribution
-         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);  // add the lightcontribution
+         m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+         m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
          shader->SetFloat(SHADER_blend_modulate_vs_add, isLightBuffer ? 0.0001f : clamp(m_d.m_modulate_vs_add, 0.0001f, 0.9999f)); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
          shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
       }
@@ -834,13 +834,13 @@ void Light::Render(const unsigned int renderMask)
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
       if (m_desktopBackdrop)
       {
-         g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(shader == m_rd->m_basicShader, shader == m_rd->m_lightShader, false);
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
+         m_renderer->UpdateDesktopBackdropShaderMatrix(shader == m_renderer->m_renderDevice->m_basicShader, shader == m_renderer->m_renderDevice->m_lightShader, false);
+         m_renderer->m_renderDevice->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
             m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
-         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+         m_renderer->UpdateBasicShaderMatrix();
       }
       else
-         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
+         m_renderer->m_renderDevice->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
             m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
    }
 }

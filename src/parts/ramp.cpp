@@ -18,7 +18,7 @@
 
 Ramp::~Ramp()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
    delete[] m_rgheightInit;
 }
 
@@ -827,30 +827,30 @@ void Ramp::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isU
 
 #pragma region Rendering
 
-void Ramp::RenderSetup(RenderDevice *device)
+void Ramp::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
    UpdateBounds();
 }
 
 void Ramp::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Ramp::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
 }
 
 void Ramp::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -880,11 +880,11 @@ void Ramp::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
          /* if (renderMask & Renderer::UI_EDGES)
          {
             // FIXME create line list index buffer and reuse vertex buffer
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::LINELIST, 0, m_numIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::LINELIST, 0, m_numIndices);
          }*/
          return;
       }
@@ -893,22 +893,22 @@ void Ramp::Render(const unsigned int renderMask)
        * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
        * since the texture coordinates always stay within [0,1] anyway. */
       const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-      m_rd->ResetRenderState();
-      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin)
       {
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
-         m_rd->m_basicShader->SetMaterial(mat, false);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
       }
       else
       {
-         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, sam, sam);
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
-         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, sam, sam);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
       }
-      m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
    else
    {
@@ -918,7 +918,7 @@ void Ramp::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
          if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
          {
             vector<unsigned int> indices(8 * m_meshIndices.size() / 6);
@@ -933,15 +933,15 @@ void Ramp::Render(const unsigned int renderMask)
                indices[i * 8 + 6] = m_meshIndices[i * 6 + 5];
                indices[i * 8 + 7] = m_meshIndices[i * 6 + 4];
             }
-            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
          }
          if (renderMask & Renderer::UI_EDGES)
-            m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
          return;
       }
 
-      m_rd->ResetRenderState();
-      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // as both floor and walls are thinwalled
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE); // as both floor and walls are thinwalled
 
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
@@ -950,39 +950,39 @@ void Ramp::Render(const unsigned int renderMask)
           * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
           * since the texture coordinates always stay within [0,1] anyway. */
          const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
-         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, sam, sam);
-         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, sam, sam);
+         m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
       }
       else
       {
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
-         m_rd->m_basicShader->SetMaterial(mat, false);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
       }
 
       if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_imageWalls))
       {
          // both walls with image and floor
-         m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
       }
       else
       {
          // only floor
-         m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
             if (pin && !m_d.m_imageWalls)
-               m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+               m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
-               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
+               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
                   (m_rampVertex - 1) * 6 * 2);
             else if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
-               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
+               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
                   (m_rampVertex - 1) * 6);
             else if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
-               m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2,
+               m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6 * 2,
                   (m_rampVertex - 1) * 6);
          }
       }
@@ -1196,8 +1196,8 @@ void Ramp::PrepareHabitrail()
    {
    case RampType1Wire:
    {
-      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_meshIndices);
-      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)tmpBuf1);
+      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_meshIndices);
+      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, (float *)tmpBuf1);
       m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       break;
    }
@@ -1216,8 +1216,8 @@ void Ramp::PrepareHabitrail()
       memcpy(indices, m_meshIndices.data(), m_numIndices * sizeof(WORD));
       for (int i = 0; i < m_numIndices; i++)
          indices[m_numIndices + i] = indices[i] + m_numVertices;
-      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 2, indices);
-      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 2, (float *)vertices);
+      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices * 2, indices);
+      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices * 2, (float *)vertices);
       m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 2;
       m_numIndices *= 2;
@@ -1246,8 +1246,8 @@ void Ramp::PrepareHabitrail()
          indices[m_numIndices + i] = indices[i] + m_numVertices;
          indices[m_numIndices * 2 + i] = indices[i] + m_numVertices * 2;
       }
-      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 3, indices);
-      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 3, (float *)vertices);
+      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices * 3, indices);
+      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices * 3, (float *)vertices);
       m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 3;
       m_numIndices *= 3;
@@ -1279,8 +1279,8 @@ void Ramp::PrepareHabitrail()
          indices[m_numIndices*2 + i] = indices[i] + m_numVertices*2;
          indices[m_numIndices*3 + i] = indices[i] + m_numVertices*3;
       }
-      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 4, indices);
-      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 4, (float *)vertices);
+      std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices * 4, indices);
+      std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices * 4, (float *)vertices);
       m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 4;
       m_numIndices *= 4;
@@ -2314,10 +2314,10 @@ void Ramp::GenerateVertexBuffer()
    Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
    std::shared_ptr<VertexBuffer> dynamicVertexBuffer
-      = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 3, (float *)tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
+      = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices * 3, (float *)tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    delete[] tmpBuffer;
 
-   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_meshIndices);
+   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_meshIndices);
    
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 }
