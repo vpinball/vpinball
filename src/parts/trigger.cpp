@@ -34,7 +34,7 @@ Trigger *Trigger::CopyForPlay() const
 
 void Trigger::UpdateStatusBarInfo()
 {
-   if(g_pplayer)
+   if (g_pplayer)
        return;
 
    if (m_d.m_shape != TriggerNone)

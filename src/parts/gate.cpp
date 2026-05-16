@@ -144,44 +144,48 @@ void Gate::WriteRegDefaults()
 
 float Gate::GetOpenAngle() const
 {
-    return RADTOANG(g_pplayer ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax);	// player active value
+   return RADTOANG(m_phitgate ? m_phitgate->m_gateMover.m_angleMax : m_d.m_angleMax); // player active value
 }
 
 void Gate::SetOpenAngle(const float angle)
 {
-    float newVal = ANGTORAD(angle);
-    if (g_pplayer)
-    {
-        if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-        else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+   float newVal = ANGTORAD(angle);
+   if (m_phitgate)
+   {
+      if (newVal > m_d.m_angleMax)
+         newVal = m_d.m_angleMax;
+      else if (newVal < m_d.m_angleMin)
+         newVal = m_d.m_angleMin;
 
-        if (m_phitgate->m_gateMover.m_angleMin < newVal)  // min is smaller
-            m_phitgate->m_gateMover.m_angleMax = newVal;  // then set new maximum
-        else m_phitgate->m_gateMover.m_angleMin = newVal; // else set new min
-    }
-    else
-        m_d.m_angleMax = newVal;
+      if (m_phitgate->m_gateMover.m_angleMin < newVal) // min is smaller
+         m_phitgate->m_gateMover.m_angleMax = newVal; // then set new maximum
+      else
+         m_phitgate->m_gateMover.m_angleMin = newVal; // else set new min
+   }
+   else
+      m_d.m_angleMax = newVal;
 }
 
 float Gate::GetCloseAngle() const
-{
-    return RADTOANG(g_pplayer ? m_phitgate->m_gateMover.m_angleMin : m_d.m_angleMin);
-}
+{ return RADTOANG(m_phitgate ? m_phitgate->m_gateMover.m_angleMin : m_d.m_angleMin); }
 
 void Gate::SetCloseAngle(const float angle)
 {
-    float newVal = ANGTORAD(angle);
-    if (g_pplayer)
-    {
-        if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
-        else if (newVal < m_d.m_angleMin) newVal = m_d.m_angleMin;
+   float newVal = ANGTORAD(angle);
+   if (m_phitgate)
+   {
+      if (newVal > m_d.m_angleMax)
+         newVal = m_d.m_angleMax;
+      else if (newVal < m_d.m_angleMin)
+         newVal = m_d.m_angleMin;
 
-        if (m_phitgate->m_gateMover.m_angleMax > newVal)  // max is bigger
-            m_phitgate->m_gateMover.m_angleMin = newVal;  // then set new minumum
-        else m_phitgate->m_gateMover.m_angleMax = newVal; // else set new max
-    }
-    else
-        m_d.m_angleMin = newVal;
+      if (m_phitgate->m_gateMover.m_angleMax > newVal) // max is bigger
+         m_phitgate->m_gateMover.m_angleMin = newVal; // then set new minumum
+      else
+         m_phitgate->m_gateMover.m_angleMax = newVal; // else set new max
+   }
+   else
+      m_d.m_angleMin = newVal;
 }
 
 void Gate::UIRenderPass1(Sur * const psur)
@@ -345,6 +349,7 @@ void Gate::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {
+      // HitObjects are owned by the physics engine, just clear the reference
       m_phitgate = nullptr;
       m_plineseg = nullptr;
    }
@@ -827,14 +832,14 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
 
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((g_pplayer) ? m_phitgate->m_enabled : m_d.m_collidable);
+   *pVal = FTOVB(m_phitgate ? m_phitgate->m_enabled : m_d.m_collidable);
    return S_OK;
 }
 
 
 STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
 {
-   if (g_pplayer)
+   if (m_phitgate)
    {
       m_phitgate->m_enabled = VBTOb(newVal);
       if (!m_d.m_twoWay)
@@ -926,14 +931,14 @@ STDMETHODIMP Gate::put_Friction(float newVal)
 
 STDMETHODIMP Gate::get_Damping(float *pVal)
 {
-   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitgate->m_gateMover.m_damping, (float)(1.0/PHYS_FACTOR));
+   *pVal = m_phitgate ? powf(m_phitgate->m_gateMover.m_damping, (float)(1.0 / PHYS_FACTOR)) : m_d.m_damping;
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Damping(float newVal)
 {
    const float tmp = saturate(newVal);
-   if (g_pplayer)
+   if (m_phitgate)
       m_phitgate->m_gateMover.m_damping = powf(tmp, (float)PHYS_FACTOR); //0.996f;
    else
       m_d.m_damping = tmp;
@@ -943,7 +948,7 @@ STDMETHODIMP Gate::put_Damping(float newVal)
 
 STDMETHODIMP Gate::get_GravityFactor(float *pVal)
 {
-   *pVal = !g_pplayer ? m_d.m_gravityfactor : m_phitgate->m_gateMover.m_gravityfactor;
+   *pVal = m_phitgate ? m_phitgate->m_gateMover.m_gravityfactor : m_d.m_gravityfactor;
    return S_OK;
 }
 
@@ -951,7 +956,7 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
 {
    const float tmp = clamp(newVal, 0.0f, 100.0f);
 
-   if (g_pplayer)
+   if (m_phitgate)
       m_phitgate->m_gateMover.m_gravityfactor = tmp;
    else
       m_d.m_gravityfactor = tmp;
@@ -979,7 +984,7 @@ STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 {
-   if (g_pplayer)
+   if (m_phitgate)
       m_phitgate->m_twoWay = VBTOb(newVal);
    else
       m_d.m_twoWay = VBTOb(newVal);
@@ -1001,7 +1006,7 @@ STDMETHODIMP Gate::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Gate::get_CurrentAngle(float *pVal)
 {
-   if (g_pplayer)
+   if (m_phitgate)
    {
       *pVal = RADTOANG(m_phitgate->m_gateMover.m_angle);
       return S_OK;

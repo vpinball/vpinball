@@ -90,7 +90,6 @@ private:
 
    // Properties used for rendering (not saved)
    Renderer* m_renderer = nullptr;
-   RenderDevice* m_rd = nullptr;
    RenderDeviceState* m_rdState = nullptr;
    bool m_dirty = true;
    bool m_rendering = false;

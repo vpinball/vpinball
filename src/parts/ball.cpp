@@ -309,9 +309,9 @@ void Ball::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, g_pplayer->m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
    m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
-      1.0f / (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left),
-      1.0f / (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top), 
-      saturate(g_pplayer->m_ptable->m_ballPlayfieldReflectionStrength * m_d.m_playfieldReflectionStrength), 0.f);
+      1.0f / (m_ptable->m_right - m_ptable->m_left),
+      1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
+      saturate(m_ptable->m_ballPlayfieldReflectionStrength * m_d.m_playfieldReflectionStrength), 0.f);
 
    // collect the x nearest lights that can reflect on balls
    vector<Light*>& reflectedLights = m_renderer->m_ballReflectedLights;
@@ -335,14 +335,14 @@ void Ball::Render(const unsigned int renderMask)
    float *pLightPos = (float *)l, *pLightEm = (float *)l;
    constexpr int lightStride = 6, lightOfs = 3;
    #endif
-   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission, 1.f);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   vec4 emission = convertColor(m_ptable->m_Light[0].emission, 1.f);
+   emission.x *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   emission.y *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
+   emission.z *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
    for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
    {
       const int pPos = i2 * lightStride, pEm = pPos + lightOfs;
-      memcpy(&pLightPos[pPos], &g_pplayer->m_ptable->m_Light[i2].pos, sizeof(float) * 3);
+      memcpy(&pLightPos[pPos], &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
       memcpy(&pLightEm[pEm], &emission, sizeof(float) * 3);
    }
    for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
@@ -403,7 +403,7 @@ void Ball::Render(const unsigned int renderMask)
          // compute size of the rendered ball on viewport, then apply reversed viewport rotation, then compute stretch correction
          const int w = m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth();
          const int h = m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight();
-         const float viewportRot = -ANGTORAD(g_pplayer->m_ptable->GetViewSetup().GetRotation(m_renderer->m_stereo3D, w, h));
+         const float viewportRot = -ANGTORAD(m_ptable->GetViewSetup().GetRotation(m_renderer->m_stereo3D, w, h));
          const float c = cosf(viewportRot), s = sinf(viewportRot);
          const float rx = (xMax - xMin) * (float)w;
          const float ry = (yMax - yMin) * (float)h;
