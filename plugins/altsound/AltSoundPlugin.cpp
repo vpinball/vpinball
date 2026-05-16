@@ -128,7 +128,9 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
 
     LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, basePath));
 
-    if (AltSoundInit(basePath, gameId, 44100, 2, 128)) {
+    // Avoid audio buffer underruns on windows mingw builds by using a larger buffer size
+    // (128 samples is too small for some reason; tried 256/512 but only 1024 works fine)
+    if (AltSoundInit(basePath, gameId, 44100, 2, 1024)) {
         AltSoundSetAudioCallback(AudioCallback, nullptr);
         AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(hardwareGen));
 
