@@ -108,7 +108,7 @@ private:
    void GenerateBracketMesh(Vertex3D_NoTex2 *buf) const;
    void GenerateWireMesh(Vertex3D_NoTex2 *buf) const;
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
 
    LineSeg *m_plineseg = nullptr;
    HitGate *m_phitgate = nullptr;

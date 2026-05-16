@@ -16,7 +16,7 @@
 
 Textbox::~Textbox()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Textbox *Textbox::CopyForPlay() const
@@ -211,10 +211,10 @@ void Textbox::PutCenter(const Vertex2D& pv)
 
 #pragma region Rendering
 
-void Textbox::RenderSetup(RenderDevice *device)
+void Textbox::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
 #ifndef __STANDALONE__
    FONTDESC oleFD = m_d.m_font.ToOLEFontDesc();
@@ -239,20 +239,20 @@ void Textbox::RenderSetup(RenderDevice *device)
 
 void Textbox::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_texture = nullptr;
    SAFE_RELEASE(m_pIFontPlay);
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Textbox::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
 }
 
 void Textbox::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -279,15 +279,15 @@ void Textbox::Render(const unsigned int renderMask)
    float h = (rect_bottom - rect_top)*ymult;
 
    #ifdef ENABLE_DX9
-      x -= 0.5f / (float)m_rd->GetOutputBackBuffer()->GetWidth();
-      y -= 0.5f / (float)m_rd->GetOutputBackBuffer()->GetHeight();
+      x -= 0.5f / (float)m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth();
+      y -= 0.5f / (float)m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight();
    #endif
 
    if (is_dmd)
    {
-      m_rd->ResetRenderState();
-      m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      m_renderer->m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
 
       Vertex3D_NoTex2 vertices[4] = {
          { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
@@ -311,12 +311,12 @@ void Textbox::Render(const unsigned int renderMask)
          dmd.state.frame);
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
       const vec3 color = m_texture->m_format == BaseTexture::BW_FP32 ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
-      g_pplayer->m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,
+      m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,
          vec4(0.f, 0.f, 0.f, 0.f), vec3(1.f, 1.f, 1.f), 0.f,
          nullptr, vec4(), vec3(0.f, 0.f, 0.f));
-      m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
-      m_rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
-      m_rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+      m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_DMDShader, vertices);
+      m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+      m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
    }
    else if (m_texture)
    {
@@ -459,13 +459,13 @@ void Textbox::Render(const unsigned int renderMask)
             SDL_DestroySurface(pSurface);
          }
 #endif
-         m_rd->m_texMan.SetDirty(m_texture.get());
+         m_renderer->m_renderDevice->m_texMan.SetDirty(m_texture.get());
       }
 
-      m_rd->ResetRenderState();
-      m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture.get(), false), m_d.m_intensity_scale);
-      m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+      m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_renderer->m_renderDevice->m_texMan.LoadTexture(m_texture.get(), false), m_d.m_intensity_scale);
+      m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }
 

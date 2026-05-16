@@ -155,7 +155,7 @@ private:
    float   getBoxWidth() const;
    float   getBoxHeight() const;
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
    struct ReelInfo

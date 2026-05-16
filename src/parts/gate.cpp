@@ -21,7 +21,7 @@
 
 Gate::~Gate()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Gate *Gate::CopyForPlay() const
@@ -355,24 +355,24 @@ void Gate::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 #pragma region Rendering
 
-void Gate::RenderSetup(RenderDevice *device)
+void Gate::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    SetGateType(m_d.m_type);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   std::shared_ptr<IndexBuffer> bracketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, gateBracketNumIndices, gateBracketIndices);
-   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, gateBracketNumVertices);
+   std::shared_ptr<IndexBuffer> bracketIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, gateBracketNumIndices, gateBracketIndices);
+   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, gateBracketNumVertices);
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->Unlock();
    m_bracketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
-   std::shared_ptr<IndexBuffer> wireIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices, m_indices);
-   std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
+   std::shared_ptr<IndexBuffer> wireIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices, m_indices);
+   std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, nullptr, true);
    wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
    wireVertexBuffer->Unlock();
@@ -381,18 +381,18 @@ void Gate::RenderSetup(RenderDevice *device)
 
 void Gate::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_wireMeshBuffer = nullptr;
    m_bracketMeshBuffer = nullptr;
    m_wireEdgeMeshBuffer = nullptr;
    m_bracketEdgeMeshBuffer = nullptr;
    m_vertexbuffer_angle = FLT_MAX;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Gate::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
    // Still monitor angle updates in order to fire animate event at most once per frame (physics engine perform far more cycle per frame)
    if (m_phitgate && m_lastAngle != m_phitgate->m_gateMover.m_angle)
@@ -404,7 +404,7 @@ void Gate::UpdateAnimation(const float diff_time_msec)
 
 void Gate::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -440,8 +440,8 @@ void Gate::Render(const unsigned int renderMask)
       if (renderMask & Renderer::UI_FILL)
       {
          if (m_d.m_showBracket)
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -455,7 +455,7 @@ void Gate::Render(const unsigned int renderMask)
                vertices.push_back(m_vertices[i]);
             m_wireEdgeMeshBuffer = m_wireMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
          if (m_d.m_showBracket)
          {
             if (m_bracketEdgeMeshBuffer == nullptr)
@@ -468,17 +468,17 @@ void Gate::Render(const unsigned int renderMask)
                   vertices.push_back(gateBracket[i]);
                m_bracketEdgeMeshBuffer = m_bracketMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
             }
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
          }
       }
    }
    else
    {
-      m_rd->ResetRenderState();
-      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
+      m_renderer->m_renderDevice->ResetRenderState();
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
       if (m_d.m_showBracket)
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
 }
 

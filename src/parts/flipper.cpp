@@ -717,18 +717,18 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
 #pragma region Rendering
 
-void Flipper::RenderSetup(RenderDevice *device)
+void Flipper::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
-   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, flipperBaseNumIndices * 2);
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, flipperBaseNumIndices * 2);
    WORD *bufI;
    indexBuffer->Lock(bufI);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));
    for (int i = 0; i < (int)flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
    indexBuffer->Unlock();
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, flipperBaseVertices * 2);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, flipperBaseVertices * 2);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);
    GenerateBaseMesh(buf);
@@ -739,16 +739,16 @@ void Flipper::RenderSetup(RenderDevice *device)
 
 void Flipper::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
    m_meshEdgeRubberBuffer = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Flipper::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
    // Still monitor angle updates in order to fire animate event at most once per frame (physics engine performs far more cycles per frame)
    if (m_phitflipper && m_lastAngle != m_phitflipper->m_flipperMover.m_angleCur)
@@ -760,7 +760,7 @@ void Flipper::UpdateAnimation(const float diff_time_msec)
 
 void Flipper::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -780,15 +780,15 @@ void Flipper::Render(const unsigned int renderMask)
    {
       matTrafo = Matrix3D::MatrixRotateZ(m_phitflipper->m_flipperMover.m_angleCur) * matTrafo;
    }
-   g_pplayer->m_renderer->UpdateBasicShaderMatrix(matTrafo);
+   m_renderer->UpdateBasicShaderMatrix(matTrafo);
 
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
       {
-         m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
          if (m_d.m_rubberthickness > 0.f)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -808,26 +808,26 @@ void Flipper::Render(const unsigned int renderMask)
                m_meshEdgeRubberBuffer = m_meshBuffer->CreateEdgeMeshBuffer(indices, vertices);
             }
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
          if (m_d.m_rubberthickness > 0.f)
-            m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeRubberBuffer, RenderDevice::LINELIST, 0, m_meshEdgeRubberBuffer->m_ib->m_count);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeRubberBuffer, RenderDevice::LINELIST, 0, m_meshEdgeRubberBuffer->m_ib->m_count);
       }
    }
    else
    {
-      m_rd->ResetRenderState();
+      m_renderer->m_renderDevice->ResetRenderState();
       Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
-      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
 
       if (m_d.m_rubberthickness > 0.f)
       {
-         m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+         m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       }
    }
 
-   g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+   m_renderer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion

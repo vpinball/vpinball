@@ -100,7 +100,7 @@ public:
 private:
    void UpdatePlate(Vertex3D_NoTex2 * const vertBuffer);
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_plateMeshBuffer;
    Matrix3D m_fullMatrix;

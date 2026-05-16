@@ -122,7 +122,7 @@ private:
    TriggerHitCircle *m_ptriggerhitcircle = nullptr;
    Hit3DPoly *m_ptriggerhitpoly = nullptr;
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    vector<Vertex3Ds> m_vertices;
    const WORD *m_faceIndices = nullptr;

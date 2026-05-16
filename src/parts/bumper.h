@@ -160,7 +160,7 @@ private:
    void GenerateRingMesh(Vertex3D_NoTex2 *buf) const;
    void GenerateCapMesh(Vertex3D_NoTex2 *buf) const;
 
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_baseMeshBuffer;
    std::shared_ptr<MeshBuffer> m_socketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_ringMeshBuffer;

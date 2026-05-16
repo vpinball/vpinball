@@ -20,7 +20,7 @@
 
 Surface::~Surface()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
+   assert(m_renderer == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Surface *Surface::CopyForPlay() const
@@ -748,10 +748,10 @@ void Surface::UpdateAnimation(const float diff_time_msec)
       m_vlinesling[i]->Animate();
 }
 
-void Surface::RenderSetup(RenderDevice *device)
+void Surface::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
@@ -820,14 +820,14 @@ void Surface::RenderSetup(RenderDevice *device)
          ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
       }
 
-      std::shared_ptr<VertexBuffer> slingshotVBuffer = std::make_shared<VertexBuffer>(m_rd, n_lines * 9);
+      std::shared_ptr<VertexBuffer> slingshotVBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, n_lines * 9);
       Vertex3D_NoTex2 *buf;
       slingshotVBuffer->Lock(buf);
       memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
       slingshotVBuffer->Unlock();
       delete[] rgv3D;
 
-      std::shared_ptr<IndexBuffer> slingIBuffer = std::make_shared<IndexBuffer>(m_rd, n_lines * 24);
+      std::shared_ptr<IndexBuffer> slingIBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, n_lines * 24);
       unsigned short *ibuf;
       slingIBuffer->Lock(ibuf);
       memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
@@ -843,7 +843,7 @@ void Surface::RenderSetup(RenderDevice *device)
       vector<WORD> topBottomIndices, sideIndices;
       GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-      std::shared_ptr<VertexBuffer> VBuffer = std::make_shared<VertexBuffer>(m_rd, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
+      std::shared_ptr<VertexBuffer> VBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
       Vertex3D_NoTex2 *verts;
       VBuffer->Lock(verts);
       memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());
@@ -861,7 +861,7 @@ void Surface::RenderSetup(RenderDevice *device)
       for (unsigned int i = 0; i < m_numPolys * 3; i++)
          topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
 
-      std::shared_ptr<IndexBuffer> IBuffer = std::make_shared<IndexBuffer>(m_rd, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
+      std::shared_ptr<IndexBuffer> IBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
       WORD* buf;
       IBuffer->Lock(buf);
       memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
@@ -877,16 +877,16 @@ void Surface::RenderSetup(RenderDevice *device)
 
 void Surface::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_slingshotMeshBuffer = nullptr;
    m_meshBuffer = nullptr;
    m_meshEdgeBuffer = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Surface::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -910,11 +910,11 @@ void Surface::Render(const unsigned int renderMask)
       if (renderMask & Renderer::UI_FILL)
       {
          if (m_d.m_sideVisible)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
          if (m_d.m_topBottomVisible)
          {
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + 0, m_numPolys * 3);
-            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
          }
       }
       if (renderMask & Renderer::UI_EDGES && (m_d.m_sideVisible || m_d.m_topBottomVisible))
@@ -933,9 +933,9 @@ void Surface::Render(const unsigned int renderMask)
                indices[i * 8 + 6] = i * 4 + 3;
                indices[i * 8 + 7] = i * 4;
             }
-            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, indices), true);
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
       }
    }
    else if (!m_isDropped || StaticRendering())
@@ -987,10 +987,10 @@ void Surface::RenderSlingshots()
       }
    }
 
-   m_rd->ResetRenderState();
-   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
-   m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<uint32_t>(m_vlinesling.size() * 24));
+   m_renderer->m_renderDevice->ResetRenderState();
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
+   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<uint32_t>(m_vlinesling.size() * 24));
 }
 
 void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
@@ -998,40 +998,40 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    if (isReflectionPass && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
-   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, StaticRendering() ? 1.f : m_d.m_disableLightingBelow, 0.f, 0.f);
+   m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, StaticRendering() ? 1.f : m_d.m_disableLightingBelow, 0.f, 0.f);
 
    // render side
    if (m_d.m_sideVisible && !drop && (m_numVertices > 0)) // Don't need to render walls if dropped
    {
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      m_rd->ResetRenderState();
+      m_renderer->m_renderDevice->ResetRenderState();
       if ((mat->m_bOpacityActive || !m_isDynamic) || (m_d.m_topBottomVisible && m_isDynamic))
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_rd->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szSideImage));
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szSideImage));
       // combine drawcalls into one (hopefully faster)
-      m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
    }
 
    // render top&bottom
    if (m_d.m_topBottomVisible && (m_numPolys > 0))
    {
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      m_rd->ResetRenderState();
+      m_renderer->m_renderDevice->ResetRenderState();
       if (mat->m_bOpacityActive || !m_isDynamic)
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_rd->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
+         m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
 
       // Top
-      m_rd->DrawMesh(
-         m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
+      m_renderer->m_renderDevice->DrawMesh(
+         m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (drop ? m_numPolys * 3 : 0), m_numPolys * 3);
 
       // Only render Bottom for Reflections
       if (isReflectionPass)
-         m_rd->DrawMesh(
-            m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
+         m_renderer->m_renderDevice->DrawMesh(
+            m_renderer->m_renderDevice->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
    }
 
-   m_rd->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+   m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
 void Surface::AddPoint(int x, int y, const bool smooth)

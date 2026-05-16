@@ -134,7 +134,7 @@ public:
    void AddPoint(int x, int y, const bool smooth) final;
 
 protected:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
 
 public:
    void UpdatePoint(int index, float x, float y);

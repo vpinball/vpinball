@@ -189,7 +189,7 @@ private:
    void AddHitEdge(class PhysicsEngine *physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi,
       const Vertex3Ds &vj, const bool setHitObject, const bool isUI);
 
-   RenderDevice    *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    const Vertex3D_NoTex2 *m_vertices = nullptr; // pointer just to the existing hittargets hardcoded in arrays
    const WORD      *m_indices = nullptr; // dto.
    unsigned int     m_numVertices = 0;

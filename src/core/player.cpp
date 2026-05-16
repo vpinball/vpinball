@@ -691,7 +691,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       editable->TimerSetup(m_vht);
 
       if (auto ph = editable->GetIRenderable(); ph)
-         ph->RenderSetup(m_renderer->m_renderDevice);
+         ph->RenderSetup(m_renderer);
    }
 
    if (!IsEditorMode())
@@ -1239,7 +1239,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_hitBall.m_d.m_vel = { vx, vy, vz };
    pBall->m_d.m_useTableRenderSettings = true;
    pBall->TimerSetup(m_vht);
-   pBall->RenderSetup(m_renderer->m_renderDevice);
+   pBall->RenderSetup(m_renderer);
    pBall->PhysicSetup(m_physics, false);
    m_vball.push_back(pBall);
    pBall->Release(); // The ball is owned by the table, not by the player

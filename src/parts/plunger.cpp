@@ -17,7 +17,7 @@
 
 Plunger::~Plunger()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Plunger *Plunger::CopyForPlay() const
@@ -244,10 +244,10 @@ static const char *nextTipToken(const char* &p)
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerDesc.cs
 //            VisualPinball.Engine/VPT/Plunger/PlungerMeshGenerator.cs
 
-void Plunger::RenderSetup(RenderDevice *device)
+void Plunger::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
    const float zheight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_v.x, m_d.m_v.y) + m_d.m_zAdjust;
    const float stroke = m_d.m_stroke;
    const float beginy = m_d.m_v.y;
@@ -467,7 +467,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_cframes * m_vtsPerFrame);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_cframes * m_vtsPerFrame);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);
@@ -777,7 +777,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    vertexBuffer->Unlock();
 
    // create the new index buffer
-   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, k, indices);
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, k, indices);
    delete[] indices;
 
    // Create the mesh buffer
@@ -793,9 +793,9 @@ void Plunger::RenderSetup(RenderDevice *device)
 
 void Plunger::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_meshBuffer = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Plunger::UpdateAnimation(const float diff_time_msec)
@@ -805,7 +805,7 @@ void Plunger::UpdateAnimation(const float diff_time_msec)
 
 void Plunger::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -821,9 +821,9 @@ void Plunger::Render(const unsigned int renderMask)
    const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (float)(m_cframes - 1) + 0.5f);
    const int frame = (frame0 < 0 ? 0 : frame0 >= m_cframes ? m_cframes - 1 : frame0);
 
-   m_rd->ResetRenderState();
-   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-   m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
+   m_renderer->m_renderDevice->ResetRenderState();
+   m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f /*m_boundingSphereRadius*/, m_meshBuffer, 
       RenderDevice::TRIANGLELIST, frame * m_indicesPerFrame, m_indicesPerFrame);
 }
 

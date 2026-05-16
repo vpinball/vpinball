@@ -19,7 +19,7 @@
 
 Spinner::~Spinner()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Spinner *Spinner::CopyForPlay() const
@@ -298,16 +298,16 @@ void Spinner::ExportMesh(ObjLoader& loader)
 
 #pragma region Rendering
 
-void Spinner::RenderSetup(RenderDevice *device)
+void Spinner::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
-   std::shared_ptr<IndexBuffer> bracketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, spinnerBracketNumFaces, spinnerBracketIndices);
-   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, spinnerBracketNumVertices);
+   std::shared_ptr<IndexBuffer> bracketIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, spinnerBracketNumFaces, spinnerBracketIndices);
+   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, spinnerBracketNumVertices);
    m_bracketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
@@ -331,8 +331,8 @@ void Spinner::RenderSetup(RenderDevice *device)
    }
    bracketVertexBuffer->Unlock();
 
-   std::shared_ptr<IndexBuffer> plateIndexBuffer = std::make_shared<IndexBuffer>(m_rd, spinnerPlateNumFaces, spinnerPlateIndices);
-   std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_rd, spinnerPlateNumVertices, nullptr, true);
+   std::shared_ptr<IndexBuffer> plateIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, spinnerPlateNumFaces, spinnerPlateIndices);
+   std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, spinnerPlateNumVertices, nullptr, true);
    m_plateMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
@@ -341,8 +341,8 @@ void Spinner::RenderSetup(RenderDevice *device)
 
 void Spinner::RenderRelease()
 {
-   assert(m_rd != nullptr);
-   m_rd = nullptr;
+   assert(m_renderer != nullptr);
+   m_renderer = nullptr;
    m_bracketMeshBuffer = nullptr;
    m_plateMeshBuffer = nullptr;
 }
@@ -360,7 +360,7 @@ void Spinner::UpdateAnimation(const float diff_time_msec)
 
 void Spinner::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -371,7 +371,7 @@ void Spinner::Render(const unsigned int renderMask)
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
-   m_rd->ResetRenderState();
+   m_renderer->m_renderDevice->ResetRenderState();
 
    if (m_d.m_showBracket && !isDynamicOnly)
    {
@@ -386,17 +386,17 @@ void Spinner::Render(const unsigned int renderMask)
       mat.m_cClearcoat = 0x20202020;
       mat.m_fEdge = 1.0f;
       mat.m_fEdgeAlpha = 1.0f;
-      m_rd->m_basicShader->SetBasic(&mat, nullptr);
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(&mat, nullptr);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
    }
 
    if (m_phitspinner->m_spinnerMover.m_visible && !isStaticOnly)
    {
       UpdatePlate(nullptr);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
+      m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerPlateNumFaces);
    }
 }
 

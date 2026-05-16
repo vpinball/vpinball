@@ -163,7 +163,7 @@ public:
    PlungerData m_d;
 
 private:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
 
    HitPlunger *m_phitplunger = nullptr;

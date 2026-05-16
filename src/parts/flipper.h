@@ -167,7 +167,7 @@ public:
    FlipperData m_d;
 
 private:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    std::shared_ptr<MeshBuffer> m_meshEdgeRubberBuffer;

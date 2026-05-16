@@ -302,7 +302,7 @@ public:
    bool m_inPlayState = false;
 
 private:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
 
    Light * m_lightmap = nullptr;
 

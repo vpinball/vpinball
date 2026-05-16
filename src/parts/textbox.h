@@ -90,7 +90,7 @@ public:
    TextboxData m_d;
 
 private:
-   RenderDevice *m_rd = nullptr;
+   Renderer *m_renderer = nullptr;
    bool m_textureDirty = true;
    std::shared_ptr<BaseTexture> m_texture = nullptr;
    IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution

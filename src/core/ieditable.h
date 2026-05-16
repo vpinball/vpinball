@@ -155,7 +155,7 @@ public:
 #define _STANDARD_DISPATCH_INDEPENDENT_EDITABLE_RENDERABLE_DECLARES(T, ItemType) \
    IRenderable *GetIRenderable() final { return static_cast<IRenderable *>(this); } \
    const IRenderable *GetIRenderable() const final { return static_cast<const IRenderable *>(this); } \
-   void RenderSetup(RenderDevice *device) final; \
+   void RenderSetup(Renderer *renderer) final; \
    void UpdateAnimation(const float diff_time_msec) final; \
    void Render(const unsigned int renderMask) final; \
    void RenderRelease() final;

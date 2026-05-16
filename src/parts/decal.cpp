@@ -17,7 +17,7 @@
 
 Decal::~Decal()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Decal *Decal::CopyForPlay() const
@@ -355,10 +355,10 @@ void Decal::EnsureSize()
 
 #pragma region Rendering
 
-void Decal::RenderSetup(RenderDevice *device)
+void Decal::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    UpdateBounds();
    
@@ -501,12 +501,12 @@ void Decal::RenderSetup(RenderDevice *device)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, 4);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, 4);
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->Lock(vertices);
    const float z = m_desktopBackdrop ? 0.f : (height + 0.2f);
    int renderWidth, renderHeight;
-   g_pplayer->m_renderer->GetRenderSize(renderWidth, renderHeight);
+   m_renderer->GetRenderSize(renderWidth, renderHeight);
    const float xmult = m_desktopBackdrop ? ((float)renderWidth * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
    const float ymult = m_desktopBackdrop ? ((float)renderHeight * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
    const float offs = m_desktopBackdrop ? 0.5f : 0.f;
@@ -554,20 +554,20 @@ void Decal::RenderSetup(RenderDevice *device)
 
 void Decal::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_textImg = nullptr;
    m_meshBuffer = nullptr;
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Decal::UpdateAnimation(const float diff_time_msec)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
 }
 
 void Decal::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    TRACE_FUNCTION();
@@ -584,17 +584,17 @@ void Decal::Render(const unsigned int renderMask)
          || (!isStaticOnly && (!m_desktopBackdrop && mat->m_bOpacityActive)))) // Not prerendered part pass
       return;
 
-   m_rd->ResetRenderState();
+   m_renderer->m_renderDevice->ResetRenderState();
 
-   m_rd->m_basicShader->SetMaterial(mat);
+   m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat);
 
    if (m_d.m_decaltype != DecalImage)
    {
       if (!m_desktopBackdrop)
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, false);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, false);
       else
-         m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, m_textImg.get());
+         m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+      m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, m_textImg.get());
    }
    else
    {
@@ -602,37 +602,37 @@ void Decal::Render(const unsigned int renderMask)
       if (pin)
       {
          if (!m_desktopBackdrop)
-            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
+            m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
          else
-            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+            m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
          // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-         m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
-         m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
+         m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
       }
       else
       {
          if (!m_desktopBackdrop)
-            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+            m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
          else
-            m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
+            m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_without_texture);
       }
    }
 
-   m_rd->EnableAlphaBlend(false);
+   m_renderer->m_renderDevice->EnableAlphaBlend(false);
 
    if (m_desktopBackdrop)
    {
-      m_rd->SetRenderStateDepthBias(0.0f);
+      m_renderer->m_renderDevice->SetRenderStateDepthBias(0.0f);
       static constexpr vec4 staticColor { 1.0f, 1.0f, 1.0f, 1.0f };
-      m_rd->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
-      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
-      m_rd->DrawMesh(m_rd->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
-      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+      m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
+      m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+      m_renderer->UpdateBasicShaderMatrix();
    }
    else
    {
-      m_rd->SetRenderStateDepthBias(-5.f);
-      m_rd->DrawMesh(m_rd->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+      m_renderer->m_renderDevice->SetRenderStateDepthBias(-5.f);
+      m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, !m_desktopBackdrop, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
    }
 }
 

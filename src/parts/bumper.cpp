@@ -20,7 +20,7 @@
 
 Bumper::~Bumper()
 {
-   assert(m_rd == nullptr);
+   assert(m_renderer == nullptr);
 }
 
 Bumper *Bumper::CopyForPlay() const
@@ -218,10 +218,10 @@ void Bumper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 #pragma region Rendering
 
-void Bumper::RenderSetup(RenderDevice *device)
+void Bumper::RenderSetup(Renderer *renderer)
 {
-   assert(m_rd == nullptr);
-   m_rd = device;
+   assert(m_renderer == nullptr);
+   m_renderer = renderer;
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -230,8 +230,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    //if (m_d.m_baseVisible)
    {
       m_baseTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperBase.webp")));
-      std::shared_ptr<IndexBuffer> baseIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperBaseNumIndices, bumperBaseIndices);
-      std::shared_ptr<VertexBuffer> baseVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperBaseNumVertices);
+      std::shared_ptr<IndexBuffer> baseIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bumperBaseNumIndices, bumperBaseIndices);
+      std::shared_ptr<VertexBuffer> baseVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
       baseVertexBuffer->Lock(buf);
       GenerateBaseMesh(buf);
@@ -242,8 +242,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    //if (m_d.m_skirtVisible)
    {
       m_skirtTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperSkirt.webp")));
-      std::shared_ptr<IndexBuffer> socketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperSocketNumIndices, bumperSocketIndices);
-      std::shared_ptr<VertexBuffer> socketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperSocketNumVertices, nullptr, true);
+      std::shared_ptr<IndexBuffer> socketIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bumperSocketNumIndices, bumperSocketIndices);
+      std::shared_ptr<VertexBuffer> socketVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
       socketVertexBuffer->Lock(buf);
       GenerateSocketMesh(buf);
@@ -254,8 +254,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    //if (m_d.m_ringVisible)
    {
       m_ringTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperRing.webp")));
-      std::shared_ptr<IndexBuffer> ringIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperRingNumIndices, bumperRingIndices);
-      std::shared_ptr<VertexBuffer> ringVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperRingNumVertices, nullptr, true);
+      std::shared_ptr<IndexBuffer> ringIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bumperRingNumIndices, bumperRingIndices);
+      std::shared_ptr<VertexBuffer> ringVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
       Vertex3D_NoTex2 *buf;
@@ -268,8 +268,8 @@ void Bumper::RenderSetup(RenderDevice *device)
    //if (m_d.m_capVisible)
    {
       m_capTexture.reset(Texture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BumperCap.webp")));
-      std::shared_ptr<IndexBuffer> capIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bumperCapNumIndices, bumperCapIndices);
-      std::shared_ptr<VertexBuffer> capVertexBuffer = std::make_shared<VertexBuffer>(m_rd, bumperCapNumVertices);
+      std::shared_ptr<IndexBuffer> capIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, bumperCapNumIndices, bumperCapIndices);
+      std::shared_ptr<VertexBuffer> capVertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
       capVertexBuffer->Lock(buf);
       GenerateCapMesh(buf);
@@ -280,7 +280,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
 void Bumper::RenderRelease()
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    m_baseMeshBuffer = nullptr;
    m_ringMeshBuffer = nullptr;
    m_capMeshBuffer = nullptr;
@@ -288,24 +288,24 @@ void Bumper::RenderRelease()
    delete[] m_ringVertices;
    m_ringVertices = nullptr;
    if (m_baseTexture)
-      m_rd->m_texMan.UnloadTexture(m_baseTexture.get());
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_baseTexture.get());
    m_baseTexture = nullptr;
    if (m_ringTexture)
-      m_rd->m_texMan.UnloadTexture(m_ringTexture.get());
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_ringTexture.get());
    m_ringTexture = nullptr;
    if (m_capTexture)
-      m_rd->m_texMan.UnloadTexture(m_capTexture.get());
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_capTexture.get());
    m_capTexture = nullptr;
    if (m_skirtTexture)
-      m_rd->m_texMan.UnloadTexture(m_skirtTexture.get());
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_skirtTexture.get());
    m_skirtTexture = nullptr;
 
-   m_rd = nullptr;
+   m_renderer = nullptr;
 }
 
 void Bumper::Render(const unsigned int renderMask)
 {
-   assert(m_rd != nullptr);
+   assert(m_renderer != nullptr);
    assert(!m_desktopBackdrop);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
@@ -322,7 +322,7 @@ void Bumper::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
          // FIXME render wireframe
       }
       else
@@ -330,11 +330,11 @@ void Bumper::Render(const unsigned int renderMask)
          const Material *const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
          if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
          {
-            m_rd->ResetRenderState();
+            m_renderer->m_renderDevice->ResetRenderState();
             if (mat->m_bOpacityActive)
-               m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_rd->m_basicShader->SetBasic(mat, m_baseTexture.get());
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_baseTexture.get());
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
          }
       }
    }
@@ -345,7 +345,7 @@ void Bumper::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
          // FIXME render wireframe
       }
       else
@@ -353,11 +353,11 @@ void Bumper::Render(const unsigned int renderMask)
          const Material *const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
          if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
          {
-            m_rd->ResetRenderState();
+            m_renderer->m_renderDevice->ResetRenderState();
             if (mat->m_bOpacityActive)
-               m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_rd->m_basicShader->SetBasic(mat, m_capTexture.get());
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+               m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_capTexture.get());
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
          }
       }
    }
@@ -368,7 +368,7 @@ void Bumper::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
          // FIXME render wireframe
       }
       else
@@ -384,9 +384,9 @@ void Bumper::Render(const unsigned int renderMask)
             ringMaterial.m_cGlossy = 0;
             ringMaterial.m_type = Material::MaterialType::METAL;
          }
-         m_rd->ResetRenderState();
-         m_rd->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+         m_renderer->m_renderDevice->ResetRenderState();
+         m_renderer->m_renderDevice->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
       }
    }
 
@@ -396,17 +396,17 @@ void Bumper::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
          // FIXME render wireframe
       }
       else
       {
          const Material *const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-         m_rd->ResetRenderState();
+         m_renderer->m_renderDevice->ResetRenderState();
          if (mat->m_bOpacityActive)
-            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->m_basicShader->SetBasic(mat, m_skirtTexture.get());
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+            m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_skirtTexture.get());
+         m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
       }
    }
 }
