@@ -19,6 +19,9 @@
     <ClCompile Include="../../plugins/pup/PUPCustomPos.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/pup/PUPFont.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/pup/PUPImage.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -58,6 +61,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/pup/PUPFont.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/pup/PUPImage.h">
