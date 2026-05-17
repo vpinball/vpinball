@@ -2,6 +2,9 @@
 
 #include "core/stdafx.h"
 #include "vpx-test.h"
+
+#include "core/VPApp.h"
+
 #include "doctest.h"
 
 enum class VPXBackends : int
