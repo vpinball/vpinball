@@ -17,7 +17,6 @@ public:
       Runnable,
       Navigation,
       ActionInputMapping,
-      PhysicsSensorMapping,
       Property,
       CustomRender,
       // Core actions
@@ -33,15 +32,13 @@ public:
       Header, // Not scrollable basic text, formated to split sections of the item list
       Markdown // Scrollable (therefore selectable), advanced formatting
    };
-   InGameUIItem(LabelType type, string label);
+   InGameUIItem(LabelType type, string label, string tooltip = "");
 
    InGameUIItem(const string& label, const string& tooltip, std::function<void(void)> runnable);
 
    InGameUIItem(string label, string tooltip, string path);
 
    InGameUIItem(const string& label, const string& tooltip, class InputAction* inputAction);
-
-   InGameUIItem(const string& label, const string& tooltip, class PhysicsSensor* physicsSensor, int typeMask);
 
    InGameUIItem(string label, string tooltip, std::function<void(int, const InGameUIItem*)> customRender);
 
@@ -70,7 +67,7 @@ public:
       const std::function<void(const string&, Settings&, bool)>& onSave);
 
    bool IsSelectable() const { return m_type != Type::Label || m_labelType == LabelType::Markdown; }
-   bool IsAdjustable() const { return m_type == Type::Property || m_type == Type::ActionInputMapping || m_type == Type::PhysicsSensorMapping; }
+   bool IsAdjustable() const { return m_type == Type::Property || m_type == Type::ActionInputMapping; }
 
    float GetFloatValue() const;
    int GetIntValue() const;
@@ -122,6 +119,8 @@ public:
 private:
    string m_defMappingString;
    string m_initialMappingString;
+
+   bool IsSameValue(float a, float b) const;
 
    const std::function<bool()> m_getBoolValue;
    const std::function<bool(const Settings&)> m_getStoredBoolValue;

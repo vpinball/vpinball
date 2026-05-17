@@ -8,6 +8,14 @@
 #include "input/PhysicsSensor.h"
 #include "math/vector.h"
 
+class PlungerSensor;
+class PlungerHandler;
+namespace VPX::Physics
+{
+class NudgeSensor;
+class NudgeHandler;
+};
+
 
 class InputManager final
    : public ButtonMapping::ButtonInputEventManager
@@ -56,72 +64,6 @@ public:
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
-   struct ActionState
-   {
-      uint64_t actionState;
-
-      void SetPressed(unsigned int actionId)
-      {
-         assert(actionId < 64);
-         const uint64_t mask = 1ull << actionId;
-         actionState |= mask;
-      }
-
-      void SetReleased(unsigned int actionId)
-      {
-         assert(actionId < 64);
-         const uint64_t mask = 1ull << actionId;
-         actionState &= ~mask;
-      }
-
-      bool IsKeyPressed(int actionId, const ActionState& prev) const
-      {
-         assert(actionId < 64);
-         const uint64_t mask = 1ull << actionId;
-         return (actionState & mask) != 0 && (prev.actionState & mask) == 0;
-      }
-
-      bool IsKeyDown(int actionId) const
-      {
-         assert(actionId < 64);
-         const uint64_t mask = 1ull << actionId;
-         return (actionState & mask) != 0;
-      }
-
-      bool IsKeyReleased(int actionId, const ActionState& prev) const
-      {
-         assert(actionId < 64);
-         const uint64_t mask = 1ull << actionId;
-         return (actionState & mask) == 0 && (prev.actionState & mask) != 0;
-      }
-   };
-   const ActionState& GetActionState() const { return m_inputActionstate; }
-
-
-   ///// Nudge & plunger
-   const std::unique_ptr<PhysicsSensor>& GetPlungerPositionSensor() const { return m_plungerPositionSensor; }
-   const std::unique_ptr<PhysicsSensor>& GetPlungerVelocitySensor() const { return m_plungerVelocitySensor; }
-   const std::unique_ptr<PhysicsSensor>& GetNudgeXSensor(int index) const { return m_nudgeXSensor[index]; }
-   const std::unique_ptr<PhysicsSensor>& GetNudgeYSensor(int index) const { return m_nudgeYSensor[index]; }
-   bool IsNudgeFiltered(int index) const { return m_nudgeFilter[index]; }
-   void SetNudgeFiltered(int index, bool enable);
-   float GetNudgeOrientation(int index) const { return m_nudgeOrientation[index]; }
-   void SetNudgeOrientation(int index, float orientation) { m_nudgeOrientation[index] = orientation; }
-
-   void AddAxisListener(std::function<void()> listener) { m_axisListeners.push_back(std::move(listener)); }
-   void ClearAxisListeners() { m_axisListeners.clear(); }
-
-   bool HasMechPlunger() const { return m_plungerPositionSensor->IsMapped(); }
-   float GetPlungerPos() const { return m_plungerPositionSensor->GetValue(); }
-   bool HasMechPlungerSpeed() const { return m_plungerVelocitySensor->IsMapped(); }
-   float GetPlungerSpeed() const { return m_plungerVelocitySensor->GetValue(); }
-   Vertex2D GetNudge() const;
-
-   // Allow to override local state for remote control support
-   void SetPlungerPos(bool overrideInput, const float pos);
-   void SetPlungerSpeed(bool overrideInput, const float speed);
-   void SetNudge(bool overrideInput, const float nudgeAccelerationX, const float nudgeAccelerationY);
-
    ///// Input devices
    enum class DeviceType
    {
@@ -132,22 +74,28 @@ public:
       VRController,
       OpenPinDev
    };
+   class MappingSetupHandler
+   {
+   public:
+      virtual void MapAction(const vector<ButtonMapping>& input, unsigned int action) = 0;
+      virtual void MapPlunger(std::unique_ptr<PlungerSensor> sensor) = 0;
+      virtual void MapNudge(std::unique_ptr<VPX::Physics::NudgeSensor> sensor) = 0;
+   };
    uint16_t RegisterDevice(const string& settingsId, DeviceType type, const string& name);
-   void RegisterDefaultMapping(uint16_t deviceId,
-      const std::function<bool( // Function to either apply or evaluate applying the default mapping of the given controller
-         std::function<bool(const vector<ButtonMapping>&, unsigned int)>, // Map Button
-         std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>, // Map plunger
-         std::function<bool(const SensorMapping& sensorX, const SensorMapping& sensorY)> // Map nudge
-         )>& mapper);
+   void SetDeviceDefaultMapping(uint16_t deviceId, const std::function<void(MappingSetupHandler&)>& mapper);
    void RegisterElementName(uint16_t deviceId, bool isAxis, uint16_t buttonOrAxisId, const string& name);
    void UnregisterDevice(uint16_t deviceId);
+   void ClearDeviceMappings(uint16_t deviceId);
    uint16_t GetDeviceId(const string& settingsId);
    const string& GetDeviceSettingId(uint16_t deviceId) const;
    const string& GetDeviceName(uint16_t deviceId) const;
+   bool IsDeviceConnected(uint16_t deviceId) const;
+   bool IsDeviceMapped(uint16_t deviceId) const;
    string GetDeviceElementName(uint16_t deviceId, uint16_t buttonOrAxisId) const;
    DeviceType GetDeviceType(uint16_t deviceId) const;
    uint16_t GetKeyboardDeviceId() const { return m_keyboardDeviceId; }
    uint16_t GetMouseDeviceId() const { return m_mouseDeviceId; }
+   vector<uint16_t> GetAllDevices() const;
    vector<uint32_t> GetAllAxis() const;
 
    void ProcessInput();
@@ -156,7 +104,9 @@ public:
    void PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_t timestampNs, bool isPressed);
    void PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t timestampNs, float position);
    void PushTouchEvent(float relativeX, float relativeY, uint64_t timestampNs, bool isPressed);
-   void OnInputActionStateChanged(InputAction* action);
+
+   void AddAxisListener(std::function<void()> listener) { m_axisListeners.push_back(std::move(listener)); }
+   void ClearAxisListeners() { m_axisListeners.clear(); }
 
    void RegisterOnUpdate(InputAction* action);
    void UnregisterOnUpdate(InputAction* action);
@@ -191,17 +141,21 @@ public:
       virtual void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) { }
    };
 
+   // Used by actions to report state changes and query if local processing should be performed
+   bool OnInputActionStateChanged(InputAction* action);
+
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
-
-   bool m_linearPlunger = false;
-   bool m_plunger_retract = false; // enable 1s retract phase for button/key plunger
 
    int m_leftFlipperLastChangePollDelay = 0;
 
    // Used to add/remove the OpenXR input handler
    void AddInputHandler(std::unique_ptr<InputHandler> handler);
    std::unique_ptr<InputHandler> RemoveInputHandler(InputHandler* handler);
+
+   std::unique_ptr<VPX::Physics::NudgeHandler> m_nudgeHandler;
+
+   std::unique_ptr<PlungerHandler> m_plungerHandler;
 
 private:
    class Player* m_player;
@@ -243,15 +197,8 @@ private:
    unsigned int m_vrControllerViewCenteringActionId;
    ankerl::unordered_dense::map<uint32_t, vector<ButtonMapping*>> m_buttonMappings;
    vector<InputAction*> m_onUpdateActions;
-   ActionState m_inputActionstate {};
    const unsigned int m_onActionEventMsgId;
 
-   std::unique_ptr<PhysicsSensor> m_plungerPositionSensor;
-   std::unique_ptr<PhysicsSensor> m_plungerVelocitySensor;
-   std::unique_ptr<PhysicsSensor> m_nudgeXSensor[2];
-   std::unique_ptr<PhysicsSensor> m_nudgeYSensor[2];
-   float m_nudgeOrientation[2] {};
-   bool m_nudgeFilter[2] { true, true };
    ankerl::unordered_dense::map<uint32_t, vector<SensorMapping*>> m_sensorMappings;
    vector<std::function<void()>> m_axisListeners;
 
@@ -277,11 +224,7 @@ private:
       ankerl::unordered_dense::map<uint16_t, ElementDef> m_buttonOrAxisNames;
 
       bool m_hasPendingLayoutApply = false;
-      std::function<bool( // Function to either apply or evaluate applying the default mapping of the given controller
-         std::function<bool(const vector<ButtonMapping>&, unsigned int)>, // Map Button
-         std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>, // Map plunger
-         std::function<bool(const SensorMapping&, const SensorMapping&)> // Map nudge
-         )> m_defaultMapping;
+      std::function<void(MappingSetupHandler&)> m_defaultMapping;
    };
    vector<DeviceDef> m_inputDevices;
    const uint16_t m_keyboardDeviceId;
@@ -289,7 +232,7 @@ private:
    bool m_hasPendingLayoutApply = false;
    void LoadDevicesFromSettings();
    void SaveDevicesToSettings() const;
-   void ApplyDefaultDeviceMapping(uint16_t deviceId, bool overwriteSensors);
+   void ApplyDefaultDeviceMapping(uint16_t deviceId);
 
    int m_buttonCaptureState = 0;
    vector<ButtonMapping> m_buttonCapture;

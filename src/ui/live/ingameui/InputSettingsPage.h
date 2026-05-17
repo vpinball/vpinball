@@ -15,6 +15,7 @@ public:
    void Open(bool isBackwardAnimation) override;
 
 private:
+   void BuildPage();
    InputManager& GetInput() const { return m_player->m_pininput; }
 
 };

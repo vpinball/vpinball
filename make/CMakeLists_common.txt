@@ -69,18 +69,21 @@ set(VPX_SOURCES
    src/input/ButtonMapping.h
    src/input/InputAction.h
    src/input/InputAction.cpp
-   src/input/SensorFilter.h
-   src/input/SensorFilter.cpp
    src/input/InputManager.h
    src/input/InputManager.cpp
    src/input/PhysicsSensor.h
    src/input/PhysicsSensor.cpp
+   src/input/PlungerHandler.h
+   src/input/PlungerHandler.cpp
    src/input/ScanCodes.h
    src/input/SensorMapping.h
    src/input/SensorMapping.cpp
    src/input/SDLInputHandler.h
 
    src/math/bbox.h
+   src/math/ExponentialMovingAverage.h
+   src/math/HighPassFilter.cpp
+   src/math/HighPassFilter.h
    src/math/math.cpp
    src/math/math.h
    src/math/matrix.cpp
@@ -198,6 +201,24 @@ set(VPX_SOURCES
    src/physics/PhysicsEngine.h
    src/physics/quadtree.cpp
    src/physics/quadtree.h
+
+   src/physics/cabinet/CabinetNudgeSensor.cpp
+   src/physics/cabinet/CabinetNudgeSensor.h
+   src/physics/cabinet/CabinetPhysics.cpp
+   src/physics/cabinet/CabinetPhysics.h
+   src/physics/cabinet/DampedHarmonicOscillator.h
+   src/physics/cabinet/GamepadNudge.cpp
+   src/physics/cabinet/GamepadNudge.h
+   src/physics/cabinet/KeyboardNudge.cpp
+   src/physics/cabinet/KeyboardNudge.h
+   src/physics/cabinet/MotionGainCalibratorAxis.h
+   src/physics/cabinet/MotionKalmanAxis.h
+   src/physics/cabinet/NudgeHandler.h
+   src/physics/cabinet/NudgeHandler.cpp
+   src/physics/cabinet/NudgeIntentHandler.cpp
+   src/physics/cabinet/NudgeIntentHandler.h
+   src/physics/cabinet/PlumbHandler.cpp
+   src/physics/cabinet/PlumbHandler.h
 
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp
@@ -323,14 +344,20 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUIItem.cpp
    src/ui/live/ingameui/InGameUIPage.h
    src/ui/live/ingameui/InGameUIPage.cpp
+   src/ui/live/ingameui/InputDevicePage.h
+   src/ui/live/ingameui/InputDevicePage.cpp
    src/ui/live/ingameui/InputProfilePage.h
    src/ui/live/ingameui/InputProfilePage.cpp
    src/ui/live/ingameui/InputSettingsPage.h
    src/ui/live/ingameui/InputSettingsPage.cpp
    src/ui/live/ingameui/MiscSettingsPage.h
    src/ui/live/ingameui/MiscSettingsPage.cpp
+   src/ui/live/ingameui/NudgeSensorSettingsPage.h
+   src/ui/live/ingameui/NudgeSensorSettingsPage.cpp
    src/ui/live/ingameui/NudgeSettingsPage.h
    src/ui/live/ingameui/NudgeSettingsPage.cpp
+   src/ui/live/ingameui/PlungerSensorSettingsPage.h
+   src/ui/live/ingameui/PlungerSensorSettingsPage.cpp
    src/ui/live/ingameui/PlungerSettingsPage.h
    src/ui/live/ingameui/PlungerSettingsPage.cpp
    src/ui/live/ingameui/PluginSettingsPage.h

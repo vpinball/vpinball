@@ -303,21 +303,6 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       }
       break;
 
-   case InGameUIItem::Type::PhysicsSensorMapping:
-      if (isInitialPress)
-      {
-         if (direction < 0.f)
-         {
-            item->m_physicsSensor->ClearMapping();
-         }
-         else
-         {
-            m_player->m_liveUI->m_inGameUI.AddPage("popup/sensor_setup"s, [this, ptr = item.get()]() { return std::make_unique<SensorSetupPage>(*ptr); });
-            m_player->m_liveUI->m_inGameUI.Navigate("popup/sensor_setup"s);
-         }
-      }
-      break;
-
    case InGameUIItem::Type::Property:
       switch (item->m_property->m_type)
       {
@@ -637,6 +622,10 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SetScrollY(ImGui::GetCursorPosY() - ImGui::GetWindowHeight() + itemHeight);
          }
       }
+      else if (!m_player->m_liveUI->m_inGameUI.IsFlipperNav() && isMouseOver)
+      {
+         hoveredItem = item.get();
+      }
 
       switch (item->m_type)
       {
@@ -710,7 +699,7 @@ void InGameUIPage::Render(float elapsedS)
          if (item->m_inputAction->IsMapped())
          {
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-            if (ImGui::Button((ICON_FK_TIMES + "##"s + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
+            if (ImGui::Button(std::format("{}##Item{:d}", ICON_FK_TIMES, i).c_str(), ImVec2(closeButtonWidth, 0)))
             {
                item->m_inputAction->ClearMapping();
                if (item->m_inputAction->IsNavigationAction())
@@ -727,7 +716,7 @@ void InGameUIPage::Render(float elapsedS)
          }
          const string mappingLabel = item->m_inputAction->GetMappingLabel();
          const float mapButtonWidth = itemEndScreenX - ImGui::GetCursorScreenPos().x - circleTextWidth - style.ItemSpacing.x;
-         if (ImGui::Button((mappingLabel + "##" + item->m_label).c_str(), ImVec2(mapButtonWidth, 0)))
+         if (ImGui::Button(std::format("{}##Item{}", mappingLabel, i).c_str(), ImVec2(mapButtonWidth, 0)))
          {
             m_defineActionPopup = true;
             m_defineActionItem = item.get();
@@ -747,30 +736,6 @@ void InGameUIPage::Render(float elapsedS)
          break;
       }
 
-      case PhysicsSensorMapping:
-      {
-         ImGui::Text("%s", item->m_label.c_str());
-         if (!item->m_physicsSensor->IsMapped())
-            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x + closeButtonWidth + style.ItemSpacing.x);
-         else
-         {
-            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-            if (ImGui::Button((ICON_FK_TIMES + "##"s + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
-               item->m_physicsSensor->ClearMapping();
-            ImGui::SameLine();
-         }
-         const string mappingLabel = item->m_physicsSensor->GetMappingLabel();
-         const float mapButtonWidth = itemEndScreenX - ImGui::GetCursorScreenPos().x - closeButtonWidth;
-         if (ImGui::Button((mappingLabel + "##" + item->m_label).c_str(), ImVec2(mapButtonWidth, 0)))
-         {
-            m_selectedItem = i;
-            AdjustItem(1.f, true);
-         }
-         if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
-            ImGui::SetItemTooltip("%s", mappingLabel.c_str());
-         break;
-      }
-
       case Property:
          switch (item->m_property->m_type)
          {
@@ -781,7 +746,8 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             float v = item->GetFloatValue() * item->m_floatValueDisplayScale;
             ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::SliderFloat(("##" + prop->m_label).c_str(), &v, prop->m_min * item->m_floatValueDisplayScale, prop->m_max * item->m_floatValueDisplayScale, item->m_format.c_str(),
+            ImGui::SliderFloat(std::format("##Item{}", i).c_str(), &v, prop->m_min * item->m_floatValueDisplayScale,
+               prop->m_max * item->m_floatValueDisplayScale, item->m_format.c_str(),
                ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
             if (item->IsModified())
             {
@@ -810,7 +776,7 @@ void InGameUIPage::Render(float elapsedS)
                // Special handling for editing main window size as mouse interaction would break (since the control is moved/resized while interacted)
                const float butWidth = ImGui::CalcTextSize(ICON_FK_ARROWS_H, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
                ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - ImGui::GetStyle().ItemSpacing.x - butWidth);
-               ImGui::InputInt(("##" + prop->m_label).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
+               ImGui::InputInt(std::format("##Item{}", i).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
                ImGui::SameLine();
                if (ImGui::Button((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_FK_ARROWS_H : ICON_FK_ARROWS_V))
                   v = prop->m_max;
@@ -818,7 +784,7 @@ void InGameUIPage::Render(float elapsedS)
             else
             {
                ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::SliderInt(("##" + prop->m_label).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+               ImGui::SliderInt(std::format("##Item{}", i).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
             }
             if (item->IsModified())
             {
@@ -841,7 +807,7 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             int v = item->GetIntValue() - prop->m_min;
             ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Combo(("##" + prop->m_label).c_str(), &v,
+            ImGui::Combo(std::format("##Item{}", i).c_str(), &v,
                [](void* data, int idx)
                {
                   const auto* vec = static_cast<const vector<string>*>(data);
@@ -871,7 +837,7 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::Text("%s", prop->m_label.c_str());
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             bool v = item->GetBoolValue();
-            RenderToggle(prop->m_label, ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
+            RenderToggle(std::format("{}##Item{}", prop->m_label, i), ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -894,7 +860,7 @@ void InGameUIPage::Render(float elapsedS)
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             string v = item->GetStringValue();
             ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::InputText(("##" + prop->m_label).c_str(), &v);
+            ImGui::InputText(std::format("##Item{}", i).c_str(), &v);
             if (item->IsModified())
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);

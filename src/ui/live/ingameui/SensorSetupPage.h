@@ -7,18 +7,20 @@
 namespace VPX::InGameUI
 {
 
-class SensorSetupPage final : public InGameUIPage
+class SensorSetupPageSection
 {
 public:
-   SensorSetupPage(const InGameUIItem& item);
-
-   void SaveGlobally() override;
-   void SaveTableOverride() override;
+   void AppendSection(InGameUIPage* page, PhysicsSensor* sensor, string settingId, int sensorTypeMask, const std::function<void()>& rebuildPage);
 
 private:
-   void BuildPage();
-   InGameUIItem m_item;
+   InGameUIPage* m_page = nullptr;
+   PhysicsSensor* m_sensor = nullptr;
+   int m_sensorTypeMask = 0;
+   int m_accUnit = -1;
+   int m_velUnit = -1;
+   string m_settingId;
    vector<uint32_t> m_sensors;
+   std::function<void()> m_rebuildPage;
 };
 
 }

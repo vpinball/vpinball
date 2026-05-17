@@ -8,6 +8,8 @@
 
 #include "hitflipper.h"
 
+#include "input/PlungerHandler.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
@@ -20,49 +22,10 @@
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_hitPlayfield(table)
    , m_hitTopGlass(table)
+   , m_plumbHandler(table->m_settings)
 {
    m_physicsMaxLoops = table->m_PhysicsMaxLoops == 0xFFFFFFFFu ? 0 : table->m_PhysicsMaxLoops * (10000 / PHYSICS_STEPTIME) /*2*/;
    m_contacts.reserve(8);
-
-   m_plumbMassFactor = 0.1f;
-   m_plumbPoleLength = 0.020f;
-   m_plumbPos.Set(0.f, 0.f, -m_plumbPoleLength);
-   m_plumbVel.Set(0.f, 0.f, 0.f);
-
-   // Initialize legacy nudging.
-   m_legacyNudgeBack = Vertex2D(0.f, 0.f); 
-
-   // Initialize new nudging.
-   m_nudgeAcceleration.SetZero();
-   m_nudgeVelocity.SetZero();
-   m_nudgeDisplacement.SetZero();
-   m_tableVel.SetZero();
-   m_tableDisplacement.SetZero();
-   m_tableVelOld.SetZero();
-   m_tableAcceleration.SetZero();
-
-   // Table movement (displacement u) is modeled as a mass-spring-damper system
-   //   u'' = -k u - c u'
-   // with a spring constant k and a damping coefficient c.
-   // See http://en.wikipedia.org/wiki/Damping#Linear_damping
-
-   const float nudgeTime = table->m_nudgeTime; // T
-   constexpr float dampingRatio = 0.5f; // zeta
-
-   // time for one half period (one swing and swing back):
-   //   T = pi / omega_d,
-   // where
-   //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
-   //   omega_0 = sqrt(k)                          (undamped frequency)
-   // Solving for the spring constant k, we get
-   m_nudgeSpring = (float)(M_PI * M_PI) / (nudgeTime * nudgeTime * (1.0f - dampingRatio * dampingRatio));
-
-   // The formula for the damping ratio is
-   //   zeta = c / (2 sqrt(k)).
-   // Solving for the damping coefficient c, we get
-   m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
-
-   ReadNudgeSettings(table->m_settings);
 
    // Collect all hit objects
    const FRect3D tableBounds = g_pplayer->m_ptable->GetBoundingBox();
@@ -267,181 +230,6 @@ bool PhysicsEngine::RecordContact(const CollisionEvent& newColl)
       return true;
    }
    return false;
-}
-
-void PhysicsEngine::Nudge(float angle, float force)
-{
-   const float a = ANGTORAD(angle);
-   const float sn = sinf(a) * force;
-   const float cs = cosf(a) * force;
-   if (!m_legacyNudge)
-   {
-      m_tableVel.x += sn;
-      m_tableVel.y += -cs;
-   }
-   else if (m_legacyNudgeTime == 0)
-   {
-      m_legacyNudgeBack.x = sn * m_legacyNudgeStrength;
-      m_legacyNudgeBack.y = -cs * m_legacyNudgeStrength;
-      m_legacyNudgeTime = 100;
-   }
-}
-
-// For the time being, there are 2 models available for nudge simulation (from keyboard or cabinet sensor).
-// 1. Legacy nudge:
-//    - Perform keyboard nudge by applying a force directly to the balls, first in the forward direction, 
-//      then, after a little while, in the opposite direction
-//    - No hardware nudging support
-// 2. New acceleration based nudge:
-//    - Perform keyboard nudge by applying an impulse to a physic model of the cabinet (spring-mass model, see below)
-//    - Acquire cabinet acceleration from hardware sensor (optionally deriving it from position or velocity sensor) and apply it directly to balls
-void PhysicsEngine::UpdateNudge(float dtime)
-{
-   // Since we are deriving forces/accelerations from velocities by doing a simple substract without scaling by delta time, we need dtime to be constant
-   assert(fabs(dtime - ((double)PHYSICS_STEPTIME / (double)DEFAULT_STEPTIME)) < 1e-5);
-
-   // Nudge acceleration is computed either from hardware accelerometer(s) or from nudge commands called from script.
-   if (!m_legacyNudge)
-   {
-      // Perform keyboard nudge by simulating table movement modeled as a mass-spring-damper system
-      //   u'' = -k u - c u'
-      // with a spring constant k and a damping coefficient c
-      const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-      m_tableVel          += (float)PHYS_FACTOR * force;
-      m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-      m_tableAcceleration = (m_tableVel - m_tableVelOld) * (float)(1.0/PHYS_FACTOR);
-      m_tableVelOld = m_tableVel;
-
-      // Simulate hardware nudge by getting the cabinet acceleration (optionally through velocity sensor) and applying it directly to the ball
-      if (g_pplayer && g_pplayer->m_liveUI->IsInGameUIOpened())
-      {
-         m_nudgeAcceleration.SetZero();
-      }
-      else
-      {
-         Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
-         m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
-      }
-
-      // Evaluate visual table displacement due to sensor nudge
-      // Always apply a damping factor to limit drifting when using a 'bad' nudge sensor
-      m_nudgeVelocity = 0.975f * m_nudgeVelocity + (float) PHYS_FACTOR * m_nudgeAcceleration;
-      m_nudgeDisplacement = 0.975f * m_nudgeDisplacement + (float) PHYS_FACTOR * m_nudgeVelocity;
-   }
-   // legacy/VP9 style keyboard nudging, by directly applying a force to the balls
-   else if (m_legacyNudgeTime != 0)
-   {
-      m_legacyNudgeTime--;
-      if (m_legacyNudgeTime == 95) // 5ms front
-      {
-         m_nudgeAcceleration.x = -m_legacyNudgeBack.x * 2.0f;
-         m_nudgeAcceleration.y = m_legacyNudgeBack.y * 2.0f;
-      }
-      else if (m_legacyNudgeTime == 90) // 5ms back
-      {
-         m_nudgeAcceleration.x = m_legacyNudgeBack.x;
-         m_nudgeAcceleration.y = -m_legacyNudgeBack.y;
-      }
-      else // Prevent new nudge during the remaining 90ms
-      {
-         m_nudgeAcceleration.SetZero();
-      }
-   }
-
-   // Convert to force
-   m_nudgeAcceleration.x *= static_cast<float>(1.0 / PHYS_FACTOR);
-   m_nudgeAcceleration.y *= static_cast<float>(1.0 / PHYS_FACTOR);
-
-   if (m_enablePlumbTilt && m_plumbTiltThreshold > 0.0f && dtime > 0.f && dtime <= 0.1f) // Ignore large time slices... forces would get crazy!
-   {
-      // Up to VPX 10.8, mechanical tilt was handled in cvpmNudge defined either in core.vbs or in a NudgePlugIn_xxx defined by the user (so in VBS, with a low and unstable integration period, using very crude model)
-      // This new implementation replaces it by a physics based model, with the following differences:
-      // - use full VPX 10 nudge (include table velocity) instead of partial one (would say that this is a bug of previous implementation)
-      // - simulate a simplified pendulum with 3 (simplified) forces: gravity, nudge and pole, and some velocity dampening
-      // - send mechanical tilt like the plumb on real machine, triggering rom tile (instead of a fake keyboard central nudge like in previous implementation. not sure why previous implementation did that: isn't the point of a plumb to actually tilt ?)
-      // Consequently NudgePlugIn_xxx scripts were also removed, support VBS script were also adapted to handle nudging and tilting separately.
-      // 
-      // Simple Newton model:
-      // . solid pole enforced by nullifying acceleration and velocity along pole axis, while keeping pole length constant
-      // . gravity force, simply applied at pole tail
-      // . table acceleration scaled and applied at pole tail (which is physically wrong but okish regarding gameplay result)
-      // . magic velocity dampening
-      const Vertex3Ds nudge = GetNudgeAcceleration();
-      Vertex3Ds poleAxis(m_plumbPos);
-      poleAxis.Normalize();
-      constexpr Vertex3Ds gravity{0.f, 0.f, -9.81f};
-      Vertex3Ds plumbAcc = gravity;
-      plumbAcc += nudge * 2.f / m_plumbMassFactor; // This is absolutely not physically correct
-      plumbAcc -= plumbAcc.Dot(poleAxis) * poleAxis; // Keep acceleration orthogonal to pole
-      m_plumbVel *= 0.999f;
-      m_plumbVel += plumbAcc * (float)PHYSICS_STEPTIME_S;
-      m_plumbVel -= m_plumbVel.Dot(poleAxis) * poleAxis; // Keep velocity orthogonal to pole
-      m_plumbPos += m_plumbVel * (float)PHYSICS_STEPTIME_S;
-      m_plumbPos *= m_plumbPoleLength / m_plumbPos.Length(); // Keep plumb at end of pole
-
-      // Check if we hit the edge, using the pole angle (tilt threshold is 0..1000/1000 corresponding to 0..PI/4)
-      const float psi = atan2f(sqrtf(m_plumbPos.x * m_plumbPos.x + m_plumbPos.y * m_plumbPos.y), -m_plumbPos.z);
-      const float tiltAngle = m_plumbTiltThreshold;
-      const float tiltPerc = 100.0f * psi / tiltAngle;
-      bool tilted = false;
-      if (tiltPerc > 100.0f)
-      {
-         tilted = true;
-         // Keep plumb inside tile limits
-         const float limitAngle = tiltAngle - 1e-3f;
-         m_plumbPos.z = -m_plumbPoleLength * cosf(limitAngle);
-         const float xy = m_plumbPoleLength * sinf(limitAngle);
-         const float theta = atan2f(m_plumbPos.x, m_plumbPos.y);
-         const Vertex3Ds axis(sinf(theta), cosf(theta), 0.f);
-         m_plumbPos.x = xy * axis.x;
-         m_plumbPos.y = xy * axis.y;
-         // Bounce the plumb (reflect velocity against circle normal, dampen it by a magic factor)
-         m_plumbVel = 0.8f * (m_plumbVel - 2.f * m_plumbVel.Dot(axis) * axis);
-      }
-
-      // Fire event (same as keyboard tilt)
-      if (m_plumbTiltHigh != tilted)
-      {
-         m_plumbTiltHigh = tilted;
-         if (tilted)
-            m_plumbTiltIndex++; 
-         if (m_plumbTiltInputSlot == -1)
-            m_plumbTiltInputSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->NewDirectStateSlot();
-         g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->SetDirectState(m_plumbTiltInputSlot, m_plumbTiltHigh);
-      }
-
-      // Update player for diagnostic/table script visibility. Only update if input value is larger than what's there.
-      // When the table script reads the values, they will reset to 0.
-      if (tiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
-         g_pplayer->m_ptable->m_tblNudgeReadTilt = tiltPerc;
-      if (fabsf(nudge.x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
-         g_pplayer->m_ptable->m_tblNudgeRead.x = nudge.x;
-      if (fabsf(nudge.y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
-         g_pplayer->m_ptable->m_tblNudgeRead.y = nudge.y;
-      if (fabsf(m_plumbPos.x) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.x))
-         g_pplayer->m_ptable->m_tblNudgePlumb.x = m_plumbPos.x;
-      if (fabsf(m_plumbPos.y) > fabsf(g_pplayer->m_ptable->m_tblNudgePlumb.y))
-         g_pplayer->m_ptable->m_tblNudgePlumb.y = m_plumbPos.y;
-   }
-}
-
-void PhysicsEngine::ReadNudgeSettings(const Settings& settings)
-{
-   m_enablePlumbTilt = settings.GetPlayer_SimulatedPlumb();
-   m_plumbMassFactor = settings.GetPlayer_PlumbInertia();
-   m_plumbTiltThreshold = ANGTORAD(settings.GetPlayer_PlumbThresholdAngle());
-
-   m_legacyNudge = settings.GetPlayer_EnableLegacyNudge();
-   m_legacyNudgeStrength = settings.GetPlayer_LegacyNudgeStrength();
-}
-
-Vertex2D PhysicsEngine::GetTableDisplacement() const
-{
-   // in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
-   if (m_legacyNudge)
-      return { m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f) };
-   else
-      return { m_tableDisplacement.x + m_nudgeDisplacement.x, -m_tableDisplacement.y - m_nudgeDisplacement.y };
 }
 
 AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()
@@ -670,7 +458,14 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
          g_pplayer->FireTimers(0);
       #endif
 
-      UpdateNudge(physics_diff_time);
+      // Since we are deriving forces/accelerations from velocities by doing a simple substract without scaling by delta time, we need dtime to be constant
+      assert(fabs(physics_diff_time - ((double)PHYSICS_STEPTIME / (double)DEFAULT_STEPTIME)) < 1e-5);
+
+      g_pplayer->m_pininput.m_nudgeHandler->StepOneMillisecond();
+
+      g_pplayer->m_pininput.m_plungerHandler->StepOneMillisecond();
+
+      m_plumbHandler.StepOneMillisecond(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration());
 
       for (size_t i = 0; i < m_vmover.size(); i++)
          m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)

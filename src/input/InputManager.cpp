@@ -7,6 +7,8 @@
 #include "core/TournamentFile.h"
 #include "core/VPApp.h"
 #include "core/VPXPluginAPIImpl.h"
+#include "input/PlungerHandler.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "renderer/VRDevice.h"
 #include "ui/live/LiveUI.h"
 
@@ -65,39 +67,17 @@ InputManager::InputManager(Player* player)
    addTouchRegion(RECT { 0, 90, 30, 100 }, GetStartActionId());
    addTouchRegion(RECT { 70, 90, 100, 100 }, GetLaunchBallActionId());
 
-   // Analog sensors for plunger and nudge
-   for (int i = 0; i < 2; i++)
-   {
-      m_nudgeXSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeX" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Side", SensorMapping::Type::Acceleration);
-      m_nudgeYSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeY" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Front", SensorMapping::Type::Acceleration);
-      m_nudgeFilter[i] = !settings.GetPlayer_NudgeFilter(i);
-      SetNudgeFiltered(i, !m_nudgeFilter[i]);
-   }
-   m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos"s, "Plunger Position"s, SensorMapping::Type::Position);
-   m_plungerVelocitySensor = std::make_unique<PhysicsSensor>(this, "PlungerVel"s, "Plunger Velocity"s, SensorMapping::Type::Velocity);
-   m_plungerPositionSensor->SetFilter(std::make_unique<PlungerPositionFilter>());
-
    m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
 
    // Load settings
-   {
-      LoadDevicesFromSettings();
+   LoadDevicesFromSettings();
 
-      for (const auto& action : m_inputActions)
-         action->LoadMapping(settings);
+   for (const auto& action : m_inputActions)
+      action->LoadMapping(settings);
 
-      m_plungerPositionSensor->LoadMapping(settings);
-      m_plungerVelocitySensor->LoadMapping(settings);
-      for (int i = 0; i < 2; i++)
-      {
-         m_nudgeXSensor[i]->LoadMapping(settings);
-         m_nudgeYSensor[i]->LoadMapping(settings);
-         m_nudgeOrientation[i] = ANGTORAD(settings.GetPlayer_NudgeOrientation(i));
-      }
+   m_nudgeHandler = std::make_unique<VPX::Physics::NudgeHandler>(this);
 
-      m_linearPlunger = settings.GetPlayer_PlungerLinearSensor();
-      m_plunger_retract = settings.GetPlayer_PlungerRetract();
-   }
+   m_plungerHandler = std::make_unique<PlungerHandler>(this);
 
    // Initialize device handlers
    m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
@@ -183,10 +163,11 @@ uint16_t InputManager::RegisterDevice(const string& settingsId, InputManager::De
    m_inputDevices[deviceId].m_name = name;
    m_inputDevices[deviceId].m_type = type;
    m_inputDevices[deviceId].m_connected = true;
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + settingsId + ".Name", "Device Name"s, ""s, true, name));
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-      "Input"s, "Device." + settingsId + ".Type", "Device Type"s, ""s, true, 0, (int)type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + settingsId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false, false));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, std::format("Device.{}.Name", settingsId), "Device Name"s, ""s, true, name));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, std::format("Device.{}.Type", settingsId), "Device Type"s, ""s, true, 0, (int)type,
+      vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, std::format("Device.{}.NoAutoLayout", settingsId), "Disable Automatic Layout"s,
+      "Disable proposing to overwrite settings with the default layout for this device in upcoming sessions."s, true, false));
    return deviceId;
 }
 
@@ -204,100 +185,67 @@ void InputManager::RegisterElementName(uint16_t deviceId, bool isAxis, uint16_t 
    m_inputDevices[deviceId].m_buttonOrAxisNames[buttonOrAxisId] = { isAxis, name };
 }
 
-void InputManager::RegisterDefaultMapping(uint16_t deviceId,
-   const std::function<bool( // Function to either apply or evaluate applying the default mapping of the given controller
-      std::function<bool(const vector<ButtonMapping>&, unsigned int)>, // Map Button
-      std::function<bool(const SensorMapping&, SensorMapping::Type, bool)>, // Map plunger
-      std::function<bool(const SensorMapping&, const SensorMapping&)> // Map nudge
-      )>& mapper)
+void InputManager::ClearDeviceMappings(uint16_t deviceId)
 {
-   assert(deviceId < m_inputDevices.size());
-   // Register device for auto layout, performed after all buttons/axis have been registered and when user interaction is possible, which may happen after device is registered
-   m_inputDevices[deviceId].m_defaultMapping = mapper;
-   auto isButtonMapped = [this](const vector<ButtonMapping>& mapping, unsigned int actionId)
+   for (const auto& action : m_inputActions)
    {
-      return m_inputActions[actionId]->HasMapping(mapping);
-   };
-   auto isPlungerMapped = [this](const SensorMapping& sensorPos, SensorMapping::Type type, bool isLinear)
-   {
-      const std::unique_ptr<PhysicsSensor>& plungerPos = type == SensorMapping::Type::Position ? GetPlungerPositionSensor() : GetPlungerVelocitySensor();
-      return plungerPos->IsMapped() && plungerPos->GetMapping().IsSame(sensorPos);
-   };
-   auto isNudgeMapped = [this](const SensorMapping& sensorX, const SensorMapping& sensorY)
-   {
-      for (int i = 0; i < 2; i++)
-      {
-         const std::unique_ptr<PhysicsSensor>& nudgeX = GetNudgeXSensor(i);
-         const std::unique_ptr<PhysicsSensor>& nudgeY = GetNudgeYSensor(i);
-         if (nudgeX->IsMapped() && nudgeX->GetMapping().IsSame(sensorX) && nudgeY->IsMapped() && nudgeY->GetMapping().IsSame(sensorY))
-            return true;
-      }
-      return false;
-   };
-   m_inputDevices[deviceId].m_hasPendingLayoutApply |= !mapper(isButtonMapped, isPlungerMapped, isNudgeMapped);
-   m_hasPendingLayoutApply |= m_inputDevices[deviceId].m_hasPendingLayoutApply;
+      action->UnmapDevice(deviceId);
+      action->SaveMapping(g_app->m_settings);
+   }
+   m_plungerHandler->UnmapDevice(deviceId);
+   m_nudgeHandler->UnmapDevice(deviceId);
 }
 
-void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId, bool overwriteSensors)
+void InputManager::SetDeviceDefaultMapping(uint16_t deviceId, const std::function<void(MappingSetupHandler&)>& mapper)
 {
    assert(deviceId < m_inputDevices.size());
-   auto mapButton = [this](const vector<ButtonMapping>& mapping, unsigned int actionId)
-   {
-      m_inputActions[actionId]->AddMapping(mapping);
-      return true;
-   };
-   auto mapPlunger = [this, overwriteSensors](const SensorMapping& sensorPos, SensorMapping::Type type, bool isLinear)
-   {
-      const std::unique_ptr<PhysicsSensor>& plungerPos = type == SensorMapping::Type::Position ? GetPlungerPositionSensor() : GetPlungerVelocitySensor();
-      if (plungerPos->IsMapped() && !overwriteSensors)
-      {
-         m_player->m_liveUI->PushNotification("Plunger sensor mapping was not applied as it was already defined"s, 5000);
-         return false;
-      }
-      plungerPos->SetMapping(sensorPos);
-      return true;
-   };
-   auto mapNudge =
-      [this, overwriteSensors](const SensorMapping& sensorX, const SensorMapping& sensorY)
-   {
-      if (overwriteSensors)
-      {
-         for (int i = 0; i < 2; i++)
-         {
-            GetNudgeXSensor(i)->ClearMapping();
-            GetNudgeYSensor(i)->ClearMapping();
-         }
-      }
-      else
-      {
-         for (int i = 0; i < 2; i++)
-         {
-            if (GetNudgeXSensor(i)->IsMapped() || GetNudgeYSensor(i)->IsMapped())
-            {
-               m_player->m_liveUI->PushNotification("Nudge sensor mapping was not applied as it was already defined"s, 5000);
-               return false;
-            }
-         }
-      }
-      GetNudgeXSensor(0)->SetMapping(sensorX);
-      GetNudgeYSensor(0)->SetMapping(sensorY);
-      return true;
-   };
-   m_inputDevices[deviceId].m_defaultMapping(mapButton, mapPlunger, mapNudge);
+   m_inputDevices[deviceId].m_defaultMapping = mapper;
 
-   // Save mapping after applying them
-   Settings& settings = g_app->m_settings;
-   for (const auto& action : m_inputActions)
-      action->SaveMapping(settings);
-
-   m_plungerPositionSensor->SaveMapping(settings);
-   m_plungerVelocitySensor->SaveMapping(settings);
-   for (int i = 0; i < 2; i++)
+   // Evaluate if we have a default layout pending that should be proposed to the user
+   class ValidateMapping : public MappingSetupHandler
    {
-      m_nudgeXSensor[i]->SaveMapping(settings);
-      m_nudgeYSensor[i]->SaveMapping(settings);
-      settings.SetPlayer_NudgeOrientation(i, RADTOANG(m_nudgeOrientation[i]), false);
+   public:
+      ValidateMapping(InputManager& manager)
+         : m_manager(manager)
+      {
+      }
+      void MapAction(const vector<ButtonMapping>& input, unsigned int action) override { m_isAlreadyMapped &= m_manager.m_inputActions[action]->HasMapping(input); }
+      void MapPlunger(std::unique_ptr<PlungerSensor> sensor) override { m_isAlreadyMapped &= m_manager.m_plungerHandler->HasSensor(sensor); }
+      void MapNudge(std::unique_ptr<VPX::Physics::NudgeSensor> sensor) override { m_isAlreadyMapped &= m_manager.m_nudgeHandler->HasSensor(sensor); }
+      InputManager& m_manager;
+      bool m_isAlreadyMapped = true;
+   };
+   ValidateMapping validate(*this);
+   mapper(validate);
+   if (!validate.m_isAlreadyMapped)
+   {
+      m_inputDevices[deviceId].m_hasPendingLayoutApply = true;
+      m_hasPendingLayoutApply = true;
    }
+}
+
+void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
+{
+   assert(deviceId < m_inputDevices.size());
+   class ApplyMapping : public MappingSetupHandler
+   {
+   public:
+      ApplyMapping(InputManager& manager)
+         : m_manager(manager)
+      {
+      }
+      void MapAction(const vector<ButtonMapping>& input, unsigned int action) override
+      {
+         m_manager.m_inputActions[action]->AddMapping(input);
+         m_manager.m_inputActions[action]->SaveMapping(g_app->m_settings);
+      }
+      void MapPlunger(std::unique_ptr<PlungerSensor> sensor) override { m_manager.m_plungerHandler->AddSensor(sensor); }
+      void MapNudge(std::unique_ptr<VPX::Physics::NudgeSensor> sensor) override { m_manager.m_nudgeHandler->AddSensor(sensor); }
+      InputManager& m_manager;
+   };
+   ApplyMapping apply(*this);
+   ClearDeviceMappings(deviceId);
+   m_inputDevices[deviceId].m_defaultMapping(apply);
 }
 
 void InputManager::LoadDevicesFromSettings()
@@ -319,7 +267,7 @@ void InputManager::LoadDevicesFromSettings()
       const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
          "Input"s, "Device." + deviceSettingId + ".Type", "Device Type"s, ""s, true, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
       Settings::GetRegistry().Register(
-         std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false, false));
+         std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, true, false));
       device.m_name = settings.GetString(namePropId);
       device.m_type = static_cast<InputManager::DeviceType>(settings.GetInt(typePropId));
 
@@ -348,16 +296,16 @@ void InputManager::SaveDevicesToSettings() const
 {
    Settings& settings = g_app->m_settings;
    std::stringstream deviceList;
-   for (size_t i = 0; i < m_inputDevices.size(); ++i)
-   {
-      if (i > 0)
-         deviceList << ';';
-      deviceList << m_inputDevices[i].m_settingsId;
-   }
-   settings.SetInput_Devices(deviceList.str(), false);
-
+   bool first = true;
    for (const auto& device : m_inputDevices)
    {
+      if (!IsDeviceMapped(device.m_id))
+         continue;
+      if (!first)
+         deviceList << ';';
+      first = false;
+      deviceList << device.m_settingsId;
+
       const auto namePropId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Name", "Device Name"s, ""s, true, ""s));
       const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
@@ -374,6 +322,7 @@ void InputManager::SaveDevicesToSettings() const
          index++;
       }
    }
+   settings.SetInput_Devices(deviceList.str(), false);
 }
 
 uint16_t InputManager::GetDeviceId(const string& settingsId)
@@ -397,6 +346,20 @@ const string& InputManager::GetDeviceName(uint16_t deviceId) const
    return m_inputDevices[deviceId].m_name;
 }
 
+bool InputManager::IsDeviceConnected(uint16_t deviceId) const
+{
+   assert(deviceId < m_inputDevices.size());
+   return m_inputDevices[deviceId].m_connected;
+}
+
+bool InputManager::IsDeviceMapped(uint16_t deviceId) const {
+   assert(deviceId < m_inputDevices.size());
+   for (const auto& action : m_inputActions)
+      if (action->IsMappedToDevice(deviceId))
+         return true;
+   return m_plungerHandler->IsMappedToDevice(deviceId) || m_nudgeHandler->IsMappedToDevice(deviceId);
+}
+
 string InputManager::GetDeviceElementName(uint16_t deviceId, uint16_t buttonOrAxisId) const
 {
    assert(deviceId < m_inputDevices.size());
@@ -412,14 +375,21 @@ InputManager::DeviceType InputManager::GetDeviceType(uint16_t deviceId) const
    return m_inputDevices[deviceId].m_type;
 }
 
+vector<uint16_t> InputManager::GetAllDevices() const
+{
+   vector<uint16_t> devices;
+   for (const auto& device : m_inputDevices)
+      devices.push_back(device.m_id);
+   return devices;
+}
+
 vector<uint32_t> InputManager::GetAllAxis() const
 {
    vector<uint32_t> axis;
    for (const auto& device : m_inputDevices)
-      if (device.m_connected)
-         for (const auto& [axisOrButtonId, elementDef] : device.m_buttonOrAxisNames)
-            if (elementDef.isAxis)
-               axis.push_back(device.m_id << 16 | axisOrButtonId);
+      for (const auto& [axisOrButtonId, elementDef] : device.m_buttonOrAxisNames)
+         if (elementDef.isAxis)
+            axis.push_back(device.m_id << 16 | axisOrButtonId);
    return axis;
 }
 
@@ -509,16 +479,16 @@ void InputManager::ProcessInput()
             // For VR controllers, the propose-layout dialog isn't reachable in the headset before the VR controller is registered, so auto-apply
             if (device.m_type == DeviceType::VRController)
             {
-               ApplyDefaultDeviceMapping(deviceId, false);
+               ApplyDefaultDeviceMapping(deviceId);
                device.m_hasPendingLayoutApply = false;
                continue;
             }
 
             if (m_player->m_liveUI->m_inGameUI.ProposeInputLayout(device.m_name,
-                   [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore, bool overwriteSensors)
+                   [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore)
                    {
                       if (isOk)
-                         ApplyDefaultDeviceMapping(deviceId, overwriteSensors);
+                         ApplyDefaultDeviceMapping(deviceId);
                       if (isDontAskAnymore)
                          g_app->m_settings.Set(noAutoLayoutId, true, false);
                       m_hasPendingLayoutApply = false;
@@ -673,10 +643,32 @@ void InputManager::CreateInputActions()
          [this](const InputAction& action, bool, bool isPressed)
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
-               return;
-            CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
-            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-            m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
+            {
+               if (isPressed)
+               {
+                  if (action.GetActionId() == m_uiUpActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUIUpAction();
+                  else if (action.GetActionId() == m_uiDownActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUIDownAction();
+                  else if (action.GetActionId() == m_uiLeftActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUILeftAction();
+                  else if (action.GetActionId() == m_uiRightActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUIRightAction();
+                  // Somewhat hacky direct UI action mapping (inherited from legacy POV adjustment mode, could benefit from some additional cleanups)
+                  else if (action.GetActionId() == m_launchBallActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUIResetToDefaults();
+                  else if (action.GetActionId() == m_addCreditActionId[0])
+                     m_player->m_liveUI->m_inGameUI.OnUICancelChanges();
+                  else if (action.GetActionId() == m_startActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUISaveChanges();
+               }
+            }
+            else
+            {
+               CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
+               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+               m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
+            }
          }));
       return newAction->GetActionId();
    };
@@ -757,6 +749,10 @@ void InputManager::CreateInputActions()
                m_player->SetCloseState(Player::CS_STOP_PLAY);
 #endif
             }
+            else if (isPressed && m_player->m_liveUI->IsInGameUIOpened())
+            {
+               m_player->m_liveUI->m_inGameUI.OnUINavigateBack();
+            }
          }))->GetActionId();
 
    m_openInGameUIActionId = AddAction(
@@ -764,7 +760,13 @@ void InputManager::CreateInputActions()
          [this](const InputAction&, bool, bool isPressed)
          {
             if (isPressed && !m_player->m_liveUI->IsOpened())
+            {
                m_player->m_liveUI->OpenInGameUI();
+            }
+            else if (isPressed && m_player->m_liveUI->IsInGameUIOpened())
+            {
+               m_player->m_liveUI->m_inGameUI.OnUINavigateBack();
+            }
          }))->GetActionId();
 
    auto volumeDown = AddAction(std::make_unique<InputAction>(this, "VolumeDown"s, "Volume Down"s, keyMapping(SDL_SCANCODE_MINUS),
@@ -984,20 +986,12 @@ void InputManager::Unregister(ButtonMapping* mapping)
       std::erase(it->second, mapping);
 }
 
-void InputManager::OnInputActionStateChanged(InputAction* action)
+// Allow plugins to react to action event, eventually disabling local processing
+bool InputManager::OnInputActionStateChanged(InputAction* action)
 {
-   // Allow plugins to react to action event, filter, ...
-   VPXActionEvent event { static_cast<VPXAction>(action->GetActionId()), action->IsPressed() };
+   VPXActionEvent event { static_cast<VPXAction>(action->GetActionId()), action->IsPressed(), 1 };
    m_player->m_pluginAPI.BroadcastVPXMsg(m_onActionEventMsgId, &event);
-
-   // Update input state
-   if (action->GetActionId() < 64)
-   {
-      if (action->IsPressed())
-         m_inputActionstate.SetPressed(action->GetActionId());
-      else
-         m_inputActionstate.SetReleased(action->GetActionId());
-   }
+   return event.enableVPXProcessing != 0;
 }
 
 void InputManager::Register(SensorMapping* mapping)
@@ -1065,70 +1059,6 @@ void InputManager::StartButtonCapture()
    assert(m_buttonCaptureState != 1);
    m_buttonCaptureState = 1;
    m_buttonCapture.clear();
-}
-
-#pragma endregion
-
-
-#pragma region Plunger and Nudge
-
-////////////////////////////////////////////////////////////////////
-// Plunger and Nudge
-
-void InputManager::SetNudgeFiltered(int index, bool enable)
-{
-   if (m_nudgeFilter[index] == enable)
-      return;
-   m_nudgeFilter[index] = enable;
-   if (enable)
-   {
-      m_nudgeXSensor[index]->SetFilter(std::make_unique<NudgeAccelerationFilter>());
-      m_nudgeYSensor[index]->SetFilter(std::make_unique<NudgeAccelerationFilter>());
-   }
-   else
-   {
-      m_nudgeXSensor[index]->SetFilter(std::make_unique<NoOpSensorFilter>());
-      m_nudgeYSensor[index]->SetFilter(std::make_unique<NoOpSensorFilter>());
-   }
-}
-
-Vertex2D InputManager::GetNudge() const
-{
-   float weight = 0.f;
-   Vertex2D nudge { 0.f, 0.f };
-   for (int i = 0; i < 2; i++)
-   {
-      const std::unique_ptr<PhysicsSensor>& sensorX = GetNudgeXSensor(i);
-      const std::unique_ptr<PhysicsSensor>& sensorY = GetNudgeYSensor(i);
-      if (!sensorX->IsMapped() || !sensorY->IsMapped())
-         continue;
-      const float sensorAngle = m_nudgeOrientation[i];
-      const float cna = cosf(sensorAngle);
-      const float sna = sinf(sensorAngle);
-      const float dx = sensorX->GetValue();
-      const float dy = sensorY->GetValue();
-      nudge.x += dx * cna + dy * sna;
-      nudge.y += dy * cna - dx * sna;
-      weight += 1.f;
-   }
-   if (weight <= 1.f)
-      return nudge;
-   return nudge / weight;
-}
-
-void InputManager::SetPlungerPos(bool overrideInput, const float pos)
-{
-   // FIXME
-}
-
-void InputManager::SetPlungerSpeed(bool overrideInput, const float speed)
-{
-   // FIXME
-}
-
-void InputManager::SetNudge(bool overrideInput, const float nudgeAccelerationX, const float nudgeAccelerationY)
-{
-   // FIXME
 }
 
 #pragma endregion

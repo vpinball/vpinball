@@ -201,26 +201,23 @@ PropBool(Player, asenable, "AutostartEnable"s, ""s, false);
 PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60"s, 0, 30 * 60, 120);
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
-// Nudge & Plumb settings
-PropFloat(Player, NudgeOrientation0, "Sensor 1 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
-PropFloat(Player, NudgeOrientation1, "Sensor 2 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
-PropBool(Player, NudgeFilter0, "Sensor 1 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
-PropBool(Player, NudgeFilter1, "Sensor 2 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
-PropBool(Player, SimulatedPlumb, "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
-PropFloat(Player, PlumbInertia, "Plumb Inertia"s, ""s, 0.001f, 1.f, 0.35f);
-PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 35.f);
-PropBool(Player, EnableLegacyNudge, "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false);
-PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Changes the visual effect/screen shaking when using the legacy keyboard nudging mode"s, 0.f, 90.f, 1.f);
-PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table"s, 0.f, 0.25f, 0.02f);
-PropArray(Player, NudgeOrientation, float, Float, Float, m_propPlayer_NudgeOrientation0, m_propPlayer_NudgeOrientation1);
-PropArray(Player, NudgeFilter, bool, Bool, Int, m_propPlayer_NudgeFilter0, m_propPlayer_NudgeFilter1);
+// Plumb settings
+PropBool(Player, SimulatedPlumb, "Plumb Simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
+PropFloat(Player, PlumbDamping, "Plumb Damping"s, "Adjust plumb damping (how fast the pumb get back to rest)"s, 0.f, 2.f, 1.f);
+PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is caused"s, 0.5f, 4.f, 2.f);
+
+// Nudge settings
+PropEnum(Player, KeyboardNudgeMode, "Keyboard Nudge Mode"s, "Select how nudge is simulated when triggered from the keyboard."s, int, 2, "VP9 (simple push/retract)"s, "VPX 10.8 (cabinet model)"s, "VPX 10.9 (improved cabinet)"s);
+PropFloat(Player, KeyboardNudgeStrength, "Keyboard Nudge Strength"s, "Strength of the keyboard nudging mode"s, 0.f, 2.f, 1.f);
+PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table"s, 0.f, 2.f, 1.f);
+PropInt(Input, NudgeSensorCount, "Nudge Sensor Count"s, "Number of hardware nudge sensor defined"s, 0, 100, 0);
 
 // Plunger settings
 PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s,
    false);
-PropBool(Player, PlungerLinearSensor, "Linear Sensor"s, "Select between symmetric (linear) and assymetric sensor"s, false);
 PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100,
    100); // Hacky: This should be a table override, not a player property as it overrides table data
+PropInt(Input, PlungerSensorCount, "Plunger Sensor Count"s, "Number of hardware plunger sensor defined"s, 0, 100, 0);
 
 // VR settings
 #if SDL_PLATFORM_ANDROID && defined(ENABLE_XR)

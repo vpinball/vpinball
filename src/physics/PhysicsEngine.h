@@ -6,6 +6,7 @@
 #include "physics/quadtree.h"
 #include "physics/AsyncDynamicQuadTree.h"
 #include "physics/collideex.h"
+#include "physics/cabinet/PlumbHandler.h"
 
 class PhysicsEngine final
 {
@@ -38,26 +39,6 @@ public:
    bool IsBallCollisionHandlingSwapped() const { return m_swap_ball_collision_handling; }
    bool RecordContact(const CollisionEvent& newColl);
 
-   void Nudge(float angle, float force);
-   Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; } // Table acceleration (due to nudge) expressed in VP units
-   Vertex2D GetTableDisplacement() const; // Table displacement
-   bool IsLegacyKeyboardNudge() const { return m_legacyNudge; }
-   void SetLegacyKeyboardNudge(bool legacyNudge) { m_legacyNudge = legacyNudge; }
-   float GetLegacyKeyboardNudgeStrength() const { return m_legacyNudgeStrength; }
-   void SetLegacyKeyboardNudgeStrength(float strength) { m_legacyNudgeStrength = strength; }
-   void ReadNudgeSettings(const Settings &settings);
-
-   bool IsPlumbSimulated() const { return m_enablePlumbTilt; }
-   void EnablePlumbSimulation(bool enable) { m_enablePlumbTilt = enable; }
-   const Vertex3Ds &GetPlumbPos() const { return m_plumbPos; }
-   const Vertex3Ds &GetPlumbVel() const { return m_plumbVel; }
-   float GetPlumbPoleLength() const { return m_plumbPoleLength; }
-   float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
-   void SetPlumbTiltThreshold(float v) { m_plumbTiltThreshold = v; }
-   float GetPlumbInertia() const { return m_plumbMassFactor; }
-   void SetPlumbInertia(float v) { m_plumbMassFactor = v; }
-   int GetPlumbTiltIndex() const { return m_plumbTiltIndex; }
-
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
    void ResetStats() { m_phys_max = 0; m_phys_max_iterations = 0; m_count = 0; m_phys_total_iterations = 0; }
@@ -71,6 +52,8 @@ public:
 
    uint64_t GetStartTime() const { return m_startTime_usec; }
    uint64_t GetCurrentTime() const { return m_curPhysicsFrameTime; }
+
+   VPX::Physics::PlumbHandler m_plumbHandler;
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
@@ -111,42 +94,6 @@ private:
 
    AsyncDynamicQuadTree *GetUIQuadTree(); // Trigger UI quadtree creation/update
    AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
-
-#pragma region Nudge & Tilt Plumb
-   void UpdateNudge(float dtime);
-
-   // Legacy nudge: apply a given acceleration for a given amount of time
-   // Hardware nudge: acquire acceleration and apply it (eventually deriving it from acquired velocity)
-   Vertex3Ds m_nudgeAcceleration; // used by both hardware nudge and legacy keyboard nudge
-   Vertex3Ds m_nudgeVelocity; // Derived from nudge acceleration to compute visual screen nudge
-   Vertex3Ds m_nudgeDisplacement; // Derived from nudge acceleration to compute visual screen nudge
-
-   // legacy/VP9 style keyboard nudging
-   bool m_legacyNudge = false;
-   float m_legacyNudgeStrength = 0.f;
-   Vertex2D m_legacyNudgeBack;
-   int m_legacyNudgeTime = 0;
-
-   // New keyboard nudge: the table is modeled as a spring, Nudge(x,y) apply an initial velocity (m_tableVel) which results in some oscillations
-   Vertex3Ds m_tableVel;
-   Vertex3Ds m_tableDisplacement;
-   Vertex3Ds m_tableVelOld;
-   Vertex3Ds m_tableAcceleration;
-   float m_nudgeSpring;
-   float m_nudgeDamping;
-
-   // Tilt plumb
-   bool m_enablePlumbTilt = false;
-   bool m_plumbTiltHigh = false;
-   int m_plumbTiltInputSlot = -1;
-   int m_plumbTiltIndex = 0;
-   float m_plumbTiltThreshold;
-   float m_plumbPoleLength;
-   float m_plumbMassFactor;
-   Vertex3Ds m_plumbPos;
-   Vertex3Ds m_plumbVel;
-
-#pragma endregion
 
    // Physics stats
    uint32_t m_phys_iterations;

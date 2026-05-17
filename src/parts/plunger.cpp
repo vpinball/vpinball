@@ -4,6 +4,7 @@
 #include "plunger.h"
 
 #include "core/VPApp.h"
+#include "input/PlungerHandler.h"
 #include "parts/ball.h"
 #include "parts/Collection.h"
 #include "parts/PartGroup.h"
@@ -939,10 +940,10 @@ STDMETHODIMP Plunger::PullBack()
    // initiate a pull; the speed is set by our pull speed property
    if (m_phitplunger)
    {
-     if(g_pplayer->m_pininput.m_plunger_retract)
-        m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
+      if (g_pplayer->m_pininput.m_plungerHandler->IsPullBackandRetract())
+         m_phitplunger->m_plungerMover.PullBackandRetract(m_d.m_speedPull);
       else
-        m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
+         m_phitplunger->m_plungerMover.PullBack(m_d.m_speedPull);
    }
 
    return S_OK;
