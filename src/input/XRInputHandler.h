@@ -4,6 +4,9 @@
 
 #include "InputManager.h"
 
+#include "input/PlungerHandler.h"
+#include "physics/cabinet/GamepadNudge.h"
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -120,35 +123,34 @@ public:
       attachInfo.actionSets = &m_actionSet;
       xrAttachSessionActionSets(m_session, &attachInfo);
 
-      auto defaultMapping = [this]( //
-               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-               const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+      auto defaultMapping = [this](InputManager::MappingSetupHandler& map)
       {
-         bool success = true;
-         success &= mapButton(ButtonMapping::Create(m_joyId, 16, 0.3f), m_pininput.GetLeftFlipperActionId()); // Trigger
-         success &= mapButton(ButtonMapping::Create(m_joyId, 17, 0.3f), m_pininput.GetRightFlipperActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 16, 0.6f), m_pininput.GetStagedLeftFlipperActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 17, 0.6f), m_pininput.GetStagedRightFlipperActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 12), m_pininput.GetVRControllerViewCenteringActionId()); // Left Thumbstick click
-         success &= mapButton(ButtonMapping::Create(m_joyId, 13), m_pininput.GetLaunchBallActionId()); // Right Thumbstick click
-         success &= mapButton(ButtonMapping::Create(m_joyId, 4), m_pininput.GetLeftMagnaActionId()); // Squeeze
-         success &= mapButton(ButtonMapping::Create(m_joyId, 5), m_pininput.GetRightMagnaActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 11), m_pininput.GetAddCreditActionId(0)); // Right buttons
-         success &= mapButton(ButtonMapping::Create(m_joyId, 10), m_pininput.GetStartActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 8), m_pininput.GetOpenInGameUIActionId()); // Left buttons
-         success &= mapButton(ButtonMapping::Create(m_joyId, 9), m_pininput.GetExitGameActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
-         success &= mapButton(ButtonMapping::Create(m_joyId, 21, 0.9f), m_pininput.GetUIUpActionId());
-         success &= mapButton(ButtonMapping::Create(m_joyId, 22, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
-         success &= mapButton(ButtonMapping::Create(m_joyId, 22, 0.9f), m_pininput.GetUIRightActionId());
-         auto plungerMapping = SensorMapping::Create(m_joyId, 23, SensorMapping::Type::Position); // Right stick
-         plungerMapping.SetScale(-1.f);
-         success &= mapPlunger(plungerMapping, SensorMapping::Type::Position, true);
-         success &= mapNudge(SensorMapping::Create(m_joyId, 20, SensorMapping::Type::Position), SensorMapping::Create(m_joyId, 21, SensorMapping::Type::Position)); // Left stick
-         return success;
+         map.MapAction(ButtonMapping::Create(m_joyId, 16, 0.3f), m_pininput.GetLeftFlipperActionId()); // Trigger
+         map.MapAction(ButtonMapping::Create(m_joyId, 17, 0.3f), m_pininput.GetRightFlipperActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 16, 0.6f), m_pininput.GetStagedLeftFlipperActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 17, 0.6f), m_pininput.GetStagedRightFlipperActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 12), m_pininput.GetVRControllerViewCenteringActionId()); // Left Thumbstick click
+         map.MapAction(ButtonMapping::Create(m_joyId, 13), m_pininput.GetLaunchBallActionId()); // Right Thumbstick click
+         map.MapAction(ButtonMapping::Create(m_joyId, 4), m_pininput.GetLeftMagnaActionId()); // Squeeze
+         map.MapAction(ButtonMapping::Create(m_joyId, 5), m_pininput.GetRightMagnaActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 11), m_pininput.GetAddCreditActionId(0)); // Right buttons
+         map.MapAction(ButtonMapping::Create(m_joyId, 10), m_pininput.GetStartActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 8), m_pininput.GetOpenInGameUIActionId()); // Left buttons
+         map.MapAction(ButtonMapping::Create(m_joyId, 9), m_pininput.GetExitGameActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
+         map.MapAction(ButtonMapping::Create(m_joyId, 21, 0.9f), m_pininput.GetUIUpActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 22, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
+         map.MapAction(ButtonMapping::Create(m_joyId, 22, 0.9f), m_pininput.GetUIRightActionId());
+         std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
+         plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(m_joyId, 23, SensorMapping::Type::Position)); // Right stick Y
+         plunger->GetPositionSensor()->GetMapping().SetScale(-1.f);
+         map.MapPlunger(std::move(plunger));
+         std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
+         nudge->GetXSensor().SetMapping(SensorMapping::Create(m_joyId, 20, SensorMapping::Type::Position)); // Left stick X
+         nudge->GetYSensor().SetMapping(SensorMapping::Create(m_joyId, 21, SensorMapping::Type::Position)); // Left stick Y
+         map.MapNudge(std::move(nudge));
       };
-      m_pininput.RegisterDefaultMapping(m_joyId, defaultMapping);
+      m_pininput.SetDeviceDefaultMapping(m_joyId, defaultMapping);
    }
 
    ~XRInputHandler() override

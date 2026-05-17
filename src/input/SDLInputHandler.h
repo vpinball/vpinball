@@ -5,6 +5,8 @@
 #include <filesystem>
 
 #include "InputManager.h"
+#include "physics/cabinet/GamepadNudge.h"
+
 
 class SDLInputHandler final : public InputManager::InputHandler
 {
@@ -347,16 +349,16 @@ private:
          m_pininput.RegisterElementName(deviceId, true, 0x0203, "Nudge X Velocity"s);
          m_pininput.RegisterElementName(deviceId, true, 0x0204, "Nudge Y Velocity"s);
          m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger Velocity"s);
-         m_pininput.RegisterDefaultMapping(deviceId,
-            [this, deviceId]( //
-               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-               const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+         m_pininput.SetDeviceDefaultMapping(deviceId,
+            [this, deviceId](InputManager::MappingSetupHandler& map)
             {
-               bool success = true;
-               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
-               success &= mapPlunger(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
-               return success;
+               std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
+               plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position));
+               map.MapPlunger(std::move(plunger));
+               std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
+               nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration));
+               nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               map.MapNudge(std::move(nudge));
             });
          break;
 
@@ -382,41 +384,43 @@ private:
          m_pininput.RegisterElementName(deviceId, false, 0x0009, "Right But. 6");
          m_pininput.RegisterElementName(deviceId, false, 0x0100, "Right But. 7"); // Hat Left
          m_pininput.RegisterElementName(deviceId, false, 0x0101, "Right But. 8"); // Hat Right
-         m_pininput.RegisterDefaultMapping(deviceId,
-            [this, deviceId]( //
-               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-               const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+         m_pininput.SetDeviceDefaultMapping(deviceId,
+            [this, deviceId](InputManager::MappingSetupHandler& map)
             {
                bool success = true;
-               success &= mapButton(ButtonMapping::Create(deviceId, 4), m_pininput.GetLeftFlipperActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 4), m_pininput.GetStagedLeftFlipperActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 5), m_pininput.GetRightFlipperActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 5), m_pininput.GetStagedRightFlipperActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 2), m_pininput.GetLeftMagnaActionId()); // Left Top row (can't use right most button due to overlay...)
-               success &= mapButton(ButtonMapping::Create(deviceId, 3), m_pininput.GetAddCreditActionId(0));
-               success &= mapButton(ButtonMapping::Create(deviceId, 1), m_pininput.GetVRViewUpActionId()); // Left Middle row (can't use left most & right most buttons due to overlays...)
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.GetVRViewCenterActionId()); // Left Bottom row
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.GetVRViewDownActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 10), m_pininput.GetStartActionId()); // 1 player button
-               success &= mapButton(ButtonMapping::Create(deviceId, 7), m_pininput.GetExitGameActionId()); // 2 player button
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0102), m_pininput.GetVolumeUpActionId()); // Right Top row
-               success &= mapButton(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0103), m_pininput.GetVolumeDownActionId()); // Right Middle row
-               success &= mapButton(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0101), m_pininput.GetOpenInGameUIActionId()); // Right Bottom row
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0201, 0.9f), m_pininput.GetUIUpActionId());
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
-               success &= mapButton(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
-               success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration).WithScale(0.2f),
-                  SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration).WithScale(0.2f));
-               success &= mapPlunger(SensorMapping::Create(deviceId, 0x0204, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
+               map.MapAction(ButtonMapping::Create(deviceId, 4), m_pininput.GetLeftFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 4), m_pininput.GetStagedLeftFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 5), m_pininput.GetRightFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 5), m_pininput.GetStagedRightFlipperActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 2), m_pininput.GetLeftMagnaActionId()); // Left Top row (can't use right most button due to overlay...)
+               map.MapAction(ButtonMapping::Create(deviceId, 3), m_pininput.GetAddCreditActionId(0));
+               map.MapAction(ButtonMapping::Create(deviceId, 1), m_pininput.GetVRViewUpActionId()); // Left Middle row (can't use left most & right most buttons due to overlays...)
+               map.MapAction(ButtonMapping::Create(deviceId, 0x202, -0.9f, true), m_pininput.GetVRViewCenterActionId()); // Left Bottom row
+               map.MapAction(ButtonMapping::Create(deviceId, 0x202, 0.9f), m_pininput.GetVRViewDownActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 10), m_pininput.GetStartActionId()); // 1 player button
+               map.MapAction(ButtonMapping::Create(deviceId, 7), m_pininput.GetExitGameActionId()); // 2 player button
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0102), m_pininput.GetVolumeUpActionId()); // Right Top row
+               map.MapAction(ButtonMapping::Create(deviceId, 8), m_pininput.GetRightMagnaActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0103), m_pininput.GetVolumeDownActionId()); // Right Middle row
+               map.MapAction(ButtonMapping::Create(deviceId, 9), m_pininput.GetLaunchBallActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0101), m_pininput.GetOpenInGameUIActionId()); // Right Bottom row
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0201, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0201, 0.9f), m_pininput.GetUIUpActionId());
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0203, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
+               map.MapAction(ButtonMapping::Create(deviceId, 0x0203, 0.9f), m_pininput.GetUIRightActionId());
+               std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
+               plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0204, SensorMapping::Type::Position));
+               map.MapPlunger(std::move(plunger));
+               std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
+               nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration));
+               nudge->GetXSensor().GetMapping().SetScale(0.2f);
+               nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               nudge->GetYSensor().GetMapping().SetScale(0.2f);
+               map.MapNudge(std::move(nudge));
                // The automatic setup also needs for controller view alignment
                // - ControllerCabYOffset = -22.5
                // - ControllerLockbarScale = 1.66
                // and nudge needs the filter to be enabled (8 bit accelerometer without automatic calibration)
-               return success;
             });
          break;
 
@@ -458,48 +462,47 @@ private:
                   && southButton != 0xFFFF && backButton != 0xFFFF && startButton != 0xFFFF && leftStickX != 0xFFFF && leftStickY != 0xFFFF && rightStickY != 0xFFFF)
                {
                   auto defaultMapping = [this, deviceId, leftTrigger, rightTrigger, leftShoulder, rightShoulder, leftStickX, leftStickY, rightStickY, southButton, northButton, eastButton,
-                                             backButton, startButton, dpadLeftButton, dpadRightButton, dpadUpButton, dpadDownButton]( //
-                                             const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
-                                             const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
-                                             const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
+                                           backButton, startButton, dpadLeftButton, dpadRightButton, dpadUpButton, dpadDownButton](InputManager::MappingSetupHandler& map)
                   {
-                     bool success = true;
-                     success &= mapButton(ButtonMapping::Create(deviceId, leftTrigger, -0.3f), m_pininput.GetLeftFlipperActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, rightTrigger, -0.3f), m_pininput.GetRightFlipperActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, leftTrigger, 0.3f), m_pininput.GetStagedLeftFlipperActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, rightTrigger, 0.3f), m_pininput.GetStagedRightFlipperActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, leftShoulder), m_pininput.GetLeftMagnaActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, rightShoulder), m_pininput.GetRightMagnaActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, northButton), m_pininput.GetAddCreditActionId(0));
-                     success &= mapButton(ButtonMapping::Create(deviceId, eastButton), m_pininput.GetStartActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, southButton), m_pininput.GetLaunchBallActionId());
-                     success &= mapButton(ButtonMapping::Create(deviceId, backButton), m_pininput.GetOpenInGameUIActionId());
-                     // success &= mapButton(ButtonMapping::Create(deviceId, startButton), m_pininput.()); // In Game UI
+                     map.MapAction(ButtonMapping::Create(deviceId, leftTrigger, -0.3f), m_pininput.GetLeftFlipperActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, rightTrigger, -0.3f), m_pininput.GetRightFlipperActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, leftTrigger, 0.3f), m_pininput.GetStagedLeftFlipperActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, rightTrigger, 0.3f), m_pininput.GetStagedRightFlipperActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, leftShoulder), m_pininput.GetLeftMagnaActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, rightShoulder), m_pininput.GetRightMagnaActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, northButton), m_pininput.GetAddCreditActionId(0));
+                     map.MapAction(ButtonMapping::Create(deviceId, eastButton), m_pininput.GetStartActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, southButton), m_pininput.GetLaunchBallActionId());
+                     map.MapAction(ButtonMapping::Create(deviceId, backButton), m_pininput.GetOpenInGameUIActionId());
+                     // map.MapAction(ButtonMapping::Create(deviceId, startButton), m_pininput.()); // In Game UI
                      if (dpadLeftButton != 0xFFFF && dpadRightButton != 0xFFFF && dpadUpButton != 0xFFFF && dpadDownButton != 0xFFFF)
                      {
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadLeftButton), m_pininput.GetServiceActionId(0));
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetServiceActionId(1));
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetServiceActionId(2));
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetServiceActionId(3));
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadLeftButton), m_pininput.GetServiceActionId(0));
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetServiceActionId(1));
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetServiceActionId(2));
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetServiceActionId(3));
 
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetUIUpActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetUIDownActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadLeftButton), m_pininput.GetUILeftActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetUIRightActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadUpButton), m_pininput.GetUIUpActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadDownButton), m_pininput.GetUIDownActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadLeftButton), m_pininput.GetUILeftActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, dpadRightButton), m_pininput.GetUIRightActionId());
                      }
                      else
                      {
-                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickY, -0.3f), m_pininput.GetUIUpActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickY, 0.3f), m_pininput.GetUIDownActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickX, -0.3f), m_pininput.GetUILeftActionId());
-                        success &= mapButton(ButtonMapping::Create(deviceId, leftStickX, 0.3f), m_pininput.GetUIRightActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, leftStickY, -0.3f), m_pininput.GetUIUpActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, leftStickY, 0.3f), m_pininput.GetUIDownActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, leftStickX, -0.3f), m_pininput.GetUILeftActionId());
+                        map.MapAction(ButtonMapping::Create(deviceId, leftStickX, 0.3f), m_pininput.GetUIRightActionId());
                      }
-                     success &= mapPlunger(SensorMapping::Create(deviceId, rightStickY, SensorMapping::Type::Position), SensorMapping::Type::Position, true);
-                     success &= mapNudge(
-                        SensorMapping::Create(deviceId, leftStickX, SensorMapping::Type::Position), SensorMapping::Create(deviceId, leftStickY, SensorMapping::Type::Position));
-                     return success;
+                     std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_pininput);
+                     plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, rightStickY, SensorMapping::Type::Position));
+                     map.MapPlunger(std::move(plunger));
+                     std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
+                     nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, leftStickX, SensorMapping::Type::Position));
+                     nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, leftStickY, SensorMapping::Type::Position));
+                     map.MapNudge(std::move(nudge));
                   };
-                  m_pininput.RegisterDefaultMapping(deviceId, defaultMapping);
+                  m_pininput.SetDeviceDefaultMapping(deviceId, defaultMapping);
                }
                SDL_free(bindings);
             }

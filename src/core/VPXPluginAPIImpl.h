@@ -77,9 +77,8 @@ private:
    static void MSGPIAPI GetActiveViewSetup(VPXViewSetupDef* view);
    static void MSGPIAPI SetActiveViewSetup(VPXViewSetupDef* view);
 
-   static void MSGPIAPI SetActionState(const VPXAction actionId, const int isPressed);
-   static void MSGPIAPI SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
-   static void MSGPIAPI SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
+   static void MSGPIAPI GetInputState(VPXInputState* state);
+   static void MSGPIAPI SetInputState(VPXInputState* state);
    ankerl::unordered_dense::map<VPXAction, std::pair<unsigned int, int>> m_actionMap;
 
    static double MSGPIAPI GetGameTime();

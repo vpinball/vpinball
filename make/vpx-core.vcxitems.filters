@@ -28,6 +28,9 @@
     <Filter Include="physics">
       <UniqueIdentifier>{fc16eece-1a36-4e44-bad4-3646af352bef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="physics\cabinet">
+      <UniqueIdentifier>{19EE66C8-28A3-40EC-954A-DB0E9FD9F72B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="renderer">
       <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
     </Filter>
@@ -240,7 +243,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/input/PlungerHandler.cpp">
       <Filter>input</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
@@ -249,6 +252,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/XRInputHandler.h">
       <Filter>input</Filter>
     </ClInclude>
+    <ClCompile Include="$(SolutionDir)/../../src/math/HighPassFilter.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
@@ -365,6 +371,27 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp">
       <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/CabinetNudgeSensor.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/CabinetPhysics.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/GamepadNudge.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/KeyboardNudge.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/NudgeHandler.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/NudgeIntentHandler.cpp">
+      <Filter>physics\cabinet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/cabinet/PlumbHandler.cpp">
+      <Filter>physics\cabinet</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
@@ -540,6 +567,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -549,10 +579,16 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSensorSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSensorSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.cpp">
@@ -1013,6 +1049,12 @@
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h">
       <Filter>math</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/ExponentialMovingAverage.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/HighPassFilter.h">
+      <Filter>math</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h">
       <Filter>math</Filter>
     </ClInclude>
@@ -1235,6 +1277,36 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/CabinetNudgeSensor.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/CabinetPhysics.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/DampedHarmonicOscillator.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/GamepadNudge.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/KeyboardNudge.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/MotionGainCalibratorAxis.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/MotionKalmanAxis.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/NudgeHandler.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/NudgeIntentHandler.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/cabinet/PlumbHandler.h">
+      <Filter>physics\cabinet</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -1442,6 +1514,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
@@ -1451,10 +1526,16 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSensorSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSensorSettingsPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.h">
@@ -2210,9 +2291,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/InputAction.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/SensorFilter.h">
-      <Filter>input</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/InputManager.h">
       <Filter>input</Filter>
     </ClInclude>
@@ -2220,6 +2298,9 @@
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/PhysicsSensor.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/PlungerHandler.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h">

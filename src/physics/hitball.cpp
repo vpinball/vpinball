@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "parts/ball.h"
 
+#include "physics/cabinet/NudgeHandler.h"
 #include "ui/live/LiveUI.h"
 
 HitBall::HitBall()
@@ -486,7 +487,10 @@ void HitBall::UpdateVelocities()
          // Apply forces (expressed in VPU/VPT) integrated on one physic step (PHYS_FACTOR is one physic step time expressed in VPX time unit)
          // This is standard Newton physics: A = dV/dt = (1/m).(Sum of F) therefore dV = (1/m).(Sum of F).dt
          m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
-         m_d.m_vel -= (float)PHYS_FACTOR * g_pplayer->m_physics->GetNudgeAcceleration(); // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
+
+         // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
+         m_d.m_vel.x -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x);
+         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y);
       }
    }
 

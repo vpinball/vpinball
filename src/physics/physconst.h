@@ -5,12 +5,11 @@
 #pragma once
 
 
-#define PHYSICS_STEPTIME    1000         // usecs to go between each physics update
-
+#define PHYSICS_STEPTIME    1000         // usecs to go between each physics update (1000Hz physics)
 #define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6) // step time in seconds
 
-#define DEFAULT_STEPTIME      10000      // default physics rate: 1000Hz
-#define DEFAULT_STEPTIME_S    0.01       // default physics rate: 1000Hz
+#define DEFAULT_STEPTIME      10000      // VPT in microseconds, custom time unit used for historical reason (1VPT = 10ms)
+#define DEFAULT_STEPTIME_S    0.01       // VPT in seconds, custom time unit used for historical reason (1VPT = 10ms)
 
 #define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S) // Physics step time expressed in Visual Pinball Time (VPT)
 

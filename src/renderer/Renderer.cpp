@@ -12,6 +12,7 @@
 #include "parts/Collection.h"
 #include "parts/light.h"
 #include "parts/pintable.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "renderer/Anaglyph.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
@@ -1669,9 +1670,9 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
       // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
       if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass())
       {
-         if (const auto nudge = g_pplayer->m_physics->GetTableDisplacement(); nudge.x != 0.f || nudge.y != 0.f)
+         if (const auto nudge = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset(); nudge.x != 0.f || nudge.y != 0.f)
          {
-            const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(2.5f * 100.f * m_visualNudgeStrength * nudge.x, 2.5f * 100.f * m_visualNudgeStrength * nudge.y, 0.f);
+            const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(m_visualNudgeStrength * MTOVPU(nudge.x), m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
             for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
                m_mvp.SetView(eye, nudgeMat * m_mvp.GetView(eye));
          }
@@ -2959,7 +2960,8 @@ void Renderer::RenderFrame()
    // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
    if (!m_disableStaticPrepass && m_visualNudgeStrength > 0.0f && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
    {
-      const Vertex2D offset = m_visualNudgeStrength * g_pplayer->m_physics->GetTableDisplacement();
+      // FIXME Screen offset is applied in clip space (-1..1, -1..1) independently of the output resolution resulting in non uniform scaling of nudge
+      const Vertex2D offset = m_visualNudgeStrength * g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset() * 2.f;
       SetScreenOffset(offset.x, offset.y);
    }
    else

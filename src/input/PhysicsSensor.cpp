@@ -5,13 +5,10 @@
 
 #include <sstream>
 
-PhysicsSensor::PhysicsSensor(class InputManager* eventManager, const string& settingId, const string& label, SensorMapping::Type sensorType)
-   : m_settingId(settingId)
-   , m_label(label)
+PhysicsSensor::PhysicsSensor(class InputManager* eventManager, const string& label, SensorMapping::Type sensorType)
+   : m_label(label)
    , m_sensorType(sensorType)
    , m_eventManager(eventManager)
-   , m_integrator(std::make_shared<NoOpStoreSensorFilter>())
-   , m_filter(std::make_unique<NoOpSensorFilter>(m_integrator))
 {
 }
 
@@ -20,15 +17,15 @@ void PhysicsSensor::ClearMapping()
    m_inputMapping = nullptr;
 }
 
-void PhysicsSensor::LoadMapping(const Settings& settings)
+void PhysicsSensor::LoadMapping(const Settings& settings, const string& settingId)
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, ""s));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + settingId, "Mapping." + settingId, ""s, false, ""s));
    SetMapping(settings.GetString(propId));
 }
 
-void PhysicsSensor::SaveMapping(Settings& settings) const
+void PhysicsSensor::SaveMapping(Settings& settings, const string& settingId) const
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, ""s));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + settingId, "Mapping." + settingId, ""s, false, ""s));
    if (m_inputMapping == nullptr)
       settings.Reset(propId);
    else
@@ -95,31 +92,6 @@ void PhysicsSensor::SetMapping(const string& mappingString)
 void PhysicsSensor::SetMapping(const SensorMapping& mapping)
 {
    m_inputMapping = std::make_unique<SensorMapping>(mapping.With(m_eventManager, this));
-   
-   if (mapping.GetType() == SensorMapping::Type::Position && m_sensorType == SensorMapping::Type::Acceleration)
-      m_integrator = std::make_shared<PositionToAccelerationFilter>();
-   else if ((mapping.GetType() == SensorMapping::Type::Position && m_sensorType == SensorMapping::Type::Velocity)
-      || (mapping.GetType() == SensorMapping::Type::Velocity && m_sensorType == SensorMapping::Type::Acceleration))
-      m_integrator = std::make_shared<VelocityToAccelerationFilter>();
-   else if (mapping.GetType() == SensorMapping::Type::Acceleration && m_sensorType == SensorMapping::Type::Position)
-   {
-      // Not supported but is it useful ?
-      assert(false);
-      m_integrator = std::make_shared<NoOpStoreSensorFilter>();
-   }
-   else if ((mapping.GetType() == SensorMapping::Type::Velocity && m_sensorType == SensorMapping::Type::Position)
-      || (mapping.GetType() == SensorMapping::Type::Acceleration && m_sensorType == SensorMapping::Type::Velocity))
-   {
-      // Not supported but is it useful ?
-      assert(false);
-      m_integrator = std::make_shared<NoOpStoreSensorFilter>();
-   }
-   else
-      m_integrator = std::make_shared<NoOpStoreSensorFilter>();
-
-   m_filter->SetSource(m_integrator);
-
-   m_integrator->SetName(m_label);
 }
 
 string PhysicsSensor::GetMappingString() const
@@ -155,26 +127,6 @@ string PhysicsSensor::GetMappingLabel() const
    return m_eventManager->GetDeviceName(m_inputMapping->GetDeviceId()) + " - " + m_eventManager->GetDeviceElementName(m_inputMapping->GetDeviceId(), m_inputMapping->GetAxisId());
 }
 
-void PhysicsSensor::SetFilter(std::unique_ptr<SourcedSensorFilter> filter)
-{
-   m_filter = std::move(filter);
-   m_filter->SetSource(m_integrator);
-}
-
 void PhysicsSensor::OnInputChanged(SensorMapping* mapping)
 {
-   if (m_overriden)
-      return;
-   m_integrator->Push(mapping->GetRawValueTimestampNs(), mapping->GetValue());
-}
-
-void PhysicsSensor::Override(float value)
-{
-   if (!m_overriden)
-   {
-      m_overriden = true;
-      m_integrator = std::make_shared<NoOpStoreSensorFilter>();
-      m_filter = std::make_unique<NoOpSensorFilter>(m_integrator);
-   }
-   m_integrator->Push(0, value);
-}
+ }

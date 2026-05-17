@@ -60,7 +60,8 @@ void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, float v, bo
 
 void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, int v, bool asTableOverride)
 {
-   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Int || GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Enum);
+   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Int || GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Enum
+      || GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Bool);
    if (asTableOverride)
    {
       assert(m_parent != nullptr);

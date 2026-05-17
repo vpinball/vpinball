@@ -49,5 +49,4 @@ private:
    bool m_dragging = false;
    Ball *m_draggedBall = nullptr;
    Vertex3Ds m_dragTarget;
-   InputManager::ActionState m_prevActionState { };
 };

@@ -14,9 +14,10 @@ namespace VPX::InGameUI
 {
 
 
-InGameUIItem::InGameUIItem(LabelType type, string label)
+InGameUIItem::InGameUIItem(LabelType type, string label, string tooltip)
    : m_type(Type::Label) // Common
    , m_label(std::move(label))
+   , m_tooltip(std::move(tooltip))
    , m_labelType(type)
 {
 }
@@ -36,16 +37,6 @@ InGameUIItem::InGameUIItem(const string& label, const string& tooltip, class Inp
    , m_inputAction(inputAction)
    , m_defMappingString(inputAction->GetDefaultMappingString())
    , m_initialMappingString(inputAction->GetMappingString())
-{
-}
-
-InGameUIItem::InGameUIItem(const string& label, const string& tooltip, class PhysicsSensor* physicsSensor, int typeMask)
-   : m_type(Type::PhysicsSensorMapping) // Common
-   , m_label(label)
-   , m_tooltip(tooltip)
-   , m_physicsSensor(physicsSensor)
-   , m_physicsSensorTypeMask(typeMask)
-   , m_initialMappingString(physicsSensor->GetMappingString())
 {
 }
 
@@ -197,6 +188,26 @@ InGameUIItem::InGameUIItem(string label, string tooltip, std::function<void(int,
 {
 }
 
+bool InGameUIItem::IsSameValue(float a, float b) const
+{
+   assert(m_type == Type::Property && m_property->m_type == PropertyDef::Type::Float);
+   const float validA = dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(a);
+   const float validB = dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(b);
+   if (validA == validB)
+      return true;
+   if (const size_t dotPos = m_format.find('.'); dotPos != string::npos)
+   {
+      const int nDec = m_format[dotPos + 1] - '0';
+      const float threshold = (float)(0.5 * std::pow(10.f, -nDec));
+      return fabs(validA - validB) * m_floatValueDisplayScale <= threshold;
+   }
+   else
+   {
+      //return validA == validB;
+      return fabs(validA - validB) * m_floatValueDisplayScale < 0.0001f;
+   }
+}
+
 bool InGameUIItem::IsModified() const
 {
    const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_app->m_settings;
@@ -208,19 +219,11 @@ bool InGameUIItem::IsModified() const
       case PropertyDef::Type::Int: return GetIntValue() != dynamic_cast<IntPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
       case PropertyDef::Type::Enum: return GetIntValue() != dynamic_cast<EnumPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
       case PropertyDef::Type::Bool: return GetBoolValue() != m_getStoredBoolValue(settings);
-      case PropertyDef::Type::Float:
-         if (const size_t dotPos = m_format.find('.'); dotPos != string::npos)
-         {
-            const int nDec = m_format[dotPos + 1] - '0';
-            const float threshold = (float)(0.5 * std::pow(10.f, -nDec));
-            return fabs(GetFloatValue() - dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings))) * m_floatValueDisplayScale > threshold;
-         }
-         return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings));
+      case PropertyDef::Type::Float: return !IsSameValue(GetFloatValue(), m_getStoredFloatValue(settings));
       case PropertyDef::Type::String: return GetStringValue() != m_getStoredStringValue(settings);
       default: assert(false); return false;
       }
    case Type::ActionInputMapping: return m_inputAction->GetMappingString() != m_initialMappingString; break;
-   case Type::PhysicsSensorMapping: return m_physicsSensor->GetMappingString() != m_initialMappingString; break;
    default: return false;
    }
 }
@@ -240,7 +243,6 @@ bool InGameUIItem::IsDefaultValue() const
       default: assert(false); return true;
       }
    case Type::ActionInputMapping: return m_inputAction->GetMappingString() == m_defMappingString;
-   case Type::PhysicsSensorMapping: return true; // Physics sensor do not have defaults
    default: return true;
    }
 }
@@ -262,7 +264,6 @@ void InGameUIItem::ResetToStoredValue()
       }
       break;
    case Type::ActionInputMapping: m_inputAction->SetMapping(m_initialMappingString); break;
-   case Type::PhysicsSensorMapping: m_physicsSensor->SetMapping(m_initialMappingString); break;
    default: break;
    }
 }
@@ -283,7 +284,6 @@ void InGameUIItem::ResetToDefault()
       }
       break;
    case Type::ActionInputMapping: m_inputAction->SetMapping(m_defMappingString); break;
-   case Type::PhysicsSensorMapping: break;
    default: break;
    }
 }
@@ -315,11 +315,6 @@ void InGameUIItem::Save(Settings& settings, bool isTableOverride)
    case Type::ActionInputMapping:
       m_inputAction->SaveMapping(settings);
       m_initialMappingString = m_inputAction->GetMappingString();
-      break;
-
-   case Type::PhysicsSensorMapping:
-      m_physicsSensor->SaveMapping(settings);
-      m_initialMappingString = m_physicsSensor->GetMappingString();
       break;
 
    default: break;
@@ -361,7 +356,7 @@ void InGameUIItem::SetValue(float value) const
    assert(m_property && m_property->m_type == PropertyDef::Type::Float);
    const float prev = GetFloatValue();
    value = dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(value);
-   if (prev != value)
+   if (!IsSameValue(prev, value))
       m_onChangeFloat(prev, value);
 }
 

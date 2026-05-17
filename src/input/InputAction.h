@@ -24,6 +24,8 @@ public:
    void SaveMapping(Settings& settings) const;
    void SetMapping(const string& mappingString);
    void AddMapping(const vector<ButtonMapping>& mapping);
+   void UnmapDevice(uint16_t deviceId);
+   bool IsMappedToDevice(uint16_t deviceId) const;
    bool HasMapping(const vector<ButtonMapping>& mapping) const;
    bool IsMapped() const { return !m_inputMappings.empty(); }
    const string& GetDefaultMappingString() const { return m_defaultMappings; }

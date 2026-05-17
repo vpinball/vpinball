@@ -237,7 +237,21 @@ typedef struct VPXActionEvent
 {
    VPXAction action;
    int isPressed;
+   int enableVPXProcessing;
 } VPXActionEvent;
+
+typedef struct VPXInputState
+{
+   uint64_t actionMask;
+   uint64_t actionState;
+   uint16_t stateMask; // Bit 0 for plunger position, bit 1 for plunger velocity, bit 2 for nudge (both acceleration & displacement)
+   float plungerPosition;
+   float plungerVelocity;
+   float nudgeAccelerationX;
+   float nudgeAccelerationY;
+   float nudgeDisplacementX;
+   float nudgeDisplacementY;
+} VPXInputState;
 
 typedef struct VPXPluginAPI
 {
@@ -255,9 +269,8 @@ typedef struct VPXPluginAPI
    void (MSGPIAPI *SetActiveViewSetup)(VPXViewSetupDef* view);
 
    // Input management
-   void(MSGPIAPI* SetActionState)(const VPXAction actionId, const int isPressed);
-   void(MSGPIAPI* SetNudgeState)(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
-   void(MSGPIAPI* SetPlungerState)(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
+   void(MSGPIAPI* GetInputState)(VPXInputState* state);
+   void(MSGPIAPI* SetInputState)(VPXInputState* state);
 
    // Game state
    double(MSGPIAPI* GetGameTime)(); // Game time in seconds

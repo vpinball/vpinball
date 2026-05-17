@@ -4,8 +4,11 @@
 #include "NudgeSettingsPage.h"
 
 #include "parts/pintable.h"
+#include "physics/cabinet/GamepadNudge.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "implot/implot.h"
 #include "ui/live/LiveUI.h"
+#include "ui/live/ingameui/NudgeSensorSettingsPage.h"
 
 
 namespace VPX::InGameUI
@@ -14,73 +17,71 @@ namespace VPX::InGameUI
 NudgeSettingsPage::NudgeSettingsPage()
    : InGameUIPage("Nudge Settings"s, ""s, SaveMode::Global)
 {
+   m_nudgeXPlot.m_rolling = true;
+   m_nudgeXPlot.m_timeSpan = 5.f;
+   m_nudgeYPlot.m_rolling = true;
+   m_nudgeYPlot.m_timeSpan = 5.f;
+   m_cabXPlot.m_rolling = true;
+   m_cabXPlot.m_timeSpan = 5.f;
+   m_cabYPlot.m_rolling = true;
+   m_cabYPlot.m_timeSpan = 5.f;
+}
+
+void NudgeSettingsPage::BuildPage()
+{
+   ClearItems();
    InputManager& input = GetInput();
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based emulated nudge"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based nudge"s));
 
-   for (int i = 0; i < 2; i++)
+   const int nudgeSensorCount = m_player->m_pininput.m_nudgeHandler->GetSensorCount();
+   for (int i = 0; i < nudgeSensorCount; i++)
    {
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Hardware sensor #" + std::to_string(i + 1)));
-
-      const auto& nudgeXSensor = input.GetNudgeXSensor(i);
-      AddItem(std::make_unique<InGameUIItem>(nudgeXSensor->GetLabel(), "Select to define which analog input to use for side nudge."s, nudgeXSensor.get(), 0x7));
-
-      const auto& nudgeYSensor = input.GetNudgeYSensor(i);
-      AddItem(std::make_unique<InGameUIItem>(nudgeYSensor->GetLabel(), "Select to define which analog input to use for front nudge."s, nudgeYSensor.get(), 0x7));
-
-      AddItem(std::make_unique<InGameUIItem>(
-         i == 0 ? Settings::m_propPlayer_NudgeOrientation0 : Settings::m_propPlayer_NudgeOrientation1, 1.f, "%4.1f deg"s, //
-         [this, i]() { return RADTOANG(GetInput().GetNudgeOrientation(i)); }, //
-         [this, i](float, float v) { GetInput().SetNudgeOrientation(i, ANGTORAD(v)); }));
-
-      AddItem(std::make_unique<InGameUIItem>(
-         i == 0 ? Settings::m_propPlayer_NudgeFilter0 : Settings::m_propPlayer_NudgeFilter1, //
-         [this, i]() { return GetInput().IsNudgeFiltered(i); }, //
-         [this, i](bool v) { GetInput().SetNudgeFiltered(i, v); }));
+      const string url = std::format("settings/nudge_sensor_{:d}", i);
+      m_player->m_liveUI->m_inGameUI.AddPage(url, [i]() { return std::make_unique<NudgeSensorSettingsPage>(i); });
+      const auto& sensor = m_player->m_pininput.m_nudgeHandler->GetSensor(i);
+      const string label = std::format("Sensor #{}: {}", i, sensor->GetDisplayName());
+      AddItem(std::make_unique<InGameUIItem>(label, "", url));
    }
+   AddItem(std::make_unique<InGameUIItem>("Add a new nudge sensor"s, "Add and setup a new nudge sensor."s,
+      [this]()
+      {
+         std::unique_ptr<VPX::Physics::NudgeSensor> sensor = std::make_unique<VPX::Physics::GamepadNudge>(&m_player->m_pininput);
+         m_player->m_pininput.m_nudgeHandler->AddSensor(sensor);
+         const int i = m_player->m_pininput.m_nudgeHandler->GetSensorCount() - 1;
+         const string url = std::format("settings/nudge_sensor_{:d}", i);
+         m_player->m_liveUI->m_inGameUI.AddPage(url, [i]() { return std::make_unique<NudgeSensorSettingsPage>(i); });
+         m_player->m_liveUI->m_inGameUI.Navigate(url);
+         BuildPage();
+      }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb"s));
-
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_SimulatedPlumb, //
-      [this]() { return m_player->m_physics->IsPlumbSimulated(); }, //
-      [this](bool v) { m_player->m_physics->EnablePlumbSimulation(v); }));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard nudge"s));
 
    AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propPlayer_PlumbInertia, 100.f, "%4.1f %%"s, //
-      [this]() { return m_player->m_physics->GetPlumbInertia(); }, //
-      [this](float, float v) { m_player->m_physics->SetPlumbInertia(v); }));
+      Settings::m_propPlayer_KeyboardNudgeMode, //
+      [this]() { return (int)m_player->m_pininput.m_nudgeHandler->GetKeyboardNudgeMode(); }, //
+      [this](int, int v)
+      {
+         m_player->m_pininput.m_nudgeHandler->SetKeyboardNudgeMode((VPX::Physics::NudgeHandler::KeyboardNudgeMode)v);
+         BuildPage();
+      }));
 
    AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propPlayer_PlumbThresholdAngle, 1.f, "%4.2f deg"s, //
-      [this]() { return RADTOANG(m_player->m_physics->GetPlumbTiltThreshold()); }, //
-      [this](float, float v) { m_player->m_physics->SetPlumbTiltThreshold(ANGTORAD(v)); }));
+      Settings::m_propPlayer_KeyboardNudgeStrength, 100.f, "%4.1f %%"s, //
+      [this]() { return m_player->m_pininput.m_nudgeHandler->GetKeyboardNudgeStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.m_nudgeHandler->SetKeyboardNudgeStrength(v); }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated nudge"s));
-
-   AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propPlayer_EnableLegacyNudge, //
-      [this]() { return m_player->m_physics->IsLegacyKeyboardNudge(); }, //
-      [this](bool v) { m_player->m_physics->SetLegacyKeyboardNudge(v); }));
-
-   AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propPlayer_LegacyNudgeStrength, 1.f, "%4.1f"s, //
-      [this]() { return m_player->m_physics->GetLegacyKeyboardNudgeStrength(); }, //
-      [this](float, float v) { m_player->m_physics->SetLegacyKeyboardNudgeStrength(v); }));
-
-   ////////////////////////////////////////////////////////////////////////////////////////////////
-
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Visual feedback"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Visual nudge feedback"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_NudgeStrength, 400.f, "%4.1f %%"s, //
+      Settings::m_propPlayer_NudgeStrength, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_NudgeStrength(); }, //
       [this](float, float v)
       {
@@ -88,24 +89,39 @@ NudgeSettingsPage::NudgeSettingsPage()
          m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
       }));
 
+   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   m_nudgeXPlot.m_rolling = true;
-   m_nudgeXPlot.m_timeSpan = 5.f;
-   m_nudgeYPlot.m_rolling = true;
-   m_nudgeYPlot.m_timeSpan = 5.f;
-   for (int i = 0; i < 2; i++)
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb"s));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_SimulatedPlumb, //
+      [this]() { return m_player->m_physics->m_plumbHandler.IsPlumbSimulated(); }, //
+      [this](bool v)
+      {
+         m_player->m_physics->m_plumbHandler.EnablePlumbSimulation(v);
+         BuildPage();
+      }));
+
+   if (m_player->m_physics->m_plumbHandler.IsPlumbSimulated())
    {
-      m_nudgeXRawPlot[i].m_rolling = true;
-      m_nudgeXRawPlot[i].m_timeSpan = 5.f;
-      m_nudgeYRawPlot[i].m_rolling = true;
-      m_nudgeYRawPlot[i].m_timeSpan = 5.f;
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_PlumbDamping, 100.f, "%4.1f %%"s, //
+         [this]() { return m_player->m_physics->m_plumbHandler.GetPlumbDamping(); }, //
+         [this](float, float v) { m_player->m_physics->m_plumbHandler.SetPlumbDamping(v); }));
+
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_PlumbThresholdAngle, 1.f, "%4.2f deg"s, //
+         [this]() { return RADTOANG(m_player->m_physics->m_plumbHandler.GetPlumbTiltThreshold()); }, //
+         [this](float, float v) { m_player->m_physics->m_plumbHandler.SetPlumbTiltThreshold(ANGTORAD(v)); }));
    }
 }
+
 
 void NudgeSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
+   BuildPage();
 }
 
 void NudgeSettingsPage::Close(bool isBackwardAnimation)
@@ -117,88 +133,25 @@ void NudgeSettingsPage::Close(bool isBackwardAnimation)
 void NudgeSettingsPage::AppendPlot()
 {
    const float t = static_cast<float>((double)msec() / 1000.);
-   Vertex2D nudge = m_player->m_pininput.GetNudge();
+   Vertex2D nudge = m_player->m_pininput.m_nudgeHandler->GetCabinetAcceleration();
    m_nudgeXPlot.AddPoint(t, nudge.x);
    m_nudgeYPlot.AddPoint(t, nudge.y);
-   for (int i = 0; i < 2; i++)
-   {
-      if (m_player->m_pininput.GetNudgeXSensor(i)->IsMapped())
-         m_nudgeXRawPlot[i].AddPoint(t, m_player->m_pininput.GetNudgeXSensor(i)->GetMapping().GetValue());
-      if (m_player->m_pininput.GetNudgeYSensor(i)->IsMapped())
-         m_nudgeYRawPlot[i].AddPoint(t, m_player->m_pininput.GetNudgeYSensor(i)->GetMapping().GetValue());
-   }
+   Vertex2D pos = m_player->m_pininput.m_nudgeHandler->GetCabinetOffset();
+   m_cabXPlot.AddPoint(t, pos.x * 1000.f);
+   m_cabYPlot.AddPoint(t, pos.y * 1000.f);
 }
 
 void NudgeSettingsPage::Render(float elapsed)
 {
    InGameUIPage::Render(elapsed);
-   const ImGuiStyle& style = ImGui::GetStyle();
-   const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
-   const float plotHeight = winSize.y / 2 - style.ItemSpacing.x;
-   const float plumbSize = plotHeight; //m_player->m_physics->IsPlumbSimulated() ? plotHeight : 0.f;
-   const float plotWidth = winSize.x - style.WindowPadding.x * 2.f - style.ItemSpacing.x - plumbSize;
-
-   if (const uint32_t ms = msec(); ms - m_resetTimestampMs > 2000)
-   {
-      m_resetTimestampMs = ms;
-      for (int sensor = 0; sensor < 2; sensor++)
-      {
-         m_sensorAcqPeriod[sensor].x = 0;
-         m_sensorAcqPeriod[sensor].y = 0;
-         if (m_player->m_pininput.GetNudgeXSensor(sensor)->IsMapped())
-         {
-            m_sensorAcqPeriod[sensor].x = m_player->m_pininput.GetNudgeXSensor(sensor)->GetMapping().GetShortestUpdateMs();
-            m_player->m_pininput.GetNudgeXSensor(sensor)->GetMapping().ResetShortestUpdateMs();
-         }
-         if (m_player->m_pininput.GetNudgeYSensor(sensor)->IsMapped())
-         {
-            m_sensorAcqPeriod[sensor].y = m_player->m_pininput.GetNudgeYSensor(sensor)->GetMapping().GetShortestUpdateMs();
-            m_player->m_pininput.GetNudgeYSensor(sensor)->GetMapping().ResetShortestUpdateMs();
-         }
-      }
-   }
 
    AppendPlot();
 
-   auto renderSensorInfo = [this, plumbSize](int sensor)
-   {
-      ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, 1.f);
-      const float downscale = min(min(0.5f, plumbSize / ImGui::CalcTextSize("Refresh Rate").x), plumbSize / (ImGui::GetTextLineHeightWithSpacing() * 7.f));
-      ImGui::PushFont(nullptr, ImGui::GetStyle().FontSizeBase * downscale); // Eventually smaller font to fit (otherwise aligned to plot font size)
-      ImGui::BeginChild(std::format("SensorInfo{}", sensor).c_str(), ImVec2(plumbSize, plumbSize), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar);
-      ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(2.f, 2.f));
-      ImGui::BeginGroup();
-      ImGui::SameLine(0.5f * (plumbSize - ImGui::CalcTextSize("Sensor #1").x));
-      ImGui::Text("Sensor #%d", sensor + 1);
-      ImVec2 min = ImGui::GetItemRectMin();
-      ImVec2 max = ImGui::GetItemRectMax();
-      min.y = max.y;
-      ImGui::GetWindowDrawList()->AddLine(min, max, IM_COL32_WHITE, 1.0f);
-      ImGui::Separator();
-      ImGui::Text("Refresh Rate");
-      if (m_sensorAcqPeriod[sensor].x != 0)
-         ImGui::Text("  X: %4dms", m_sensorAcqPeriod[sensor].x);
-      else
-         ImGui::Text("  X:  - ms");
-      if (m_sensorAcqPeriod[sensor].y != 0)
-         ImGui::Text("  Y: %4dms", m_sensorAcqPeriod[sensor].y);
-      else
-         ImGui::Text("  Y:  - ms");
-      ImGui::Separator();
-      ImGui::Text("Nudge Frequency");
-      float freq = 0.f;
-      if (m_player->m_pininput.GetNudgeYSensor(sensor)->IsMapped())
-         freq = m_player->m_pininput.GetNudgeYSensor(sensor)->GetMapping().GetMainFrequency();
-      if (freq != 0)
-         ImGui::Text("  Freq: %4.2fHz", freq);
-      else
-         ImGui::Text("  Freq:  - Hz");
-      ImGui::EndGroup();
-      ImGui::EndChild();
-      ImGui::PopFont();
-      ImGui::PopStyleVar();
-   };
+   const ImGuiStyle& style = ImGui::GetStyle();
 
+   const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
+   const float plotWidth = (winSize.x - style.WindowPadding.x * 2.f);
+   const float plotHeight = (winSize.y - style.WindowPadding.y * 2.f - style.ItemSpacing.y) / 2.f;
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowPos(ImVec2(GetWindowPos().x, GetWindowPos().y - winSize.y - style.ItemSpacing.y));
@@ -206,61 +159,43 @@ void NudgeSettingsPage::Render(float elapsed)
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
-
    ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
+
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
-      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_AuxDefault);
+      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeXPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y2, -0.3f, 0.3f, ImGuiCond_Always);
-      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-      for (int i = 0; i < 2; i++)
-         if (m_player->m_pininput.GetNudgeXSensor(i)->IsMapped() && m_nudgeXRawPlot[i].HasData())
-            ImPlot::PlotLine(std::format("Sensor X{} - {}", i + 1, m_player->m_pininput.GetNudgeXSensor(i)->GetMappingLabel()).c_str(),
-               &m_nudgeXRawPlot[i].m_data[0].x, //
-               &m_nudgeXRawPlot[i].m_data[0].y, //
-               m_nudgeXRawPlot[i].m_data.size(), { ImPlotProp_Offset, m_nudgeXRawPlot[i].m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -5.f, 5.f, ImGuiCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always);
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-      ImPlot::PlotLine("Nudge X", &m_nudgeXPlot.m_data[0].x, &m_nudgeXPlot.m_data[0].y, m_nudgeXPlot.m_data.size(),
+      ImPlot::PlotLine("X Position (mm)", &m_cabXPlot.m_data[0].x, &m_cabXPlot.m_data[0].y, m_cabXPlot.m_data.size(),
+         { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
+      ImPlot::PlotLine("X Acceleration (m/s^2)", &m_nudgeXPlot.m_data[0].x, &m_nudgeXPlot.m_data[0].y, m_nudgeXPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
    }
-   ImGui::PopFont();
 
-   ImGui::SameLine();
-   
-   renderSensorInfo(0);
-
-   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
    if (ImPlot::BeginPlot("##NudgeY", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
-      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_AuxDefault);
+      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeYPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y2, -0.3f, 0.3f, ImGuiCond_Always);
-      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-      for (int i = 0; i < 2; i++)
-         if (m_player->m_pininput.GetNudgeYSensor(i)->IsMapped() && m_nudgeYRawPlot[i].HasData())
-            ImPlot::PlotLine(std::format("Sensor Y{} - {}", i + 1, m_player->m_pininput.GetNudgeYSensor(i)->GetMappingLabel()).c_str(),
-               &m_nudgeYRawPlot[i].m_data[0].x, //
-               &m_nudgeYRawPlot[i].m_data[0].y, //
-               m_nudgeYRawPlot[i].m_data.size(), { ImPlotProp_Offset, m_nudgeYRawPlot[i].m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -5.f, 5.f, ImGuiCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always);
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-      ImPlot::PlotLine("Nudge Y", &m_nudgeYPlot.m_data[0].x, &m_nudgeYPlot.m_data[0].y, m_nudgeYPlot.m_data.size(),
+      ImPlot::PlotLine("Y Position (mm)", &m_cabYPlot.m_data[0].x, &m_cabYPlot.m_data[0].y, m_cabYPlot.m_data.size(),
+         { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
+      ImPlot::PlotLine("Y Acceleration (m/s^2)", &m_nudgeYPlot.m_data[0].x, &m_nudgeYPlot.m_data[0].y, m_nudgeYPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
    }
+
    ImGui::PopFont();
-
-   ImGui::SameLine();
-
-   renderSensorInfo(1);
-
    ImPlot::PopStyleColor();
    ImGui::End();
 }

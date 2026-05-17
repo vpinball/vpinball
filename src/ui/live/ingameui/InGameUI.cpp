@@ -108,7 +108,6 @@ void InGameUI::Open(const string& page)
    assert(!IsOpened());
    Navigate(page);
    m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN;
-   m_prevActionState = m_player->m_pininput.GetActionState();
 }
 
 void InGameUI::Close()
@@ -169,10 +168,8 @@ void InGameUI::Update()
          m_player->SetPlayState(true);
       }
 
-      const InputManager::ActionState state = m_player->m_pininput.GetActionState();
-      HandlePageInput(state);
-      HandleLegacyFlyOver(state);
-      m_prevActionState = state;
+      HandlePageInput();
+      HandleLegacyFlyOver();
    }
 
    // Copy list as it may be modified when the page is updated (for example when a navigation event is triggered)
@@ -184,7 +181,87 @@ void InGameUI::Update()
       page->Render(elapsed);
 }
 
-void InGameUI::HandlePageInput(const InputManager::ActionState &state)
+void InGameUI::OnUIUpAction()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   const bool wasFlipperNav = m_useFlipperNav;
+   m_useFlipperNav = true;
+   m_flipperNavStart = msec();
+   m_flipperNavRepeatCount = 0;
+   SDL_HideCursor();
+   GetActivePage()->SelectPrevItem();
+   if (!wasFlipperNav)
+      GetActivePage()->SelectNextItem();
+}
+
+void InGameUI::OnUIDownAction()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   const bool wasFlipperNav = m_useFlipperNav;
+   m_useFlipperNav = true;
+   m_flipperNavStart = msec();
+   m_flipperNavRepeatCount = 0;
+   SDL_HideCursor();
+   GetActivePage()->SelectNextItem();
+   if (!wasFlipperNav)
+      GetActivePage()->SelectPrevItem();
+}
+
+void InGameUI::OnUILeftAction()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   if (m_useFlipperNav)
+      GetActivePage()->AdjustItem(-1, true);
+}
+
+void InGameUI::OnUIRightAction()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   if (m_useFlipperNav)
+      GetActivePage()->AdjustItem(1, true);
+}
+
+void InGameUI::OnUIResetToDefaults()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   GetActivePage()->ResetToDefaults();
+}
+
+void InGameUI::OnUICancelChanges()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   GetActivePage()->ResetToStoredValues();
+}
+
+void InGameUI::OnUISaveChanges()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   GetActivePage()->Save();
+}
+
+void InGameUI::OnUINavigateBack()
+{
+   if (ImGui::IsAnyItemActive())
+      return;
+
+   NavigateBack();
+}
+
+void InGameUI::HandlePageInput()
 {
    // Disable keyboard shortcut if no control editing is in progress
    if (ImGui::IsAnyItemActive())
@@ -201,80 +278,33 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    // Allow pages to force flipper navigation (needed by anaglyph calibration)
    for (const auto &page : m_activePages)
       m_useFlipperNav |= page->IsFlipperNavNeeded();
-   const uint32_t flipperNavRepeat = m_flipperNavRepeatCount == 0 ? 500 : m_flipperNavRepeatCount == 1 ? 250 : 125;
 
+   // Handle continuous press navigation
    const uint32_t now = msec();
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetUIUpActionId(), m_prevActionState))
-   {
-      const bool wasFlipperNav = m_useFlipperNav;
-      m_useFlipperNav = true;
-      m_flipperNavStart = now;
-      m_flipperNavRepeatCount = 0;
-      SDL_HideCursor();
-      GetActivePage()->SelectPrevItem();
-      if (!wasFlipperNav)
-         GetActivePage()->SelectNextItem();
-   }
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIUpActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
+   const uint32_t flipperNavRepeat = m_flipperNavRepeatCount == 0 ? 500 : m_flipperNavRepeatCount == 1 ? 250 : 125;
+   if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIUpActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
       GetActivePage()->SelectPrevItem();
    }
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetUIDownActionId(), m_prevActionState))
-   {
-      const bool wasFlipperNav = m_useFlipperNav;
-      m_useFlipperNav = true;
-      m_flipperNavStart = now;
-      m_flipperNavRepeatCount = 0;
-      SDL_HideCursor();
-      GetActivePage()->SelectNextItem();
-      if (!wasFlipperNav)
-         GetActivePage()->SelectPrevItem();
-   }
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIDownActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
+   else if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIDownActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
       GetActivePage()->SelectNextItem();
    }
 
-   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetUILeftActionId(), m_prevActionState))
-      GetActivePage()->AdjustItem(-1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUILeftActionId()))
+   // Handle continuous press item adjustment
+   if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUILeftActionId()))
       GetActivePage()->AdjustItem(-1, false);
-
-   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetUIRightActionId(), m_prevActionState))
-      GetActivePage()->AdjustItem(1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetUIRightActionId()))
+   else if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIRightActionId()))
       GetActivePage()->AdjustItem(1, false);
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetLaunchBallActionId(), m_prevActionState))
-      GetActivePage()->ResetToDefaults();
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetAddCreditActionId(0), m_prevActionState))
-   {
-      // FIXME
-      /* if (g_app->m_commandLineProcessor.m_povEdit)
-         g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-      else*/
-         GetActivePage()->ResetToStoredValues();
-   }
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))
-      GetActivePage()->Save();
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetOpenInGameUIActionId(), m_prevActionState))
-      NavigateBack();
-
-   if (state.IsKeyPressed(m_player->m_pininput.GetExitGameActionId(), m_prevActionState))
-      NavigateBack();
 }
 
-// Legacy keyboard fly camera when in ingame option. Remove ?
-void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
+// Legacy keyboard fly camera when in ingame option
+// FIXME Remove
+void InGameUI::HandleLegacyFlyOver()
 {
    if (!m_player->m_ptable->m_settings.GetPlayer_EnableCameraModeFlyAround())
       return;
@@ -302,14 +332,14 @@ void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
          m_player->m_renderer->m_inc -= 0.01f;
    }
 
-   if (state.IsKeyDown(m_player->m_pininput.GetLeftNudgeActionId()))
+   if (m_player->m_pininput.IsPressed(m_player->m_pininput.GetLeftNudgeActionId()))
       m_player->m_ptable->GetViewSetup().mViewportRotation -= 1.0f;
 
-   if (state.IsKeyDown(m_player->m_pininput.GetRightNudgeActionId()))
+   if (m_player->m_pininput.IsPressed(m_player->m_pininput.GetRightNudgeActionId()))
       m_player->m_ptable->GetViewSetup().mViewportRotation += 1.0f;
 }
 
-bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool, bool)>& handler)
+bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler)
 {
    if (IsOpened())
       return false;

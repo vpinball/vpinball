@@ -7,6 +7,7 @@
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/ball.h"
+#include "physics/cabinet/NudgeHandler.h"
 #include "renderer/Renderer.h"
 #include "ui/win/WinEditor.h"
 
@@ -49,7 +50,7 @@ STDMETHODIMP ScriptGlobalTable::EndModal()
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
    if (g_pplayer)
-      g_pplayer->m_physics->Nudge(Angle, Force);
+      g_pplayer->m_pininput.m_nudgeHandler->ApplyKeyboardImpulse(Angle, Force);
    return S_OK;
 }
 
