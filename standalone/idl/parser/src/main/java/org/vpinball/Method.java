@@ -125,6 +125,16 @@ public class Method {
         return cArgs;
     }
 
+    public int getMinRequiredArgs() {
+        int required = 0;
+        for (Param param:paramList) {
+            if (param.getParamType() == ParamType.OUT_RETVAL) continue;
+            if (param.getParamType() == ParamType.IN && (param.hasDefaultValue() || param.isOptional())) continue;
+            required++;
+        }
+        return required;
+    }
+
     public boolean hasDefaultValueParams() {
         for (Param param:paramList) {
             if (param.hasDefaultValue()) {

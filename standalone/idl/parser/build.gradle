@@ -1,20 +1,16 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-    dependencies {
-    }
-}
-
-
 plugins {
     id 'java'
-    id 'eclipse'
+    id 'application'
 }
 
-sourceCompatibility=11
-targetCompatibility=11
-assert System.properties["java.specification.version"] == "11" || "12" || "13" || "14" || "15" || "16" || "17" || "18"
-
-group = "org.vpinball"
+group = 'org.vpinball'
 version = '0.5'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+application {
+    mainClass = 'org.vpinball.IDLParserToCpp'
+}
