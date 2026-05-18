@@ -5,6 +5,7 @@
 #include "MemoryStatus.h"
 #include "StackTrace.h"
 #include <cstdio>
+#include <stdlib.h>
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -324,6 +325,34 @@ namespace
 
       return returnCode;
    }
+
+#ifdef CRASH_HANDLER
+   void __cdecl PureCallHandler()
+   {
+      ShowError("Pure Virtual Function Call");
+
+      CONTEXT Context = {};
+#ifdef _WIN64
+      RtlCaptureContext(&Context);
+#else
+      Context.ContextFlags = CONTEXT_CONTROL;
+
+      __asm
+      {
+      Label:
+         mov[Context.Ebp], ebp;
+         mov[Context.Esp], esp;
+         mov eax, [Label];
+         mov[Context.Eip], eax;
+      }
+#endif
+
+      char callStack[2048] = {};
+      rde::StackTrace::GetCallStack(&Context, true, callStack, sizeof(callStack) - 1);
+
+      ShowError(callStack);
+   }
+#endif
 } // namespace
 
 namespace rde
@@ -331,6 +360,9 @@ namespace rde
    void CrashHandler::Init()
    {
       SetUnhandledExceptionFilter(MyExceptionFilter);
+#ifdef CRASH_HANDLER
+      _set_purecall_handler(PureCallHandler);
+#endif
    }
 
    void CrashHandler::SetMiniDumpFileName(const string& name)

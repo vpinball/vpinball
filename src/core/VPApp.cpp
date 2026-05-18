@@ -10,7 +10,6 @@
 #include "plugins/VPXPlugin.h"
 
 #ifdef CRASH_HANDLER
-#include "utils/StackTrace.h"
 #include "utils/CrashHandler.h"
 #include "utils/BlackBox.h"
 #endif
@@ -66,36 +65,6 @@
 #else
    #define OVERRIDE
 #endif
-#endif
-
-#ifdef CRASH_HANDLER
-extern "C" int __cdecl _purecall()
-{
-   ShowError("Pure Virtual Function Call");
-
-   CONTEXT Context = {};
-#ifdef _WIN64
-   RtlCaptureContext(&Context);
-#else
-   Context.ContextFlags = CONTEXT_CONTROL;
-
-   __asm
-   {
-   Label:
-      mov[Context.Ebp], ebp;
-      mov[Context.Esp], esp;
-      mov eax, [Label];
-      mov[Context.Eip], eax;
-   }
-#endif
-
-   char callStack[2048] = {};
-   rde::StackTrace::GetCallStack(&Context, true, callStack, sizeof(callStack) - 1);
-
-   ShowError(callStack);
-
-   return 0;
-}
 #endif
 
 #if !defined(__STANDALONE__)
