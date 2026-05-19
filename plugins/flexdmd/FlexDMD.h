@@ -160,7 +160,7 @@ private:
    int m_height = 32;
    Group* m_pStage;
    RenderMode m_renderMode = RenderMode_DMD_GRAY_4;
-   uint32_t m_dmdColor = 0x00FF5820;
+   uint32_t m_dmdColor = RGB(0xFF, 0x58, 0x20);
    AssetManager* m_pAssetManager;
    bool m_show = true;
    bool m_run = false;
