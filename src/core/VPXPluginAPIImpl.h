@@ -95,7 +95,7 @@ private:
 
    // Plugin logging API
    static void MSGPIAPI OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);
-   static void MSGPIAPI PluginLog(unsigned int level, const char* message);
+   static void MSGPIAPI PluginLog(const char* source, const char* func, int line, unsigned int level, const char* message);
 
    LoggingPluginAPI m_loggingApi;
    const unsigned int m_getLoggingAPIMsgId;

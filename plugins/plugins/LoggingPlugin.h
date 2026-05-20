@@ -32,8 +32,16 @@
 
 typedef struct LoggingPluginAPI
 {
-   void (MSGPIAPI *Log)(unsigned int level, const char* message);
+   void (MSGPIAPI *Log)(const char* source, const char* func, int line, unsigned int level, const char* message);
 } LoggingPluginAPI;
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+   #define LPI_FUNC __FUNCTION__
+#elif defined(__GNUC__) || defined(__clang__)
+   #define LPI_FUNC __PRETTY_FUNCTION__
+#else
+   #define LPI_FUNC __func__
+#endif
 
 
 
@@ -52,73 +60,79 @@ typedef struct LoggingPluginAPI
 #include <string>
 #include <sstream>
 
-#define LPI_USE_CPP() extern void LPILog_CPP(const unsigned int level, const std::string& s); extern void LPILog_CPP(const unsigned int level, const std::stringstream& s)
+#define LPI_USE_CPP() extern void LPILog_CPP(const char* func, int line, const unsigned int level, const std::string& s); extern void LPILog_CPP(const char* func, int line, const unsigned int level, const std::stringstream& s)
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_DEBUG
-#define LPI_LOGD_CPP(x) LPILog_CPP(LPI_LVL_DEBUG, x)
+#define LPI_LOGD_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_DEBUG, x)
 #else
-#define LPI_LOGD_CPP(x) LPILog_CPP(LPI_LVL_DEBUG, ""s)
+#define LPI_LOGD_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_DEBUG, ""s)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_INFO
-#define LPI_LOGI_CPP(x) LPILog_CPP(LPI_LVL_INFO, x)
+#define LPI_LOGI_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_INFO, x)
 #else
-#define LPI_LOGI_CPP(x) LPILog_CPP(LPI_LVL_INFO, ""s)
+#define LPI_LOGI_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_INFO, ""s)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_WARN
-#define LPI_LOGW_CPP(x) LPILog_CPP(LPI_LVL_WARN, x)
+#define LPI_LOGW_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_WARN, x)
 #else
-#define LPI_LOGW_CPP(x) LPILog_CPP(LPI_LVL_WARN, ""s)
+#define LPI_LOGW_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_WARN, ""s)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_ERROR
-#define LPI_LOGE_CPP(x) LPILog_CPP(LPI_LVL_ERROR, x)
+#define LPI_LOGE_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_ERROR, x)
 #else
-#define LPI_LOGE_CPP(x) LPILog_CPP(LPI_LVL_ERROR, ""s)
+#define LPI_LOGE_CPP(x) LPILog_CPP(LPI_FUNC, __LINE__, LPI_LVL_ERROR, ""s)
 #endif
 
 #define LPI_IMPLEMENT_CPP \
    LoggingPluginAPI* loggingApi = nullptr; \
-   void LPILog_CPP(const unsigned int level, const std::string& s) { \
+   const char* loggingSource = ""; \
+   void LPILog_CPP(const char* func, int line, const unsigned int level, const std::string& s) { \
       if (loggingApi != nullptr && !s.empty()) { \
-         loggingApi->Log(level, s.c_str()); \
+         loggingApi->Log(loggingSource, func, line, level, s.c_str()); \
       } \
    } \
-   void LPILog_CPP(const unsigned int level, const std::stringstream& s) { \
+   void LPILog_CPP(const char* func, int line, const unsigned int level, const std::stringstream& s) { \
       if (loggingApi != nullptr && !s.str().empty()) { \
-         loggingApi->Log(level, s.str().c_str()); \
+         loggingApi->Log(loggingSource, func, line, level, s.str().c_str()); \
       } \
    } \
    void LPISetup(unsigned int endpointId, const MsgPluginAPI* msgApi) { \
       const unsigned int getLoggingApiId = msgApi->GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API); \
       msgApi->BroadcastMsg(endpointId, getLoggingApiId, &loggingApi); \
       msgApi->ReleaseMsgID(getLoggingApiId); \
+      MsgEndpointInfo info = {}; \
+      msgApi->GetEndpointInfo(endpointId, &info); \
+      if (info.id != nullptr) \
+         loggingSource = info.id; \
    }
 #endif
 
 
-#define LPI_USE() extern void LPILog(unsigned int level, const char* format, ...)
-#if LOGPI_DEFAULT_LEVEL <= LPI_LVL_DEBUG 
-#define LPI_LOGD(...) LPILog(LPI_LVL_DEBUG, __VA_ARGS__)
+#define LPI_USE() extern void LPILog(const char* func, int line, unsigned int level, const char* format, ...)
+#if LOGPI_DEFAULT_LEVEL <= LPI_LVL_DEBUG
+#define LPI_LOGD(...) LPILog(LPI_FUNC, __LINE__, LPI_LVL_DEBUG, __VA_ARGS__)
 #else
 #define LPI_LOGD(...)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_INFO
-#define LPI_LOGI(...) LPILog(LPI_LVL_INFO, __VA_ARGS__)
+#define LPI_LOGI(...) LPILog(LPI_FUNC, __LINE__, LPI_LVL_INFO, __VA_ARGS__)
 #else
 #define LPI_LOGI(...)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_WARN
-#define LPI_LOGW(...) LPILog(LPI_LVL_WARN, __VA_ARGS__)
+#define LPI_LOGW(...) LPILog(LPI_FUNC, __LINE__, LPI_LVL_WARN, __VA_ARGS__)
 #else
 #define LPI_LOGW(...)
 #endif
 #if LOGPI_DEFAULT_LEVEL <= LPI_LVL_ERROR
-#define LPI_LOGE(...) LPILog(LPI_LVL_ERROR, __VA_ARGS__)
+#define LPI_LOGE(...) LPILog(LPI_FUNC, __LINE__, LPI_LVL_ERROR, __VA_ARGS__)
 #else
 #define LPI_LOGE(...)
 #endif
 
 #define LPI_IMPLEMENT \
    LoggingPluginAPI* loggingApi = nullptr; \
-   void LPILog(unsigned int level, const char* format, ...) { \
+   const char* loggingSource = ""; \
+   void LPILog(const char* func, int line, unsigned int level, const char* format, ...) { \
       if (loggingApi != nullptr) { \
          va_list args; \
          va_start(args, format); \
@@ -129,7 +143,7 @@ typedef struct LoggingPluginAPI
          if (size > 0) { \
             char* buffer = static_cast<char*>(malloc(size + 1)); \
             vsnprintf(buffer, size + 1, format, args); \
-            loggingApi->Log(level, buffer); \
+            loggingApi->Log(loggingSource, func, line, level, buffer); \
             free(buffer); \
          } \
          va_end(args); \
@@ -139,4 +153,8 @@ typedef struct LoggingPluginAPI
       const unsigned int getLoggingApiId = msgApi->GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API); \
       msgApi->BroadcastMsg(endpointId, getLoggingApiId, &loggingApi); \
       msgApi->ReleaseMsgID(getLoggingApiId); \
+      MsgEndpointInfo info = {}; \
+      msgApi->GetEndpointInfo(endpointId, &info); \
+      if (info.id != nullptr) \
+         loggingSource = info.id; \
    }

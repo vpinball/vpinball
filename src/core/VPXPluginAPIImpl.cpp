@@ -235,17 +235,23 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 ///////////////////////////////////////////////////////////////////////////////
 // Shared logging support for plugin API
 
-void MSGPIAPI VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
+void MSGPIAPI VPXPluginAPIImpl::PluginLog(const char* source, const char* func, int line, unsigned int level, const char* message)
 {
-   VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
+   plog::Severity severity;
    switch (level)
    {
-   case LPI_LVL_DEBUG: PLOGD << message; break;
-   case LPI_LVL_INFO: PLOGI << message; break;
-   case LPI_LVL_WARN: PLOGW << message; break;
-   case LPI_LVL_ERROR: PLOGE << message; break;
-   default: assert(false); PLOGE << "Invalid plugin log message level";
+   case LPI_LVL_DEBUG: severity = plog::debug; break;
+   case LPI_LVL_INFO: severity = plog::info; break;
+   case LPI_LVL_WARN: severity = plog::warning; break;
+   case LPI_LVL_ERROR: severity = plog::error; break;
+   default: assert(false); severity = plog::error; message = "Invalid plugin log message level"; break;
    }
+   auto* const logger = plog::get<PLOG_DEFAULT_INSTANCE_ID>();
+   if (logger == nullptr || !logger->checkSeverity(severity))
+      return;
+   const std::string cleanFunc = plog::util::processFuncName(func);
+   const std::string where = (source != nullptr && *source != '\0') ? (std::string(source) + ':' + cleanFunc) : cleanFunc;
+   *logger += plog::Record(severity, where.c_str(), static_cast<size_t>(line), "", nullptr, PLOG_DEFAULT_INSTANCE_ID).ref() << message;
 }
 
 
