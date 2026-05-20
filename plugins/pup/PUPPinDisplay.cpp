@@ -447,6 +447,14 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                               pScreen->SetFadeStep(fs);
                         }
                         break;
+                     case 57:
+                        // "Overlay Hide" (OH) toggle for a screen that has text/label overlays.
+                        // PinUp Player 2.0+ only; older players ignore it.
+                        // { "mt":301, "SN": XX, "FN":57, "OH":0/1 } - OH 1 = hide overlay, 0 = show
+                        // We don't act on it yet, so sending it produces no visible change on screen.
+                        // TODO implement overlay hide/show toggling the screen's overlay (HUD) visibility
+                        LOGW(std::format("Overlay hide (OH) toggle not implemented, ignoring: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+                        break;
                      default:
                         NOT_IMPLEMENTED(std::format("Unknown function not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
                         break;
