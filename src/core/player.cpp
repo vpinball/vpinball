@@ -1279,8 +1279,7 @@ void Player::DestroyBall(Ball *pBall)
       m_pactiveball = m_vball.empty() ? nullptr : m_vball.front();
    if (m_pactiveballDebug == pBall)
       m_pactiveballDebug = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_liveUI->m_ballControl.GetDraggedBall() == pBall)
-      m_liveUI->m_ballControl.SetDraggedBall(nullptr);
+   m_liveUI->m_ballControl.NotifyBallDestroyed(pBall);
 }
 
 void Player::SetCabinetAutoFitMode(int mode)

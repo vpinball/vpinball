@@ -5,6 +5,7 @@
 
 #include "parts/ball.h"
 #include "renderer/Renderer.h"
+#include "math/ModelViewProj.h"
 #include "ui/live/LiveUI.h"
 
 void BallControl::LoadSettings(const Settings& settings)
@@ -73,6 +74,52 @@ void BallControl::Update(const int width, const int height)
    
    if (leftFlipperPressed)
       EndBallDrag();
+
+   // Transient visual indicator (only while the FPS/stats overlay is shown): a ring on the current drag
+   // target so it is clear which ball is grabbed (yellow = grabbable, red = locked in a kicker/trough and
+   // cannot be dragged, green = being dragged). Shown at full alpha when a ball is selected or while it is
+   // dragged, then fading out over a few seconds.
+   constexpr float ringFadeSeconds = 3.f;
+   constexpr int ringPeakAlpha = 200;
+   if (m_draggedBall != nullptr && m_draggedBall != m_ringHighlightBall) // new selection
+      m_ringHighlight = ringFadeSeconds;
+   m_ringHighlightBall = m_draggedBall;
+   if (m_dragging) // keep fully visible while dragging
+      m_ringHighlight = ringFadeSeconds;
+
+   if (m_liveUI.IsShowingFPSDetails() && (m_mode == DragBall || m_mode == ThrowDraggedBall)
+      && m_draggedBall != nullptr && m_ringHighlight > 0.f)
+   {
+      const Matrix3D mvp = player->m_renderer->GetMVP().GetModelViewProj(0);
+      auto project = [&mvp, width, height](const Vertex3Ds& v, ImVec2& out)
+      {
+         const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
+         const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
+         const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
+         if (wp <= 1e-10f)
+            return false;
+         out = ImVec2((wp + xp) * (static_cast<float>(width) * 0.5f) / wp, (wp - yp) * (static_cast<float>(height) * 0.5f) / wp);
+         return true;
+      };
+      ImVec2 center, edge;
+      if (project(m_draggedBall->GetPosition(), center)
+         && project(m_draggedBall->GetPosition() + Vertex3Ds(m_draggedBall->GetRadius(), 0.f, 0.f), edge))
+      {
+         const float dx = edge.x - center.x;
+         const float dy = edge.y - center.y;
+         float radius = sqrtf(dx * dx + dy * dy) * 1.5f;
+         if (radius < 10.f)
+            radius = 10.f;
+         const int alpha = static_cast<int>(ringPeakAlpha * clamp(m_ringHighlight / ringFadeSeconds, 0.f, 1.f));
+         const bool locked = m_draggedBall->m_hitBall.m_d.m_lockedInKicker;
+         const ImU32 col = m_dragging ? IM_COL32(80, 255, 80, alpha)
+            : (locked ? IM_COL32(255, 80, 80, alpha) : IM_COL32(255, 220, 60, alpha));
+         ImGui::GetForegroundDrawList()->AddCircle(center, radius, col, 24, 3.f);
+      }
+   }
+   m_ringHighlight -= ImGui::GetIO().DeltaTime;
+   if (m_ringHighlight < 0.f)
+      m_ringHighlight = 0.f;
 }
 
 void BallControl::HandleDragBall(const int width, const int height)
