@@ -16,7 +16,7 @@ Visual Pinball X installation is made of 3 parts: the application, its preferenc
 - The settings
   - Windows: `C:\Users\xxx\AppData\Roaming\...`
   - MacOS: `/Users/xxx/Library/Application Support/VPinballX`
-  - Linux: `/home/xxx/.local/shared/VPinballX`
+  - Linux: `/home/xxx/.local/share/VPinballX`
   - Android & Meta Quest: `/data/data/org.vpinball.app/files/`
   - iOS: preferences are stored in the app's Documents directory
 - The 'Tables' folder to store all table datas
