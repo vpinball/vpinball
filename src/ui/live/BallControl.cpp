@@ -35,6 +35,15 @@ void BallControl::SetMode(Mode mode)
    m_mode = mode;
 }
 
+bool BallControl::IsDraggedBallSelectable() const
+{
+   // A ball is only a valid drag target while it is in active play: visible and not held in a kicker
+   // (trough/saucer/lock). Checked at use time rather than registration because a ball's state changes
+   // (e.g. trough balls are briefly unlocked while being shuffled along the trough). Matches the physics
+   // engine, which skips locked balls in HitBall::UpdateVelocities.
+   return m_draggedBall != nullptr && m_draggedBall->m_d.m_visible && !m_draggedBall->m_hitBall.m_d.m_lockedInKicker;
+}
+
 void BallControl::Update(const int width, const int height)
 {
    using enum Mode;
@@ -54,7 +63,7 @@ void BallControl::Update(const int width, const int height)
       break;
 
    case DragBall:
-      if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperPressed)
+      if (IsDraggedBallSelectable() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperPressed)
          HandleDragBall(width, height);
       break;
       
