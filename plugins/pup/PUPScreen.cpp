@@ -274,10 +274,18 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
 void PUPScreen::SetPage(int pagenum, int seconds)
 {
    assert(std::this_thread::get_id() == m_apiThread);
+
+   // Reapply each label's on-show default ONLY when the page actually changes. A same-page
+   // hold (e.g. KOTH ball-save LabelShowPage(5,1,3)) must leave script-toggled labels alone -
+   // that was the disappearing-bonus-labels bug.
+   const bool pageChanged = (pagenum != m_pagenum);
    m_pagenum = pagenum;
 
-   for (const auto& label : m_labels)
-      label->SetVisible(label->GetOnShowVisible());
+   if (pageChanged)
+   {
+      for (const auto& label : m_labels)
+         label->SetVisible(label->GetOnShowVisible());
+   }
 
    if (seconds == 0)
    {
@@ -495,10 +503,10 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
 
    UpdateTimers();
 
-   // Pop screen window are dynamically created/destroyed when playing starts/ends
-   if (IsPop() && !IsMainPlaying())
-      return;
-
+   // ForcePop / ForcePopBack only affect z-order (topmost), handled by the render-order tiers
+   // in PUPManager::Render. The screen still renders its background, overlay, labels and static
+   // image when no main video is playing, so packs that drive a screen purely via background
+   // videos, overlays, or labels stay visible.
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
 
