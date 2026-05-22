@@ -6542,12 +6542,19 @@ STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
 std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOption(
    BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values)
 {
-   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
-      return std::nullopt;
-   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
-      return std::nullopt;
-
    const string name = MakeString(optionName);
+
+   if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
+   {
+      PLOGE << "Table.Option(\"" << name << "\"): the values argument must be omitted or an Array";
+      return std::nullopt;
+   }
+   if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
+   {
+      PLOGE << "Table.Option(\"" << name << "\"): invalid arguments (minValue=" << minValue << ", maxValue=" << maxValue << ", step=" << step << ", defaultValue=" << defaultValue
+            << "); require minValue < maxValue, step > 0, and minValue <= defaultValue <= maxValue";
+      return std::nullopt;
+   }
 
    // Prevent invalid characters in the option id
    string optId = trim_string(name);
@@ -6567,12 +6574,18 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
    if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
    {
       if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
+      {
+         PLOGE << "Table.Option(\"" << name << "\"): with a values Array, step must be 1 and minValue/maxValue must be integers (minValue=" << minValue << ", maxValue=" << maxValue << ", step=" << step << ")";
          return std::nullopt;
+      }
       const int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
       LONG lbound, ubound;
       if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
+      {
+         PLOGE << "Table.Option(\"" << name << "\"): the values Array must have exactly " << nValues << " entries to cover the minValue..maxValue range";
          return std::nullopt;
+      }
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
       literals.reserve(nValues);
@@ -6623,6 +6636,7 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
       return propId;
    }
 
+   PLOGE << "Table.Option(\"" << name << "\"): internal error, could not register option";
    return std::nullopt;
 }
 
@@ -6657,6 +6671,7 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
          return S_OK;
       }
    }
+   PLOGE << "Table.Option(\"" << MakeString(optionName) << "\"): internal error, registered option not found";
    return E_FAIL;
 }
 
