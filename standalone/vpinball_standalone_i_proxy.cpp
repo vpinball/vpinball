@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "core/ScriptGlobalTable.h"
 #include "olectl.h"
+#include <libwinevbs/libwinevbs.h>
 
 #include "parts/ball.h"
 #include "parts/bumper.h"
@@ -50,6 +51,15 @@ STDMETHODIMP Collection::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UIN
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Collection_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_NEWENUM: return "_NewEnum";
+		case DISPID_VALUE: return "Item";
+		case 8000: return "Count";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -108,7 +118,7 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Collection_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Collection_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -278,6 +288,103 @@ STDMETHODIMP PinTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *PinTable_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 3: return "GlassHeight";
+		case 340: return "PlayfieldMaterial";
+		case 5: return "BackdropColor";
+		case 215: return "SlopeMax";
+		case 6: return "SlopeMin";
+		case DISPID_Table_Inclination: return "Inclination";
+		case DISPID_Table_FieldOfView: return "FieldOfView";
+		case DISPID_Table_Layback: return "Layback";
+		case 99: return "Rotation";
+		case 100: return "Scalex";
+		case 101: return "Scaley";
+		case 108: return "Scalez";
+		case 102: return "Xlatex";
+		case 103: return "Xlatey";
+		case 110: return "Xlatez";
+		case 1100: return "Gravity";
+		case 1101: return "Friction";
+		case 1708: return "Elasticity";
+		case 1709: return "ElasticityFalloff";
+		case 1710: return "Scatter";
+		case 1102: return "DefaultScatter";
+		case 1103: return "NudgeTime";
+		case 1104: return "PlungerNormalize";
+		case 1105: return "PhysicsLoopTime";
+		case 1107: return "PlungerFilter";
+		case 7: return "YieldTime";
+		case DISPID_Image3: return "BallImage";
+		case DISPID_Image2: return "BackdropImage_DT";
+		case DISPID_Image6: return "BackdropImage_FS";
+		case DISPID_Image8: return "BackdropImage_FSS";
+		case 459: return "BackdropImageApplyNightDay";
+		case DISPID_Image5: return "ColorGradeImage";
+		case DISPID_Table_Width: return "Width";
+		case DISPID_Table_Height: return "Height";
+		case DISPID_Table_MaxSeparation: return "MaxSeparation";
+		case DISPID_Table_ZPD: return "ZPD";
+		case DISPID_Table_Offset: return "Offset";
+		case 427: return "GlobalStereo3D";
+		case 438: return "BallDecalMode";
+		case DISPID_Image: return "Image";
+		case 1711: return "FileName";
+		case DISPID_Name: return "Name";
+		case 394: return "EnableAntialiasing";
+		case 396: return "EnableAO";
+		case 395: return "EnableFXAA";
+		case 590: return "EnableSSR";
+		case 450: return "BloomStrength";
+		case DISPID_Image4: return "BallFrontDecal";
+		case DISPID_Table_OverridePhysics: return "OverridePhysics";
+		case 584: return "OverridePhysicsFlippers";
+		case 13432: return "EnableEMReels";
+		case 13433: return "EnableDecals";
+		case 13434: return "ShowDT";
+		case 625: return "ShowFSS";
+		case 431: return "ReflectElementsOnPlayfield";
+		case DISPID_Image7: return "EnvironmentImage";
+		case 1714: return "BackglassMode";
+		case 200: return "Accelerometer";
+		case 201: return "AccelNormalMount";
+		case 202: return "AccelerometerAngle";
+		case 209: return "GlobalDifficulty";
+		case 214: return "TableHeight";
+		case 217: return "DeadZone";
+		case 558: return "LightAmbient";
+		case 559: return "Light0Emission";
+		case 564: return "LightHeight";
+		case 565: return "LightRange";
+		case 566: return "EnvironmentEmissionScale";
+		case 567: return "LightEmissionScale";
+		case 568: return "AOScale";
+		case 569: return "SSRScale";
+		case 579: return "TableSoundVolume";
+		case 580: return "TableMusicVolume";
+		case 585: return "TableAdaptiveVSync";
+		case 1700: return "BallReflection";
+		case 1707: return "PlayfieldReflectionStrength";
+		case 1704: return "BallTrail";
+		case 1705: return "TrailStrength";
+		case 1712: return "BallPlayfieldReflectionScale";
+		case 1713: return "DefaultBulbIntensityScale";
+		case 420: return "DetailLevel";
+		case 436: return "NightDay";
+		case 398: return "GlobalAlphaAcc";
+		case 588: return "GlobalDayNight";
+		case 219: return "Version";
+		case 38: return "VersionMajor";
+		case 39: return "VersionMinor";
+		case 40: return "VersionRevision";
+		case 24: return "VPBuildVersion";
+		case 230: return "Option";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -2071,7 +2178,7 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "PinTable_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", PinTable_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -2336,6 +2443,242 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *ScriptGlobalTable_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 4: return "LeftFlipperKey";
+		case 5: return "RightFlipperKey";
+		case 825: return "StagedLeftFlipperKey";
+		case 826: return "StagedRightFlipperKey";
+		case 6: return "LeftTiltKey";
+		case 7: return "RightTiltKey";
+		case 8: return "CenterTiltKey";
+		case 9: return "PlungerKey";
+		case 12: return "StartGameKey";
+		case 20: return "AddCreditKey";
+		case 67: return "AddCreditKey2";
+		case 30: return "MechanicalTilt";
+		case 31: return "LeftMagnaSave";
+		case 32: return "RightMagnaSave";
+		case 34: return "ExitGame";
+		case 803: return "LockbarKey";
+		case 808: return "JoyCustomKey";
+		case 809: return "VPXActionKey";
+		case 3: return "PlaySound";
+		case 10: return "PlayMusic";
+		case 15: return "MusicVolume";
+		case 11: return "EndMusic";
+		case 13: return "UserDirectory";
+		case 256: return "TablesDirectory";
+		case 257: return "MusicDirectory";
+		case 258: return "ScriptsDirectory";
+		case 259: return "PlatformOS";
+		case 260: return "PlatformCPU";
+		case 261: return "PlatformBits";
+		case 262: return "ShowCursor";
+		case 14: return "GetPlayerHWnd";
+		case 16: return "StopSound";
+		case 17: return "SaveValue";
+		case 18: return "LoadValue";
+		case 19: return "ActiveBall";
+		case 22: return "GameTime";
+		case 263: return "PreciseGameTime";
+		case 232: return "FrameIndex";
+		case 225: return "SystemTime";
+		case 823: return "GetCustomParam";
+		case 824: return "Setting";
+		case 23: return "GetTextFile";
+		case 25: return "BeginModal";
+		case 26: return "EndModal";
+		case DISPID_Table_Nudge: return "Nudge";
+		case 804: return "NudgeGetCalibration";
+		case 805: return "NudgeSetCalibration";
+		case 806: return "NudgeSensorStatus";
+		case 807: return "NudgeTiltStatus";
+		case 33: return "FireKnocker";
+		case 37: return "QuitPlayer";
+		case 13434: return "ShowDT";
+		case 625: return "ShowFSS";
+		case 436: return "NightDay";
+		case 41: return "GetBalls";
+		case 42: return "GetElements";
+		case 43: return "GetElementByName";
+		case 48: return "ActiveTable";
+		case 44: return "DMDWidth";
+		case 45: return "DMDHeight";
+		case 46: return "DMDPixels";
+		case 47: return "DMDColoredPixels";
+		case 219: return "Version";
+		case 38: return "VersionMajor";
+		case 39: return "VersionMinor";
+		case 40: return "VersionRevision";
+		case 24: return "VPBuildVersion";
+		case 249: return "GetSerialDevices";
+		case 250: return "OpenSerial";
+		case 251: return "CloseSerial";
+		case 252: return "FlushSerial";
+		case 253: return "SetupSerial";
+		case 254: return "ReadSerial";
+		case 255: return "WriteSerial";
+		case 218: return "RenderingMode";
+		case 230: return "UpdateMaterial";
+		case 231: return "GetMaterial";
+		case 247: return "UpdateMaterialPhysics";
+		case 248: return "GetMaterialPhysics";
+		case 224: return "MaterialColor";
+		case 226: return "WindowWidth";
+		case 227: return "WindowHeight";
+		case 228: return "DisableStaticPrerendering";
+		case 229: return "LoadTexture";
+		case 265: return "CreatePluginObject";
+		case 2000: return "LightStateOff";
+		case 2001: return "LightStateOn";
+		case 2002: return "LightStateBlinking";
+		case 2003: return "ImageAlignWorld";
+		case 2004: return "ImageAlignTopLeft";
+		case 2005: return "ImageAlignCenter";
+		case 2006: return "ShapeCircle";
+		case 2007: return "ShapeCustom";
+		case 2008: return "TriggerNone";
+		case 2009: return "TriggerWireA";
+		case 2010: return "TriggerStar";
+		case 2011: return "TriggerWireB";
+		case 2012: return "TriggerButton";
+		case 2013: return "TriggerWireC";
+		case 2014: return "TriggerWireD";
+		case 2015: return "TriggerInder";
+		case 2016: return "RampTypeFlat";
+		case 2017: return "RampType4Wire";
+		case 2018: return "RampType2Wire";
+		case 2019: return "RampType3WireLeft";
+		case 2020: return "RampType3WireRight";
+		case 2021: return "RampType1Wire";
+		case 2022: return "PlungerTypeModern";
+		case 2023: return "PlungerTypeFlat";
+		case 2024: return "PlungerTypeCustom";
+		case 2025: return "DropTargetBeveled";
+		case 2026: return "DropTargetSimple";
+		case 2027: return "HitTargetRound";
+		case 2028: return "HitTargetRectangle";
+		case 2029: return "HitFatTargetRectangle";
+		case 2030: return "HitFatTargetSquare";
+		case 2031: return "DropTargetFlatSimple";
+		case 2032: return "HitFatTargetSlim";
+		case 2033: return "HitTargetSlim";
+		case 2034: return "GateWireW";
+		case 2035: return "GateWireRectangle";
+		case 2036: return "GatePlate";
+		case 2037: return "GateLongPlate";
+		case 2038: return "TextAlignLeft";
+		case 2039: return "TextAlignCenter";
+		case 2040: return "TextAlignRight";
+		case 2041: return "DecalText";
+		case 2042: return "DecalImage";
+		case 2043: return "SeqUpOn";
+		case 2044: return "SeqUpOff";
+		case 2045: return "SeqDownOn";
+		case 2046: return "SeqDownOff";
+		case 2047: return "SeqRightOn";
+		case 2048: return "SeqRightOff";
+		case 2049: return "SeqLeftOn";
+		case 2050: return "SeqLeftOff";
+		case 2051: return "SeqDiagUpRightOn";
+		case 2052: return "SeqDiagUpRightOff";
+		case 2053: return "SeqDiagUpLeftOn";
+		case 2054: return "SeqDiagUpLeftOff";
+		case 2055: return "SeqDiagDownRightOn";
+		case 2056: return "SeqDiagDownRightOff";
+		case 2057: return "SeqDiagDownLeftOn";
+		case 2058: return "SeqDiagDownLeftOff";
+		case 2059: return "SeqMiddleOutHorizOn";
+		case 2060: return "SeqMiddleOutHorizOff";
+		case 2061: return "SeqMiddleInHorizOn";
+		case 2062: return "SeqMiddleInHorizOff";
+		case 2063: return "SeqMiddleOutVertOn";
+		case 2064: return "SeqMiddleOutVertOff";
+		case 2065: return "SeqMiddleInVertOn";
+		case 2066: return "SeqMiddleInVertOff";
+		case 2067: return "SeqStripe1HorizOn";
+		case 2068: return "SeqStripe1HorizOff";
+		case 2069: return "SeqStripe2HorizOn";
+		case 2070: return "SeqStripe2HorizOff";
+		case 2071: return "SeqStripe1VertOn";
+		case 2072: return "SeqStripe1VertOff";
+		case 2073: return "SeqStripe2VertOn";
+		case 2074: return "SeqStripe2VertOff";
+		case 2075: return "SeqHatch1HorizOn";
+		case 2076: return "SeqHatch1HorizOff";
+		case 2077: return "SeqHatch2HorizOn";
+		case 2078: return "SeqHatch2HorizOff";
+		case 2079: return "SeqHatch1VertOn";
+		case 2080: return "SeqHatch1VertOff";
+		case 2081: return "SeqHatch2VertOn";
+		case 2082: return "SeqHatch2VertOff";
+		case 2083: return "SeqCircleOutOn";
+		case 2084: return "SeqCircleOutOff";
+		case 2085: return "SeqCircleInOn";
+		case 2086: return "SeqCircleInOff";
+		case 2087: return "SeqClockRightOn";
+		case 2088: return "SeqClockRightOff";
+		case 2089: return "SeqClockLeftOn";
+		case 2090: return "SeqClockLeftOff";
+		case 2091: return "SeqRadarRightOn";
+		case 2092: return "SeqRadarRightOff";
+		case 2093: return "SeqRadarLeftOn";
+		case 2094: return "SeqRadarLeftOff";
+		case 2095: return "SeqWiperRightOn";
+		case 2096: return "SeqWiperRightOff";
+		case 2097: return "SeqWiperLeftOn";
+		case 2098: return "SeqWiperLeftOff";
+		case 2099: return "SeqFanLeftUpOn";
+		case 2100: return "SeqFanLeftUpOff";
+		case 2101: return "SeqFanLeftDownOn";
+		case 2102: return "SeqFanLeftDownOff";
+		case 2103: return "SeqFanRightUpOn";
+		case 2104: return "SeqFanRightUpOff";
+		case 2105: return "SeqFanRightDownOn";
+		case 2106: return "SeqFanRightDownOff";
+		case 2107: return "SeqArcBottomLeftUpOn";
+		case 2108: return "SeqArcBottomLeftUpOff";
+		case 2109: return "SeqArcBottomLeftDownOn";
+		case 2110: return "SeqArcBottomLeftDownOff";
+		case 2111: return "SeqArcBottomRightUpOn";
+		case 2112: return "SeqArcBottomRightUpOff";
+		case 2113: return "SeqArcBottomRightDownOn";
+		case 2114: return "SeqArcBottomRightDownOff";
+		case 2115: return "SeqArcTopLeftUpOn";
+		case 2116: return "SeqArcTopLeftUpOff";
+		case 2117: return "SeqArcTopLeftDownOn";
+		case 2118: return "SeqArcTopLeftDownOff";
+		case 2119: return "SeqArcTopRightUpOn";
+		case 2120: return "SeqArcTopRightUpOff";
+		case 2121: return "SeqArcTopRightDownOn";
+		case 2122: return "SeqArcTopRightDownOff";
+		case 2123: return "SeqScrewRightOn";
+		case 2124: return "SeqScrewRightOff";
+		case 2125: return "SeqScrewLeftOn";
+		case 2126: return "SeqScrewLeftOff";
+		case 2127: return "SeqLastDynamic";
+		case 2128: return "SeqAllOff";
+		case 2129: return "SeqAllOn";
+		case 2130: return "SeqBlinking";
+		case 2131: return "SeqRandom";
+		case 2132: return "AutoSize";
+		case 2133: return "AutoWidth";
+		case 2134: return "ManualSize";
+		case 2135: return "KickerInvisible";
+		case 2136: return "KickerHole";
+		case 2137: return "KickerCup";
+		case 2138: return "KickerHoleSimple";
+		case 2139: return "KickerWilliams";
+		case 2140: return "KickerGottlieb";
+		case 2141: return "KickerCup2";
+		case 2142: return "ImageModeWorld";
+		case 2143: return "ImageModeWrap";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -4678,7 +5021,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "ScriptGlobalTable_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", ScriptGlobalTable_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -4762,6 +5105,14 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::GetIDsOfNames(REFIID /*riid*/, L
 	return DISP_E_MEMBERNOTFOUND;
 }
 
+static const char *ScriptInterpreter_DebuggerModule_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 10: return "Print";
+		default: return "?";
+	}
+}
+
 STDMETHODIMP ScriptInterpreter::DebuggerModule::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -4800,7 +5151,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Invoke(DISPID dispIdMember, REFI
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "ScriptInterpreter_DebuggerModule_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", ScriptInterpreter_DebuggerModule_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -4873,6 +5224,50 @@ STDMETHODIMP Surface::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Surface_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 34: return "HasHitEvent";
+		case 33: return "Threshold";
+		case DISPID_Image: return "Image";
+		case 341: return "SideMaterial";
+		case 7: return "ImageAlignment";
+		case 8: return "HeightBottom";
+		case 9: return "HeightTop";
+		case 340: return "TopMaterial";
+		case 11: return "CanDrop";
+		case 111: return "Collidable";
+		case 12: return "IsDropped";
+		case 13: return "DisplayTexture";
+		case 14: return "SlingshotStrength";
+		case 110: return "Elasticity";
+		case 120: return "ElasticityFalloff";
+		case DISPID_Image2: return "SideImage";
+		case 16: return "Visible";
+		case 108: return "Disabled";
+		case 109: return "SideVisible";
+		case DISPID_UserValue: return "UserValue";
+		case 426: return "SlingshotMaterial";
+		case 427: return "SlingshotThreshold";
+		case 112: return "SlingshotAnimation";
+		case 113: return "FlipbookAnimation";
+		case 116: return "IsBottomSolid";
+		case 484: return "DisableLighting";
+		case 494: return "BlendDisableLighting";
+		case 496: return "BlendDisableLightingFromBelow";
+		case 114: return "Friction";
+		case 115: return "Scatter";
+		case 431: return "ReflectionEnabled";
+		case 999: return "PlaySlingshotHit";
+		case 734: return "PhysicsMaterial";
+		case 432: return "OverwritePhysics";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -5628,7 +6023,7 @@ STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Surface_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Surface_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -5711,6 +6106,20 @@ STDMETHODIMP DragPoint::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *DragPoint_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "X";
+		case 2: return "Y";
+		case 6: return "Z";
+		case 377: return "CalcHeight";
+		case 3: return "Smooth";
+		case 4: return "IsAutoTextureCoordinate";
+		case 5: return "TextureCoordinateU";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP DragPoint::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -5868,7 +6277,7 @@ STDMETHODIMP DragPoint::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "DragPoint_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", DragPoint_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -5941,6 +6350,50 @@ STDMETHODIMP Flipper::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Flipper_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "BaseRadius";
+		case 2: return "EndRadius";
+		case 3: return "Length";
+		case 4: return "StartAngle";
+		case 5: return "RotateToEnd";
+		case 6: return "RotateToStart";
+		case 7: return "EndAngle";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 12: return "CurrentAngle";
+		case 13: return "X";
+		case 14: return "Y";
+		case 340: return "Material";
+		case DISPID_Flipper_Speed: return "Mass";
+		case DISPID_Flipper_OverridePhysics: return "OverridePhysics";
+		case 341: return "RubberMaterial";
+		case 18: return "RubberThickness";
+		case 19: return "Strength";
+		case 458: return "Visible";
+		case 394: return "Enabled";
+		case 110: return "Elasticity";
+		case 115: return "Scatter";
+		case 23: return "Return";
+		case 24: return "RubberHeight";
+		case 25: return "RubberWidth";
+		case 114: return "Friction";
+		case 27: return "RampUp";
+		case 28: return "ElasticityFalloff";
+		case DISPID_Surface: return "Surface";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		case 107: return "Height";
+		case 113: return "EOSTorque";
+		case 189: return "EOSTorqueAngle";
+		case 111: return "FlipperRadiusMin";
+		case DISPID_Image: return "Image";
+		case 431: return "ReflectionEnabled";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -6671,7 +7124,7 @@ STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Flipper_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Flipper_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -6754,6 +7207,17 @@ STDMETHODIMP Timer::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Timer_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Timer_Enabled: return "Enabled";
+		case DISPID_Timer_Interval: return "Interval";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -6862,7 +7326,7 @@ STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Timer_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Timer_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -6975,6 +7439,52 @@ STDMETHODIMP Plunger::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Plunger_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "PullBack";
+		case 2: return "Fire";
+		case 3: return "PullSpeed";
+		case 4: return "FireSpeed";
+		case 5: return "CreateBall";
+		case 6: return "Position";
+		case 7: return "PullBackandRetract";
+		case 216: return "MotionDevice";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_X: return "X";
+		case DISPID_Y: return "Y";
+		case DISPID_Width: return "Width";
+		case DISPID_ZAdjust: return "ZAdjust";
+		case DISPID_Surface: return "Surface";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		case 390: return "Type";
+		case 340: return "Material";
+		case DISPID_Image: return "Image";
+		case DISPID_PluFrames: return "AnimFrames";
+		case DISPID_TipShape: return "TipShape";
+		case DISPID_RodDiam: return "RodDiam";
+		case DISPID_RingGap: return "RingGap";
+		case DISPID_RingDiam: return "RingDiam";
+		case DISPID_RingThickness: return "RingWidth";
+		case DISPID_SpringDiam: return "SpringDiam";
+		case DISPID_SpringGauge: return "SpringGauge";
+		case DISPID_SpringLoops: return "SpringLoops";
+		case DISPID_SpringEndLoops: return "SpringEndLoops";
+		case 110: return "MechPlunger";
+		case 116: return "AutoPlunger";
+		case 117: return "Visible";
+		case 111: return "MechStrength";
+		case 112: return "ParkPosition";
+		case 113: return "Stroke";
+		case 114: return "ScatterVelocity";
+		case 118: return "MomentumXfer";
+		case 431: return "ReflectionEnabled";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -7708,7 +8218,7 @@ STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Plunger_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Plunger_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -7801,6 +8311,30 @@ STDMETHODIMP Textbox::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Textbox_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Textbox_BackColor: return "BackColor";
+		case DISPID_Textbox_FontColor: return "FontColor";
+		case 3: return "Text";
+		case DISPID_Textbox_Font: return "Font";
+		case 60002: return "Width";
+		case 60003: return "Height";
+		case 11: return "Alignment";
+		case 12: return "IsTransparent";
+		case 555: return "DMD";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 60000: return "X";
+		case 60001: return "Y";
+		case 587: return "IntensityScale";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		case 616: return "Visible";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -8175,7 +8709,7 @@ STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Textbox_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Textbox_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -8280,6 +8814,44 @@ STDMETHODIMP Bumper::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Bumper_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 8: return "Radius";
+		case DISPID_X: return "X";
+		case DISPID_Y: return "Y";
+		case 341: return "BaseMaterial";
+		case 426: return "SkirtMaterial";
+		case DISPID_UserValue: return "UserValue";
+		case DISPID_Surface: return "Surface";
+		case 2: return "Force";
+		case 33: return "Threshold";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 340: return "CapMaterial";
+		case 734: return "RingMaterial";
+		case 24: return "HeightScale";
+		case 25: return "Orientation";
+		case 26: return "RingSpeed";
+		case 27: return "RingDropOffset";
+		case 28: return "CurrentRingOffset";
+		case DISPID_Name: return "Name";
+		case 34: return "HasHitEvent";
+		case 109: return "CapVisible";
+		case 110: return "BaseVisible";
+		case 735: return "RingVisible";
+		case 736: return "SkirtVisible";
+		case 111: return "Collidable";
+		case 431: return "ReflectionEnabled";
+		case 115: return "Scatter";
+		case 822: return "EnableSkirtAnimation";
+		case 827: return "RotX";
+		case 828: return "RotY";
+		case 999: return "PlayHit";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -8879,7 +9451,7 @@ STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Bumper_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Bumper_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -8975,6 +9547,33 @@ STDMETHODIMP Trigger::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Trigger_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 346: return "Radius";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_X: return "X";
+		case DISPID_Y: return "Y";
+		case DISPID_Enabled: return "Enabled";
+		case 458: return "Visible";
+		case DISPID_Shape: return "TriggerShape";
+		case DISPID_Surface: return "Surface";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		case 312: return "BallCntOver";
+		case 313: return "DestroyBall";
+		case 314: return "HitHeight";
+		case 340: return "Material";
+		case 345: return "Rotation";
+		case 347: return "WireThickness";
+		case 26: return "AnimSpeed";
+		case 27: return "CurrentAnimOffset";
+		case 431: return "ReflectionEnabled";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -9367,7 +9966,7 @@ STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Trigger_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Trigger_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -9481,6 +10080,50 @@ STDMETHODIMP Light::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Light_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "Falloff";
+		case 432: return "FalloffPower";
+		case DISPID_Light_State: return "State";
+		case 595: return "GetInPlayState";
+		case 596: return "GetInPlayStateBool";
+		case 597: return "GetInPlayIntensity";
+		case 3: return "Color";
+		case 457: return "ColorFull";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_X: return "X";
+		case DISPID_Y: return "Y";
+		case 9: return "BlinkPattern";
+		case DISPID_Light_BlinkInterval: return "BlinkInterval";
+		case 38: return "Duration";
+		case 12: return "Intensity";
+		case 617: return "TransmissionScale";
+		case 434: return "IntensityScale";
+		case DISPID_Surface: return "Surface";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		case DISPID_Image: return "Image";
+		case 453: return "ImageMode";
+		case 397: return "DepthBias";
+		case 377: return "FadeSpeedUp";
+		case 437: return "FadeSpeedDown";
+		case 340: return "Bulb";
+		case 394: return "ShowBulbMesh";
+		case 727: return "StaticBulbMesh";
+		case 455: return "ShowReflectionOnBall";
+		case 425: return "ScaleBulbMesh";
+		case 431: return "BulbModulateVsAdd";
+		case 429: return "BulbHaloHeight";
+		case 615: return "Visible";
+		case 456: return "Shadows";
+		case 458: return "Fader";
+		case 459: return "FilamentTemperature";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -10204,7 +10847,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Light_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Light_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -10305,6 +10948,39 @@ STDMETHODIMP Kicker::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Kicker_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case 1: return "CreateBall";
+		case 11: return "CreateSizedBall";
+		case 444: return "CreateSizedBallWithMass";
+		case 2: return "DestroyBall";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 5: return "Kick";
+		case 310: return "KickXYZ";
+		case 311: return "KickZ";
+		case DISPID_X: return "X";
+		case DISPID_Y: return "Y";
+		case DISPID_Enabled: return "Enabled";
+		case 9: return "DrawStyle";
+		case 340: return "Material";
+		case DISPID_Surface: return "Surface";
+		case DISPID_UserValue: return "UserValue";
+		case 312: return "BallCntOver";
+		case 115: return "Scatter";
+		case 314: return "HitAccuracy";
+		case 315: return "HitHeight";
+		case 107: return "Orientation";
+		case 111: return "Radius";
+		case 394: return "FallThrough";
+		case 431: return "Legacy";
+		case 19: return "LastCapturedBall";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -10833,7 +11509,7 @@ STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Kicker_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Kicker_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -10923,6 +11599,27 @@ STDMETHODIMP Decal::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Decal_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "Rotation";
+		case DISPID_Image: return "Image";
+		case 3: return "Width";
+		case 4: return "Height";
+		case 5: return "X";
+		case 6: return "Y";
+		case 7: return "Type";
+		case 8: return "Text";
+		case DISPID_Decal_SizingType: return "SizingType";
+		case 11: return "FontColor";
+		case 340: return "Material";
+		case DISPID_Decal_Font: return "Font";
+		case 13: return "HasVerticalText";
+		case DISPID_Surface: return "Surface";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Decal::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -11238,7 +11935,7 @@ STDMETHODIMP Decal::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Decal_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Decal_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -11376,6 +12073,79 @@ STDMETHODIMP Primitive::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Primitive_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "PlayAnim";
+		case 2: return "PlayAnimEndless";
+		case 18: return "StopAnim";
+		case 19: return "ShowFrame";
+		case 35: return "ContinueAnim";
+		case 38: return "DisplayTexture";
+		case 101: return "Sides";
+		case 458: return "Visible";
+		case 340: return "Material";
+		case 104: return "SideColor";
+		case 106: return "DrawTexturesInside";
+		case DISPID_UserValue: return "UserValue";
+		case DISPID_Image: return "Image";
+		case DISPID_Image2: return "NormalMap";
+		case DISPID_POSITION_X: return "X";
+		case DISPID_POSITION_Y: return "Y";
+		case DISPID_POSITION_Z: return "Z";
+		case DISPID_SIZE_X: return "Size_X";
+		case DISPID_SIZE_Y: return "Size_Y";
+		case DISPID_SIZE_Z: return "Size_Z";
+		case DISPID_ROTRA1: return "RotAndTra0";
+		case DISPID_ROT_X: return "RotX";
+		case DISPID_ROTRA2: return "RotAndTra1";
+		case DISPID_ROT_Y: return "RotY";
+		case DISPID_ROTRA3: return "RotAndTra2";
+		case DISPID_ROT_Z: return "RotZ";
+		case DISPID_ROTRA4: return "RotAndTra3";
+		case DISPID_TRANS_X: return "TransX";
+		case DISPID_ROTRA5: return "RotAndTra4";
+		case DISPID_TRANS_Y: return "TransY";
+		case DISPID_ROTRA6: return "RotAndTra5";
+		case DISPID_TRANS_Z: return "TransZ";
+		case DISPID_ROTRA7: return "RotAndTra6";
+		case DISPID_OBJROT_X: return "ObjRotX";
+		case DISPID_ROTRA8: return "RotAndTra7";
+		case DISPID_OBJROT_Y: return "ObjRotY";
+		case DISPID_ROTRA9: return "RotAndTra8";
+		case DISPID_OBJROT_Z: return "ObjRotZ";
+		case 454: return "EdgeFactorUI";
+		case 481: return "CollisionReductionFactor";
+		case DISPID_Name: return "Name";
+		case 398: return "EnableStaticRendering";
+		case 110: return "Elasticity";
+		case 112: return "ElasticityFalloff";
+		case 111: return "Collidable";
+		case 395: return "IsToy";
+		case 792: return "BackfacesEnabled";
+		case 34: return "HasHitEvent";
+		case 33: return "Threshold";
+		case 114: return "Friction";
+		case 115: return "Scatter";
+		case 441: return "DisableLighting";
+		case 494: return "BlendDisableLighting";
+		case 496: return "BlendDisableLightingFromBelow";
+		case 431: return "ReflectionEnabled";
+		case 377: return "Opacity";
+		case 556: return "AddBlend";
+		case 557: return "Color";
+		case 558: return "EnableDepthMask";
+		case 559: return "ReflectionProbe";
+		case 560: return "RefractionProbe";
+		case 397: return "DepthBias";
+		case 734: return "PhysicsMaterial";
+		case 432: return "OverwritePhysics";
+		case 735: return "HitThreshold";
+		case 824: return "ObjectSpaceNormalMap";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Primitive::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -12683,7 +13453,7 @@ STDMETHODIMP Primitive::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Primitive_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Primitive_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -12792,6 +13562,48 @@ STDMETHODIMP HitTarget::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *HitTarget_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 458: return "Visible";
+		case 340: return "Material";
+		case DISPID_UserValue: return "UserValue";
+		case DISPID_Image: return "Image";
+		case DISPID_POSITION_X: return "X";
+		case DISPID_POSITION_Y: return "Y";
+		case DISPID_POSITION_Z: return "Z";
+		case DISPID_SIZE_X: return "ScaleX";
+		case DISPID_SIZE_Y: return "ScaleY";
+		case DISPID_SIZE_Z: return "ScaleZ";
+		case DISPID_ROT_Z: return "Orientation";
+		case DISPID_Name: return "Name";
+		case 110: return "Elasticity";
+		case 112: return "ElasticityFalloff";
+		case 111: return "Collidable";
+		case 34: return "HasHitEvent";
+		case 33: return "Threshold";
+		case 114: return "Friction";
+		case 115: return "Scatter";
+		case 483: return "DisableLighting";
+		case 494: return "BlendDisableLighting";
+		case 496: return "BlendDisableLightingFromBelow";
+		case 431: return "ReflectionEnabled";
+		case 397: return "DepthBias";
+		case 377: return "DropSpeed";
+		case 27: return "CurrentAnimOffset";
+		case 435: return "IsDropped";
+		case 9: return "DrawStyle";
+		case 433: return "LegacyMode";
+		case 726: return "RaiseDelay";
+		case 734: return "PhysicsMaterial";
+		case 432: return "OverwritePhysics";
+		case 727: return "HitThreshold";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -13496,7 +14308,7 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "HitTarget_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", HitTarget_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -13600,6 +14412,39 @@ STDMETHODIMP Gate::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Gate_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_Gate_Length: return "Length";
+		case 1142: return "Height";
+		case DISPID_Gate_Rotation: return "Rotation";
+		case 5: return "X";
+		case 6: return "Y";
+		case 7: return "Open";
+		case 13: return "Damping";
+		case 17: return "GravityFactor";
+		case 2147: return "Move";
+		case 340: return "Material";
+		case 110: return "Elasticity";
+		case DISPID_Surface: return "Surface";
+		case DISPID_UserValue: return "UserValue";
+		case 2144: return "CloseAngle";
+		case 2145: return "OpenAngle";
+		case 111: return "Collidable";
+		case 114: return "Friction";
+		case 458: return "Visible";
+		case 427: return "TwoWay";
+		case 15: return "ShowBracket";
+		case 16: return "CurrentAngle";
+		case 431: return "ReflectionEnabled";
+		case 9: return "DrawStyle";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -14141,7 +14986,7 @@ STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Gate_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Gate_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -14239,6 +15084,33 @@ STDMETHODIMP Spinner::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Spinner_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_Spinner_Length: return "Length";
+		case 4: return "Rotation";
+		case 5: return "Height";
+		case 7: return "Damping";
+		case DISPID_Image: return "Image";
+		case 340: return "Material";
+		case 11: return "X";
+		case 12: return "Y";
+		case DISPID_Surface: return "Surface";
+		case DISPID_UserValue: return "UserValue";
+		case 108: return "ShowBracket";
+		case 13: return "AngleMax";
+		case 14: return "AngleMin";
+		case 110: return "Elasticity";
+		case 458: return "Visible";
+		case 431: return "ReflectionEnabled";
+		case 18: return "CurrentAngle";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -14655,7 +15527,7 @@ STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Spinner_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Spinner_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -14764,6 +15636,44 @@ STDMETHODIMP Ramp::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Ramp_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 1: return "HeightBottom";
+		case 2: return "HeightTop";
+		case 3: return "WidthBottom";
+		case 4: return "WidthTop";
+		case 340: return "Material";
+		case 6: return "Type";
+		case DISPID_Image: return "Image";
+		case 8: return "ImageAlignment";
+		case 9: return "HasWallImage";
+		case 10: return "LeftWallHeight";
+		case 11: return "RightWallHeight";
+		case DISPID_UserValue: return "UserValue";
+		case 108: return "VisibleLeftWallHeight";
+		case 109: return "VisibleRightWallHeight";
+		case 110: return "Elasticity";
+		case 111: return "Collidable";
+		case 34: return "HasHitEvent";
+		case 33: return "Threshold";
+		case 458: return "Visible";
+		case 114: return "Friction";
+		case 115: return "Scatter";
+		case 397: return "DepthBias";
+		case 377: return "WireDiameter";
+		case 398: return "WireDistanceX";
+		case 425: return "WireDistanceY";
+		case 431: return "ReflectionEnabled";
+		case 734: return "PhysicsMaterial";
+		case 432: return "OverwritePhysics";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -15412,7 +16322,7 @@ STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Ramp_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Ramp_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -15479,6 +16389,44 @@ STDMETHODIMP Flasher::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Flasher_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case 5: return "X";
+		case 6: return "Y";
+		case 8: return "ImageAlignment";
+		case 378: return "Height";
+		case 1: return "RotZ";
+		case 2: return "RotY";
+		case 9: return "RotX";
+		case 11: return "Color";
+		case DISPID_Image: return "ImageA";
+		case DISPID_Image2: return "ImageB";
+		case 13: return "DisplayTexture";
+		case 377: return "Opacity";
+		case 435: return "IntensityScale";
+		case 433: return "ModulateVsAdd";
+		case DISPID_UserValue: return "UserValue";
+		case 458: return "Visible";
+		case 556: return "AddBlend";
+		case 557: return "DMD";
+		case 44: return "DMDWidth";
+		case 45: return "DMDHeight";
+		case 46: return "DMDPixels";
+		case 47: return "DMDColoredPixels";
+		case 560: return "VideoCapWidth";
+		case 561: return "VideoCapHeight";
+		case 562: return "VideoCapUpdate";
+		case 397: return "DepthBias";
+		case 32996: return "Filter";
+		case 379: return "Amount";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -16092,7 +17040,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Flasher_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Flasher_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -16152,6 +17100,37 @@ STDMETHODIMP Rubber::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Rubber_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case 2: return "Height";
+		case 116: return "HitHeight";
+		case 34: return "HasHitEvent";
+		case 4: return "Thickness";
+		case 18: return "RotX";
+		case 25: return "RotZ";
+		case 24: return "RotY";
+		case 340: return "Material";
+		case DISPID_Image: return "Image";
+		case 110: return "Elasticity";
+		case 120: return "ElasticityFalloff";
+		case 111: return "Collidable";
+		case 458: return "Visible";
+		case 114: return "Friction";
+		case 115: return "Scatter";
+		case 398: return "EnableStaticRendering";
+		case 479: return "EnableShowInEditor";
+		case 431: return "ReflectionEnabled";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_UserValue: return "UserValue";
+		case 734: return "PhysicsMaterial";
+		case 432: return "OverwritePhysics";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -16660,7 +17639,7 @@ STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Rubber_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Rubber_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -16723,6 +17702,40 @@ STDMETHODIMP Ball::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNam
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *Ball_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case 1: return "X";
+		case 2: return "Y";
+		case 3: return "VelX";
+		case 4: return "VelY";
+		case 5: return "Z";
+		case 6: return "VelZ";
+		case 14: return "AngVelX";
+		case 15: return "AngVelY";
+		case 16: return "AngVelZ";
+		case 17: return "AngMomX";
+		case 18: return "AngMomY";
+		case 19: return "AngMomZ";
+		case 7: return "Color";
+		case 8: return "Image";
+		case 9: return "FrontDecal";
+		case 497: return "DecalMode";
+		case DISPID_UserValue: return "UserValue";
+		case 11: return "Mass";
+		case 12: return "Radius";
+		case 13: return "ID";
+		case DISPID_Name: return "Name";
+		case 451: return "BulbIntensityScale";
+		case 484: return "ReflectionEnabled";
+		case 485: return "PlayfieldReflectionScale";
+		case 486: return "ForceReflection";
+		case 487: return "Visible";
+		case 100: return "DestroyBall";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -17279,7 +18292,7 @@ STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "Ball_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", Ball_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -17491,6 +18504,37 @@ STDMETHODIMP DispReel::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *DispReel_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_DispReel_BackColor: return "BackColor";
+		case DISPID_Image: return "Image";
+		case 11: return "Reels";
+		case 5: return "Width";
+		case 6: return "Height";
+		case 7: return "Spacing";
+		case 12: return "IsTransparent";
+		case DISPID_Sound: return "Sound";
+		case 8: return "Steps";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case 9: return "X";
+		case 10: return "Y";
+		case 14: return "Range";
+		case DISPID_Name: return "Name";
+		case 15: return "UpdateInterval";
+		case DISPID_UserValue: return "UserValue";
+		case 17: return "UseImageGrid";
+		case 458: return "Visible";
+		case 18: return "ImagesPerGridRow";
+		case 30: return "AddValue";
+		case 31: return "ResetToZero";
+		case 32: return "SpinReel";
+		case 33: return "SetValue";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -17975,7 +19019,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "DispReel_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", DispReel_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -18054,6 +19098,17 @@ STDMETHODIMP PartGroup::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *PartGroup_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_Name: return "Name";
+		case DISPID_UserValue: return "UserValue";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -18162,7 +19217,7 @@ STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "PartGroup_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", PartGroup_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }
@@ -18246,6 +19301,23 @@ STDMETHODIMP LightSeq::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT 
 			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
+}
+
+static const char *LightSeq_dispid_name(DISPID dispId) {
+	switch(dispId) {
+		case DISPID_VALUE: return "(default)";
+		case DISPID_Name: return "Name";
+		case DISPID_Collection: return "Collection";
+		case 9: return "CenterX";
+		case 10: return "CenterY";
+		case 15: return "UpdateInterval";
+		case DISPID_Timer_Enabled: return "TimerEnabled";
+		case DISPID_Timer_Interval: return "TimerInterval";
+		case DISPID_UserValue: return "UserValue";
+		case 32: return "Play";
+		case 33: return "StopPlay";
+		default: return "?";
+	}
 }
 
 STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
@@ -18471,7 +19543,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			VariantClear(&res);
 	}
 	else {
-		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+		libwinevbs_log(LIBWINEVBS_LOG_WARN, "LightSeq_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)", LightSeq_dispid_name(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));
 	}
 	return hres;
 }

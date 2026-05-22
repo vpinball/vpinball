@@ -114,6 +114,7 @@ public class IDLParserToCpp {
 		outputStream.write("#include \"core/stdafx.h\"\n".getBytes());
 		outputStream.write("#include \"core/ScriptGlobalTable.h\"\n".getBytes());
 		outputStream.write("#include \"olectl.h\"\n".getBytes());
+		outputStream.write("#include <libwinevbs/libwinevbs.h>\n".getBytes());
 
 		if (includes != null && includes.size() > 0) {
 			outputStream.write("\n".getBytes());
@@ -354,6 +355,27 @@ public class IDLParserToCpp {
 		buffer.append("}\n");
 		buffer.append("\n");
 
+		String classBase = idlInterface.getClassName().replace("::", "_");
+		String dispIdNameFn = classBase + "_dispid_name";
+
+		buffer.append("static const char *" + dispIdNameFn + "(DISPID dispId) {\n");
+		buffer.append("switch(dispId) {\n");
+		if (!hasDispIdValue) {
+			buffer.append("case DISPID_VALUE: return \"(default)\";\n");
+		}
+		for (String key : dispatchMap.keySet()) {
+			buffer.append("case " + dispatchMap.get(key).getId() + ": return \"" + key + "\";\n");
+		}
+		if (enumMap != null) {
+			for (String key : enumMap.keySet()) {
+				buffer.append("case " + enumMap.get(key).getId() + ": return \"" + key + "\";\n");
+			}
+		}
+		buffer.append("default: return \"?\";\n");
+		buffer.append("}\n");
+		buffer.append("}\n");
+		buffer.append("\n");
+
 		buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {\n");
 		buffer.append("int index = pDispParams->cArgs;\n");
 		buffer.append("VARIANT res;\n");
@@ -428,7 +450,7 @@ public class IDLParserToCpp {
 		buffer.append("\tVariantClear(&res);\n");
 		buffer.append("}\n");
 		buffer.append("else {\n");
-		buffer.append("PLOGI.printf(\"dispId=%d (0x%08x), wFlags=%d, hres=%d\", dispIdMember, dispIdMember, wFlags, hres);\n");
+		buffer.append("libwinevbs_log(LIBWINEVBS_LOG_WARN, \"" + classBase + "_Invoke: %s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)\", " + dispIdNameFn + "(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, libwinevbs_hresult_name(hres));\n");
 		buffer.append("}\n");
 		buffer.append("return hres;\n");
 		buffer.append("}\n");
