@@ -2215,6 +2215,7 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
       PLOGE << "Failed to open script file";
       return;
    }
+   PLOGI << "Loading script: " << scriptPath.string();
    
    std::streamsize size = file.tellg();
    file.seekg(0, std::ios::beg);

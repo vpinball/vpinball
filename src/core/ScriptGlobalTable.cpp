@@ -355,7 +355,10 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
          if (szFileName.ends_with(".vbs"))
+         {
+            PLOGI << "Reading script: " << file.string();
             content = g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(content);
+         }
          *pContents = MakeWideBSTR(content);
          return S_OK;
       }
