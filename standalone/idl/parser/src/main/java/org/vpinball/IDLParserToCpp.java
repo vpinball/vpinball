@@ -124,6 +124,8 @@ public class IDLParserToCpp {
 
 		outputStream.write("\n".getBytes());
 
+		outputStream.write(generateHresultName().getBytes());
+
 		for (String[] block : order) {
 			String kind = block[0];
 			String name = block[1];
@@ -283,6 +285,61 @@ public class IDLParserToCpp {
 		return dispatchMap;
 	}
 
+	// Maps an HRESULT to its symbolic name for diagnostic Invoke logging. Emitted once at the top of the
+	// proxy. Mirrors libwinevbs_hresult_name from vpinball/libwinevbs.
+	private String generateHresultName() throws Exception {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("static const char* hresult_name(HRESULT hr) {\n");
+		buffer.append("switch (hr) {\n");
+		buffer.append("case S_OK: return \"S_OK\";\n");
+		buffer.append("case S_FALSE: return \"S_FALSE\";\n");
+		buffer.append("case E_NOTIMPL: return \"E_NOTIMPL\";\n");
+		buffer.append("case E_NOINTERFACE: return \"E_NOINTERFACE\";\n");
+		buffer.append("case E_POINTER: return \"E_POINTER\";\n");
+		buffer.append("case E_ABORT: return \"E_ABORT\";\n");
+		buffer.append("case E_FAIL: return \"E_FAIL\";\n");
+		buffer.append("case E_UNEXPECTED: return \"E_UNEXPECTED\";\n");
+		buffer.append("case E_ACCESSDENIED: return \"E_ACCESSDENIED\";\n");
+		buffer.append("case E_HANDLE: return \"E_HANDLE\";\n");
+		buffer.append("case E_OUTOFMEMORY: return \"E_OUTOFMEMORY\";\n");
+		buffer.append("case E_INVALIDARG: return \"E_INVALIDARG\";\n");
+		buffer.append("case CLASS_E_CLASSNOTAVAILABLE: return \"CLASS_E_CLASSNOTAVAILABLE\";\n");
+		buffer.append("case DISP_E_UNKNOWNINTERFACE: return \"DISP_E_UNKNOWNINTERFACE\";\n");
+		buffer.append("case DISP_E_MEMBERNOTFOUND: return \"DISP_E_MEMBERNOTFOUND\";\n");
+		buffer.append("case DISP_E_PARAMNOTFOUND: return \"DISP_E_PARAMNOTFOUND\";\n");
+		buffer.append("case DISP_E_TYPEMISMATCH: return \"DISP_E_TYPEMISMATCH\";\n");
+		buffer.append("case DISP_E_UNKNOWNNAME: return \"DISP_E_UNKNOWNNAME\";\n");
+		buffer.append("case DISP_E_NONAMEDARGS: return \"DISP_E_NONAMEDARGS\";\n");
+		buffer.append("case DISP_E_BADVARTYPE: return \"DISP_E_BADVARTYPE\";\n");
+		buffer.append("case DISP_E_EXCEPTION: return \"DISP_E_EXCEPTION\";\n");
+		buffer.append("case DISP_E_OVERFLOW: return \"DISP_E_OVERFLOW\";\n");
+		buffer.append("case DISP_E_BADINDEX: return \"DISP_E_BADINDEX\";\n");
+		buffer.append("case DISP_E_UNKNOWNLCID: return \"DISP_E_UNKNOWNLCID\";\n");
+		buffer.append("case DISP_E_ARRAYISLOCKED: return \"DISP_E_ARRAYISLOCKED\";\n");
+		buffer.append("case DISP_E_BADPARAMCOUNT: return \"DISP_E_BADPARAMCOUNT\";\n");
+		buffer.append("case DISP_E_PARAMNOTOPTIONAL: return \"DISP_E_PARAMNOTOPTIONAL\";\n");
+		buffer.append("case DISP_E_NOTACOLLECTION: return \"DISP_E_NOTACOLLECTION\";\n");
+		buffer.append("case DISP_E_DIVBYZERO: return \"DISP_E_DIVBYZERO\";\n");
+		buffer.append("case DISP_E_BUFFERTOOSMALL: return \"DISP_E_BUFFERTOOSMALL\";\n");
+		buffer.append("case CTL_E_ILLEGALFUNCTIONCALL: return \"CTL_E_ILLEGALFUNCTIONCALL\";\n");
+		buffer.append("case CTL_E_OVERFLOW: return \"CTL_E_OVERFLOW\";\n");
+		buffer.append("case CTL_E_OUTOFMEMORY: return \"CTL_E_OUTOFMEMORY\";\n");
+		buffer.append("case CTL_E_DIVISIONBYZERO: return \"CTL_E_DIVISIONBYZERO\";\n");
+		buffer.append("case CTL_E_FILENOTFOUND: return \"CTL_E_FILENOTFOUND\";\n");
+		buffer.append("case CTL_E_DEVICEIOERROR: return \"CTL_E_DEVICEIOERROR\";\n");
+		buffer.append("case CTL_E_FILEALREADYEXISTS: return \"CTL_E_FILEALREADYEXISTS\";\n");
+		buffer.append("case CTL_E_PERMISSIONDENIED: return \"CTL_E_PERMISSIONDENIED\";\n");
+		buffer.append("case CTL_E_PATHFILEACCESSERROR: return \"CTL_E_PATHFILEACCESSERROR\";\n");
+		buffer.append("case CTL_E_PATHNOTFOUND: return \"CTL_E_PATHNOTFOUND\";\n");
+		buffer.append("case STD_CTL_SCODE(457): return \"CTL_E_KEY_ALREADY_EXISTS\";\n");
+		buffer.append("case STD_CTL_SCODE(32811): return \"CTL_E_ELEMENT_NOT_FOUND\";\n");
+		buffer.append("default: return \"?\";\n");
+		buffer.append("}\n");
+		buffer.append("}\n");
+		buffer.append("\n");
+		return indent(buffer.toString(), 0);
+	}
+
 	private String generateDispatch(IDLInterface idlInterface, LinkedHashMap<String, Dispatch> dispatchMap,
 			HashMap<String, IDLEnum> enumMap, boolean excludeDocumentation) throws Exception {
 		StringBuffer buffer = new StringBuffer();
@@ -351,6 +408,22 @@ public class IDLParserToCpp {
 		buffer.append("}\n");
 		buffer.append("return DISP_E_MEMBERNOTFOUND;\n");
 
+		buffer.append("}\n");
+		buffer.append("\n");
+
+		// dispId -> method name table, used for diagnostic logging in Invoke. Sanitize "::" out of nested
+		// class names (e.g. ScriptInterpreter::DebuggerModule) so the free function name stays valid.
+		String dispidNameFn = idlInterface.getClassName().replace("::", "_") + "_dispid_name";
+		buffer.append("static const char* " + dispidNameFn + "(DISPID dispId) {\n");
+		buffer.append("switch (dispId) {\n");
+		if (!hasDispIdValue) {
+			buffer.append("case DISPID_VALUE: return \"(default)\";\n");
+		}
+		for (String key : dispatchMap.keySet()) {
+			buffer.append("case " + dispatchMap.get(key).getId() + ": return \"" + key + "\";\n");
+		}
+		buffer.append("default: return \"?\";\n");
+		buffer.append("}\n");
 		buffer.append("}\n");
 		buffer.append("\n");
 
@@ -428,7 +501,7 @@ public class IDLParserToCpp {
 		buffer.append("\tVariantClear(&res);\n");
 		buffer.append("}\n");
 		buffer.append("else {\n");
-		buffer.append("PLOGI.printf(\"dispId=%d (0x%08x), wFlags=%d, hres=%d\", dispIdMember, dispIdMember, wFlags, hres);\n");
+		buffer.append("PLOGI.printf(\"%s (dispId=%d 0x%08x), wFlags=%d, hres=0x%08x (%s)\", " + dispidNameFn + "(dispIdMember), dispIdMember, dispIdMember, wFlags, hres, hresult_name(hres));\n");
 		buffer.append("}\n");
 		buffer.append("return hres;\n");
 		buffer.append("}\n");
