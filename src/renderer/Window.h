@@ -132,6 +132,9 @@ private:
    int m_pendingWidth = -1, m_pendingHeight = -1; // Size requested while another request was in flight
 
    SDL_Window* m_nwnd = nullptr;
+
+   SDL_DisplayID m_targetDisplayId = 0; // intended display from settings, used by Show() to log requested vs WM-placed position
+   bool m_placementLogged = false;
 };
 
 class RenderOutput final

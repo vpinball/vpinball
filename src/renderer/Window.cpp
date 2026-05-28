@@ -100,6 +100,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          PLOGW << "The selected display \"" << configuredDisplay << "\" is not available. Using display \"" << selectedDisplay.displayName << "\" instead.";
       }
    }
+   m_targetDisplayId = selectedDisplay.display;
    int wnd_x = selectedDisplay.left;
    int wnd_y = selectedDisplay.top;
    int nDisplayModes;
@@ -322,7 +323,21 @@ void Window::Show(const bool show)
    if (m_isVR)
       return;
    if (show)
+   {
       SDL_ShowWindow(m_nwnd);
+      if (!m_placementLogged)
+      {
+         m_placementLogged = true;
+         SDL_SyncWindow(m_nwnd);
+         const SDL_DisplayID actualDisp = SDL_GetDisplayForWindow(m_nwnd);
+         int wx = 0, wy = 0, ww = 0, wh = 0;
+         SDL_GetWindowPosition(m_nwnd, &wx, &wy);
+         SDL_GetWindowSize(m_nwnd, &ww, &wh);
+         PLOGI << "Window #" << m_windowId << " first mapped: requested display=" << m_targetDisplayId
+               << " | WM placed display=" << actualDisp
+               << " at (" << wx << ',' << wy << ") " << ww << 'x' << wh;
+      }
+   }
    else
       SDL_HideWindow(m_nwnd);
 }
