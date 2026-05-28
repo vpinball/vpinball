@@ -206,7 +206,9 @@ string GetPluginPath()
     if (pathBuf.empty())
         return string();
 
-    const size_t lastSep = pathBuf.find_last_of(PATH_SEPARATOR_CHAR);
+    // Accept both separators: POSIX paths use '/', Win32 APIs (GetModuleFileNameA) always
+    // return '\' regardless of compiler, and PATH_SEPARATOR_CHAR is '/' on MinGW.
+    const size_t lastSep = pathBuf.find_last_of("\\/");
     if (lastSep == string::npos)
         return string();
 
