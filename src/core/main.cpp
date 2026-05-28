@@ -200,6 +200,17 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       // The video subsystem is initialized lazily when a window is created (see VPX::Window), so
       // headless commands (info, script/POV export, audit, tournament validation) run without a
       // display or a working video driver.
+#if !defined(_MSC_VER) && !defined(__APPLE__) && !defined(__ANDROID__)
+      {
+         const char* const xdgDesktop = SDL_getenv("XDG_CURRENT_DESKTOP");
+         const char* const xdgSession = SDL_getenv("XDG_SESSION_TYPE");
+         const char* const waylandDpy = SDL_getenv("WAYLAND_DISPLAY");
+         PLOGI << "Linux desktop session: "
+               << "XDG_CURRENT_DESKTOP=" << (xdgDesktop ? xdgDesktop : "(unset)")
+               << " XDG_SESSION_TYPE=" << (xdgSession ? xdgSession : "(unset)")
+               << " WAYLAND_DISPLAY=" << (waylandDpy ? waylandDpy : "(unset)");
+      }
+#endif
 
       // Run the application
       if (cmdLine.m_command)

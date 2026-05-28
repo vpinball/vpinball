@@ -1489,6 +1489,19 @@ void Player::ProcessOSMessages(const bool isInitialized)
          break;
       }
 
+      case SDL_EVENT_WINDOW_MOVED: {
+         SDL_Window* const w = SDL_GetWindowFromID(e.window.windowID);
+         const char* const title = (w != nullptr) ? SDL_GetWindowTitle(w) : nullptr;
+         PLOGI << "Window '" << (title ? title : "(unknown)") << "' moved to (" << e.window.data1 << ',' << e.window.data2 << ')';
+         break;
+      }
+      case SDL_EVENT_WINDOW_DISPLAY_CHANGED: {
+         SDL_Window* const w = SDL_GetWindowFromID(e.window.windowID);
+         const char* const title = (w != nullptr) ? SDL_GetWindowTitle(w) : nullptr;
+         PLOGI << "Window '" << (title ? title : "(unknown)") << "' moved to display ID " << e.window.data1;
+         break;
+      }
+
       case SDL_EVENT_KEY_UP:
       case SDL_EVENT_KEY_DOWN:
          isPFWnd = (SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR();
