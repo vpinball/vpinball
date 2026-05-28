@@ -39,7 +39,7 @@ private:
    void HandleVideoFrame(AVFrame* pFrame);
 
    string m_name;
-   SDL_Rect m_bounds;
+   SDL_Rect m_bounds = {};
 
    std::atomic<int> m_pendingPlay = 0;
    std::atomic<int> m_pendingStop = 0;

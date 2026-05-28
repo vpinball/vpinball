@@ -527,14 +527,14 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
 
    // Take ownership of the frame
    FrameInfo& selectedFrame = m_frames[selectedFrameSlot];
+   int targetWidth, targetHeight;
    {
       std::lock_guard lock(m_mutex);
       selectedFrame.valid = false;
+      // Read m_bounds under the lock to avoid a data race with SetBounds()
+      targetWidth = m_bounds.w > 0 ? m_bounds.w : m_pVideoContext->width;
+      targetHeight = m_bounds.h > 0 ? m_bounds.h : m_pVideoContext->height;
    }
-
-   // Lazily create/recreate video frame conversion context and frame queue, adjusted to the render size
-   const int targetWidth = m_bounds.w > 0 ? m_bounds.w : m_pVideoContext->width;
-   const int targetHeight = m_bounds.h > 0 ? m_bounds.h : m_pVideoContext->height;
    constexpr AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
    if ((selectedFrame.frame != nullptr) && ((selectedFrame.frame->width != targetWidth) || (selectedFrame.frame->height != targetHeight)))
    {
