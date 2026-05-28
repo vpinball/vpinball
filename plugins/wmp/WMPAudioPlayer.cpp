@@ -16,12 +16,12 @@ struct AudioCallbackData {
 
 static uint32_t nextAudioResId = 1;
 
-WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId) 
+WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId)
    : m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_onAudioUpdateId(onAudioUpdateId)
    , m_isLoaded(false)
-   , m_isPlaying(false) 
+   , m_isPlaying(false)
    , m_isPaused(false)
    , m_volume(0.5f)
    , m_shouldStopStreaming(false)
@@ -188,7 +188,12 @@ void WMPAudioPlayer::StartStreaming()
    m_thread = std::thread([this]() {
       constexpr size_t bufferSizeFrames = BUFFER_SIZE_FRAMES;
       float* audioBuffer = new float[bufferSizeFrames * m_channels];
-   
+
+      // Anchor all sleep targets to an absolute clock so that OS timer
+      // overshoot on one iteration is corrected by a shorter sleep on the
+      // next, rather than accumulating indefinitely.
+      auto nextSendTime = std::chrono::steady_clock::now();
+
       while (!m_shouldStopStreaming && m_isPlaying && !m_isPaused) {
          ma_uint64 framesRead = 0;
          const ma_result result = wmp_ma_decoder_read_pcm_frames(&m_decoder, audioBuffer, bufferSizeFrames, &framesRead);
@@ -206,8 +211,12 @@ void WMPAudioPlayer::StartStreaming()
 
          SendAudioChunk(audioBuffer, (size_t)framesRead);
 
-         double bufferDurationMs = (double)framesRead / (double)m_sampleRate * 1000.0;
-         std::this_thread::sleep_for(std::chrono::microseconds((int)(bufferDurationMs * 800.)));
+         // Advance the absolute target by 80% of this chunk's duration.
+         // If we already overslept, sleep_until returns immediately and the
+         // next chunk is sent without delay, self-correcting the drift.
+         const double chunkDurationUs = (double)framesRead / (double)m_sampleRate * 1e6;
+         nextSendTime += std::chrono::microseconds((long long)(chunkDurationUs * 0.8));
+         std::this_thread::sleep_until(nextSendTime);
       }
 
       if (!m_shouldStopStreaming) {
