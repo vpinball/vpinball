@@ -153,6 +153,12 @@ void Settings::UpdateDefaults()
          reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.width));
          reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.height));
          #endif
+         #if defined(ENABLE_BGFX) && !defined(_MSC_VER)
+         // On Linux/macOS a screen-sized borderless window is not promoted to fullscreen by the
+         // compositor, so default the playfield to fullscreen(-desktop) for a usable fresh install.
+         if (i == VPXWindowId::VPXWINDOW_Playfield)
+            reg.Register(GetWindow_FullScreen_Property(i)->WithDefault(true));
+         #endif
          reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.width : (conf.width / 4)));
          reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.height : min(conf.width * 4 / 9, conf.height)));
          break;

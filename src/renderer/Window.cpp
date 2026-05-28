@@ -74,10 +74,17 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
-#ifdef ENABLE_BGFX
+#if defined(ENABLE_BGFX) && defined(_MSC_VER)
+   // Windows+BGFX: a screen-sized borderless window already acts as fullscreen (Windows fullscreen
+   // optimization), so no explicit fullscreen flag is used and there is no Fullscreen setting.
    m_fullscreen = false;
 #else
+   // BGFX has no exclusive fullscreen (video mode change): for it m_fullscreen requests a
+   // fullscreen-desktop window. This is what makes a screen-sized playfield actually fill the
+   // display on Linux/macOS, where the compositor does not promote a borderless window the way
+   // Windows does. Other backends may still use exclusive fullscreen with a display mode (below).
    m_fullscreen = g_isMobile || settings.GetWindow_FullScreen(m_windowId);
+   #ifndef ENABLE_BGFX
    if (!g_isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
    {
       // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
@@ -86,6 +93,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       else if (g_app->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
+   #endif
 #endif
 
    // Both fullscreen and windowed modes are anchored to a user selected display
@@ -161,7 +169,11 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       m_height = m_fullscreen ? m_screenheight : settings.GetWindow_Height(m_windowId);
       m_refreshrate = selectedDisplay.refreshrate;
       m_bitdepth = selectedDisplay.depth;
+      #if !defined(ENABLE_BGFX) || defined(_MSC_VER)
+      // Exclusive fullscreen failed or was not requested: fall back to windowed. Non-Windows BGFX has
+      // no exclusive mode, so it keeps m_fullscreen here to request a fullscreen-desktop window.
       m_fullscreen = false;
+      #endif
 
       // Constrain window to screen
       if (m_width > m_screenwidth)
@@ -196,8 +208,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    assert(m_height > 0 && m_height <= m_screenheight);
    assert(selectedDisplay.left <= wnd_x);
    assert(selectedDisplay.top <= wnd_y);
-   assert((wnd_x + m_width) <= (selectedDisplay.left + (m_fullscreen ? fullscreenDisplayMode->w : selectedDisplay.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
-   assert((wnd_y + m_height) <= (selectedDisplay.top + (m_fullscreen ? fullscreenDisplayMode->h : selectedDisplay.height)));
+   assert((wnd_x + m_width) <= (selectedDisplay.left + ((m_fullscreen && fullscreenDisplayMode) ? fullscreenDisplayMode->w : selectedDisplay.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
+   assert((wnd_y + m_height) <= (selectedDisplay.top + ((m_fullscreen && fullscreenDisplayMode) ? fullscreenDisplayMode->h : selectedDisplay.height)));
    if (m_refreshrate <= 0)
    {
       PLOGE << "Failed to get display refresh rate. VPX will use a 60Hz default which may be wrong and cause bad video synchronization.";

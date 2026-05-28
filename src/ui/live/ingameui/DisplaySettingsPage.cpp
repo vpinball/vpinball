@@ -290,7 +290,10 @@ void DisplaySettingsPage::BuildWindowPage()
       [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
       [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayName, asTableOverride); }));
 
-#ifndef ENABLE_BGFX
+   // Fullscreen toggle. On BGFX fullscreen means fullscreen-desktop (no exclusive video mode change),
+   // so there is no resolution selector below; other backends additionally show a video-mode picker
+   // when fullscreen is enabled. Not offered on Windows+BGFX (borderless screen-sized acts as fullscreen).
+#if !defined(ENABLE_BGFX) || !defined(_MSC_VER)
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
               Settings::m_propWindow_FullScreen[m_wndId], //
@@ -304,6 +307,10 @@ void DisplaySettingsPage::BuildWindowPage()
       .m_excludeFromDefault = true;
 
    const bool isFullScreen = m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId);
+#else
+   const bool isFullScreen = false;
+#endif
+#ifndef ENABLE_BGFX
    if (isFullScreen)
    {
       int defaultMode = 0, selectedMode = 0, i = 0;
@@ -355,6 +362,7 @@ void DisplaySettingsPage::BuildWindowPage()
    }
    else
 #endif
+   if (!isFullScreen)
    {
       const int containerWidth = m_displays[wndDisplay].width;
       const int containerHeight = m_displays[wndDisplay].height;
