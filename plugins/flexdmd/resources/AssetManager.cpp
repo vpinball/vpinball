@@ -238,36 +238,36 @@ void* AssetManager::Open(AssetSrc* pSrc)
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        string path = find_case_insensitive_file_path(pSrc->GetPath());
+        std::filesystem::path path = find_case_insensitive_file_path(pSrc->GetPath());
         if (!path.empty()) {
            if (pSrc->GetAssetType() == AssetType_BMFont)
               pAsset = BitmapFont::Create(path);
            else if (pSrc->GetAssetType() != AssetType_GIF)
-              pAsset = IMG_Load(path.c_str());
+              pAsset = IMG_Load(path.string().c_str());
            else
-              pAsset = IMG_LoadAnimation(path.c_str());
+              pAsset = IMG_LoadAnimation(path.string().c_str());
         }
       }
       break;
       case AssetSrcType_FlexResource:
       {
          // Load assets provided with plugin
-         string path;
+         std::filesystem::path path;
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
          m_vpxApi->GetVpxInfo(&vpxInfo);
-         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins" + PATH_SEPARATOR_CHAR + "flexdmd" + PATH_SEPARATOR_CHAR;
+         path = std::filesystem::path(vpxInfo.path) / "plugins" / "flexdmd";
          #else
          path = GetPluginPath();
          #endif
-         path = find_case_insensitive_file_path(path + "assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath());
+         path = find_case_insensitive_file_path(path / "assets" / pSrc->GetPath());
          if (!path.empty()) {
             if (pSrc->GetAssetType() == AssetType_BMFont)
                pAsset = BitmapFont::Create(path);
             else if (pSrc->GetAssetType() != AssetType_GIF)
-               pAsset = IMG_Load(path.c_str());
+               pAsset = IMG_Load(path.string().c_str());
             else
-               pAsset = IMG_LoadAnimation(path.c_str());
+               pAsset = IMG_LoadAnimation(path.string().c_str());
          }
       }
       break;

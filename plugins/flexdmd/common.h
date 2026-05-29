@@ -6,6 +6,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <format>
+#include <filesystem>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -86,7 +87,7 @@ bool try_parse_int(const string& str, int& value);
 bool try_parse_color(const string& str, ColorRGBA32& value);
 string normalize_path_separators(const string& szPath);
 string extension_from_path(const string& path);
-string find_case_insensitive_file_path(const string& szPath);
-string GetPluginPath();
+std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile);
+std::filesystem::path GetPluginPath();
 
 }
