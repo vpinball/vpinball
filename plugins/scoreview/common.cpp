@@ -118,30 +118,27 @@ static T GetModulePath(HMODULE hModule)
 std::filesystem::path GetPluginPath()
 {
 #ifdef _WIN32
-    HMODULE hm = nullptr;
-    if (GetModuleHandleEx(
-            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-            _T("ScoreViewPluginLoad"), &hm) == 0)
-       return std::filesystem::path();
+   HMODULE hm = nullptr;
+   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("ScoreViewPluginLoad"), &hm) == 0)
+      return std::filesystem::path();
 
 #ifdef _UNICODE
-    const std::wstring pathBuf = GetModulePath<std::wstring>(hm);
+   const std::wstring pathBuf = GetModulePath<std::wstring>(hm);
 #else
-    const string pathBuf = GetModulePath<string>(hm);
+   const string pathBuf = GetModulePath<string>(hm);
 #endif
 #else
-    Dl_info info{};
-    if (dladdr((void*)&GetPluginPath, &info) == 0 || !info.dli_fname)
-        return string();
+   Dl_info info {};
+   if (dladdr((void*)&GetPluginPath, &info) == 0 || !info.dli_fname)
+      return string();
 
-    char pathBuf[PATH_MAX];
-    if (!realpath(info.dli_fname, pathBuf))
-        return string();
+   char pathBuf[PATH_MAX];
+   if (!realpath(info.dli_fname, pathBuf))
+      return string();
 #endif
 
-    std::filesystem::path path(pathBuf);
-    return path.empty() ? path : path.parent_path();
+   std::filesystem::path path(pathBuf);
+   return path.empty() ? path : path.parent_path();
 }
 
 }

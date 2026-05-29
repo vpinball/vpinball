@@ -200,7 +200,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
    HMODULE hm = nullptr;
-   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
+   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PinUpEventsPluginLoad"), &hm) == 0)
       return;
 #ifdef _UNICODE
    std::wstring fullpath = GetModulePath<std::wstring>(hm);

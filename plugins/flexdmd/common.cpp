@@ -161,7 +161,7 @@ std::filesystem::path GetPluginPath()
 {
 #ifdef _WIN32
    HMODULE hm = nullptr;
-   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("ScoreViewPluginLoad"), &hm) == 0)
+   if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("FlexDMDPluginLoad"), &hm) == 0)
       return std::filesystem::path();
 
 #ifdef _UNICODE

@@ -155,7 +155,7 @@ private:
       #endif
 
       HMODULE hm = nullptr;
-      if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
+      if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PUPPluginLoad"), &hm) == 0)
          return;
       TCHAR path[MAX_PATH];
       if (GetModuleFileName(hm, path, MAX_PATH) == 0)
