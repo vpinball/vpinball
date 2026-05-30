@@ -66,7 +66,10 @@ void Group::Draw(Flex::SurfaceGraphics* pGraphics)
 Actor* Group::Get(const string& name, bool logMissing)
 {
    if (GetName() == name)
+   {
+      AddRef();
       return this;
+   }
 
    if (GetFlexDMD()->GetRuntimeVersion() <= 1008)
    {
