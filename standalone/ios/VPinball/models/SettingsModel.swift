@@ -45,7 +45,7 @@ class SettingsModel: ObservableObject {
 
         if vpinballManager.loadValue(.pluginDMDUtil, "DMDServer", false) {
             externalDMD = .dmdServer
-        } else if vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFi", false) {
+        } else if vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFiEnabled", false) {
             externalDMD = .zedmdWiFi
         } else {
             externalDMD = .none
@@ -90,7 +90,7 @@ class SettingsModel: ObservableObject {
 
     func handleExternalDMD() {
         vpinballManager.saveValue(.pluginDMDUtil, "DMDServer", externalDMD == .dmdServer)
-        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFi", externalDMD == .zedmdWiFi)
+        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFiEnabled", externalDMD == .zedmdWiFi)
         vpinballManager.saveValue(.pluginDMDUtil, "Enable", externalDMD != .none)
     }
 
