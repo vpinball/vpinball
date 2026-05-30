@@ -109,7 +109,7 @@ class SettingsViewModel : ViewModel() {
             when {
                 VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServer", false) -> VPinballExternalDMD.DMD_SERVER
 
-                VPinballManager.loadValue(PLUGIN_DMDUTIL, "ZeDMDWiFi", false) -> VPinballExternalDMD.ZEDMD_WIFI
+                VPinballManager.loadValue(PLUGIN_DMDUTIL, "ZeDMDWiFiEnabled", false) -> VPinballExternalDMD.ZEDMD_WIFI
 
                 else -> VPinballExternalDMD.NONE
             }
@@ -190,7 +190,7 @@ class SettingsViewModel : ViewModel() {
     fun handleExternalDMD(value: VPinballExternalDMD) {
         externalDMD = value
         VPinballManager.saveValue(PLUGIN_DMDUTIL, "DMDServer", externalDMD == VPinballExternalDMD.DMD_SERVER)
-        VPinballManager.saveValue(PLUGIN_DMDUTIL, "ZeDMDWiFi", externalDMD == VPinballExternalDMD.ZEDMD_WIFI)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "ZeDMDWiFiEnabled", externalDMD == VPinballExternalDMD.ZEDMD_WIFI)
         VPinballManager.saveValue(PLUGIN_DMDUTIL, "Enable", externalDMD != VPinballExternalDMD.NONE)
     }
 
