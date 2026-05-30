@@ -23,6 +23,8 @@ LPI_IMPLEMENT_CPP // Implement shared log support
 
 MSGPI_STRING_VAL_SETTING(altsoundFolderProp, "Folder", "AltSound Folder", "", true, "", 1024);
 
+static constexpr uint32_t BUFFER_SIZE_FRAMES = 128;
+
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 
@@ -128,7 +130,7 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
 
     LOGI(std::format("Initializing AltSound for game: {}, basePath: {}", gameId, basePath));
 
-    if (AltSoundInit(basePath, gameId, 44100, 2, 128)) {
+    if (AltSoundInit(basePath, gameId, 44100, 2, BUFFER_SIZE_FRAMES)) {
         AltSoundSetAudioCallback(AudioCallback, nullptr);
         AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(hardwareGen));
 
