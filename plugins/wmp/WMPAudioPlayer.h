@@ -4,7 +4,6 @@
 
 #include "common.h"
 #include "miniaudio_private.h"
-#include <thread>
 #include <atomic>
 
 namespace WMP {
@@ -32,30 +31,35 @@ public:
    void UpdateVolume(int volume, bool mute);
 
 private:
-   void StartStreaming();
-   void StopStreaming();
+   static void EngineProcess(void* pUserData, float* pFramesOut, ma_uint64 frameCount);
+   void OnEngineProcess(float* pFramesOut, ma_uint64 frameCount);
+   static void SoundEndCallback(void* pUserData, ma_sound* pSound);
    void SendAudioChunk(const float* samples, size_t frameCount);
+   void SendClear();
 
    MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_onAudioUpdateId;
 
    ma_decoder m_decoder;
+   ma_context m_context;
+   ma_engine m_engine;
+   ma_sound m_sound;
+   bool m_engineInited = false;
+   bool m_soundInited = false;
 
    std::atomic<bool> m_isLoaded;
    std::atomic<bool> m_isPlaying;
    std::atomic<bool> m_isPaused;
    std::atomic<float> m_volume;
-
-   std::thread m_thread;
-   std::atomic<bool> m_shouldStopStreaming;
+   std::atomic<bool> m_endSignaled{false};
 
    ma_uint32 m_sampleRate;
    ma_uint32 m_channels;
    string m_loadedFile;
 
    CtlResId m_audioResId;
-   static constexpr size_t BUFFER_SIZE_FRAMES = 1024;
+   static constexpr size_t BUFFER_SIZE_FRAMES = 128;
 };
 
 }

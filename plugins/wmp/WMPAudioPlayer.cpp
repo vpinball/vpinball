@@ -24,7 +24,6 @@ WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsign
    , m_isPlaying(false) 
    , m_isPaused(false)
    , m_volume(0.5f)
-   , m_shouldStopStreaming(false)
    , m_sampleRate(44100)
    , m_channels(2)
 {
@@ -35,9 +34,6 @@ WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsign
 WMPAudioPlayer::~WMPAudioPlayer()
 {
    UnloadFile();
-   m_shouldStopStreaming = true;
-   if (m_thread.joinable())
-      m_thread.join();
 }
 
 bool WMPAudioPlayer::LoadFile(const string& filepath)
@@ -65,8 +61,35 @@ bool WMPAudioPlayer::LoadFile(const string& filepath)
 
    m_sampleRate = sampleRate;
    m_channels = channels;
+
+   result = wmp_ma_engine_init_null_device(m_channels, m_sampleRate, BUFFER_SIZE_FRAMES, EngineProcess, this, &m_context, &m_engine);
+   if (result != MA_SUCCESS) {
+      LOGE("Failed to initialize miniAudio engine (error: " + std::to_string(result) + ')');
+      wmp_ma_decoder_uninit(&m_decoder);
+      return false;
+   }
+   m_engineInited = true;
+
+   result = wmp_ma_sound_init_from_decoder(&m_engine, &m_decoder, MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH, &m_sound);
+   if (result != MA_SUCCESS) {
+      LOGE("Failed to initialize miniAudio sound (error: " + std::to_string(result) + ')');
+      wmp_ma_engine_uninit(&m_engine);
+      wmp_ma_context_uninit(&m_context);
+      m_engineInited = false;
+      wmp_ma_decoder_uninit(&m_decoder);
+      return false;
+   }
+   m_soundInited = true;
+   wmp_ma_sound_set_volume(&m_sound, m_volume.load());
+   wmp_ma_sound_set_end_callback(&m_sound, SoundEndCallback, this);
+
    m_loadedFile = filepath;
    m_isLoaded = true;
+
+   // miniAudio owns the audio thread (a realtime-paced null device); it calls
+   // EngineProcess with the mixed buffer, which we forward to the host. The
+   // engine runs until UnloadFile(); playback is gated by m_isPlaying.
+   wmp_ma_engine_start(&m_engine);
 
    LOGD("Audio loaded: " + std::to_string(sampleRate) + " Hz, " + std::to_string(channels) + " channels, format: f32");
    return true;
@@ -77,6 +100,19 @@ void WMPAudioPlayer::UnloadFile()
    Stop();
 
    if (m_isLoaded) {
+      // Stop miniAudio's audio thread before tearing anything down so no
+      // EngineProcess callback runs during teardown.
+      if (m_engineInited)
+         wmp_ma_engine_stop(&m_engine);
+      if (m_soundInited) {
+         wmp_ma_sound_uninit(&m_sound);
+         m_soundInited = false;
+      }
+      if (m_engineInited) {
+         wmp_ma_engine_uninit(&m_engine);
+         wmp_ma_context_uninit(&m_context);
+         m_engineInited = false;
+      }
       wmp_ma_decoder_uninit(&m_decoder);
       m_isLoaded = false;
       m_loadedFile.clear();
@@ -94,10 +130,16 @@ void WMPAudioPlayer::Play()
 
    LOGI("Starting playback"s);
 
+   m_endSignaled = false;
    m_isPaused = false;
    m_isPlaying = true;
 
-   StartStreaming();
+   if (m_soundInited) {
+      // Rewind if a previous playback ran to completion so this is a fresh play.
+      if (wmp_ma_sound_at_end(&m_sound))
+         wmp_ma_sound_seek_to_pcm_frame(&m_sound, 0);
+      wmp_ma_sound_start(&m_sound);
+   }
 }
 
 void WMPAudioPlayer::Pause()
@@ -108,7 +150,11 @@ void WMPAudioPlayer::Pause()
    LOGI("Pausing playback"s);
 
    m_isPaused = true;
-   StopStreaming();
+
+   if (m_soundInited)
+      wmp_ma_sound_stop(&m_sound);
+
+   SendClear();
 }
 
 void WMPAudioPlayer::Stop()
@@ -120,10 +166,14 @@ void WMPAudioPlayer::Stop()
 
    m_isPlaying = false;
    m_isPaused = false;
+   m_endSignaled = false;
 
-   StopStreaming();
-   if (m_isLoaded)
-      wmp_ma_decoder_seek_to_pcm_frame(&m_decoder, 0);
+   if (m_soundInited) {
+      wmp_ma_sound_stop(&m_sound);
+      wmp_ma_sound_seek_to_pcm_frame(&m_sound, 0);
+   }
+
+   SendClear();
 }
 
 double WMPAudioPlayer::GetPosition()
@@ -148,7 +198,9 @@ void WMPAudioPlayer::SetPosition(double positionInSeconds)
       return;
 
    const ma_uint64 targetFrame = (ma_uint64)(positionInSeconds * m_sampleRate);
-   const ma_result result = wmp_ma_decoder_seek_to_pcm_frame(&m_decoder, targetFrame);
+   const ma_result result = m_soundInited
+      ? wmp_ma_sound_seek_to_pcm_frame(&m_sound, targetFrame)
+      : wmp_ma_decoder_seek_to_pcm_frame(&m_decoder, targetFrame);
 
    if (result == MA_SUCCESS) {
       LOGI(std::format("Seek to position: {:.2f} seconds (frame {})", positionInSeconds, targetFrame));
@@ -161,6 +213,8 @@ void WMPAudioPlayer::SetPosition(double positionInSeconds)
 void WMPAudioPlayer::SetVolume(float volume)
 {
    m_volume = volume;
+   if (m_soundInited)
+      wmp_ma_sound_set_volume(&m_sound, m_volume.load());
    LOGI(std::format("Volume set to: {:.2f}", m_volume.load()));
 }
 
@@ -173,75 +227,42 @@ void WMPAudioPlayer::UpdateVolume(int volume, bool mute)
       audioVolume = 0.0f;
 
    m_volume = audioVolume;
+   if (m_soundInited)
+      wmp_ma_sound_set_volume(&m_sound, m_volume.load());
    LOGI(std::format("Volume updated: {}{} -> {:.2f}", clampedVolume, mute ? " (muted)" : "", m_volume.load()));
 }
 
-void WMPAudioPlayer::StartStreaming()
+void WMPAudioPlayer::EngineProcess(void* pUserData, float* pFramesOut, ma_uint64 frameCount)
 {
-   if (m_thread.joinable()) {
-      m_shouldStopStreaming = true;
-      m_thread.join();
-   }
-
-   m_shouldStopStreaming = false;
-
-   m_thread = std::thread([this]() {
-      constexpr size_t bufferSizeFrames = BUFFER_SIZE_FRAMES;
-      float* audioBuffer = new float[bufferSizeFrames * m_channels];
-   
-      while (!m_shouldStopStreaming && m_isPlaying && !m_isPaused) {
-         ma_uint64 framesRead = 0;
-         const ma_result result = wmp_ma_decoder_read_pcm_frames(&m_decoder, audioBuffer, bufferSizeFrames, &framesRead);
-
-         if (result != MA_SUCCESS || framesRead == 0) {
-            LOGI("End of audio stream reached"s);
-            break;
-         }
-
-         float volume = m_volume.load();
-         if (volume != 1.0f) {
-            for (size_t i = 0; i < framesRead * m_channels; ++i)
-               audioBuffer[i] *= volume;
-         }
-
-         SendAudioChunk(audioBuffer, (size_t)framesRead);
-
-         double bufferDurationMs = (double)framesRead / (double)m_sampleRate * 1000.0;
-         std::this_thread::sleep_for(std::chrono::microseconds((int)(bufferDurationMs * 800.)));
-      }
-
-      if (!m_shouldStopStreaming) {
-         AudioUpdateMsg* endMsg = new AudioUpdateMsg();
-         endMsg->id = m_audioResId;
-         endMsg->buffer = nullptr;
-         endMsg->bufferSize = 0;
-
-         AudioCallbackData* cbData = new AudioCallbackData{m_msgApi, m_endpointId, m_onAudioUpdateId, endMsg};
-
-         m_msgApi->RunOnMainThread(m_endpointId, 0, [](void* userData) {
-            AudioCallbackData* data = static_cast<AudioCallbackData*>(userData);
-            data->msgApi->BroadcastMsg(data->endpointId, data->onAudioUpdateId, data->msg);
-            delete data->msg;
-            delete data;
-         }, cbData);
-      }
-
-      delete[] audioBuffer;
-
-      if (m_isPlaying && !m_shouldStopStreaming) {
-         m_isPlaying = false;
-         LOGI("Playback completed"s);
-      }
-   });
+   static_cast<WMPAudioPlayer*>(pUserData)->OnEngineProcess(pFramesOut, frameCount);
 }
 
-void WMPAudioPlayer::StopStreaming()
+void WMPAudioPlayer::SoundEndCallback(void* pUserData, ma_sound* pSound)
 {
-   m_shouldStopStreaming = true;
+   // Fired by miniAudio (audio thread) the moment the sound reaches its end. Per
+   // miniAudio's contract we only set a flag here; OnEngineProcess acts on it.
+   static_cast<WMPAudioPlayer*>(pUserData)->m_endSignaled = true;
+}
 
-   if (m_thread.joinable())
-      m_thread.join();
+void WMPAudioPlayer::OnEngineProcess(float* pFramesOut, ma_uint64 frameCount)
+{
+   // Called on miniAudio's audio thread with the mixed buffer. Forward it to the
+   // host only while actively playing; the engine keeps running when idle.
+   if (!m_isPlaying || m_isPaused)
+      return;
 
+   SendAudioChunk(pFramesOut, (size_t)frameCount);
+
+   // This buffer carried the tail of the sound; finish playback after sending it.
+   if (m_endSignaled.exchange(false)) {
+      m_isPlaying = false;
+      SendClear();
+      LOGI("Playback completed"s);
+   }
+}
+
+void WMPAudioPlayer::SendClear()
+{
    AudioUpdateMsg* pAudioUpdateMsg = new AudioUpdateMsg();
    pAudioUpdateMsg->id = m_audioResId;
    pAudioUpdateMsg->buffer = nullptr;
