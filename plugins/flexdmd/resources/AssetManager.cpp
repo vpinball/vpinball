@@ -134,7 +134,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    }
    else {
       pAssetSrc->SetSrcType(AssetSrcType_File);
-      if (!pBaseSrc)
+      if (!pBaseSrc && !std::filesystem::path(parts[0]).is_absolute())
          pAssetSrc->SetPath(m_szBasePath + parts[0]);
       else
          pAssetSrc->SetPath(parts[0]);
