@@ -6,6 +6,7 @@
 #include "core/VPApp.h"
 #include "parts/Collection.h"
 #include "renderer/Renderer.h"
+#include "renderer/WaylandActivation.h"
 
 #include <SDL3/SDL_video.h>
 
@@ -368,6 +369,18 @@ void Window::Show(const bool show)
          PLOGI << "Window #" << m_windowId << " first mapped: requested display=" << m_targetDisplayId
                << " | WM placed display=" << actualDisp
                << " at (" << wx << ',' << wy << ") " << ww << 'x' << wh;
+
+#if defined(__linux__) && !defined(__ANDROID__)
+         if (m_windowId == VPXWindowId::VPXWINDOW_Playfield && WaylandActivation::HasStartupToken())
+         {
+            SDL_PropertiesID wlProps = SDL_GetWindowProperties(m_nwnd);
+            auto* display = static_cast<struct wl_display*>(
+               SDL_GetPointerProperty(wlProps, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr));
+            auto* surface = static_cast<struct wl_surface*>(
+               SDL_GetPointerProperty(wlProps, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr));
+            WaylandActivation::ActivatePlayfield(display, surface);
+         }
+#endif
       }
    }
    else

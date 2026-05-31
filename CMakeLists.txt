@@ -642,6 +642,10 @@ elseif(PLATFORM STREQUAL "linux")
 
    add_executable(vpinball
       ${VPX_STANDALONE_SOURCES}
+      src/renderer/WaylandActivation.cpp
+      src/renderer/WaylandActivation.h
+      src/renderer/wayland-protocols/xdg-activation-v1-protocol.c
+      src/renderer/wayland-protocols/xdg-activation-v1-client-protocol.h
    )
 
    target_include_directories(vpinball PUBLIC
@@ -718,6 +722,7 @@ elseif(PLATFORM STREQUAL "linux")
       freeimage
       hidapi-hidraw
       winevbs
+      wayland-client
    )
 
    target_link_libraries(vpinball PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)

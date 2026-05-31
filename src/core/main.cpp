@@ -11,6 +11,7 @@
 
 #include "core/AppCommands.h"
 #include "core/VPApp.h"
+#include "renderer/WaylandActivation.h"
 
 #include "ui/win/resource.h"
 #include <initguid.h>
@@ -200,6 +201,15 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       // The video subsystem is initialized lazily when a window is created (see VPX::Window), so
       // headless commands (info, script/POV export, audit, tournament validation) run without a
       // display or a working video driver.
+#if defined(__linux__) && !defined(__ANDROID__)
+      // Stash XDG_ACTIVATION_TOKEN before SDL touches it. SDL3's Wayland_ShowWindow
+      // consumes the env var on the first window it shows, but VPX does not guarantee
+      // the Playfield is shown first, so without saving the token here the Playfield
+      // gets mapped without activation and Mutter denies it focus. We re-apply the
+      // saved token to the Playfield surface explicitly from Window::Show.
+      if (const char* tok = SDL_getenv("XDG_ACTIVATION_TOKEN"))
+         WaylandActivation::SaveStartupToken(tok);
+#endif
 #if !defined(_MSC_VER) && !defined(__APPLE__) && !defined(__ANDROID__)
       {
          const char* const xdgDesktop = SDL_getenv("XDG_CURRENT_DESKTOP");
