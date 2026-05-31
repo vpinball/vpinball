@@ -123,7 +123,7 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 	return hres;
 }
 
-STDMETHODIMP Collection::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Collection::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Collection");
 		return S_OK;
@@ -2183,7 +2183,7 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 	return hres;
 }
 
-STDMETHODIMP PinTable::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP PinTable::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Table");
 		return S_OK;
@@ -5026,7 +5026,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 	return hres;
 }
 
-STDMETHODIMP ScriptGlobalTable::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP ScriptGlobalTable::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"TableGlobal");
 		return S_OK;
@@ -5156,7 +5156,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Invoke(DISPID dispIdMember, REFI
 	return hres;
 }
 
-STDMETHODIMP ScriptInterpreter::DebuggerModule::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP ScriptInterpreter::DebuggerModule::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"VPDebug");
 		return S_OK;
@@ -6028,7 +6028,7 @@ STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Surface::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Surface::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Wall");
 		return S_OK;
@@ -6282,7 +6282,7 @@ STDMETHODIMP DragPoint::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 	return hres;
 }
 
-STDMETHODIMP DragPoint::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP DragPoint::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"ControlPoint");
 		return S_OK;
@@ -7129,7 +7129,7 @@ STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Flipper::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Flipper::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Flipper");
 		return S_OK;
@@ -7331,7 +7331,7 @@ STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	return hres;
 }
 
-STDMETHODIMP Timer::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Timer::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Timer");
 		return S_OK;
@@ -8223,7 +8223,7 @@ STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Plunger::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Plunger::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Plunger");
 		return S_OK;
@@ -8714,7 +8714,7 @@ STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Textbox::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Textbox::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Textbox");
 		return S_OK;
@@ -9456,7 +9456,7 @@ STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	return hres;
 }
 
-STDMETHODIMP Bumper::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Bumper::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Bumper");
 		return S_OK;
@@ -9971,7 +9971,7 @@ STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Trigger::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Trigger::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Trigger");
 		return S_OK;
@@ -10852,7 +10852,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	return hres;
 }
 
-STDMETHODIMP Light::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Light::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Light");
 		return S_OK;
@@ -11514,7 +11514,7 @@ STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	return hres;
 }
 
-STDMETHODIMP Kicker::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Kicker::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Kicker");
 		return S_OK;
@@ -11940,7 +11940,7 @@ STDMETHODIMP Decal::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	return hres;
 }
 
-STDMETHODIMP Decal::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Decal::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Decal");
 		return S_OK;
@@ -13458,7 +13458,7 @@ STDMETHODIMP Primitive::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 	return hres;
 }
 
-STDMETHODIMP Primitive::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Primitive::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Primitive");
 		return S_OK;
@@ -14313,7 +14313,7 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 	return hres;
 }
 
-STDMETHODIMP HitTarget::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP HitTarget::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"HitTarget");
 		return S_OK;
@@ -14991,7 +14991,7 @@ STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 	return hres;
 }
 
-STDMETHODIMP Gate::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Gate::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Gate");
 		return S_OK;
@@ -15532,7 +15532,7 @@ STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Spinner::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Spinner::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Spinner");
 		return S_OK;
@@ -16327,7 +16327,7 @@ STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 	return hres;
 }
 
-STDMETHODIMP Ramp::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Ramp::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Ramp");
 		return S_OK;
@@ -17045,7 +17045,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP Flasher::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Flasher::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Flasher");
 		return S_OK;
@@ -17644,7 +17644,7 @@ STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	return hres;
 }
 
-STDMETHODIMP Rubber::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Rubber::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"Rubber");
 		return S_OK;
@@ -18297,7 +18297,7 @@ STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 	return hres;
 }
 
-STDMETHODIMP Ball::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Ball::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"IBall");
 		return S_OK;
@@ -19024,7 +19024,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 	return hres;
 }
 
-STDMETHODIMP DispReel::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP DispReel::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"DispReel");
 		return S_OK;
@@ -19222,7 +19222,7 @@ STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 	return hres;
 }
 
-STDMETHODIMP PartGroup::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP PartGroup::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"PartGroup");
 		return S_OK;
@@ -19548,7 +19548,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 	return hres;
 }
 
-STDMETHODIMP LightSeq::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP LightSeq::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"LightSeq");
 		return S_OK;

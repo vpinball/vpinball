@@ -6,7 +6,7 @@
 #include "physics/hitable.h"
 #include "physics/hitflipper.h"
 #include "renderer/Renderable.h"
-#include "ui/win/resource.h"  
+#include "ui/win/resource.h"
 #include "utils/eventproxy.h"
 
 
@@ -17,7 +17,7 @@ class FlipperData final : public BaseProperty
 public:
    float m_BaseRadius;
    float m_EndRadius;
-   float m_FlipperRadiusMin; // the flipper length reduction at maximum difficulty 
+   float m_FlipperRadiusMin; // the flipper length reduction at maximum difficulty
    float m_FlipperRadiusMax;
    float m_FlipperRadius;
    float m_StartAngle;
@@ -78,7 +78,7 @@ public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Flipper() { }
