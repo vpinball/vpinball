@@ -35,7 +35,7 @@ void BallControl::SetMode(Mode mode)
    m_mode = mode;
 }
 
-bool BallControl::IsDraggedBallSelectable() const
+bool BallControl::IsSelectedBallDraggable() const
 {
    // A ball is only a valid drag target while it is in active play: visible and not held in a kicker
    // (trough/saucer/lock). Checked at use time rather than registration because a ball's state changes
@@ -63,7 +63,7 @@ void BallControl::Update(const int width, const int height)
       break;
 
    case DragBall:
-      if (IsDraggedBallSelectable() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperPressed)
+      if (IsSelectedBallDraggable() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperPressed)
          HandleDragBall(width, height);
       break;
       

@@ -42,7 +42,7 @@ private:
    void HandleDragBall(const int width, const int height);
    void HandleDestroyBall(const int width, const int height) const;
    void HandleThrowBalls(const int width, const int height);
-   bool IsDraggedBallSelectable() const;
+   bool IsSelectedBallDraggable() const;
 
    LiveUI& m_liveUI;
    Mode m_mode = Mode::Disabled;
