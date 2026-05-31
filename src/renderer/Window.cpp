@@ -391,7 +391,19 @@ void Window::RaiseAndFocus()
 bool Window::IsFocused() const {
    if (m_isVR)
       return true;
-   return m_nwnd == SDL_GetKeyboardFocus();
+   if (m_nwnd == SDL_GetKeyboardFocus())
+      return true;
+   // Linux cab fallback: a fullscreen-pinned playfield is the user's only viewport on a
+   // dedicated output. Mutter Wayland does not reliably grant focus to newly-mapped fullscreen
+   // sibling toplevels of the same app_id without an xdg_activation_v1 token (which a child
+   // process spawned by a launcher typically lacks). Without this, the simulation stays paused
+   // and the user has to Alt+Tab onto the Playfield to unfreeze it. Reporting the Playfield
+   // as focused in this scenario keeps the cab playable. Restricted to the Playfield window
+   // and to fullscreen state so it does not relax focus semantics anywhere else.
+   if (m_windowId == VPXWindowId::VPXWINDOW_Playfield
+       && (SDL_GetWindowFlags(m_nwnd) & SDL_WINDOW_FULLSCREEN))
+      return true;
+   return false;
 }
 
 void Window::GetPos(int& x, int& y) const
