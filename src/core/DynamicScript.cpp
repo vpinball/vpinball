@@ -899,8 +899,6 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       return DISP_E_MEMBERNOTFOUND;
    }
    const ScriptClassMemberDef& memberDef = classDef->members[memberIndex];
-   if ((memberDef.type.id != TypeID::TYPEID_VOID) && (pVarResult == nullptr))
-      return E_POINTER;
 
    // Convert all incoming COM arguments to ScriptVariants
    ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
@@ -995,8 +993,13 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    // Convert then dispose the return value if any
    if (memberDef.type.id != TypeID::TYPEID_VOID)
    {
-      assert(V_VT(pVarResult) == VT_EMPTY);
-      ScriptToCOMVariant(memberDef.type, retValue, pVarResult);
+      // pVarResult is null when a non-void member is invoked as a statement (DISPATCH_METHOD), e.g. a
+      // property get used as a bare statement. That is valid: run the call but discard the result.
+      if (pVarResult != nullptr)
+      {
+         assert(V_VT(pVarResult) == VT_EMPTY);
+         ScriptToCOMVariant(memberDef.type, retValue, pVarResult);
+      }
       ReleaseScriptVariant(memberDef.type, retValue);
    }
 
