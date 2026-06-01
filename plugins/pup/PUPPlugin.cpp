@@ -287,7 +287,11 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    std::filesystem::path rootPath = find_case_insensitive_directory_path(pupFolder / "pupvideos"sv);
    if (rootPath.empty())
    {
-      LOGW("PUP folder was not found (settings is '" + pupFolder.string() + "')");
+      if (pupFolder.empty())
+         // No global folder configured: the per-table 'pupvideos' folder (next to each table) is the primary source.
+         LOGI("No global PUP folder configured; per-table 'pupvideos' used when present");
+      else
+         LOGW("PUP folder was not found (settings is '" + pupFolder.string() + "')");
    }
    pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
 }
