@@ -325,7 +325,8 @@ void Decal::EnsureSize()
 
       if (m_d.m_decaltype == DecalImage)
       {
-         Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+         // m_ptable is not set yet during the early Load/Init/CopyForPlay calls; RenderSetup recomputes once it is
+         Texture * const pin = m_ptable ? m_ptable->GetImage(m_d.m_szImage) : nullptr;
          m_realwidth = m_realheight;
          if (pin)
             m_realwidth *= (float)((double)pin->m_width / (double)pin->m_height);
@@ -360,8 +361,9 @@ void Decal::RenderSetup(Renderer *renderer)
    assert(m_renderer == nullptr);
    m_renderer = renderer;
 
+   EnsureSize();
    UpdateBounds();
-   
+
 #ifndef __STANDALONE__
    if (m_d.m_decaltype == DecalText)
    {
