@@ -9,7 +9,7 @@
 #endif
 
 namespace Serum {
-   
+
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -64,7 +64,8 @@ string normalize_path_separators(const string& szPath)
       std::ranges::replace(szResult.begin(), szResult.end(), '/', PATH_SEPARATOR_CHAR);
    #endif
 
-   auto end = std::unique(szResult.begin(), szResult.end(),
+   const bool isUNC = szResult.size() >= 2 && szResult[0] == PATH_SEPARATOR_CHAR && szResult[1] == PATH_SEPARATOR_CHAR;
+   auto end = std::unique(isUNC ? szResult.begin() + 2 : szResult.begin(), szResult.end(),
       [](char a, char b) { return a == b && a == PATH_SEPARATOR_CHAR; });
    szResult.erase(end, szResult.end());
 
