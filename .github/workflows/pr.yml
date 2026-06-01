@@ -1,0 +1,78 @@
+name: PR build
+
+# Minimal continuous integration for pull requests: build a representative
+# configuration on each desktop platform so a broken build (or a platform
+# specific compile error/warning, e.g. macOS only) is caught before merge.
+#
+# Cost control (see discussion on enabling PR CI):
+# - One config per platform (BGFX Release), not the full release matrix.
+# - The external dependency cache is restored READ-ONLY (no save step), so PR
+#   runs can never evict the cache that the push-to-master builds populate.
+# - Concurrent runs on the same PR are cancelled.
+# - No packaging, code signing, notarization or artifact upload.
+on:
+  pull_request:
+
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build VPinballX_BGFX-${{ matrix.platform }}-${{ matrix.arch }}-Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, platform: linux, arch: x64 }
+          - { os: macos-15, platform: macos, arch: arm64 }
+          - { os: windows-2025-vs2026, platform: windows, arch: x64 }
+    env:
+      config: Release
+    steps:
+      - if: (matrix.platform == 'windows')
+        uses: microsoft/setup-msbuild@v3
+      - if: (matrix.platform == 'windows')
+        run: |
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm bison git autoconf automake libtool"
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
+      - if: (matrix.platform == 'macos')
+        run: |
+          brew install bison autoconf automake libtool nasm
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - if: (matrix.platform == 'linux')
+        run: |
+          sudo apt-get update
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+      - uses: actions/checkout@v6
+      - name: Calculate external cache hash
+        run: |
+          echo "EXT_HASH=$(cat platforms/config.sh platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh | sha256sum | cut -c1-12)" >> $GITHUB_ENV
+      - name: Restore external cache (read-only)
+        uses: actions/cache/restore@v5
+        with:
+          path: external
+          key: ${{ matrix.platform }}-${{ matrix.arch }}-${{ env.config }}-external-${{ env.EXT_HASH }}
+          restore-keys: |
+            ${{ matrix.platform }}-${{ matrix.arch }}-${{ env.config }}-external-
+      - name: Build external dependencies
+        run: |
+          BUILD_TYPE=${{ env.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+      - name: Build
+        run: |
+          cp make/CMakeLists_bgfx-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            cmake -G "Visual Studio 18 2026" -A x64 -B build
+            cmake --build build --config ${{ env.config }}
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            cmake -DCMAKE_BUILD_TYPE=${{ env.config }} -B build/${{ env.config }}
+            cmake --build build/${{ env.config }} -- -j$(sysctl -n hw.ncpu)
+          else
+            cmake -DCMAKE_BUILD_TYPE=${{ env.config }} -B build/${{ env.config }}
+            cmake --build build/${{ env.config }} -- -j$(nproc)
+          fi
