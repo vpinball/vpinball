@@ -7147,8 +7147,7 @@ STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
-   PLOGE << "BackglassMode is deprecated";
-   m_viewMode = (ViewSetupID)(pVal - DESKTOP);
+   PLOGE << "BackglassMode is deprecated and ignored, this call has no effect";
    return S_OK;
 }
 
