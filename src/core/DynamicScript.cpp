@@ -900,7 +900,12 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    }
    const ScriptClassMemberDef& memberDef = classDef->members[memberIndex];
    if ((memberDef.type.id != TypeID::TYPEID_VOID) && (pVarResult == nullptr))
-      return E_POINTER;
+      // A value-returning member invoked with no result buffer was used as a statement (e.g. a bare
+      // property get). Report it as native COM does (-> VBScript error 438).
+      // TODO a value-returning function used as a bare statement should run and discard its result (as
+      // native does), but a property getter and a function are indistinguishable here (identical member
+      // shape), so such a call fails with 438 too. Telling them apart needs a flag in ScriptClassMemberDef.
+      return DISP_E_MEMBERNOTFOUND;
 
    // Convert all incoming COM arguments to ScriptVariants
    ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
