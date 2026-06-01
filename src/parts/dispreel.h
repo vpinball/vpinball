@@ -52,7 +52,7 @@ public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    DispReel() { m_desktopBackdrop = true; } // DispReel is always located on backdrop
@@ -132,7 +132,7 @@ public:
        m_d.m_v2.y = m_d.m_v1.y + getBoxHeight();
    }
    float   GetSpacing() const { return m_d.m_reelspacing; }
-   void    SetSpacing(const float newSpace) 
+   void    SetSpacing(const float newSpace)
    {
        m_d.m_reelspacing = max(0.0f, newSpace);
        m_d.m_v2.x = m_d.m_v1.x + getBoxWidth();

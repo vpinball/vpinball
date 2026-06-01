@@ -50,7 +50,7 @@ public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Trigger() { m_menuid = IDR_SURFACEMENU; }
@@ -65,8 +65,8 @@ public:
       COM_INTERFACE_ENTRY(IProvideClassInfo)
       COM_INTERFACE_ENTRY(IProvideClassInfo2)
    END_COM_MAP()
-   //DECLARE_NOT_AGGREGATABLE(Trigger) 
-   // Remove the comment from the line above if you don't want your object to 
+   //DECLARE_NOT_AGGREGATABLE(Trigger)
+   // Remove the comment from the line above if you don't want your object to
    // support aggregation.
 
    BEGIN_CONNECTION_POINT_MAP(Trigger)

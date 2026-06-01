@@ -335,7 +335,7 @@ public class IDLParserToCpp {
 		buffer.append("\n");
 		buffer.append("};\n");
 		buffer.append("\n");
-		
+
 		buffer.append("size_t min = 1, max = ARRAYSIZE(namesIdsList) - 1, i;\n");
 		buffer.append("int r;\n");
 		buffer.append("while(min <= max) {\n");
@@ -400,7 +400,7 @@ public class IDLParserToCpp {
 		for (String key : dispatchMap.keySet()) {
 			Dispatch dispatch = dispatchMap.get(key);
 
-			buffer.append("case " + dispatch.getId() + ": {\n"); 
+			buffer.append("case " + dispatch.getId() + ": {\n");
 
 			int index = 0;
 
@@ -421,8 +421,8 @@ public class IDLParserToCpp {
 				buffer.append("}\n");
 			}
 
-			buffer.append("break;\n"); 
-			buffer.append("}\n"); 
+			buffer.append("break;\n");
+			buffer.append("}\n");
 		}
 
 		if (enumMap != null) {
@@ -457,7 +457,7 @@ public class IDLParserToCpp {
 		buffer.append("\n");
 
 		if (!excludeDocumentation) {
-			buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {\n");
+			buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::GetDocumentation(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {\n");
 			buffer.append("if (index == MEMBERID_NIL) {\n");
 			buffer.append("*pBstrName = SysAllocString(L\"" + idlInterface.getDocumentationName() + "\");\n");
 			buffer.append("return S_OK;\n");
@@ -549,7 +549,7 @@ public class IDLParserToCpp {
 		buffer.append("\n");
 		buffer.append("};\n");
 		buffer.append("\n");
-		
+
 		buffer.append("static WCHAR wzName[MAXSTRING];\n");
 		buffer.append("size_t min = 1, max = ARRAYSIZE(idsNamesList) - 1, i;\n");
 		buffer.append("int r;\n");
@@ -765,22 +765,22 @@ public class IDLParserToCpp {
 				else if ("LONG_PTR".equals(param.getType())) {
 					header.append(generateHeaderVariant(index, param, "VT_UI4", method));
 					buffer.append("(LONG_PTR)V_UI4(&var" + index + ")");
-				}   
+				}
 				else if ("UserDefaultOnOff".equals(param.getType())
 						|| "FXAASettings".equals(param.getType())
 						|| "PhysicsSet".equals(param.getType())
 						|| "BackglassIndex".equals(param.getType())
 						|| "ImageAlignment".equals(param.getType())
-						|| "PlungerType".equals(param.getType()) 
-						|| "TextAlignment".equals(param.getType()) 
+						|| "PlungerType".equals(param.getType())
+						|| "TextAlignment".equals(param.getType())
 						|| "TriggerShape".equals(param.getType())
-						|| "LightState".equals(param.getType()) 
-						|| "KickerType".equals(param.getType()) 
-						|| "DecalType".equals(param.getType()) 
-						|| "SizingType".equals(param.getType()) 
-						|| "TargetType".equals(param.getType()) 
-						|| "GateType".equals(param.getType()) 
-						|| "RampType".equals(param.getType()) 
+						|| "LightState".equals(param.getType())
+						|| "KickerType".equals(param.getType())
+						|| "DecalType".equals(param.getType())
+						|| "SizingType".equals(param.getType())
+						|| "TargetType".equals(param.getType())
+						|| "GateType".equals(param.getType())
+						|| "RampType".equals(param.getType())
 						|| "RampImageAlignment".equals(param.getType())
 						|| "SequencerState".equals(param.getType())
 						|| "RenderMode".equals(param.getType())
@@ -915,7 +915,7 @@ public class IDLParserToCpp {
 		index = 0;
 
 		for (Param param : method.getParamList()) {
-			if (param.getParamType() != ParamType.OUT && 
+			if (param.getParamType() != ParamType.OUT &&
 					param.getParamType() != ParamType.OUT_RETVAL) {
 				buffer.append("VariantClear(&var" + index + ");\n");
 			}

@@ -49,7 +49,7 @@ public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
-   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Textbox() { m_desktopBackdrop = true; } // Textbox is always located on backdrop
@@ -63,8 +63,8 @@ public:
       COM_INTERFACE_ENTRY(IProvideClassInfo2)
       //COM_INTERFACE_ENTRY(ISupportErrorInfo)
    END_COM_MAP()
-   //DECLARE_NOT_AGGREGATABLE(Textbox) 
-   // Remove the comment from the line above if you don't want your object to 
+   //DECLARE_NOT_AGGREGATABLE(Textbox)
+   // Remove the comment from the line above if you don't want your object to
    // support aggregation.
 
    BEGIN_CONNECTION_POINT_MAP(Textbox)

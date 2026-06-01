@@ -108,7 +108,7 @@ private:
 
    /**
     * Will be nullptr on systems that don't support debugging.
-    * 
+    *
     * For example, wine 6.9 says ...
     * > no class object {78a51822-51f4-11d0-8f20-00805f2cd064} could be created for context 0x17
     * ... if I try to create CLSID_ProcessDebugManager
@@ -129,7 +129,7 @@ private:
    public:
       STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
       STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
-      STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+      STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
 #endif
       BEGIN_COM_MAP(DebuggerModule)
       COM_INTERFACE_ENTRY(IVPDebug)
