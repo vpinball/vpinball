@@ -111,6 +111,11 @@ static void UpdateThread()
 
       std::lock_guard<std::mutex> lock(sourceMutex);
 
+      // The loop condition above is read without the lock, so the source may have been reset (e.g. removed
+      // during teardown, clearing GetRenderFrame) before we get here. Re-validate under the lock.
+      if (selectedDmdId.GetRenderFrame == nullptr)
+         continue;
+
       const DisplayFrame frame = selectedDmdId.GetRenderFrame(selectedDmdId.id);
       if (lastFrameID == frame.frameId)
          continue;
