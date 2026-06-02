@@ -3396,6 +3396,12 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
    if (outputRT == nullptr)
       return;
 
+   // Keep the embedded ancillary content ordered after bloom: it writes the back buffer that bloom
+   // already sampled with this region cleared, so without this dependency the sorter may run it before
+   // the bloom sample and bloom bleeds the content into the region. No-op if bloom did not run.
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+      rd->AddRenderTargetDependency(GetBloomBufferTexture());
+
    rd->ResetRenderState();
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
