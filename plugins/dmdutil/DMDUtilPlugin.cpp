@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include <cstdlib>
+#include <atomic>
 #include <chrono>
 #include <cstring>
 #include <charconv>
@@ -33,7 +34,7 @@ static unsigned int getDmdSrcMsgId;
 static std::mutex sourceMutex;
 static std::thread updateThread;
 static DisplaySrcId selectedDmdId = {};
-static bool isRunning = false;
+static std::atomic<bool> isRunning = false;
 
 static DMDUtil::DMD* pDmd = nullptr;
 
@@ -104,12 +105,17 @@ void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format,
 static void UpdateThread()
 {
    int lastFrameID = 0;
-   while (isRunning && pDmd && selectedDmdId.id.id != 0)
+   while (isRunning)
    {
       // Fixed update at 60 FPS
       std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
       std::lock_guard<std::mutex> lock(sourceMutex);
+
+      // Read the shared source/display state under the lock: it can be reset (e.g. the source removed
+      // during teardown, clearing GetRenderFrame) concurrently with this thread. Skip until it is valid.
+      if (pDmd == nullptr || selectedDmdId.id.id == 0 || selectedDmdId.GetRenderFrame == nullptr)
+         continue;
 
       const DisplayFrame frame = selectedDmdId.GetRenderFrame(selectedDmdId.id);
       if (lastFrameID == frame.frameId)
