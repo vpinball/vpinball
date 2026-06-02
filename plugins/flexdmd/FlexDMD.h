@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "common.h"
 #include "SurfaceGraphics.h"
 #include "plugins/VPXPlugin.h"
@@ -77,6 +79,13 @@ public:
    const std::vector<uint32_t>& GetDmdColoredPixels();
    const std::vector<uint8_t>& GetDmdPixels();
 
+   // Render the scene and publish a thread-safe snapshot of the source frame. Main thread only.
+   void RenderAndPublish();
+   // Thread-safe accessor for the last published source frame (RGB888 in RGB mode, LUM32F in gray
+   // modes). The pointer is owned by this FlexDMD and stays valid; { 0, nullptr } until first render.
+   struct RenderSnapshot { unsigned int frameId; const void* frame; };
+   RenderSnapshot GetRenderSnapshot() const;
+
    void SetSegments(const std::vector<uint16_t>& segments);
 
    void LockRenderThread() { m_renderLockCount++; }
@@ -148,6 +157,13 @@ private:
    void UpdateLumFrame();
    std::vector<uint8_t> m_lumFrame;
    bool m_lumFrameDirty = true;
+
+   // Published source-format frame, double buffered so GetRenderSnapshot can be called from any
+   // thread (scoreview / dmdutil worker) while the main thread renders into the other buffer.
+   void PublishFrame();
+   std::vector<uint8_t> m_pubFrame[2];
+   unsigned int m_pubFrameId[2] = { 0, 0 };
+   std::atomic<int> m_pubIndex = 0;
 
    string m_szGameName;
    uint64_t m_lastRenderTick = 0;

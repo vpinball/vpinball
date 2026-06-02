@@ -121,6 +121,9 @@ private:
 
    // Contribute VPX script controlled DMD through controller plugin API
    vector<Flasher*> m_dmdSources;
+   // Last announced descriptor of the global script DMD, to avoid re-broadcasting a source
+   // change on every per-frame content push (DMDPixels/DMDColoredPixels).
+   struct { bool present; unsigned int width, height; int format; } m_globalDmdSrc = {};
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static DisplayFrame ControllerOnGetRenderDMD(const CtlResId id);
    const unsigned int m_onDisplaySrcChgMsgId;
