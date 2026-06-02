@@ -85,6 +85,11 @@ public:
          LINESTRIP
       };
 
+      // Names of the graphics backends selectable on this platform: reported as supported by bgfx and not
+      // filtered out (excludes Noop, WebGPU, and Direct3D12 in release). Single source of truth shared by
+      // the graphics settings UI and the GfxBackend validation/log so they cannot drift.
+      static std::vector<std::string> GetSelectableBackendNames();
+
    #elif defined(ENABLE_OPENGL)
       enum PrimitiveTypes
       {
