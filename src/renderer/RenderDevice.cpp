@@ -1140,18 +1140,39 @@ RenderDevice::RenderDevice(
       syncMode = VideoSyncMode::VSM_VSYNC;
    
    // Select backend
-   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "WebGPU"s, "Default"s };
    const string& gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-   string supportedRendererLog;
+   // Valid GfxBackend values: 'Default' (let BGFX auto-select the platform default) plus the backends
+   // usable on this platform. Mirrors the in-game graphics settings list, so it is what we suggest below.
+   string validBackends = "Default"s;
    init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
+   bool backendMatched = false;
    for (int i = 0; i < nRendererSupported; ++i)
    {
-      supportedRendererLog += (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
-      if (gfxBackend == bgfxRendererNames[supportedRenderers[i]])
-         init.type = supportedRenderers[i];
+      const bgfx::RendererType::Enum renderer = supportedRenderers[i];
+      if (gfxBackend == bgfxRendererNames[renderer])
+      {
+         init.type = renderer;
+         backendMatched = true;
+      }
+      if (renderer == bgfx::RendererType::Noop || renderer == bgfx::RendererType::WebGPU)
+         continue; // no-op / web backend, not a usable desktop choice
+      #if !defined(_WIN32)
+      if (renderer == bgfx::RendererType::Direct3D11 || renderer == bgfx::RendererType::Direct3D12)
+         continue; // Direct3D is Windows only
+      #endif
+      #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
+      if (renderer == bgfx::RendererType::Direct3D12)
+         continue;
+      #endif
+      validBackends += ", " + bgfxRendererNames[renderer];
    }
+   // The GfxBackend setting is case sensitive and an unknown/unsupported value silently falls back to the
+   // platform default, so warn rather than leave the user guessing (e.g. 'opengl' instead of 'OpenGL').
+   if (!backendMatched && !gfxBackend.empty() && gfxBackend != "Default"s)
+      PLOGW << "Ignoring unknown or unsupported graphics backend '" << gfxBackend << "' (case sensitive), using platform default. Valid values: " << validBackends;
 #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
    if (init.type == bgfx::RendererType::Direct3D12)
       init.type = bgfx::RendererType::Count;
@@ -1160,7 +1181,8 @@ RenderDevice::RenderDevice(
       init.type = bgfx::RendererType::Count;
    if (g_pplayer->m_vrDevice == nullptr)
    {
-      PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
+      PLOGI << "Using graphics backend: " << (init.type == bgfx::RendererType::Count ? "Default (auto-selected by BGFX)"s : bgfxRendererNames[init.type])
+            << " (valid values: " << validBackends << ')';
    }
 
    #ifndef __LIBVPINBALL__
