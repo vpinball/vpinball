@@ -602,6 +602,12 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 {
+   // Keep the returned frame (texture or its SRGB alias) alive for the calling thread until its next
+   // call here. GetRenderFrame is called from consumer threads (e.g. the dmdutil worker), which read
+   // the returned pointer after this returns; without holding a reference the main thread could free
+   // the texture/alias (texture swap, alias cache clear) before the consumer copies it.
+   thread_local std::shared_ptr<BaseTexture> s_held;
+
    VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
 
    if ((g_pplayer == nullptr) || (id.endpointId != me.m_vpxPlugin->m_endpointId))
@@ -625,11 +631,12 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 
    switch (dmdFrame->m_format)
    {
-   case BaseTexture::BW_FP32: result.frame = dmdFrame->data(); break;
-   case BaseTexture::SRGB: result.frame = dmdFrame->data(); break;
-   case BaseTexture::SRGBA: result.frame = dmdFrame->GetAlias(BaseTexture::SRGB)->data(); break;
+   case BaseTexture::BW_FP32: s_held = dmdFrame; break;
+   case BaseTexture::SRGB: s_held = dmdFrame; break;
+   case BaseTexture::SRGBA: s_held = dmdFrame->GetAlias(BaseTexture::SRGB); break;
    default: assert(false); return { 0, nullptr };  // Not yet supported
    }
+   result.frame = s_held->data();
 
    return result;
 }
