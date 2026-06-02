@@ -2431,7 +2431,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(UFXA):
             // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             if (const int fxaa = reader.AsInt(); fxaa != -1 && !hasIni)
-               m_settings.SetPlayer_FXAA(fxaa, false);
+               m_settings.SetPlayer_FXAA(fxaa, true);
             break;
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
