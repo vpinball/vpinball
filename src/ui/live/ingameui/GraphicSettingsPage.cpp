@@ -101,15 +101,27 @@ void GraphicSettingsPage::BuildPage()
    if (const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers); nRendererSupported > 1)
    {
       static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
-         = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+         = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "WebGPU"s, "Default"s };
       vector<string> renderers;
+      // "Default" first: an unset or unknown GfxBackend resolves to index 0 below (max(0, -1)), so without
+      // it the dialog would show the first supported backend (e.g. Direct3D11 on Linux) as selected.
+      renderers.push_back("Default"s);
       for (int i = 0; i < nRendererSupported; i++)
-         #if defined(_DEBUG) || defined(ENABLE_BGFX_DX12)
-         if (supportedRenderers[i] != bgfx::RendererType::Noop)
-         #else
-         if (supportedRenderers[i] != bgfx::RendererType::Noop && supportedRenderers[i] != bgfx::RendererType::Direct3D12)
+      {
+         const bgfx::RendererType::Enum renderer = supportedRenderers[i];
+         // Skip backends bgfx reports as compiled-in but that are not usable here
+         if (renderer == bgfx::RendererType::Noop || renderer == bgfx::RendererType::WebGPU)
+            continue; // no-op / web backend, never a real desktop choice
+         #if !defined(_WIN32)
+         if (renderer == bgfx::RendererType::Direct3D11 || renderer == bgfx::RendererType::Direct3D12)
+            continue; // Direct3D is Windows only
          #endif
-            renderers.push_back(bgfxRendererNames[supportedRenderers[i]]);
+         #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
+         if (renderer == bgfx::RendererType::Direct3D12)
+            continue;
+         #endif
+         renderers.push_back(bgfxRendererNames[renderer]);
+      }
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
          [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Live
