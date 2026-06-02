@@ -1168,8 +1168,10 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
       newMenu.AppendMenu(MF_SEPARATOR, ~0u, "");
 
       FillLayerContextMenu(newMenu, layerSubMenu, psel);
+      layerSubMenu.Detach();
       newMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_CURRENT_LAYER, LocalString(IDS_ASSIGN_TO_CURRENT_LAYER).m_szbuffer);
       FillCollectionContextMenu(newMenu, colSubMenu, psel);
+      colSubMenu.Detach();
 
       newMenu.AppendMenu(MF_STRING, ID_LOCK, LocalString(IDS_LOCK).m_szbuffer);
 
