@@ -13,7 +13,7 @@ SAMPLER2D(blendTex,        8);
 
 void main()
 {
-#if BGFX_SHADER_LANGUAGE_GLSL
+#if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
 	gl_FragColor = SMAANeighborhoodBlendingPS(v_texcoord0, v_texcoord2, tex_fb_filtered, blendTex);
 #else
 	gl_FragColor = SMAANeighborhoodBlendingPS(v_texcoord0, v_texcoord2, tex_fb_filtered.m_texture, blendTex.m_texture);
