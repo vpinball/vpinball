@@ -223,7 +223,7 @@ void OnControllerGameStart(const unsigned int eventId, void* userData, void* eve
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (pupManager->IsRunning())
    {
-      LOGW("PUP: Ignoring game start, already running"s);
+      LOGW("PUP: PinUpPlayer was instantiated and initialized from the table script before table init; skipping automated PuP loading. Initialize PuP during table init to avoid relying on uninitialized table state."s);
       return;
    }
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
