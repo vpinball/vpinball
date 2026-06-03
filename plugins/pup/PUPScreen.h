@@ -80,6 +80,7 @@ public:
    void AddChild(std::shared_ptr<PUPScreen> pScreen);
    void ReplaceChild(std::shared_ptr<PUPScreen> pChild, std::shared_ptr<PUPScreen> pScreen);
    PUPScreen* GetParent() const { return m_pParent; }
+   bool HasChildren() const { return !m_children.empty(); }
 
    void AddTrigger(PUPTrigger* pTrigger);
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
