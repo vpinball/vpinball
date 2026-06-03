@@ -2413,11 +2413,10 @@ void PinTable::Load(IObjectReader& reader)
             break;
          case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
          case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
-         case FID(UAAL):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            if (const int useAA = reader.AsInt(); useAA != -1 && !hasIni)
-               m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
-            break;
+         // Obsolete pre-10.8 render settings (anti-aliasing, FXAA, synchronization) that were embedded in
+         // the .vpx and imported when no user ini existed, silently overriding the global configuration
+         // (see #2133, #1004). Read past for file format compatibility but no longer applied.
+         case FID(UAAL): reader.AsInt(); break;
          case FID(UAOC):
             // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
             m_enableAO = reader.AsInt() != 0;
@@ -2428,11 +2427,7 @@ void PinTable::Load(IObjectReader& reader)
          break;
          case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
          case FID(EXPO): m_exposure = reader.AsFloat(); break;
-         case FID(UFXA):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            if (const int fxaa = reader.AsInt(); fxaa != -1 && !hasIni)
-               m_settings.SetPlayer_FXAA(fxaa, true);
-            break;
+         case FID(UFXA): reader.AsInt(); break; // obsolete, see UAAL
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
          case FID(SECB): // old protection/encryption data
@@ -2460,55 +2455,15 @@ void PinTable::Load(IObjectReader& reader)
          case FID(SVOL): m_TableSoundVolume = reader.AsFloat(); break;
          case FID(BDMO): m_BallDecalMode = reader.AsBool(); break;
          case FID(MVOL): m_TableMusicVolume = reader.AsFloat(); break;
-         case FID(AVSY):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            if (const int tableAdaptiveVSync = reader.AsInt(); tableAdaptiveVSync != -1 && !hasIni)
-            {
-               switch (tableAdaptiveVSync)
-               {
-               case 0:
-                  m_settings.SetPlayer_MaxFramerate(0, true);
-                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
-                  break;
-               case 1:
-                  m_settings.SetPlayer_MaxFramerate(-1, true);
-                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
-                  break;
-               case 2:
-                  m_settings.SetPlayer_MaxFramerate(-1, true);
-                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-                  break;
-               default:
-                  m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
-                  m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
-                  break;
-               }
-            }
-            break;
-         case FID(OGAC):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            if (const bool overwriteGlobalDetailLevel = reader.AsBool(); !overwriteGlobalDetailLevel && !hasIni)
-               m_settings.ResetPlayer_AlphaRampAccuracy();
-            break;
-         case FID(OGDN):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            // Global Day/Night was fairly convoluted:
-            // - table would define the value
-            // - user could select in video options to override this value by an automatic value
-            // - table could then define to reject this user settings
-            // - user could define in commandline to finally override the value
-            // Now the logic is the same as all other settings:
-            // - table defines the default value, then users define if they want to override this value (through app/table settings or commandline)
-            if (const bool overwriteGlobalDayNight = reader.AsBool(); overwriteGlobalDayNight && !hasIni)
-               m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
-            break;
+         case FID(AVSY): reader.AsInt(); break; // obsolete, see UAAL
+         // Obsolete pre-10.8 table-embedded overrides of the global detail level (OGAC, the override flag for
+         // the ARAC value) and day/night (OGDN). They imported when no user ini existed, silently overriding
+         // the global configuration; dropped like the AA/FXAA/sync settings above. Read past for file format
+         // compatibility but no longer applied.
+         case FID(OGAC): reader.AsBool(); break;
+         case FID(OGDN): reader.AsBool(); break;
          case FID(GDAC): m_winEditorGrid = reader.AsBool(); break;
-         case FID(ARAC):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
-            if (const int userDetailLevel = reader.AsInt(); !hasIni) 
-               m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
-            break;
+         case FID(ARAC): reader.AsInt(); break; // obsolete detail level, see OGAC
          case FID(MASI): m_numMaterials = reader.AsInt(); break;
          case FID(MATE):
          {
