@@ -126,7 +126,11 @@ void Controller::Run(long hParentWnd, int nMinVersion)
 
 void Controller::Stop()
 {
-   PinmameSetTimeFence(0.0);
+   // Do not disable the time fence here (the previous PinmameSetTimeFence(0.0)): while a fence is
+   // active the PinMAME OSD throttle bails out, but disabling it makes the throttle (or, unthrottled,
+   // the audio update) run away inside updatescreen(), which then never returns - so the emulation
+   // thread never re-checks the stop flag and PinmameStop() hangs joining it. Leaving the fence at its
+   // last value keeps the throttle bailing and the emulation fence-paced, so it observes the stop.
    if (PinmameIsRunning())
    {
       PinmameStop();
