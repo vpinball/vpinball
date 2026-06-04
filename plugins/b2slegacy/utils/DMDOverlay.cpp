@@ -2,7 +2,6 @@
 
 #include "DMDOverlay.h"
 #include "VPXGraphics.h"
-#include "plugins/DMDDisplay.h"
 
 #include <cmath>
 #include <vector>
@@ -144,10 +143,20 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    vec4 glassTint(1.f, 1.f, 1.f, 1.f);
    vec4 glassPad(0.f, 0.f, 0.f, 0.f);
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
+   // Glass overlay, using the same texture and parameters as the ScoreView DMD so both render identically
+   VPXTexture glassTex = nullptr;
+   float glassRoughness = 0.f;
+   if ((glassTex = m_glass.Get(m_vpxApi)) != nullptr)
+   {
+      glassRoughness = 0.1f;
+      glassArea = vec4(0.f, 0.f, 1.f, 1.f); // full glass texture
+      const float amb = DMDsRGBToLinear(0.4f);
+      glassAmbient = vec4(amb, amb, amb, 1.f);
+   }
    const VPXDisplayRenderStyle style = DMDStyleFromHardware(dmd.source->hardware);
    ctx->DrawDisplay(ctx, style,
       // First layer: glass
-      nullptr, glassTint.x, glassTint.y, glassTint.z, 0.f, // Glass texture, tint and roughness
+      glassTex, glassTint.x, glassTint.y, glassTint.z, glassRoughness, // Glass texture, tint and roughness
       glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
       glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass lighting from room
       // Second layer: emitter

@@ -4,6 +4,7 @@
 
 #include "../common.h"
 #include "plugins/ResURIResolver.h"
+#include "plugins/DMDDisplay.h"
 
 namespace B2SLegacy {
    
@@ -28,6 +29,7 @@ private:
 
    ivec4 m_frame;
    bool m_enable = false;
+   DMDGlassTexture m_glass;
 
    bool m_detectDmdFrame = false;
    VPXTexture m_backImage;
