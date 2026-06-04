@@ -50,10 +50,30 @@ static int GetPixelFormatDepth(SDL_PixelFormat format)
    }
 }
 
+// Initialize the SDL video subsystem on first window creation. Doing it here rather than at
+// application startup lets headless commands (info, script/POV export, audit, tournament
+// validation) run without a display or a working video driver. Refcounted, released in ~Window().
+static void EnsureVideoSubsystem()
+{
+   const bool wasInit = SDL_WasInit(SDL_INIT_VIDEO);
+   if (!wasInit)
+      SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+   {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+      exit(1);
+   }
+   if (!wasInit)
+      if (const char* const drv = SDL_GetCurrentVideoDriver())
+         PLOGI << "SDL video driver: " << drv;
+}
+
 Window::Window(const int width, const int height)
    : m_windowId(VPXWindowId::VPXWINDOW_Playfield)
    , m_isVR(true)
 {
+   EnsureVideoSubsystem();
+
    m_width = width;
    m_height = height;
    m_pixelWidth = width;
@@ -74,6 +94,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
+   EnsureVideoSubsystem();
+
 #ifdef ENABLE_BGFX
    m_fullscreen = false;
 #else
@@ -296,6 +318,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
 Window::~Window()
 {
+   SDL_QuitSubSystem(SDL_INIT_VIDEO); // Balances the init done in the constructor (refcounted)
+
    if (m_isVR)
       return;
 
