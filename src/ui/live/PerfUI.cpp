@@ -35,6 +35,8 @@ void PerfUI::NextPerfMode()
    {
       m_player->InitFPS();
       m_player->m_logicProfiler.EnableWorstFrameLogging(true);
+      if (m_player->m_renderProfiler != &m_player->m_logicProfiler)
+         m_player->m_renderProfiler->EnableWorstFrameLogging(true);
    }
    if (m_showPerf == PerfMode::PM_DISABLED)
       m_player->m_renderer->m_renderDevice->LogNextFrame();
@@ -193,6 +195,8 @@ void PerfUI::RenderStats() const
       "(Sleep to synchronise on user selected FPS)"s,
       #endif
    };
+   static_assert(std::size(infoLabels) == FrameProfiler::PROFILE_RENDER_SLEEP + 1, "infoLabels[] is out of sync with the ProfileSection enum");
+   static_assert(std::size(infoLabels2) == FrameProfiler::PROFILE_RENDER_SLEEP + 1, "infoLabels2[] is out of sync with the ProfileSection enum");
    static constexpr FrameProfiler::ProfileSection sections[] = {
       FrameProfiler::PROFILE_RENDER_SLEEP,
       FrameProfiler::PROFILE_RENDER_WAIT,
