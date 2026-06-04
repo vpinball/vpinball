@@ -111,18 +111,20 @@ public:
          "Custom 2:      "s,
          "Custom 3:      "s,
          // Render thread
-         "Render Wait:   "s, 
+         "Render Wait:   "s,
+         "Render WaitSC: "s,
          "Render Submit: "s,
          "Render Flip:   "s,
          "Render Sleep:  "s,
       };
+      static_assert(sizeof(labels) / sizeof(labels[0]) == PROFILE_RENDER_SLEEP + 1, "labels[] is out of sync with the ProfileSection enum");
       for (unsigned int i = 0; i < N_WORST; i++)
       {
          if (m_profileWorstData[i][PROFILE_FRAME] == 0)
             break;
          PLOGI << "Long Frame of " << std::setw(5) << std::fixed << std::setprecision(1) << (m_profileWorstData[i][PROFILE_FRAME] * 1e-3) << "ms happened after " 
                << std::setw(5) << std::fixed << (m_profileWorstGameTime[i] * 1e-3) << "s:";
-         for (int j = PROFILE_MISC; j <= PROFILE_CUSTOM3; j++)
+         for (int j = PROFILE_MISC; j <= PROFILE_RENDER_SLEEP; j++)
             if (m_profileWorstData[i][j] > 100) // only log impacting timings (above 0.1 ms)
             {
                PLOGI << "  . " << labels[j] << std::setw(6) << std::fixed << std::setprecision(1) << (m_profileWorstData[i][j] * 1e-3) << "ms";
