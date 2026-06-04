@@ -17,6 +17,7 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SRenderer.cpp
    plugins/b2s/B2SServer.h
    plugins/b2s/B2SServer.cpp
+   plugins/plugins/DMDDisplay.h
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
    third-party/include/tinyxml2/tinyxml2.h
