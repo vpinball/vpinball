@@ -197,16 +197,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       cmdLine.ProcessCommandLine();
       theApp.InitInstance();
 
-      SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-      if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
-      {
-         PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
-         // FIXME this is not correct as we may be running something else than the player (extract vbs, ...)
-         exit(1);
-      }
-      if (const char* const drv = SDL_GetCurrentVideoDriver()) {
-         PLOGI << "SDL video driver: " << drv;
-      }
+      // The video subsystem is initialized lazily when a window is created (see VPX::Window), so
+      // headless commands (info, script/POV export, audit, tournament validation) run without a
+      // display or a working video driver.
 
       // Run the application
       if (cmdLine.m_command)
@@ -221,8 +214,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-
-   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
    #ifdef __STANDALONE__
       TTF_Quit();
