@@ -467,6 +467,61 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
           dst[o] = (unsigned int)src[o*3 + 2] | ((unsigned int)src[o*3 + 1] << 8) | ((unsigned int)src[o*3] << 16) | (255u << 24);
 }
 
+// Copy and convert from RGB565 (16bpp) to RGBA (32bpp), expanding the 5/6/5-bit channels to 8 bits.
+// Magic-constant algos (x*527+23)>>6 and (x*259+33)>>6 for proper mapping white to white, black to black, and inbetween
+inline void copy_rgb565_rgba(unsigned int* const __restrict dst, const uint16_t* const __restrict src, const size_t size)
+{
+   static constexpr uint8_t lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+   static constexpr uint8_t lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
+                                        142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
+
+   size_t o = 0;
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+   // align output writes
+   for (; ((reinterpret_cast<size_t>(dst + o) & 15) != 0) && o < size; ++o)
+   {
+      const uint16_t rgb565 = src[o];
+      dst[o] = 0xFF000000u | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
+   }
+
+   const __m128i mask5   = _mm_set1_epi16(0x1F);
+   const __m128i mask6   = _mm_set1_epi16(0x3F);
+   const __m128i c527    = _mm_set1_epi16(527);
+   const __m128i c23     = _mm_set1_epi16(23);
+   const __m128i c259    = _mm_set1_epi16(259);
+   const __m128i c33     = _mm_set1_epi16(33);
+   const __m128i alphaHi = _mm_set1_epi16(static_cast<short>(0xFF00u));
+   for (; o + 8 <= size; o += 8)
+   {
+      const __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src + o)); // 8x rgb565
+
+      const __m128i hi5 = _mm_srli_epi16(v, 11);                      // bits 11..15 (0..31) -> byte0
+      const __m128i g6  = _mm_and_si128(_mm_srli_epi16(v, 5), mask6); // bits  5..10 (0..63) -> byte1
+      const __m128i lo5 = _mm_and_si128(v, mask5);                    // bits  0.. 4 (0..31) -> byte2
+
+      // exact expansion, bit-identical to lum32/lum64; max product 31*527+23=16360 fits in unsigned 16-bit, result is in the low byte
+      const __m128i e_hi = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(hi5, c527), c23), 6);
+      const __m128i e_g  = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(g6,  c259), c33), 6);
+      const __m128i e_lo = _mm_srli_epi16(_mm_add_epi16(_mm_mullo_epi16(lo5, c527), c23), 6);
+
+      // pack two bytes into each 16-bit lane, then interleave the two halves into AoS RGBA
+      const __m128i rg = _mm_or_si128(e_hi, _mm_slli_epi16(e_g, 8)); // lane = [byte0, byte1]
+      const __m128i ba = _mm_or_si128(e_lo, alphaHi);                // lane = [byte2, 0xFF]
+
+      _mm_store_si128(reinterpret_cast<__m128i*>(dst + o    ), _mm_unpacklo_epi16(rg, ba));
+      _mm_store_si128(reinterpret_cast<__m128i*>(dst + o + 4), _mm_unpackhi_epi16(rg, ba));
+   }
+#else
+#pragma message ("Warning: No SSE RGB565 texture conversion")
+#endif
+   for (; o < size; ++o)
+   {
+      const uint16_t rgb565 = src[o];
+      dst[o] = 0xFF000000u | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
+   }
+}
+
 // Copy and convert from fp16 RGB to RGBA.
 // Source must be 3, and destination buffer 4 uint16s per pixel
 inline void copy_rgb_rgba(uint16_t *const __restrict dst, const uint16_t *const __restrict src, const size_t size)

@@ -652,17 +652,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, SRGBA);
             if (tex == nullptr)
                return nullptr;
-            static constexpr uint8_t lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
-            static constexpr uint8_t lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
-               142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
-            uint32_t* const __restrict data = reinterpret_cast<uint32_t*>(tex->data());
-            const uint16_t* const __restrict frame = reinterpret_cast<const uint16_t*>(datac());
-            const size_t size = (size_t)width() * height();
-            for (size_t ofs = 0; ofs < size; ++ofs)
-            {
-               const uint16_t rgb565 = frame[ofs];
-               data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
-            }
+            copy_rgb565_rgba(reinterpret_cast<unsigned int*>(tex->data()), reinterpret_cast<const uint16_t*>(datac()), (size_t)width() * height());
             tex->SetIsOpaque(true);
          }
          break;
