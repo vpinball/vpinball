@@ -98,6 +98,19 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    g_pplayer = this;
    m_ptable->AddRef();
 
+   // Initialize the SDL video subsystem before anything that needs a display. This is done here
+   // (rather than at application startup) so headless commands, which never create a Player, run
+   // without a working video driver. It must happen before the Win32 SDL_RegisterApp / window
+   // creation below, hence at the very start of the Player. Released in the destructor.
+   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+   {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+      exit(1);
+   }
+   if (const char* const drv = SDL_GetCurrentVideoDriver())
+      PLOGI << "SDL video driver: " << drv;
+
    // Load player plugins
 
    PLOGI << "Loading player plugins"; // For profiling
@@ -1043,6 +1056,8 @@ Player::~Player()
 
    delete m_vrDevice;
    m_vrDevice = nullptr;
+
+   SDL_QuitSubSystem(SDL_INIT_VIDEO); // Balances the init done in the constructor
 
    m_logicProfiler.LogWorstFrame();
    if (&m_logicProfiler != m_renderProfiler)
