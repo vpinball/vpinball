@@ -20,9 +20,7 @@ jobs:
       - id: sha
         run: |
            SHA=$(if [[ "${{ github.event.inputs.sha }}" ]]; then echo "${{ github.event.inputs.sha }}"; else echo "${GITHUB_SHA}"; fi)
-           SHA7="${SHA::7}"
            echo "sha=${SHA}" >> $GITHUB_OUTPUT
-           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v6
         with:
           ref: ${{ steps.sha.outputs.sha }}
@@ -33,7 +31,8 @@ jobs:
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..${{ steps.sha.outputs.sha }} --count)
-          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
+          SHA_SHORT=$(git rev-parse --short "${{ steps.sha.outputs.sha }}")
+          TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA_SHORT}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   prerelease:

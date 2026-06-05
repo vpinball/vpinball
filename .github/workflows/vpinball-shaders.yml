@@ -17,7 +17,7 @@ jobs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
       version_full: ${{ steps.version.outputs.version_full }}
-      sha7: ${{ steps.version.outputs.sha7 }}
+      sha_short: ${{ steps.version.outputs.sha_short }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
@@ -31,12 +31,12 @@ jobs:
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
           VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
           VERSION_FULL="${VERSION_SHORT}.${REVISION}"
-          SHA7="${GITHUB_SHA::7}"
-          TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
+          SHA_SHORT=$(git rev-parse --short "${GITHUB_SHA}")
+          TAG="${VERSION_SHORT}-${REVISION}-${SHA_SHORT}"
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
           echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
-          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   shaders:
