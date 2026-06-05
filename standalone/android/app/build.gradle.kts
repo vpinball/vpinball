@@ -32,8 +32,8 @@ val versionCodeValue: Int by lazy {
 
 val versionFilename: String by lazy {
     val (maj, min, rev, build) = parseVersion(versionNameValue)
-    val sha7 = project.findProperty("sha7")?.toString()
-    val value = if (sha7 != null) "$maj.$min.$rev-$build-$sha7" else "$maj.$min.$rev-$build"
+    val shaShort = project.findProperty("sha_short")?.toString()
+    val value = if (shaShort != null) "$maj.$min.$rev-$build-$shaShort" else "$maj.$min.$rev-$build"
     println("versionFilename: $value")
     value
 }
