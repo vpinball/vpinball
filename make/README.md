@@ -277,6 +277,3 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ## Continuous Integration
 
 Inspecting the [CI workflows](../.github/workflows) is also a good way to understand how everything is built.
-
-> [!NOTE]
-> Due to the large storage requirements and build times for external dependencies, pull requests currently do not trigger continuous integration. We recommend enabling GitHub Actions on your fork.
