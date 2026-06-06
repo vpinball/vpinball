@@ -509,7 +509,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
    m_liveUI->m_ballControl.LoadSettings(m_ptable->m_settings);
 
-   m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.GetPlayer_Mirror();
+   m_tblMirrorEnabled = m_ptable->m_settings.GetPlayer_Mirror();
    #ifndef __STANDALONE__
    {
       const int vkLeftFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetLeftFlipperActionId());
@@ -521,11 +521,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       if (leftFlipPressed && rightFlipPressed)
       {
          PLOGI << "Both flipper buttons detected as pressed during load, enabling table mirroring";
-         m_ptable->m_tblMirrorEnabled = true;
+         m_tblMirrorEnabled = true;
       }
 
       // if left flipper is hold during load, then swap DT/FS view (for quick testing)
-      if (m_ptable->GetViewMode() != BG_FSS && !m_ptable->m_tblMirrorEnabled && leftFlipPressed)
+      if (m_ptable->GetViewMode() != BG_FSS && !m_tblMirrorEnabled && leftFlipPressed)
       {
          PLOGI << "Left flipper button detected as pressed during load, swapping playfield/backglass view";
          switch (m_ptable->GetViewMode())
@@ -538,11 +538,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    #endif
 
-   if (m_ptable->m_tblMirrorEnabled)
+   if (m_tblMirrorEnabled)
    {
       m_audioPlayer->SetMirrored(true);
       int rotation = (int)(m_ptable->GetViewSetup().GetRotation(m_renderer->m_stereo3D, m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
-      m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
+      m_renderer->SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
 
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
@@ -693,7 +693,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    // Setup rendering and timers
    RenderState state;
-   state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
+   state.SetRenderState(RenderState::CULLMODE, m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
    m_renderer->m_renderDevice->CopyRenderStates(false, state);
    m_renderer->m_renderDevice->SetDefaultRenderState();
    m_renderer->SetAnisoFiltering(m_ptable->m_settings.GetPlayer_ForceAnisotropicFiltering());

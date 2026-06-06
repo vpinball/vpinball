@@ -683,8 +683,6 @@ public:
    uint32_t m_tblAutoStartRetry; // msecs before retrying to autostart.
    bool m_tblAutoStartEnabled;
 
-   bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
-
    bool m_script_protected = false; // To be able to decrypt old tables with protected script
 
    float m_difficulty = 0.2f; // table difficulty Level

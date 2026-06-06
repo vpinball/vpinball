@@ -73,6 +73,8 @@ public:
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
    PinTable *const m_ptable; // The played table (which can eventually be a shallow copy of a table to allow being modified by the script without changing the original table)
+   bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
+
    bool IsEditorMode() const { return m_playMode == PlayMode::FullEdit; }
    const PlayMode m_playMode;
 
