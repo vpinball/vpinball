@@ -2461,6 +2461,8 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    std::array<Vertex3D_TexelOnly*, 16> updatedVertices;
    const float invX = static_cast<float>(1.0 / beforeTonemapRT->GetWidth());
    const float invY = static_cast<float>(1.0 / beforeTonemapRT->GetHeight());
+   const float padX = invX; // One pixel padding to account for filtering in the final copy which applies visual nudge with a non integral offset 
+   const float padY = invY;
    int nQuads = 0;
    for (size_t i = 0; i < g_pplayer->m_vball.size() && nQuads < 16; i++)
    {
@@ -2491,7 +2493,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
       ShaderState* ss = m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
       updatedVertices[nQuads] = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
       m_renderDevice->AddBeginOfFrameCmd(
-         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], balls, whHeight = vec4(invX, invY, 0.f, 2.f)]()
+         [this, pball, view, ss, cmdVerts = updatedVertices[nQuads], balls, invX, invY, padX, padY]()
          {
             RenderTarget* tempRT = GetMotionBlurBufferTexture();
             const vec3 posl = pball->GetPosition() + m_renderDevice->GetPredictedDisplayDelay() * pball->GetVelocity();
@@ -2511,24 +2513,23 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
                Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
             const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
 
-            // Add a 1 pixel margin as the visual nudge may cause some sampling in here
-            xMin -= whHeight.x;
-            yMin -= whHeight.y;
-            xMax += whHeight.x;
-            yMax += whHeight.y;
+            // Add a margin as the visual nudge may cause some filtering
+            xMin -= padX;
+            yMin -= padY;
+            xMax += padX;
+            yMax += padY;
 
-            //xMin = yMin = -1.f; xMax = yMax = 1.f;
             const Vertex3D_TexelOnly verts[4] =
             {
-               { xMax, yMax, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
-               { xMin, yMax, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
-               { xMax, yMin, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMin * 0.5f },
-               { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
+               { xMax, yMax, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMax * 0.5f }, //
+               { xMin, yMax, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMax * 0.5f }, //
+               { xMax, yMin, 0.0f, 0.5f + xMax * 0.5f, 0.5f - yMin * 0.5f }, //
+               { xMin, yMin, 0.0f, 0.5f + xMin * 0.5f, 0.5f - yMin * 0.5f } //
             };
             memcpy(cmdVerts, verts, sizeof(verts));
 
             const int nSamples = clamp(static_cast<int>(0.5f * fullLen), 2, 32);
-            vec4 whHeightWithNSamples(whHeight.x, whHeight.y, 0.f, static_cast<float>(nSamples));
+            vec4 whHeightWithNSamples(invX, invY, 0.f, static_cast<float>(nSamples));
             ss->SetVector(SHADER_w_h_height, &whHeightWithNSamples);
 
             pball->m_lastRenderedPos = newPos;
@@ -2550,16 +2551,18 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, quads.data() + i * 4);
          m_renderDevice->AddBeginOfFrameCmd(
             [vertices = static_cast<Vertex3D_TexelOnly*>(m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices()), cmdVerts = updatedVertices[i],
-               screenOffset = m_screenOffset, invX, invY]()
+               screenOffset = m_screenOffset, padX, padY]()
             {
-               const Vertex2D pad[4] = { { invX, invY }, { -invX, invY }, { invX, -invY }, { -invX, -invY } }; // Remove padding added to support screenOffset filtering
+               const Vertex2D pad[4] = { { padX, padY }, { -padX, padY }, { padX, -padY }, { -padX, -padY } };
                for (int i = 0; i < 4; i++)
                {
+                  // Source in temp buffer: no screen offset, remove padding
+                  vertices[i].tu = 0.5f + (cmdVerts[i].x - pad[i].x) * 0.5f;
+                  vertices[i].tv = 0.5f - (cmdVerts[i].y - pad[i].y) * 0.5f;
+                  // Destination is the tonemapped back buffer, apply screen offset and remove padding
                   vertices[i].x = cmdVerts[i].x + screenOffset.x - pad[i].x;
                   vertices[i].y = cmdVerts[i].y + screenOffset.y - pad[i].y;
-                  vertices[i].z = cmdVerts[i].z;
-                  vertices[i].tu = vertices[i].x * 0.5f + 0.5f;
-                  vertices[i].tv = 0.5f - vertices[i].y * 0.5f;
+                  vertices[i].z = 0.0f;
                }
             });
       }
