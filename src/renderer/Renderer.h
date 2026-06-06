@@ -27,8 +27,10 @@ public:
    int GetDisplayWidth() const; // Playfield display width, taking in consideration stretching applied by some stereo modes
    int GetDisplayHeight() const; // Playfield display width, taking in consideration stretching applied by some stereo modes
    float GetDisplayAspectRatio() const;
-   void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
-   ModelViewProj& GetMVP() { return m_mvp; }
+   void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f); // Reset both the base and the current MVP to the default view setup, with an optional pixel offset for AA
+   void SetFlip(ModelViewProj::FlipMode flipMode); // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
+   void SetViewProj(const Matrix3D& view, const Matrix3D& proj); // Override the MVP, applied to the base MVP
+   void SetReflection(const Matrix3D& reflectionMatrix); // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
    const ModelViewProj& GetMVP() const { return m_mvp; }
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
@@ -287,7 +289,8 @@ private:
 
    PinTable* const m_table;
 
-   ModelViewProj m_mvp; // Store the active Model / View / Projection
+   ModelViewProj m_initialMVP; // Store the base Model / View / Projection
+   ModelViewProj m_mvp; // Store the active Model / View / Projection (includes visual nudge)
    Matrix3D m_playfieldView[2]; // Store the base playfield view matrix computed at beginning of frame render
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
 

@@ -993,12 +993,28 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    constexpr bool stereo = false;
    #endif
    viewSetup.ComputeMVP(m_table, GetDisplayAspectRatio(), stereo, m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
-   SetupShaders();
+   m_initialMVP = m_mvp;
+}
+
+void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
+{
+   m_initialMVP.SetFlip(flipMode);
+   InitLayout();
+}
+
+void Renderer::SetReflection(const Matrix3D& reflectionMatrix) { m_mvp.SetReflection(reflectionMatrix); }
+
+void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
+{
+   m_initialMVP.SetView(0, view);
+   m_initialMVP.SetView(1, view);
+   m_initialMVP.SetProj(0, proj);
+   m_initialMVP.SetProj(1, proj);
 }
 
 Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point) const
 {
-   Matrix3D invMVP = m_mvp.GetModelViewProj(0);
+   Matrix3D invMVP = m_initialMVP.GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(
       2.0f * point.x / static_cast<float>(width)  - 1.0f,
@@ -2432,7 +2448,7 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    Matrix3D matProj[2];
    Matrix3D matProjInv[2];
    const int nEyes = m_renderDevice->m_nEyes;
-   GetMVP().SetModel(Matrix3D::MatrixIdentity());
+   m_mvp.SetModel(Matrix3D::MatrixIdentity());
    for (int eye = 0; eye < nEyes; eye++)
    {
       matProj[eye] = GetMVP().GetProj(eye);
@@ -2932,7 +2948,7 @@ void Renderer::RenderFrame()
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
 
    // Update camera point of view
-   // FIXME this may lead to view drift if nudging and the mvp has not been initialized per frame
+   m_mvp = m_initialMVP;
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
       m_playfieldView[eye] = m_mvp.GetView(eye);
    m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update

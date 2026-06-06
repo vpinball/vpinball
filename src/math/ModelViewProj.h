@@ -38,6 +38,7 @@ public:
          }
       }
    }
+   void operator=(ModelViewProj& rhs) { Set(rhs); }
 
    const Matrix3D& GetModel() const { return m_matModel; }
    const Matrix3D& GetView(const unsigned int eye) const { Update(); return m_matReflectedView[eye]; }

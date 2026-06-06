@@ -418,12 +418,12 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    m_renderer->m_renderDevice->SetClipPlane(clip_plane);
    m_renderer->m_renderDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
-   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, g_pplayer->m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, g_pplayer->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
    m_renderer->m_renderDevice->SetDefaultRenderState();
    m_renderer->m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_reflection);
 
    // Flip camera
-   m_renderer->GetMVP().SetReflection(Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w));
+   m_renderer->SetReflection(Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w));
 
    if (render_static || render_dynamic)
       m_renderer->UpdateBasicShaderMatrix();
@@ -438,7 +438,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
       m_renderer->DrawDynamics(true);
 
    // Restore initial render states and camera
-   m_renderer->GetMVP().SetReflection(Matrix3D::MatrixIdentity());
+   m_renderer->SetReflection(Matrix3D::MatrixIdentity());
    m_renderer->m_render_mask = prevRenderMask;
    m_renderer->m_renderDevice->CopyRenderAndShaderStates(false, *m_rdState);
    m_renderer->m_renderDevice->SetDefaultRenderState();
