@@ -34,7 +34,7 @@ public:
    Ball* GetDraggedBall() const { return m_mode == Mode::DragBall && m_dragging ? m_draggedBall : nullptr; }
    const Vertex3Ds& GetDraggedBallTarget() const { return m_dragTarget; }
    void SetDraggedBall(Ball* ball) { if (!m_dragging) m_draggedBall = ball; }
-   void EndBallDrag() { m_dragging = false; }
+   void EndBallDrag() { m_dragging = false; m_draggedBall = nullptr; }
    
    void Update(const int width, const int height);
    
