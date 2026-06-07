@@ -189,7 +189,7 @@ static void MSGPIAPI OnB2SStateChg(unsigned int index, void* context)
    if (index < b2sDevSrc.nDevices && pDOF != nullptr)
    {
       float state = b2sDevSrc.GetFloatState(index);
-      // LOGD(std::format("DOFPlugin: B2S state change E{:d} = {:f}", b2sDevSrc.deviceDefs[index].id.deviceId, state));
+      // LOGD(std::format("B2S state change E{:d} = {:f}", b2sDevSrc.deviceDefs[index].id.deviceId, state));
       pDOF->DataReceive('E', b2sDevSrc.deviceDefs[index].id.deviceId, state > 0.5f ? 1 : 0);
    }
 }
@@ -202,12 +202,12 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (isRunning)
    {
-      LOGW("DOFPlugin: Ignoring game start, already running"s);
+      LOGW("Ignoring game start, already running"s);
       return;
    }
 
    if (pDOF) {
-      LOGI("DOFPlugin: OnControllerGameStart: gameId="s + msg->gameId);
+      LOGI("OnControllerGameStart: gameId="s + msg->gameId);
       isRunning = true;
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
@@ -220,7 +220,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    if (pDOF) {
-      LOGI("DOFPlugin: OnControllerGameEnd"s);
+      LOGI("OnControllerGameEnd"s);
       isRunning = false;
       if (pollThread.joinable())
          pollThread.join();
@@ -246,7 +246,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    msgApi->BroadcastMsg(endpointId, getDevSrcId, &getSrcMsg);
    if (getSrcMsg.count == 0)
    {
-      LOGI("DOFPlugin: OnDevSrcChanged - No source"s);
+      LOGI("OnDevSrcChanged - No source"s);
       return;
    }
 
@@ -276,7 +276,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    }
    delete[] getSrcMsg.entries;
 
-   LOGI(std::format("DOFPlugin: OnDevSrcChanged - Found {} PinMAME devices and {} B2S devices", pinmameDevSrc.nDevices, b2sDevSrc.nDevices));
+   LOGI(std::format("OnDevSrcChanged - Found {} PinMAME devices and {} B2S devices", pinmameDevSrc.nDevices, b2sDevSrc.nDevices));
 }
 
 static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* msgData)
@@ -306,7 +306,7 @@ static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* 
    }
    delete[] getSrcMsg.entries;
 
-   LOGI(std::format("DOFPlugin: OnInputSrcChanged - Found {} PinMAME inputs", pinmameInputSrc.nInputs));
+   LOGI(std::format("OnInputSrcChanged - Found {} PinMAME inputs", pinmameInputSrc.nInputs));
 }
 
 }

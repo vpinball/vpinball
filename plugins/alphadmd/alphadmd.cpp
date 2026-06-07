@@ -598,9 +598,9 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
       for (size_t i = 0; i < selectedSources.size(); i++)
          elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
       if (dmdLayout == DmdLayouts::Undefined)
-         LOGI(std::format("AlphaDMD: Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
+         LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
       else
-         LOGI(std::format("AlphaDMD: Matched layout {} ({} displays: {})", LayoutName(dmdLayout), selectedSources.size(), elements));
+         LOGI(std::format("Matched layout {} ({} displays: {})", LayoutName(dmdLayout), selectedSources.size(), elements));
    }
    lock.unlock();
 

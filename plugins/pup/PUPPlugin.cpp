@@ -223,7 +223,7 @@ void OnControllerGameStart(const unsigned int eventId, void* userData, void* eve
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (pupManager->IsRunning())
    {
-      LOGW("PUP: PinUpPlayer was instantiated and initialized from the table script before table init; skipping automated PuP loading. Initialize PuP during table init to avoid relying on uninitialized table state."s);
+      LOGW("PinUpPlayer was instantiated and initialized from the table script before table init; skipping automated PuP loading. Initialize PuP during table init to avoid relying on uninitialized table state."s);
       return;
    }
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
@@ -232,7 +232,7 @@ void OnControllerGameStart(const unsigned int eventId, void* userData, void* eve
    // don't let those poison the manager state.
    if (msg->gameId[0] == '\0')
    {
-      LOGW("PUP: Ignoring game start with empty gameId"s);
+      LOGW("Ignoring game start with empty gameId"s);
       return;
    }
    pupManager->LoadConfig(msg->gameId);
