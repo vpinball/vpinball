@@ -23,18 +23,25 @@ void put_Property2(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { p
 void AddRef(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { }
 void Release(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { }
 
-// Example: return a 1D string array with 3 elements
+// Example: return a 1D string array with 3 elements.
+// String elements are packed as ScriptString values, each carrying its own Release hook so the
+// host frees plugin-owned strings through the documented per-element lifecycle.
 void get_StringArray1D(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet)
 {
    static const char* strings[] = { "hello", "world", "vpx" };
    const unsigned int count = 3;
-   const size_t dataSize = count * sizeof(const char*);
+   const size_t dataSize = count * sizeof(ScriptString);
    ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + 1 * sizeof(unsigned int) + dataSize));
    array->Release = [](ScriptArray* me) { free(me); };
    array->lengths[0] = count;
-   const char** pData = reinterpret_cast<const char**>(&array->lengths[1]);
+   ScriptString* pData = reinterpret_cast<ScriptString*>(&array->lengths[1]);
    for (unsigned int i = 0; i < count; i++)
-      pData[i] = strings[i];
+   {
+      const size_t n = strlen(strings[i]) + 1;
+      char* s = new char[n];
+      memcpy(s, strings[i], n);
+      pData[i] = { [](ScriptString* str) { delete[] str->string; }, s };
+   }
    pRet->vArray = array;
 }
 
@@ -43,14 +50,19 @@ void get_StringArray2D(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet)
 {
    static const char* strings[] = { "l-1", "on", "l-2", "off", "coil1", "pulse" };
    const unsigned int rows = 3, cols = 2;
-   const size_t dataSize = rows * cols * sizeof(const char*);
+   const size_t dataSize = rows * cols * sizeof(ScriptString);
    ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + 2 * sizeof(unsigned int) + dataSize));
    array->Release = [](ScriptArray* me) { free(me); };
    array->lengths[0] = rows;
    array->lengths[1] = cols;
-   const char** pData = reinterpret_cast<const char**>(&array->lengths[2]);
+   ScriptString* pData = reinterpret_cast<ScriptString*>(&array->lengths[2]);
    for (unsigned int i = 0; i < rows * cols; i++)
-      pData[i] = strings[i];
+   {
+      const size_t n = strlen(strings[i]) + 1;
+      char* s = new char[n];
+      memcpy(s, strings[i], n);
+      pData[i] = { [](ScriptString* str) { delete[] str->string; }, s };
+   }
    pRet->vArray = array;
 }
 
