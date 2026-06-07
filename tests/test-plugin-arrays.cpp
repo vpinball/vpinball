@@ -9,18 +9,29 @@
 #include <cstdlib>
 #include <cstring>
 
+// Counts how many string elements have had their ScriptString::Release called, so the
+// test can verify the host walks the array and releases each element (not just the block).
+static int g_stringElemReleaseCount = 0;
+
 // Helper to build a 2D string ScriptArray from a flat array of C strings.
-// Layout: [Release][lengths[0]=rows][lengths[1]=cols][const char* ptrs...]
+// Layout: [Release][lengths[0]=rows][lengths[1]=cols][ScriptString values...]
+// Each element is a ScriptString carrying its own Release hook (heap-allocated copy),
+// matching the scalar string convention so the lifecycle is owned per element.
 static ScriptArray* MakeStringArray2D(unsigned int rows, unsigned int cols, const char* const* strings)
 {
-   const size_t dataSize = rows * cols * sizeof(const char*);
+   const size_t dataSize = rows * cols * sizeof(ScriptString);
    ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + 2 * sizeof(unsigned int) + dataSize));
    array->Release = [](ScriptArray* me) { free(me); };
    array->lengths[0] = rows;
    array->lengths[1] = cols;
-   const char** pData = reinterpret_cast<const char**>(&array->lengths[2]);
+   ScriptString* pData = reinterpret_cast<ScriptString*>(&array->lengths[2]);
    for (unsigned int i = 0; i < rows * cols; i++)
-      pData[i] = strings[i];
+   {
+      const size_t n = strlen(strings[i]) + 1;
+      char* s = new char[n];
+      memcpy(s, strings[i], n);
+      pData[i] = { [](ScriptString* str) { delete[] str->string; ++g_stringElemReleaseCount; }, s };
+   }
    return array;
 }
 
@@ -117,6 +128,7 @@ TEST_CASE("Plugin 2D string and bool array marshalling")
 
    SUBCASE("2D string array")
    {
+      g_stringElemReleaseCount = 0;
       VARIANT result = InvokePropertyGet(disp, L"StringArray2D");
       CHECK(V_VT(&result) == (VT_ARRAY | VT_VARIANT));
 
@@ -156,6 +168,11 @@ TEST_CASE("Plugin 2D string and bool array marshalling")
       checkStr(2, 1, "off");
 
       VariantClear(&result);
+
+      // The marshaller copies each element to a BSTR owned by the SAFEARRAY, then the host
+      // releases the source ScriptArray. Each element's ScriptString::Release must run so
+      // plugin-owned strings are freed through the documented per-element lifecycle.
+      CHECK(g_stringElemReleaseCount == 6);
    }
 
    SUBCASE("2D bool array")
