@@ -226,11 +226,11 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
       }
       else if (logLevel == PINMAME_LOG_LEVEL_INFO)
       {
-         LOGI("PinMAME: " + buffer);
+         LOGI(buffer);
       }
       else if (logLevel == PINMAME_LOG_LEVEL_ERROR)
       {
-         LOGE("PinMAME: " + buffer);
+         LOGE(buffer);
       }
    }
 }
@@ -276,7 +276,7 @@ static void StopAudioStream()
 
 int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData)
 {
-   LOGI(std::format("PinMAME: format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}", p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT",
+   LOGI(std::format("format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}", p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT",
       p_audioInfo->channels, p_audioInfo->sampleRate,
       p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame, p_audioInfo->bufferSize));
    if (((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT))

@@ -175,7 +175,7 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
    if (m_deviceStateSrc.deviceDefs == nullptr)
       return;
 
-   LOGI(std::format("B2SLegacy: Device state updated - {} devices", m_deviceStateSrc.nDevices));
+   LOGI(std::format("Device state updated - {} devices", m_deviceStateSrc.nDevices));
 }
 
 void Server::OnGetDevSrc(const unsigned int, void* userData, void* msgData)

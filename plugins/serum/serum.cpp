@@ -324,7 +324,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (isRunning)
    {
-      LOGW("Serum: Ignoring game start, already running"s);
+      LOGW("Ignoring game start, already running"s);
       return;
    }
    StopColorization();
@@ -360,11 +360,11 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 
    if (serumPath.empty())
    {
-      LOGI("Serum: No colorization file found for "s + msg->gameId);
+      LOGI("No colorization file found for "s + msg->gameId);
       return;
    }
 
-   LOGI("Serum: Loading from " + serumPath.string() + " for " + msg->gameId);
+   LOGI("Loading from " + serumPath.string() + " for " + msg->gameId);
 
    pSerum = Serum_Load(serumPath.string().c_str(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
@@ -375,7 +375,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    }
    else
    {
-      LOGE("Serum: Failed to load colorization data");
+      LOGE("Failed to load colorization data");
    }
 }
 
