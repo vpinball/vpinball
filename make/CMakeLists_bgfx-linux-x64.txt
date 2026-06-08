@@ -70,11 +70,11 @@ target_compile_options(vpinball PUBLIC
       -fapprox-func
       -fno-math-errno
       -fno-trapping-math
-      -ffp-contract=off
+      -ffp-contract=fast
       -Wno-shorten-64-to-32>
    $<$<CXX_COMPILER_ID:GNU>:
       -ffast-math
-      -ffp-contract=off
+      -ffp-contract=fast
       -Wno-changes-meaning>
 )
 

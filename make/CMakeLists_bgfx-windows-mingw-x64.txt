@@ -66,7 +66,7 @@ target_compile_options(vpinball PUBLIC
    -mssse3
    $<$<CXX_COMPILER_ID:GNU>:
       -ffast-math
-      -ffp-contract=off
+      -ffp-contract=fast
       -Wno-template-body>
 )
 
