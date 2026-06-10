@@ -29,7 +29,6 @@ NudgeSettingsPage::NudgeSettingsPage()
 
 void NudgeSettingsPage::BuildPage()
 {
-   ClearItems();
    InputManager& input = GetInput();
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +53,7 @@ void NudgeSettingsPage::BuildPage()
          const string url = std::format("settings/nudge_sensor_{:d}", i);
          m_player->m_liveUI->m_inGameUI.AddPage(url, [i]() { return std::make_unique<NudgeSensorSettingsPage>(i); });
          m_player->m_liveUI->m_inGameUI.Navigate(url);
-         BuildPage();
+         RequestRebuild();
       }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +66,7 @@ void NudgeSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_player->m_pininput.m_nudgeHandler->SetKeyboardNudgeMode((VPX::Physics::NudgeHandler::KeyboardNudgeMode)v);
-         BuildPage();
+         RequestRebuild();
       }));
 
    AddItem(std::make_unique<InGameUIItem>(
@@ -99,7 +98,7 @@ void NudgeSettingsPage::BuildPage()
       [this](bool v)
       {
          m_player->m_physics->m_plumbHandler.EnablePlumbSimulation(v);
-         BuildPage();
+         RequestRebuild();
       }));
 
    if (m_player->m_physics->m_plumbHandler.IsPlumbSimulated())
@@ -121,7 +120,7 @@ void NudgeSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
-   BuildPage();
+   RequestRebuild();
 }
 
 void NudgeSettingsPage::Close(bool isBackwardAnimation)

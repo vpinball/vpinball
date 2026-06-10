@@ -33,6 +33,7 @@ void InGameUIPage::Open(bool isBackwardAnimation)
    m_openAnimStart = m_openAnimPos;
    m_selectedItem = 0;
    m_pressedItemLabel.clear();
+   RequestRebuild();
 }
 
 void InGameUIPage::Close(bool isBackwardAnimation)
@@ -42,10 +43,15 @@ void InGameUIPage::Close(bool isBackwardAnimation)
    m_openAnimStart = m_openAnimPos;
 }
 
-void InGameUIPage::ClearItems() { m_items.clear(); }
+void InGameUIPage::ClearItems()
+{
+   assert(m_isBuildingPage);
+   m_items.clear();
+}
 
 InGameUIItem& InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item)
 {
+   assert(m_isBuildingPage);
    m_items.push_back(std::move(item));
    return *m_items.back();
 }
@@ -125,6 +131,12 @@ public:
               : "This table was not saved yet, therefore the changes can only be saved globally."s,
            SaveMode::None)
       , m_page(page)
+      , m_canSaveTableOverrides(canSaveTableOverrides)
+   {
+   }
+
+private:
+   void BuildPage()
    {
       AddItem(std::make_unique<InGameUIItem>("Save Globally"s, "Your changes will be saved as the new default for all tables."s,
          [this]()
@@ -132,7 +144,7 @@ public:
             m_page->SaveGlobally();
             m_player->m_liveUI->m_inGameUI.NavigateBack();
          }));
-      if (canSaveTableOverrides)
+      if (m_canSaveTableOverrides)
          AddItem(std::make_unique<InGameUIItem>("Save as Table Override"s, "The settings adjusted for this specific table will be persisted for the next time you play this table."s,
             [this]()
             {
@@ -148,6 +160,7 @@ public:
    };
 
    InGameUIPage* m_page;
+   bool m_canSaveTableOverrides;
 };
 
 void InGameUIPage::Save()
@@ -223,7 +236,7 @@ void InGameUIPage::SelectPrevItem()
 
 void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 {
-   if (m_selectedItem < 0 || m_selectedItem > (int)m_items.size())
+   if (m_selectedItem < 0 || m_selectedItem >= (int)m_items.size())
       return;
    const auto& item = m_items[m_selectedItem];
    const uint32_t now = msec();
@@ -356,6 +369,17 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 
 void InGameUIPage::Render(float elapsedS)
 {
+   if (m_needsRebuild)
+   {
+      // Pages are always built here, before rendering and interaction handling, to avoid item lifecycle issues (for example when changing a setting may result in other settings being added/removed).
+      assert(!m_isBuildingPage);
+      m_needsRebuild = false;
+      m_isBuildingPage = true;
+      ClearItems();
+      BuildPage();
+      m_isBuildingPage = false;
+   }
+
    ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
 

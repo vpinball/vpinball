@@ -20,7 +20,7 @@ public:
    bool IsPlayerPauseAllowed() const override { return false; }
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    InputManager& GetInput() const { return m_player->m_pininput; }
    void AppendPlot();
 

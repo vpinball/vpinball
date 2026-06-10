@@ -12,10 +12,8 @@ class InputSettingsPage final : public InGameUIPage
 public:
    InputSettingsPage();
 
-   void Open(bool isBackwardAnimation) override;
-
 private:
-   void BuildPage();
+   void BuildPage() override;
    InputManager& GetInput() const { return m_player->m_pininput; }
 
 };

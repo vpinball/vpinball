@@ -15,13 +15,10 @@ InputDevicePage::InputDevicePage(uint16_t deviceId)
    , m_deviceId(deviceId)
    , m_deviceSettingId(m_player->m_pininput.GetDeviceSettingId(m_deviceId))
 {
-   BuildPage();
 }
 
 void InputDevicePage::BuildPage()
 {
-   ClearItems();
-
    const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Device.{}.NoAutoLayout", m_deviceSettingId));
    if (noAutoLayoutId.has_value())
       AddItem(std::make_unique<InGameUIItem>( //
@@ -36,7 +33,7 @@ void InputDevicePage::BuildPage()
             g_app->m_settings.Set(noAutoLayoutId.value(), false, false);
          m_player->m_pininput.ClearDeviceMappings(m_deviceId);
          m_player->m_liveUI->m_inGameUI.NavigateBack();
-         BuildPage();
+         RequestRebuild();
       }));
 }
 

@@ -18,10 +18,8 @@ PluginHomePage::PluginHomePage()
 {
 }
 
-void PluginHomePage::Open(bool isBackwardAnimation)
+void PluginHomePage::BuildPage()
 {
-   InGameUIPage::Open(isBackwardAnimation);
-   ClearItems();
    const MsgPluginManager& manager = m_player->m_pluginManager;
    for (const auto& plugin : manager.GetPlugins())
    {
@@ -43,16 +41,8 @@ PluginSettingsPage::PluginSettingsPage(const string& pluginId)
 {
 }
 
-void PluginSettingsPage::Open(bool isBackwardAnimation)
-{
-   InGameUIPage::Open(isBackwardAnimation);
-   BuildPage();
-}
-
 void PluginSettingsPage::BuildPage()
 {
-   ClearItems();
-
    #ifdef _WIN32
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Warning: Plugins are a beta experimental feature, not yet considered stable"s));
    #endif
@@ -92,7 +82,7 @@ void PluginSettingsPage::BuildPage()
             }
             manager.UnloadPlugin(plugin);
          }
-         BuildPage();
+         RequestRebuild();
       })).m_excludeFromDefault = true;
 
    if (!plugin->IsLoaded())

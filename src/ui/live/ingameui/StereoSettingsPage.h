@@ -21,7 +21,7 @@ public:
    bool IsFlipperNavNeeded() const override { return m_calibrationStep >= 0; }
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void OnPointOfViewChanged();
 
    void RenderAnaglyphInformations() const;

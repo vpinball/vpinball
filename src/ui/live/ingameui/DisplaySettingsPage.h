@@ -13,6 +13,9 @@ class DisplayHomePage final : public InGameUIPage
 {
 public:
    DisplayHomePage();
+
+private:
+   void BuildPage() override;
 };
 
 
@@ -28,7 +31,7 @@ public:
 
 private:
    void ResetARLock();
-   void BuildPage();
+   void BuildPage() override;
    void BuildWindowPage();
    void BuildEmbeddedPage();
    VPX::RenderOutput& GetOutput(VPXWindowId wndId);

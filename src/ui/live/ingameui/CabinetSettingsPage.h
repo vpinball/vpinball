@@ -22,7 +22,7 @@ public:
    void ResetToDefaults() override;
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void OnPointOfViewChanged();
 
    ViewSetup& GetCurrentViewSetup() const { return m_player->m_ptable->GetViewSetup(); }

@@ -20,7 +20,6 @@ void StereoSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_staticPrepassDisabled = false;
-   BuildPage();
 }
 
 void StereoSettingsPage::Close(bool isBackwardAnimation)
@@ -75,7 +74,7 @@ void StereoSettingsPage::SelectNextItem()
       if (m_calibrationStep > 5)
       {
          m_calibrationStep = -1;
-         BuildPage();
+         RequestRebuild();
       }
    }
    else
@@ -88,7 +87,7 @@ void StereoSettingsPage::SelectPrevItem()
    {
       m_calibrationStep--;
       if (m_calibrationStep < 0)
-         BuildPage();
+         RequestRebuild();
    }
    else
       InGameUIPage::SelectPrevItem();
@@ -149,8 +148,6 @@ void StereoSettingsPage::NotifyDirectSave()
 
 void StereoSettingsPage::BuildPage()
 {
-   ClearItems();
-
    const bool stereoRT = m_player->m_renderer->m_stereo3D != STEREO_OFF;
    const bool stereoSel = m_player->m_ptable->m_settings.GetPlayer_Stereo3D() != STEREO_OFF;
    m_editedStereoMode = (stereoRT != stereoSel) ? m_player->m_ptable->m_settings.GetPlayer_Stereo3D() : m_player->m_renderer->m_stereo3D;
@@ -176,7 +173,7 @@ void StereoSettingsPage::BuildPage()
             m_player->m_renderer->m_stereo3D = (StereoMode)v;
          m_player->m_ptable->m_settings.SetPlayer_Stereo3D((StereoMode)v, false);
          OnPointOfViewChanged();
-         BuildPage();
+         RequestRebuild();
       })).m_excludeFromDefault = true;
 
    if (m_editedStereoMode == STEREO_OFF)
@@ -310,7 +307,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_ptable->m_settings.SetPlayer_AnaglyphsRGB(glassesIndex, v, false);
          m_player->m_renderer->UpdateStereoShaderState();
          NotifyDirectSave();
-         BuildPage();
+         RequestRebuild();
       }));
 
    AddItem(std::make_unique<InGameUIItem>("Calibrate"s, "Perform calibration to adjust rendering to the characteristic of your display, using your glasses, with your eyes."s,

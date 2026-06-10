@@ -15,12 +15,10 @@ DisplayProfileSettingsPage::DisplayProfileSettingsPage()
    : InGameUIPage("Display Profile Settings"s, ""s, SaveMode::Both)
    , m_dmdTexture(BaseTexture::Create(128, 32, BaseTexture::Format::BW_FP32))
 {
-   BuildPage();
 }
 
 void DisplayProfileSettingsPage::BuildPage()
 {
-   ClearItems();
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Edited profile"s, "Select the DMD or alphanumeric segment display profile you cant ot adjust."s, false, 0, 0,
          vector<string> { //
@@ -31,7 +29,7 @@ void DisplayProfileSettingsPage::BuildPage()
       [this](int, int v)
       {
          m_selectedProfile = v;
-         BuildPage();
+         RequestRebuild();
       },
       [](Settings&) { /* UI state, not persisted */ }, //
       [](int, Settings&, bool) { /* UI state, not persisted */ }));

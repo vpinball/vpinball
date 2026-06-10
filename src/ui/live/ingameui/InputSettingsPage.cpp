@@ -15,17 +15,10 @@ InputSettingsPage::InputSettingsPage()
 {
 }
 
-void InputSettingsPage::Open(bool isBackwardAnimation)
-{
-   InGameUIPage::Open(isBackwardAnimation);
-   BuildPage();
-}
-
 void InputSettingsPage::BuildPage()
 {
    InputManager& input = GetInput();
 
-   ClearItems();
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Input devices"s, "Devices which are either active or used in input mappings are listed here."s));
    const auto& deviceIds = m_player->m_pininput.GetAllDevices();
    for (uint16_t deviceId : deviceIds)

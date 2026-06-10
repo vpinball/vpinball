@@ -12,7 +12,6 @@ namespace VPX::InGameUI
 GraphicSettingsPage::GraphicSettingsPage()
    : InGameUIPage("Graphics Settings"s, ""s, SaveMode::Both)
 {
-   BuildPage();
 }
 
 void GraphicSettingsPage::OnStaticRenderDirty()
@@ -27,8 +26,6 @@ void GraphicSettingsPage::OnStaticRenderDirty()
 
 void GraphicSettingsPage::BuildPage()
 {
-   ClearItems();
-
 #if defined(ENABLE_DX9)
    constexpr bool isDX9 = true;
    constexpr bool isOpenGL = false;
@@ -57,7 +54,7 @@ void GraphicSettingsPage::BuildPage()
          m_player->SetCabinetAutoFitMode(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
          m_player->SetCabinetAutoFitPos(m_player->m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
          OnStaticRenderDirty();
-         BuildPage();
+         RequestRebuild();
       },
       [](Settings& settings) { settings.ResetPlayer_BGSet(); }, //
       [this](int v, Settings& settings, bool asTableOverride)
@@ -203,7 +200,7 @@ void GraphicSettingsPage::BuildPage()
             m_player->SetTargetRefreshRate(10000.f);
             break;
          }
-         BuildPage();
+         RequestRebuild();
          if (isDX9 || isOpenGL)
             m_notificationId = m_player->m_liveUI->PushNotification("Note that some changes will only be applied after restarting the player."s, 3000, m_notificationId);
       },
@@ -454,7 +451,7 @@ void GraphicSettingsPage::BuildPage()
             m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_BallImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
             m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(m_player->m_ptable->m_settings.GetPlayer_DecalImage(), m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension());
          }
-         BuildPage();
+         RequestRebuild();
       }));
 
    if (m_player->m_renderer->m_overwriteBallImages)

@@ -16,6 +16,7 @@ public:
    void ResetToDefaults() override;
 
 private:
+   void BuildPage() override;
    struct rgb
    {
       int r, g, b;

@@ -13,7 +13,7 @@ public:
    GraphicSettingsPage();
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void OnStaticRenderDirty();
 
    unsigned int m_notificationId = 0;

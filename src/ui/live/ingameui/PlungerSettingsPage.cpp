@@ -23,7 +23,6 @@ PlungerSettingsPage::PlungerSettingsPage()
 
 void PlungerSettingsPage::BuildPage()
 {
-   ClearItems();
    const InputManager& input = GetInput();
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +51,7 @@ void PlungerSettingsPage::BuildPage()
          const string url = std::format("settings/plunger_sensor_{:d}", i);
          m_player->m_liveUI->m_inGameUI.AddPage(url, [i]() { return std::make_unique<PlungerSensorSettingsPage>(i); });
          m_player->m_liveUI->m_inGameUI.Navigate(url);
-         BuildPage();
+         RequestRebuild();
       }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +68,7 @@ void PlungerSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
-   BuildPage();
+   RequestRebuild();
 }
 
 void PlungerSettingsPage::Close(bool isBackwardAnimation)

@@ -15,14 +15,12 @@ namespace VPX::InGameUI
 HomePage::HomePage()
    : InGameUIPage("Options & Settings"s, ""s, SaveMode::None)
 {
-   BuildPage();
 }
 
 void HomePage::BuildPage()
 {
    constexpr bool hasKeyboard = !(g_isAndroid || g_isIOS);
    constexpr bool isTouch = g_isAndroid || g_isIOS;
-   ClearItems();
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Table options"s));
@@ -76,7 +74,7 @@ void HomePage::BuildPage()
             m_player->m_liveUI->ShowTouchOverlay(showTouchOverlay);
             ImGui::GetIO().MousePos.x = 0;
             ImGui::GetIO().MousePos.y = 0;
-            BuildPage();
+            RequestRebuild();
          }));
 
    if (!hasKeyboard)
@@ -92,7 +90,7 @@ void HomePage::BuildPage()
             }
             ImGui::GetIO().MousePos.x = 0;
             ImGui::GetIO().MousePos.y = 0;
-            BuildPage();
+            RequestRebuild();
          }));
 
    if (g_isMobile)
