@@ -19,7 +19,7 @@ void main()
 	offset[1] = v_texcoord3;
 	offset[2] = v_texcoord4;
 	vec4 subsampleIndices = vec4_splat(0.0);
-#if BGFX_SHADER_LANGUAGE_GLSL
+#if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
 	gl_FragColor = SMAABlendingWeightCalculationPS(v_texcoord0, v_texcoord1, offset, edgesTex, areaTex, searchTex, subsampleIndices);
 #else
 	gl_FragColor = SMAABlendingWeightCalculationPS(v_texcoord0, v_texcoord1, offset, edgesTex.m_texture, areaTex.m_texture, searchTex.m_texture, subsampleIndices);
