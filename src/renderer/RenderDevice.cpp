@@ -298,6 +298,8 @@ colorFormat RenderDevice::BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum forma
 }
 
 
+static const string& bgfxRendererName(const bgfx::RendererType::Enum type);
+
 void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 {
    SetThreadName("RenderThread"s);
@@ -420,6 +422,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    {
       PLOGE << "BGFX initialization failed";
       exit(-1);
+   }
+
+   // A specific backend was requested but BGFX created a different one (init.fallback let it fall back to
+   // the next best because the requested backend failed to initialize), so make that explicit.
+   if (init.type != bgfx::RendererType::Count && bgfx::getRendererType() != init.type)
+   {
+      PLOGW << "Requested graphics backend " << bgfxRendererName(init.type) << " is unavailable; BGFX fell back to "
+            << bgfx::getRendererName(bgfx::getRendererType());
    }
 
    if (init.platformData.nwh)
@@ -1078,6 +1088,39 @@ RenderDeviceState::~RenderDeviceState()
 
 ////////////////////////////////////////////////////////////////////
 
+#if defined(ENABLE_BGFX)
+// Human-readable name for a bgfx renderer type. Index bgfx::RendererType::Count maps to "Default"
+// (let bgfx auto-select the platform default). Keep aligned with the bgfx::RendererType enum.
+static const string& bgfxRendererName(const bgfx::RendererType::Enum type)
+{
+   // One entry per bgfx::RendererType, plus a trailing "Default" for RendererType::Count (auto-select).
+   static const string names[]
+      = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "WebGPU"s, "Default"s };
+   static_assert(std::size(names) == bgfx::RendererType::Count + 1,
+      "bgfxRendererName is out of sync with bgfx::RendererType - add/remove a name when bgfx changes its renderer list");
+   return names[type];
+}
+
+std::vector<std::string> RenderDevice::GetSelectableBackendNames()
+{
+   bgfx::RendererType::Enum supported[bgfx::RendererType::Count];
+   const int n = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supported);
+   std::vector<std::string> result;
+   for (int i = 0; i < n; ++i)
+   {
+      const bgfx::RendererType::Enum renderer = supported[i];
+      if (renderer == bgfx::RendererType::Noop || renderer == bgfx::RendererType::WebGPU)
+         continue; // no-op / web backend, not a usable desktop choice
+      #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
+      if (renderer == bgfx::RendererType::Direct3D12)
+         continue;
+      #endif
+      result.push_back(bgfxRendererName(renderer));
+   }
+   return result;
+}
+#endif
+
 RenderDevice::RenderDevice(
    VPX::Window* const wnd, const bool isStereo, const bool isAnaglyph, const bool isVR, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
    : m_texMan(*this)
@@ -1140,18 +1183,26 @@ RenderDevice::RenderDevice(
       syncMode = VideoSyncMode::VSM_VSYNC;
    
    // Select backend
-   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
    const string& gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-   string supportedRendererLog;
    init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
+   bool backendMatched = false;
    for (int i = 0; i < nRendererSupported; ++i)
-   {
-      supportedRendererLog += (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
-      if (gfxBackend == bgfxRendererNames[supportedRenderers[i]])
+      if (gfxBackend == bgfxRendererName(supportedRenderers[i]))
+      {
          init.type = supportedRenderers[i];
-   }
+         backendMatched = true;
+      }
+   // Valid GfxBackend values: 'Default' (let BGFX auto-select the platform default) plus the backends
+   // usable on this platform (same list as the in-game graphics settings).
+   string validBackends = "Default"s;
+   for (const string& name : GetSelectableBackendNames())
+      validBackends += ", " + name;
+   // The setting is case sensitive and an unknown/unsupported value silently falls back to the platform
+   // default, so warn rather than leave the user guessing (e.g. 'opengl' instead of 'OpenGL').
+   if (!backendMatched && !gfxBackend.empty() && gfxBackend != "Default"s)
+      PLOGW << "Ignoring unknown or unsupported graphics backend '" << gfxBackend << "' (case sensitive), using platform default. Valid values: " << validBackends;
 #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
    if (init.type == bgfx::RendererType::Direct3D12)
       init.type = bgfx::RendererType::Count;
@@ -1160,7 +1211,11 @@ RenderDevice::RenderDevice(
       init.type = bgfx::RendererType::Count;
    if (g_pplayer->m_vrDevice == nullptr)
    {
-      PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
+      // Requested only: BGFX may fall back to another backend if the requested one cannot initialize. The
+      // backend actually selected is logged from the render thread once BGFX is initialized ("BGFX
+      // initialized using ... backend").
+      PLOGI << "Requested graphics backend: " << (init.type == bgfx::RendererType::Count ? "Default (auto-selected by BGFX)"s : bgfxRendererName(init.type))
+            << " (valid values: " << validBackends << ')';
    }
 
    #ifndef __LIBVPINBALL__
