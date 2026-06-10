@@ -21,6 +21,8 @@ namespace LibAV
 #endif
 #include <Windows.h>
 #include <tchar.h>
+#define LIBAV_STR_(x) _T(#x)
+#define LIBAV_STR(x) LIBAV_STR_(x)
 #endif
 
 #ifdef CDECL
@@ -168,7 +170,7 @@ private:
       basepath.erase(basepath.find_last_of(_T("\\/")));
       basepath += _T('\\');
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avcodec64-61.dll"): _T("avcodec-61.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avcodec64-") LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) _T(".dll") : _T("avcodec-") LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_packet_alloc = reinterpret_cast<fn_av_packet_alloc>(GetProcAddress(hinstLib, "av_packet_alloc"));
@@ -187,7 +189,7 @@ private:
             && _avcodec_get_name && _avcodec_open2 && _avcodec_parameters_to_context && _avcodec_receive_frame && _avcodec_send_packet;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avformat64-61.dll") : _T("avformat-61.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avformat64-") LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) _T(".dll") : _T("avformat-") LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_find_best_stream = reinterpret_cast<fn_av_find_best_stream>(GetProcAddress(hinstLib, "av_find_best_stream"));
@@ -199,7 +201,7 @@ private:
          isLoaded &= _av_find_best_stream && _av_read_frame && _av_seek_frame && _avformat_open_input && _avformat_close_input;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avutil64-59.dll") : _T("avutil-59.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avutil64-") LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) _T(".dll") : _T("avutil-") LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_get_bytes_per_sample = reinterpret_cast<fn_av_get_bytes_per_sample>(GetProcAddress(hinstLib, "av_get_bytes_per_sample"));
@@ -216,7 +218,7 @@ private:
          isLoaded &= _av_get_bytes_per_sample && _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_free && _av_image_fill_arrays && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swresample64-5.dll") : _T("swresample-5.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swresample64-") LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) _T(".dll") : _T("swresample-") LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _swr_alloc_set_opts2 = reinterpret_cast<fn_swr_alloc_set_opts2>(GetProcAddress(hinstLib, "swr_alloc_set_opts2"));
@@ -227,7 +229,7 @@ private:
          isLoaded &= _swr_alloc_set_opts2 && _swr_convert && _swr_free && _swr_init && _swr_set_compensation;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swscale64-8.dll") : _T("swscale-8.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swscale64-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll") : _T("swscale-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _sws_freeContext = reinterpret_cast<fn_sws_freeContext>(GetProcAddress(hinstLib, "sws_freeContext"));

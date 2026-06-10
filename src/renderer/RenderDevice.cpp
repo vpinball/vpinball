@@ -1201,8 +1201,9 @@ RenderDevice::RenderDevice(
       validBackends += ", " + name;
    // The setting is case sensitive and an unknown/unsupported value silently falls back to the platform
    // default, so warn rather than leave the user guessing (e.g. 'opengl' instead of 'OpenGL').
-   if (!backendMatched && !gfxBackend.empty() && gfxBackend != "Default"s)
+   if (!backendMatched && !gfxBackend.empty() && gfxBackend != "Default"s) {
       PLOGW << "Ignoring unknown or unsupported graphics backend '" << gfxBackend << "' (case sensitive), using platform default. Valid values: " << validBackends;
+   }
 #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
    if (init.type == bgfx::RendererType::Direct3D12)
       init.type = bgfx::RendererType::Count;

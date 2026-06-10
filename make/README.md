@@ -57,7 +57,7 @@ cp make/CMakeLists_[target]_[platform].txt CMakeLists.txt
 <summary>windows-x64</summary>
 
 ```
-pacman -S --noconfirm make diffutils yasm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
+pacman -S --noconfirm make diffutils nasm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
 platforms/windows-x64/external.sh
 cp make/CMakeLists_bgfx-windows-x64.txt CMakeLists.txt
 cmake -G "Visual Studio 18 2026" -A x64 -B build
@@ -69,7 +69,7 @@ cmake --build build --config Release
 <summary>windows-x86</summary>
 
 ```
-pacman -S --noconfirm make diffutils yasm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv mingw-w64-i686-cmake
+pacman -S --noconfirm make diffutils nasm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv mingw-w64-i686-cmake
 platforms/windows-x86/external.sh
 cp make/CMakeLists_bgfx-windows-x86.txt CMakeLists.txt
 cmake -G "Visual Studio 18 2026" -A Win32 -B build
@@ -189,7 +189,7 @@ cd standalone/android
 <summary>windows-x64-mingw</summary>
 
 ```
-pacman -S --noconfirm make diffutils yasm bison git autoconf automake libtool mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
+pacman -S --noconfirm make diffutils nasm bison git autoconf automake libtool mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools
 ```
 
 Build (entire build runs inside the MSYS2 UCRT64 shell):

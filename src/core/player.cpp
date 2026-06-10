@@ -108,8 +108,9 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
       exit(1);
    }
-   if (const char* const drv = SDL_GetCurrentVideoDriver())
+   if (const char* const drv = SDL_GetCurrentVideoDriver()) {
       PLOGI << "SDL video driver: " << drv;
+   }
 
    // Load player plugins
 
