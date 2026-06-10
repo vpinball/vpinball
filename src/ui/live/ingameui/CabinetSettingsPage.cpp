@@ -24,7 +24,6 @@ void CabinetSettingsPage::Open(bool isBackwardAnimation)
    m_playerPos.x = settings.GetPlayer_ScreenPlayerX();
    m_playerPos.y = settings.GetPlayer_ScreenPlayerY();
    m_playerPos.z = settings.GetPlayer_ScreenPlayerZ();
-   BuildPage();
 }
 
 void CabinetSettingsPage::Close(bool isBackwardAnimation)
@@ -55,7 +54,7 @@ void CabinetSettingsPage::ResetToDefaults()
       viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
    }
    OnPointOfViewChanged();
-   BuildPage();
+   RequestRebuild();
 }
 
 void CabinetSettingsPage::BuildPage()

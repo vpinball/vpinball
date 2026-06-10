@@ -14,7 +14,7 @@ public:
    void Render(float elapsed) override;
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void BuildDMDPage();
    void BuildAlphaPage();
    

@@ -28,8 +28,6 @@ PlungerSensorSettingsPage::PlungerSensorSettingsPage(int sensorIndex)
 
 void PlungerSensorSettingsPage::BuildPage()
 {
-   ClearItems();
-
    if (m_removed)
       return;
 
@@ -39,12 +37,12 @@ void PlungerSensorSettingsPage::BuildPage()
       return;
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Position sensor"s));
-   m_sideAxisSection.AppendSection(this, GetSensor()->GetPositionSensor().get(), std::format("Plunger{}.Position", m_sensorIndex), 0x01, [this]() { BuildPage(); });
+   m_sideAxisSection.AppendSection(this, GetSensor()->GetPositionSensor().get(), std::format("Plunger{}.Position", m_sensorIndex), 0x01, [this]() { RequestRebuild(); });
    AddItem(std::make_unique<InGameUIItem>(posFilterPropId.value(), [this]() { return GetSensor()->IsPositionFilterEnabled(); }, [this](bool v) { GetSensor()->EnablePositionFilter(v); }));
    AddItem(std::make_unique<InGameUIItem>(linearPropId.value(), [this]() { return GetSensor()->IsLinear(); }, [this](bool v) { GetSensor()->SetLinear(v); }));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Velocity sensor"s));
-   m_frontAxisSection.AppendSection(this, GetSensor()->GetVelocitySensor().get(), std::format("Plunger{}.Velocity", m_sensorIndex), 0x02, [this]() { BuildPage(); });
+   m_frontAxisSection.AppendSection(this, GetSensor()->GetVelocitySensor().get(), std::format("Plunger{}.Velocity", m_sensorIndex), 0x02, [this]() { RequestRebuild(); });
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Other settings"s));
    AddItem(std::make_unique<InGameUIItem>("Remove this sensor"s, "Delete this sensor from the plunger sensor list."s,
@@ -53,7 +51,7 @@ void PlungerSensorSettingsPage::BuildPage()
          m_removed = true;
          m_player->m_pininput.m_plungerHandler->RemoveSensor(m_sensorIndex);
          m_player->m_liveUI->m_inGameUI.NavigateBack();
-         BuildPage();
+         RequestRebuild();
       }));
 }
 
@@ -61,7 +59,7 @@ void PlungerSensorSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
-   BuildPage();
+   RequestRebuild();
 }
 
 void PlungerSensorSettingsPage::Close(bool isBackwardAnimation)

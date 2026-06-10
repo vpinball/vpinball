@@ -12,9 +12,10 @@ class TableOptionsPage final : public InGameUIPage
 {
 public:
    TableOptionsPage();
-   void Open(bool isBackwardAnimation) override;
 
 private:
+   void BuildPage() override;
+
    const PinTable::TableOption* GetOption(VPX::Properties::PropertyRegistry::PropId id) const;
 };
 

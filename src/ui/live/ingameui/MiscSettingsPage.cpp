@@ -18,7 +18,6 @@ void MiscSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_staticPrepassDisabled = false;
-   BuildPage();
 }
 
 void MiscSettingsPage::Close(bool isBackwardAnimation)
@@ -41,8 +40,6 @@ void MiscSettingsPage::RequestDynamicRendererUpdate()
 
 void MiscSettingsPage::BuildPage()
 {
-   ClearItems();
-
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propController_DOFContactors, //

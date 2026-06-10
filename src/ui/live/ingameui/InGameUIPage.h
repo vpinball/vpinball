@@ -16,10 +16,10 @@ public:
    enum class SaveMode { None, Global, Table, Both };
 
    InGameUIPage(const string& title, const string& info, SaveMode saveMode);
+   virtual ~InGameUIPage() = default;
 
    Settings& GetSettings();
 
-   void ClearItems();
    InGameUIItem& AddItem(std::unique_ptr<InGameUIItem> item);
 
    virtual void Open(bool isBackwardAnimation);
@@ -54,10 +54,17 @@ public:
 
    Player* const m_player;
 
+   void RequestRebuild() { m_needsRebuild = true; }
+   virtual void BuildPage() = 0;
+
 private:
    const string m_title;
    const string m_info;
    const SaveMode m_saveMode;
+
+   bool m_needsRebuild = true;
+   bool m_isBuildingPage = false;
+   void ClearItems();
 
    // Open/Close animations
    // -1.f = closed, 0.f = opened, 1.f = appearing

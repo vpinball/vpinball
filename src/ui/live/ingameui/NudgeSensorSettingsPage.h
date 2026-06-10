@@ -21,8 +21,9 @@ public:
 
    bool IsPlayerPauseAllowed() const override { return false; }
 
+   void BuildPage() override;
+
 private:
-   void BuildPage();
    void AppendPlot();
 
    InputManager& GetInput() const { return m_player->m_pininput; }

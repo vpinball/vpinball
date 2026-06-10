@@ -11,6 +11,10 @@ namespace VPX::InGameUI
 AudioSettingsPage::AudioSettingsPage()
    : InGameUIPage("Audio Settings"s, ""s, SaveMode::Both)
 {
+}
+
+void AudioSettingsPage::BuildPage()
+{
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, false, true), //
       [this]() { return m_lockVolume; }, //

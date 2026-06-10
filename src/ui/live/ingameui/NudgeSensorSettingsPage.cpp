@@ -34,8 +34,6 @@ NudgeSensorSettingsPage::NudgeSensorSettingsPage(int sensorIndex)
 
 void NudgeSensorSettingsPage::BuildPage()
 {
-   ClearItems();
-
    if (m_removed)
       return;
 
@@ -102,7 +100,7 @@ void NudgeSensorSettingsPage::BuildPage()
          }
          default: assert(false); break;
          }
-         BuildPage();
+         RequestRebuild();
       }));
 
    auto strengthPropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Nudge{}.Strength", m_sensorIndex));
@@ -114,10 +112,10 @@ void NudgeSensorSettingsPage::BuildPage()
    if (VPX::Physics::GamepadNudge* gamepadSensor = dynamic_cast<VPX::Physics::GamepadNudge*>(GetSensor().get()); gamepadSensor)
    {
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Side nudge sensor"s));
-      m_sideAxisSection.AppendSection(this, &gamepadSensor->GetXSensor(), std::format("Nudge{}.X", m_sensorIndex), 1, [this]() { BuildPage(); });
+      m_sideAxisSection.AppendSection(this, &gamepadSensor->GetXSensor(), std::format("Nudge{}.X", m_sensorIndex), 1, [this]() { RequestRebuild(); });
 
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Front nudge sensor"s));
-      m_frontAxisSection.AppendSection(this, &gamepadSensor->GetYSensor(), std::format("Nudge{}.Y", m_sensorIndex), 1, [this]() { BuildPage(); });
+      m_frontAxisSection.AppendSection(this, &gamepadSensor->GetYSensor(), std::format("Nudge{}.Y", m_sensorIndex), 1, [this]() { RequestRebuild(); });
    }
 
    if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
@@ -132,16 +130,16 @@ void NudgeSensorSettingsPage::BuildPage()
       }
       
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Side acceleration sensor"s));
-      m_sideAxisSection.AppendSection(this, &cabSensor->GetXAccSensor(), std::format("Nudge{}.AccX", m_sensorIndex), 4, [this]() { BuildPage(); });
+      m_sideAxisSection.AppendSection(this, &cabSensor->GetXAccSensor(), std::format("Nudge{}.AccX", m_sensorIndex), 4, [this]() { RequestRebuild(); });
 
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Front acceleration sensor"s));
-      m_frontAxisSection.AppendSection(this, &cabSensor->GetYAccSensor(), std::format("Nudge{}.AccY", m_sensorIndex), 4, [this]() { BuildPage(); });
+      m_frontAxisSection.AppendSection(this, &cabSensor->GetYAccSensor(), std::format("Nudge{}.AccY", m_sensorIndex), 4, [this]() { RequestRebuild(); });
 
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Side velocity sensor"s));
-      m_sideAxisSection2.AppendSection(this, &cabSensor->GetXVelSensor(), std::format("Nudge{}.VelX", m_sensorIndex), 2, [this]() { BuildPage(); });
+      m_sideAxisSection2.AppendSection(this, &cabSensor->GetXVelSensor(), std::format("Nudge{}.VelX", m_sensorIndex), 2, [this]() { RequestRebuild(); });
 
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Front velocity sensor"s));
-      m_frontAxisSection2.AppendSection(this, &cabSensor->GetYVelSensor(), std::format("Nudge{}.VelY", m_sensorIndex), 2, [this]() { BuildPage(); });
+      m_frontAxisSection2.AppendSection(this, &cabSensor->GetYVelSensor(), std::format("Nudge{}.VelY", m_sensorIndex), 2, [this]() { RequestRebuild(); });
    }
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Other settings"s));
@@ -151,7 +149,7 @@ void NudgeSensorSettingsPage::BuildPage()
          m_removed = true;
          m_player->m_pininput.m_nudgeHandler->RemoveSensor(m_sensorIndex);
          m_player->m_liveUI->m_inGameUI.NavigateBack();
-         BuildPage();
+         RequestRebuild();
       }));
 }
 
@@ -159,7 +157,7 @@ void NudgeSensorSettingsPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
-   BuildPage();
+   RequestRebuild();
 }
 
 void NudgeSensorSettingsPage::Close(bool isBackwardAnimation)

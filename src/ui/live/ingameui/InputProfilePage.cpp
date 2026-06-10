@@ -12,9 +12,14 @@ namespace VPX::InGameUI
 
 InputProfilePage::InputProfilePage(const string& deviceName, const std::function<void(bool, bool)>& handler)
    : InGameUIPage("Apply Device Layout"s, ""s, SaveMode::None)
+   , m_deviceName(deviceName)
    , m_handler(handler)
 {
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Device '" + deviceName + "' was detected."));
+}
+
+void InputProfilePage::BuildPage()
+{
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Device '" + m_deviceName + "' was detected."));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Would you like the default input layout to be applied ?"s));
 

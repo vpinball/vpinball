@@ -21,10 +21,8 @@ const PinTable::TableOption* TableOptionsPage::GetOption(VPX::Properties::Proper
    return nullptr;
 }
 
-void TableOptionsPage::Open(bool isBackwardAnimation)
+void TableOptionsPage::BuildPage()
 {
-   InGameUIPage::Open(isBackwardAnimation);
-   ClearItems();
    for (const PinTable::TableOption& option : m_player->m_ptable->GetOptions())
    {
       const VPX::Properties::PropertyRegistry::PropId id = option.id;

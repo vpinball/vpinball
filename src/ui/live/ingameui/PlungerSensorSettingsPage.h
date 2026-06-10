@@ -22,7 +22,7 @@ public:
    bool IsPlayerPauseAllowed() const override { return false; }
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void AppendPlot();
 
    const std::unique_ptr<PlungerSensor>& GetSensor() const { return m_player->m_pininput.m_plungerHandler->GetSensor(m_sensorIndex); }

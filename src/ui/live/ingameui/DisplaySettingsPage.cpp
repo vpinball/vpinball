@@ -41,6 +41,10 @@ static constexpr std::array<int2, 13> aspectRatios {
 DisplayHomePage::DisplayHomePage()
    : InGameUIPage("Display Settings"s, ""s, SaveMode::None)
 {
+}
+
+void DisplayHomePage::BuildPage()
+{
    // On Phone platform, the main display is always the device screen
    if (!g_isMobile)
    {
@@ -80,9 +84,7 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
    m_displays = VPX::Window::GetDisplays();
    for (const auto& display : m_displays)
       m_displayNames.push_back((display.isPrimary ? '*' : ' ') + std::to_string(display.width) + 'x' + std::to_string(display.height) + " [" + display.displayName + ']');
-
    ResetARLock();
-   BuildPage();
 }
 
 void DisplaySettingsPage::ResetARLock()
@@ -153,8 +155,6 @@ void DisplaySettingsPage::BuildPage()
 #else
    constexpr bool isSingleView = true;
 #endif
-   ClearItems();
-
    // Main view is rendered by the main application and is always active
    if (m_wndId == VPXWindowId::VPXWINDOW_Playfield || m_wndId == VPXWindowId::VPXWINDOW_VRPreview)
    {
@@ -177,7 +177,7 @@ void DisplaySettingsPage::BuildPage()
                     [this, id = renderer.id](int, int v)
                     {
                        m_player->SetAncillaryRendererPriority(m_wndId, id, v);
-                       BuildPage();
+                       RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
       }
@@ -193,7 +193,7 @@ void DisplaySettingsPage::BuildPage()
          [this](bool v)
          {
             GetOutput(m_wndId).SetMode(m_player->m_ptable->m_settings, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
-            BuildPage();
+            RequestRebuild();
          }, //
          [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
          [this](bool v, Settings& settings, bool asTableOverride)
@@ -217,7 +217,7 @@ void DisplaySettingsPage::BuildPage()
                        m_player->m_renderer->m_renderDevice->AddWindow(GetOutput(m_wndId).GetWindow());
                        GetOutput(m_wndId).GetWindow()->Show();
                     }
-                    BuildPage();
+                    RequestRebuild();
                  }))
          .m_excludeFromDefault = true;
       switch (GetOutput(m_wndId).GetMode())
@@ -281,7 +281,7 @@ void DisplaySettingsPage::BuildWindowPage()
             wnd->SetSize(size.x, size.y);
          }
          wnd->SetPos(m_displays[v].left + (m_displays[v].width - size.x) / 2, m_displays[v].top + (m_displays[v].height - size.y) / 2);
-         BuildPage();
+         RequestRebuild();
       }, //
       [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
       [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayName, asTableOverride); }));
@@ -295,7 +295,7 @@ void DisplaySettingsPage::BuildWindowPage()
               {
                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
                  m_player->m_ptable->m_settings.SetWindow_FullScreen(m_wndId, v, false);
-                 BuildPage();
+                 RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 
@@ -370,7 +370,7 @@ void DisplaySettingsPage::BuildWindowPage()
          [this](int, int v)
          {
             m_arLock = v;
-            BuildPage();
+            RequestRebuild();
          }, //
          [](Settings&) { /* UI state, not persisted */ }, //
          [](int, Settings&, bool) { /* UI state, not persisted */ }));
@@ -398,7 +398,7 @@ void DisplaySettingsPage::BuildWindowPage()
                           m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, h, false);
                        }
                        m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, v, false);
-                       BuildPage();
+                       RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
 
@@ -422,7 +422,7 @@ void DisplaySettingsPage::BuildWindowPage()
                           m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, w, false);
                        }
                        m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, v, false);
-                       BuildPage();
+                       RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
       }
@@ -462,7 +462,7 @@ void DisplaySettingsPage::BuildWindowPage()
                        wnd->SetPos(pos.x, pos.y);
                        wnd->SetSize(size.x, size.y);
                        OnStaticRenderDirty();
-                       BuildPage();
+                       RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
 
@@ -499,7 +499,7 @@ void DisplaySettingsPage::BuildWindowPage()
                        wnd->SetSize(size.x, size.y);
 
                        OnStaticRenderDirty();
-                       BuildPage();
+                       RequestRebuild();
                     }))
             .m_excludeFromDefault = true;
       }
@@ -526,7 +526,7 @@ void DisplaySettingsPage::BuildWindowPage()
                        SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
                        SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev), mousePos.y);
                     }
-                    BuildPage();
+                    RequestRebuild();
                  }))
          .m_excludeFromDefault = true;
 
@@ -552,7 +552,7 @@ void DisplaySettingsPage::BuildWindowPage()
                        SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
                        SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev));
                     }
-                    BuildPage();
+                    RequestRebuild();
                  }))
          .m_excludeFromDefault = true;
 
@@ -582,7 +582,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
       [this](int, int v)
       {
          m_arLock = v;
-         BuildPage();
+         RequestRebuild();
       }, //
       [](Settings&) { /* UI state, not persisted */ }, //
       [](int, Settings&, bool) { /* UI state, not persisted */ }));
@@ -604,7 +604,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
                     GetOutput(m_wndId).SetHeight(h);
                  }
                  GetOutput(m_wndId).SetWidth(v);
-                 BuildPage();
+                 RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 
@@ -625,7 +625,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
                     GetOutput(m_wndId).SetWidth(w);
                  }
                  GetOutput(m_wndId).SetHeight(v);
-                 BuildPage();
+                 RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 
@@ -643,7 +643,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
                  SDL_Point pos;
                  GetOutput(m_wndId).GetPos(pos.x, pos.y);
                  GetOutput(m_wndId).SetPos(v, pos.y);
-                 BuildPage();
+                 RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 
@@ -661,7 +661,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
                  SDL_Point pos;
                  GetOutput(m_wndId).GetPos(pos.x, pos.y);
                  GetOutput(m_wndId).SetPos(pos.x, v);
-                 BuildPage();
+                 RequestRebuild();
               }))
       .m_excludeFromDefault = true;
 

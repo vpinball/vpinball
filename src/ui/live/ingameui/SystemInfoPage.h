@@ -11,6 +11,9 @@ class SystemInfoPage final : public InGameUIPage
 {
 public:
    SystemInfoPage();
+
+private:
+   void BuildPage() override;
 };
 
 }

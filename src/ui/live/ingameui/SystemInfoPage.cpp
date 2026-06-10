@@ -13,7 +13,10 @@ namespace VPX::InGameUI
 SystemInfoPage::SystemInfoPage()
    : InGameUIPage("System Info"s, ""s, SaveMode::None)
 {
+}
 
+void SystemInfoPage::BuildPage()
+{
    std::ostringstream info;
    info << std::format(" *Visual Pinball*: {} \n", VP_VERSION_STRING_FULL_LITERAL);
    info << std::format(" *Logical CPU cores*: {}\n", g_app->GetLogicalNumberOfProcessors());

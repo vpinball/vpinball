@@ -15,6 +15,10 @@ namespace VPX::InGameUI
 VRSettingsPage::VRSettingsPage()
    : InGameUIPage("Virtual Reality Settings"s, ""s, SaveMode::Both)
 {
+}
+
+void VRSettingsPage::BuildPage()
+{
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View Offset"s));
 
    AddItem(std::make_unique<InGameUIItem>( //

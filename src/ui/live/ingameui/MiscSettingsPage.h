@@ -15,7 +15,7 @@ public:
    void Close(bool isBackwardAnimation) override;
 
 private:
-   void BuildPage();
+   void BuildPage() override;
    void RequestDynamicRendererUpdate();
 
    unsigned int m_difficultyNotification = 0; 

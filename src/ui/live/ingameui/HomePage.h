@@ -15,7 +15,7 @@ public:
    void Render(float elapsedMs) override;
 
 private:
-   void BuildPage();
+   void BuildPage() override;
 
 };
 

@@ -20,7 +20,6 @@ void TableMiscPage::Open(bool isBackwardAnimation)
 {
    InGameUIPage::Open(isBackwardAnimation);
    m_staticPrepassDisabled = false;
-   BuildPage();
 }
 
 void TableMiscPage::Close(bool isBackwardAnimation)
@@ -43,8 +42,6 @@ void TableMiscPage::RequestDynamicRendererUpdate()
 
 void TableMiscPage::BuildPage()
 {
-   ClearItems();
-
    // Tonemapper, as a table override, if not using WCG display tonemapper
    if (!m_player->m_renderer->m_HDRforceDisableToneMapper || !m_player->m_playfieldWnd->IsWCGBackBuffer())
    {
@@ -88,7 +85,7 @@ void TableMiscPage::BuildPage()
          {
             m_player->m_renderer->m_sceneLighting.SetMode((Renderer::SceneLighting::Mode)v);
             RequestDynamicRendererUpdate();
-            BuildPage();
+            RequestRebuild();
          },
          [](Settings& settings)
          {

@@ -26,7 +26,7 @@ private:
       VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab) const;
    void OnPointOfViewChanged();
    void UpdateDefaults();
-   void BuildPage();
+   void BuildPage() override;
 
    ViewSetup& GetCurrentViewSetup() const;
 

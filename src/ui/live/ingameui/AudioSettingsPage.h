@@ -13,6 +13,8 @@ public:
    AudioSettingsPage();
 
 private:
+   void BuildPage() override;
+
    bool m_lockVolume = true;
    vector<string> m_devices;
 };
