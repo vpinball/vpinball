@@ -334,7 +334,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then

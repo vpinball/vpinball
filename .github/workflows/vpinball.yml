@@ -123,7 +123,7 @@ jobs:
         uses: microsoft/setup-msbuild@v3
       - if: (matrix.platform == 'windows' || matrix.platform == 'windows-mingw')
         run: |
-          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm bison git autoconf automake libtool"
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils nasm bison git autoconf automake libtool"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
           else
@@ -297,7 +297,7 @@ jobs:
       - uses: microsoft/setup-msbuild@v3
       - if: (matrix.platform == 'windows')
         run: |
-          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm autoconf automake libtool"
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils nasm autoconf automake libtool"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libwinpthread mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-tools"
           else

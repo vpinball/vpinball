@@ -499,7 +499,7 @@ cp libdof/libdof/third-party/runtime-libs/win/x86/libftdi1.dll ../../../third-pa
 for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
    DIR="lib${LIB}"
    cp ffmpeg/ffmpeg/${DIR}/${LIB}.lib ../../../third-party/build-libs/windows-x86
-   cp ffmpeg/ffmpeg/${DIR}/${LIB}.dll ../../../third-party/runtime-libs/windows-x86
+   cp ffmpeg/ffmpeg/${DIR}/${LIB}-*.dll ../../../third-party/runtime-libs/windows-x86
    mkdir -p ../../../third-party/include/${DIR}
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
