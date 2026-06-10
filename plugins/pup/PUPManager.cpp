@@ -631,11 +631,12 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       padBottom = pupTopperPadBottom_Get();
       break;
    case VPXWindowId::VPXWINDOW_Backglass:
-      // Prefer screen 2, falling back to 6. A screen with a custom position but no children is a
-      // positioned element rather than a backglass canvas, so skip it; a custom positioned screen
-      // that does host children (the overlays/videos) is a valid canvas and kept as root.
+      // Prefer screen 2, falling back to 6. A childless screen positioned on another screen is a
+      // positioned element rather than a backglass canvas, so skip it; a positioned screen that
+      // does host children (the overlays/videos) is a valid canvas and kept as root. A screen
+      // whose custom position references itself has no parent and stays root.
       rootScreen = me->GetScreen(2);
-      if (rootScreen == nullptr || (rootScreen->GetCustomPos() != nullptr && !rootScreen->HasChildren()))
+      if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
          rootScreen = me->GetScreen(6);
       padLeft = pupBGPadLeft_Get();
       padRight = pupBGPadRight_Get();
@@ -644,7 +645,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       break;
    case VPXWindowId::VPXWINDOW_ScoreView:
       rootScreen = me->GetScreen(5);
-      if (rootScreen == nullptr || (rootScreen->GetCustomPos() != nullptr && !rootScreen->HasChildren()))
+      if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
          rootScreen = me->GetScreen(1);
       padLeft = pupSVPadLeft_Get();
       padRight = pupSVPadRight_Get();
@@ -653,7 +654,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       break;
    default: break;
    }
-   if (rootScreen == nullptr || (rootScreen->GetCustomPos() != nullptr && !rootScreen->HasChildren()))
+   if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
       return false;
 
    if (!LibAV::LibAV::GetInstance().isLoaded)
