@@ -15,11 +15,12 @@ namespace PinMAME {
 class Game final
 {
 public:
-   Game(Controller* pController, const PinmameGame& pinmameGame)
+   Game(Controller* pController, const PinmameGame& pinmameGame, GameSettings* pSettings)
       : m_pController(pController)
-      , m_settings(new GameSettings())
+      , m_settings(pSettings)
    {
       m_pController->AddRef();
+      m_settings->AddRef();
       memcpy(&m_pinmameGame, &pinmameGame, sizeof(PinmameGame));
    }
    ~Game()
