@@ -4,18 +4,9 @@
 
 #include "common.h"
 
-#include <algorithm>
-#include <cctype>
 #include <unordered_map>
 
 namespace PinMAME {
-
-inline string ToLowerKey(const string& key)
-{
-   string k(key);
-   std::transform(k.begin(), k.end(), k.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-   return k;
-}
 
 // Default values matching VPinMAME settings that were never explicitly set,
 // so table scripts relying on VPinMAME defaults behave the same as on

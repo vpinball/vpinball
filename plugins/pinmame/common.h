@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <cstdarg>
 #include <cstdio>
 #include <filesystem>
@@ -35,6 +37,12 @@ LPI_USE_CPP();
 PSC_USE_ERROR();
 
 std::filesystem::path find_case_insensitive_directory_path(const std::filesystem::path& searchedFile);
+
+inline string string_to_lower(string str)
+{
+   std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+   return str;
+}
 
    // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
 inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const char* const __restrict src)
