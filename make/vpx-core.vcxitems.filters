@@ -142,6 +142,12 @@
     <Filter Include="third-party\simple-uri-parser">
       <UniqueIdentifier>{d2ad50dc-81bf-4ece-9513-85e36260bc19}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\miniaudio">
+      <UniqueIdentifier>{0fc3611f-61f8-4697-a8c2-26195a8df392}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\miniaudio\extras">
+      <UniqueIdentifier>{84240660-f13f-48ce-9a20-29477b615dcf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.cpp">
@@ -436,9 +442,6 @@
       <Filter>ui\live</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/EditorUI.cpp">
-      <Filter>ui\live\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/EditableUIPart.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/PropertyPane.cpp">
@@ -908,6 +911,15 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <Filter>plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\miniaudio.c">
+      <Filter>third-party\miniaudio</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\extras\stb_vorbis.c">
+      <Filter>third-party\miniaudio\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\extras\stb_vorbis_static.c">
+      <Filter>third-party\miniaudio\extras</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2227,6 +2239,15 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\miniaudio.h">
+      <Filter>third-party\miniaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\extras\miniaudio_libopus.h">
+      <Filter>third-party\miniaudio\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\third-party\include\miniaudio\extras\miniaudio_libvorbis.h">
+      <Filter>third-party\miniaudio\extras</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
