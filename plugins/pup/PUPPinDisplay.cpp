@@ -28,7 +28,9 @@ PUPPinDisplay::PUPPinDisplay(PUPManager& manager)
 
 PUPPinDisplay::~PUPPinDisplay()
 {
-   m_pupManager.Unload();
+   // This object is only a script proxy: tables may create and release several of
+   // them for the same game, so do not unload the manager here. Teardown happens
+   // on game end (see PUPPlugin OnGameEnd) or through an explicit CloseApp call.
 }
 
 void PUPPinDisplay::Init(int screenNum, const string& romName)
