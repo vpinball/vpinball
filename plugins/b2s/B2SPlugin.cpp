@@ -42,6 +42,16 @@ PSC_CLASS_START(B2S_GameSettings, GameSettings)
    PSC_PROXY_PROP_RW_ARRAY1(m_gameSettingsProxy.get(), int, Value, string)
 PSC_CLASS_END()
 
+// Proxy class for PinMAME Settings
+static std::unique_ptr<ScriptablePlugin::ScriptClassProxy> m_settingsProxy;
+class Settings { PSC_IMPLEMENT_REFCOUNT() }; // Dummy class as we directly use the proxied object
+PSC_CLASS_START(B2S_Settings, Settings)
+   members.clear();
+   PSC_PROXY_PROP_R(m_settingsProxy.get(), uint32, AddRef)
+   PSC_PROXY_PROP_R(m_settingsProxy.get(), uint32, Release)
+   PSC_PROXY_PROP_RW_ARRAY1(m_settingsProxy.get(), int, Value, string)
+PSC_CLASS_END()
+
 // Proxy class for PinMAME Game
 static std::unique_ptr<ScriptablePlugin::ScriptClassProxy> m_gameProxy;
 class Game { PSC_IMPLEMENT_REFCOUNT() }; // Dummy class as we directly use the proxied object
@@ -141,6 +151,7 @@ PSC_CLASS_START(B2S_Server, B2SServer)
    PSC_PROXY_PROP_RW(me, bool, ShowTitle)
    PSC_PROXY_PROP_RW(me, bool, HandleKeyboard)
    PSC_PROXY_PROP_RW(me, bool, HandleMechanics)
+   PSC_PROXY_PROP_R(me, B2S_Settings, Settings)
    PSC_PROXY_PROP_RW_ARRAY1(me, int32, SolMask, int)
    // Run/Pause/Stop
    PSC_PROXY_FUNCTION0(me, void, Run)
@@ -247,12 +258,14 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
    RegisterB2S_Server(classLambda);
    RegisterB2S_GameSettings(classLambda);
+   RegisterB2S_Settings(classLambda);
    RegisterB2S_Game(classLambda);
    RegisterB2S_ByteArray(arrayLambda);
    RegisterB2S_IntArray(arrayLambda);
    RegisterB2S_StructArray(arrayLambda);
    m_gameProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Game", "B2S_", B2S_Game_SCD);
    m_gameSettingsProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_GameSettings", "B2S_", B2S_GameSettings_SCD);
+   m_settingsProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Settings", "B2S_", B2S_Settings_SCD);
    B2S_Server_SCD->CreateObject = []()
    {
       if (nServer > 0)
@@ -274,11 +287,13 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->UnregisterScriptArrayType(sad); };
    m_gameProxy = nullptr;
    m_gameSettingsProxy = nullptr;
+   m_settingsProxy = nullptr;
    UnregisterB2S_ByteArray(arrayLambda);
    UnregisterB2S_IntArray(arrayLambda);
    UnregisterB2S_StructArray(arrayLambda);
    UnregisterB2S_Game(classLambda);
    UnregisterB2S_GameSettings(classLambda);
+   UnregisterB2S_Settings(classLambda);
    UnregisterB2S_Server(classLambda);
    
    msgApi->ReleaseMsgID(getVpxApiId);
