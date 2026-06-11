@@ -24,7 +24,7 @@ public:
    //void PutValue(const string& name, ScriptVariant v) { /* Not yet implemented */ }
    int GetValue(const string& key) const
    {
-      const string k = ToLowerKey(key);
+      const string k = string_to_lower(key);
       const auto it = m_values.find(k);
       if (it != m_values.end())
          return it->second;
@@ -34,7 +34,7 @@ public:
       LOGW(std::format("Unknown game setting '{}', returning 0", key));
       return 0;
    }
-   void SetValue(const string& key, int v) { m_values[ToLowerKey(key)] = v; }
+   void SetValue(const string& key, int v) { m_values[string_to_lower(key)] = v; }
    void SetDisplayPosition(float newValX, float newValY, void* hWnd = nullptr) { /* Not yet implemented */ }
    void ShowSettingsDlg(void* hParentWnd = nullptr) { /* Not yet implemented */ }
 
