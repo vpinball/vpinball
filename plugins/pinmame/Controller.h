@@ -10,6 +10,7 @@
 namespace PinMAME {
 
 class Game;
+class GameSettings;
 class Settings;
 
 class Controller final
@@ -159,7 +160,7 @@ public:
 private:
    string m_vpmPath;
    string m_szGameName;
-   mutable std::unordered_map<string, Game*> m_games; // cache so per-game settings survive repeated Games(name) accesses
+   mutable std::unordered_map<string, GameSettings*> m_gameSettings; // shared per game so settings survive repeated Games(name) accesses
    Settings* m_settings = nullptr;
    PinmameGame* m_pPinmameGame = nullptr;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;

@@ -34,8 +34,8 @@ Controller::~Controller()
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
-   for (const auto& game : m_games)
-      game.second->Release();
+   for (const auto& settings : m_gameSettings)
+      settings.second->Release();
    if (m_settings)
       m_settings->Release();
    delete m_pPinmameGame;
@@ -55,29 +55,28 @@ string Controller::GetVersion() const
 
 Game* Controller::GetGames(const string& name) const
 {
-   const auto it = m_games.find(name);
-   if (it != m_games.end())
+   GameSettings* settings;
+   if (const auto it = m_gameSettings.find(name); it != m_gameSettings.end())
+      settings = it->second;
+   else
    {
-      it->second->AddRef();
-      return it->second;
+      // shared settings instance so values written through one Game object
+      // are seen by later Games(name) accesses
+      settings = new GameSettings();
+      m_gameSettings[name] = settings;
    }
    struct GameCBData
    {
       const Controller* controller;
+      GameSettings* settings;
       Game* game;
    };
-   GameCBData cbData { this, nullptr };
+   GameCBData cbData { this, settings, nullptr };
    PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData)
       {
          GameCBData* pGame = static_cast<GameCBData*>(pUserData);
-         pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame);
+         pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame, pGame->settings);
       }, &cbData);
-   if (cbData.game)
-   {
-      // keep one reference for the cache, hand the initial one to the caller
-      cbData.game->AddRef();
-      m_games[name] = cbData.game;
-   }
    return cbData.game;
 }
 
