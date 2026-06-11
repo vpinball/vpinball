@@ -203,6 +203,10 @@ void PUPManager::LoadConfig(const string& szRomName)
 
 void PUPManager::Unload()
 {
+   // Run any still-queued trigger invokes (see QueueDOFEvent) while the triggers
+   // and screens they point to are still alive.
+   m_msgApi->FlushPendingCallbacks(m_endpointId);
+
    if (IsRunning())
       Stop();
 
