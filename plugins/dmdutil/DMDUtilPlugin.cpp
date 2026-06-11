@@ -161,9 +161,20 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
 
    bool foundDMD = false;
 
+   // libdmdutil's update buffers are fixed at 256x64 pixels and larger frames overflow
+   // them (vpinball/libdmdutil#65), so skip sources that do not fit (e.g. the 192x256
+   // video monitor of pinball/video hybrids like Granny and the Gators)
+   constexpr unsigned int maxPixels = 256 * 64;
+   for (unsigned int i = 0; i < getSrcMsg.count; i++) {
+      if ((unsigned int)getSrcMsg.entries[i].width * getSrcMsg.entries[i].height > maxPixels)
+         LOGW(std::format("Display source of {}x{} pixels exceeds the size supported by libdmdutil and cannot be shown on DMD devices, skipping it",
+            getSrcMsg.entries[i].width, getSrcMsg.entries[i].height));
+   }
+
    // Select the largest color display
    for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-      if (getSrcMsg.entries[i].frameFormat != CTLPI_DISPLAY_FORMAT_LUM32F) {
+      if (getSrcMsg.entries[i].frameFormat != CTLPI_DISPLAY_FORMAT_LUM32F
+          && (unsigned int)getSrcMsg.entries[i].width * getSrcMsg.entries[i].height <= maxPixels) {
           if (getSrcMsg.entries[i].width > newDmdId.width) {
               newDmdId = getSrcMsg.entries[i];
               foundDMD = true;
@@ -174,7 +185,8 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
    // Defaults to the largest monochrome display
    if (!foundDMD) {
       for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-         if (getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F) {
+         if (getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F
+             && (unsigned int)getSrcMsg.entries[i].width * getSrcMsg.entries[i].height <= maxPixels) {
              if (getSrcMsg.entries[i].width > newDmdId.width) {
                newDmdId = getSrcMsg.entries[i];
                foundDMD = true;
