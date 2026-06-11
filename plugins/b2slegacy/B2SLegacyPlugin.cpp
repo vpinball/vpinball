@@ -39,6 +39,16 @@ PSC_CLASS_START(B2SLegacy_GameSettings, GameSettings)
    PSC_PROXY_PROP_RW_ARRAY1(m_gameSettingsProxy.get(), int, Value, string)
 PSC_CLASS_END()
 
+// Proxy class for PinMAME Settings
+static std::unique_ptr<ScriptablePlugin::ScriptClassProxy> m_settingsProxy;
+class Settings { PSC_IMPLEMENT_REFCOUNT() }; // Dummy class as we directly use the proxied object
+PSC_CLASS_START(B2SLegacy_Settings, Settings)
+   members.clear();
+   PSC_PROXY_PROP_R(m_settingsProxy.get(), uint32, AddRef)
+   PSC_PROXY_PROP_R(m_settingsProxy.get(), uint32, Release)
+   PSC_PROXY_PROP_RW_ARRAY1(m_settingsProxy.get(), int, Value, string)
+PSC_CLASS_END()
+
 // Proxy class for PinMAME Game
 static std::unique_ptr<ScriptablePlugin::ScriptClassProxy> m_gameProxy;
 class Game { PSC_IMPLEMENT_REFCOUNT() }; // Dummy class as we directly use the proxied object
@@ -138,6 +148,7 @@ PSC_CLASS_START(B2SLegacy_Server, Server)
    PSC_PROXY_PROP_RW(me, bool, ShowTitle)
    PSC_PROXY_PROP_RW(me, bool, HandleKeyboard)
    PSC_PROXY_PROP_RW(me, bool, HandleMechanics)
+   PSC_PROXY_PROP_R(me, B2SLegacy_Settings, Settings)
    PSC_PROXY_PROP_RW_ARRAY1(me, int32, SolMask, int)
    // Run/Pause/Stop
    PSC_PROXY_FUNCTION0(me, void, Run)
@@ -210,12 +221,14 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
    RegisterB2SLegacy_Server(classLambda);
    RegisterB2SLegacy_GameSettings(classLambda);
+   RegisterB2SLegacy_Settings(classLambda);
    RegisterB2SLegacy_Game(classLambda);
    RegisterB2SLegacy_ByteArray(arrayLambda);
    RegisterB2SLegacy_IntArray(arrayLambda);
    RegisterB2SLegacy_StructArray(arrayLambda);
    m_gameProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Game", "B2SLegacy_", B2SLegacy_Game_SCD);
    m_gameSettingsProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_GameSettings", "B2SLegacy_", B2SLegacy_GameSettings_SCD);
+   m_settingsProxy = std::make_unique<ScriptablePlugin::ScriptClassProxy>(msgApi, endpointId, "PinMAME_", "PinMAME_Settings", "B2SLegacy_", B2SLegacy_Settings_SCD);
    B2SLegacy_Server_SCD->CreateObject = []()
    {
       if (nServer > 0)
@@ -237,11 +250,13 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload()
    auto arrayLambda = [](ScriptArrayDef* sad) { scriptApi->UnregisterScriptArrayType(sad); };
    m_gameProxy = nullptr;
    m_gameSettingsProxy = nullptr;
+   m_settingsProxy = nullptr;
    UnregisterB2SLegacy_ByteArray(arrayLambda);
    UnregisterB2SLegacy_IntArray(arrayLambda);
    UnregisterB2SLegacy_StructArray(arrayLambda);
    UnregisterB2SLegacy_Game(classLambda);
    UnregisterB2SLegacy_GameSettings(classLambda);
+   UnregisterB2SLegacy_Settings(classLambda);
    UnregisterB2SLegacy_Server(classLambda);
    
    msgApi->ReleaseMsgID(getVpxApiId);

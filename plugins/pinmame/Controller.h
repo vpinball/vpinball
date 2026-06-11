@@ -5,9 +5,12 @@
 #include "common.h"
 #include "plugins/ControllerPlugin.h"
 
+#include <unordered_map>
+
 namespace PinMAME {
 
 class Game;
+class Settings;
 
 class Controller final
 {
@@ -26,6 +29,8 @@ public:
 
    // TODO may also be accessed as a collection object
    Game* GetGames(const string& name) const;
+
+   Settings* GetSettings();
 
    string GetGameName() const { return m_szGameName; }
    void SetGameName(const string& name);
@@ -154,6 +159,8 @@ public:
 private:
    string m_vpmPath;
    string m_szGameName;
+   mutable std::unordered_map<string, Game*> m_games; // cache so per-game settings survive repeated Games(name) accesses
+   Settings* m_settings = nullptr;
    PinmameGame* m_pPinmameGame = nullptr;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
    vector<PinmameLampState> m_lampStates;

@@ -2,6 +2,7 @@
 
 #include "Controller.h"
 #include "Game.h"
+#include "Settings.h"
 #include <thread>
 #include <format>
 
@@ -33,6 +34,10 @@ Controller::~Controller()
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
+   for (const auto& game : m_games)
+      game.second->Release();
+   if (m_settings)
+      m_settings->Release();
    delete m_pPinmameGame;
    delete m_pPinmameMechConfig;
 }
@@ -50,6 +55,12 @@ string Controller::GetVersion() const
 
 Game* Controller::GetGames(const string& name) const
 {
+   const auto it = m_games.find(name);
+   if (it != m_games.end())
+   {
+      it->second->AddRef();
+      return it->second;
+   }
    struct GameCBData
    {
       const Controller* controller;
@@ -61,7 +72,21 @@ Game* Controller::GetGames(const string& name) const
          GameCBData* pGame = static_cast<GameCBData*>(pUserData);
          pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame);
       }, &cbData);
+   if (cbData.game)
+   {
+      // keep one reference for the cache, hand the initial one to the caller
+      cbData.game->AddRef();
+      m_games[name] = cbData.game;
+   }
    return cbData.game;
+}
+
+Settings* Controller::GetSettings()
+{
+   if (m_settings == nullptr)
+      m_settings = new Settings();
+   m_settings->AddRef();
+   return m_settings;
 }
 
 void Controller::SetGameName(const string& name)
