@@ -2878,6 +2878,13 @@ End Function
 
 Private vpmSystemHelp
 Private Sub vpmShowHelp
+	' With the PinMAME plugin most listed keys do not apply (the VPM dialogs are gone and
+	' action mapped keys cannot be resolved to a key name); the in-game UI shows the
+	' actual key bindings instead. On standalone there also is no message box to show.
+	If IsPluginPinMAME Then
+		MsgBox "The key help is not available with the PinMAME plugin, the in-game UI shows the actual key bindings"
+		Exit Sub
+	End If
 	Dim szKeyMsg
 	szKeyMsg = "The following keys are defined: "				   & vbNewLine &_
 			   "(American keyboard layout)"						   & vbNewLine &_
@@ -2926,8 +2933,9 @@ End Sub
 
 'added thanks to Koadic
 Sub NVOffset(version) ' version 2 for dB2S compatibility
-	if PlatformOS <> "windows" then
-		MsgBox "NVOffset is not supported on standalone versions of Visual Pinball. Similar functionality can be achieved by putting the rom in pinmame/roms next to the table file."
+	' Relies on the classic VPinMAME registry configuration and nvram folder
+	If IsPluginPinMAME Then
+		MsgBox "NVOffset is not supported with the PinMAME plugin. Similar functionality can be achieved by putting the rom in pinmame/roms next to the table file."
 		Exit Sub
 	End If
 	Dim check,nvcheck,v,vv,nvpath,rom
@@ -2962,10 +2970,6 @@ End Sub
 Sub VPMVol
 	' PinMAME plugin streams its sound through VPX, using VPX mixing and therefore volume settings
 	if IsPluginPinMAME Then Exit Sub
-	if PlatformOS <> "windows" then
-		MsgBox "VPinMAME Volume adjustment is not supported on standalone versions of Visual Pinball."
-		Exit Sub
-	End If
 	Dim VolPM,VolPMNew
 	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
 	VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
