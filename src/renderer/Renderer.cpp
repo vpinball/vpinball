@@ -3337,17 +3337,12 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    return rd->GetCurrentRenderTarget();
 }
 
-void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT)
+// Pages of the in game UI adjusting the displays, indexed by VPXWindowId
+static const string s_displaySettingsPages[]
+   = { "settings/display_playfield"s, "settings/display_backglass"s, "settings/display_scoreview"s, "settings/display_topper"s, "settings/display_vr_preview"s };
+
+void Renderer::DrawEmbeddedQuad(RenderTarget* outputRT, int x, int y, int w, int h, float r, float g, float b)
 {
-   if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
-      return;
-
-   bool isOutputLinear;
-   int m_outputX, m_outputY, m_outputW, m_outputH;
-   RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
-   if (outputRT == nullptr)
-      return;
-
    Vertex3D_NoTex2 vertices[4] = { { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
       { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
@@ -3356,19 +3351,41 @@ void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::Rende
    const float sy = 1.f / static_cast<float>(outputRT->GetHeight());
    for (unsigned int i = 0; i < 4; ++i)
    {
-      vertices[i].x = sx * (vertices[i].x * static_cast<float>(m_outputW) + static_cast<float>(m_outputX)) * 2.0f - 1.0f;
-      vertices[i].y = 1.0f - sy * (vertices[i].y * static_cast<float>(m_outputH) + static_cast<float>(m_outputY)) * 2.0f;
+      vertices[i].x = sx * (vertices[i].x * static_cast<float>(w) + static_cast<float>(x)) * 2.0f - 1.0f;
+      vertices[i].y = 1.0f - sy * (vertices[i].y * static_cast<float>(h) + static_cast<float>(y)) * 2.0f;
    }
    RenderDevice* const rd = m_renderDevice;
-   rd->ResetRenderState();
-   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE); // Also clear depth to avoid AO artefacts
-   rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, 0.f, 0.f, 0.f, 1.f);
+   rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, r, g, b, 1.f);
    rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD_notex);
    rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
    rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
    rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+}
+
+void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT)
+{
+   if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
+      return;
+
+   // No renderer claimed this window on the last frame: leave the playfield visible
+   // instead of showing an empty black area, except while a display is being adjusted
+   // in the in game UI where all regions must be visible so the user can align them
+   const bool adjustingDisplays = std::ranges::any_of(s_displaySettingsPages, [](const string& page) { return g_pplayer->m_liveUI->m_inGameUI.IsOpened(page); });
+   if (!m_ancillaryWndRendered[window] && !adjustingDisplays)
+      return;
+
+   bool isOutputLinear;
+   int m_outputX, m_outputY, m_outputW, m_outputH;
+   RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
+   if (outputRT == nullptr)
+      return;
+
+   RenderDevice* const rd = m_renderDevice;
+   rd->ResetRenderState();
+   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE); // Also clear depth to avoid AO artefacts
+   DrawEmbeddedQuad(outputRT, m_outputX, m_outputY, m_outputW, m_outputH, 0.f, 0.f, 0.f);
 
    UpdateBasicShaderMatrix();
 }
@@ -3413,6 +3430,22 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       rendered = renderer.Render(&context, renderer.context);
       if (rendered)
          break;
+   }
+   m_ancillaryWndRendered[window] = rendered;
+
+   // Highlight the display selected in the in game UI with a colored frame, drawn on top
+   // of the window content
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED && g_pplayer->m_liveUI->m_inGameUI.IsOpened(s_displaySettingsPages[window]))
+   {
+      constexpr int border = 10;
+      constexpr float fr = 0.f, fg = 1.f, fb = 0.2f;
+      rd->ResetRenderState();
+      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      DrawEmbeddedQuad(outputRT, m_outputX, m_outputY, m_outputW, border, fr, fg, fb); // Top
+      DrawEmbeddedQuad(outputRT, m_outputX, m_outputY + m_outputH - border, m_outputW, border, fr, fg, fb); // Bottom
+      DrawEmbeddedQuad(outputRT, m_outputX, m_outputY + border, border, m_outputH - 2 * border, fr, fg, fb); // Left
+      DrawEmbeddedQuad(outputRT, m_outputX + m_outputW - border, m_outputY + border, border, m_outputH - 2 * border, fr, fg, fb); // Right
+      UpdateBasicShaderMatrix();
    }
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
