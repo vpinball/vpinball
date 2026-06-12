@@ -258,6 +258,15 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       SDL_DestroyProperties(props);
    }
 
+   // On Wayland applications may not position windows themselves, so the drag support of
+   // the display settings UI (see Player::ProcessOSMessages) cannot work; declaring the
+   // undecorated floating ancillary windows draggable lets the window manager move them
+   // when dragged anywhere instead. Other platforms keep the settings UI drag (a full
+   // surface hit test would swallow the mouse events it relies on, and make the windows
+   // movable outside of the settings UI, e.g. by stray touches on a cabinet).
+   if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && !m_fullscreen && SDL_GetCurrentVideoDriver() == "wayland"sv)
+      SDL_SetWindowHitTest(m_nwnd, [](SDL_Window*, const SDL_Point*, void*) -> SDL_HitTestResult { return SDL_HITTEST_DRAGGABLE; }, nullptr);
+
    props = SDL_GetWindowProperties(m_nwnd);
    m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
    m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
