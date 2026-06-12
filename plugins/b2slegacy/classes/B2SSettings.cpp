@@ -13,7 +13,6 @@ MSGPI_INT_VAL_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDua
 B2SSettings::B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId)
    : m_msgApi(msgApi)
    , m_endpointId(endpointId)
-   , m_gameNameFound(false)
 {
    ClearAll();
 }

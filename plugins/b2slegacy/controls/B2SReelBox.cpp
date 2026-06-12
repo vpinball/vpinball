@@ -8,23 +8,7 @@ namespace B2SLegacy {
 B2SReelBox::B2SReelBox(VPXPluginAPI* vpxApi, B2SData* pB2SData)
    : B2SBaseBox(vpxApi, pB2SData)
 {
-   m_led = false;
-   m_length = 1;
-   m_initValue = "0"sv;
-   m_szReelIndex.clear();
-   m_intermediates = -1;
-   m_intermediates2go = 0;
-   m_szSoundName.clear();
-   m_pSound = nullptr;
-   m_scoreType = eScoreType_NotUsed;
-   m_szGroupName.clear();
-   m_illuminated = false;
-   m_value = 0;
-   m_currentText = 0;
-   m_text = 0;
-   m_rollingInterval = cTimerInterval;
    m_pTimer = new Timer(m_rollingInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
-   m_firstintermediatecount = 1;
 }
 
 B2SReelBox::~B2SReelBox()

@@ -39,10 +39,6 @@ PictureBoxAnimation::PictureBoxAnimation(
    m_pFormDMD = pFormDMD;
    SetName(szName);
 
-   m_loopticker = 0;
-   m_ticker = 0;
-   m_reachedThe0Point = false;
-   m_pMainFormBackgroundImage = nullptr;
    SetElapsedListener(std::bind(&PictureBoxAnimation::PictureBoxAnimationTick, this, std::placeholders::_1));
 
    // collect all the entries in a nice collection
@@ -76,15 +72,12 @@ PictureBoxAnimation::PictureBoxAnimation(
    }
 
    // pick up all involved lights
-   m_lightsInvolved.clear();
    for (const auto& [key, pEntry] : m_entries) {
       for (const auto& bulb : *pEntry->GetBulbs()) {
          if (!bulb.empty() && std::find(m_lightsInvolved.begin(), m_lightsInvolved.end(), bulb) == m_lightsInvolved.end())
             m_lightsInvolved.push_back(bulb);
       }
    }
-
-   m_selectedLEDType = eLEDTypes_Undefined;
 }
 
 PictureBoxAnimation::~PictureBoxAnimation() {

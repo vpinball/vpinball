@@ -17,9 +17,9 @@ public:
    void SetEarlyOffMode(const bool earlyoffmode) { m_earlyoffmode = earlyoffmode; }
 
 private:
-   int m_state;
-   int m_types;
-   bool m_earlyoffmode;
+   int m_state = 0;
+   int m_types = 0;
+   bool m_earlyoffmode = false;
 };
 
 }

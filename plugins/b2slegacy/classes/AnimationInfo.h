@@ -15,7 +15,7 @@ public:
 
 private:
    string m_szAnimationName;
-   bool m_inverted;
+   bool m_inverted = false;
 };
 
 }

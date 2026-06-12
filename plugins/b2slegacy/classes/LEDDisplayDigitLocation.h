@@ -18,9 +18,9 @@ public:
    void SetLEDDisplayID(const int ledDisplayID) { m_ledDisplayID = ledDisplayID; }
 
 private:
-   Dream7Display* m_pLEDDisplay;
-   int m_digit;
-   int m_ledDisplayID;
+   Dream7Display* m_pLEDDisplay = nullptr;
+   int m_digit = 0;
+   int m_ledDisplayID = 0;
 };
 
 }

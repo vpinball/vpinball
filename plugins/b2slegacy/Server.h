@@ -152,28 +152,28 @@ private:
    void KillBackglassForm();
    static int RandomStarter(int top);
 
-   B2SSettings* m_pB2SSettings;
-   B2SData* m_pB2SData;
-   FormBackglass* m_pFormBackglass;
-   bool m_isVisibleStateSet;
-   bool m_lastTopVisible;
-   bool m_lastSecondVisible;
-   int m_lampThreshold;
-   int m_giStringThreshold;
-   bool m_changedLampsCalled;
-   bool m_changedSolenoidsCalled;
-   bool m_changedGIStringsCalled;
-   bool m_changedMechsCalled;
-   bool m_changedLEDsCalled;
+   B2SSettings* m_pB2SSettings = nullptr;
+   B2SData* m_pB2SData = nullptr;
+   FormBackglass* m_pFormBackglass = nullptr;
+   bool m_isVisibleStateSet = false;
+   bool m_lastTopVisible = false;
+   bool m_lastSecondVisible = false;
+   int m_lampThreshold = 0;
+   int m_giStringThreshold = 4;
+   bool m_changedLampsCalled = false;
+   bool m_changedSolenoidsCalled = false;
+   bool m_changedGIStringsCalled = false;
+   bool m_changedMechsCalled = false;
+   bool m_changedLEDsCalled = false;
    string m_lastRandomStartedAnimation;
-   B2SCollectData* m_pCollectLampsData;
-   B2SCollectData* m_pCollectSolenoidsData;
-   B2SCollectData* m_pCollectGIStringsData;
-   B2SCollectData* m_pCollectLEDsData;
-   string m_szPath;
-   Timer* m_pTimer;
+   B2SCollectData* m_pCollectLampsData = nullptr;
+   B2SCollectData* m_pCollectSolenoidsData = nullptr;
+   B2SCollectData* m_pCollectGIStringsData = nullptr;
+   B2SCollectData* m_pCollectLEDsData = nullptr;
+   string m_szPath = "./";
+   Timer* m_pTimer = nullptr;
 
-   DevSrcId m_deviceStateSrc;
+   DevSrcId m_deviceStateSrc {};
 
    static Server* m_singleton;
    ankerl::unordered_dense::map<int, float> m_b2sStates;

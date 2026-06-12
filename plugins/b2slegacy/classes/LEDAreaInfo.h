@@ -14,8 +14,8 @@ public:
    void SetOnDMD(bool isOnDMD) { m_onDMD = isOnDMD; }
 
 private:
-   SDL_Rect m_rect;
-   int m_onDMD;
+   SDL_Rect m_rect = { 0, 0, 0, 0 };
+   bool m_onDMD = false;
 };
 
 }

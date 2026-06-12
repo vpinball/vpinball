@@ -52,7 +52,7 @@ public:
    VPXTexture GetDarkImage4Fantasy() const { return m_pDarkImage4Fantasy; }
    void SetDarkImage4Fantasy(VPXTexture pDarkImage4Fantasy) { if (m_pDarkImage4Fantasy) m_vpxApi->DeleteTexture(m_pDarkImage4Fantasy); m_pDarkImage4Fantasy = pDarkImage4Fantasy; }
    int GetTopRomID() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomID4Fantasy : m_topRomID4Authentic; }
-   int GetTopRomIDType() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomIDType4Fantasy : m_topRomIDType4Authentic; }
+   eRomIDType GetTopRomIDType() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomIDType4Fantasy : m_topRomIDType4Authentic; }
    bool IsTopRomInverted() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomInverted4Fantasy : m_topRomInverted4Authentic; }
    int GetSecondRomID() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomID4Fantasy : m_secondRomID4Authentic; }
    eRomIDType GetSecondRomIDType() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomIDType4Fantasy : m_secondRomIDType4Authentic; }
@@ -89,38 +89,38 @@ private:
 
    static constexpr int minSize4Image = 300000;
 
-   B2SSettings* m_pB2SSettings;
-   B2SScreen* m_pB2SScreen;
-   B2SAnimation* m_pB2SAnimation;
-   FormDMD* m_pFormDMD;
-   Timer* m_pStartupTimer;
-   Timer* m_pRotateTimer;
-   int m_rotateSlowDownSteps;
-   bool m_rotateRunTillEnd;
-   bool m_rotateRunToFirstStep;
-   int m_rotateAngle;
-   int m_rotateTimerInterval;
-   eLEDTypes m_selectedLEDType;
-   VPXTexture m_pDarkImage4Authentic;
-   VPXTexture m_pTopLightImage4Authentic;
-   VPXTexture m_pSecondLightImage4Authentic;
-   VPXTexture m_pTopAndSecondLightImage4Authentic;
-   VPXTexture m_pDarkImage4Fantasy;
-   VPXTexture m_pTopLightImage4Fantasy;
-   VPXTexture m_pSecondLightImage4Fantasy;
-   VPXTexture m_pTopAndSecondLightImage4Fantasy;
-   int m_topRomID4Authentic;
-   eRomIDType m_topRomIDType4Authentic;
-   bool m_topRomInverted4Authentic;
-   int m_secondRomID4Authentic;
-   eRomIDType m_secondRomIDType4Authentic;
-   bool m_secondRomInverted4Authentic;
-   int m_topRomID4Fantasy;
-   eRomIDType m_topRomIDType4Fantasy;
-   bool m_topRomInverted4Fantasy;
-   int m_secondRomID4Fantasy;
-   eRomIDType m_secondRomIDType4Fantasy;
-   bool m_secondRomInverted4Fantasy;
+   B2SSettings* m_pB2SSettings = nullptr;
+   B2SScreen* m_pB2SScreen = nullptr;
+   B2SAnimation* m_pB2SAnimation = nullptr;
+   FormDMD* m_pFormDMD = nullptr;
+   Timer* m_pStartupTimer = nullptr;
+   Timer* m_pRotateTimer = nullptr;
+   int m_rotateSlowDownSteps = 0;
+   bool m_rotateRunTillEnd = false;
+   bool m_rotateRunToFirstStep = false;
+   int m_rotateAngle = 0;
+   int m_rotateTimerInterval = 0;
+   eLEDTypes m_selectedLEDType = eLEDTypes_Undefined;
+   VPXTexture m_pDarkImage4Authentic = nullptr;
+   VPXTexture m_pTopLightImage4Authentic = nullptr;
+   VPXTexture m_pSecondLightImage4Authentic = nullptr;
+   VPXTexture m_pTopAndSecondLightImage4Authentic = nullptr;
+   VPXTexture m_pDarkImage4Fantasy = nullptr;
+   VPXTexture m_pTopLightImage4Fantasy = nullptr;
+   VPXTexture m_pSecondLightImage4Fantasy = nullptr;
+   VPXTexture m_pTopAndSecondLightImage4Fantasy = nullptr;
+   int m_topRomID4Authentic = 0;
+   eRomIDType m_topRomIDType4Authentic = eRomIDType_NotDefined;
+   bool m_topRomInverted4Authentic = false;
+   int m_secondRomID4Authentic = 0;
+   eRomIDType m_secondRomIDType4Authentic = eRomIDType_NotDefined;
+   bool m_secondRomInverted4Authentic = false;
+   int m_topRomID4Fantasy = 0;
+   eRomIDType m_topRomIDType4Fantasy = eRomIDType_NotDefined;
+   bool m_topRomInverted4Fantasy = false;
+   int m_secondRomID4Fantasy = 0;
+   eRomIDType m_secondRomIDType4Fantasy = eRomIDType_NotDefined;
+   bool m_secondRomInverted4Fantasy = false;
 
    bool m_valid = false;
 };

@@ -34,35 +34,6 @@ FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t
 {
    SetName("formBackglass"s);
 
-   m_pFormDMD = nullptr;
-   m_pStartupTimer = nullptr;
-   m_pRotateTimer = nullptr;
-   m_rotateSlowDownSteps = 0;
-   m_rotateRunTillEnd = false;
-   m_rotateRunToFirstStep = false;
-   m_rotateAngle = 0;
-   m_rotateTimerInterval = 0;
-   m_selectedLEDType = eLEDTypes_Undefined;
-   m_pDarkImage4Authentic = nullptr;
-   m_pDarkImage4Fantasy = nullptr;
-   m_pTopLightImage4Authentic = nullptr;
-   m_pTopLightImage4Fantasy = nullptr;
-   m_pSecondLightImage4Authentic = nullptr;
-   m_pSecondLightImage4Fantasy = nullptr;
-   m_pTopAndSecondLightImage4Authentic = nullptr;
-   m_pTopAndSecondLightImage4Fantasy = nullptr;
-   m_topRomID4Authentic = 0;
-   m_topRomIDType4Authentic = eRomIDType_NotDefined;
-   m_topRomInverted4Authentic = false;
-   m_secondRomID4Authentic = 0;
-   m_secondRomIDType4Authentic = eRomIDType_NotDefined;
-   m_secondRomInverted4Authentic = false;
-   m_topRomID4Fantasy = 0;
-   m_topRomIDType4Fantasy = eRomIDType_NotDefined;
-   m_topRomInverted4Fantasy = false;
-   m_secondRomID4Fantasy = 0;
-   m_secondRomIDType4Fantasy = eRomIDType_NotDefined;
-   m_secondRomInverted4Fantasy = false;
    m_pB2SAnimation = new B2SAnimation();
    m_pB2SScreen = new B2SScreen(m_pB2SData, m_msgApi, m_vpxApi, endpointId);
 

@@ -44,16 +44,16 @@ private:
    void LightBulb(const string& szBulb, bool visible);
    eLEDTypes GetLEDType() const;
 
-   Form* m_pForm;
-   Form* m_pFormDMD;
+   Form* m_pForm = nullptr;
+   Form* m_pFormDMD = nullptr;
    std::map<int, EntryAction*> m_entries;
-   int m_loopticker;
-   int m_ticker;
-   bool m_reachedThe0Point;
+   int m_loopticker = 0;
+   int m_ticker = 0;
+   bool m_reachedThe0Point = false;
    vector<string> m_lightsInvolved;
    std::map<string, bool> m_lightsStateAtStartup;
-   VPXTexture m_pMainFormBackgroundImage;
-   eLEDTypes m_selectedLEDType;
+   VPXTexture m_pMainFormBackgroundImage = nullptr;
+   eLEDTypes m_selectedLEDType = eLEDTypes_Undefined;
 };
 
 }

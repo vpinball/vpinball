@@ -43,27 +43,27 @@ private:
    string ConvertValue(int value) const;
    string ConvertText(int text) const;
 
-   Timer* m_pTimer;
+   Timer* m_pTimer = nullptr;
    static constexpr int cTimerInterval = 50;
-   bool m_led;
-   int m_length;
-   string m_initValue;
+   bool m_led = false;
+   int m_length = 1;
+   string m_initValue = "0";
    string m_szReelIndex;
-   int m_intermediates;
-   int m_intermediates2go;
-   int m_setID;
+   int m_intermediates = -1;
+   int m_intermediates2go = 0;
+   int m_setID = 0;
    string m_szReelType;
    string m_szSoundName;
-   Sound* m_pSound;
-   eScoreType m_scoreType;
+   Sound* m_pSound = nullptr;
+   eScoreType m_scoreType = eScoreType_NotUsed;
    string m_szGroupName;
-   bool m_illuminated;
-   int m_value;
-   int m_currentText;
-   int m_text;
-   int m_rollingInterval;
+   bool m_illuminated = false;
+   int m_value = 0;
+   int m_currentText = 0;
+   int m_text = 0;
+   int m_rollingInterval = cTimerInterval;
 
-   int m_firstintermediatecount;
+   int m_firstintermediatecount = 1;
 };
 
 }

@@ -34,12 +34,6 @@ VPXGraphics::VPXGraphics(VPXPluginAPI* vpxApi, int width, int height)
    : m_vpxApi(vpxApi),
      m_width(width),
      m_height(height),
-     m_texture(nullptr),
-     m_translateX(0),
-     m_translateY(0),
-     m_color(RGB(0, 0, 0)),
-     m_alpha(255),
-     m_needsTextureUpdate(true),
      m_bufferSize(width * height * 4)
 {
    m_pixelBuffer = new uint8_t[m_bufferSize];

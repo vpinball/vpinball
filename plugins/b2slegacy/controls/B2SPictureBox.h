@@ -33,16 +33,16 @@ public:
    void SetOffImage(VPXTexture pOffImage) { if (m_pOffImage != pOffImage) { if (m_pOffImage) m_vpxApi->DeleteTexture(m_pOffImage); m_pOffImage = pOffImage; } }
 
 private:
-   ePictureBoxType m_pictureBoxType;
+   ePictureBoxType m_pictureBoxType = ePictureBoxType_StandardImage;
    string m_szGroupName;
-   int m_intensity;
-   int m_initialState;
-   eDualMode m_dualMode;
-   int m_zorder;
-   bool m_imageSnippit;
-   eSnippitRotationStopBehaviour m_snippitRotationStopBehaviour;
-   bool m_setThruAnimation;
-   VPXTexture m_pOffImage;
+   int m_intensity = 1;
+   int m_initialState = 0;
+   eDualMode m_dualMode = eDualMode_Both;
+   int m_zorder = 0;
+   bool m_imageSnippit = false;
+   eSnippitRotationStopBehaviour m_snippitRotationStopBehaviour = eSnippitRotationStopBehaviour_SpinOff;
+   bool m_setThruAnimation = false;
+   VPXTexture m_pOffImage = nullptr;
 };
 
 }

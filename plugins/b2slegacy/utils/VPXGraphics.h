@@ -47,18 +47,18 @@ private:
    void SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
    void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
 
-   VPXPluginAPI* m_vpxApi;
-   VPXTexture m_texture;
-   uint8_t* m_pixelBuffer;
-   int m_width;
-   int m_height;
-   int m_bufferSize;
-   int m_translateX;
-   int m_translateY;
+   VPXPluginAPI* m_vpxApi = nullptr;
+   VPXTexture m_texture = nullptr;
+   uint8_t* m_pixelBuffer = nullptr;
+   int m_width = 0;
+   int m_height = 0;
+   int m_bufferSize = 0;
+   int m_translateX = 0;
+   int m_translateY = 0;
    Matrix m_pModelMatrix;
-   uint32_t m_color;
-   uint8_t m_alpha;
-   bool m_needsTextureUpdate;
+   uint32_t m_color = RGB(0, 0, 0);
+   uint8_t m_alpha = 255;
+   bool m_needsTextureUpdate = true;
 };
 
 }

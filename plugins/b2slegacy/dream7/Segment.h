@@ -49,20 +49,20 @@ private:
    void ResetCacheData();
    void SetTransform(VPXGraphics* pRenderer);
 
-   SDL_FPoint m_focusScales;
+   SDL_FPoint m_focusScales = { 0.0f, 0.0f };
    vector<SDL_FPoint> m_lights;
-   SDL_FRect m_lightDot;
+   SDL_FRect m_lightDot = { 0.0f, 0.0f, 0.0f, 0.0f };
    vector<SDL_FPoint> m_points;
-   SegmentStyle* m_pStyle;
-   bool m_on;
+   SegmentStyle* m_pStyle = nullptr;
+   bool m_on = false;
    string m_szName;
-   GraphicsPath* m_pGlassPath;
-   float m_glow;
-   float m_angle;
-   float m_radius;
-   GraphicsPath* m_pLightPath;
-   Matrix* m_pOwnMatrix;
-   Matrix* m_pExternMatrix;
+   GraphicsPath* m_pGlassPath = nullptr;
+   float m_glow = -1.0f;
+   float m_angle = 0.0f;
+   float m_radius = 0.0f;
+   GraphicsPath* m_pLightPath = nullptr;
+   Matrix* m_pOwnMatrix = nullptr;
+   Matrix* m_pExternMatrix = nullptr;
 };
 
 }

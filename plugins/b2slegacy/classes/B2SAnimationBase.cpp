@@ -46,15 +46,7 @@ B2SAnimationBase::B2SAnimationBase(
    m_randomStart = randomStart;
    m_randomQuality = randomQuality;
 
-   m_slowDown = 1;
-   m_wouldBeStarted = false;
-   m_stopMeLater = false;
-
    m_pRunningAnimations = RunningAnimationsCollection::GetInstance();
-
-   m_finishedListener = nullptr;
-
-   m_pSwitchTimer = nullptr;
 }
 
 B2SAnimationBase::~B2SAnimationBase()

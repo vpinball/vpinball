@@ -9,13 +9,6 @@ namespace B2SLegacy {
 Control::Control(VPXPluginAPI* vpxApi)
    : m_vpxApi(vpxApi)
 {
-   m_pParent = nullptr;
-   m_szName.clear();
-   m_rect = { 0, 0, 0, 0 };
-   m_visible = true;
-   m_backColor = RGB(0, 0, 0);
-   m_handleCreated = false;
-   m_pBackgroundImage = nullptr;
 }
 
 Control::~Control()

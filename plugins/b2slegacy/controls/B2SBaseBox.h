@@ -35,20 +35,20 @@ public:
    void SetHidden(const bool hidden) { m_hidden = hidden; }
 
 protected:
-   B2SData* m_pB2SData;
+   B2SData* m_pB2SData = nullptr;
 
 private:
-   eType_2 m_type;
-   int m_id;
-   int m_displayId;
-   int m_romid;
-   eRomIDType m_romidtype;
-   int m_romidvalue;
-   bool m_rominverted;
-   SDL_FRect m_rectangleF;
-   int m_startDigit;
-   int m_digits;
-   bool m_hidden;
+   eType_2 m_type = eType_2_NotDefined;
+   int m_id = 0;
+   int m_displayId = 0;
+   int m_romid = 0;
+   eRomIDType m_romidtype = eRomIDType_NotDefined;
+   int m_romidvalue = 0;
+   bool m_rominverted = false;
+   SDL_FRect m_rectangleF = { 0.0f, 0.0f, 0.0f, 0.0f };
+   int m_startDigit = 0;
+   int m_digits = 0;
+   bool m_hidden = false;
 };
 
 }

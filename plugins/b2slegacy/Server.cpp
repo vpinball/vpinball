@@ -42,17 +42,6 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_singleton = this;
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
-   m_pFormBackglass = nullptr;
-   m_isVisibleStateSet = false;
-   m_lastTopVisible = false;
-   m_lastSecondVisible = false;
-   m_lampThreshold = 0;
-   m_giStringThreshold = 4;
-   m_changedLampsCalled = false;
-   m_changedSolenoidsCalled = false;
-   m_changedGIStringsCalled = false;
-   m_changedMechsCalled = false;
-   m_changedLEDsCalled = false;
    m_pCollectLampsData = new B2SCollectData(m_pB2SSettings->GetLampsSkipFrames());
    m_pCollectSolenoidsData = new B2SCollectData(m_pB2SSettings->GetSolenoidsSkipFrames());
    m_pCollectGIStringsData = new B2SCollectData(m_pB2SSettings->GetGIStringsSkipFrames());
@@ -60,9 +49,6 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_pTimer = new Timer();
    m_pTimer->SetInterval(37);
    m_pTimer->SetElapsedListener(std::bind(&Server::TimerElapsed, this, std::placeholders::_1));
-   m_szPath = "./";
-
-   memset(&m_deviceStateSrc, 0, sizeof(m_deviceStateSrc));
 
    m_devSrc.id.endpointId = m_endpointId;
    m_devSrc.GetByteState = GetByteState;

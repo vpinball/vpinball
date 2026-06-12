@@ -53,15 +53,15 @@ protected:
    std::unique_ptr<VPXGraphics> m_pGraphics;
 
 private:
-   Control* m_pParent;
+   Control* m_pParent = nullptr;
    string m_szName;
    vector<Control*> m_children;
-   SDL_Rect m_rect;
-   bool m_visible;
-   uint32_t m_backColor;
-   VPXTexture m_pBackgroundImage;
-   bool m_handleCreated;
-   bool m_invalidated;
+   SDL_Rect m_rect = { 0, 0, 0, 0 };
+   bool m_visible = true;
+   uint32_t m_backColor = RGB(0, 0, 0);
+   VPXTexture m_pBackgroundImage = nullptr;
+   bool m_handleCreated = false;
+   bool m_invalidated = false;
 };
 
 }

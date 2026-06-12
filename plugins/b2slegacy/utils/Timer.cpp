@@ -13,18 +13,10 @@ uint32_t Timer::TimerCallback(void* param, SDL_TimerID timerID, uint32_t interva
 
 Timer::Timer()
 {
-   m_timerID = 0;
-   m_enabled = false;
-
-   m_interval = 0;
-   m_elapsedListener = nullptr;
 }
 
 Timer::Timer(uint32_t interval, ElapsedListener elapsedListener, void* param)
 {
-   m_timerID = 0;
-   m_enabled = false;
-
    m_interval = interval;
    m_elapsedListener = elapsedListener;
 }
