@@ -55,11 +55,14 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const std::filesystem::path& szFol
       return;
    }
 
-   for (const auto& entry : std::filesystem::directory_iterator(m_szBasePath)) {
+   for (const auto& entry : std::filesystem::recursive_directory_iterator(m_szBasePath)) {
       if (entry.is_regular_file()) {
-         std::filesystem::path szFilename = entry.path().filename();
+         std::filesystem::path szFilename = entry.path().lexically_relative(m_szBasePath);
          if (!szFilename.empty() && szFilename != ".") {
-            m_files.push_back(szFilename);
+            // Only top level files take part in the playlist rotation, files in subfolders
+            // can still be requested explicitly (e.g. LabelSet with playlist\subdir\file.png)
+            if (szFilename.parent_path().empty())
+               m_files.push_back(szFilename);
             m_fileMap[lowerCase(szFilename)] = szFilename;
          }
       }
@@ -133,9 +136,6 @@ const std::filesystem::path& PUPPlaylist::GetNextPlayFile()
 
 std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& szFilename)
 {
-   if (m_files.empty())
-      return emptyPath;
-
    if (!szFilename.empty()) {
       ankerl::unordered_dense::map<std::filesystem::path, std::filesystem::path>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
@@ -143,8 +143,11 @@ std::filesystem::path PUPPlaylist::GetPlayFilePath(const std::filesystem::path& 
       else
          return emptyPath;
    }
-   else
-      return m_szBasePath / GetNextPlayFile();
+
+   if (m_files.empty())
+      return emptyPath;
+
+   return m_szBasePath / GetNextPlayFile();
 }
 
 bool PUPPlaylist::IsResting() const

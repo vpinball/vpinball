@@ -190,11 +190,13 @@ void PUPLabel::SetCaption(const string& szCaption)
          if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg" || szExt == "jpeg")
          {
             std::filesystem::path fs_path(normalize_path_separators(szText));
-            string playlistFolder = fs_path.parent_path().string();
-            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
+            // The playlist is the first path component, the rest is the file path inside
+            // the playlist folder (which may contain subfolders, e.g. playlist\player2\foo.png)
+            const std::filesystem::path playlistFolder = *fs_path.begin();
+            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder.string());
             std::filesystem::path szPath;
             if (pPlaylist)
-               szPath = pPlaylist->GetPlayFilePath(fs_path.filename());
+               szPath = pPlaylist->GetPlayFilePath(fs_path.lexically_relative(playlistFolder));
             if (!szPath.empty())
             {
                m_szPath = szPath;
