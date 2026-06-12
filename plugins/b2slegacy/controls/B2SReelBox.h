@@ -44,7 +44,7 @@ private:
    string ConvertText(int text) const;
 
    Timer* m_pTimer = nullptr;
-   static constexpr int cTimerInterval = 50;
+   static constexpr int cTimerInterval = 101;
    bool m_led = false;
    int m_length = 1;
    string m_initValue = "0";
@@ -62,6 +62,7 @@ private:
    int m_currentText = 0;
    int m_text = 0;
    int m_rollingInterval = cTimerInterval;
+   VPXTexture m_pCurrentImage = nullptr;
 
    int m_firstintermediatecount = 1;
 };
