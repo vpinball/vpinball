@@ -27,7 +27,7 @@ private:
    uint32_t m_litLEDSegmentColor;
    uint32_t m_darkLEDSegmentColor;
    eLEDType m_ledType;
-   int m_value;
+   int m_value = 0;
    string m_text;
 };
 
