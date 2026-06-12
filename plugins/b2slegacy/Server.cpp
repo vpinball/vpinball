@@ -100,6 +100,8 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
    if (!m_pFormBackglass)
       return 0;
 
+   Timer::ServicePendingTimers();
+
    if (!m_ready) {
       if (!m_pFormBackglass->IsValid())
          return 0;
