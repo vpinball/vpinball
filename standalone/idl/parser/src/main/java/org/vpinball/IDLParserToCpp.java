@@ -391,6 +391,7 @@ public class IDLParserToCpp {
 			buffer.append("// Default method\n");
 			buffer.append("V_VT(&res) = VT_DISPATCH;\n");
 			buffer.append("V_DISPATCH(&res) = this;\n");
+			buffer.append("AddRef();\n");
 			buffer.append("hres = S_OK;\n");
 			buffer.append("}\n");
 			buffer.append("break;\n");
@@ -417,6 +418,7 @@ public class IDLParserToCpp {
 				buffer.append("// Default method\n");
 				buffer.append("V_VT(&res) = VT_DISPATCH;\n");
 				buffer.append("V_DISPATCH(&res) = this;\n");
+				buffer.append("AddRef();\n");
 				buffer.append("hres = S_OK;\n");
 				buffer.append("}\n");
 			}

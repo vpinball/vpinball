@@ -96,6 +96,7 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -400,6 +401,7 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -2694,6 +2696,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -5126,6 +5129,7 @@ STDMETHODIMP ScriptInterpreter::DebuggerModule::Invoke(DISPID dispIdMember, REFI
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -5283,6 +5287,7 @@ STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -6135,6 +6140,7 @@ STDMETHODIMP DragPoint::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -6409,6 +6415,7 @@ STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -7233,6 +7240,7 @@ STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -7500,6 +7508,7 @@ STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -8350,6 +8359,7 @@ STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -8867,6 +8877,7 @@ STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -9589,6 +9600,7 @@ STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -10139,6 +10151,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -10996,6 +11009,7 @@ STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -11635,6 +11649,7 @@ STDMETHODIMP Decal::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -12161,6 +12176,7 @@ STDMETHODIMP Primitive::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -13619,6 +13635,7 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -14460,6 +14477,7 @@ STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -15126,6 +15144,7 @@ STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -15689,6 +15708,7 @@ STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -16442,6 +16462,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -17146,6 +17167,7 @@ STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -17751,6 +17773,7 @@ STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -18550,6 +18573,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -19124,6 +19148,7 @@ STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
@@ -19333,6 +19358,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
+				AddRef();
 				hres = S_OK;
 			}
 			break;
