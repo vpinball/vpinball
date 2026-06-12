@@ -43,7 +43,7 @@ private:
    void CreateLightData();
    void SetBulbSize();
    static void LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, float& nLeft, float& nRight, float& nDelta);
-   void PaintSegment(VPXGraphics* pRenderer, GraphicsPath* pPath);
+   void PaintSegment(VPXGraphics* pRenderer, Brush* pBrush, uint32_t penColor, GraphicsPath* pPath);
    void GetGlassData();
    void GetLightData();
    void ResetCacheData();
@@ -61,6 +61,7 @@ private:
    float m_angle = 0.0f;
    float m_radius = 0.0f;
    GraphicsPath* m_pLightPath = nullptr;
+   PathGradientBrush* m_pLightBrush = nullptr;
    Matrix* m_pOwnMatrix = nullptr;
    Matrix* m_pExternMatrix = nullptr;
 };

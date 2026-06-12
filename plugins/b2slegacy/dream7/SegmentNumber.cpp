@@ -39,29 +39,22 @@ void SegmentNumber::AssignStyle()
 
 void SegmentNumber::Draw(VPXGraphics* pRenderer)
 {
-   int onCount = 0, offCount = 0;
-   for (const auto& pSegment : m_segments) {
-      if (pSegment->IsOn()) onCount++; else offCount++;
-   }
-
-   // First draw OFF segments (if any)
-   for (auto& pSegment : m_segments) {
-      if (!pSegment->IsOn())
-         pSegment->Draw(pRenderer);
-   }
-
-   // Handle glow effect for ON segments
-   if (m_pStyle.GetGlow() > 0.0f) {
-      for (auto& pSegment : m_segments) {
-         if (pSegment->IsOn())
-            pSegment->DrawLight(pRenderer);
-      }
-   }
-
-   // Draw ON segments
    for (auto& pSegment : m_segments) {
       if (pSegment->IsOn())
-         pSegment->Draw(pRenderer);
+         continue;
+      pSegment->Draw(pRenderer);
+   }
+   if (m_pStyle.GetGlow() > 0) {
+      for (auto& pSegment : m_segments) {
+         if (!pSegment->IsOn())
+            continue;
+         pSegment->DrawLight(pRenderer);
+      }
+   }
+   for (auto& pSegment : m_segments) {
+      if (!pSegment->IsOn())
+         continue;
+      pSegment->Draw(pRenderer);
    }
 }
 

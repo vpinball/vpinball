@@ -69,6 +69,122 @@ void VPXGraphics::FillPath(GraphicsPath* pPath)
    m_needsTextureUpdate = true;
 }
 
+void VPXGraphics::FillPath(Brush* pBrush, GraphicsPath* pPath)
+{
+   const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
+   if (pPoints->size() < 3)
+      return;
+
+   if (pBrush->GetBrushType() == BrushType_PathGradient) {
+      PathGradientBrush* const pGradientBrush = static_cast<PathGradientBrush*>(pBrush);
+      if (pGradientBrush->GetPath()->GetPoints()->size() < 3)
+         return;
+      GradientData gradientData;
+      InitGradientData(gradientData, pGradientBrush);
+      FillPolygon(*pPoints, &gradientData);
+   }
+   else {
+      SolidBrush* const pSolidBrush = static_cast<SolidBrush*>(pBrush);
+      SetColor(pSolidBrush->GetColor(), pSolidBrush->GetAlpha());
+      FillPolygon(*pPoints);
+   }
+   m_needsTextureUpdate = true;
+}
+
+void VPXGraphics::InitGradientData(GradientData& gradientData, PathGradientBrush* pBrush)
+{
+   const std::vector<SDL_FPoint>* const pPoints = pBrush->GetPath()->GetPoints();
+   const size_t count = pPoints->size();
+
+   float centerX = 0.0f;
+   float centerY = 0.0f;
+   for (const auto& point : *pPoints) {
+      centerX += point.x;
+      centerY += point.y;
+   }
+   centerX /= (float)count;
+   centerY /= (float)count;
+
+   gradientData.outer.reserve(count);
+   for (const auto& point : *pPoints) {
+      float x = point.x;
+      float y = point.y;
+      m_pModelMatrix.TransformPoint(x, y);
+      gradientData.outer.push_back({ x + (float)m_translateX, y + (float)m_translateY });
+   }
+
+   const SDL_FPoint& focusScales = pBrush->GetFocusScales();
+   if (focusScales.x == focusScales.y)
+      gradientData.uniformInner = clamp(focusScales.x, 0.0f, 0.999f);
+   else {
+      gradientData.inner.reserve(count);
+      for (const auto& point : *pPoints) {
+         float x = centerX + (point.x - centerX) * focusScales.x;
+         float y = centerY + (point.y - centerY) * focusScales.y;
+         m_pModelMatrix.TransformPoint(x, y);
+         gradientData.inner.push_back({ x + (float)m_translateX, y + (float)m_translateY });
+      }
+   }
+
+   m_pModelMatrix.TransformPoint(centerX, centerY);
+   gradientData.cx = centerX + (float)m_translateX;
+   gradientData.cy = centerY + (float)m_translateY;
+
+   gradientData.centerColor[0] = (float)GetRValue(pBrush->GetCenterColor());
+   gradientData.centerColor[1] = (float)GetGValue(pBrush->GetCenterColor());
+   gradientData.centerColor[2] = (float)GetBValue(pBrush->GetCenterColor());
+   gradientData.centerColor[3] = (float)pBrush->GetCenterAlpha();
+   gradientData.surroundColor[0] = (float)GetRValue(pBrush->GetSurroundColor());
+   gradientData.surroundColor[1] = (float)GetGValue(pBrush->GetSurroundColor());
+   gradientData.surroundColor[2] = (float)GetBValue(pBrush->GetSurroundColor());
+   gradientData.surroundColor[3] = (float)pBrush->GetSurroundAlpha();
+}
+
+float VPXGraphics::RayBoundaryDistance(const std::vector<SDL_FPoint>& polygon, float cx, float cy, float dx, float dy)
+{
+   float tMax = 0.0f;
+   const size_t count = polygon.size();
+   for (size_t i = 0; i < count; i++) {
+      const SDL_FPoint& p1 = polygon[i];
+      const SDL_FPoint& p2 = polygon[(i + 1) == count ? 0 : (i + 1)];
+      const float ex = p2.x - p1.x;
+      const float ey = p2.y - p1.y;
+      const float denom = dx * ey - dy * ex;
+      if (fabsf(denom) < 1e-12f)
+         continue;
+      const float wx = p1.x - cx;
+      const float wy = p1.y - cy;
+      const float t = (wx * ey - wy * ex) / denom;
+      const float s = (wx * dy - wy * dx) / denom;
+      if (t > 0.0f && s >= 0.0f && s <= 1.0f && t > tMax)
+         tMax = t;
+   }
+   return tMax;
+}
+
+void VPXGraphics::GradientColorAt(const GradientData& gradientData, float x, float y, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& a)
+{
+   const float dx = x - gradientData.cx;
+   const float dy = y - gradientData.cy;
+
+   float u = 0.0f;
+   if (dx * dx + dy * dy > 0.0001f) {
+      const float tOuter = RayBoundaryDistance(gradientData.outer, gradientData.cx, gradientData.cy, dx, dy);
+      const float q = (tOuter > 0.0001f) ? clamp(1.0f / tOuter, 0.0f, 1.0f) : 1.0f;
+      float qInner = gradientData.uniformInner;
+      if (!gradientData.inner.empty()) {
+         const float tInner = RayBoundaryDistance(gradientData.inner, gradientData.cx, gradientData.cy, dx, dy);
+         qInner = (tOuter > 0.0001f) ? clamp(tInner / tOuter, 0.0f, 0.999f) : 0.0f;
+      }
+      u = (qInner > 0.0f) ? clamp((q - qInner) / (1.0f - qInner), 0.0f, 1.0f) : q;
+   }
+
+   r = (uint8_t)(gradientData.centerColor[0] + (gradientData.surroundColor[0] - gradientData.centerColor[0]) * u);
+   g = (uint8_t)(gradientData.centerColor[1] + (gradientData.surroundColor[1] - gradientData.centerColor[1]) * u);
+   b = (uint8_t)(gradientData.centerColor[2] + (gradientData.surroundColor[2] - gradientData.centerColor[2]) * u);
+   a = (uint8_t)(gradientData.centerColor[3] + (gradientData.surroundColor[3] - gradientData.centerColor[3]) * u);
+}
+
 void VPXGraphics::DrawPath(GraphicsPath* pPath)
 {
    const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
@@ -79,7 +195,7 @@ void VPXGraphics::DrawPath(GraphicsPath* pPath)
    m_needsTextureUpdate = true;
 }
 
-void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
+void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points, const GradientData* pGradientData)
 {
    const int ps = static_cast<int>(points.size());
    if (ps < 3) return;
@@ -252,13 +368,26 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
                   while (strip[++xi] >= 0.996f) ;
                   xi--;
                   for (int x = x0; x <= xi; x++) {
-                     SetPixel((int)minx + x, yi, r, g, b, a);
+                     if (pGradientData) {
+                        uint8_t gr, gg, gb, ga;
+                        GradientColorAt(*pGradientData, (float)minx + (float)x + 0.5f, (float)yi + 0.5f, gr, gg, gb, ga);
+                        SetPixelBlended((int)minx + x, yi, gr, gg, gb, ga);
+                     }
+                     else
+                        SetPixel((int)minx + x, yi, r, g, b, a);
                   }
                }
                else {
                   // Anti-aliased pixel
-                  uint8_t blendedAlpha = (uint8_t)((float)a * strip[xi]);
-                  SetPixelBlended((int)minx + xi, yi, r, g, b, blendedAlpha);
+                  if (pGradientData) {
+                     uint8_t gr, gg, gb, ga;
+                     GradientColorAt(*pGradientData, (float)minx + (float)xi + 0.5f, (float)yi + 0.5f, gr, gg, gb, ga);
+                     SetPixelBlended((int)minx + xi, yi, gr, gg, gb, (uint8_t)((float)ga * strip[xi]));
+                  }
+                  else {
+                     uint8_t blendedAlpha = (uint8_t)((float)a * strip[xi]);
+                     SetPixelBlended((int)minx + xi, yi, r, g, b, blendedAlpha);
+                  }
                }
             }
          }

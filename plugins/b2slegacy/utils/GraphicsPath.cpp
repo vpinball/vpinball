@@ -21,17 +21,19 @@ void GraphicsPath::AddPolygon(const vector<SDL_FPoint>* const pPoints)
 
 void GraphicsPath::AddEllipse(float x, float y, float width, float height)
 {
-   constexpr int segments = 5;
+   constexpr int segments = 24;
 
    float a = width * 0.5f;
    float b = height * 0.5f;
+   float centerX = x + a;
+   float centerY = y + b;
    float angleStep = (float)(2.0 * M_PI / (double)segments);
 
    for (int i = 0; i < segments; ++i) {
       float angle = (float)i * angleStep;
       SDL_FPoint point;
-      point.x = x + a * cosf(angle);
-      point.y = y + b * sinf(angle);
+      point.x = centerX + a * cosf(angle);
+      point.y = centerY + b * sinf(angle);
       m_points.push_back(point);
    }
 }

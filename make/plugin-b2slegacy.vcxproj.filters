@@ -297,6 +297,9 @@
     <ClInclude Include="..\..\plugins\b2slegacy\utils\DMDOverlay.h">
       <Filter>source\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Brush.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\plugins\b2slegacy\utils\GraphicsPath.h">
       <Filter>source\utils</Filter>
     </ClInclude>

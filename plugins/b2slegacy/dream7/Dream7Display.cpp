@@ -21,15 +21,18 @@ Dream7Display::~Dream7Display()
 void Dream7Display::OnPaint(VPXRenderContext2D* const ctx)
 {
    if (IsVisible()) {
-      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0)
+      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0) {
          m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
-
-      Control::OnPaint(ctx);
+         Invalidate();
+      }
 
       if (m_pGraphics) {
-         for (auto& pSegmentNumber : m_segmentNumbers)
-            pSegmentNumber->Draw(m_pGraphics.get());
-         m_pGraphics->ResetTransform();
+         if (IsInvalidated()) {
+            Control::OnPaint(ctx);
+            for (auto& pSegmentNumber : m_segmentNumbers)
+               pSegmentNumber->Draw(m_pGraphics.get());
+            m_pGraphics->ResetTransform();
+         }
          m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
       }
    }

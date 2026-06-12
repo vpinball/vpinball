@@ -45,27 +45,32 @@ void B2SLEDBox::OnResize()
           scaled[i] = { entry[i].x * width, entry[i].y * height };
        m_currentSeg.push_back(std::move(scaled));
     }
+
+    Invalidate();
 }
 
 void B2SLEDBox::OnPaint(VPXRenderContext2D* const ctx)
 {
    if (IsVisible()) {
-      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0)
+      if (!m_pGraphics && GetWidth() > 0 && GetHeight() > 0) {
          m_pGraphics = std::make_unique<VPXGraphics>(m_vpxApi, GetWidth(), GetHeight());
-
-      Control::OnPaint(ctx);
+         Invalidate();
+      }
 
       if (m_pGraphics) {
-         for (int i = 0; i < (int)m_currentSeg.size(); i++) {
-            GraphicsPath* pPath = new GraphicsPath();
-            pPath->AddPolygon(&m_currentSeg[i]);
-            if ((m_value & (1 << i)) != 0)
-               m_pGraphics->SetColor(m_litLEDSegmentColor);
-            else
-               m_pGraphics->SetColor(m_darkLEDSegmentColor);
+         if (IsInvalidated()) {
+            Control::OnPaint(ctx);
+            for (int i = 0; i < (int)m_currentSeg.size(); i++) {
+               GraphicsPath* pPath = new GraphicsPath();
+               pPath->AddPolygon(&m_currentSeg[i]);
+               if ((m_value & (1 << i)) != 0)
+                  m_pGraphics->SetColor(m_litLEDSegmentColor);
+               else
+                  m_pGraphics->SetColor(m_darkLEDSegmentColor);
 
-            m_pGraphics->FillPath(pPath);
-            delete pPath;
+               m_pGraphics->FillPath(pPath);
+               delete pPath;
+            }
          }
 
          m_pGraphics->DrawToContext(ctx, GetLeft(), GetTop());
