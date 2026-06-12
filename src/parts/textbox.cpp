@@ -242,6 +242,13 @@ void Textbox::RenderRelease()
    assert(m_renderer != nullptr);
    m_texture = nullptr;
    SAFE_RELEASE(m_pIFontPlay);
+#ifdef __STANDALONE__
+   if (m_pFont)
+   {
+      TTF_CloseFont(m_pFont);
+      m_pFont = nullptr;
+   }
+#endif
    m_renderer = nullptr;
 }
 
@@ -453,7 +460,6 @@ void Textbox::Render(const unsigned int renderMask)
                   SDL_BlitSurface(pTextSurface, NULL, pSurface, &textRect);
                   SDL_DestroySurface(pTextSurface);
                }
-               TTF_CloseFont(pFont);
             }
             memcpy(m_texture->data(), pSurface->pixels, pSurface->pitch * pSurface->h);
             SDL_DestroySurface(pSurface);
@@ -670,6 +676,10 @@ STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
 #ifdef __STANDALONE__
 TTF_Font* Textbox::LoadFont()
 {
+   // The font cannot change during play, so load it once and keep it until RenderRelease
+   if (m_pFont)
+      return m_pFont;
+
    TTF_Font* pFont = nullptr;
 
    string fontName = m_d.m_font.name;
@@ -724,6 +734,7 @@ TTF_Font* Textbox::LoadFont()
       style |= TTF_STYLE_STRIKETHROUGH;
    TTF_SetFontStyle(pFont, style);
 
+   m_pFont = pFont;
    return pFont;
 }
 #endif
