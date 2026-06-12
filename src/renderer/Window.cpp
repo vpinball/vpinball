@@ -357,25 +357,62 @@ void Window::SetSize(const int x, const int y)
       return;
    if (x == GetWidth() && y == GetHeight())
       return;
-   SDL_SetWindowSize(m_nwnd, x, y);
-   SDL_GetWindowSize(m_nwnd, &m_width, &m_height);
-   SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
-   #ifdef ENABLE_BGFX
-   // The RenderDevice automatically manages the backbuffer resize. For ancillary windows (BGFX only), we need to recreate the swapchain
-   if (m_backBuffer && g_pplayer && g_pplayer->m_playfieldWnd != this)
+   // The window manager applies resizes asynchronously (or not at all, e.g. tiled), so
+   // send a request and only send the next one once this one has been acknowledged by a
+   // resize event (see OnResized), collapsing intermediate sizes (e.g. a size slider).
+   // The timeout recovers from window managers that do not answer a request at all.
+   if (m_resizeRequestTick != 0 && SDL_GetTicks() - m_resizeRequestTick < 500)
    {
-      g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
-         [this]()
-         {
-            g_pplayer->m_renderer->m_renderDevice->RemoveWindow(this);
-            delete m_backBuffer;
-            m_backBuffer = nullptr;
-            // We must destroy the swapchain before attaching a new swapchain, so flush and flip now
-            g_pplayer->m_renderer->m_renderDevice->Flip();
-            g_pplayer->m_renderer->m_renderDevice->AddWindow(this);
-         });
+      m_pendingWidth = x;
+      m_pendingHeight = y;
+      return;
    }
-   #endif
+   m_resizeRequestTick = SDL_GetTicks();
+   m_pendingWidth = -1;
+   m_pendingHeight = -1;
+   SDL_SetWindowSize(m_nwnd, x, y);
+}
+
+void Window::OnResized()
+{
+   if (m_isVR)
+      return;
+   m_resizeRequestTick = 0;
+   int width, height, pixelWidth, pixelHeight;
+   SDL_GetWindowSize(m_nwnd, &width, &height);
+   SDL_GetWindowSizeInPixels(m_nwnd, &pixelWidth, &pixelHeight);
+   if (width != m_width || height != m_height || pixelWidth != m_pixelWidth || pixelHeight != m_pixelHeight)
+   {
+      m_width = width;
+      m_height = height;
+      m_pixelWidth = pixelWidth;
+      m_pixelHeight = pixelHeight;
+      #ifdef ENABLE_BGFX
+      // The RenderDevice automatically manages the backbuffer resize. For ancillary windows (BGFX only), we need to recreate the swapchain
+      if (m_backBuffer && g_pplayer && g_pplayer->m_playfieldWnd != this)
+      {
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+            [this]()
+            {
+               g_pplayer->m_renderer->m_renderDevice->RemoveWindow(this);
+               delete m_backBuffer;
+               m_backBuffer = nullptr;
+               // We must destroy the swapchain before attaching a new swapchain, so flush and flip now
+               g_pplayer->m_renderer->m_renderDevice->Flip();
+               g_pplayer->m_renderer->m_renderDevice->AddWindow(this);
+            });
+      }
+      #endif
+   }
+   // Apply the latest size requested while the acknowledged request was in flight
+   if (m_pendingWidth > 0 && m_pendingHeight > 0)
+   {
+      const int w = m_pendingWidth;
+      const int h = m_pendingHeight;
+      m_pendingWidth = -1;
+      m_pendingHeight = -1;
+      SetSize(w, h);
+   }
 }
 
 vector<Window::DisplayConfig> Window::GetDisplays()
