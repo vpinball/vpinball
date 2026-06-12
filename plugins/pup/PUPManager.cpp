@@ -616,6 +616,30 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
          screen->SetMainVolume(volume);
    }
 
+   // A usable root must exist, must be a canvas rather than a positioned element (a childless
+   // screen positioned on another screen; a screen whose custom position references itself has
+   // no parent and stays a canvas), and its screen tree must contain something that can render.
+   // Ancillary window renderers are exclusive (the first one that renders claims the window), so
+   // claiming a window for a dead tree would blank it and starve lower priority renderers (e.g.
+   // the B2S backglass behind an Off backglass screen 2). Skipping dead candidates also routes
+   // content to the fallback screen (e.g. videos on DMD screen 1 when screen 5 is Off).
+   auto isUsableRoot = [me](const std::shared_ptr<PUPScreen>& root) -> bool
+   {
+      if (root == nullptr || (root->GetParent() != nullptr && !root->HasChildren()))
+         return false;
+      for (const auto& screen : me->m_screenOrder)
+      {
+         if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly)
+            continue;
+         const PUPScreen* parent = screen.get();
+         while (parent && parent != root.get())
+            parent = parent->GetParent();
+         if (parent)
+            return true;
+      }
+      return false;
+   };
+
    int padLeft = 0;
    int padRight = 0;
    int padTop = 0;
@@ -631,12 +655,8 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       padBottom = pupTopperPadBottom_Get();
       break;
    case VPXWindowId::VPXWINDOW_Backglass:
-      // Prefer screen 2, falling back to 6. A childless screen positioned on another screen is a
-      // positioned element rather than a backglass canvas, so skip it; a positioned screen that
-      // does host children (the overlays/videos) is a valid canvas and kept as root. A screen
-      // whose custom position references itself has no parent and stays root.
       rootScreen = me->GetScreen(2);
-      if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
+      if (!isUsableRoot(rootScreen))
          rootScreen = me->GetScreen(6);
       padLeft = pupBGPadLeft_Get();
       padRight = pupBGPadRight_Get();
@@ -645,7 +665,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       break;
    case VPXWindowId::VPXWINDOW_ScoreView:
       rootScreen = me->GetScreen(5);
-      if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
+      if (!isUsableRoot(rootScreen))
          rootScreen = me->GetScreen(1);
       padLeft = pupSVPadLeft_Get();
       padRight = pupSVPadRight_Get();
@@ -654,7 +674,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
       break;
    default: break;
    }
-   if (rootScreen == nullptr || (rootScreen->GetParent() != nullptr && !rootScreen->HasChildren()))
+   if (!isUsableRoot(rootScreen))
       return false;
 
    if (!LibAV::LibAV::GetInstance().isLoaded)
