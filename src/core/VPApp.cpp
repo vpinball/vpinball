@@ -300,6 +300,13 @@ void VPApp::InitInstance()
       if (size > 0) {
          char* const buffer = new char[size + 1];
          vsnprintf(buffer, size + 1, format, args);
+         // Multi line script messages (e.g. MsgBox prompts) use CRLF line endings; strip the
+         // CRs as some consoles treat a carriage return as erasing the current line
+         char* out = buffer;
+         for (const char* in = buffer; *in != '\0'; in++)
+            if (*in != '\r')
+               *out++ = *in;
+         *out = '\0';
          switch (level) {
          case LIBWINEVBS_LOG_DEBUG: PLOGD << buffer; break;
          case LIBWINEVBS_LOG_WARN:  PLOGW << buffer; break;
