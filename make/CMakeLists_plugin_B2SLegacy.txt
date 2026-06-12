@@ -17,6 +17,7 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/utils/Timer.cpp
    plugins/b2slegacy/utils/Matrix.h
    plugins/b2slegacy/utils/Matrix.cpp
+   plugins/b2slegacy/utils/Brush.h
    plugins/b2slegacy/utils/GraphicsPath.h
    plugins/b2slegacy/utils/GraphicsPath.cpp
    plugins/b2slegacy/utils/VPXGraphics.h

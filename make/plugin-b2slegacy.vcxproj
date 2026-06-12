@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\plugins\b2slegacy\forms\FormBackglass.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\forms\FormDMD.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\Server.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Brush.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\DMDOverlay.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\GraphicsPath.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\Matrix.h" />
