@@ -8,8 +8,6 @@ namespace B2SLegacy {
 
 SegmentNumber::SegmentNumber(Dream7Display* pDisplay)
    : m_pDisplay(pDisplay)
-   , m_thickness(16.0f)
-   , m_pNumberMatrix(nullptr)
 {
 }
 

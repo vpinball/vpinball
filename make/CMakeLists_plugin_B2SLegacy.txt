@@ -95,7 +95,6 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/dream7/SegmentNumber.h
    plugins/b2slegacy/dream7/SegmentNumber.cpp
    plugins/b2slegacy/dream7/SegmentStyle.h
-   plugins/b2slegacy/dream7/SegmentStyle.cpp
    plugins/b2slegacy/forms/Form.h
    plugins/b2slegacy/forms/Form.cpp
    plugins/b2slegacy/forms/FormBackglass.h

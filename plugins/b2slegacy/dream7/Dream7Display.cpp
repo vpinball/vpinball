@@ -6,29 +6,7 @@
 namespace B2SLegacy {
 
 Dream7Display::Dream7Display(VPXPluginAPI* vpxApi)
-   : Control(vpxApi),
-     m_hidden{false},
-     m_mirrored{false},
-     //m_szText{},
-     m_scaleMode{ScaleMode_Stretch},
-     m_spacing{20.0f},
-     m_transparentBackground{false},
-     m_type{SegmentNumberType_SevenSegment},
-     m_offColor{RGB(20, 20, 20)},
-     m_lightColor{RGB(254, 90, 50)},
-     m_glassColor{RGB(254, 50, 25)},
-     m_glassColorCenter{RGB(254, 50, 25)},
-     m_glassAlpha{140},
-     m_glassAlphaCenter{255},
-     m_glow{10.0f},
-     m_bulbSize{0.0f, 0.0f, 0.0f, 0.0f},
-     m_wireFrame{false},
-     m_shear{0.1f},
-     m_thickness{16.0f},
-     m_scaleFactor{0.5f},
-     m_offsetWidth{0},
-     m_angle{0.0f},
-     m_pMatrix{nullptr}
+   : Control(vpxApi)
 {
 }
 

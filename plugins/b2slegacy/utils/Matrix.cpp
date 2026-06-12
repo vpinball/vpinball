@@ -58,11 +58,6 @@ AffineTransform AffineTransformMakeMultiply(const AffineTransform& a, const Affi
    return tRet;
 }
 
-Matrix::Matrix()
-{
-   m_transform = AffineTransformMakeIdentity();
-}
-
 void Matrix::Translate(float offsetX, float offsetY)
 {
    AffineTransform affine = AffineTransformMakeTranslation(offsetX, offsetY);

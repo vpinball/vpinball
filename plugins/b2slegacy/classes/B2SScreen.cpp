@@ -32,26 +32,6 @@ B2SScreen::B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxA
      m_endpointId(endpointId),
      m_pB2SSettings(pB2SData->GetB2SSettings())
 {
-   m_pFormBackglass = nullptr;
-   m_pFormDMD = nullptr;
-   m_playfieldSize = { 0, 0, 0, 0 };
-   m_backglassMonitor.clear();
-   m_backglassSize = { 0, 0, 0, 0 };
-   m_backglassLocation = { 0, 0 };
-   m_backglassGrillHeight = 0;
-   m_backglassSmallGrillHeight = 0;
-   m_dmdSize = { 0, 0, 0, 0 };
-   m_dmdLocation = { 0, 0 };
-   m_dmdFlipY = false;
-   m_dmdAtDefaultLocation = true;
-   m_dmdViewMode = eDMDViewMode_NotDefined;
-   m_backgroundSize = { 0, 0, 0, 0 };
-   m_backgroundLocation = { 0, 0 };
-   m_backgroundPath.clear();
-   m_backglassCutOff = { 0, 0, 0, 0 };
-   m_dmdToBeShown = false;
-   m_rescaleBackglass = { 0, 0, 1.0f, 1.0f };
-
    ReadB2SSettingsFromFile();
 }
 

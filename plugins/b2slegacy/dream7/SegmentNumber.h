@@ -32,12 +32,12 @@ public:
    void DisplayBitCode(int value);
 
 private:
-   Dream7Display* m_pDisplay;
+   Dream7Display* m_pDisplay = nullptr;
    SegmentList m_segments;
    SegmentStyle m_pStyle;
-   SegmentNumberType m_type;
-   float m_thickness;
-   Matrix* m_pNumberMatrix;
+   SegmentNumberType m_type = (SegmentNumberType)-1;
+   float m_thickness = 16.0f;
+   Matrix* m_pNumberMatrix = nullptr;
    string m_szCharacter;
 };
 

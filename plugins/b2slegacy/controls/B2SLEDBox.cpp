@@ -83,7 +83,7 @@ void B2SLEDBox::SetLEDType(eLEDType ledType)
 
 void B2SLEDBox::SetValue(int value, bool refresh)
 {
-   if (m_value != value) {
+   if (m_value != value || refresh) {
       m_value = value;
       Refresh();
    }

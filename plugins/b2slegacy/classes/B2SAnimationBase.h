@@ -64,32 +64,32 @@ protected:
    void SetSwitch(int switchid);
    void SwitchTimerElapsed(Timer* pTimer);
 
-   B2SData* m_pB2SData;
+   B2SData* m_pB2SData = nullptr;
 
 private:
-   B2SAnimation* m_pB2SAnimation;
+   B2SAnimation* m_pB2SAnimation = nullptr;
    string m_szName;
-   eDualMode m_dualMode;
-   eType m_type;
-   int m_loops;
-   bool m_playReverse;
-   bool m_startMeAtVPActivate;
-   eLightsStateAtAnimationStart m_lightsStateAtAnimationStart;
-   eLightsStateAtAnimationEnd m_lightsStateAtAnimationEnd;
-   eAnimationStopBehaviour m_animationStopBehaviour;
-   bool m_lockInvolvedLamps;
-   bool m_hideScoreDisplays;
-   bool m_bringToFront;
-   bool m_randomStart;
-   int m_randomQuality;
-   int m_baseInterval;
-   int m_slowDown;
-   bool m_wouldBeStarted;
-   bool m_stopMeLater;
-   RunningAnimationsCollection* m_pRunningAnimations;
+   eDualMode m_dualMode = eDualMode_Both;
+   eType m_type = eType_Undefined;
+   int m_loops = 0;
+   bool m_playReverse = false;
+   bool m_startMeAtVPActivate = false;
+   eLightsStateAtAnimationStart m_lightsStateAtAnimationStart = eLightsStateAtAnimationStart_Undefined;
+   eLightsStateAtAnimationEnd m_lightsStateAtAnimationEnd = eLightsStateAtAnimationEnd_Undefined;
+   eAnimationStopBehaviour m_animationStopBehaviour = eAnimationStopBehaviour_Undefined;
+   bool m_lockInvolvedLamps = false;
+   bool m_hideScoreDisplays = false;
+   bool m_bringToFront = false;
+   bool m_randomStart = false;
+   int m_randomQuality = 0;
+   int m_baseInterval = 0;
+   int m_slowDown = 1;
+   bool m_wouldBeStarted = false;
+   bool m_stopMeLater = false;
+   RunningAnimationsCollection* m_pRunningAnimations = nullptr;
    FinishedListener m_finishedListener;
    std::map<int, bool> m_switches;
-   Timer* m_pSwitchTimer;
+   Timer* m_pSwitchTimer = nullptr;
 };
 
 }

@@ -26,11 +26,11 @@ private:
    vector<string> m_off1;
    vector<string> m_on2;
    vector<string> m_off2;
-   int m_waitAfterOn1;
-   int m_waitAfterOff1;
-   int m_waitAfterOn2;
-   int m_waitAfterOff2;
-   int m_pulseSwitch;
+   int m_waitAfterOn1 = 0;
+   int m_waitAfterOff1 = 0;
+   int m_waitAfterOn2 = 0;
+   int m_waitAfterOff2 = 0;
+   int m_pulseSwitch = 0;
 };
 
 }

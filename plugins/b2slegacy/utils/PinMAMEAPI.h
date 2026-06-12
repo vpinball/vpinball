@@ -20,16 +20,16 @@ public:
    void HandleCall(int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet);
 
 private:
-   Server* m_server;
-   ScriptClassDef* m_serverClassDef;
+   Server* m_server = nullptr;
+   ScriptClassDef* m_serverClassDef = nullptr;
    ScriptablePlugin::ScriptClassProxy m_controllerClassProxy;
    ScriptablePlugin::ScriptObjectProxy m_controllerProxy;
 
-   int m_changedLampsIndex;
-   int m_changedSolenoidsIndex;
-   int m_changedGIStringsIndex;
-   int m_changedLEDsIndex;
-   int m_setSwitchIndex;
+   int m_changedLampsIndex = -1;
+   int m_changedSolenoidsIndex = -1;
+   int m_changedGIStringsIndex = -1;
+   int m_changedLEDsIndex = -1;
+   int m_setSwitchIndex = -1;
 };
 
 }

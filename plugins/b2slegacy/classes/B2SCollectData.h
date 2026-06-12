@@ -23,7 +23,7 @@ public:
    void Unlock();
 
 private:
-   int m_skipFrames;
+   int m_skipFrames = 0;
    std::mutex m_mutex;
 };
 

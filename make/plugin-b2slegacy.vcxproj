@@ -42,7 +42,6 @@
     <ClCompile Include="..\..\plugins\b2slegacy\dream7\Segment.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentList.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentNumber.cpp" />
-    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentStyle.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\forms\Form.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\forms\FormBackglass.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\forms\FormDMD.cpp" />

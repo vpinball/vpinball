@@ -14,8 +14,6 @@ PictureBoxAnimationEntry::PictureBoxAnimationEntry(const string& on1, int waitAf
 
    m_on2.emplace_back(""s);
    m_off2.emplace_back(""s);
-   m_waitAfterOn2 = 0;
-   m_waitAfterOff2 = 0;
 }
 
 vector<string> PictureBoxAnimationEntry::Check4StringOrArray(const string& str)

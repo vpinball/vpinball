@@ -28,7 +28,7 @@ AffineTransform AffineTransformMakeMultiply(const AffineTransform& a, const Affi
 class Matrix final
 {
 public:
-   Matrix();
+   Matrix() = default;
    constexpr Matrix(const Matrix& matrix) { m_transform = matrix.m_transform; }
    constexpr Matrix(float m11, float m12, float m21, float m22, float dx, float dy) { m_transform = { m11, m12, m21, m22, dx, dy }; }
 
@@ -42,7 +42,7 @@ public:
    void Reset();
    Matrix* Clone() const;
 
-   AffineTransform m_transform;
+   AffineTransform m_transform = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
 };
 
 }

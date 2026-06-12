@@ -25,9 +25,9 @@ public:
     void SetElapsedListener(ElapsedListener listener);
 
 private:
-    SDL_TimerID m_timerID;
-    bool m_enabled;
-    uint32_t m_interval;
+    SDL_TimerID m_timerID = 0;
+    bool m_enabled = false;
+    uint32_t m_interval = 0;
     ElapsedListener m_elapsedListener;
 };
 

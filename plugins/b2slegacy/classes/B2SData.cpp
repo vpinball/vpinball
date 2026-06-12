@@ -15,27 +15,6 @@ namespace B2SLegacy {
 B2SData::B2SData(Server* pServer, B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi)
    : m_pServer(pServer), m_pB2SSettings(pB2SSettings), m_vpxApi(vpxApi)
 {
-   m_tableType = 0;
-   m_dmdType = 0;
-   m_grillHeight = 0;
-   m_smallGrillHeight = 0;
-   m_dmdDefaultLocation = { 0, 0 };
-   m_dualBackglass = false;
-   m_launchBackglass = true;
-   m_backglassVisible = false;
-   m_useZOrder = false;
-   m_useDMDZOrder = false;
-   m_onAndOffImage = false;
-   m_offImageVisible = false;
-   m_usedTopRomIDType4Authentic = eRomIDType_NotDefined;
-   m_usedTopRomIDType4Fantasy = eRomIDType_NotDefined;
-   m_usedSecondRomIDType4Authentic = eRomIDType_NotDefined;
-   m_usedSecondRomIDType4Fantasy = eRomIDType_NotDefined;
-   m_useRotatingImage = false;
-   m_useMechRotatingImage = false;
-
-   m_ledCoordMax = 103;
-
    // add led segments
    constexpr int toleft = 8;
    // 8 segments

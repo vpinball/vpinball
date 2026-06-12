@@ -9,12 +9,7 @@ PinMAMEAPI::PinMAMEAPI(MsgPluginAPI* msgApi, uint32_t endpointId, Server* server
    : m_server(server),
      m_serverClassDef(serverClassDef),
      m_controllerClassProxy(msgApi, endpointId, "PinMAME_", "PinMAME_Controller", "B2SLegacy_", serverClassDef),
-     m_controllerProxy(m_controllerClassProxy),
-     m_changedLampsIndex(-1),
-     m_changedSolenoidsIndex(-1),
-     m_changedGIStringsIndex(-1),
-     m_changedLEDsIndex(-1),
-     m_setSwitchIndex(-1)
+     m_controllerProxy(m_controllerClassProxy)
 {
    for (unsigned int i = 0; i < serverClassDef->nMembers; i++) {
       const char* name = serverClassDef->members[i].name.name;

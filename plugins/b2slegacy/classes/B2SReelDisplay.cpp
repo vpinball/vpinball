@@ -8,15 +8,6 @@ namespace B2SLegacy {
 
 B2SReelDisplay::B2SReelDisplay()
 {
-   m_startDigit = 0;
-   m_digits = 0;
-   m_score = -1;
-   m_nextScore = -1;
-   m_currentindex = 0;
-   m_currentnewvalue = 0;
-   m_currentscore = 0;
-   m_currentrestartat = 0;
-
    m_pTimerRR = new Timer(17, std::bind(&B2SReelDisplay::TimerRRTick, this, std::placeholders::_1));
    m_pTimerIA = new Timer(17, std::bind(&B2SReelDisplay::TimerIATick, this, std::placeholders::_1));
 }
