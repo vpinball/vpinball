@@ -97,6 +97,7 @@ private:
 
 #ifdef __STANDALONE__
    TTF_Font* LoadFont();
+   TTF_Font* m_pFont = nullptr; // Lazily loaded by LoadFont, kept for the play session
 #endif
 
 public:
