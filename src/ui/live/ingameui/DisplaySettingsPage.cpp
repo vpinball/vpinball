@@ -171,17 +171,19 @@ void DisplaySettingsPage::BuildPage()
    {
       if (std::optional<VPX::Properties::PropertyRegistry::PropId> propId = Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)); propId)
       {
-         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+         const string id = renderer.id;
          AddItem(std::make_unique<InGameUIItem>(
-                    propId.value(),
-                    "%d", //
-                    [this, propId]() { return m_player->m_ptable->m_settings.GetInt(propId.value()); }, //
-                    [this, propId](int, int v)
+                    *Settings::GetRegistry().GetIntProperty(propId.value()),
+                    "%d"s, //
+                    [this, id]() { return m_player->GetAncillaryRendererPriority(m_wndId, id); }, // Live
+                    [propId](const Settings& settings) { return settings.GetInt(propId.value()); }, // Stored
+                    [this, id](int, int v)
                     {
-                       m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-                       m_player->m_ptable->m_settings.Set(propId.value(), v, false);
+                       m_player->SetAncillaryRendererPriority(m_wndId, id, v);
                        BuildPage();
-                    }))
+                    }, //
+                    [propId](Settings& settings) { settings.Reset(propId.value()); }, //
+                    [propId](int v, Settings& settings, bool asTableOverride) { settings.Set(propId.value(), v, asTableOverride); }))
             .m_excludeFromDefault = true;
       }
    }

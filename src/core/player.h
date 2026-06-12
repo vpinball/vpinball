@@ -189,6 +189,8 @@ public:
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
+   int GetAncillaryRendererPriority(VPXWindowId window, const string& id) const;
+   void SetAncillaryRendererPriority(VPXWindowId window, const string& id, int priority);
 
    bool IsVR() const { return m_vrDevice != nullptr; }
 
@@ -204,6 +206,8 @@ private:
 
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
+   // Live (unsaved) renderer priorities, seeded from settings when renderers are collected
+   std::map<string, int, std::less<>> m_ancillaryWndRendererPriorities[VPXWindowId::VPXWINDOW_Topper + 1];
 
    int m_cabinetAutoFitMode = 0;
    float m_cabinetAutoFitPos = 0.05f;
