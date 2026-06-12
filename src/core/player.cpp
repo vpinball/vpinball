@@ -2290,20 +2290,36 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
       me->m_ancillaryWndRenderers[window].resize(getAuxRendererMsg.count);
       getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_ancillaryWndRenderers[window].data() };
       m_msgApi->BroadcastMsg(me->m_pluginAPI.GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      auto& priorities = me->m_ancillaryWndRendererPriorities[window];
       for (const auto& renderer : me->m_ancillaryWndRenderers[window])
+      {
          Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), renderer.name,
             "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the "s + section + " display. Higher values are priorized other lower ones."s,
             false, 0, 100, 0));
-      std::ranges::sort(me->m_ancillaryWndRenderers[window],
+         // Seed the live priority from settings, keeping any live (unsaved) adjustment made through the in game UI
+         priorities.try_emplace(renderer.id, me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));
+      }
+      std::ranges::stable_sort(me->m_ancillaryWndRenderers[window],
          [&](const AncillaryRendererDef &a, const AncillaryRendererDef &b)
-         {
-            int pa = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value());
-            int pb = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(b.id)).value());
-            return pa > pb; // Sort in descending order (first is the most wanted)
-         });
+         { return priorities[a.id] > priorities[b.id]; }); // Sort in descending order (first is the most wanted)
       std::erase_if(me->m_ancillaryWndRenderers[window],
-         [section, me](const AncillaryRendererDef &a) { return me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value()) < 0; });
+         [&priorities](const AncillaryRendererDef &a) { return priorities[a.id] < 0; });
    }
+}
+
+int Player::GetAncillaryRendererPriority(VPXWindowId window, const string& id) const
+{
+   const auto& priorities = m_ancillaryWndRendererPriorities[window];
+   const auto entry = priorities.find(id);
+   return entry != priorities.end() ? entry->second : 0;
+}
+
+void Player::SetAncillaryRendererPriority(VPXWindowId window, const string& id, int priority)
+{
+   m_ancillaryWndRendererPriorities[window][id] = priority;
+   // Re-collect and re-sort so the change is directly applied (also restores renderers
+   // previously dropped for a negative priority)
+   OnAuxRendererChanged(0, this, nullptr);
 }
 
 void Player::UpdateVolume()
