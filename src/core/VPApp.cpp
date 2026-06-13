@@ -137,7 +137,13 @@ VPApp::VPApp()
 {
    g_app = this;
 
+   // On Linux the main thread name is the process comm, which is what task
+   // monitors (top, btop, ...) display, so leave it as the executable name.
+   // Elsewhere the thread name is separate from the process name and a label
+   // is useful in debuggers.
+#if !defined(__linux__) && !defined(__ANDROID__)
    SetThreadName("Main"s);
+#endif
 
    #ifdef CRASH_HANDLER
       rde::CrashHandler::Init();
