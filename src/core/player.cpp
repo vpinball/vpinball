@@ -826,24 +826,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
 }
 
-// Show or hide the mouse cursor. The native build uses the Win32 ShowCursor
-// counter; the standalone build uses SDL on every platform, since there
-// ShowCursor is only a no-op stub.
-static void SetMouseCursorVisible(const bool visible)
-{
-#ifndef __STANDALONE__
-   if (visible)
-      while (ShowCursor(TRUE) < 0); // FIXME on a system without a mouse, it looks like this may result in an infinite loop
-   else
-      while (ShowCursor(FALSE) >= 0);
-#else
-   if (visible)
-      SDL_ShowCursor();
-   else
-      SDL_HideCursor();
-#endif
-}
-
 Player::~Player()
 {
    assert(g_pplayer == this && g_pplayer->m_closing != CS_CLOSED);
@@ -1093,7 +1075,7 @@ Player::~Player()
 
    m_ptable->Release();
 
-   SetMouseCursorVisible(true);
+   SDL_ShowCursor();
    PLOGI << "Player closed.";
 
 #ifdef __LIBVPINBALL__
@@ -1229,7 +1211,10 @@ void Player::ApplyPlayingState(const bool play)
 
 void Player::UpdateCursorState() const
 {
-   SetMouseCursorVisible(m_drawCursor || !IsPlaying());
+   if (m_drawCursor || !IsPlaying())
+      SDL_ShowCursor();
+   else
+      SDL_HideCursor();
 }
 
 void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
