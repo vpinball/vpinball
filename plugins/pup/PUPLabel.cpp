@@ -180,45 +180,58 @@ void PUPLabel::SetCaption(const string& szCaption)
 
    {
       std::lock_guard lock(m_mutex);
-      if (m_szCaption != szText)
+      if (m_szCaption == szText)
+         return;
+
+      const string szExt = extension_from_path(szText);
+      const bool isImageCaption = (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg" || szExt == "jpeg");
+
+      if (!isImageCaption)
       {
-         const bool wasImage = (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF);
+         // Matches real PuP (TFontObject::UpdateText): only an image-extension caption touches
+         // image state. A plain caption (e.g. " " from pDMDLabelShow/pDMDLabelHide) on an image
+         // label must keep the image, not convert the label to text and wipe the overlay.
+         if (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF)
+         {
+            m_szCaption = szText;
+            return;
+         }
          m_type = PUP_LABEL_TYPE_TEXT;
          m_szPath.clear();
-
-         const string szExt = extension_from_path(szText);
-         if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg" || szExt == "jpeg")
-         {
-            std::filesystem::path fs_path(normalize_path_separators(szText));
-            // The playlist is the first path component, the rest is the file path inside
-            // the playlist folder (which may contain subfolders, e.g. playlist\player2\foo.png)
-            const std::filesystem::path playlistFolder = *fs_path.begin();
-            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder.string());
-            std::filesystem::path szPath;
-            if (pPlaylist)
-               szPath = pPlaylist->GetPlayFilePath(fs_path.lexically_relative(playlistFolder));
-            if (!szPath.empty())
-            {
-               m_szPath = szPath;
-               m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
-            }
-            else
-            {
-               // Many tables use clear.png / clear1.png as a "clear this label" caption without
-               // ever shipping the file in the pup pack. Drop the caption so nothing renders, and
-               // if we had previously loaded an image, hide the label so a later valid image
-               // doesn't silently reappear.
-               LOGE(std::format("Image not found, hiding label: screen={}, label={}, path={}",
-                  m_pScreen->GetScreenNum(), m_szName, szText));
-               if (wasImage)
-                  m_visible = false;
-               m_szCaption.clear();
-               m_dirty = true;
-               return;
-            }
-         }
-
          m_szCaption = szText;
+         m_dirty = true;
+         return;
+      }
+
+      const bool wasImage = (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF);
+      std::filesystem::path fs_path(normalize_path_separators(szText));
+      // The playlist is the first path component, the rest is the file path inside
+      // the playlist folder (which may contain subfolders, e.g. playlist\player2\foo.png)
+      const std::filesystem::path playlistFolder = *fs_path.begin();
+      PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder.string());
+      std::filesystem::path szPath;
+      if (pPlaylist)
+         szPath = pPlaylist->GetPlayFilePath(fs_path.lexically_relative(playlistFolder));
+      if (!szPath.empty())
+      {
+         m_szPath = szPath;
+         m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+         m_szCaption = szText;
+         m_dirty = true;
+      }
+      else
+      {
+         // Many tables use clear.png / clear1.png as a "clear this label" caption without
+         // ever shipping the file in the pup pack. Drop the caption so nothing renders, and
+         // if we had previously loaded an image, hide the label so a later valid image
+         // doesn't silently reappear.
+         LOGE(std::format("Image not found, hiding label: screen={}, label={}, path={}",
+            m_pScreen->GetScreenNum(), m_szName, szText));
+         m_type = PUP_LABEL_TYPE_TEXT;
+         m_szPath.clear();
+         if (wasImage)
+            m_visible = false;
+         m_szCaption.clear();
          m_dirty = true;
       }
    }
