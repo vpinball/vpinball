@@ -29,7 +29,7 @@ namespace PUP {
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-// FIXME rotation is done via CPU (90/270 degress render blank via GPU?)
+// Rotation is baked into the texture on the CPU (GPU rotation skews the image).
 static SDL_Surface* RotateSurface(SDL_Surface* const src, float angleDeg)
 {
    if (!src || angleDeg == 0.f)
@@ -164,6 +164,10 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
 
 PUPLabel::~PUPLabel()
 {
+   if (m_pendingTextureUpdate.valid())
+      m_pendingTextureUpdate.wait();
+   if (m_pSourceImage)
+      SDL_DestroySurface(m_pSourceImage);
 }
 
 void PUPLabel::SetCaption(const string& szCaption)
@@ -188,9 +192,8 @@ void PUPLabel::SetCaption(const string& szCaption)
 
       if (!isImageCaption)
       {
-         // Matches real PuP (TFontObject::UpdateText): only an image-extension caption touches
-         // image state. A plain caption (e.g. " " from pDMDLabelShow/pDMDLabelHide) on an image
-         // label must keep the image, not convert the label to text and wipe the overlay.
+         // A plain caption (e.g. " " from pDMDLabelShow/pDMDLabelHide) must keep an existing
+         // image, not convert the label to text and wipe it.
          if (m_type == PUP_LABEL_TYPE_IMAGE || m_type == PUP_LABEL_TYPE_GIF)
          {
             m_szCaption = szText;
@@ -362,7 +365,6 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          case 8:
          {
             // See pDMDLabelWiggleText / pDMDLabelWiggleImage — rotation bounces between rstart and rend
-            // Uses GPU rotation since wiggle angles are small (never hits 90°/270°).
             float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f;  // default -4.5 deg from pDMDLabelWiggleText
             float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f;       // default +4.5 deg from pDMDLabelWiggleText
             int rspeed = json["rspeed"s].as<int>(5);   // default 5 from pDMDLabelWiggleText, 0 = use range as speed
@@ -767,6 +769,14 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    int fontColor = m_animation ? m_animation->m_color : m_color;
 
+   // Re-bake the texture when the rotation angle moves (static 'rotate' plus any wiggle).
+   const float wantAngle = m_angle + ((m_animation && m_animation->IsWiggle()) ? m_animation->m_wiggle : 0.f);
+   if (wantAngle != m_renderAngle)
+   {
+      m_renderAngle = wantAngle;
+      m_dirty = true;
+   }
+
    if (m_pendingTextureUpdate.valid())
    {
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -861,8 +871,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    }
    else
    {
-      width = (m_imageWidth / 100.0f) * static_cast<float>(rect.w);
-      height = (m_imageHeight / 100.0f) * static_cast<float>(rect.h);
+      // Scale the dest by m_imageScale* so a rotated (grown) texture keeps its on-screen size.
+      width = (m_imageWidth / 100.0f) * static_cast<float>(rect.w) * m_renderState.m_imageScaleX;
+      height = (m_imageHeight / 100.0f) * static_cast<float>(rect.h) * m_renderState.m_imageScaleY;
    }
 
    SDL_FRect dest = { static_cast<float>(rect.x), static_cast<float>(rect.y), width, height };
@@ -962,15 +973,11 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (visible && alpha > 0.f)
    {
       // FIXME implement color (as the animation may animate it)
-      // FIXME rotation is done via CPU (90/270 degress render blank via GPU?)
-      // Wiggle animation uses GPU rotation since the angles are small
+      // Rotation is baked into the texture (see RotateSurface), so none is applied here.
       const VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
-      const float drawAngle = (m_animation && m_animation->IsWiggle()) ? m_animation->m_wiggle : 0.f;
-      const float pivotX = (drawAngle != 0.f) ? static_cast<float>(texInfo->width) * 0.5f : 0.f;
-      const float pivotY = (drawAngle != 0.f) ? static_cast<float>(texInfo->height) * 0.5f : 0.f;
       ClipDrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, alpha,
          0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
-         pivotX, pivotY, drawAngle, dest, rect);
+         0.f, 0.f, 0.f, dest, rect);
    }
 }
 
@@ -983,21 +990,68 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    // Handle Image 'labels'
    if (type == PUP_LABEL_TYPE_IMAGE)
    {
-      SDL_Surface* image = IMG_Load(szPath.string().c_str());
-      if (image && image->format != SDL_PIXELFORMAT_RGBA32) {
-         SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
-         SDL_DestroySurface(image);
-         image = newImage;
+      // Treat an active wiggle as rotating so the cached source survives the angle crossing 0.
+      const bool rotating = (m_renderAngle != 0.f) || (m_animation && m_animation->IsWiggle());
+      if (!rotating)
+      {
+         // No rotation: texture directly without keeping a cached source.
+         if (m_pSourceImage) {
+            SDL_DestroySurface(m_pSourceImage);
+            m_pSourceImage = nullptr;
+            m_sourceImagePath.clear();
+         }
+         SDL_Surface* image = IMG_Load(szPath.string().c_str());
+         if (image && image->format != SDL_PIXELFORMAT_RGBA32) {
+            SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
+            SDL_DestroySurface(image);
+            image = newImage;
+         }
+         if (image) {
+            if (m_filterMode > 0)
+               ApplyFilter(image, m_filterMode);
+            rs.m_pTexture = CreateTexture(image);
+            SDL_DestroySurface(image);
+         }
+         else
+            LOGE("Unable to load image: " + szPath.string());
       }
-      if (image) {
-         if (m_filterMode > 0)
-            ApplyFilter(image, m_filterMode);
-         rs.m_pTexture = CreateTexture(image);
-         SDL_DestroySurface(image);
-      }
+      // Rotated image: cache the decoded source so a spinning image does not re-decode every
+      // frame, then bake the rotation into a working copy.
       else
       {
-         LOGE("Unable to load image: " + szPath.string());
+         if (!m_pSourceImage || m_sourceImagePath != szPath)
+         {
+            if (m_pSourceImage)
+               SDL_DestroySurface(m_pSourceImage);
+            m_pSourceImage = IMG_Load(szPath.string().c_str());
+            if (m_pSourceImage && m_pSourceImage->format != SDL_PIXELFORMAT_RGBA32) {
+               SDL_Surface* newImage = SDL_ConvertSurface(m_pSourceImage, SDL_PIXELFORMAT_RGBA32);
+               SDL_DestroySurface(m_pSourceImage);
+               m_pSourceImage = newImage;
+            }
+            m_sourceImagePath = szPath;
+         }
+
+         if (m_pSourceImage) {
+            SDL_Surface* work = SDL_ConvertSurface(m_pSourceImage, SDL_PIXELFORMAT_RGBA32);
+            if (work) {
+               if (m_filterMode > 0)
+                  ApplyFilter(work, m_filterMode);
+               SDL_Surface* rotated = RotateSurface(work, m_renderAngle);
+               if (rotated) {
+                  SDL_DestroySurface(work);
+                  work = rotated;
+               }
+            }
+            SDL_Surface* const tex = work ? work : m_pSourceImage;
+            rs.m_imageScaleX = static_cast<float>(tex->w) / static_cast<float>(m_pSourceImage->w);
+            rs.m_imageScaleY = static_cast<float>(tex->h) / static_cast<float>(m_pSourceImage->h);
+            rs.m_pTexture = CreateTexture(tex);
+            if (work)
+               SDL_DestroySurface(work);
+         }
+         else
+            LOGE("Unable to load image: " + szPath.string());
       }
    }
    else if (type == PUP_LABEL_TYPE_GIF)
@@ -1183,9 +1237,9 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
       if (m_filterMode > 0)
          ApplyFilter(pMergedSurface, m_filterMode);
 
-      if (m_angle != 0.f)
+      if (m_renderAngle != 0.f)
       {
-         SDL_Surface* pRotated = RotateSurface(pMergedSurface, m_angle);
+         SDL_Surface* pRotated = RotateSurface(pMergedSurface, m_renderAngle);
          if (pRotated)
          {
             SDL_DestroySurface(pMergedSurface);
@@ -1241,9 +1295,9 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    if (m_filterMode > 0)
       ApplyFilter(pMergedSurface, m_filterMode);
 
-   if (m_angle != 0.f)
+   if (m_renderAngle != 0.f)
    {
-      SDL_Surface* pRotated = RotateSurface(pMergedSurface, m_angle);
+      SDL_Surface* pRotated = RotateSurface(pMergedSurface, m_renderAngle);
       if (pRotated)
       {
          SDL_DestroySurface(pMergedSurface);
