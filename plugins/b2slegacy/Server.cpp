@@ -1737,6 +1737,10 @@ void Server::HideBackglassForm()
 
 void Server::KillBackglassForm()
 {
+   // Clear the running flag before destroying the form, like the B2S server does. The data
+   // setters gate on IsBackglassRunning(), so a script that keeps pushing B2S data after the
+   // backglass is killed then stops touching the freed form instead of dereferencing it.
+   m_pB2SData->SetBackglassVisible(false);
    if (m_pFormBackglass) {
       delete m_pFormBackglass;
       m_pFormBackglass = nullptr;
