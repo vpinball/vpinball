@@ -412,6 +412,19 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
       FreeImage_Unload(dibResized);
    FreeImage_Unload(dib);
 
+   // Clear the colour of fully transparent texels. Some images (e.g. dot matrix reel font atlases)
+   // store transparent areas as opaque-coloured (often white), which bilinear filtering and mip
+   // generation then bleed into the visible edges as a halo/seam. Zeroing them makes any filtering
+   // blend toward black instead, and is invisible since these texels have zero alpha.
+   if (tex && (tex->m_format == RGBA || tex->m_format == SRGBA))
+   {
+      uint8_t* const d = tex->m_data;
+      const size_t numPixels = (size_t)tex->m_width * tex->m_height;
+      for (size_t i = 0; i < numPixels; ++i)
+         if (d[i * 4 + 3] == 0)
+            d[i * 4 + 0] = d[i * 4 + 1] = d[i * 4 + 2] = 0;
+   }
+
    return tex;
 }
 
