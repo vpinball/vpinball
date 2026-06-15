@@ -315,11 +315,22 @@ void Ball::Render(const unsigned int renderMask)
 
    // collect the x nearest lights that can reflect on balls
    vector<Light*>& reflectedLights = m_renderer->m_ballReflectedLights;
-   std::ranges::sort(reflectedLights.begin(), reflectedLights.end(), [this](const Light* const pLight1, const Light* const pLight2) {
-      const float dist1 = Vertex3Ds(pLight1->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight1->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight1->m_d.m_meshRadius + pLight1->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
-      const float dist2 = Vertex3Ds(pLight2->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight2->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight2->m_d.m_meshRadius + pLight2->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
-      return dist1 < dist2;
-   });
+   // Sort the candidate lights nearest-first. -ffp-contract=fast (CMakeLists) lets the compiler contract this
+   // distance math (FMA) differently between libc++'s several inlined comparison sites, so the comparator stops
+   // being a consistent strict weak ordering and libc++'s introsort reads out of bounds -> crash (#3528;
+   // macOS/clang only, libstdc++ tolerates it). Routing each key through volatile yields one stable,
+   // identically-rounded value at every site. The non-finite clamp keeps the order total as a safety net; it
+   // uses a bit test on purpose because the GNU build adds -ffast-math, which makes std::isfinite() unreliable.
+   const auto sqDistToBall = [this](const Light* const pLight) -> float {
+      const float raw = Vertex3Ds(pLight->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight->m_d.m_meshRadius + pLight->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
+      volatile float vd = raw; // barrier: one stable, identically-rounded value at every inlined compare site
+      const float d = vd;
+      uint32_t bits;
+      memcpy(&bits, &d, sizeof(bits));
+      return ((bits & 0x7F800000u) == 0x7F800000u) ? FLT_MAX : d; // exponent all-ones => Inf/NaN -> sorts last
+   };
+   std::ranges::sort(reflectedLights.begin(), reflectedLights.end(),
+      [&sqDistToBall](const Light* const pLight1, const Light* const pLight2) { return sqDistToBall(pLight1) < sqDistToBall(pLight2); });
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
