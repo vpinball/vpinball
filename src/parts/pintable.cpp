@@ -2155,6 +2155,12 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
 
+   // Warn if the backdrop used by the active view mode references an image that is not in the
+   // table: it would render black. An empty name or the "<None>" sentinel means no backdrop is set.
+   if (const string& bg = m_BG_image[GetViewMode()];
+       !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr)
+      PLOGW << "Backdrop image '" << bg << "' set for the active view mode was not found in the table (renders black)";
+
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 
@@ -4724,6 +4730,13 @@ string PinTable::AuditTable(bool log) const
       totalGpuSize += gpuSize;
    }
    ss << ". Total image size: " << SizeToReadable(totalSize) << " in VPX file, at least " << SizeToReadable(totalGpuSize) << " in GPU memory when played\r\n";
+
+   // Backdrop images referenced per view mode but not present in the table would render black.
+   // An empty name or the "<None>" sentinel means no backdrop is set.
+   static const char* const bgSetNames[NUM_BG_SETS] = { "Desktop", "Cabinet", "Full Single Screen" };
+   for (unsigned int i = 0; i < NUM_BG_SETS; ++i)
+      if (const string& bg = m_BG_image[i]; !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr)
+         ss << ". Warning: " << bgSetNames[i] << " backdrop image '" << bg << "' is not present in the table (renders black)\r\n";
 
    int nPrimTris = 0, primMemSize = 0;
    for (const auto part : m_vedit)

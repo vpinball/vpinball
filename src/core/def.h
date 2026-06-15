@@ -801,6 +801,9 @@ CONSTEXPR inline void StrToUpper(string& str)
    std::ranges::transform(str.begin(), str.end(), str.begin(), cUpper);
 }
 
+// Sentinel stored in image/sound/material droplist references to mean "no selection".
+inline constexpr char g_szNoneSelection[] = "<None>";
+
 inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length()
