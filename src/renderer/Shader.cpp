@@ -17,11 +17,10 @@
 #pragma push_macro("_WIN64")
 #undef _WIN64
 #endif
-#include "bx/timer.h"
-#include "bx/file.h"
-#include "bx/readerwriter.h"
-#include "bgfx/bgfx.h"
-#include "bgfx/platform.h"
+#include <bx/timer.h>
+#include <bx/file.h>
+#include <bx/readerwriter.h>
+#include <bgfx/bgfx.h>
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #endif

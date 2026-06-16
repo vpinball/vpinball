@@ -10,7 +10,6 @@
 #include <bx/endian.h>
 #include <bx/math.h>
 #include <bimg/decode.h>
-#include <bgfx/platform.h>
 #endif
 
 Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
