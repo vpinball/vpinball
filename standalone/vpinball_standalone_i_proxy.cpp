@@ -2203,22 +2203,23 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"ActiveTable", 48 },
 			{ L"AddCreditKey", 20 },
 			{ L"AddCreditKey2", 67 },
-			{ L"AutoSize", 2132 },
-			{ L"AutoWidth", 2133 },
+			{ L"AutoSize", 2135 },
+			{ L"AutoWidth", 2136 },
 			{ L"BeginModal", 25 },
 			{ L"CenterTiltKey", 8 },
 			{ L"CloseSerial", 251 },
 			{ L"CreatePluginObject", 265 },
-			{ L"DecalImage", 2042 },
-			{ L"DecalText", 2041 },
+			{ L"DecalImage", 2045 },
+			{ L"DecalText", 2044 },
+			{ L"Default", 2025 },
 			{ L"DisableStaticPrerendering", 228 },
 			{ L"DMDColoredPixels", 47 },
 			{ L"DMDHeight", 45 },
 			{ L"DMDPixels", 46 },
 			{ L"DMDWidth", 44 },
-			{ L"DropTargetBeveled", 2025 },
-			{ L"DropTargetFlatSimple", 2031 },
-			{ L"DropTargetSimple", 2026 },
+			{ L"DropTargetBeveled", 2028 },
+			{ L"DropTargetFlatSimple", 2034 },
+			{ L"DropTargetSimple", 2029 },
 			{ L"EndModal", 26 },
 			{ L"EndMusic", 11 },
 			{ L"ExitGame", 34 },
@@ -2226,10 +2227,10 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"FlushSerial", 252 },
 			{ L"FrameIndex", 232 },
 			{ L"GameTime", 22 },
-			{ L"GateLongPlate", 2037 },
-			{ L"GatePlate", 2036 },
-			{ L"GateWireRectangle", 2035 },
-			{ L"GateWireW", 2034 },
+			{ L"GateLongPlate", 2040 },
+			{ L"GatePlate", 2039 },
+			{ L"GateWireRectangle", 2038 },
+			{ L"GateWireW", 2037 },
 			{ L"GetBalls", 41 },
 			{ L"GetCustomParam", 823 },
 			{ L"GetElementByName", 43 },
@@ -2239,25 +2240,25 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"GetPlayerHWnd", 14 },
 			{ L"GetSerialDevices", 249 },
 			{ L"GetTextFile", 23 },
-			{ L"HitFatTargetRectangle", 2029 },
-			{ L"HitFatTargetSlim", 2032 },
-			{ L"HitFatTargetSquare", 2030 },
-			{ L"HitTargetRectangle", 2028 },
-			{ L"HitTargetRound", 2027 },
-			{ L"HitTargetSlim", 2033 },
+			{ L"HitFatTargetRectangle", 2032 },
+			{ L"HitFatTargetSlim", 2035 },
+			{ L"HitFatTargetSquare", 2033 },
+			{ L"HitTargetRectangle", 2031 },
+			{ L"HitTargetRound", 2030 },
+			{ L"HitTargetSlim", 2036 },
 			{ L"ImageAlignCenter", 2005 },
 			{ L"ImageAlignTopLeft", 2004 },
 			{ L"ImageAlignWorld", 2003 },
-			{ L"ImageModeWorld", 2142 },
-			{ L"ImageModeWrap", 2143 },
+			{ L"ImageModeWorld", 2145 },
+			{ L"ImageModeWrap", 2146 },
 			{ L"JoyCustomKey", 808 },
-			{ L"KickerCup", 2137 },
-			{ L"KickerCup2", 2141 },
-			{ L"KickerGottlieb", 2140 },
-			{ L"KickerHole", 2136 },
-			{ L"KickerHoleSimple", 2138 },
-			{ L"KickerInvisible", 2135 },
-			{ L"KickerWilliams", 2139 },
+			{ L"KickerCup", 2140 },
+			{ L"KickerCup2", 2144 },
+			{ L"KickerGottlieb", 2143 },
+			{ L"KickerHole", 2139 },
+			{ L"KickerHoleSimple", 2141 },
+			{ L"KickerInvisible", 2138 },
+			{ L"KickerWilliams", 2142 },
 			{ L"LeftFlipperKey", 4 },
 			{ L"LeftMagnaSave", 31 },
 			{ L"LeftTiltKey", 6 },
@@ -2267,7 +2268,7 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"LoadTexture", 229 },
 			{ L"LoadValue", 18 },
 			{ L"LockbarKey", 803 },
-			{ L"ManualSize", 2134 },
+			{ L"ManualSize", 2137 },
 			{ L"MaterialColor", 224 },
 			{ L"MechanicalTilt", 30 },
 			{ L"MusicDirectory", 257 },
@@ -2278,6 +2279,8 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"NudgeSensorStatus", 806 },
 			{ L"NudgeSetCalibration", 805 },
 			{ L"NudgeTiltStatus", 807 },
+			{ L"Off", 2026 },
+			{ L"On", 2027 },
 			{ L"OpenSerial", 250 },
 			{ L"PlatformBits", 261 },
 			{ L"PlatformCPU", 260 },
@@ -2303,95 +2306,95 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"RightTiltKey", 7 },
 			{ L"SaveValue", 17 },
 			{ L"ScriptsDirectory", 258 },
-			{ L"SeqAllOff", 2128 },
-			{ L"SeqAllOn", 2129 },
-			{ L"SeqArcBottomLeftDownOff", 2110 },
-			{ L"SeqArcBottomLeftDownOn", 2109 },
-			{ L"SeqArcBottomLeftUpOff", 2108 },
-			{ L"SeqArcBottomLeftUpOn", 2107 },
-			{ L"SeqArcBottomRightDownOff", 2114 },
-			{ L"SeqArcBottomRightDownOn", 2113 },
-			{ L"SeqArcBottomRightUpOff", 2112 },
-			{ L"SeqArcBottomRightUpOn", 2111 },
-			{ L"SeqArcTopLeftDownOff", 2118 },
-			{ L"SeqArcTopLeftDownOn", 2117 },
-			{ L"SeqArcTopLeftUpOff", 2116 },
-			{ L"SeqArcTopLeftUpOn", 2115 },
-			{ L"SeqArcTopRightDownOff", 2122 },
-			{ L"SeqArcTopRightDownOn", 2121 },
-			{ L"SeqArcTopRightUpOff", 2120 },
-			{ L"SeqArcTopRightUpOn", 2119 },
-			{ L"SeqBlinking", 2130 },
-			{ L"SeqCircleInOff", 2086 },
-			{ L"SeqCircleInOn", 2085 },
-			{ L"SeqCircleOutOff", 2084 },
-			{ L"SeqCircleOutOn", 2083 },
-			{ L"SeqClockLeftOff", 2090 },
-			{ L"SeqClockLeftOn", 2089 },
-			{ L"SeqClockRightOff", 2088 },
-			{ L"SeqClockRightOn", 2087 },
-			{ L"SeqDiagDownLeftOff", 2058 },
-			{ L"SeqDiagDownLeftOn", 2057 },
-			{ L"SeqDiagDownRightOff", 2056 },
-			{ L"SeqDiagDownRightOn", 2055 },
-			{ L"SeqDiagUpLeftOff", 2054 },
-			{ L"SeqDiagUpLeftOn", 2053 },
-			{ L"SeqDiagUpRightOff", 2052 },
-			{ L"SeqDiagUpRightOn", 2051 },
-			{ L"SeqDownOff", 2046 },
-			{ L"SeqDownOn", 2045 },
-			{ L"SeqFanLeftDownOff", 2102 },
-			{ L"SeqFanLeftDownOn", 2101 },
-			{ L"SeqFanLeftUpOff", 2100 },
-			{ L"SeqFanLeftUpOn", 2099 },
-			{ L"SeqFanRightDownOff", 2106 },
-			{ L"SeqFanRightDownOn", 2105 },
-			{ L"SeqFanRightUpOff", 2104 },
-			{ L"SeqFanRightUpOn", 2103 },
-			{ L"SeqHatch1HorizOff", 2076 },
-			{ L"SeqHatch1HorizOn", 2075 },
-			{ L"SeqHatch1VertOff", 2080 },
-			{ L"SeqHatch1VertOn", 2079 },
-			{ L"SeqHatch2HorizOff", 2078 },
-			{ L"SeqHatch2HorizOn", 2077 },
-			{ L"SeqHatch2VertOff", 2082 },
-			{ L"SeqHatch2VertOn", 2081 },
-			{ L"SeqLastDynamic", 2127 },
-			{ L"SeqLeftOff", 2050 },
-			{ L"SeqLeftOn", 2049 },
-			{ L"SeqMiddleInHorizOff", 2062 },
-			{ L"SeqMiddleInHorizOn", 2061 },
-			{ L"SeqMiddleInVertOff", 2066 },
-			{ L"SeqMiddleInVertOn", 2065 },
-			{ L"SeqMiddleOutHorizOff", 2060 },
-			{ L"SeqMiddleOutHorizOn", 2059 },
-			{ L"SeqMiddleOutVertOff", 2064 },
-			{ L"SeqMiddleOutVertOn", 2063 },
-			{ L"SeqRadarLeftOff", 2094 },
-			{ L"SeqRadarLeftOn", 2093 },
-			{ L"SeqRadarRightOff", 2092 },
-			{ L"SeqRadarRightOn", 2091 },
-			{ L"SeqRandom", 2131 },
-			{ L"SeqRightOff", 2048 },
-			{ L"SeqRightOn", 2047 },
-			{ L"SeqScrewLeftOff", 2126 },
-			{ L"SeqScrewLeftOn", 2125 },
-			{ L"SeqScrewRightOff", 2124 },
-			{ L"SeqScrewRightOn", 2123 },
-			{ L"SeqStripe1HorizOff", 2068 },
-			{ L"SeqStripe1HorizOn", 2067 },
-			{ L"SeqStripe1VertOff", 2072 },
-			{ L"SeqStripe1VertOn", 2071 },
-			{ L"SeqStripe2HorizOff", 2070 },
-			{ L"SeqStripe2HorizOn", 2069 },
-			{ L"SeqStripe2VertOff", 2074 },
-			{ L"SeqStripe2VertOn", 2073 },
-			{ L"SeqUpOff", 2044 },
-			{ L"SeqUpOn", 2043 },
-			{ L"SeqWiperLeftOff", 2098 },
-			{ L"SeqWiperLeftOn", 2097 },
-			{ L"SeqWiperRightOff", 2096 },
-			{ L"SeqWiperRightOn", 2095 },
+			{ L"SeqAllOff", 2131 },
+			{ L"SeqAllOn", 2132 },
+			{ L"SeqArcBottomLeftDownOff", 2113 },
+			{ L"SeqArcBottomLeftDownOn", 2112 },
+			{ L"SeqArcBottomLeftUpOff", 2111 },
+			{ L"SeqArcBottomLeftUpOn", 2110 },
+			{ L"SeqArcBottomRightDownOff", 2117 },
+			{ L"SeqArcBottomRightDownOn", 2116 },
+			{ L"SeqArcBottomRightUpOff", 2115 },
+			{ L"SeqArcBottomRightUpOn", 2114 },
+			{ L"SeqArcTopLeftDownOff", 2121 },
+			{ L"SeqArcTopLeftDownOn", 2120 },
+			{ L"SeqArcTopLeftUpOff", 2119 },
+			{ L"SeqArcTopLeftUpOn", 2118 },
+			{ L"SeqArcTopRightDownOff", 2125 },
+			{ L"SeqArcTopRightDownOn", 2124 },
+			{ L"SeqArcTopRightUpOff", 2123 },
+			{ L"SeqArcTopRightUpOn", 2122 },
+			{ L"SeqBlinking", 2133 },
+			{ L"SeqCircleInOff", 2089 },
+			{ L"SeqCircleInOn", 2088 },
+			{ L"SeqCircleOutOff", 2087 },
+			{ L"SeqCircleOutOn", 2086 },
+			{ L"SeqClockLeftOff", 2093 },
+			{ L"SeqClockLeftOn", 2092 },
+			{ L"SeqClockRightOff", 2091 },
+			{ L"SeqClockRightOn", 2090 },
+			{ L"SeqDiagDownLeftOff", 2061 },
+			{ L"SeqDiagDownLeftOn", 2060 },
+			{ L"SeqDiagDownRightOff", 2059 },
+			{ L"SeqDiagDownRightOn", 2058 },
+			{ L"SeqDiagUpLeftOff", 2057 },
+			{ L"SeqDiagUpLeftOn", 2056 },
+			{ L"SeqDiagUpRightOff", 2055 },
+			{ L"SeqDiagUpRightOn", 2054 },
+			{ L"SeqDownOff", 2049 },
+			{ L"SeqDownOn", 2048 },
+			{ L"SeqFanLeftDownOff", 2105 },
+			{ L"SeqFanLeftDownOn", 2104 },
+			{ L"SeqFanLeftUpOff", 2103 },
+			{ L"SeqFanLeftUpOn", 2102 },
+			{ L"SeqFanRightDownOff", 2109 },
+			{ L"SeqFanRightDownOn", 2108 },
+			{ L"SeqFanRightUpOff", 2107 },
+			{ L"SeqFanRightUpOn", 2106 },
+			{ L"SeqHatch1HorizOff", 2079 },
+			{ L"SeqHatch1HorizOn", 2078 },
+			{ L"SeqHatch1VertOff", 2083 },
+			{ L"SeqHatch1VertOn", 2082 },
+			{ L"SeqHatch2HorizOff", 2081 },
+			{ L"SeqHatch2HorizOn", 2080 },
+			{ L"SeqHatch2VertOff", 2085 },
+			{ L"SeqHatch2VertOn", 2084 },
+			{ L"SeqLastDynamic", 2130 },
+			{ L"SeqLeftOff", 2053 },
+			{ L"SeqLeftOn", 2052 },
+			{ L"SeqMiddleInHorizOff", 2065 },
+			{ L"SeqMiddleInHorizOn", 2064 },
+			{ L"SeqMiddleInVertOff", 2069 },
+			{ L"SeqMiddleInVertOn", 2068 },
+			{ L"SeqMiddleOutHorizOff", 2063 },
+			{ L"SeqMiddleOutHorizOn", 2062 },
+			{ L"SeqMiddleOutVertOff", 2067 },
+			{ L"SeqMiddleOutVertOn", 2066 },
+			{ L"SeqRadarLeftOff", 2097 },
+			{ L"SeqRadarLeftOn", 2096 },
+			{ L"SeqRadarRightOff", 2095 },
+			{ L"SeqRadarRightOn", 2094 },
+			{ L"SeqRandom", 2134 },
+			{ L"SeqRightOff", 2051 },
+			{ L"SeqRightOn", 2050 },
+			{ L"SeqScrewLeftOff", 2129 },
+			{ L"SeqScrewLeftOn", 2128 },
+			{ L"SeqScrewRightOff", 2127 },
+			{ L"SeqScrewRightOn", 2126 },
+			{ L"SeqStripe1HorizOff", 2071 },
+			{ L"SeqStripe1HorizOn", 2070 },
+			{ L"SeqStripe1VertOff", 2075 },
+			{ L"SeqStripe1VertOn", 2074 },
+			{ L"SeqStripe2HorizOff", 2073 },
+			{ L"SeqStripe2HorizOn", 2072 },
+			{ L"SeqStripe2VertOff", 2077 },
+			{ L"SeqStripe2VertOn", 2076 },
+			{ L"SeqUpOff", 2047 },
+			{ L"SeqUpOn", 2046 },
+			{ L"SeqWiperLeftOff", 2101 },
+			{ L"SeqWiperLeftOn", 2100 },
+			{ L"SeqWiperRightOff", 2099 },
+			{ L"SeqWiperRightOn", 2098 },
 			{ L"Setting", 824 },
 			{ L"SetupSerial", 253 },
 			{ L"ShapeCircle", 2006 },
@@ -2405,9 +2408,9 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"StopSound", 16 },
 			{ L"SystemTime", 225 },
 			{ L"TablesDirectory", 256 },
-			{ L"TextAlignCenter", 2039 },
-			{ L"TextAlignLeft", 2038 },
-			{ L"TextAlignRight", 2040 },
+			{ L"TextAlignCenter", 2042 },
+			{ L"TextAlignLeft", 2041 },
+			{ L"TextAlignRight", 2043 },
 			{ L"TriggerButton", 2012 },
 			{ L"TriggerInder", 2015 },
 			{ L"TriggerNone", 2008 },
@@ -2560,125 +2563,128 @@ static const char *ScriptGlobalTable_dispid_name(DISPID dispId) {
 		case 2022: return "PlungerTypeModern";
 		case 2023: return "PlungerTypeFlat";
 		case 2024: return "PlungerTypeCustom";
-		case 2025: return "DropTargetBeveled";
-		case 2026: return "DropTargetSimple";
-		case 2027: return "HitTargetRound";
-		case 2028: return "HitTargetRectangle";
-		case 2029: return "HitFatTargetRectangle";
-		case 2030: return "HitFatTargetSquare";
-		case 2031: return "DropTargetFlatSimple";
-		case 2032: return "HitFatTargetSlim";
-		case 2033: return "HitTargetSlim";
-		case 2034: return "GateWireW";
-		case 2035: return "GateWireRectangle";
-		case 2036: return "GatePlate";
-		case 2037: return "GateLongPlate";
-		case 2038: return "TextAlignLeft";
-		case 2039: return "TextAlignCenter";
-		case 2040: return "TextAlignRight";
-		case 2041: return "DecalText";
-		case 2042: return "DecalImage";
-		case 2043: return "SeqUpOn";
-		case 2044: return "SeqUpOff";
-		case 2045: return "SeqDownOn";
-		case 2046: return "SeqDownOff";
-		case 2047: return "SeqRightOn";
-		case 2048: return "SeqRightOff";
-		case 2049: return "SeqLeftOn";
-		case 2050: return "SeqLeftOff";
-		case 2051: return "SeqDiagUpRightOn";
-		case 2052: return "SeqDiagUpRightOff";
-		case 2053: return "SeqDiagUpLeftOn";
-		case 2054: return "SeqDiagUpLeftOff";
-		case 2055: return "SeqDiagDownRightOn";
-		case 2056: return "SeqDiagDownRightOff";
-		case 2057: return "SeqDiagDownLeftOn";
-		case 2058: return "SeqDiagDownLeftOff";
-		case 2059: return "SeqMiddleOutHorizOn";
-		case 2060: return "SeqMiddleOutHorizOff";
-		case 2061: return "SeqMiddleInHorizOn";
-		case 2062: return "SeqMiddleInHorizOff";
-		case 2063: return "SeqMiddleOutVertOn";
-		case 2064: return "SeqMiddleOutVertOff";
-		case 2065: return "SeqMiddleInVertOn";
-		case 2066: return "SeqMiddleInVertOff";
-		case 2067: return "SeqStripe1HorizOn";
-		case 2068: return "SeqStripe1HorizOff";
-		case 2069: return "SeqStripe2HorizOn";
-		case 2070: return "SeqStripe2HorizOff";
-		case 2071: return "SeqStripe1VertOn";
-		case 2072: return "SeqStripe1VertOff";
-		case 2073: return "SeqStripe2VertOn";
-		case 2074: return "SeqStripe2VertOff";
-		case 2075: return "SeqHatch1HorizOn";
-		case 2076: return "SeqHatch1HorizOff";
-		case 2077: return "SeqHatch2HorizOn";
-		case 2078: return "SeqHatch2HorizOff";
-		case 2079: return "SeqHatch1VertOn";
-		case 2080: return "SeqHatch1VertOff";
-		case 2081: return "SeqHatch2VertOn";
-		case 2082: return "SeqHatch2VertOff";
-		case 2083: return "SeqCircleOutOn";
-		case 2084: return "SeqCircleOutOff";
-		case 2085: return "SeqCircleInOn";
-		case 2086: return "SeqCircleInOff";
-		case 2087: return "SeqClockRightOn";
-		case 2088: return "SeqClockRightOff";
-		case 2089: return "SeqClockLeftOn";
-		case 2090: return "SeqClockLeftOff";
-		case 2091: return "SeqRadarRightOn";
-		case 2092: return "SeqRadarRightOff";
-		case 2093: return "SeqRadarLeftOn";
-		case 2094: return "SeqRadarLeftOff";
-		case 2095: return "SeqWiperRightOn";
-		case 2096: return "SeqWiperRightOff";
-		case 2097: return "SeqWiperLeftOn";
-		case 2098: return "SeqWiperLeftOff";
-		case 2099: return "SeqFanLeftUpOn";
-		case 2100: return "SeqFanLeftUpOff";
-		case 2101: return "SeqFanLeftDownOn";
-		case 2102: return "SeqFanLeftDownOff";
-		case 2103: return "SeqFanRightUpOn";
-		case 2104: return "SeqFanRightUpOff";
-		case 2105: return "SeqFanRightDownOn";
-		case 2106: return "SeqFanRightDownOff";
-		case 2107: return "SeqArcBottomLeftUpOn";
-		case 2108: return "SeqArcBottomLeftUpOff";
-		case 2109: return "SeqArcBottomLeftDownOn";
-		case 2110: return "SeqArcBottomLeftDownOff";
-		case 2111: return "SeqArcBottomRightUpOn";
-		case 2112: return "SeqArcBottomRightUpOff";
-		case 2113: return "SeqArcBottomRightDownOn";
-		case 2114: return "SeqArcBottomRightDownOff";
-		case 2115: return "SeqArcTopLeftUpOn";
-		case 2116: return "SeqArcTopLeftUpOff";
-		case 2117: return "SeqArcTopLeftDownOn";
-		case 2118: return "SeqArcTopLeftDownOff";
-		case 2119: return "SeqArcTopRightUpOn";
-		case 2120: return "SeqArcTopRightUpOff";
-		case 2121: return "SeqArcTopRightDownOn";
-		case 2122: return "SeqArcTopRightDownOff";
-		case 2123: return "SeqScrewRightOn";
-		case 2124: return "SeqScrewRightOff";
-		case 2125: return "SeqScrewLeftOn";
-		case 2126: return "SeqScrewLeftOff";
-		case 2127: return "SeqLastDynamic";
-		case 2128: return "SeqAllOff";
-		case 2129: return "SeqAllOn";
-		case 2130: return "SeqBlinking";
-		case 2131: return "SeqRandom";
-		case 2132: return "AutoSize";
-		case 2133: return "AutoWidth";
-		case 2134: return "ManualSize";
-		case 2135: return "KickerInvisible";
-		case 2136: return "KickerHole";
-		case 2137: return "KickerCup";
-		case 2138: return "KickerHoleSimple";
-		case 2139: return "KickerWilliams";
-		case 2140: return "KickerGottlieb";
-		case 2141: return "KickerCup2";
-		case 2142: return "ImageModeWorld";
-		case 2143: return "ImageModeWrap";
+		case 2025: return "Default";
+		case 2026: return "Off";
+		case 2027: return "On";
+		case 2028: return "DropTargetBeveled";
+		case 2029: return "DropTargetSimple";
+		case 2030: return "HitTargetRound";
+		case 2031: return "HitTargetRectangle";
+		case 2032: return "HitFatTargetRectangle";
+		case 2033: return "HitFatTargetSquare";
+		case 2034: return "DropTargetFlatSimple";
+		case 2035: return "HitFatTargetSlim";
+		case 2036: return "HitTargetSlim";
+		case 2037: return "GateWireW";
+		case 2038: return "GateWireRectangle";
+		case 2039: return "GatePlate";
+		case 2040: return "GateLongPlate";
+		case 2041: return "TextAlignLeft";
+		case 2042: return "TextAlignCenter";
+		case 2043: return "TextAlignRight";
+		case 2044: return "DecalText";
+		case 2045: return "DecalImage";
+		case 2046: return "SeqUpOn";
+		case 2047: return "SeqUpOff";
+		case 2048: return "SeqDownOn";
+		case 2049: return "SeqDownOff";
+		case 2050: return "SeqRightOn";
+		case 2051: return "SeqRightOff";
+		case 2052: return "SeqLeftOn";
+		case 2053: return "SeqLeftOff";
+		case 2054: return "SeqDiagUpRightOn";
+		case 2055: return "SeqDiagUpRightOff";
+		case 2056: return "SeqDiagUpLeftOn";
+		case 2057: return "SeqDiagUpLeftOff";
+		case 2058: return "SeqDiagDownRightOn";
+		case 2059: return "SeqDiagDownRightOff";
+		case 2060: return "SeqDiagDownLeftOn";
+		case 2061: return "SeqDiagDownLeftOff";
+		case 2062: return "SeqMiddleOutHorizOn";
+		case 2063: return "SeqMiddleOutHorizOff";
+		case 2064: return "SeqMiddleInHorizOn";
+		case 2065: return "SeqMiddleInHorizOff";
+		case 2066: return "SeqMiddleOutVertOn";
+		case 2067: return "SeqMiddleOutVertOff";
+		case 2068: return "SeqMiddleInVertOn";
+		case 2069: return "SeqMiddleInVertOff";
+		case 2070: return "SeqStripe1HorizOn";
+		case 2071: return "SeqStripe1HorizOff";
+		case 2072: return "SeqStripe2HorizOn";
+		case 2073: return "SeqStripe2HorizOff";
+		case 2074: return "SeqStripe1VertOn";
+		case 2075: return "SeqStripe1VertOff";
+		case 2076: return "SeqStripe2VertOn";
+		case 2077: return "SeqStripe2VertOff";
+		case 2078: return "SeqHatch1HorizOn";
+		case 2079: return "SeqHatch1HorizOff";
+		case 2080: return "SeqHatch2HorizOn";
+		case 2081: return "SeqHatch2HorizOff";
+		case 2082: return "SeqHatch1VertOn";
+		case 2083: return "SeqHatch1VertOff";
+		case 2084: return "SeqHatch2VertOn";
+		case 2085: return "SeqHatch2VertOff";
+		case 2086: return "SeqCircleOutOn";
+		case 2087: return "SeqCircleOutOff";
+		case 2088: return "SeqCircleInOn";
+		case 2089: return "SeqCircleInOff";
+		case 2090: return "SeqClockRightOn";
+		case 2091: return "SeqClockRightOff";
+		case 2092: return "SeqClockLeftOn";
+		case 2093: return "SeqClockLeftOff";
+		case 2094: return "SeqRadarRightOn";
+		case 2095: return "SeqRadarRightOff";
+		case 2096: return "SeqRadarLeftOn";
+		case 2097: return "SeqRadarLeftOff";
+		case 2098: return "SeqWiperRightOn";
+		case 2099: return "SeqWiperRightOff";
+		case 2100: return "SeqWiperLeftOn";
+		case 2101: return "SeqWiperLeftOff";
+		case 2102: return "SeqFanLeftUpOn";
+		case 2103: return "SeqFanLeftUpOff";
+		case 2104: return "SeqFanLeftDownOn";
+		case 2105: return "SeqFanLeftDownOff";
+		case 2106: return "SeqFanRightUpOn";
+		case 2107: return "SeqFanRightUpOff";
+		case 2108: return "SeqFanRightDownOn";
+		case 2109: return "SeqFanRightDownOff";
+		case 2110: return "SeqArcBottomLeftUpOn";
+		case 2111: return "SeqArcBottomLeftUpOff";
+		case 2112: return "SeqArcBottomLeftDownOn";
+		case 2113: return "SeqArcBottomLeftDownOff";
+		case 2114: return "SeqArcBottomRightUpOn";
+		case 2115: return "SeqArcBottomRightUpOff";
+		case 2116: return "SeqArcBottomRightDownOn";
+		case 2117: return "SeqArcBottomRightDownOff";
+		case 2118: return "SeqArcTopLeftUpOn";
+		case 2119: return "SeqArcTopLeftUpOff";
+		case 2120: return "SeqArcTopLeftDownOn";
+		case 2121: return "SeqArcTopLeftDownOff";
+		case 2122: return "SeqArcTopRightUpOn";
+		case 2123: return "SeqArcTopRightUpOff";
+		case 2124: return "SeqArcTopRightDownOn";
+		case 2125: return "SeqArcTopRightDownOff";
+		case 2126: return "SeqScrewRightOn";
+		case 2127: return "SeqScrewRightOff";
+		case 2128: return "SeqScrewLeftOn";
+		case 2129: return "SeqScrewLeftOff";
+		case 2130: return "SeqLastDynamic";
+		case 2131: return "SeqAllOff";
+		case 2132: return "SeqAllOn";
+		case 2133: return "SeqBlinking";
+		case 2134: return "SeqRandom";
+		case 2135: return "AutoSize";
+		case 2136: return "AutoWidth";
+		case 2137: return "ManualSize";
+		case 2138: return "KickerInvisible";
+		case 2139: return "KickerHole";
+		case 2140: return "KickerCup";
+		case 2141: return "KickerHoleSimple";
+		case 2142: return "KickerWilliams";
+		case 2143: return "KickerGottlieb";
+		case 2144: return "KickerCup2";
+		case 2145: return "ImageModeWorld";
+		case 2146: return "ImageModeWrap";
 		default: return "?";
 	}
 }
@@ -4065,7 +4071,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2025: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1;
+				V_I2(&res) = -1;
 				hres = S_OK;
 			}
 			break;
@@ -4073,7 +4079,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2026: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 2;
+				V_I2(&res) = 0;
 				hres = S_OK;
 			}
 			break;
@@ -4081,7 +4087,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2027: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 3;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4089,7 +4095,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2028: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 4;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4097,7 +4103,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2029: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 5;
+				V_I2(&res) = 2;
 				hres = S_OK;
 			}
 			break;
@@ -4105,7 +4111,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2030: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 6;
+				V_I2(&res) = 3;
 				hres = S_OK;
 			}
 			break;
@@ -4113,7 +4119,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2031: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 7;
+				V_I2(&res) = 4;
 				hres = S_OK;
 			}
 			break;
@@ -4121,7 +4127,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2032: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 8;
+				V_I2(&res) = 5;
 				hres = S_OK;
 			}
 			break;
@@ -4129,7 +4135,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2033: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 9;
+				V_I2(&res) = 6;
 				hres = S_OK;
 			}
 			break;
@@ -4137,7 +4143,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2034: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1;
+				V_I2(&res) = 7;
 				hres = S_OK;
 			}
 			break;
@@ -4145,7 +4151,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2035: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 2;
+				V_I2(&res) = 8;
 				hres = S_OK;
 			}
 			break;
@@ -4153,7 +4159,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2036: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 3;
+				V_I2(&res) = 9;
 				hres = S_OK;
 			}
 			break;
@@ -4161,7 +4167,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2037: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 4;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4169,7 +4175,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2038: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 0;
+				V_I2(&res) = 2;
 				hres = S_OK;
 			}
 			break;
@@ -4177,7 +4183,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2039: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1;
+				V_I2(&res) = 3;
 				hres = S_OK;
 			}
 			break;
@@ -4185,7 +4191,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2040: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 2;
+				V_I2(&res) = 4;
 				hres = S_OK;
 			}
 			break;
@@ -4209,7 +4215,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2043: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1;
+				V_I2(&res) = 2;
 				hres = S_OK;
 			}
 			break;
@@ -4217,7 +4223,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2044: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 2;
+				V_I2(&res) = 0;
 				hres = S_OK;
 			}
 			break;
@@ -4225,7 +4231,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2045: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 3;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4233,7 +4239,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2046: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 4;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4241,7 +4247,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2047: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 5;
+				V_I2(&res) = 2;
 				hres = S_OK;
 			}
 			break;
@@ -4249,7 +4255,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2048: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 6;
+				V_I2(&res) = 3;
 				hres = S_OK;
 			}
 			break;
@@ -4257,7 +4263,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2049: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 7;
+				V_I2(&res) = 4;
 				hres = S_OK;
 			}
 			break;
@@ -4265,7 +4271,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2050: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 8;
+				V_I2(&res) = 5;
 				hres = S_OK;
 			}
 			break;
@@ -4273,7 +4279,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2051: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 9;
+				V_I2(&res) = 6;
 				hres = S_OK;
 			}
 			break;
@@ -4281,7 +4287,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2052: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 10;
+				V_I2(&res) = 7;
 				hres = S_OK;
 			}
 			break;
@@ -4289,7 +4295,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2053: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 11;
+				V_I2(&res) = 8;
 				hres = S_OK;
 			}
 			break;
@@ -4297,7 +4303,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2054: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 12;
+				V_I2(&res) = 9;
 				hres = S_OK;
 			}
 			break;
@@ -4305,7 +4311,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2055: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 13;
+				V_I2(&res) = 10;
 				hres = S_OK;
 			}
 			break;
@@ -4313,7 +4319,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2056: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 14;
+				V_I2(&res) = 11;
 				hres = S_OK;
 			}
 			break;
@@ -4321,7 +4327,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2057: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 15;
+				V_I2(&res) = 12;
 				hres = S_OK;
 			}
 			break;
@@ -4329,7 +4335,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2058: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 16;
+				V_I2(&res) = 13;
 				hres = S_OK;
 			}
 			break;
@@ -4337,7 +4343,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2059: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 17;
+				V_I2(&res) = 14;
 				hres = S_OK;
 			}
 			break;
@@ -4345,7 +4351,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2060: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 18;
+				V_I2(&res) = 15;
 				hres = S_OK;
 			}
 			break;
@@ -4353,7 +4359,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2061: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 19;
+				V_I2(&res) = 16;
 				hres = S_OK;
 			}
 			break;
@@ -4361,7 +4367,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2062: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 20;
+				V_I2(&res) = 17;
 				hres = S_OK;
 			}
 			break;
@@ -4369,7 +4375,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2063: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 21;
+				V_I2(&res) = 18;
 				hres = S_OK;
 			}
 			break;
@@ -4377,7 +4383,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2064: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 22;
+				V_I2(&res) = 19;
 				hres = S_OK;
 			}
 			break;
@@ -4385,7 +4391,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2065: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 23;
+				V_I2(&res) = 20;
 				hres = S_OK;
 			}
 			break;
@@ -4393,7 +4399,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2066: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 24;
+				V_I2(&res) = 21;
 				hres = S_OK;
 			}
 			break;
@@ -4401,7 +4407,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2067: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 25;
+				V_I2(&res) = 22;
 				hres = S_OK;
 			}
 			break;
@@ -4409,7 +4415,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2068: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 26;
+				V_I2(&res) = 23;
 				hres = S_OK;
 			}
 			break;
@@ -4417,7 +4423,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2069: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 27;
+				V_I2(&res) = 24;
 				hres = S_OK;
 			}
 			break;
@@ -4425,7 +4431,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2070: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 28;
+				V_I2(&res) = 25;
 				hres = S_OK;
 			}
 			break;
@@ -4433,7 +4439,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2071: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 29;
+				V_I2(&res) = 26;
 				hres = S_OK;
 			}
 			break;
@@ -4441,7 +4447,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2072: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 30;
+				V_I2(&res) = 27;
 				hres = S_OK;
 			}
 			break;
@@ -4449,7 +4455,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2073: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 31;
+				V_I2(&res) = 28;
 				hres = S_OK;
 			}
 			break;
@@ -4457,7 +4463,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2074: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 32;
+				V_I2(&res) = 29;
 				hres = S_OK;
 			}
 			break;
@@ -4465,7 +4471,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2075: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 33;
+				V_I2(&res) = 30;
 				hres = S_OK;
 			}
 			break;
@@ -4473,7 +4479,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2076: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 34;
+				V_I2(&res) = 31;
 				hres = S_OK;
 			}
 			break;
@@ -4481,7 +4487,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2077: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 35;
+				V_I2(&res) = 32;
 				hres = S_OK;
 			}
 			break;
@@ -4489,7 +4495,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2078: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 36;
+				V_I2(&res) = 33;
 				hres = S_OK;
 			}
 			break;
@@ -4497,7 +4503,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2079: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 37;
+				V_I2(&res) = 34;
 				hres = S_OK;
 			}
 			break;
@@ -4505,7 +4511,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2080: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 38;
+				V_I2(&res) = 35;
 				hres = S_OK;
 			}
 			break;
@@ -4513,7 +4519,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2081: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 39;
+				V_I2(&res) = 36;
 				hres = S_OK;
 			}
 			break;
@@ -4521,7 +4527,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2082: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 40;
+				V_I2(&res) = 37;
 				hres = S_OK;
 			}
 			break;
@@ -4529,7 +4535,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2083: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 41;
+				V_I2(&res) = 38;
 				hres = S_OK;
 			}
 			break;
@@ -4537,7 +4543,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2084: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 42;
+				V_I2(&res) = 39;
 				hres = S_OK;
 			}
 			break;
@@ -4545,7 +4551,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2085: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 43;
+				V_I2(&res) = 40;
 				hres = S_OK;
 			}
 			break;
@@ -4553,7 +4559,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2086: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 44;
+				V_I2(&res) = 41;
 				hres = S_OK;
 			}
 			break;
@@ -4561,7 +4567,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2087: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 45;
+				V_I2(&res) = 42;
 				hres = S_OK;
 			}
 			break;
@@ -4569,7 +4575,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2088: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 46;
+				V_I2(&res) = 43;
 				hres = S_OK;
 			}
 			break;
@@ -4577,7 +4583,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2089: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 47;
+				V_I2(&res) = 44;
 				hres = S_OK;
 			}
 			break;
@@ -4585,7 +4591,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2090: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 48;
+				V_I2(&res) = 45;
 				hres = S_OK;
 			}
 			break;
@@ -4593,7 +4599,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2091: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 49;
+				V_I2(&res) = 46;
 				hres = S_OK;
 			}
 			break;
@@ -4601,7 +4607,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2092: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 50;
+				V_I2(&res) = 47;
 				hres = S_OK;
 			}
 			break;
@@ -4609,7 +4615,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2093: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 51;
+				V_I2(&res) = 48;
 				hres = S_OK;
 			}
 			break;
@@ -4617,7 +4623,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2094: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 52;
+				V_I2(&res) = 49;
 				hres = S_OK;
 			}
 			break;
@@ -4625,7 +4631,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2095: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 53;
+				V_I2(&res) = 50;
 				hres = S_OK;
 			}
 			break;
@@ -4633,7 +4639,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2096: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 54;
+				V_I2(&res) = 51;
 				hres = S_OK;
 			}
 			break;
@@ -4641,7 +4647,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2097: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 55;
+				V_I2(&res) = 52;
 				hres = S_OK;
 			}
 			break;
@@ -4649,7 +4655,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2098: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 56;
+				V_I2(&res) = 53;
 				hres = S_OK;
 			}
 			break;
@@ -4657,7 +4663,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2099: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 57;
+				V_I2(&res) = 54;
 				hres = S_OK;
 			}
 			break;
@@ -4665,7 +4671,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2100: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 58;
+				V_I2(&res) = 55;
 				hres = S_OK;
 			}
 			break;
@@ -4673,7 +4679,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2101: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 59;
+				V_I2(&res) = 56;
 				hres = S_OK;
 			}
 			break;
@@ -4681,7 +4687,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2102: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 60;
+				V_I2(&res) = 57;
 				hres = S_OK;
 			}
 			break;
@@ -4689,7 +4695,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2103: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 61;
+				V_I2(&res) = 58;
 				hres = S_OK;
 			}
 			break;
@@ -4697,7 +4703,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2104: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 62;
+				V_I2(&res) = 59;
 				hres = S_OK;
 			}
 			break;
@@ -4705,7 +4711,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2105: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 63;
+				V_I2(&res) = 60;
 				hres = S_OK;
 			}
 			break;
@@ -4713,7 +4719,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2106: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 64;
+				V_I2(&res) = 61;
 				hres = S_OK;
 			}
 			break;
@@ -4721,7 +4727,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2107: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 65;
+				V_I2(&res) = 62;
 				hres = S_OK;
 			}
 			break;
@@ -4729,7 +4735,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2108: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 66;
+				V_I2(&res) = 63;
 				hres = S_OK;
 			}
 			break;
@@ -4737,7 +4743,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2109: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 67;
+				V_I2(&res) = 64;
 				hres = S_OK;
 			}
 			break;
@@ -4745,7 +4751,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2110: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 68;
+				V_I2(&res) = 65;
 				hres = S_OK;
 			}
 			break;
@@ -4753,7 +4759,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2111: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 69;
+				V_I2(&res) = 66;
 				hres = S_OK;
 			}
 			break;
@@ -4761,7 +4767,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2112: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 70;
+				V_I2(&res) = 67;
 				hres = S_OK;
 			}
 			break;
@@ -4769,7 +4775,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2113: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 71;
+				V_I2(&res) = 68;
 				hres = S_OK;
 			}
 			break;
@@ -4777,7 +4783,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2114: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 72;
+				V_I2(&res) = 69;
 				hres = S_OK;
 			}
 			break;
@@ -4785,7 +4791,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2115: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 73;
+				V_I2(&res) = 70;
 				hres = S_OK;
 			}
 			break;
@@ -4793,7 +4799,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2116: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 74;
+				V_I2(&res) = 71;
 				hres = S_OK;
 			}
 			break;
@@ -4801,7 +4807,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2117: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 75;
+				V_I2(&res) = 72;
 				hres = S_OK;
 			}
 			break;
@@ -4809,7 +4815,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2118: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 76;
+				V_I2(&res) = 73;
 				hres = S_OK;
 			}
 			break;
@@ -4817,7 +4823,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2119: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 77;
+				V_I2(&res) = 74;
 				hres = S_OK;
 			}
 			break;
@@ -4825,7 +4831,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2120: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 78;
+				V_I2(&res) = 75;
 				hres = S_OK;
 			}
 			break;
@@ -4833,7 +4839,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2121: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 79;
+				V_I2(&res) = 76;
 				hres = S_OK;
 			}
 			break;
@@ -4841,7 +4847,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2122: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 80;
+				V_I2(&res) = 77;
 				hres = S_OK;
 			}
 			break;
@@ -4849,7 +4855,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2123: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 81;
+				V_I2(&res) = 78;
 				hres = S_OK;
 			}
 			break;
@@ -4857,7 +4863,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2124: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 82;
+				V_I2(&res) = 79;
 				hres = S_OK;
 			}
 			break;
@@ -4865,7 +4871,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2125: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 83;
+				V_I2(&res) = 80;
 				hres = S_OK;
 			}
 			break;
@@ -4873,7 +4879,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2126: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 84;
+				V_I2(&res) = 81;
 				hres = S_OK;
 			}
 			break;
@@ -4881,7 +4887,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2127: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 85;
+				V_I2(&res) = 82;
 				hres = S_OK;
 			}
 			break;
@@ -4889,7 +4895,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2128: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1000;
+				V_I2(&res) = 83;
 				hres = S_OK;
 			}
 			break;
@@ -4897,7 +4903,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2129: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1001;
+				V_I2(&res) = 84;
 				hres = S_OK;
 			}
 			break;
@@ -4905,7 +4911,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2130: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1002;
+				V_I2(&res) = 85;
 				hres = S_OK;
 			}
 			break;
@@ -4913,7 +4919,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2131: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1003;
+				V_I2(&res) = 1000;
 				hres = S_OK;
 			}
 			break;
@@ -4921,7 +4927,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2132: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 0;
+				V_I2(&res) = 1001;
 				hres = S_OK;
 			}
 			break;
@@ -4929,7 +4935,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2133: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 1;
+				V_I2(&res) = 1002;
 				hres = S_OK;
 			}
 			break;
@@ -4937,7 +4943,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2134: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 2;
+				V_I2(&res) = 1003;
 				hres = S_OK;
 			}
 			break;
@@ -4969,7 +4975,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2138: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 3;
+				V_I2(&res) = 0;
 				hres = S_OK;
 			}
 			break;
@@ -4977,7 +4983,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2139: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 4;
+				V_I2(&res) = 1;
 				hres = S_OK;
 			}
 			break;
@@ -4985,7 +4991,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2140: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 5;
+				V_I2(&res) = 2;
 				hres = S_OK;
 			}
 			break;
@@ -4993,7 +4999,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2141: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 6;
+				V_I2(&res) = 3;
 				hres = S_OK;
 			}
 			break;
@@ -5001,12 +5007,36 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		case 2142: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
-				V_I2(&res) = 0;
+				V_I2(&res) = 4;
 				hres = S_OK;
 			}
 			break;
 		}
 		case 2143: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				V_VT(&res) = VT_I2;
+				V_I2(&res) = 5;
+				hres = S_OK;
+			}
+			break;
+		}
+		case 2144: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				V_VT(&res) = VT_I2;
+				V_I2(&res) = 6;
+				hres = S_OK;
+			}
+			break;
+		}
+		case 2145: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				V_VT(&res) = VT_I2;
+				V_I2(&res) = 0;
+				hres = S_OK;
+			}
+			break;
+		}
+		case 2146: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				V_VT(&res) = VT_I2;
 				V_I2(&res) = 1;

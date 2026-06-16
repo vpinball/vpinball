@@ -997,7 +997,7 @@ public class IDLParserToCpp {
 								"TriggerShape",
 								"RampType",
 								"PlungerType",
-								//"UserDefaultOnOff",
+								"UserDefaultOnOff",
 								//"FXAASettings",
 								//"PhysicsSet",
 								"TargetType",
