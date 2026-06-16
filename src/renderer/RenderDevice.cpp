@@ -35,11 +35,10 @@
 #pragma push_macro("_WIN64")
 #undef _WIN64
 #endif
-#include "bx/platform.h"
-#include "bx/string.h"
-#include "bgfx/platform.h"
-#include "bgfx/bgfx.h"
-#include "bimg/bimg.h"
+#include <bx/platform.h>
+#include <bx/string.h>
+#include <bgfx/bgfx.h>
+#include <bimg/bimg.h>
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #endif
