@@ -1596,8 +1596,6 @@ public:
       #if defined(ENABLE_BGFX)
          if (m_player->m_backglassOutput.GetMode() == RenderOutput::OutputMode::OM_WINDOW)
             m_captureRequestMask |= 2;
-         if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal) // Metal backend does not support screenshot from other framebuffers
-            m_captureRequestMask &= 1;
       #endif
    }
 

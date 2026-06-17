@@ -119,7 +119,8 @@ void RenderDevice::tBGFXCallback::screenShot(
 {
    // Note that BGFX has a few bugs regarding screenshots:
    // - DX11 applies an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
-   // - Metal & DX12 do not implement the framebuffer selection and always capture from the base swapchain and return data on the swapchain format
+   // - DX12 does not implement the framebuffer selection and always captures from the base swapchain and returns data on the swapchain format
+   // - Metal implements per-window framebuffer selection and returns data on the (per-window) swapchain format
    // - OpenGL & Vulkan seems to be ok (always returning 4 byte BGRA, eventually after conversion if backbuffer format is not BGRA)
    int index = -1;
    std::filesystem::path path(_filePath);
@@ -129,7 +130,8 @@ void RenderDevice::tBGFXCallback::screenShot(
          index = i;
          break;
       }
-   m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
+   if (index >= 0)
+      m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
    bool success = false;
    if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
    {
