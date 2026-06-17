@@ -175,7 +175,7 @@ private:
    class Animation {
    public:
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int flashingPeriod);
-      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor);
+      Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float xps, float xpe, float yps, float ype, int motionLen, int motionTween, int motionColor);
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int alphaStart, int alphaEnd, int pulseSpeed, bool screenFade);
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float zoomStart, float zoomEnd, int zoomPulseSpeed);
       Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float wiggleStart, float wiggleEnd, int wiggleSpeed, int dummy);
@@ -202,10 +202,10 @@ private:
 
       int m_flashingPeriod = 0;
 
-      int m_xps = 0;
-      int m_xpe = 0;
-      int m_yps = 0;
-      int m_ype = 0;
+      float m_xps = 0.f;
+      float m_xpe = 0.f;
+      float m_yps = 0.f;
+      float m_ype = 0.f;
       int m_motionLen = 0;
       int m_motionTween = 0;
       int m_motionColor = 0;
