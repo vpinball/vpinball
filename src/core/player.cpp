@@ -112,6 +112,9 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       PLOGI << "SDL video driver: " << drv;
    }
 
+   if ((m_playMode == PlayMode::Play) || (m_playMode == PlayMode::CaptureAttract))
+      SDL_HideCursor();
+
    // Load player plugins
 
    PLOGI << "Loading player plugins"; // For profiling
@@ -1206,15 +1209,6 @@ void Player::ApplyPlayingState(const bool play)
       if (!IsEditorMode())
          m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
    }
-   UpdateCursorState();
-}
-
-void Player::UpdateCursorState() const
-{
-   if (m_drawCursor || !IsPlaying())
-      SDL_ShowCursor();
-   else
-      SDL_HideCursor();
 }
 
 void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
@@ -1492,7 +1486,6 @@ void Player::ProcessOSMessages(const bool isInitialized)
       case SDL_EVENT_KEY_UP:
       case SDL_EVENT_KEY_DOWN:
          isPFWnd = (SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR();
-         ShowMouseCursor(false);
          break;
 
       case SDL_EVENT_TEXT_INPUT:
@@ -1518,9 +1511,10 @@ void Player::ProcessOSMessages(const bool isInitialized)
             static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
             if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
             {
+               if (m_lastcursorx != FLT_MAX) // hacky...
+                  SDL_ShowCursor();
                m_lastcursorx = e.motion.x;
                m_lastcursory = e.motion.y;
-               ShowMouseCursor(true);
             }
          }
          else if (dragging)

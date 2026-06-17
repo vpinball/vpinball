@@ -432,19 +432,8 @@ STDMETHODIMP ScriptGlobalTable::get_PlatformBits(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
 {
-   /*if(VBTOb(enable)) // not needed, otherwise hides mouse cursor in windowed mode
-   {
-      while (ShowCursor(FALSE) >= 0) ;
-      while (ShowCursor(TRUE) < 0) ;
-   }
-   else
-   {
-      while (ShowCursor(TRUE) < 0) ;
-      while (ShowCursor(FALSE) >= 0) ;
-   }*/
-
-   ShowCursor(VBTOb(enable) ? TRUE : FALSE);
-
+   // Deprecated: cursor state is entirely managed by the app
+   PLOGI << "The ShowCursor property is deprecated: the cursor is managed by VPX and automatically shown/hidden when playing/paused";
    return S_OK;
 }
 

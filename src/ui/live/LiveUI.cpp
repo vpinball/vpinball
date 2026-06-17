@@ -268,6 +268,10 @@ void LiveUI::HandleSDLEvent(SDL_Event &e) const
 void LiveUI::NewFrame()
 {
    ImGuiIO &io = ImGui::GetIO();
+   if (m_editorUI.IsOpened() || SDL_CursorVisible())
+      io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+   else
+      io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
    UpdateScale();
    ImGui_ImplSDL3_NewFrame();
 

@@ -426,10 +426,8 @@ void CodeViewer::OnScriptError(ScriptInterpreter::ErrorType type, int line, int 
    if (!m_suppressErrorDialogs && type != ScriptInterpreter::ErrorType::DebugConsole)
    {
       if (g_pplayer)
-      {
          g_pplayer->LockForegroundWindow(false);
-         g_pplayer->ShowMouseCursor(true);
-      }
+      SDL_ShowCursor();
 
       SetVisible(true);
       ShowWindow(SW_RESTORE);

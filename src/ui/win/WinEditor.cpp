@@ -1405,9 +1405,6 @@ void WinEditor::OnClose()
    CComObject<PinTable> * const ptable = GetActiveTable();
    m_closing = true;
 
-   while (ShowCursor(FALSE) >= 0);
-   while (ShowCursor(TRUE) < 0);
-
    if (ptable)
       while (ptable->m_savingActive)
          Sleep(THREADS_PAUSE);
