@@ -204,7 +204,7 @@ jobs:
             else
               cmake -G "Visual Studio 18 2026" -A Win32 -B build
             fi
-            cmake --build build --config ${{ matrix.config }}
+            cmake --build build --config ${{ matrix.config }} --parallel
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(sysctl -n hw.ncpu)
