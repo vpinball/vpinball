@@ -298,7 +298,8 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                int mlen = json["mlen"s].as<int>(0);
                if (mlen == 0) mlen = len;
                m_animation = std::make_unique<Animation>(this, len, json["fc"s].as<int>(m_color),
-                  json["xps"s].as<int>(0), json["xpe"s].as<int>(0), json["yps"s].as<int>(0), json["ype"s].as<int>(0),
+                  static_cast<float>(json["xps"s].as<double>(0)), static_cast<float>(json["xpe"s].as<double>(0)),
+                  static_cast<float>(json["yps"s].as<double>(0)), static_cast<float>(json["ype"s].as<double>(0)),
                   mlen, json["tt"s].as<int>(0), json["mColor"s].as<int>(m_color));
                m_animation->m_alphaFade = json["af"s].as<int>(0);
             }
@@ -1338,7 +1339,7 @@ PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foreg
 {
 }
 
-PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor)
+PUPLabel::Animation::Animation(PUPLabel* label, unsigned int lengthMs, int foregroundColor, float xps, float xpe, float yps, float ype, int motionLen, int motionTween, int motionColor)
    : m_label(label)
    , m_color(label->m_color)
    , m_lengthMs(lengthMs)
