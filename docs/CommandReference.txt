@@ -261,7 +261,7 @@ PlatformOS(string) - returns OS that VPX is running on, e.g. windows,linux,andro
 PlatformCPU(string) - returns CPU that VPX is running on, e.g. x86 or arm
 PlatformBits(string) - returns bitness of VPX executable, i.e. 32 or 64
 
-ShowCursor(bool) - en/disables mouse cursor
+ShowCursor(bool) - used to en/disables mouse cursor, this is now deprecated (cursor is entirely managed by VPX)
 
 GetTextFile(string) - returns content of text file
 

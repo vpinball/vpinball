@@ -217,11 +217,7 @@ private:
 #pragma region Input
 public:
    InputManager m_pininput;
-   void ShowMouseCursor(const bool show) { m_drawCursor = show; UpdateCursorState(); }
 
-private:
-   bool m_drawCursor = false;
-   void UpdateCursorState() const;
 #pragma endregion
 
 

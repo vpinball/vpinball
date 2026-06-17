@@ -689,8 +689,12 @@ void InputManager::CreateInputActions()
             if (m_player->m_liveUI->IsInGameUIOpened())
                return;
             if (isPressed)
+            {
                m_player->m_pininput.PlayRumble(0.f, 0.2f, 150);
-            
+               if (m_player->IsPlaying())
+                  SDL_HideCursor();
+            }
+         
             if (action.GetActionId() == m_leftFlipperActionId)
                m_leftFlipperLastChangePollDelay = m_player->m_logicProfiler.GetPrev(FrameProfiler::ProfileSection::PROFILE_INPUT_POLL_PERIOD);
 

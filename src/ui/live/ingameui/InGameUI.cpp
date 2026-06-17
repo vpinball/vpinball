@@ -211,6 +211,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       m_useFlipperNav = true;
       m_flipperNavStart = now;
       m_flipperNavRepeatCount = 0;
+      SDL_HideCursor();
       GetActivePage()->SelectPrevItem();
       if (!wasFlipperNav)
          GetActivePage()->SelectNextItem();
@@ -228,6 +229,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       m_useFlipperNav = true;
       m_flipperNavStart = now;
       m_flipperNavRepeatCount = 0;
+      SDL_HideCursor();
       GetActivePage()->SelectNextItem();
       if (!wasFlipperNav)
          GetActivePage()->SelectPrevItem();
