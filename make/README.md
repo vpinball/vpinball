@@ -220,6 +220,19 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 </details>
 
+<details>
+<summary>linux-x64 (CachyOS)</summary>
+
+```
+sudo pacman -Sy cmake nasm git
+platforms/linux-x64/external.sh
+cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx
+```
+</details>
 
 <details>
 <summary>linux-aarch64 (Fedora Asahi Remix 41 - Apple silicon)</summary>
