@@ -19,15 +19,14 @@ FetchContent_MakeAvailable(doctest)
 add_library(doctest INTERFACE)
 target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})
 
-# Same translation units as the app, minus its main() entry point (the tests provide their own).
-set(VPX_TEST_ENGINE_SOURCES ${VPX_STANDALONE_SOURCES})
+# Reuse the exact translation units of the app target (whatever each platform added),
+# minus its WinMain/main entry point - the tests provide their own. Deriving the list from
+# the target keeps this portable across the standalone and native (Windows) build variants.
+get_target_property(VPX_TEST_ENGINE_SOURCES vpinball SOURCES)
 list(REMOVE_ITEM VPX_TEST_ENGINE_SOURCES src/core/main.cpp)
 
 add_executable(vpx-test
    ${VPX_TEST_ENGINE_SOURCES}
-
-   src/input/OpenPinDevHandler.cpp
-   third-party/include/imgui/imgui_impl_sdl3.cpp
 
    tests/unit/main.cpp
    tests/unit/test_settings_defaults.cpp

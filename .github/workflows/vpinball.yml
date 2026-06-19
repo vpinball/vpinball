@@ -212,12 +212,22 @@ jobs:
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(nproc)
           fi
-      - if: (matrix.platform == 'linux' && matrix.arch == 'x64' && matrix.type == 'BGFX')
+      - if: (matrix.type == 'BGFX' && matrix.config == 'Release' && ((matrix.platform == 'linux' && matrix.arch == 'x64') || (matrix.platform == 'macos' && matrix.arch == 'arm64') || (matrix.platform == 'windows' && matrix.arch == 'x64')))
         name: Unit tests
         run: |
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DVPINBALL_BUILD_TESTS=ON -B build/${{ matrix.config }}
-          cmake --build build/${{ matrix.config }} --target vpx-test -- -j$(nproc)
-          ctest --test-dir build/${{ matrix.config }} --output-on-failure
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            cmake -DVPINBALL_BUILD_TESTS=ON -B build
+            cmake --build build --config ${{ matrix.config }} --target vpx-test --parallel
+            ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            cmake -DVPINBALL_BUILD_TESTS=ON -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} --target vpx-test -- -j$(sysctl -n hw.ncpu)
+            ctest --test-dir build/${{ matrix.config }} --output-on-failure
+          else
+            cmake -DVPINBALL_BUILD_TESTS=ON -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} --target vpx-test -- -j$(nproc)
+            ctest --test-dir build/${{ matrix.config }} --output-on-failure
+          fi
       - if: (matrix.platform == 'macos')
         name: Code signing, notarization, and packaging
         run: |
