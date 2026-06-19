@@ -20,10 +20,13 @@ add_library(doctest INTERFACE)
 target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})
 
 # Reuse the exact translation units of the app target (whatever each platform added),
-# minus its WinMain/main entry point - the tests provide their own. Deriving the list from
-# the target keeps this portable across the standalone and native (Windows) build variants.
+# minus its entry points - the tests provide their own main(). Deriving the list from the
+# target keeps this portable across the standalone and native (Windows) build variants.
 get_target_property(VPX_TEST_ENGINE_SOURCES vpinball SOURCES)
-list(REMOVE_ITEM VPX_TEST_ENGINE_SOURCES src/core/main.cpp)
+list(REMOVE_ITEM VPX_TEST_ENGINE_SOURCES
+   src/core/main.cpp          # console / WinMain entry point
+   standalone/macos/main.mm   # macOS NSApplication entry point
+)
 
 add_executable(vpx-test
    ${VPX_TEST_ENGINE_SOURCES}
