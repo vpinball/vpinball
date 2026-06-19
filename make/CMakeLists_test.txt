@@ -30,8 +30,11 @@ target_link_libraries(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,LINK_LIBRARIES
 # The shared libraries the engine links (bgfx, SDL3, ...) live in third-party/runtime-libs/<platform>.
 # Point the test executable's rpath there so it runs from the build tree on Linux and macOS; unlike
 # the app target it is not a bundle and does not get those libs staged next to it.
+# MSVC_RUNTIME_LIBRARY must match the app target and the prebuilt /MT libs (the inherited compile
+# flags do not carry this target property); it is a no-op on non-MSVC toolchains.
 set_target_properties(vpx-test PROPERTIES
    INSTALL_RPATH "$<TARGET_PROPERTY:vpinball,LINK_DIRECTORIES>"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
 
 enable_testing()
