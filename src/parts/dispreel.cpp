@@ -278,7 +278,7 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
             m_reelInfo[i].motorOffset = 0;
 
             // play the sound (if any) for each click of the reel
-            if (!m_d.m_szSound.empty() && (m_d.m_szSound != "<None>"))
+            if (!m_d.m_szSound.empty() && (m_d.m_szSound != g_szNoneSelection))
             {
                const BSTR mySoundBSTR = MakeWideBSTR(m_d.m_szSound);
                m_ptable->PlaySound(mySoundBSTR, 0, 1.0f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE, 0.f);
