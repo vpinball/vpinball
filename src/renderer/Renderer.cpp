@@ -3263,6 +3263,8 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
    else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
       outputRT = output.GetWindow()->GetBackBuffer();
+      if (outputRT == nullptr) // The swapchain is being recreated (see Window::OnResized), skip rendering this window
+         return nullptr;
       outputW = outputRT->GetWidth();
       outputH = outputRT->GetHeight();
       outputX = 0;

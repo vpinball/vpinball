@@ -1483,6 +1483,19 @@ void Player::ProcessOSMessages(const bool isInitialized)
          SetCloseState(Player::CloseState::CS_STOP_PLAY);
          break;
 
+      case SDL_EVENT_WINDOW_RESIZED:
+      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+      {
+         SDL_Window* const wnd = SDL_GetWindowFromID(e.window.windowID);
+         if (m_playfieldWnd->GetCore() == wnd)
+            m_playfieldWnd->OnResized();
+         else
+            for (VPX::RenderOutput* const output : { &m_backglassOutput, &m_scoreViewOutput, &m_topperOutput })
+               if (output->GetMode() == VPX::RenderOutput::OM_WINDOW && output->GetWindow()->GetCore() == wnd)
+                  output->GetWindow()->OnResized();
+         break;
+      }
+
       case SDL_EVENT_KEY_UP:
       case SDL_EVENT_KEY_DOWN:
          isPFWnd = (SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore()) || IsVR();

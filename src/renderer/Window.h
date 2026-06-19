@@ -70,7 +70,8 @@ public:
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
    void SetPos(const int x, const int y);
-   void SetSize(const int w, const int h); // This only changes the window size, without adjusting its backbuffer
+   void SetSize(const int w, const int h); // Request a new window size, applied asynchronously by the window manager (acknowledged through OnResized)
+   void OnResized(); // To be called when the window manager resized the window: updates the cached sizes and recreates the swapchain of ancillary windows
    void Show(const bool show = true);
    bool IsVisible() const;
    void RaiseAndFocus();
@@ -126,6 +127,9 @@ private:
    const bool m_isVR;
 
    class RenderTarget* m_backBuffer = nullptr;
+
+   uint64_t m_resizeRequestTick = 0; // Last unacknowledged resize request, 0 for none (see SetSize/OnResized)
+   int m_pendingWidth = -1, m_pendingHeight = -1; // Size requested while another request was in flight
 
    SDL_Window* m_nwnd = nullptr;
 };
