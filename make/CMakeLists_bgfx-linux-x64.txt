@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+option(VPINBALL_BUILD_TESTS "Build the doctest based unit tests" OFF)
 
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -129,3 +130,7 @@ endif()
 set(PluginPlatform "linux")
 set(PluginArch "x64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
+
+if(VPINBALL_BUILD_TESTS)
+   include("${CMAKE_SOURCE_DIR}/make/CMakeLists_test.txt")
+endif()

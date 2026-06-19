@@ -1,0 +1,43 @@
+
+# Unit test target (doctest based). Opt-in via -DVPINBALL_BUILD_TESTS=ON.
+# doctest is fetched at configure time rather than vendored in the repository.
+# Must be included after the `vpinball` target is defined: the test executable reuses
+# its include directories, compile definitions/options and link libraries verbatim.
+
+# doctest is header-only, so fetch just the sources and skip its CMake project
+# (SOURCE_SUBDIR points at a non-existent dir so MakeAvailable does not add_subdirectory it).
+# We expose the header through an interface target ourselves.
+include(FetchContent)
+FetchContent_Declare(
+   doctest
+   GIT_REPOSITORY https://github.com/doctest/doctest.git
+   GIT_TAG v2.4.11
+   SOURCE_SUBDIR do-not-configure
+)
+FetchContent_MakeAvailable(doctest)
+
+add_library(doctest INTERFACE)
+target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})
+
+# Same translation units as the app, minus its main() entry point (the tests provide their own).
+set(VPX_TEST_ENGINE_SOURCES ${VPX_STANDALONE_SOURCES})
+list(REMOVE_ITEM VPX_TEST_ENGINE_SOURCES src/core/main.cpp)
+
+add_executable(vpx-test
+   ${VPX_TEST_ENGINE_SOURCES}
+
+   src/input/OpenPinDevHandler.cpp
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+
+   tests/unit/main.cpp
+   tests/unit/test_settings_defaults.cpp
+)
+
+target_include_directories(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,INCLUDE_DIRECTORIES>)
+target_compile_definitions(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,COMPILE_DEFINITIONS>)
+target_compile_options(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,COMPILE_OPTIONS>)
+target_link_directories(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,LINK_DIRECTORIES>)
+target_link_libraries(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,LINK_LIBRARIES> doctest)
+
+enable_testing()
+add_test(NAME vpx-unit COMMAND vpx-test)
