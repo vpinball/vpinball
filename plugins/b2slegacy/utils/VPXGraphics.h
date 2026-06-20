@@ -1,10 +1,12 @@
 #pragma once
 
 /*
- * Portions of this code was derived from SDL_gfx and BBCSDL:
+ * Portions of this code was derived from SDL_gfx, BBCSDL, and Wine:
  *
  * https://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx
  * https://github.com/rtrussell/BBCSDL/blob/master/src/SDL2_gfxPrimitives.c
+ * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/graphics.c
+ * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/gdiplus_private.h
  */
 
 #include "common.h"
@@ -45,15 +47,14 @@ private:
    struct GradientData {
       float cx = 0.0f;
       float cy = 0.0f;
-      float uniformInner = 0.0f;
+      float uniformInner = 1.0f;
       std::vector<SDL_FPoint> outer;
       std::vector<SDL_FPoint> inner;
-      float centerColor[4] {};
-      float surroundColor[4] {};
+      uint32_t centerArgb = 0;
+      uint32_t surroundArgb = 0;
    };
 
    void InitGradientData(GradientData& gradientData, PathGradientBrush* pBrush);
-   static float RayBoundaryDistance(const std::vector<SDL_FPoint>& polygon, float cx, float cy, float dx, float dy);
    static void GradientColorAt(const GradientData& gradientData, float x, float y, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& a);
    void FillPolygon(const std::vector<SDL_FPoint>& points, const GradientData* pGradientData = nullptr);
    void DrawPolygonOutline(const std::vector<SDL_FPoint>& points);
