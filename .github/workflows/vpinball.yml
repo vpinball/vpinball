@@ -189,7 +189,7 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build
         run: |
-          CMAKE_ARGS="-DTARGET=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
+          CMAKE_ARGS="-DRENDERER=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
           if [[ "${{ matrix.platform }}" == "windows-mingw" ]]; then
             CURRENT_DIR="$(pwd)"
             MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
@@ -339,7 +339,7 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build
         run : |
-          CMAKE_ARGS="-DTARGET=DX9 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
+          CMAKE_ARGS="-DRENDERER=DX9 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
             cmake ${CMAKE_ARGS} -G "Visual Studio 18 2026" -A x64 -B build
           else
@@ -416,7 +416,7 @@ jobs:
           elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
             OPTIONS="-DBUILD_RK3588=ON"
           fi
-          cmake -DTARGET=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
+          cmake -DRENDERER=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
           cmake --build build/${{ matrix.config }} -- -j$(nproc)
       - name: Stage artifacts
         run: |
@@ -484,7 +484,6 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build libvpinball
         run: |
-          cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
           cmake \
                 -DPLATFORM=ios \
                 -DARCH=arm64 \
@@ -564,7 +563,6 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build libvpinball
         run: |
-          cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
           if [[ "${{ matrix.flavor }}" == "quest" ]]; then
             cmake \
                   -DPLATFORM=android \

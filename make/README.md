@@ -45,23 +45,21 @@ By default the build targets the BGFX renderer for the current host platform and
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 ```
 
-To build a different backend, platform or architecture, override `-DTARGET`, `-DPLATFORM` and/or `-DARCH`:
+To build a different backend, platform or architecture, override `-DRENDERER`, `-DPLATFORM` and/or `-DARCH`:
 
 ```bash
-cmake -DTARGET=GL -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DRENDERER=GL -DCMAKE_BUILD_TYPE=Release -B build
 cmake -DPLATFORM=windows -DARCH=x86 -B build
 ```
 
-* `TARGET` is the renderer backend:
+* `RENDERER` is the renderer backend:
   * `BGFX` (recommended) - uses [bgfx](https://github.com/bkaradzic/bgfx) to support multiple rendering backends
   * `GL` - OpenGL
   * `DX9` - DirectX 9
 * `PLATFORM` defaults to the host (`linux`, `macos`, `windows`, ...) and should match the one you used to build the external dependencies.
 * `ARCH` defaults to the host (`x64`, `arm64`, ...).
 
-These select a `make/CMakeLists_<target>-<platform>-<arch>.txt` file; an unknown combination prints the list of available targets. The iOS/Android library builds are not handled by the dispatcher (they must set their cross-compile toolchain before `project()`); they use `make/CMakeLists_bgfx_lib.txt` directly - see those sections below.
-
-The previous flow of copying a per-target file over the root `CMakeLists.txt` (`cp make/CMakeLists_<target>.txt CMakeLists.txt`) still works as a fallback; the dispatcher just makes it unnecessary. Note that the root `CMakeLists.txt` is now tracked, so after such a copy run `git checkout CMakeLists.txt` to restore the dispatcher.
+All combinations — including the iOS/Android shared-library builds — are handled by the single root `CMakeLists.txt`; an unsupported combination prints the list of supported ones. The source manifests live in `make/CMakeLists_sources.txt` and the plugins in `make/CMakeLists_plugins.txt`.
 
 #### Supported Platforms
 
@@ -140,7 +138,6 @@ brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 platforms/ios-arm64/external.sh
 #platforms/ios-simulator-arm64/external.sh
-cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=ios -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build/ios-arm64
 cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
 #cmake -DPLATFORM=ios-simulator -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build/ios-simulator-arm64
@@ -163,7 +160,6 @@ export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
 export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
-cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
 cd standalone/android
@@ -182,7 +178,6 @@ export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
 export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
 platforms/android-arm64-v8a/external.sh
-cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
 cd standalone/android
@@ -231,7 +226,6 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 ```
 sudo pacman -Sy cmake nasm git
 platforms/linux-x64/external.sh
-cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
@@ -265,7 +259,7 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx
 sudo apt-get update
 sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev libwayland-dev autotools-dev libdrm-etnaviv1 libegl-dev libglvnd-core-dev libltdl-dev libspa-0.2-dev libxrender-dev cmake-data libdrm-freedreno1 libffi-dev libglvnd-dev libpciaccess-dev libwayland-bin m4 libcap-dev libdrm-tegra0 libgles-dev libjsoncpp26 librhash1 libxfixes-dev libgpiod-dev
 platforms/linux-aarch64/external.sh
-cmake -DTARGET=GL -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DRENDERER=GL -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
 build/VPinballX_GL -play src/assets/exampleTable.vpx

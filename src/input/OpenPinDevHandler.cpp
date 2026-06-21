@@ -8,6 +8,8 @@
 // target platforms (particularly the mobile platforms) have limited or
 // no support for the sort of low-level HID access we need.
 
+#ifndef __LIBVPINBALL__
+
 #include "core/stdafx.h"
 #include "input/OpenPinDevHandler.h"
 
@@ -479,3 +481,5 @@ void OpenPinDevHandler::Update()
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
       p->ReadReport();
 }
+
+#endif

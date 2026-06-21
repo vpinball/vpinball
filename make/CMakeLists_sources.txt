@@ -1,11 +1,3 @@
-# common CMakeLists file shared by all build targets
-
-add_compile_definitions($<$<CONFIG:Release>:IMGUI_DISABLE_DEBUG_TOOLS>)
-add_compile_options(
-   $<$<CXX_COMPILER_ID:MSVC>:/we4172>
-   $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Werror=return-local-addr>
-)
-
 set(VPX_SOURCES
    plugins/plugins/MsgPlugin.h
    plugins/plugins/MsgPluginManager.h
@@ -74,6 +66,8 @@ set(VPX_SOURCES
    src/input/InputAction.cpp
    src/input/InputManager.h
    src/input/InputManager.cpp
+   src/input/OpenPinDevHandler.h
+   src/input/OpenPinDevHandler.cpp
    src/input/PhysicsSensor.h
    src/input/PhysicsSensor.cpp
    src/input/PlungerHandler.h
@@ -82,6 +76,7 @@ set(VPX_SOURCES
    src/input/SensorMapping.h
    src/input/SensorMapping.cpp
    src/input/SDLInputHandler.h
+   src/input/XRInputHandler.h
 
    src/math/bbox.h
    src/math/ExponentialMovingAverage.h
@@ -263,6 +258,10 @@ set(VPX_SOURCES
    src/renderer/VRDevice.h
    src/renderer/Window.cpp
    src/renderer/Window.h
+   src/renderer/XRD3D11Backend.h
+   src/renderer/XRD3D12Backend.h
+   src/renderer/XRGraphicBackend.h
+   src/renderer/XRVulkanBackend.h
 
    src/ui/VPXFileFeedback.h
 
@@ -437,6 +436,8 @@ set(VPX_SOURCES
    third-party/include/imgui/imgui_tables.cpp
    third-party/include/imgui/imgui_widgets.cpp
    third-party/include/imgui/imgui_internal.h
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+   third-party/include/imgui/imgui_impl_sdl3.h
    third-party/include/imgui_markdown/imgui_markdown.h
    third-party/include/imguizmo/ImGuizmo.cpp
    third-party/include/imguizmo/ImGuizmo.h
@@ -456,4 +457,309 @@ set(VPX_SOURCES
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h
    third-party/include/unordered_dense.h
+)
+
+set(VPX_WINDOWS_SOURCES
+   ${VPX_SOURCES}
+
+   src/core/stdafx.cpp
+   src/core/stdafx.h
+
+   src/core/vpinball.idl
+
+   src/utils/StackTrace.cpp
+   src/utils/StackTrace.h
+   src/utils/MemoryStatus.cpp
+   src/utils/MemoryStatus.h
+   src/utils/BlackBox.cpp
+   src/utils/BlackBox.h
+   src/utils/CrashHandler.cpp
+   src/utils/CrashHandler.h
+
+   src/ui/win/DragPointDialogs.h
+   src/ui/win/DragPointDialogs.cpp
+   src/ui/win/paintsur.cpp
+   src/ui/win/paintsur.h
+   src/ui/win/worker.cpp
+   src/ui/win/worker.h
+   src/ui/win/resource.h
+   src/ui/win/Debugger.cpp
+   src/ui/win/Debugger.h
+   src/ui/win/vpinball.rc
+
+   src/ui/win/dialogs/AboutDialog.cpp
+   src/ui/win/dialogs/AboutDialog.h
+   src/ui/win/dialogs/CollectionManagerDialog.cpp
+   src/ui/win/dialogs/CollectionManagerDialog.h
+   src/ui/win/dialogs/DimensionDialog.cpp
+   src/ui/win/dialogs/DimensionDialog.h
+   src/ui/win/dialogs/DrawingOrderDialog.cpp
+   src/ui/win/dialogs/DrawingOrderDialog.h
+   src/ui/win/dialogs/EditorOptionsDialog.cpp
+   src/ui/win/dialogs/EditorOptionsDialog.h
+   src/ui/win/dialogs/ImageDialog.cpp
+   src/ui/win/dialogs/ImageDialog.h
+   src/ui/win/dialogs/PlayerOptionsDialog.cpp
+   src/ui/win/dialogs/PlayerOptionsDialog.h
+   src/ui/win/dialogs/LayersListDialog.cpp
+   src/ui/win/dialogs/LayersListDialog.h
+   src/ui/win/dialogs/MaterialDialog.cpp
+   src/ui/win/dialogs/MaterialDialog.h
+   src/ui/win/dialogs/NotesDialog.cpp
+   src/ui/win/dialogs/NotesDialog.h
+   src/ui/win/dialogs/ScriptErrorDialog.cpp
+   src/ui/win/dialogs/ScriptErrorDialog.h
+   src/ui/win/dialogs/RenderProbeDialog.cpp
+   src/ui/win/dialogs/RenderProbeDialog.h
+   src/ui/win/dialogs/PhysicsOptionsDialog.cpp
+   src/ui/win/dialogs/PhysicsOptionsDialog.h
+   src/ui/win/dialogs/WhereUsedDialog.cpp
+   src/ui/win/dialogs/WhereUsedDialog.h
+   src/ui/win/dialogs/SearchSelectDialog.cpp
+   src/ui/win/dialogs/SearchSelectDialog.h
+   src/ui/win/dialogs/SoundDialog.cpp
+   src/ui/win/dialogs/SoundDialog.h
+   src/ui/win/dialogs/TableInfoDialog.cpp
+   src/ui/win/dialogs/TableInfoDialog.h
+   src/ui/win/dialogs/ToolbarDialog.cpp
+   src/ui/win/dialogs/ToolbarDialog.h
+   src/ui/win/dialogs/VPXLoadFileProgressBar.cpp
+   src/ui/win/dialogs/VPXLoadFileProgressBar.h
+   src/ui/win/dialogs/VPXSaveFileProgressBar.cpp
+   src/ui/win/dialogs/VPXSaveFileProgressBar.h
+
+   src/ui/win/properties/BackglassCameraProperty.cpp
+   src/ui/win/properties/BackglassCameraProperty.h
+   src/ui/win/properties/BackglassVisualsProperty.cpp
+   src/ui/win/properties/BackglassVisualsProperty.h
+   src/ui/win/properties/BallPhysicsProperty.cpp
+   src/ui/win/properties/BallPhysicsProperty.h
+   src/ui/win/properties/BallVisualsProperty.cpp
+   src/ui/win/properties/BallVisualsProperty.h
+   src/ui/win/properties/BumperPhysicsProperty.cpp
+   src/ui/win/properties/BumperPhysicsProperty.h
+   src/ui/win/properties/BumperVisualsProperty.cpp
+   src/ui/win/properties/BumperVisualsProperty.h
+   src/ui/win/properties/DecalVisualsProperty.cpp
+   src/ui/win/properties/DecalVisualsProperty.h
+   src/ui/win/properties/DispreelStateProperty.cpp
+   src/ui/win/properties/DispreelStateProperty.h
+   src/ui/win/properties/DispreelVisualsProperty.cpp
+   src/ui/win/properties/DispreelVisualsProperty.h
+   src/ui/win/properties/DragpointVisualsProperty.cpp
+   src/ui/win/properties/DragpointVisualsProperty.h
+   src/ui/win/properties/FlasherVisualsProperty.cpp
+   src/ui/win/properties/FlasherVisualsProperty.h
+   src/ui/win/properties/FlipperPhysicsProperty.cpp
+   src/ui/win/properties/FlipperVisualsProperty.h
+   src/ui/win/properties/FlipperPhysicsProperty.h
+   src/ui/win/properties/FlipperVisualsProperty.cpp
+   src/ui/win/properties/GatePhysicsProperty.cpp
+   src/ui/win/properties/GatePhysicsProperty.h
+   src/ui/win/properties/GateVisualsProperty.cpp
+   src/ui/win/properties/GateVisualsProperty.h
+   src/ui/win/properties/HitTargetPhysicsProperty.cpp
+   src/ui/win/properties/HitTargetPhysicsProperty.h
+   src/ui/win/properties/HitTargetVisualsProperty.cpp
+   src/ui/win/properties/HitTargetVisualsProperty.h
+   src/ui/win/properties/KickerPhysicsProperty.cpp
+   src/ui/win/properties/KickerPhysicsProperty.h
+   src/ui/win/properties/KickerVisualsProperty.cpp
+   src/ui/win/properties/KickerVisualsProperty.h
+   src/ui/win/properties/LightseqStatesProperty.cpp
+   src/ui/win/properties/LightseqStatesProperty.h
+   src/ui/win/properties/LightStatesProperty.cpp
+   src/ui/win/properties/LightStatesProperty.h
+   src/ui/win/properties/LightVisualsProperty.cpp
+   src/ui/win/properties/LightVisualsProperty.h
+   src/ui/win/properties/PartGroupVisualsProperty.cpp
+   src/ui/win/properties/PartGroupVisualsProperty.h
+   src/ui/win/properties/PlungerPhysicsProperty.cpp
+   src/ui/win/properties/PlungerPhysicsProperty.h
+   src/ui/win/properties/PlungerVisualsProperty.cpp
+   src/ui/win/properties/PlungerVisualsProperty.h
+   src/ui/win/properties/PrimitivePhysicsProperty.cpp
+   src/ui/win/properties/PrimitivePhysicsProperty.h
+   src/ui/win/properties/PrimitivePositionProperty.cpp
+   src/ui/win/properties/PrimitivePositionProperty.h
+   src/ui/win/properties/PrimitiveVisualsProperty.cpp
+   src/ui/win/properties/PrimitiveVisualsProperty.h
+   src/ui/win/properties/PropertyDialog.cpp
+   src/ui/win/properties/PropertyDialog.h
+   src/ui/win/properties/RampPhysicsProperty.cpp
+   src/ui/win/properties/RampPhysicsProperty.h
+   src/ui/win/properties/RampVisualsProperty.cpp
+   src/ui/win/properties/RampVisualsProperty.h
+   src/ui/win/properties/RubberPhysicsProperty.cpp
+   src/ui/win/properties/RubberPhysicsProperty.h
+   src/ui/win/properties/RubberVisualsProperty.cpp
+   src/ui/win/properties/RubberVisualsProperty.h
+   src/ui/win/properties/SpinnerPhysicsProperty.cpp
+   src/ui/win/properties/SpinnerVisualsProperty.h
+   src/ui/win/properties/SpinnerVisualsProperty.cpp
+   src/ui/win/properties/SpinnerPhysicsProperty.h
+   src/ui/win/properties/TableAudioProperty.cpp
+   src/ui/win/properties/TableAudioProperty.h
+   src/ui/win/properties/TableLightsProperty.cpp
+   src/ui/win/properties/TableLightsProperty.h
+   src/ui/win/properties/TablePhysicsProperty.cpp
+   src/ui/win/properties/TablePhysicsProperty.h
+   src/ui/win/properties/TableVisualsProperty.cpp
+   src/ui/win/properties/TableVisualsProperty.h
+   src/ui/win/properties/TextboxVisualsProperty.cpp
+   src/ui/win/properties/TextboxVisualsProperty.h
+   src/ui/win/properties/TriggerPhysicsProperty.cpp
+   src/ui/win/properties/TriggerPhysicsProperty.h
+   src/ui/win/properties/TriggerVisualsProperty.cpp
+   src/ui/win/properties/TriggerVisualsProperty.h
+   src/ui/win/properties/WallPhysicsProperty.cpp
+   src/ui/win/properties/WallPhysicsProperty.h
+   src/ui/win/properties/WallVisualsProperty.cpp
+   src/ui/win/properties/WallVisualsProperty.h
+
+   src/ui/win/res/ball.rgs
+   src/ui/win/res/bumper.rgs
+   src/ui/win/res/hittarget.rgs
+   src/ui/win/res/dispreel.rgs
+   src/ui/win/res/dragpoint.rgs
+   src/ui/win/res/flasher.rgs
+   src/ui/win/res/rubber.rgs
+   src/ui/win/res/flipper.rgs
+   src/ui/win/res/gate.rgs
+   src/ui/win/res/kicker.rgs
+   src/ui/win/res/light.rgs
+   src/ui/win/res/lightseq.rgs
+   src/ui/win/res/pieventhandler.rgs
+   src/ui/win/res/plunger.rgs
+   src/ui/win/res/primitive.rgs
+   src/ui/win/res/ramp.rgs
+   src/ui/win/res/spinner.rgs
+   src/ui/win/res/surface.rgs
+   src/ui/win/res/textbox.rgs
+   src/ui/win/res/timer.rgs
+   src/ui/win/res/trigger.rgs
+   src/ui/win/res/vpinball.rgs
+
+   third-party/include/freeimage.h
+   third-party/include/serial.cpp
+   third-party/include/serial.h
+   third-party/include/hidapi/windows/hid.cpp
+   third-party/include/nvapi/nvapi.h
+   third-party/include/nvapi/nvapi_lite_common.h
+   third-party/include/nvapi/nvapi_lite_d3dext.h
+   third-party/include/nvapi/nvapi_lite_salend.h
+   third-party/include/nvapi/nvapi_lite_salstart.h
+   third-party/include/nvapi/nvapi_lite_sli.h
+   third-party/include/nvapi/nvapi_lite_stereo.h
+   third-party/include/nvapi/nvapi_lite_surround.h
+   third-party/include/scilexer.h
+   third-party/include/scintilla.h
+   third-party/include/Sci_Position.h
+   third-party/include/win32xx/include/wxx_appcore.h
+   third-party/include/win32xx/include/wxx_appcore0.h
+   third-party/include/win32xx/include/wxx_archive.h
+   third-party/include/win32xx/include/wxx_commondlg.h
+   third-party/include/win32xx/include/wxx_criticalsection.h
+   third-party/include/win32xx/include/wxx_controls.h
+   third-party/include/win32xx/include/wxx_cstring.h
+   third-party/include/win32xx/include/wxx_ddx.h
+   third-party/include/win32xx/include/wxx_dialog.h
+   third-party/include/win32xx/include/wxx_dockframe.h
+   third-party/include/win32xx/include/wxx_docking.h
+   third-party/include/win32xx/include/wxx_exception.h
+   third-party/include/win32xx/include/wxx_file.h
+   third-party/include/win32xx/include/wxx_filefind.h
+   third-party/include/win32xx/include/wxx_folderdialog.h
+   third-party/include/win32xx/include/wxx_frame.h
+   third-party/include/win32xx/include/wxx_gdi.h
+   third-party/include/win32xx/include/wxx_hglobal.h
+   third-party/include/win32xx/include/wxx_imagelist.h
+   third-party/include/win32xx/include/wxx_listview.h
+   third-party/include/win32xx/include/wxx_mdi.h
+   third-party/include/win32xx/include/wxx_menu.h
+   third-party/include/win32xx/include/wxx_menubar.h
+   third-party/include/win32xx/include/wxx_menumetrics.h
+   third-party/include/win32xx/include/wxx_messagepump.h
+   third-party/include/win32xx/include/wxx_messagepump0.h
+   third-party/include/win32xx/include/wxx_metafile.h
+   third-party/include/win32xx/include/wxx_mutex.h
+   third-party/include/win32xx/include/wxx_printdialogs.h
+   third-party/include/win32xx/include/wxx_propertysheet.h
+   third-party/include/win32xx/include/wxx_rebar.h
+   third-party/include/win32xx/include/wxx_rect.h
+   third-party/include/win32xx/include/wxx_regkey.h
+   third-party/include/win32xx/include/wxx_ribbon.h
+   third-party/include/win32xx/include/wxx_richedit.h
+   third-party/include/win32xx/include/wxx_scrollview.h
+   third-party/include/win32xx/include/wxx_setup.h
+   third-party/include/win32xx/include/wxx_socket.h
+   third-party/include/win32xx/include/wxx_statusbar.h
+   third-party/include/win32xx/include/wxx_stdcontrols.h
+   third-party/include/win32xx/include/wxx_tab.h
+   third-party/include/win32xx/include/wxx_taskdialog.h
+   third-party/include/win32xx/include/wxx_textconv.h
+   third-party/include/win32xx/include/wxx_themes.h
+   third-party/include/win32xx/include/wxx_thread.h
+   third-party/include/win32xx/include/wxx_time.h
+   third-party/include/win32xx/include/wxx_toolbar.h
+   third-party/include/win32xx/include/wxx_treeview.h
+   third-party/include/win32xx/include/wxx_webbrowser.h
+   third-party/include/win32xx/include/wxx_wincore.h
+   third-party/include/win32xx/include/wxx_wincore0.h
+   third-party/include/winsdk/hidpi.h
+   third-party/include/winsdk/hidsdi.h
+   third-party/include/winsdk/hidusage.h
+)
+
+set(VPX_STANDALONE_SOURCES
+   ${VPX_SOURCES}
+
+   standalone/vpinball_standalone_i.c
+   standalone/vpinball_standalone_i.h
+   standalone/vpinball_standalone_i_proxy.cpp
+   standalone/PoleStream.cpp
+   standalone/PoleStorage.cpp
+
+   third-party/include/pole/pole.cpp
+)
+
+set(VPX_LIB_SOURCES
+   ${VPX_STANDALONE_SOURCES}
+
+   lib/src/VPinballLib.h
+   lib/src/VPinballLib.cpp
+   lib/src/WebServer.h
+   lib/src/WebServer.cpp
+   lib/src/ZipUtils.h
+   lib/src/ZipUtils.cpp
+   lib/include/vpinball/VPinballLib_C.h
+   lib/src/VPinballLib_C.cpp
+   lib/src/VPXProgress.h
+   lib/src/VPXProgress.cpp
+
+   third-party/include/mongoose/mongoose.c
+   third-party/include/mongoose/mongoose.h
+)
+
+set(VPX_GL_SHADERS
+   BallShader.glfx
+   BallShadows.fxh
+   BasicShader.glfx
+   ClassicLightShader.glfx
+   DMDShader.glfx
+   DMDShaderVR.glfx
+   FBShader.fxh
+   FBShader.glfx
+   FlasherShader.glfx
+   FAAA.fxh
+   FXAAStereoAO_GL.fxh
+   Helpers.fxh
+   LightShader.glfx
+   Material_GL.fxh
+   SMAA.fxh
+   SMAA.glfx
+   SSR_GL.fxh
+   Stereo.fxh
+   StereoShader.glfx
+   UIShader.glfx
 )
