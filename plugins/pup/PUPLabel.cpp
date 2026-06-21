@@ -65,16 +65,17 @@ static SDL_Surface* RotateSurface(SDL_Surface* const src, float angleDeg)
 
    for (int dy = 0; dy < dstH; dy++)
    {
-      for (int dx = 0; dx < dstW; dx++)
+      int ofs = dy * dstPitch;
+      for (int dx = 0; dx < dstW; dx++,ofs++)
       {
-         const float rx = (dx - dstCx) * c + (dy - dstCy) * s + srcCx;
+         const float rx =  (dx - dstCx) * c + (dy - dstCy) * s + srcCx;
          const float ry = -(dx - dstCx) * s + (dy - dstCy) * c + srcCy;
          const int sx = (int)rx;
          const int sy = (int)ry;
          if (/*sx >= 0 &&*/ (unsigned int)sx < srcW && /*sy >= 0 &&*/ (unsigned int)sy < srcH)
-            dstPixels[dy * dstPitch + dx] = srcPixels[sy * srcPitch + sx];
+            dstPixels[ofs] = srcPixels[sy * srcPitch + sx];
          else
-            dstPixels[dy * dstPitch + dx] = 0;
+            dstPixels[ofs] = 0;
       }
    }
 
@@ -83,7 +84,7 @@ static SDL_Surface* RotateSurface(SDL_Surface* const src, float angleDeg)
    return dst;
 }
 
-// See pDMDLabelSetFilter — apply pixel filter to an RGBA32 surface
+// See pDMDLabelSetFilter - apply pixel filter to an RGBA32 surface
 // fmode: 1=invertRGB, 2=invert(+alpha), 3=grayscale, 4=invertalpha, 5=clear
 static void ApplyFilter(SDL_Surface* surf, int filterMode)
 {
@@ -280,7 +281,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          switch (json["at"s].as<int>(0))
          {
          case 1:
-            // See pDMDLabelFlash — fq is the toggle interval in milliseconds, fc is optional
+            // See pDMDLabelFlash - fq is the toggle interval in milliseconds, fc is optional
             if (json["len"s].exists() && json["fq"s].exists() && json["fq"s].as<int>() > 0)
                m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(), json["fc"s].as<int>(m_color), json["fq"s].as<int>());
             else
@@ -291,7 +292,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             
          case 2:
             // See pDMDLabelMoveHorz / pDMDLabelMoveVert / pDMDLabelMoveTO
-            // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade — af = alpha fade start time (ms before end)
+            // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade - af = alpha fade start time (ms before end)
             if (json["len"s].exists())
             {
                int len = json["len"s].as<int>();
@@ -311,7 +312,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          case 3:
          {
-            // See pDMDZoomBig — zoom from hstart% to hend% over len ms
+            // See pDMDZoomBig - zoom from hstart% to hend% over len ms
             float hstart = static_cast<float>(json["hstart"s].as<double>(100));  // default 100% (normal size)
             float hend = static_cast<float>(json["hend"s].as<double>(200));    // default 200% (double size)
             m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), hstart, hend, 0);  // 1000ms fallback
@@ -320,52 +321,52 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          case 4:
          {
-            // See pDMDLabelPulseText / pDMDLabelPulseImage — bounce zoom between hstart% and hend%
-            // See pDMDLabelPulseNumber — numstart/numend count up during animation.
+            // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart% and hend%
+            // See pDMDLabelPulseNumber - numstart/numend count up during animation.
             // pspeed=0 means use a default bounce speed derived from the zoom range.
-            float hstart = static_cast<float>(json["hstart"s].as<double>(80));   // default 80% from pDMDLabelPulseText
-            float hend = static_cast<float>(json["hend"s].as<double>(120));      // default 120% from pDMDLabelPulseText
+            float hstart = static_cast<float>(json["hstart"s].as<double>(80)); // default 80% from pDMDLabelPulseText
+            float hend = static_cast<float>(json["hend"s].as<double>(120));    // default 120% from pDMDLabelPulseText
             int pspeed = json["pspeed"s].as<int>(0);
             if (pspeed == 0)
                pspeed = std::max(1, static_cast<int>(hend - hstart));
             m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), hstart, hend, pspeed);  // 3000ms fallback if len missing
-            m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN);   // INT_MIN = no number counting
+            m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN); // INT_MIN = no number counting
             m_animation->m_numEnd = json["numend"s].as<int>(INT_MIN);
-            m_animation->m_numFormat = json["numformat"s].as<int>(0);       // 0=plain, 1=thousands separators
+            m_animation->m_numFormat = json["numformat"s].as<int>(0);     // 0=plain, 1=thousands separators
             break;
          }
 
          case 5:
          {
-            // See pDMDLabelFadeOut / pDMDLabelFadeIn — alpha ease from astart to aend over len ms
-            int astart = json["astart"s].as<int>(255);   // default 255 (fully visible) from pDMDLabelFadeOut
-            int aend = json["aend"s].as<int>(0);          // default 0 (invisible) from pDMDLabelFadeOut
+            // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over len ms
+            int astart = json["astart"s].as<int>(255); // default 255 (fully visible) from pDMDLabelFadeOut
+            int aend = json["aend"s].as<int>(0);       // default 0 (invisible) from pDMDLabelFadeOut
             m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, false);  // 1000ms fallback
             break;
          }
 
          case 6:
          {
-            // See pDMDLabelFadePulse — alpha oscillates between astart and aend
-            int astart = json["astart"s].as<int>(70);    // default 70 (dim) from pDMDLabelFadePulse
-            int aend = json["aend"s].as<int>(255);        // default 255 (full) from pDMDLabelFadePulse
-            int pspeed = json["pspeed"s].as<int>(40);     // default 40 (alpha units per tick) from pDMDLabelFadePulse
+            // See pDMDLabelFadePulse - alpha oscillates between astart and aend
+            int astart = json["astart"s].as<int>(70); // default 70 (dim) from pDMDLabelFadePulse
+            int aend = json["aend"s].as<int>(255);    // default 255 (full) from pDMDLabelFadePulse
+            int pspeed = json["pspeed"s].as<int>(40); // default 40 (alpha units per tick) from pDMDLabelFadePulse
             m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), astart, aend, pspeed, false);  // 3000ms fallback
             break;
          }
 
          case 7:
          {
-            // See pDMDScreenFadeOut / pDMDScreenFadeIn — same as at=5 but for parent screen
-            int astart = json["astart"s].as<int>(255);   // default 255 from pDMDScreenFadeOut
-            int aend = json["aend"s].as<int>(0);          // default 0 from pDMDScreenFadeOut
+            // See pDMDScreenFadeOut / pDMDScreenFadeIn - same as at=5 but for parent screen
+            int astart = json["astart"s].as<int>(255); // default 255 from pDMDScreenFadeOut
+            int aend = json["aend"s].as<int>(0);       // default 0 from pDMDScreenFadeOut
             m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, true);  // 1000ms fallback
             break;
          }
 
          case 8:
          {
-            // See pDMDLabelWiggleText / pDMDLabelWiggleImage — rotation bounces between rstart and rend
+            // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend
             float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f;  // default -4.5 deg from pDMDLabelWiggleText
             float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f;       // default +4.5 deg from pDMDLabelWiggleText
             int rspeed = json["rspeed"s].as<int>(5);   // default 5 from pDMDLabelWiggleText, 0 = use range as speed
@@ -376,8 +377,8 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
 
          case 10:
-            // See pDMDLabelClone / pDMDLabelCloneDelay — delayed show.
-            // True cloning (creating a duplicate label) is not yet implemented.
+            // See pDMDLabelClone / pDMDLabelCloneDelay - delayed show.
+            // True cloning (creating a duplicate label) is not yet implemented
             NOT_IMPLEMENTED("at=10 clone not implemented"s);
             break;
 
@@ -411,7 +412,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "size")
          {
-            // See pDMDLabelSetSizeText — height as percent of display height
+            // See pDMDLabelSetSizeText - height as percent of display height
             const float newSize = static_cast<float>(json["size"s].as<double>());
             if (m_size != newSize)
             {
@@ -421,7 +422,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "xpos")
          {
-            // See pDMDLabelSetPos — position as percent of display width/height
+            // See pDMDLabelSetPos - position as percent of display width/height
             m_xPos = static_cast<float>(value.as<double>());
          }
          else if (key == "ypos")
@@ -461,7 +462,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "xalign")
          {
-            // See PDMDLabelSetAlign — 0=left 1=center 2=right, 0=top 1=center 2=bottom
+            // See PDMDLabelSetAlign - 0=left 1=center 2=right, 0=top 1=center 2=bottom
             // Dirty because TTF_SetFontWrapAlignment uses xAlign for multi-line text justification
             const PUP_LABEL_XALIGN newXAlign = (PUP_LABEL_XALIGN)value.as<int>();
             if (m_xAlign != newXAlign)
@@ -480,7 +481,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "stopani")
          {
-            // See pDMDLabelStopAnis — stop any pup animations on label/image (zoom/flash/pulse), not animated gifs
+            // See pDMDLabelStopAnis - stop any pup animations on label/image (zoom/flash/pulse), not animated gifs
             m_animation = nullptr;
             m_alpha = 1.0f;
             m_zoom = 100.0f;
@@ -492,7 +493,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "rotate")
          {
-            // See pDMDLabelSetRotate — in tenths, so 900 is 90 degrees. rotate support for images too.
+            // See pDMDLabelSetRotate - in tenths, so 900 is 90 degrees. rotate support for images too.
             // note images must be aligned center to rotate properly(default)
             const float newAngle = static_cast<float>(value.as<double>() / 10.0);
             if (m_angle != newAngle)
@@ -503,17 +504,17 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "zoom")
          {
-            // See pDMDLabelSetZoom — 120 for 120% of current height, 80% etc...
+            // See pDMDLabelSetZoom - 120 for 120% of current height, 80% etc...
             m_zoom = static_cast<float>(value.as<double>());
          }
          else if (key == "alpha")
          {
-            // See pDMDLabelSetAlpha — 0-255  255=full, 0=blank
+            // See pDMDLabelSetAlpha - 0-255  255=full, 0=blank
             m_alpha = saturate((float)value.as<int>() / 255.0f);
          }
          else if (key == "gradstate")
          {
-            // See pDMDLabelSetColorGradient — gradstate controls gradient blend (0=off, 1+=on)
+            // See pDMDLabelSetColorGradient - gradstate controls gradient blend (0=off, 1+=on)
             const int newGradState = value.as<int>();
             if (m_gradState != newGradState)
             {
@@ -523,7 +524,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "gradcolor")
          {
-            // See pDMDLabelSetColorGradientPercent — end color of the vertical gradient
+            // See pDMDLabelSetColorGradientPercent - end color of the vertical gradient
             const int newGradColor = value.as<int>();
             if (m_gradColor != newGradColor)
             {
@@ -533,7 +534,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "grayscale")
          {
-            // See pDMDLabelSetGrayScale — shortcut for filter mode 3 on images. 1=on, 0=off
+            // See pDMDLabelSetGrayScale - shortcut for filter mode 3 on images. 1=on, 0=off
             const int newFilterMode = (value.as<int>() == 1) ? 3 : 0;
             if (m_filterMode != newFilterMode)
             {
@@ -543,7 +544,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "filter")
          {
-            // See pDMDLabelSetFilter — fmode 1=invertRGB, 2=invert, 3=grayscale, 4=invertalpha, 5=clear/blur
+            // See pDMDLabelSetFilter - fmode 1=invertRGB, 2=invert, 3=grayscale, 4=invertalpha, 5=clear/blur
             const int newFilterMode = value.as<int>();
             if (m_filterMode != newFilterMode)
             {
@@ -583,7 +584,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "xoffset")
          {
-            // See pDMDLabelSetShadow / pDMDLabelSetBorder — shadow displacement as % of font height
+            // See pDMDLabelSetShadow / pDMDLabelSetBorder - shadow displacement as % of font height
             const float newXOffset = static_cast<float>(value.as<double>());
             if (m_xoffset != newXOffset)
             {
@@ -602,14 +603,14 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "anigif")
          {
-            // See pDMDPNGAnimate — speed is frame timer, 100 is ~30fps
+            // See pDMDPNGAnimate - speed is frame timer, 100 is ~30fps
             m_anigif = value.as<int>();
             m_animating = m_anigif > 0;
             m_dirty = true;
          }
          else if (key == "animate")
          {
-            // See pDMDPNGAnimate / pDMDPNGAnimateOnce — animation interval in ms, 0 stops
+            // See pDMDPNGAnimate / pDMDPNGAnimateOnce - animation interval in ms, 0 stops
             int interval = value.as<int>();
             if (interval < 1)
             {
@@ -632,12 +633,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "gifloop")
          {
-            // See pDMDPNGAnimateEx — 1=loop forever (default), 0=play once
+            // See pDMDPNGAnimateEx - 1=loop forever (default), 0=play once
             m_gifLoop = (value.as<int>() == 1);
          }
          else if (key == "gifstart")
          {
-            // See pDMDPNGAnimateEx / pDMDPNGShowFrame — start frame index, -1 resets to full range
+            // See pDMDPNGAnimateEx / pDMDPNGShowFrame - start frame index, -1 resets to full range
             m_gifStart = value.as<int>();
             if (m_gifStart < 0)
             {
@@ -649,23 +650,23 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "gifend")
          {
-            // See pDMDPNGAnimateEx / pDMDPNGShowFrame — end frame index, start==end shows single frame
+            // See pDMDPNGAnimateEx / pDMDPNGShowFrame - end frame index, start==end shows single frame
             m_gifEnd = value.as<int>();
             if (m_gifStart == m_gifEnd && m_gifEnd >= 0)
                m_dirty = true;
          }
          else if (key == "aniendhide")
          {
-            // See pDMDPNGAnimateOnce — 1=hide label when animation completes
+            // See pDMDPNGAnimateOnce - 1=hide label when animation completes
             m_hideOnAnimEnd = (value.as<int>() == 1);
          }
          else if (key == "anidispose")
          {
-            // See pDMDPNGAnimateOnceAndDispose — marks for cleanup after play
+            // See pDMDPNGAnimateOnceAndDispose - marks for cleanup after play
          }
          else if (key == "width")
          {
-            // See pDMDLabelSetSizeImage — width/height as percent of display dimensions
+            // See pDMDLabelSetSizeImage - width/height as percent of display dimensions
             const float newWidth = static_cast<float>(value.as<double>());
             if (m_imageWidth != newWidth)
             {
@@ -684,7 +685,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "autow")
          {
-            // See pDMDLabelSetAutoSize — auto-shrink font to fit within specified dimensions
+            // See pDMDLabelSetAutoSize - auto-shrink font to fit within specified dimensions
             const float newAutoW = static_cast<float>(value.as<double>());
             if (m_autoFitWidth != newAutoW)
             {
@@ -703,7 +704,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "outline")
          {
-            // See pDMDLabelSetBorder / pDMDLabelSetOutShadow — outline=1 upgrades shadow to border mode (type 2)
+            // See pDMDLabelSetBorder / pDMDLabelSetOutShadow - outline=1 upgrades shadow to border mode (type 2)
             const int newOutline = value.as<int>();
             const int newShadowType = (newOutline == 1) ? 2 : m_shadowType;
             if (m_outline != newOutline || m_shadowType != newShadowType)
@@ -946,7 +947,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       }
       else
       {
-         // See pDMDScreenFadeOut / pDMDScreenFadeIn — at=7 fades the entire screen
+         // See pDMDScreenFadeOut / pDMDScreenFadeIn - at=7 fades the entire screen
          if (m_animation->IsScreenFade() && m_pScreen)
             m_pScreen->m_screenAlpha = m_animation->m_alpha;
 
@@ -1117,25 +1118,25 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    TTF_SetFontWrapAlignment(pTTFFont,
       m_xAlign == PUP_LABEL_XALIGN_CENTER ? TTF_HORIZONTAL_ALIGN_CENTER :
       m_xAlign == PUP_LABEL_XALIGN_RIGHT  ? TTF_HORIZONTAL_ALIGN_RIGHT :
-                                             TTF_HORIZONTAL_ALIGN_LEFT);
+                                            TTF_HORIZONTAL_ALIGN_LEFT);
 
    string text = szCaption;
    if (m_pScreen && m_pScreen->m_padTextAlways)
    {
       // FN=46 / pDMDAlwaysPAD: ensure caption and each newline are bracketed by spaces.
       if (text.empty() || text.front() != ' ')
-         text.insert(0, " ");
+         text.insert(0, 1, ' ');
       if (text.back() != ' ')
          text += ' ';
       for (size_t pos = text.find('\n'); pos != string::npos; pos = text.find('\n', pos + 2))
       {
          if (pos > 0 && text[pos - 1] != ' ')
          {
-            text.insert(pos, " ");
+            text.insert(pos, 1, ' ');
             pos++;
          }
          if (pos + 1 >= text.size() || text[pos + 1] != ' ')
-            text.insert(pos + 1, " ");
+            text.insert(pos + 1, 1, ' ');
       }
    }
    std::replace_if(text.begin(), text.end(), [pTTFFont](char c) { return c != '\n' && !TTF_FontHasGlyph(pTTFFont, c); }, ' ');
@@ -1143,7 +1144,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    const int lineCount = 1 + static_cast<int>(std::count(text.begin(), text.end(), '\n'));
    rs.m_logicalHeight = fontHeight * static_cast<float>(lineCount);
 
-   // See pDMDLabelSetAutoSize — shrink font until text fits within autow/autoh dimensions
+   // See pDMDLabelSetAutoSize - shrink font until text fits within autow/autoh dimensions
    const float maxW = (m_autoFitWidth > 0) ? (m_autoFitWidth / 100.0f) * static_cast<float>(outHeight) * (16.0f / 9.0f) : 0;
    const float maxH = (m_autoFitHeight > 0) ? (m_autoFitHeight / 100.0f) * static_cast<float>(outHeight) : 0;
    float adjustedHeight = fontHeight;
@@ -1180,21 +1181,23 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
    if (m_gradState > 0)
    {
       SDL_LockSurface(pTextSurface);
-      uint32_t* const pixels = (uint32_t*)pTextSurface->pixels;
+      uint32_t* const __restrict pixels = (uint32_t*)pTextSurface->pixels;
       const int pitch = pTextSurface->pitch / 4;
       const int h = pTextSurface->h;
+      const int hm1 = (h > 1 ? h - 1 : 1);
       for (int y = 0; y < h; y++)
       {
-         const float t = (float)y / (float)(h > 1 ? h - 1 : 1);
-         const uint8_t gr = GetRValue(m_color) + static_cast<uint8_t>(t * (GetRValue(m_gradColor) - GetRValue(m_color)));
-         const uint8_t gg = GetGValue(m_color) + static_cast<uint8_t>(t * (GetGValue(m_gradColor) - GetGValue(m_color)));
-         const uint8_t gb = GetBValue(m_color) + static_cast<uint8_t>(t * (GetBValue(m_gradColor) - GetBValue(m_color)));
-         for (int x = 0; x < pTextSurface->w; x++)
+         const uint32_t gr = GetRValue(m_color) + y * ((int)GetRValue(m_gradColor) - GetRValue(m_color)) / hm1;
+         const uint32_t gg = GetGValue(m_color) + y * ((int)GetGValue(m_gradColor) - GetGValue(m_color)) / hm1;
+         const uint32_t gb = GetBValue(m_color) + y * ((int)GetBValue(m_gradColor) - GetBValue(m_color)) / hm1;
+         const uint32_t g = (gb << 16) | (gg << 8) | gr;
+         size_t ofs = y*pitch;
+         for (int x = 0; x < pTextSurface->w; x++,ofs++)
          {
-            uint32_t& px = pixels[y * pitch + x];
-            const uint8_t a = (px >> 24) /*& 0xFF*/;
-            if (a > 0)
-               px = (a << 24) | (gb << 16) | (gg << 8) | gr;
+            uint32_t& px = pixels[ofs];
+            const uint32_t a = px & 0xFF000000u;
+            if (a != 0)
+               px = a | g;
          }
       }
       SDL_UnlockSurface(pTextSurface);
@@ -1207,7 +1210,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
 
    if (shadowstate == 2 && (absxoff != 0 || absyoff != 0))
    {
-      // See pDMDLabelSetBorder — render foreground text inside a true outline glyph
+      // See pDMDLabelSetBorder - render foreground text inside a true outline glyph
       // produced by TTF_SetFontOutline.
       const int outline = SDL_max(1, SDL_max(absxoff, absyoff) - 2);
       const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
@@ -1268,7 +1271,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, PUPFont* pFont
 
    if (shadowstate && (xoffset != 0 || yoffset != 0))
    {
-      // See pDMDLabelSetShadow — drop shadow: render shadow text at offset, foreground at origin
+      // See pDMDLabelSetShadow - drop shadow: render shadow text at offset, foreground at origin
       const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
       SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0);
       if (pShadowSurface)
@@ -1424,14 +1427,14 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
 
    if (m_flashingPeriod)
    {
-      // See pDMDLabelFlash — toggle visibility every fq milliseconds
+      // See pDMDLabelFlash - toggle visibility every fq milliseconds
       m_visible = ((elapsed / m_flashingPeriod) & 1) == 0;
       m_color = m_foregroundColor;
    }
 
    if (m_delayShow > 0)
    {
-      // See pDMDLabelClone — hide until delay elapsed, then show
+      // See pDMDLabelClone - hide until delay elapsed, then show
       m_visible = (static_cast<int>(elapsed) >= m_delayShow);
    }
 
@@ -1465,7 +1468,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       const float screenW = static_cast<float>(screenRect.w);
       const float screenH = static_cast<float>(screenRect.h);
       // TODO: position interpretation when only end is specified (no start) is uncertain.
-      // GOTG bumper pops use ype:150 with no yps — video shows upward movement.
+      // GOTG bumper pops use ype:150 with no yps - video shows upward movement.
       // Current: treat as pixel offset upward from current position when start is absent.
       const float xs = m_xps == 0 ? xBase : m_xps == 1 ? xRight : m_xps == -1 ? xLeft : static_cast<float>(screenRect.x) + screenW * (float)m_xps / 100.f;
       const float xe = m_xpe == 0 ? xBase : m_xpe == 1 ? xRight : m_xpe == -1 ? xLeft
@@ -1491,7 +1494,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       const float ae = static_cast<float>(m_alphaEnd) / 255.0f;
       if (m_pulseSpeed > 0)
       {
-         // See pDMDLabelFadePulse — bounce alpha between astart and aend
+         // See pDMDLabelFadePulse - bounce alpha between astart and aend
          // Approximate one full cycle takes range/speed*2 ticks * 33ms
          const float range = static_cast<float>(m_alphaEnd - m_alphaStart);
          const float periodMs = (range / static_cast<float>(m_pulseSpeed)) * (float)(2.0 * 33.0);
@@ -1512,7 +1515,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
    {
       if (m_zoomPulseSpeed != 0)
       {
-         // See pDMDLabelPulseText / pDMDLabelPulseImage — bounce zoom between hstart and hend
+         // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart and hend
          // Approximate one full cycle (start->end->start) every 500ms
          const float periodMs = 500.0f;
          const float cyclePos = fmodf(static_cast<float>(elapsed), periodMs) / periodMs;
@@ -1521,7 +1524,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       }
       else
       {
-         // See pDMDZoomBig — zoom from hstart to hend over len ms
+         // See pDMDZoomBig - zoom from hstart to hend over len ms
          float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_lengthMs));
          m_zoom = m_zoomStart + pos * (m_zoomEnd - m_zoomStart);
       }
@@ -1530,7 +1533,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
 
    if (m_wiggleStart != m_wiggleEnd)
    {
-      // See pDMDLabelWiggleText / pDMDLabelWiggleImage — bounce rotation between rstart and rend.
+      // See pDMDLabelWiggleText / pDMDLabelWiggleImage - bounce rotation between rstart and rend.
       const float periodMs = 300.0f;
       const float cyclePos = fmodf(static_cast<float>(elapsed), periodMs) / periodMs;
       const float t = cyclePos < 0.5f ? cyclePos * 2.0f : 2.0f - cyclePos * 2.0f;
@@ -1538,7 +1541,7 @@ bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& la
       m_color = m_foregroundColor;
    }
 
-   // See pDMDLabelPulseNumber — interpolate number and update label caption
+   // See pDMDLabelPulseNumber - interpolate number and update label caption
    if (m_numStart != INT_MIN)
    {
       float pos = saturate(static_cast<float>(elapsed) / static_cast<float>(m_lengthMs));
