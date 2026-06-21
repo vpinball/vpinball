@@ -5,12 +5,12 @@
 set(BUILD_SHARED ON)
 set(BUILD_STATIC OFF)
 
-if(PluginPlatform STREQUAL "ios" OR PluginPlatform STREQUAL "ios-simulator" OR PluginPlatform STREQUAL "tvos" OR PluginPlatform STREQUAL "android")
+if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "tvos" OR PLATFORM STREQUAL "android")
    set(BUILD_SHARED OFF)
    set(BUILD_STATIC ON)
 endif()
 
-if(PluginPlatform STREQUAL "macos")
+if(PLATFORM STREQUAL "macos")
    set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources/plugins")
 else()
    set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
