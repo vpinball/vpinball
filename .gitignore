@@ -14,7 +14,6 @@ fastlane/
 
 tmp
 
-CMakeLists.txt
 external
 third-party/*
 

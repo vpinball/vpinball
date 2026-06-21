@@ -189,27 +189,26 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build
         run: |
-          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-          cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
+          CMAKE_ARGS="-DTARGET=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
           if [[ "${{ matrix.platform }}" == "windows-mingw" ]]; then
             CURRENT_DIR="$(pwd)"
             MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
               cd \"${CURRENT_DIR}\" &&
-              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }} &&
+              cmake ${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }} &&
               cmake --build build/${{ matrix.config }} -- -j\$(nproc)
             "
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             if [[ "${{ matrix.arch }}" == "x64" ]]; then
-              cmake -G "Visual Studio 18 2026" -A x64 -B build
+              cmake ${CMAKE_ARGS} -G "Visual Studio 18 2026" -A x64 -B build
             else
-              cmake -G "Visual Studio 18 2026" -A Win32 -B build
+              cmake ${CMAKE_ARGS} -G "Visual Studio 18 2026" -A Win32 -B build
             fi
             cmake --build build --config ${{ matrix.config }} --parallel
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
-            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            cmake ${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(sysctl -n hw.ncpu)
           else
-            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            cmake ${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(nproc)
           fi
       - if: (matrix.platform == 'macos')
@@ -340,11 +339,11 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build
         run : |
-          cp make/CMakeLists_dx9-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
+          CMAKE_ARGS="-DTARGET=DX9 -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
-            cmake -G "Visual Studio 18 2026" -A x64 -B build
+            cmake ${CMAKE_ARGS} -G "Visual Studio 18 2026" -A x64 -B build
           else
-            cmake -G "Visual Studio 18 2026" -A Win32 -B build
+            cmake ${CMAKE_ARGS} -G "Visual Studio 18 2026" -A Win32 -B build
           fi
           cmake --build build --config ${{ matrix.config }}
       - name: Stage artifacts
@@ -411,15 +410,13 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha_short }}/g" src/core/git_version.h
       - name: Build
         run: |
-          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-          cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           OPTIONS=""
           if [[ "${{ matrix.board }}" == "rpi" ]]; then
             OPTIONS="-DBUILD_RPI=ON"
           elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
             OPTIONS="-DBUILD_RK3588=ON"
           fi
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
+          cmake -DTARGET=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }} -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
           cmake --build build/${{ matrix.config }} -- -j$(nproc)
       - name: Stage artifacts
         run: |
