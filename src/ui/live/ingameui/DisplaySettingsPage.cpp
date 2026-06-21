@@ -123,6 +123,10 @@ void DisplaySettingsPage::Close(bool isBackwardAnimation)
    InGameUIPage::Close(isBackwardAnimation);
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
+   // Pin the floating window again now that the page is closed (re-pins min==max at the current size).
+   if (m_wndId == VPXWINDOW_Backglass || m_wndId == VPXWINDOW_ScoreView || m_wndId == VPXWINDOW_Topper)
+      if (Window* const auxWnd = GetOutput(m_wndId).GetWindow())
+         auxWnd->SetResizable(false);
 }
 
 void DisplaySettingsPage::OnStaticRenderDirty()
@@ -248,6 +252,12 @@ void DisplaySettingsPage::BuildWindowPage()
       wndSize.x = wnd->GetWidth();
       wndSize.y = wnd->GetHeight();
    }
+
+   // Floating ancillary windows are resizable only while this settings page is open; closing it pins
+   // the size again (see Close). The slider keeps enforcing the aspect ratio lock in its own logic.
+   if (m_wndId == VPXWINDOW_Backglass || m_wndId == VPXWINDOW_ScoreView || m_wndId == VPXWINDOW_Topper)
+      if (Window* const auxWnd = GetOutput(m_wndId).GetWindow())
+         auxWnd->SetResizable(true);
 
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Display"s, "Select the display output"s, false, 0, 0, m_displayNames), //
