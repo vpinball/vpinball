@@ -1,14 +1,17 @@
 /*
- * Portions of this code was derived from SDL_gfx and BBCSDL:
+ * Portions of this code was derived from SDL_gfx, BBCSDL, and Wine:
  *
  * https://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx
  * https://github.com/rtrussell/BBCSDL/blob/master/src/SDL2_gfxPrimitives.c
+ * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/graphics.c
+ * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/gdiplus_private.h
  */
 
 #include "common.h"
 #include "VPXGraphics.h"
 
 #include <cmath>
+#include <cfloat>
 #include <cstring>
 
 #ifndef _COLORREF_DEFINED
@@ -28,6 +31,35 @@ static int GraphicsCompareFloat(const void *a, const void *b)
       return (diff > 0.f) - (diff < 0.f);
    diff = *(float*)a - *(float*)b;
    return (diff > 0.f) - (diff < 0.f);
+}
+
+typedef uint32_t ARGB;
+typedef float REAL;
+typedef int INT;
+
+static inline INT gdip_round(REAL x)
+{
+    return (INT) floorf(x + 0.5);
+}
+
+static ARGB blend_colors(ARGB start, ARGB end, REAL position)
+{
+    INT start_a, end_a, final_a;
+    INT pos;
+
+    pos = gdip_round(position * 0xff);
+
+    start_a = ((start >> 24) & 0xff) * (pos ^ 0xff);
+    end_a = ((end >> 24) & 0xff) * pos;
+
+    final_a = start_a + end_a;
+
+    if (final_a < 0xff) return 0;
+
+    return (final_a / 0xff) << 24 |
+        ((((start >> 16) & 0xff) * start_a + (((end >> 16) & 0xff) * end_a)) / final_a) << 16 |
+        ((((start >> 8) & 0xff) * start_a + (((end >> 8) & 0xff) * end_a)) / final_a) << 8 |
+        (((start & 0xff) * start_a + ((end & 0xff) * end_a)) / final_a);
 }
 
 VPXGraphics::VPXGraphics(VPXPluginAPI* vpxApi, int width, int height)
@@ -113,9 +145,11 @@ void VPXGraphics::InitGradientData(GradientData& gradientData, PathGradientBrush
       gradientData.outer.push_back({ x + (float)m_translateX, y + (float)m_translateY });
    }
 
+   // FocusScales push the solid center color outward: uniform scales give a
+   // constant inner boundary, anisotropic ones keep a scaled inner polygon.
    const SDL_FPoint& focusScales = pBrush->GetFocusScales();
    if (focusScales.x == focusScales.y)
-      gradientData.uniformInner = clamp(focusScales.x, 0.0f, 0.999f);
+      gradientData.uniformInner = 1.0f - clamp(focusScales.x, 0.0f, 0.999f);
    else {
       gradientData.inner.reserve(count);
       for (const auto& point : *pPoints) {
@@ -130,59 +164,73 @@ void VPXGraphics::InitGradientData(GradientData& gradientData, PathGradientBrush
    gradientData.cx = centerX + (float)m_translateX;
    gradientData.cy = centerY + (float)m_translateY;
 
-   gradientData.centerColor[0] = (float)GetRValue(pBrush->GetCenterColor());
-   gradientData.centerColor[1] = (float)GetGValue(pBrush->GetCenterColor());
-   gradientData.centerColor[2] = (float)GetBValue(pBrush->GetCenterColor());
-   gradientData.centerColor[3] = (float)pBrush->GetCenterAlpha();
-   gradientData.surroundColor[0] = (float)GetRValue(pBrush->GetSurroundColor());
-   gradientData.surroundColor[1] = (float)GetGValue(pBrush->GetSurroundColor());
-   gradientData.surroundColor[2] = (float)GetBValue(pBrush->GetSurroundColor());
-   gradientData.surroundColor[3] = (float)pBrush->GetSurroundAlpha();
-}
-
-float VPXGraphics::RayBoundaryDistance(const std::vector<SDL_FPoint>& polygon, float cx, float cy, float dx, float dy)
-{
-   float tMax = 0.0f;
-   const size_t count = polygon.size();
-   for (size_t i = 0; i < count; i++) {
-      const SDL_FPoint& p1 = polygon[i];
-      const SDL_FPoint& p2 = polygon[(i + 1) == count ? 0 : (i + 1)];
-      const float ex = p2.x - p1.x;
-      const float ey = p2.y - p1.y;
-      const float denom = dx * ey - dy * ex;
-      if (fabsf(denom) < 1e-12f)
-         continue;
-      const float wx = p1.x - cx;
-      const float wy = p1.y - cy;
-      const float t = (wx * ey - wy * ex) / denom;
-      const float s = (wx * dy - wy * dx) / denom;
-      if (t > 0.0f && s >= 0.0f && s <= 1.0f && t > tMax)
-         tMax = t;
-   }
-   return tMax;
+   const uint32_t centerColor = pBrush->GetCenterColor();
+   gradientData.centerArgb = ((uint32_t)pBrush->GetCenterAlpha() << 24)
+      | ((uint32_t)GetRValue(centerColor) << 16) | ((uint32_t)GetGValue(centerColor) << 8) | (uint32_t)GetBValue(centerColor);
+   const uint32_t surroundColor = pBrush->GetSurroundColor();
+   gradientData.surroundArgb = ((uint32_t)pBrush->GetSurroundAlpha() << 24)
+      | ((uint32_t)GetRValue(surroundColor) << 16) | ((uint32_t)GetGValue(surroundColor) << 8) | (uint32_t)GetBValue(surroundColor);
 }
 
 void VPXGraphics::GradientColorAt(const GradientData& gradientData, float x, float y, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& a)
 {
-   const float dx = x - gradientData.cx;
-   const float dy = y - gradientData.cy;
+   // GDI+ fans the path into one triangle per edge; we sample a single pixel
+   // (to reuse FillPolygon's anti-aliasing), so first pick its containing
+   // triangle, then use Wine's distance math.
+   const std::vector<SDL_FPoint>& outer = gradientData.outer;
+   const size_t count = outer.size();
+   const SDL_FPoint center_point = { gradientData.cx, gradientData.cy };
 
-   float u = 0.0f;
-   if (dx * dx + dy * dy > 0.0001f) {
-      const float tOuter = RayBoundaryDistance(gradientData.outer, gradientData.cx, gradientData.cy, dx, dy);
-      const float q = (tOuter > 0.0001f) ? clamp(1.0f / tOuter, 0.0f, 1.0f) : 1.0f;
-      float qInner = gradientData.uniformInner;
-      if (!gradientData.inner.empty()) {
-         const float tInner = RayBoundaryDistance(gradientData.inner, gradientData.cx, gradientData.cy, dx, dy);
-         qInner = (tOuter > 0.0001f) ? clamp(tInner / tOuter, 0.0f, 0.999f) : 0.0f;
+   float distance = 1.0f;
+   float innerDistance = gradientData.uniformInner;
+   float bestScore = -FLT_MAX;
+   for (size_t i = 0; i < count; i++) {
+      const SDL_FPoint start_point = outer[i];
+      const SDL_FPoint end_point = outer[(i + 1) == count ? 0 : (i + 1)];
+
+      const float denom = (start_point.y - end_point.y) * (center_point.x - end_point.x) + (end_point.x - start_point.x) * (center_point.y - end_point.y);
+      if (fabsf(denom) < 1e-6f)
+         continue;
+      const float wCenter = ((start_point.y - end_point.y) * (x - end_point.x) + (end_point.x - start_point.x) * (y - end_point.y)) / denom;
+      const float wStart = ((end_point.y - center_point.y) * (x - end_point.x) + (center_point.x - end_point.x) * (y - end_point.y)) / denom;
+      const float wEnd = 1.0f - wCenter - wStart;
+      const float score = std::min(std::min(wCenter, wStart), wEnd);
+      if (score <= bestScore)
+         continue;
+      bestScore = score;
+
+      const float center_distance = (end_point.y - start_point.y) * (start_point.x - center_point.x) +
+         (end_point.x - start_point.x) * (center_point.y - start_point.y);
+      if (fabsf(center_distance) < 1e-6f) {
+         distance = 1.0f;
+         innerDistance = gradientData.uniformInner;
+         continue;
       }
-      u = (qInner > 0.0f) ? clamp((q - qInner) / (1.0f - qInner), 0.0f, 1.0f) : q;
+      distance = (end_point.y - start_point.y) * (start_point.x - x) +
+         (end_point.x - start_point.x) * (y - start_point.y);
+      distance = clamp(distance / center_distance, 0.0f, 1.0f);
+
+      // FocusScales (the bulb glow) moves the full-center-color boundary outward.
+      if (gradientData.inner.empty())
+         innerDistance = gradientData.uniformInner;
+      else {
+         const SDL_FPoint& innerS = gradientData.inner[i];
+         const SDL_FPoint& innerE = gradientData.inner[(i + 1) == count ? 0 : (i + 1)];
+         const float dInnerS = ((end_point.y - start_point.y) * (start_point.x - innerS.x) + (end_point.x - start_point.x) * (innerS.y - start_point.y)) / center_distance;
+         const float dInnerE = ((end_point.y - start_point.y) * (start_point.x - innerE.x) + (end_point.x - start_point.x) * (innerE.y - start_point.y)) / center_distance;
+         const float t = (wStart + wEnd > 1e-6f) ? clamp(wEnd / (wStart + wEnd), 0.0f, 1.0f) : 0.0f;
+         innerDistance = dInnerS + (dInnerE - dInnerS) * t;
+      }
    }
 
-   r = (uint8_t)(gradientData.centerColor[0] + (gradientData.surroundColor[0] - gradientData.centerColor[0]) * u);
-   g = (uint8_t)(gradientData.centerColor[1] + (gradientData.surroundColor[1] - gradientData.centerColor[1]) * u);
-   b = (uint8_t)(gradientData.centerColor[2] + (gradientData.surroundColor[2] - gradientData.centerColor[2]) * u);
-   a = (uint8_t)(gradientData.centerColor[3] + (gradientData.surroundColor[3] - gradientData.centerColor[3]) * u);
+   const float position = (innerDistance > 1e-6f) ? clamp(distance / innerDistance, 0.0f, 1.0f) : 1.0f;
+
+   const ARGB outer_color = gradientData.surroundArgb;
+   const ARGB argb = blend_colors(outer_color, gradientData.centerArgb, position);
+   a = (uint8_t)((argb >> 24) & 0xff);
+   r = (uint8_t)((argb >> 16) & 0xff);
+   g = (uint8_t)((argb >> 8) & 0xff);
+   b = (uint8_t)(argb & 0xff);
 }
 
 void VPXGraphics::DrawPath(GraphicsPath* pPath)
