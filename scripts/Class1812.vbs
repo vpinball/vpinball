@@ -78,9 +78,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyDown         .Switch(swLeftAdvance) = True
 			Case keyUp           .Switch(swRightAdvance) = True
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
-			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

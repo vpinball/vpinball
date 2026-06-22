@@ -69,9 +69,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySelfTest     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = Not inverseKeyCoinDoor
 			Case keyAdvance      vpmTimer.PulseSw swTilt
 			Case keyBangBack     vpmNudge.DoMechTilt
-			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
-			Case RightTiltKey    vpmNudge.DoNudge 285, 2
-			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select

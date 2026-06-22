@@ -71,6 +71,7 @@ public:
    void SetKeyboardNudgeMode(KeyboardNudgeMode mode);
    float GetKeyboardNudgeStrength() const;
    void SetKeyboardNudgeStrength(float strength);
+   int GetKeyboardNudgeIndex() const { return m_keyboardNudgeIndex; }
 
    int GetSensorCount() const;
    const std::unique_ptr<NudgeSensor>& GetSensor(int index) const;
@@ -88,7 +89,7 @@ private:
    vector<std::unique_ptr<NudgeSensor>> m_sensors;
    Vertex2D m_noNudge = Vertex2D(0.f, 0.f);
    KeyboardNudgeMode m_keyboardNudgeMode;
-
+   int m_keyboardNudgeIndex = 0;
 };
 
 };
