@@ -697,6 +697,35 @@ void InputManager::CreateInputActions()
       return newAction->GetActionId();
    };
 
+   auto addNudgeKeyAction = [this, keyMapping](const string& settingId, const string& label, const SDL_Scancode sdlScancode)
+   {
+      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, keyMapping(sdlScancode),
+         [this](const InputAction& action, bool prev, bool isPressed)
+         {
+            if (m_player->m_liveUI->IsInGameUIOpened())
+               return;
+            const int prevIndex = m_nudgeHandler->GetKeyboardNudgeIndex();
+            CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
+            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+            m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
+            // Nudge used to be performed through script (digital only), then sensor support was added and later integrated into the core physics engine.
+            // To support legacy tables we check if a script nudge was performed and if so, discard default nudge handling
+            if (isPressed && (prevIndex == m_nudgeHandler->GetKeyboardNudgeIndex()))
+            {
+               constexpr float baseForce = 2.f;
+               const float angle = (rand_mt_01() - 0.5f) * 15.f * baseForce;
+               const float force = (0.6f + rand_mt_01() * 0.8f) * baseForce;
+               if (action.GetActionId() == m_leftNudgeActionId)
+                  m_nudgeHandler->ApplyKeyboardImpulse(75.f + angle, force);
+               else if (action.GetActionId() == m_rightNudgeActionId)
+                  m_nudgeHandler->ApplyKeyboardImpulse(285.f + angle, force);
+               else if (action.GetActionId() == m_centerNudgeActionId)
+                  m_nudgeHandler->ApplyKeyboardImpulse(angle, force);
+            }
+         }));
+      return newAction->GetActionId();
+   };
+
    m_leftFlipperActionId = addFlipperKeyAction("LeftFlipper"s, "Left Flipper"s, SDL_SCANCODE_LSHIFT);
    m_rightFlipperActionId = addFlipperKeyAction("RightFlipper"s, "Right Flipper"s, SDL_SCANCODE_RSHIFT);
    m_stagedLeftFlipperActionId = addFlipperKeyAction("LeftStagedFlipper"s, "Left Staged Flipper"s, SDL_SCANCODE_LSHIFT); // SDL_SCANCODE_LGUI
@@ -708,9 +737,9 @@ void InputManager::CreateInputActions()
    m_uiLeftActionId = addKeyAction("UILeft"s, "UI: Decrease/Cancel"s, SDL_SCANCODE_LSHIFT);
    m_uiRightActionId = addKeyAction("UIRight"s, "UI: Increase/Confirm"s, SDL_SCANCODE_RSHIFT);
    m_launchBallActionId = addKeyAction("LaunchBall"s, "Launch Ball"s, SDL_SCANCODE_RETURN);
-   m_leftNudgeActionId = addKeyAction("LeftNudge"s, "Left Nudge"s, SDL_SCANCODE_Z);
-   m_rightNudgeActionId = addKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);
-   m_centerNudgeActionId = addKeyAction("CenterNudge"s, "Center Nudge"s, SDL_SCANCODE_SPACE);
+   m_leftNudgeActionId = addNudgeKeyAction("LeftNudge"s, "Left Nudge"s, SDL_SCANCODE_Z);
+   m_rightNudgeActionId = addNudgeKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);
+   m_centerNudgeActionId = addNudgeKeyAction("CenterNudge"s, "Center Nudge"s, SDL_SCANCODE_SPACE);
    m_tiltActionId = addKeyAction("Tilt"s, "Tilt"s, SDL_SCANCODE_T);
    m_addCreditActionId[0] = addKeyAction("Credit1"s, "Credit (1)"s, SDL_SCANCODE_5);
    m_addCreditActionId[1] = addKeyAction("Credit2"s, "Credit (2)"s, SDL_SCANCODE_4);

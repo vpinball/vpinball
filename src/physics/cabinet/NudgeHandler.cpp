@@ -40,7 +40,11 @@ NudgeHandler::NudgeHandler(InputManager* inputManager)
    }
 }
 
-void NudgeHandler::ApplyKeyboardImpulse(float angle, float force) { m_keyboardNudge->Nudge(angle, force); }
+void NudgeHandler::ApplyKeyboardImpulse(float angle, float force)
+{
+   m_keyboardNudgeIndex++;
+   m_keyboardNudge->Nudge(angle, force);
+}
 
 void NudgeHandler::StepOneMillisecond()
 {

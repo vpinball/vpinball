@@ -83,9 +83,6 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySelfTest     .Switch(swDiagnostic)  = NOT .Switch(swDiagnostic)
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keyBangBack     vpmNudge.DoNudge   0,6
-			Case LeftTiltKey     vpmNudge.DoNudge  75,2
-			Case RightTiltKey    vpmNudge.DoNudge 285,2
-			Case CenterTiltKey   vpmNudge.DoNudge   0,2
 			Case keyVPMVolume    vpmVol
 			Case Else            vpmKeyDown = False
 		End Select
