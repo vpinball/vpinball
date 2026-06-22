@@ -3,7 +3,6 @@
   <ImportGroup Label="Shared">
     <Import Project="vpx-configurations.vcxitems" Label="Shared" />
   </ImportGroup>
-  
   <ItemGroup>
     <ClInclude Include="../../plugins/vni/common.h" />
     <ClCompile Include="../../plugins/vni/common.cpp" />
@@ -57,11 +56,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2bf90d88-9139-4e66-a778-4327311af778}</ProjectGuid>
+    <ProjectGuid>{A87F99D4-F3A3-4E5E-8E0A-40BBEEBFE51A}</ProjectGuid>
     <RootNamespace>plugin-vni</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">$(RootNamespace)</TargetName>
@@ -69,7 +67,7 @@
     <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-	<UseDebugLibraries>$(Configuration.StartsWith('Debug'))</UseDebugLibraries>
+    <UseDebugLibraries>$(Configuration.StartsWith('Debug'))</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>$(Configuration.StartsWith('Release'))</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
