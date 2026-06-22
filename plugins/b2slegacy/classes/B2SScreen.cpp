@@ -16,13 +16,9 @@ namespace B2SLegacy {
 
 MSGPI_INT_VAL_SETTING(backglassWidthProp, "B2SBackglassWidth", "B2SBackglassWidth", "", true, 0, 16384, 1024);
 MSGPI_INT_VAL_SETTING(backglassHeightProp, "B2SBackglassHeight", "B2SBackglassHeight", "", true, 0, 16384, 768);
-MSGPI_INT_VAL_SETTING(backglassXProp, "BackglassX", "BackglassX", "", true, 0, 16384, 0);
-MSGPI_INT_VAL_SETTING(backglassYProp, "BackglassY", "BackglassY", "", true, 0, 16384, 0);
 
 MSGPI_INT_VAL_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", true, 0, 16384, 512);
 MSGPI_INT_VAL_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", true, 0, 16384, 128);
-MSGPI_INT_VAL_SETTING(dmdXProp, "DMDX", "DMDX", "", true, 0, 16384, 0);
-MSGPI_INT_VAL_SETTING(dmdYProp, "DMDY", "DMDY", "", true, 0, 16384, 0);
 MSGPI_BOOL_VAL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "B2SDMDFlipY", "", true, false);
 
 B2SScreen::B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId)
@@ -76,20 +72,14 @@ void B2SScreen::ReadB2SSettingsFromFile()
 {
    m_msgApi->RegisterSetting(m_endpointId, &backglassWidthProp);
    m_msgApi->RegisterSetting(m_endpointId, &backglassHeightProp);
-   m_msgApi->RegisterSetting(m_endpointId, &backglassXProp);
-   m_msgApi->RegisterSetting(m_endpointId, &backglassYProp);
 
    m_backglassSize = { 0, 0, backglassWidthProp_Val, backglassHeightProp_Val };
-   m_backglassLocation = { backglassXProp_Val, backglassYProp_Val };
 
    m_msgApi->RegisterSetting(m_endpointId, &dmdWidthProp);
    m_msgApi->RegisterSetting(m_endpointId, &dmdHeightProp);
-   m_msgApi->RegisterSetting(m_endpointId, &dmdXProp);
-   m_msgApi->RegisterSetting(m_endpointId, &dmdYProp);
    m_msgApi->RegisterSetting(m_endpointId, &dmdFlipYProp);
 
    m_dmdSize = { 0, 0, dmdWidthProp_Val, dmdHeightProp_Val };
-   m_dmdLocation = { dmdXProp_Val, dmdYProp_Val };
 
    m_dmdFlipY = dmdFlipYProp_Val;
 }
@@ -189,7 +179,7 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
 void B2SScreen::Show()
 {
    // first of all get the info whether the DMD is to be shown or not
-   m_dmdToBeShown = (m_pFormDMD && !SDL_RectEmpty(&m_dmdSize) && /* FIXME !(m_dmdLocation.x == 0 && m_dmdLocation.y == 0) && */
+   m_dmdToBeShown = (m_pFormDMD && !SDL_RectEmpty(&m_dmdSize) && !(m_dmdLocation.x == 0 && m_dmdLocation.y == 0) &&
         ((m_dmdViewMode == eDMDViewMode_ShowDMD) ||
          (m_dmdViewMode == eDMDViewMode_ShowDMDOnlyAtDefaultLocation && m_dmdAtDefaultLocation) ||
          (m_dmdViewMode == eDMDViewMode_DoNotShowDMDAtDefaultLocation && !m_dmdAtDefaultLocation)));
@@ -220,8 +210,8 @@ void B2SScreen::Show()
       if (m_dmdAtDefaultLocation) {
          m_dmdSize = m_pFormDMD->GetSize();
          if (m_rescaleBackglass.w != 1.0f || m_rescaleBackglass.h != 1.0f) {
-            m_dmdLocation = { (int)((float)m_dmdLocation.x * m_rescaleBackglass.w), (int)((float)m_dmdLocation.y * m_rescaleBackglass.h) };
-            m_dmdSize = { 0, 0, (int)((float)m_dmdSize.w * m_rescaleBackglass.w), (int)((float)m_dmdSize.h * m_rescaleBackglass.h) };
+            m_dmdLocation = { (int)((float)m_dmdLocation.x / m_rescaleBackglass.w), (int)((float)m_dmdLocation.y / m_rescaleBackglass.h) };
+            m_dmdSize = { 0, 0, (int)((float)m_dmdSize.w / m_rescaleBackglass.w), (int)((float)m_dmdSize.h / m_rescaleBackglass.h) };
          }
       }
 
