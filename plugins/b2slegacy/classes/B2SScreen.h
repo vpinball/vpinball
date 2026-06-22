@@ -8,7 +8,7 @@ class B2SData;
 class B2SBaseBox;
 class Dream7Display;
 
-class B2SScreen
+class B2SScreen final
 {
 public:
    B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId);

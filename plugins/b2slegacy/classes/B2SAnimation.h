@@ -7,7 +7,7 @@
 
 namespace B2SLegacy {
 
-class B2SAnimation
+class B2SAnimation final
 {
 public:
    B2SAnimation();

@@ -3,7 +3,7 @@
 
 namespace B2SLegacy {
 
-class SegmentStyle
+class SegmentStyle final
 {
 public:
    uint32_t GetOffColor() const { return m_offColor; }

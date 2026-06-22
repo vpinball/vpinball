@@ -6,7 +6,7 @@
 
 namespace B2SLegacy {
 
-class B2SReelDisplay
+class B2SReelDisplay final
 {
 public:
    B2SReelDisplay();

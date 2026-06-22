@@ -3,7 +3,7 @@
 
 namespace B2SLegacy {
 
-class CollectData
+class CollectData final
 {
 public:
    CollectData(const int state, const int types);

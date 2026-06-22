@@ -9,7 +9,7 @@ class Dream7Display;
 class B2SReelBox;
 class B2SReelDisplay;
 
-class ControlInfo
+class ControlInfo final
 {
 public:
    ControlInfo(int startDigit, int digits, eControlType type, B2SLEDBox* pLEDBox);

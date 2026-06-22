@@ -3,7 +3,7 @@
 
 namespace B2SLegacy {
 
-class AnimationInfo
+class AnimationInfo final
 {
 public:
    AnimationInfo(const string& szAnimationName, bool inverted);

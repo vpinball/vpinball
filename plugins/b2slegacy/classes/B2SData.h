@@ -23,7 +23,7 @@ class Dream7Display;
 class LEDDisplayDigitLocation;
 class LEDAreaInfo;
 
-class B2SData
+class B2SData final
 {
 public:
    B2SData(Server* pServer, B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi);

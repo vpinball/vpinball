@@ -3,7 +3,7 @@
 
 namespace B2SLegacy {
 
-class LEDAreaInfo
+class LEDAreaInfo final
 {
 public:
    LEDAreaInfo(const SDL_Rect& rect, bool isOnDMD);

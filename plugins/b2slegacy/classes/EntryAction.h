@@ -3,7 +3,7 @@
 
 namespace B2SLegacy {
 
-class EntryAction
+class EntryAction final
 {
 public:
    EntryAction(const vector<string>& bulbs, int intervalMultiplier, bool visible, int corrector, int pulseSwitch);

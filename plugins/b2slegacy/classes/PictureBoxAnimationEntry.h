@@ -4,7 +4,7 @@
 
 namespace B2SLegacy {
 
-class PictureBoxAnimationEntry
+class PictureBoxAnimationEntry final
 {
 public:
    PictureBoxAnimationEntry(const string& on1, int waitAfterOn1, const string& off1, int waitAfterOff1, int pulseSwitch);
