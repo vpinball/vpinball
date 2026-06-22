@@ -2158,8 +2158,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    // Warn if the backdrop used by the active view mode references an image that is not in the
    // table: it would render black. An empty name or the "<None>" sentinel means no backdrop is set.
    if (const string& bg = m_BG_image[GetViewMode()];
-       !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr)
+       !bg.empty() && !StrCompareNoCase(bg, g_szNoneSelection) && GetImage(bg) == nullptr) {
       PLOGW << "Backdrop image '" << bg << "' set for the active view mode was not found in the table (renders black)";
+   }
 
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();

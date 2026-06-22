@@ -1113,8 +1113,6 @@ struct ColorDistanceARGB
     {
         const float a1 = (float)getAlpha(pix1) / 255.0f ;
         const float a2 = (float)getAlpha(pix2) / 255.0f ;
-        /*
-        Requirements for a color distance handling alpha channel: with a1, a2 in [0, 1]
 
         /*  Requirements for a color distance handling alpha channel: with a1, a2 in [0, 1]
 
