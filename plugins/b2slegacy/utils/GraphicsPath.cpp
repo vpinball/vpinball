@@ -95,13 +95,4 @@ void GraphicsPath::Transform(Matrix* pMatrix)
       pMatrix->TransformPoints(m_points);
 }
 
-GraphicsPath* GraphicsPath::Clone() const
-{
-   GraphicsPath* pPath = new GraphicsPath();
-   pPath->m_points.reserve(m_points.size());
-   for (const auto &point : m_points)
-      pPath->m_points.push_back(point);
-   return pPath;
-}
-
 }

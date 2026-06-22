@@ -30,21 +30,12 @@ Segment::~Segment()
    delete m_pGlassPath;
    delete m_pLightPath;
    delete m_pLightBrush;
-   delete m_pExternMatrix;
-   delete m_pOwnMatrix;
 }
 
 GraphicsPath* Segment::GetGlassPath()
 {
    GetGlassData();
    return m_pGlassPath;
-}
-
-GraphicsPath* Segment::GetGlassPathTransformed()
-{
-   GraphicsPath* pPath = GetGlassPath()->Clone();
-   pPath->Transform(m_pOwnMatrix);
-   return pPath;
 }
 
 void Segment::AssignStyle()
@@ -61,11 +52,11 @@ void Segment::Draw(VPXGraphics* pRenderer)
       brush.SetCenterColor(m_pStyle->GetGlassColorCenter(), m_pStyle->GetGlassAlphaCenter());
       brush.SetSurroundColor(m_pStyle->GetGlassColor(), (uint8_t)m_pStyle->GetGlassAlpha());
       brush.SetFocusScales(m_focusScales);
-      PaintSegment(pRenderer, &brush, RGB(255, 0, 0), m_pGlassPath);
+      PaintSegment(pRenderer, brush, RGB(255, 0, 0), m_pGlassPath);
    }
    else {
-      SolidBrush brush(m_pStyle->GetOffColor());
-      PaintSegment(pRenderer, &brush, RGB(169, 169, 169), m_pGlassPath);
+      const SolidBrush brush(m_pStyle->GetOffColor());
+      PaintSegment(pRenderer, brush, RGB(169, 169, 169), m_pGlassPath);
    }
    pRenderer->ResetTransform();
 }
@@ -77,7 +68,7 @@ void Segment::DrawLight(VPXGraphics* pRenderer)
 
    SetTransform(pRenderer);
    GetLightData();
-   PaintSegment(pRenderer, m_pLightBrush, RGB(255, 255, 0), m_pLightPath);
+   PaintSegment(pRenderer, *m_pLightBrush, RGB(255, 255, 0), m_pLightPath);
    pRenderer->ResetTransform();
 }
 
@@ -89,8 +80,7 @@ void Segment::InitSegmentDot(float x, float y, float radius)
 
    CreateLightData();
 
-   m_pOwnMatrix = new Matrix();
-   m_pOwnMatrix->Translate(x, y);
+   m_ownMatrix.Translate(x, y);
 }
 
 void Segment::InitSegment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap, float capangle)
@@ -116,9 +106,8 @@ void Segment::InitSegment(const string& szName, float x, float y, float width, f
    m_angle = angle;
    CreateLightData();
 
-   m_pOwnMatrix = new Matrix();
-   m_pOwnMatrix->Translate(x, y);
-   m_pOwnMatrix->Rotate(angle);
+   m_ownMatrix.Translate(x, y);
+   m_ownMatrix.Rotate(angle);
 }
 
 void Segment::CreateLightData()
@@ -183,18 +172,19 @@ void Segment::LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, f
          break;
     }
     nDelta = nLeft;
-    nLeft *= tanf(nCapangle * (float)(M_PI / 180.0));
-    nRight *= tanf(nCapangle * (float)(M_PI / 180.0));
+    const float tmp = tanf(nCapangle * (float)(M_PI / 180.0));
+    nLeft *= tmp;
+    nRight *= tmp;
 }
 
-void Segment::PaintSegment(VPXGraphics* pRenderer, Brush* pBrush, uint32_t penColor, GraphicsPath* pPath)
+void Segment::PaintSegment(VPXGraphics* pRenderer, const Brush& pBrush, uint32_t penColor, const GraphicsPath* const __restrict pPath)
 {
    if (m_pStyle->IsWireFrame()) {
       pRenderer->SetColor(penColor);
-      pRenderer->DrawPath(pPath);
+      pRenderer->DrawPath(*pPath);
    }
    else
-      pRenderer->FillPath(pBrush, pPath);
+      pRenderer->FillPath(pBrush, *pPath);
 }
 
 void Segment::GetGlassData()
@@ -244,17 +234,15 @@ void Segment::ResetCacheData()
 
 void Segment::SetTransform(VPXGraphics* pRenderer)
 {
-   Matrix pMatrix;
-   if (m_pExternMatrix)
-      pMatrix = *m_pExternMatrix;
-   pMatrix.Multiply(*m_pOwnMatrix);
+   // m_externMatrix defaults to identity, so multiplying is a no-op until a parent transform is assigned via Transform()
+   Matrix pMatrix = m_externMatrix;
+   pMatrix.Multiply(m_ownMatrix);
    pRenderer->SetTransform(pMatrix);
 }
 
 void Segment::Transform(Matrix* pMatrix)
 {
-   delete m_pExternMatrix;
-   m_pExternMatrix = pMatrix->Clone();
+   m_externMatrix = *pMatrix;
 }
 
 

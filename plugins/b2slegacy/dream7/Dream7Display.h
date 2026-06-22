@@ -103,7 +103,7 @@ private:
    float m_scaleFactor = 0.5f;
    int m_offsetWidth = 0;
    float m_angle = 0.0f;
-   Matrix* m_pMatrix = nullptr;
+   Matrix m_matrix;
    SDL_FRect m_bounds = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 

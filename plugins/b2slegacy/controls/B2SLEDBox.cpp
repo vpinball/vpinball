@@ -61,15 +61,14 @@ void B2SLEDBox::OnPaint(VPXRenderContext2D* const ctx)
          if (IsInvalidated()) {
             Control::OnPaint(ctx);
             for (int i = 0; i < (int)m_currentSeg.size(); i++) {
-               GraphicsPath* pPath = new GraphicsPath();
-               pPath->AddPolygon(&m_currentSeg[i]);
+               GraphicsPath path;
+               path.AddPolygon(&m_currentSeg[i]);
                if ((m_value & (1 << i)) != 0)
                   m_pGraphics->SetColor(m_litLEDSegmentColor);
                else
                   m_pGraphics->SetColor(m_darkLEDSegmentColor);
 
-               m_pGraphics->FillPath(pPath);
-               delete pPath;
+               m_pGraphics->FillPath(path);
             }
          }
 

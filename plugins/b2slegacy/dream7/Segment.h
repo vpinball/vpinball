@@ -17,7 +17,7 @@ enum SegmentCap {
    SegmentCap_Right = 5
 };
 
-class Segment
+class Segment final
 {
 public:
    Segment(const string& szName, float x, float y, float width, float height, float angle);
@@ -31,7 +31,6 @@ public:
    void SetOn(bool on) { m_on = on; }
    const string& GetName() const { return m_szName; }
    GraphicsPath* GetGlassPath();
-   GraphicsPath* GetGlassPathTransformed();
    void AssignStyle();
    void Draw(VPXGraphics* pRenderer);
    void DrawLight(VPXGraphics* pRenderer);
@@ -43,7 +42,7 @@ private:
    void CreateLightData();
    void SetBulbSize();
    static void LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, float& nLeft, float& nRight, float& nDelta);
-   void PaintSegment(VPXGraphics* pRenderer, Brush* pBrush, uint32_t penColor, GraphicsPath* pPath);
+   void PaintSegment(VPXGraphics* pRenderer, const Brush& pBrush, uint32_t penColor, const GraphicsPath* const __restrict pPath);
    void GetGlassData();
    void GetLightData();
    void ResetCacheData();
@@ -62,8 +61,8 @@ private:
    float m_radius = 0.0f;
    GraphicsPath* m_pLightPath = nullptr;
    PathGradientBrush* m_pLightBrush = nullptr;
-   Matrix* m_pOwnMatrix = nullptr;
-   Matrix* m_pExternMatrix = nullptr;
+   Matrix m_ownMatrix;
+   Matrix m_externMatrix;
 };
 
 }

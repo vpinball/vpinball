@@ -13,7 +13,6 @@ class GraphicsPath final
 public:
    GraphicsPath();
 
-   GraphicsPath* Clone() const;
    void AddPolygon(const vector<SDL_FPoint>* const pPoints);
    void AddEllipse(const SDL_FRect& rect);
    void AddEllipse(float x, float y, float width, float height);

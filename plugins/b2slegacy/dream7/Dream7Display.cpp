@@ -12,8 +12,6 @@ Dream7Display::Dream7Display(VPXPluginAPI* vpxApi)
 
 Dream7Display::~Dream7Display()
 {
-   delete m_pMatrix;
-
    for (auto& pSegmentNumber : m_segmentNumbers)
       delete pSegmentNumber;
 }
@@ -193,8 +191,7 @@ void Dream7Display::SetExtraSpacing(int segment, float value)
 
 void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
 {
-   delete m_pMatrix;
-   m_pMatrix = new Matrix();
+   m_matrix.Reset();
    shear = clamp(shear, 0.0f, 2.0f);
    scaleFactor = clamp(scaleFactor, 0.01f, 10.0f);
    Matrix styleMatrix;
@@ -216,11 +213,11 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
             scaleX = scaleY;
          }
          if (scaleX > 0.0f && scaleY > 0.0f)
-            m_pMatrix->Scale(scaleX, scaleY);
+            m_matrix.Scale(scaleX, scaleY);
       }
-      m_pMatrix->Translate(-bounds.x, -bounds.y);
+      m_matrix.Translate(-bounds.x, -bounds.y);
    }
-   m_pMatrix->Multiply(styleMatrix);
+   m_matrix.Multiply(styleMatrix);
 }
 
 SDL_FRect Dream7Display::GetBounds(const Matrix* const pMatrix)
@@ -254,10 +251,10 @@ void Dream7Display::InitSegments()
    InitSegments(m_digits, m_type, m_shear);
 }
 
-void Dream7Display::SegmentNumberInvalidated(SegmentNumber* pNumber)
+void Dream7Display::SegmentNumberInvalidated(SegmentNumber* /*pNumber*/)
 {
-   GraphicsPath* pPath = pNumber->GetBounds();
-   delete pPath;
+   //GraphicsPath* pPath = pNumber->GetBounds();
+   //delete pPath;
 
    Invalidate();
 }
@@ -286,7 +283,7 @@ void Dream7Display::InitSegmentsStyle()
    float distance = 154.0f + m_spacing;
    float xPos = 0.0f;
    for (auto& pNumber : m_segmentNumbers) {
-      pNumber->Init( { xPos, 0.0f }, m_type, m_pMatrix, m_thickness);
+      pNumber->Init( { xPos, 0.0f }, m_type, &m_matrix, m_thickness);
       xPos += distance;
       const auto itr = m_extraSpacings.find(number);
       if (itr != m_extraSpacings.end())

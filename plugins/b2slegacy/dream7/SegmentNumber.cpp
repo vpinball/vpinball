@@ -13,7 +13,6 @@ SegmentNumber::SegmentNumber(Dream7Display* pDisplay)
 
 SegmentNumber::~SegmentNumber()
 {
-   delete m_pNumberMatrix;
 }
 
 void SegmentNumber::OnInvalidated()
@@ -56,15 +55,6 @@ void SegmentNumber::Draw(VPXGraphics* pRenderer)
          continue;
       pSegment->Draw(pRenderer);
    }
-}
-
-GraphicsPath* SegmentNumber::GetBounds()
-{
-   constexpr SDL_FRect bounds = {-14.0f, -14.0f, 173.0f, 272.f};
-   GraphicsPath* pRegion = new GraphicsPath();
-   pRegion->AddRectangle(bounds);
-   pRegion->Transform(m_pNumberMatrix);
-   return pRegion;
 }
 
 void SegmentNumber::SetCharacter(const string& szCharacter)
@@ -143,10 +133,9 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
 
 void SegmentNumber::InitMatrix(const SDL_FPoint& location, const Matrix* pMatrix)
 {
-   delete m_pNumberMatrix;
-   m_pNumberMatrix = pMatrix->Clone();
-   m_pNumberMatrix->Translate(location.x, location.y);
-   m_segments.Transform(m_pNumberMatrix);
+   m_numberMatrix = *pMatrix;
+   m_numberMatrix.Translate(location.x, location.y);
+   m_segments.Transform(&m_numberMatrix);
 }
 
 bool SegmentNumber::SetSegmentState(Segment* pSegment, const bool isOn)
@@ -157,15 +146,6 @@ bool SegmentNumber::SetSegmentState(Segment* pSegment, const bool isOn)
    pSegment->SetOn(isOn);
 
    return true;
-}
-
-void SegmentNumber::GetSegmentRegions()
-{
-   for (auto& pSegment : m_segments) {
-      GraphicsPath* pPath = pSegment->GetGlassPathTransformed();
-      pPath->Transform(m_pNumberMatrix);
-      delete pPath;
-   }
 }
 
 void SegmentNumber::DisplayCharacter(const string& szCharacter)

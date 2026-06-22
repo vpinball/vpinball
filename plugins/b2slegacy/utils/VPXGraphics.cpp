@@ -1,8 +1,6 @@
 /*
- * Portions of this code was derived from SDL_gfx, BBCSDL, and Wine:
+ * Portions of this code was derived from Wine:
  *
- * https://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx
- * https://github.com/rtrussell/BBCSDL/blob/master/src/SDL2_gfxPrimitives.c
  * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/graphics.c
  * https://gitlab.winehq.org/wine/wine/-/blob/master/dlls/gdiplus/gdiplus_private.h
  */
@@ -20,39 +18,18 @@
 #endif
 #include <utils/color.h>
 
-#define MAX_GRAPHICS_POLYSIZE 16384
-
 namespace B2SLegacy {
 
-static int GraphicsCompareFloat(const void *a, const void *b)
-{
-   float diff = *((float*)a + 1) - *((float*)b + 1);
-   if (diff != 0.f)
-      return (diff > 0.f) - (diff < 0.f);
-   diff = *(float*)a - *(float*)b;
-   return (diff > 0.f) - (diff < 0.f);
-}
-
 typedef uint32_t ARGB;
-typedef float REAL;
 typedef int INT;
 
-static inline INT gdip_round(REAL x)
+// Blend surround->center at an already-quantized position (0..255)
+// (if necessary, could use similar trick/approximation(s) as blend_into below)
+static inline ARGB blend_colors_pos(ARGB start, ARGB end, INT pos)
 {
-    return (INT) floorf(x + 0.5);
-}
-
-static ARGB blend_colors(ARGB start, ARGB end, REAL position)
-{
-    INT start_a, end_a, final_a;
-    INT pos;
-
-    pos = gdip_round(position * 0xff);
-
-    start_a = ((start >> 24) & 0xff) * (pos ^ 0xff);
-    end_a = ((end >> 24) & 0xff) * pos;
-
-    final_a = start_a + end_a;
+    const INT start_a = ((start >> 24) & 0xff) * (pos ^ 0xff);
+    const INT end_a = ((end >> 24) & 0xff) * pos;
+    const INT final_a = start_a + end_a;
 
     if (final_a < 0xff) return 0;
 
@@ -62,26 +39,42 @@ static ARGB blend_colors(ARGB start, ARGB end, REAL position)
         (((start & 0xff) * start_a + ((end & 0xff) * end_a)) / final_a);
 }
 
+// Source-over blend of (r,g,b,a) onto an already-stored buffer pixel, in place.
+// Two-lane (R/B, G/A) integer blend, /255 is approximated by >>8 (<=1 LSB low; a==255 path stays exact) though
+static inline void blend_into(uint32_t& pixel, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+   if (a == 0)
+      return;
+   const uint32_t src = (uint32_t)r | ((uint32_t)g << 8) | ((uint32_t)b << 16) | 0xff000000u;
+   if (a == 255) {
+      pixel = src;
+      return;
+   }
+   const uint32_t dst = pixel;
+   const uint32_t alpha = a;
+   const uint32_t invAlpha = 255u - a;
+   const uint32_t rb = ( src       & 0x00FF00FFu) * alpha + ( dst       & 0x00FF00FFu) * invAlpha;
+   const uint32_t ga = ((src >> 8) & 0x00FF00FFu) * alpha + ((dst >> 8) & 0x00FF00FFu) * invAlpha;
+   pixel = ((rb >> 8) & 0x00FF00FFu) | (ga & 0xFF00FF00u);
+}
+
 VPXGraphics::VPXGraphics(VPXPluginAPI* vpxApi, int width, int height)
    : m_vpxApi(vpxApi),
+     m_pixelBuffer((size_t)width * height, 0),
      m_width(width),
-     m_height(height),
-     m_bufferSize(width * height * 4)
+     m_height(height)
 {
-   m_pixelBuffer = new uint8_t[m_bufferSize];
-   memset(m_pixelBuffer, 0, m_bufferSize);
 }
 
 VPXGraphics::~VPXGraphics()
 {
    if (m_texture)
       m_vpxApi->DeleteTexture(m_texture);
-   delete[] m_pixelBuffer;
 }
 
 void VPXGraphics::Clear()
 {
-   memset(m_pixelBuffer, 0, m_bufferSize);
+   std::fill(m_pixelBuffer.begin(), m_pixelBuffer.end(), 0u);
    m_needsTextureUpdate = true;
 }
 
@@ -91,39 +84,40 @@ void VPXGraphics::SetColor(uint32_t color, uint8_t alpha)
    m_alpha = alpha;
 }
 
-void VPXGraphics::FillPath(GraphicsPath* pPath)
+void VPXGraphics::FillPath(const GraphicsPath& pPath)
 {
-   const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
+   const std::vector<SDL_FPoint>* const pPoints = pPath.GetPoints();
    if (pPoints->size() < 3)
       return;
 
-   FillPolygon(*pPoints);
+   FillPolygon<false>(pPoints, nullptr);
    m_needsTextureUpdate = true;
 }
 
-void VPXGraphics::FillPath(Brush* pBrush, GraphicsPath* pPath)
+void VPXGraphics::FillPath(const Brush& pBrush, const GraphicsPath& pPath)
 {
-   const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
+   const std::vector<SDL_FPoint>* const pPoints = pPath.GetPoints();
    if (pPoints->size() < 3)
       return;
 
-   if (pBrush->GetBrushType() == BrushType_PathGradient) {
-      PathGradientBrush* const pGradientBrush = static_cast<PathGradientBrush*>(pBrush);
+   if (pBrush.GetBrushType() == BrushType_PathGradient) {
+      const PathGradientBrush* const pGradientBrush = static_cast<const PathGradientBrush*>(&pBrush);
       if (pGradientBrush->GetPath()->GetPoints()->size() < 3)
          return;
-      GradientData gradientData;
-      InitGradientData(gradientData, pGradientBrush);
-      FillPolygon(*pPoints, &gradientData);
+      //!! Note: if the brush's gradient path equals the fill path, the vertices get transformed twice:
+      // once here for the gradient geometry, and once in FillPolygon for the fill, BUT the API allows the two paths to differ
+      InitGradientData(m_gradientData, pGradientBrush);
+      FillPolygon<true>(pPoints, &m_gradientData);
    }
    else {
-      SolidBrush* const pSolidBrush = static_cast<SolidBrush*>(pBrush);
+      const SolidBrush* const pSolidBrush = static_cast<const SolidBrush*>(&pBrush);
       SetColor(pSolidBrush->GetColor(), pSolidBrush->GetAlpha());
-      FillPolygon(*pPoints);
+      FillPolygon<false>(pPoints, nullptr);
    }
    m_needsTextureUpdate = true;
 }
 
-void VPXGraphics::InitGradientData(GradientData& gradientData, PathGradientBrush* pBrush)
+void VPXGraphics::InitGradientData(GradientData& gradientData, const PathGradientBrush* const __restrict pBrush)
 {
    const std::vector<SDL_FPoint>* const pPoints = pBrush->GetPath()->GetPoints();
    const size_t count = pPoints->size();
@@ -137,105 +131,142 @@ void VPXGraphics::InitGradientData(GradientData& gradientData, PathGradientBrush
    centerX /= (float)count;
    centerY /= (float)count;
 
-   gradientData.outer.reserve(count);
-   for (const auto& point : *pPoints) {
+   const Matrix xform = EffectiveTransform();
+   std::vector<SDL_FPoint> outer(count);
+   for (size_t i = 0; i < count; i++) {
+      const auto& point = (*pPoints)[i];
       float x = point.x;
       float y = point.y;
-      m_pModelMatrix.TransformPoint(x, y);
-      gradientData.outer.push_back({ x + (float)m_translateX, y + (float)m_translateY });
+      xform.TransformPoint(x, y);
+      outer[i] = { x, y };
    }
 
    // FocusScales push the solid center color outward: uniform scales give a
-   // constant inner boundary, anisotropic ones keep a scaled inner polygon.
+   // constant inner boundary, anisotropic ones keep a scaled inner polygon
+   // (gradientData is reused across fills, so reset uniformInner unconditionally)
    const SDL_FPoint& focusScales = pBrush->GetFocusScales();
+   std::vector<SDL_FPoint> inner((focusScales.x == focusScales.y) ? 0 : count);
+   gradientData.uniformInner = 1.0f;
    if (focusScales.x == focusScales.y)
-      gradientData.uniformInner = 1.0f - clamp(focusScales.x, 0.0f, 0.999f);
+      gradientData.uniformInner -= clamp(focusScales.x, 0.0f, 0.999f);
    else {
-      gradientData.inner.reserve(count);
-      for (const auto& point : *pPoints) {
+      for (size_t i = 0; i < count; i++) {
+         const auto& point = (*pPoints)[i];
          float x = centerX + (point.x - centerX) * focusScales.x;
          float y = centerY + (point.y - centerY) * focusScales.y;
-         m_pModelMatrix.TransformPoint(x, y);
-         gradientData.inner.push_back({ x + (float)m_translateX, y + (float)m_translateY });
+         xform.TransformPoint(x, y);
+         inner[i] = { x, y };
       }
    }
+   gradientData.hasInner = !inner.empty();
 
-   m_pModelMatrix.TransformPoint(centerX, centerY);
-   gradientData.cx = centerX + (float)m_translateX;
-   gradientData.cy = centerY + (float)m_translateY;
+   xform.TransformPoint(centerX, centerY);
+   const float cx = centerX;
+   const float cy = centerY;
 
-   const uint32_t centerColor = pBrush->GetCenterColor();
-   gradientData.centerArgb = ((uint32_t)pBrush->GetCenterAlpha() << 24)
-      | ((uint32_t)GetRValue(centerColor) << 16) | ((uint32_t)GetGValue(centerColor) << 8) | (uint32_t)GetBValue(centerColor);
-   const uint32_t surroundColor = pBrush->GetSurroundColor();
-   gradientData.surroundArgb = ((uint32_t)pBrush->GetSurroundAlpha() << 24)
-      | ((uint32_t)GetRValue(surroundColor) << 16) | ((uint32_t)GetGValue(surroundColor) << 8) | (uint32_t)GetBValue(surroundColor);
+   const uint32_t centerArgb   = (pBrush->GetCenterColor()   & 0x00FFFFFFu) | ((uint32_t)pBrush->GetCenterAlpha()   << 24);
+   const uint32_t surroundArgb = (pBrush->GetSurroundColor() & 0x00FFFFFFu) | ((uint32_t)pBrush->GetSurroundAlpha() << 24);
+
+   // Per-pixel blend_colors LUT: tabulate the surround->center blend once. The table
+   // depends only on the two colors, so reuse it across fills until these change
+   if (!gradientData.lutValid || surroundArgb != gradientData.lutSurround || centerArgb != gradientData.lutCenter) {
+      for (int k = 0; k < 256; k++)
+         gradientData.blendLut[k] = blend_colors_pos(surroundArgb, centerArgb, k);
+      gradientData.lutSurround = surroundArgb;
+      gradientData.lutCenter = centerArgb;
+      gradientData.lutValid = true;
+   }
+
+   // Precompute each fan triangle's affine coefficients (see GradientEdge)
+   gradientData.edges.resize(count);
+   for (size_t i = 0; i < count; i++) {
+      const size_t j = (i + 1) == count ? 0 : (i + 1);
+      const float sx = outer[i].x, sy = outer[i].y;
+      const float ex = outer[j].x, ey = outer[j].y;
+      GradientEdge& e = gradientData.edges[i];
+
+      const float denom = (sy - ey) * (cx - ex) + (ex - sx) * (cy - ey);
+      e.denomOk = fabsf(denom) >= 1e-6f;
+      if (e.denomOk) {
+         const float inv = 1.0f / denom;
+         e.wcA = (sy - ey) * inv;
+         e.wcB = (ex - sx) * inv;
+         e.wcC = (-(sy - ey) * ex - (ex - sx) * ey) * inv;
+         e.wsA = (ey - cy) * inv;
+         e.wsB = (cx - ex) * inv;
+         e.wsC = (-(ey - cy) * ex - (cx - ex) * ey) * inv;
+      }
+      else {
+         e.wcA = e.wcB = e.wcC = e.wsA = e.wsB = e.wsC = 0.0f;
+      }
+
+      const float cd = (ey - sy) * (sx - cx) + (ex - sx) * (cy - sy);
+      e.cdOk = fabsf(cd) >= 1e-6f;
+      e.dA = e.dB = e.dC = 0.0f;
+      e.dInnerS = e.dInnerE = 0.0f;
+      if (e.cdOk) {
+         const float cinv = 1.0f / cd;
+         e.dA = -(ey - sy) * cinv;
+         e.dB =  (ex - sx) * cinv;
+         e.dC =  ((ey - sy) * sx - (ex - sx) * sy) * cinv;
+         if (gradientData.hasInner) {
+            const float isx = inner[i].x, isy = inner[i].y;
+            const float iex = inner[j].x, iey = inner[j].y;
+            e.dInnerS = ((ey - sy) * (sx - isx) + (ex - sx) * (isy - sy)) * cinv;
+            e.dInnerE = ((ey - sy) * (sx - iex) + (ex - sx) * (iey - sy)) * cinv;
+         }
+      }
+   }
 }
 
 void VPXGraphics::GradientColorAt(const GradientData& gradientData, float x, float y, uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& a)
 {
-   // GDI+ fans the path into one triangle per edge; we sample a single pixel
-   // (to reuse FillPolygon's anti-aliasing), so first pick its containing
-   // triangle, then use Wine's distance math.
-   const std::vector<SDL_FPoint>& outer = gradientData.outer;
-   const size_t count = outer.size();
-   const SDL_FPoint center_point = { gradientData.cx, gradientData.cy };
-
+   // Pick the containing fan triangle (highest min-barycentric score) and read
+   // its radial distance, all from the precomputed affine coefficients
    float distance = 1.0f;
    float innerDistance = gradientData.uniformInner;
    float bestScore = -FLT_MAX;
+   const size_t count = gradientData.edges.size();
    for (size_t i = 0; i < count; i++) {
-      const SDL_FPoint start_point = outer[i];
-      const SDL_FPoint end_point = outer[(i + 1) == count ? 0 : (i + 1)];
-
-      const float denom = (start_point.y - end_point.y) * (center_point.x - end_point.x) + (end_point.x - start_point.x) * (center_point.y - end_point.y);
-      if (fabsf(denom) < 1e-6f)
+      const GradientEdge& e = gradientData.edges[i];
+      if (!e.denomOk)
          continue;
-      const float wCenter = ((start_point.y - end_point.y) * (x - end_point.x) + (end_point.x - start_point.x) * (y - end_point.y)) / denom;
-      const float wStart = ((end_point.y - center_point.y) * (x - end_point.x) + (center_point.x - end_point.x) * (y - end_point.y)) / denom;
+      const float wCenter = e.wcA * x + e.wcB * y + e.wcC;
+      const float wStart  = e.wsA * x + e.wsB * y + e.wsC;
       const float wEnd = 1.0f - wCenter - wStart;
       const float score = std::min(std::min(wCenter, wStart), wEnd);
       if (score <= bestScore)
          continue;
       bestScore = score;
 
-      const float center_distance = (end_point.y - start_point.y) * (start_point.x - center_point.x) +
-         (end_point.x - start_point.x) * (center_point.y - start_point.y);
-      if (fabsf(center_distance) < 1e-6f) {
+      if (!e.cdOk) {
          distance = 1.0f;
          innerDistance = gradientData.uniformInner;
          continue;
       }
-      distance = (end_point.y - start_point.y) * (start_point.x - x) +
-         (end_point.x - start_point.x) * (y - start_point.y);
-      distance = clamp(distance / center_distance, 0.0f, 1.0f);
+      distance = clamp(e.dA * x + e.dB * y + e.dC, 0.0f, 1.0f);
 
-      // FocusScales (the bulb glow) moves the full-center-color boundary outward.
-      if (gradientData.inner.empty())
+      // FocusScales (the bulb glow) moves the full-center-color boundary outward
+      if (!gradientData.hasInner)
          innerDistance = gradientData.uniformInner;
       else {
-         const SDL_FPoint& innerS = gradientData.inner[i];
-         const SDL_FPoint& innerE = gradientData.inner[(i + 1) == count ? 0 : (i + 1)];
-         const float dInnerS = ((end_point.y - start_point.y) * (start_point.x - innerS.x) + (end_point.x - start_point.x) * (innerS.y - start_point.y)) / center_distance;
-         const float dInnerE = ((end_point.y - start_point.y) * (start_point.x - innerE.x) + (end_point.x - start_point.x) * (innerE.y - start_point.y)) / center_distance;
-         const float t = (wStart + wEnd > 1e-6f) ? clamp(wEnd / (wStart + wEnd), 0.0f, 1.0f) : 0.0f;
-         innerDistance = dInnerS + (dInnerE - dInnerS) * t;
+         innerDistance = e.dInnerS;
+         if (wStart + wEnd > 1e-6f)
+            innerDistance += (e.dInnerE - e.dInnerS) * clamp(wEnd / (wStart + wEnd), 0.0f, 1.0f);
       }
    }
 
-   const float position = (innerDistance > 1e-6f) ? clamp(distance / innerDistance, 0.0f, 1.0f) : 1.0f;
-
-   const ARGB outer_color = gradientData.surroundArgb;
-   const ARGB argb = blend_colors(outer_color, gradientData.centerArgb, position);
-   a = (uint8_t)((argb >> 24) & 0xff);
-   r = (uint8_t)((argb >> 16) & 0xff);
+   const int idx = (innerDistance > 1e-6f) ? static_cast<int>(clamp((distance / innerDistance) * 255.0f + 0.5f, 0.0f, 255.0f)) : 255;
+   const ARGB argb = gradientData.blendLut[idx];
+   r = (uint8_t)(argb & 0xff);
    g = (uint8_t)((argb >> 8) & 0xff);
-   b = (uint8_t)(argb & 0xff);
+   b = (uint8_t)((argb >> 16) & 0xff);
+   a = (uint8_t)((argb >> 24) /*& 0xff*/);
 }
 
-void VPXGraphics::DrawPath(GraphicsPath* pPath)
+void VPXGraphics::DrawPath(const GraphicsPath& pPath)
 {
-   const std::vector<SDL_FPoint>* const pPoints = pPath->GetPoints();
+   const std::vector<SDL_FPoint>* const pPoints = pPath.GetPoints();
    if (pPoints->size() < 2)
       return;
 
@@ -243,208 +274,154 @@ void VPXGraphics::DrawPath(GraphicsPath* pPath)
    m_needsTextureUpdate = true;
 }
 
-void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points, const GradientData* pGradientData)
+// Accumulate one edge sub-segment (clipped to a single scanline) into a row of
+// signed-area deltas. (xa, xb) are the edge's x at the top and bottom of the
+// scanline slice and 'd' is the signed vertical coverage of that slice
+// (height * winding direction). After a left-to-right prefix sum of the row,
+// cell C holds the signed coverage of pixel C: the convention is that the area
+// to the *right* of the edge is "inside", so the per-cell partial plus a carry
+// into the next cell sum to 'd' and the prefix sum propagates full coverage
+// rightward. 'acc' must have (w + 1) cells; column w is the carry sink
+static inline void AccumulateSpan(float* const __restrict acc, const int w, float xa, float xb, const float d)
 {
-   const int ps = static_cast<int>(points.size());
-   if (ps < 3) return;
+   float xL = xa < xb ? xa : xb;
+   const float xR = xa < xb ? xb : xa;
+   const float origDx = xR - xL;
 
-   double* const __restrict vx = new double[ps];
-   double* const __restrict vy = new double[ps];
+   // Vertical (or sub-cell-wide) edge: all coverage lands in one column.
+   if (origDx <= 1e-6f) {
+      if (xL < 0.0f) { acc[0] += d; return; } // edge left of view: fully inside
+      if (xL >= (float)w) return;             // edge right of view: nothing visible
+      const float fc = floorf(xL);            // assume xL >= 0
+      const int c = (int)fc;
+      const float f = xL - fc;                // sub-cell position
+      acc[c]     += d * (1.0f - f);
+      acc[c + 1] += d * f;
+      return;
+   }
 
-   // Transform points and store in arrays
-   int i = 0;
-   for (const auto &point : points) {
+   const float invDx = 1.0f / origDx;
+
+   // Portion left of the viewport contributes full coverage from column 0
+   if (xL < 0.0f) {
+      const float seg = std::min(xR, 0.0f) - xL;
+      acc[0] += d * (seg * invDx);
+      if (xR <= 0.0f) return;
+      xL = 0.0f;
+   }
+   if (xL >= (float)w) return;
+   const float xRc = std::min(xR, (float)w); // portion right of view covers no visible cell
+
+   // Walk the integer columns the (clipped) edge spans, splitting 'd' in proportion to each piece's x-length and depositing its trapezoidal area
+   for (int c = (int)xL; (float)c < xRc; c++) {
+      const float pa = std::max(xL, (float)c);
+      const float pb = std::min(xRc, (float)c + 1.f);
+      const float len = pb - pa;
+      if (len <= 0.0f)
+         continue;
+      const float dp = d * (len * invDx);
+      const float f = 0.5f * (pa + pb) - (float)c; // mean sub-cell position, in [0,1]
+      acc[c]     += dp * (1.0f - f);
+      acc[c + 1] += dp * f;
+   }
+}
+
+template <bool Gradient>
+void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>* const __restrict points, [[maybe_unused]] const GradientData* const __restrict pGradientData)
+{
+   const int ps = static_cast<int>(points->size());
+   if (ps < 3)
+      return;
+
+   // Transform vertices into surface space and track the bounding box
+   const Matrix xform = EffectiveTransform();
+   m_rasterVerts.clear();
+   m_rasterVerts.reserve(ps);
+   float minXs = FLT_MAX, minYs = FLT_MAX, maxXs = -FLT_MAX, maxYs = -FLT_MAX;
+   for (const auto& point : *points) {
       float x = point.x;
       float y = point.y;
-      m_pModelMatrix.TransformPoint(x, y);
-      vx[i] = static_cast<double>(x) + m_translateX;
-      vy[i] = static_cast<double>(y) + m_translateY;
-      i++;
+      xform.TransformPoint(x, y);
+      m_rasterVerts.push_back({ x, y });
+      minXs = std::min(minXs, x); maxXs = std::max(maxXs, x);
+      minYs = std::min(minYs, y); maxYs = std::max(maxYs, y);
    }
 
-   double minx = 99999.0;
-   double maxx = -99999.0;
-   double prec = 0.00001;
-   uint8_t r = GetRValue(m_color);
-   uint8_t g = GetGValue(m_color);
-   uint8_t b = GetBValue(m_color);
-   uint8_t a = m_alpha;
+   // Integer bounding box clipped to the surface; everything below is local to it
+   const int ix0 = std::max(0, (int)std::floor(minXs));
+   const int iy0 = std::max(0, (int)std::floor(minYs));
+   const int ix1 = std::min(m_width,  (int)std::ceil(maxXs));
+   const int iy1 = std::min(m_height, (int)std::ceil(maxYs));
+   const int w = ix1 - ix0;
+   const int h = iy1 - iy0;
+   if (w <= 0 || h <= 0)
+      return;
 
-   for (i = 0; i < ps; i++) {
-      double x = vx[i];
-      double y = std::abs(vy[i]);
-      if (x < minx) minx = x;
-      if (x > maxx) maxx = x;
-      if (y > prec) prec = y;
+   // Build the non-horizontal edge list in bbox-local coordinates
+   const float ix0f = (float)ix0, iy0f = (float)iy0;
+   m_rasterEdges.clear();
+   for (int i = 0; i < ps; i++) {
+      const SDL_FPoint& a = m_rasterVerts[i];
+      const SDL_FPoint& b = m_rasterVerts[(i + 1 == ps) ? 0 : (i + 1)];
+      const float ax = a.x - ix0f, ay = a.y - iy0f;
+      const float bx = b.x - ix0f, by = b.y - iy0f;
+      if (ay == by) // horizontal edge contributes no coverage
+         continue;
+      RasterEdge e;
+      if (ay < by) { e.dir =  1.0f; e.x0 = ax; e.y0 = ay; e.y1 = by; e.dxdy = (bx - ax) / (by - ay); }
+      else         { e.dir = -1.0f; e.x0 = bx; e.y0 = by; e.y1 = ay; e.dxdy = (ax - bx) / (ay - by); }
+      m_rasterEdges.push_back(e);
    }
-   minx = std::floor(minx);
-   maxx = std::floor(maxx);
-   static const/*expr*/ double p219 = std::pow(2,19);
-   prec = std::floor(p219 / prec);
+   if (m_rasterEdges.empty())
+      return;
 
-   float* const __restrict list = new float[MAX_GRAPHICS_POLYSIZE];
+   m_scanAccum.assign((size_t)w + 1, 0.0f);
+   float* const __restrict acc = m_scanAccum.data();
 
-   int yi = 0;
-   double y0 = std::floor(vy[ps - 1] * prec) / prec;
-   double y1 = std::floor(vy[0] * prec) / prec;
-   for (i = 1; i <= ps; i++) {
-      if (yi > MAX_GRAPHICS_POLYSIZE - 4) {
-         delete[] list;
-         delete[] vx;
-         delete[] vy;
-         return;
-      }
-      double y2 = std::floor(vy[i == ps ? 0 : i] * prec) / prec;
-      if (((y1 < y2) - (y1 > y2)) == ((y0 < y1) - (y0 > y1))) {
-         list[yi++] = -100002.0f;
-         list[yi++] = (float)y1;
-         list[yi++] = -100002.0f;
-         list[yi++] = (float)y1;
-      }
-      else {
-         if (y0 != y1) {
-            list[yi++] = (float)((y1 < y0) - (y1 > y0)) - 100002.0f;
-            list[yi++] = (float)y1;
-         }
-         if (y1 != y2) {
-            list[yi++] = (float)((y1 < y2) - (y1 > y2)) - 100002.0f;
-            list[yi++] = (float)y1;
-         }
-      }
-      y0 = y1;
-      y1 = y2;
-   }
-   const int xi = yi;
+   // Solid-fill color (unused by the gradient case)
+   [[maybe_unused]] const uint8_t r = GetRValue(m_color);
+   [[maybe_unused]] const uint8_t g = GetGValue(m_color);
+   [[maybe_unused]] const uint8_t b = GetBValue(m_color);
+   [[maybe_unused]] const uint8_t a = m_alpha;
 
-   qsort (list, yi / 2, sizeof(float) * 2, GraphicsCompareFloat);
+   for (int row = 0; row < h; row++) {
+      const float rowTop = (float)row;
+      const float rowBot = rowTop + 1.f;
 
-   for (i = 1; i <= ps; i++) {
-      const double d = 0.5 / prec;
-
-      double x1 = vx[i - 1];
-      y1 = floor(vy[i - 1] * prec) / prec;
-      double x2 = vx[i == ps ? 0 : i];
-      double y2 = std::floor(vy[i == ps ? 0 : i] * prec) / prec;
-
-      if (y2 < y1) {
-         double tmp1 = x1; x1 = x2; x2 = tmp1;
-         double tmp2 = y1; y1 = y2; y2 = tmp2;
-      }
-      if (y2 != y1)
-         y0 = (x2 - x1) / (y2 - y1);
-
-      for (int j = 1; j < xi; j += 4) {
-         double y = list[j];
-         if (((y + d) <= y1) || (y == list[j + 4]))
+      // Deposit each edge's contribution for the part it covers in this scanline
+      for (const RasterEdge& e : m_rasterEdges) {
+         const float ytop = std::max(rowTop, e.y0);
+         const float ybot = std::min(rowBot, e.y1);
+         if (ybot <= ytop)
             continue;
-         if ((y -= d) >= y2)
-            break;
-         if (yi > MAX_GRAPHICS_POLYSIZE - 4) {
-            delete[] list;
-            delete[] vx;
-            delete[] vy;
-            return;
-         }
-         if (y > y1) {
-            list[yi++] = (float)(x1 + y0 * (y - y1));
-            list[yi++] = (float)y;
-         }
-         y += d * 2.0;
-         if (y < y2) {
-            list[yi++] = (float)(x1 + y0 * (y - y1));
-            list[yi++] = (float)y;
-         }
+         const float xa = e.x0 + (ytop - e.y0) * e.dxdy;
+         const float xb = e.x0 + (ybot - e.y0) * e.dxdy;
+         AccumulateSpan(acc, w, xa, xb, (ybot - ytop) * e.dir);
       }
 
-      double y = std::floor(y1) + 1.0;
-      while (y <= y2) {
-         const double x = x1 + y0 * (y - y1);
-         if (yi > MAX_GRAPHICS_POLYSIZE - 2) {
-            delete[] list;
-            delete[] vx;
-            delete[] vy;
-            return;
+      // Prefix sum turns the area deltas into per-pixel coverage; clear cells as consumed, so the row buffer is zeroed for the next scanline.
+      // The bbox was already clipped to the surface, so the row is fully visible/in screen bounds
+      const int sy = iy0 + row;
+      uint32_t* const __restrict rowPix = m_pixelBuffer.data() + (size_t)sy * m_width + ix0;
+      float running = 0.0f;
+      for (int col = 0; col < w; col++) {
+         running += acc[col];
+         acc[col] = 0.0f;
+         float cov = std::fabs(running);
+         if (cov <= 1.0f / 512.0f)   // below ~0.5/255: invisible
+            continue;
+         if (cov > 1.0f)
+            cov = 1.0f;
+         if constexpr (Gradient) {
+            uint8_t gr, gg, gb, ga;
+            GradientColorAt(*pGradientData, (float)(ix0 + col) + 0.5f, (float)sy + 0.5f, gr, gg, gb, ga);
+            blend_into(rowPix[col], gr, gg, gb, (uint8_t)((float)ga * cov + 0.5f));
          }
-         list[yi++] = (float)x;
-         list[yi++] = (float)y;
-         y += 1.0;
+         else
+            blend_into (rowPix[col], r, g, b, (cov >= 0.996f) ? a : (uint8_t)((float)a * cov + 0.5f)); //!! magic value, to snap to 1
       }
+      acc[w] = 0.0f;   // clear the carry sink
    }
-
-   delete[] vx;
-   delete[] vy;
-
-   qsort (list, yi / 2, sizeof(float) * 2, GraphicsCompareFloat);
-
-   float* const __restrict strip = new float[(size_t)(maxx - minx) + 2];
-   memset(strip, 0, ((size_t)(maxx - minx) + 2) * sizeof(float));
-   const int n = yi;
-   yi = (int)list[1];
-   int j = 0;
-   for (i = 0; i < n - 7; i += 4) {
-      float x1 = list[i + 0];
-      float y1 = list[i + 1];
-      float x3 = list[i + 2];
-      float x2 = list[i + j + 0];
-      float y2 = list[i + j + 1];
-      float x4 = list[i + j + 2];
-
-      if (x1 + x3 == -200002.0f)
-         j += 4;
-      else if (x1 + x3 == -200006.0f)
-         j -= 4;
-      else if ((x1 >= minx) && (x2 >= minx)) {
-         if (x1 > x2) { float tmp = x1; x1 = x2; x2 = tmp; }
-         if (x3 > x4) { float tmp = x3; x3 = x4; x4 = tmp; }
-
-         for (int xi = (int)(x1 - minx); xi <= (int)(x4 - minx); xi++) {
-            float u, v;
-            float x = (float)(minx + xi);
-            if (x < x2)  u = (x - x1 + 1.f) / (x2 - x1 + 1.f); else u = 1.0f;
-            if (x >= x3 - 1.f) v = (x4 - x) / (x4 - x3 + 1.f); else v = 1.0f;
-            if ((u > 0.0f) && (v > 0.0f))
-               strip[xi] += (y2 - y1) * (u + v - 1.0f);
-         }
-      }
-
-      if ((yi == (int)(list[i + 5] - 1.0f)) || (i == n - 8)) {
-         for (int xi = 0; xi <= maxx - minx; xi++) {
-            if (strip[xi] != 0.0f) {
-               if (strip[xi] >= 0.996f) {
-                  // Fill solid pixels
-                  int x0 = xi;
-                  while (strip[++xi] >= 0.996f) ;
-                  xi--;
-                  for (int x = x0; x <= xi; x++) {
-                     if (pGradientData) {
-                        uint8_t gr, gg, gb, ga;
-                        GradientColorAt(*pGradientData, (float)minx + (float)x + 0.5f, (float)yi + 0.5f, gr, gg, gb, ga);
-                        SetPixelBlended((int)minx + x, yi, gr, gg, gb, ga);
-                     }
-                     else
-                        SetPixel((int)minx + x, yi, r, g, b, a);
-                  }
-               }
-               else {
-                  // Anti-aliased pixel
-                  if (pGradientData) {
-                     uint8_t gr, gg, gb, ga;
-                     GradientColorAt(*pGradientData, (float)minx + (float)xi + 0.5f, (float)yi + 0.5f, gr, gg, gb, ga);
-                     SetPixelBlended((int)minx + xi, yi, gr, gg, gb, (uint8_t)((float)ga * strip[xi]));
-                  }
-                  else {
-                     uint8_t blendedAlpha = (uint8_t)((float)a * strip[xi]);
-                     SetPixelBlended((int)minx + xi, yi, r, g, b, blendedAlpha);
-                  }
-               }
-            }
-         }
-         memset(strip, 0, ((size_t)(maxx - minx) + 2) * sizeof(float));
-         yi++;
-      }
-   }
-   delete[] list;
-   delete[] strip;
 }
 
 void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
@@ -453,10 +430,8 @@ void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
    if (ps < 2)
       return;
 
-   uint8_t r = GetRValue(m_color);
-   uint8_t g = GetGValue(m_color);
-   uint8_t b = GetBValue(m_color);
-   uint8_t a = m_alpha;
+   const uint32_t rgba = (m_color & 0x00FFFFFFu) | ((uint32_t)m_alpha << 24);
+   const Matrix xform = EffectiveTransform();
 
    for (int i = 0; i < ps; i++) {
       const int nextIndex = (i + 1) == ps ? 0 : (i+1);
@@ -466,19 +441,14 @@ void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
       float x2 = points[nextIndex].x;
       float y2 = points[nextIndex].y;
 
-      m_pModelMatrix.TransformPoint(x1, y1);
-      m_pModelMatrix.TransformPoint(x2, y2);
+      xform.TransformPoint(x1, y1);
+      xform.TransformPoint(x2, y2);
 
-      x1 += (float)m_translateX;
-      y1 += (float)m_translateY;
-      x2 += (float)m_translateX;
-      y2 += (float)m_translateY;
-
-      DrawLine((int)x1, (int)y1, (int)x2, (int)y2, r, g, b, a);
+      DrawLine((int)x1, (int)y1, (int)x2, (int)y2, rgba);
    }
 }
 
-void VPXGraphics::DrawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+void VPXGraphics::DrawLine(int x1, int y1, int x2, int y2, uint32_t rgba)
 {
    int dx = abs(x2 - x1);
    int dy = abs(y2 - y1);
@@ -487,7 +457,7 @@ void VPXGraphics::DrawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g,
    int err = dx - dy;
 
    while (true) {
-      SetPixel(x1, y1, r, g, b, a);
+      SetPixel(x1, y1, rgba);
 
       if (x1 == x2 && y1 == y2)
          break;
@@ -504,37 +474,18 @@ void VPXGraphics::DrawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g,
    }
 }
 
-void VPXGraphics::SetPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+void VPXGraphics::SetPixel(int x, int y, uint32_t rgba)
 {
    if (/*x < 0 ||*/ (unsigned int)x >= (unsigned int)m_width /*|| y < 0*/ || (unsigned int)y >= (unsigned int)m_height) // unsigned int test incl. <0
       return;
-
-   int offset = (y * m_width + x) * 4;
-   m_pixelBuffer[offset + 0] = r;
-   m_pixelBuffer[offset + 1] = g;
-   m_pixelBuffer[offset + 2] = b;
-   m_pixelBuffer[offset + 3] = a;
+   m_pixelBuffer[(size_t)y * m_width + x] = rgba;
 }
 
 void VPXGraphics::SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
    if (/*x < 0 ||*/ (unsigned int)x >= (unsigned int)m_width /*|| y < 0*/ || (unsigned int)y >= (unsigned int)m_height) // unsigned int test incl. <0
       return;
-
-   int offset = (y * m_width + x) * 4;
-
-   uint8_t existingR = m_pixelBuffer[offset + 0];
-   uint8_t existingG = m_pixelBuffer[offset + 1];
-   uint8_t existingB = m_pixelBuffer[offset + 2];
-   uint8_t existingA = m_pixelBuffer[offset + 3];
-
-   float alpha = (float)a * (float)(1.0/255.0);
-   float invAlpha = 1.0f - alpha;
-
-   m_pixelBuffer[offset + 0] = (uint8_t)((float)r * alpha + (float)existingR * invAlpha);
-   m_pixelBuffer[offset + 1] = (uint8_t)((float)g * alpha + (float)existingG * invAlpha);
-   m_pixelBuffer[offset + 2] = (uint8_t)((float)b * alpha + (float)existingB * invAlpha);
-   m_pixelBuffer[offset + 3] = (uint8_t)((float)a         + (float)existingA * invAlpha);
+   blend_into(m_pixelBuffer[(size_t)y * m_width + x], r, g, b, a);
 }
 
 VPXTexture VPXGraphics::GetTexture()
@@ -547,7 +498,7 @@ VPXTexture VPXGraphics::GetTexture()
 
 void VPXGraphics::SyncTexture()
 {
-   UpdateTexture(&m_texture, m_width, m_height, VPXTEXFMT_sRGBA8, m_pixelBuffer);
+   UpdateTexture(&m_texture, m_width, m_height, VPXTEXFMT_sRGBA8, m_pixelBuffer.data());
    m_needsTextureUpdate = false;
 }
 
@@ -581,11 +532,7 @@ void VPXGraphics::SetTransform(const Matrix& pModelMatrix)
 
 void VPXGraphics::FillRectangle(const SDL_Rect& rect)
 {
-   const uint32_t r = GetRValue(m_color);
-   const uint32_t g = GetGValue(m_color);
-   const uint32_t b = GetBValue(m_color);
-   const uint32_t a = m_alpha;
-   const uint32_t col = (a << 24) | (b << 16) | (g << 8) | r;
+   const uint32_t col = (m_color & 0x00FFFFFFu) | ((uint32_t)m_alpha << 24);
 
    int x1 = rect.x + m_translateX;
    int y1 = rect.y + m_translateY;
@@ -597,11 +544,11 @@ void VPXGraphics::FillRectangle(const SDL_Rect& rect)
    x2 = std::min(m_width, x2);
    y2 = std::min(m_height, y2);
 
-   uint32_t* const __restrict buf = reinterpret_cast<uint32_t*>(m_pixelBuffer);
+   uint32_t* const __restrict buf = m_pixelBuffer.data();
 
    for (int y = y1; y < y2; y++)
    {
-      int offset = y * m_width + x1;
+      size_t offset = (size_t)y * m_width + x1;
       for (int x = x1; x < x2; x++,offset++)
          buf[offset] = col;
    }
