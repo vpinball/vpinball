@@ -185,6 +185,8 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          m_pFormatContext = pFormatContext;
          m_videoStream = videoStream;
          m_pVideoContext = pVideoContext;
+         m_videoPtsBaseValid = false;
+         m_videoPtsBase = 0.0;
          m_audioStream = audioStream;
          m_pAudioContext = pAudioContext;
          m_running = true;
@@ -611,7 +613,16 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       std::lock_guard lock(m_mutex);
       m_libAv._av_frame_copy_props(selectedFrame.frame, frame);
       selectedFrame.age = 0;
-      selectedFrame.pts = (static_cast<double>(selectedFrame.frame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
+      int64_t framePts = frame->best_effort_timestamp != AV_NOPTS_VALUE ? frame->best_effort_timestamp : frame->pts;
+      const double framePtsSeconds = (framePts == AV_NOPTS_VALUE)
+         ? GetPlayTime()
+         : (static_cast<double>(framePts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
+      if (!m_videoPtsBaseValid)
+      {
+         m_videoPtsBase = framePtsSeconds;
+         m_videoPtsBaseValid = true;
+      }
+      selectedFrame.pts = framePtsSeconds - m_videoPtsBase;
       selectedFrame.uploaded = false;
       selectedFrame.valid = true;
       //LOGD(std::format("{} Decoded with Video PTS: {:5.3f} / Slot: {}", m_filename.filename().string(), selectedFrame.pts, selectedFrameSlot));

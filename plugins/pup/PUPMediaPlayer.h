@@ -64,6 +64,8 @@ private:
 
    int m_videoStream = -1;
    AVCodecContext* m_pVideoContext = nullptr;
+   bool m_videoPtsBaseValid = false;
+   double m_videoPtsBase = 0.0;
 
    // Slots of unordered decoded frames
    struct FrameInfo
