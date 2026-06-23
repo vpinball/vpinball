@@ -575,32 +575,32 @@ void Server::B2SSetScorePlayer(int playerno, int score)
 
 void Server::B2SSetScorePlayer1(int score)
 {
-   MyB2SSetScore(1, score, false);
+   MyB2SSetScorePlayer(1, score);
 }
 
 void Server::B2SSetScorePlayer2(int score)
 {
-   MyB2SSetScore(2, score, false);
+   MyB2SSetScorePlayer(2, score);
 }
 
 void Server::B2SSetScorePlayer3(int score)
 {
-   MyB2SSetScore(3, score, false);
+   MyB2SSetScorePlayer(3, score);
 }
 
 void Server::B2SSetScorePlayer4(int score)
 {
-   MyB2SSetScore(4, score, false);
+   MyB2SSetScorePlayer(4, score);
 }
 
 void Server::B2SSetScorePlayer5(int score)
 {
-   MyB2SSetScore(5, score, false);
+   MyB2SSetScorePlayer(5, score);
 }
 
 void Server::B2SSetScorePlayer6(int score)
 {
-   MyB2SSetScore(6, score, false);
+   MyB2SSetScorePlayer(6, score);
 }
 
 void Server::B2SSetScoreDigit(int digit, int value)
