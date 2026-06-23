@@ -276,6 +276,7 @@ public:
 
    bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    std::binary_semaphore m_rendererInitialized { 0 }; // Semaphore to signal when the renderer is initialized
+   std::binary_semaphore m_renderThreadStopped { 0 }; // Semaphore signaled by the render thread when it has left its render loop, so the destructor can free render resources without racing in-flight rendering
    std::binary_semaphore m_frameReadySem { 0 }; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 

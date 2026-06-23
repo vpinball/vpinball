@@ -497,6 +497,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 #endif
       rd->BGFXDesktopRenderLoop(init);
 
+   // Signal that the render loop has fully exited (no more rendering) so the destructor can free render
+   // resources without racing an in-flight frame still using them
+   rd->m_renderThreadStopped.release();
+
    // Wait until main thread has released all native resources
    rd->m_rendererInitialized.acquire();
    bgfx::shutdown();
@@ -1767,6 +1771,9 @@ RenderDevice::~RenderDevice()
       // Suspend rendering before deleting anything that could be used
       m_renderDeviceAlive = false;
       m_frameReadySem.release();
+      // Wait for the render thread to actually leave its render loop: it may still be mid-frame (using the
+      // shaders, meshes and textures freed below) since it only re-checks m_renderDeviceAlive between frames
+      m_renderThreadStopped.acquire();
    #endif
 
    m_quadMeshBuffer = nullptr;
