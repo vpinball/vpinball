@@ -317,7 +317,6 @@ private:
 public:
    bool m_vrApplyColorKey = false;
    bool m_vrPreviewShrink = false;
-   vec4 m_vrColorKey = vec4(0.f, 0.f, 0.f, 0.f);
 
 private:
    float m_visualNudgeStrength; // whether to shake the table/screen during nudges and how much

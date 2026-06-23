@@ -135,7 +135,9 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(basic_reflection_only, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
 
+   // BGFX OpenXR shaders
    SHADER_TECHNIQUE(vr_mask, SHADER_matWorldViewProj, SHADER_staticColor_Alpha),
+   SHADER_TECHNIQUE(vr_passthrough, SHADER_layer, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
 
    SHADER_TECHNIQUE(bg_decal_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_cBase_Alpha, SHADER_clip_plane),
@@ -1553,6 +1555,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_msaa_depth),
+      BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
       // Motion Blur as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_motionblur),
       // Anti-Aliasing as post-processes
@@ -1565,6 +1568,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_faaa),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_cas),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_bilateral_cas),
+      BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
       BGFX_EMBEDDED_SHADER(vs_pp_smaa_edgedetection),
       BGFX_EMBEDDED_SHADER(fs_pp_smaa_edgedetection),
       BGFX_EMBEDDED_SHADER(vs_pp_smaa_blendweightcalculation),
@@ -1736,6 +1740,9 @@ void Shader::Load()
 
       // Postprocessed motion blur
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));
+
+      // Postprocessed color keyed passthrough
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_passthrough, "vs_postprocess_st", "fs_pp_passthrough");
 
       // Postprocessed antialiasing
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, STEREO(vs_postprocess), STEREO(fs_pp_nfaa));

@@ -209,6 +209,7 @@ if ($gen_postprocess)
 {
 	Write-Host "`n>>>>>>>>>>>>>>>> Post process shaders"
 	New-Item -Path . -Name "../bgfx_postprocess.h" -ItemType "File" -Force -Value "// Postprocess Shaders`n"
+    Process-Shader "fs_pp_passthrough.sc" "postprocess.h" "fs_pp_passthrough_" "fragment" @($stereo[1])
 	for($k = 0; $k -lt 2; $k++)
 	{
 	  Process-Shader "vs_postprocess.sc" "postprocess.h" ("vs_postprocess" + $stOutput[$k]) "vertex" @($stereo[$k])
