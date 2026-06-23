@@ -74,10 +74,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
-#ifdef ENABLE_BGFX
-   m_fullscreen = false;
-#else
    m_fullscreen = g_isMobile || settings.GetWindow_FullScreen(m_windowId);
+#ifndef ENABLE_BGFX
    if (!g_isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
    {
       // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
@@ -111,10 +109,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
 
    constexpr bool isExtCreatedWindow = g_isMobile && g_isIOS;
-   #ifndef ENABLE_BGFX
    if (m_fullscreen && !isExtCreatedWindow)
    {
-      if (g_isAndroid) {
+#ifndef ENABLE_BGFX
+      if (g_isAndroid)
+#endif
+      {
         const SDL_DisplayMode* currentMode = SDL_GetCurrentDisplayMode(selectedDisplay.display);
         if (currentMode) {
             fullscreenDisplayMode = currentMode;
@@ -125,7 +125,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
             m_refreshrate = currentMode->refresh_rate;
             m_bitdepth = GetPixelFormatDepth(currentMode->format);
         }
+        else
+        {
+           m_fullscreen = false;
+        }
       }
+#ifndef ENABLE_BGFX
       else
       {
          const int requestedW = settings.GetWindow_FSWidth(m_windowId);
@@ -156,8 +161,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          PLOGE << "Requested fullscreen mode " << settings.GetWindow_Width(m_windowId) << 'x' << settings.GetWindow_Height(m_windowId) << " at "
                << settings.GetWindow_FSRefreshRate(m_windowId) << "Hz, Bit depth: " << settings.GetWindow_FSColorDepth(m_windowId) << " is not available. Switching to windowed mode.";
       }
+#endif
    }
-   #endif
 
    // Fullscreen failed or was not requested, setup windowed mode
    if (!m_fullscreen || fullscreenDisplayMode == nullptr)

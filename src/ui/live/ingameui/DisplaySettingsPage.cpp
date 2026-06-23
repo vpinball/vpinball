@@ -286,7 +286,6 @@ void DisplaySettingsPage::BuildWindowPage()
       [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
       [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayName, asTableOverride); }));
 
-#ifndef ENABLE_BGFX
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
               Settings::m_propWindow_FullScreen[m_wndId], //
@@ -302,6 +301,7 @@ void DisplaySettingsPage::BuildWindowPage()
    const bool isFullScreen = m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId);
    if (isFullScreen)
    {
+#ifndef ENABLE_BGFX
       int defaultMode = 0, selectedMode = 0, i = 0;
       vector<Window::VideoMode> modes = VPX::Window::GetDisplayModes(m_displays[wndDisplay]);
       vector<string> modeNames;
@@ -348,9 +348,9 @@ void DisplaySettingsPage::BuildWindowPage()
          }, //
          [](Settings&) { /* Directly stored on change, nothing to do */ }, //
          [](int, Settings&, bool) { /* Directly stored on change, nothing to do */ }));
+#endif
    }
    else
-#endif
    {
       const int containerWidth = m_displays[wndDisplay].width;
       const int containerHeight = m_displays[wndDisplay].height;
