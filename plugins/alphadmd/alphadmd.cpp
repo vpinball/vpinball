@@ -267,7 +267,11 @@ static void DrawChar(const int x, const int y, const segDisplay& display, const 
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
          const int pos = 128 * (y + display.segs[seg].dots[i][1]) + (x + display.segs[seg].dots[i][0]);
-         renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
+         // Clip dots that fall outside the 128x32 frame: some layouts place the bottom row of glyphs past
+         // the end of renderFrame, and the unchecked write corrupted the globals stored right after it
+         // (e.g. dmd128Id), which later crashed consumers of that display source descriptor
+         if (pos >= 0 && pos < 128 * 32)
+            renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
       }
    }
 }
