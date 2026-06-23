@@ -206,6 +206,7 @@ fi
 if [ "$gen_postprocess" = true ]; then
     echo -e "\n>>>>>>>>>>>>>>>> Post process shaders"
     echo "// Postprocess Shaders" > "../bgfx_postprocess.h"
+    process_shader "fs_pp_passthrough.sc" "postprocess.h" "fs_pp_passthrough_" "fragment" "${stereo[1]}"
     for k in 0 1; do
         process_shader "vs_postprocess.sc" "postprocess.h" "vs_postprocess${st_output[$k]}" "vertex" "${stereo[$k]}"
         process_shader "fs_pp_msaa_depth.sc" "postprocess.h" "fs_pp_msaa_depth${st_output[$k]}" "fragment" "${stereo[$k]}"

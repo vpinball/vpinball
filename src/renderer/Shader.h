@@ -141,7 +141,9 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_reflection_only, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
 
+   // BGFX OpenXR shaders
    SHADER_TECHNIQUE(vr_mask, SHADER_matWorldViewProj, SHADER_staticColor_Alpha),
+   SHADER_TECHNIQUE(vr_passthrough, SHADER_layer, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
 
    SHADER_TECHNIQUE(bg_decal_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
       SHADER_cBase_Alpha, SHADER_clip_plane),

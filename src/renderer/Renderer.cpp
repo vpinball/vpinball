@@ -76,10 +76,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
    }
    m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->m_settings.GetPlayerVR_UsePassthroughColor();
-   m_vrColorKey = convertColor(m_table->m_settings.GetPlayerVR_PassthroughColor(), 1.f);
-   m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
-   m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
-   m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
    m_visualNudgeStrength = m_table->m_settings.GetPlayer_NudgeStrength();
 
    #if defined(ENABLE_BGFX)
@@ -2760,9 +2756,6 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
             m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), outputBackBuffer, false, true);
          }
-         // FIXME no preview for Vulkan (as we are not creating the desktop swapchain)
-         if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
-            return outputBackBuffer;
 
       #elif defined(ENABLE_VR)
          // Copy each eye to the HMD texture
@@ -2812,7 +2805,6 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
       #if defined(ENABLE_XR)
-      
          Vertex3D_TexelOnly verts[4] =
          {
             { -1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
@@ -2823,7 +2815,12 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
          m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
-         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+         if (bgfx::getRendererType() != bgfx::RendererType::Vulkan)
+         {
+            // FIXME no preview for Vulkan as we are not creating the desktop swapchain
+
+         }
+         else if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
          {
             m_renderDevice->m_FBShader->SetInt(SHADER_layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
@@ -2840,36 +2837,6 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
          }
 
-         if (m_vrApplyColorKey)
-         {
-            // Apply a color mask for color keying. For the time being, this is the only way we have to support mixed reality
-            // as HMD does not expose passthrough layers to PCVR (at least Meta Quest 3, used for development).
-            // Therefore we leverage VirtualDesktop color keying feature. This needs to be performed as a post process to avoid
-            // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
-            // color key after blending).
-            m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
-            m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
-            Matrix3D matWorldViewProj[2];
-            matWorldViewProj[0].SetIdentity();
-            matWorldViewProj[1].SetIdentity();
-            const vec4 cameraPos[2] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
-            m_renderDevice->m_basicShader->SetVector(SHADER_cameraPosWorld, &cameraPos[0], 2);
-            m_renderDevice->m_basicShader->SetMatrix(SHADER_matRotViewProj, &matWorldViewProj[0], 2);
-            m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &m_vrColorKey);
-            m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
-            static constexpr Vertex3D_NoTex2 ckVerts[4] =
-            {
-               { -1.0f,  1.0f, 1.0f },
-               {  1.0f,  1.0f, 1.0f },
-               { -1.0f, -1.0f, 1.0f },
-               {  1.0f, -1.0f, 1.0f }
-            };
-            m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-            m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_basicShader, ckVerts);
-            m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
-         }
-
       #elif defined(ENABLE_VR)
          if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
          {
@@ -2883,6 +2850,26 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          m_renderDevice->SubmitVR(renderedRT);
       #endif
    #endif
+
+#if defined(ENABLE_XR)
+      if (m_vrApplyColorKey)
+      {
+         // Apply a color mask for color keying. For the time being, this is the only way we have to support mixed reality
+         // as HMD does not expose passthrough layers to PCVR (at least Meta Quest 3, used for development).
+         // Therefore we leverage VirtualDesktop color keying feature. This needs to be performed as a post process to avoid
+         // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
+         // color key after blending).
+         m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
+         m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
+         m_renderDevice->AddRenderTargetDependency(renderedRT);
+         m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+         m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
+         m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_vr_passthrough);
+         m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+      }
+#endif
 
       return outputBackBuffer;
    }
@@ -3059,7 +3046,7 @@ void Renderer::RenderFrame()
    const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
    // OpenXR directly renders to the XR render target view without any postprocess needs
    #ifdef ENABLE_XR
-   const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
+   const bool hasStereoPass = (m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR)) || ((m_stereo3D == STEREO_VR) && m_vrApplyColorKey);
    #else
    const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF);
    #endif
