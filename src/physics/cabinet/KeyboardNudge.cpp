@@ -50,12 +50,14 @@ void PushRetractKeyboardNudge::StepOneMillisecond()
          m_cabinetAcceleration.x = -m_impulse.x * 2.0f;
          m_cabinetAcceleration.y = m_impulse.y * 2.0f;
          m_cabinetAcceleration *= static_cast<float>(1.0 / PHYS_FACTOR); // Convert to force
+         m_cabinetAcceleration = VPUVPT2TOMS2(m_cabinetAcceleration);
       }
       else if (m_nudgeTime == 90) // 5ms back
       {
          m_cabinetAcceleration.x = m_impulse.x;
          m_cabinetAcceleration.y = -m_impulse.y;
          m_cabinetAcceleration *= static_cast<float>(1.0 / PHYS_FACTOR); // Convert to force
+         m_cabinetAcceleration = VPUVPT2TOMS2(m_cabinetAcceleration);
       }
       else // Prevent new nudge during the remaining 90ms
       {
@@ -66,11 +68,12 @@ void PushRetractKeyboardNudge::StepOneMillisecond()
    const float attenuation = sqrf(static_cast<float>(m_nudgeTime) * 0.01f);
    m_cabinetPosition.x = m_impulse.x * attenuation;
    m_cabinetPosition.y = -m_impulse.y * attenuation;
+   m_cabinetPosition = VPUTOM(m_cabinetPosition);
 }
 
-const Vertex2D& PushRetractKeyboardNudge::GetCabinetAcceleration() const { return VPUVPT2TOMS2(m_cabinetAcceleration); }
+const Vertex2D& PushRetractKeyboardNudge::GetCabinetAcceleration() const { return m_cabinetAcceleration; }
 
-const Vertex2D& PushRetractKeyboardNudge::GetCabinetOffset() const { return VPUTOM(m_cabinetPosition); }
+const Vertex2D& PushRetractKeyboardNudge::GetCabinetOffset() const { return m_cabinetPosition; }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +85,7 @@ BoxModelKeyboardNudge::BoxModelKeyboardNudge(float nudgeStrength)
    : m_strength(nudgeStrength)
 {
    m_cabinetAcceleration.SetZero();
+   m_cabinetPositionVPU.SetZero();
    m_cabinetPosition.SetZero();
 
    // Table movement (displacement u) is modeled as a mass-spring-damper system
@@ -126,16 +130,17 @@ void BoxModelKeyboardNudge::StepOneMillisecond()
    // Perform keyboard nudge by simulating table movement modeled as a mass-spring-damper system
    //   u'' = -k u - c u'
    // with a spring constant k and a damping coefficient c
-   const Vertex2D force = -m_nudgeSpring * m_cabinetPosition - m_nudgeDamping * m_cabinetVelocity;
+   const Vertex2D force = -m_nudgeSpring * m_cabinetPositionVPU - m_nudgeDamping * m_cabinetVelocity;
    m_cabinetVelocity += static_cast<float>(PHYS_FACTOR) * force;
-   m_cabinetPosition += static_cast<float>(PHYS_FACTOR) * m_cabinetVelocity;
-   m_cabinetAcceleration = (m_cabinetVelocity - m_cabinetPrevVelocity) * static_cast<float>(1.0 / PHYS_FACTOR);
+   m_cabinetPositionVPU += static_cast<float>(PHYS_FACTOR) * m_cabinetVelocity;
+   m_cabinetPosition = VPUTOM(m_cabinetPositionVPU);
+   m_cabinetAcceleration = VPUVPT2TOMS2((m_cabinetVelocity - m_cabinetPrevVelocity) * static_cast<float>(1.0 / PHYS_FACTOR));
    m_cabinetPrevVelocity = m_cabinetVelocity;
 }
 
-const Vertex2D& BoxModelKeyboardNudge::GetCabinetAcceleration() const { return VPUVPT2TOMS2(m_cabinetAcceleration); }
+const Vertex2D& BoxModelKeyboardNudge::GetCabinetAcceleration() const { return m_cabinetAcceleration; }
 
-const Vertex2D& BoxModelKeyboardNudge::GetCabinetOffset() const { return VPUTOM(m_cabinetPosition); }
+const Vertex2D& BoxModelKeyboardNudge::GetCabinetOffset() const { return m_cabinetPosition; }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

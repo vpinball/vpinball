@@ -27,8 +27,8 @@ public:
    bool IsActive() const override;
 
 private:
-   Vertex2D m_cabinetAcceleration;
-   Vertex2D m_cabinetPosition;
+   Vertex2D m_cabinetAcceleration; // m/s^2
+   Vertex2D m_cabinetPosition; // m
 
    float m_strength = 0.f;
    Vertex2D m_impulse;
@@ -58,10 +58,11 @@ public:
 private:
    float m_strength = 0.f;
 
-   Vertex2D m_cabinetAcceleration;
+   Vertex2D m_cabinetAcceleration; // m/s^2
    Vertex2D m_cabinetVelocity;
    Vertex2D m_cabinetPrevVelocity;
-   Vertex2D m_cabinetPosition;
+   Vertex2D m_cabinetPositionVPU; // VPU
+   Vertex2D m_cabinetPosition; // m
 
    float m_nudgeSpring;
    float m_nudgeDamping;
