@@ -255,6 +255,7 @@ private:
    std::shared_ptr<Sampler> m_SMAAsearchTexture = nullptr;
    std::shared_ptr<Sampler> m_SMAAareaTexture = nullptr;
 
+   std::mutex m_screenshotMutex; // Guards the screenshot state below, shared between the logic thread (CaptureScreenshot) and the render thread (request loop & BGFX screenShot callback)
    int m_screenshotFrameDelay = 0;
    bool m_screenshotSuccess = true;
    vector<VPX::Window*> m_screenshotWindow;

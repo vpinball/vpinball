@@ -122,62 +122,81 @@ void RenderDevice::tBGFXCallback::screenShot(
    // - DX12 does not implement the framebuffer selection and always captures from the base swapchain and returns data on the swapchain format
    // - Metal implements per-window framebuffer selection and returns data on the (per-window) swapchain format
    // - OpenGL & Vulkan seems to be ok (always returning 4 byte BGRA, eventually after conversion if backbuffer format is not BGRA)
-   int index = -1;
-   std::filesystem::path path(_filePath);
-   for (int i = 0; i < (int)m_rd.m_screenshotFilename.size(); i++)
-      if (m_rd.m_screenshotFilename[i] == path)
-      {
-         index = i;
-         break;
-      }
-   if (index >= 0)
-      m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
-   bool success = false;
-   if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
+   std::function<void(bool)> callback;
+   bool fireCallback = false;
+   bool callbackSuccess = false;
    {
-      switch (_format)
-      {
-      case bgfx::TextureFormat::RGBA8:
-         if (_pitch == _width * 4)
-            memcpy(tex->data(), _data, _size);
-         else
-         {
-            for (unsigned int i = 0; i < _height; i++)
-               bx::memCopy(static_cast<uint8_t*>(tex->data()) + i * (_width * 4), static_cast<const uint8_t*>(_data) + i * _pitch, _width * 4);
-         }
-         success = true;
-         break;
+      // The screenshot state is concurrently written by the logic thread in CaptureScreenshot
+      std::lock_guard lock(m_rd.m_screenshotMutex);
 
-      case bgfx::TextureFormat::BGRA8:
-         if (_pitch == _width * 4)
-            copy_bgra_rgba<false>(static_cast<uint32_t*>(tex->data()), static_cast<const uint32_t*>(_data), (size_t)_width * _height);
-         else
+      const std::filesystem::path path(_filePath);
+      int index = -1;
+      for (int i = 0; i < (int)m_rd.m_screenshotFilename.size(); i++)
+         if (m_rd.m_screenshotFilename[i] == path)
          {
-            for (unsigned int i = 0; i < _height; i++)
+            index = i;
+            break;
+         }
+      // Drop stale/duplicate captures that are no longer pending (e.g. a late delivery of a request
+      // that was already re-issued by the timeout path), instead of saving them again or double-firing.
+      if (index < 0)
+         return;
+      m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
+
+      bool success = false;
+      if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
+      {
+         switch (_format)
+         {
+         case bgfx::TextureFormat::RGBA8:
+            if (_pitch == _width * 4)
+               memcpy(tex->data(), _data, _size);
+            else
             {
-               const uint32_t* src = reinterpret_cast<const uint32_t*>(static_cast<const uint8_t*>(_data) + i * _pitch);
-               uint32_t* dst = static_cast<uint32_t*>(tex->data()) + i * _width;
-               copy_bgra_rgba<false>(dst, src, _width);
+               for (unsigned int i = 0; i < _height; i++)
+                  bx::memCopy(static_cast<uint8_t*>(tex->data()) + i * (_width * 4), static_cast<const uint8_t*>(_data) + i * _pitch, _width * 4);
             }
+            success = true;
+            break;
+
+         case bgfx::TextureFormat::BGRA8:
+            if (_pitch == _width * 4)
+               copy_bgra_rgba<false>(static_cast<uint32_t*>(tex->data()), static_cast<const uint32_t*>(_data), (size_t)_width * _height);
+            else
+            {
+               for (unsigned int i = 0; i < _height; i++)
+               {
+                  const uint32_t* src = reinterpret_cast<const uint32_t*>(static_cast<const uint8_t*>(_data) + i * _pitch);
+                  uint32_t* dst = static_cast<uint32_t*>(tex->data()) + i * _width;
+                  copy_bgra_rgba<false>(dst, src, _width);
+               }
+            }
+            success = true;
+            break;
+
+         case bgfx::TextureFormat::RGB8: // Unsupported yet
+         default: // HDR, ... are not supported either
+            break;
          }
-         success = true;
-         break;
 
-      case bgfx::TextureFormat::RGB8: // Unsupported yet
-      default: // HDR, ... are not supported either
-         break;
+         if (success)
+         {
+            if (_yflip)
+               tex->FlipY();
+            success = tex->Save(_filePath);
+         }
       }
-
-      if (success)
+      m_rd.m_screenshotSuccess &= success;
+      if (m_rd.m_screenshotFilename.empty())
       {
-         if (_yflip)
-            tex->FlipY();
-         success = tex->Save(_filePath);
+         fireCallback = true;
+         callbackSuccess = m_rd.m_screenshotSuccess;
+         callback = m_rd.m_screenshotCallback;
       }
    }
-   m_rd.m_screenshotSuccess &= success;
-   if (m_rd.m_screenshotFilename.empty())
-      m_rd.m_screenshotCallback(m_rd.m_screenshotSuccess);
+   // Fire outside the lock: the callback may take other locks (e.g. the capture mutex) or re-enter CaptureScreenshot
+   if (fireCallback)
+      callback(callbackSuccess);
 }
 
 bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool allowHDR10) const
@@ -554,12 +573,16 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             Flip();
             m_frameIndex++;
-            if (m_screenshotFrameDelay > 0)
             {
-               m_screenshotFrameDelay--;
-               if (m_screenshotFrameDelay == 0)
-                  for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-                     bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+               // Screenshot state is concurrently written by the logic thread in CaptureScreenshot
+               std::lock_guard lock(m_screenshotMutex);
+               if (m_screenshotFrameDelay > 0)
+               {
+                  m_screenshotFrameDelay--;
+                  if (m_screenshotFrameDelay == 0)
+                     for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+                        bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+               }
             }
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
@@ -872,19 +895,22 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          }
       }
 
-      // Screenshot handling
-      if (!m_screenshotWindow.empty())
+      // Screenshot handling (state is concurrently written by the logic thread in CaptureScreenshot)
       {
-         m_screenshotFrameDelay--;
-         if (m_screenshotFrameDelay == 0)
-            for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-               bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
-         else if (m_screenshotFrameDelay < -60)
+         std::lock_guard lock(m_screenshotMutex);
+         if (!m_screenshotWindow.empty())
          {
-            // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
-            PLOGE << "Screenshot capture timed out. Requesting it again";
-            for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-               bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+            m_screenshotFrameDelay--;
+            if (m_screenshotFrameDelay == 0)
+               for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+            else if (m_screenshotFrameDelay < -60)
+            {
+               // Sadly BGFX will silently fails screenshot capture, so if after 60 frames we did not get it, we try again
+               PLOGE << "Screenshot capture timed out. Requesting it again";
+               for (size_t i = 0; i < m_screenshotWindow.size(); i++)
+                  bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+            }
          }
       }
    }
@@ -1978,17 +2004,22 @@ bool RenderDevice::DepthBufferReadBackAvailable() const
 void RenderDevice::CaptureScreenshot(const vector<VPX::Window*>& wnd, const vector<std::filesystem::path>& filename, const std::function<void(bool)>& callback, int frameDelay)
 {
    assert(frameDelay >= 1);
-   if (!m_screenshotFilename.empty())
    {
-      PLOGE << "Screenshot capture already in progress.";
-      callback(false);
-      return;
+      // The render thread concurrently reads this state in its screenshot request loop and BGFX callback
+      std::lock_guard lock(m_screenshotMutex);
+      if (m_screenshotFilename.empty())
+      {
+         m_screenshotSuccess = true;
+         m_screenshotWindow = wnd;
+         m_screenshotFilename = filename;
+         m_screenshotCallback = callback;
+         m_screenshotFrameDelay = frameDelay;
+         return;
+      }
    }
-   m_screenshotSuccess = true;
-   m_screenshotWindow = wnd;
-   m_screenshotFilename = filename;
-   m_screenshotCallback = callback;
-   m_screenshotFrameDelay = frameDelay;
+   // Fire outside the lock as the callback may re-enter CaptureScreenshot or take other locks
+   PLOGE << "Screenshot capture already in progress.";
+   callback(false);
 }
 
 float RenderDevice::GetVisualLatency() const
