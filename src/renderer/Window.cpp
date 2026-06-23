@@ -107,6 +107,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    // Search for the request fullscreen exclusive display mode, eventually fallback to windowed mode if we fail
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
+   bool nativePixelFullscreen = false; // True when fullscreen uses a native (density 1) mode, so HIGH_PIXEL_DENSITY must not be set
 
    constexpr bool isExtCreatedWindow = g_isMobile && g_isIOS;
    if (m_fullscreen && !isExtCreatedWindow)
@@ -117,13 +118,32 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       {
         const SDL_DisplayMode* currentMode = SDL_GetCurrentDisplayMode(selectedDisplay.display);
         if (currentMode) {
-            fullscreenDisplayMode = currentMode;
-            m_screenwidth = currentMode->w;
-            m_screenheight = currentMode->h;
-            m_width = currentMode->w;
-            m_height = currentMode->h;
-            m_refreshrate = currentMode->refresh_rate;
-            m_bitdepth = GetPixelFormatDepth(currentMode->format);
+            // The current/desktop mode may be a fractionally scaled mode reported in logical points (e.g. a
+            // 4K panel at 1.75x reports 2194x1234 with pixel_density 1.75). Prefer the matching native pixel
+            // mode (same physical size at density 1) so the fullscreen backbuffer is the panel's real
+            // resolution instead of a smaller buffer the compositor upscales (blurry). Working in native
+            // pixels also matches the rest of this class (see header) and avoids relying on the high pixel
+            // density flag in fullscreen. See SDL's docs/README-highdpi.md and libsdl-org/SDL#7418, #12079.
+            const SDL_DisplayMode* nativeMode = currentMode;
+            if (currentMode->pixel_density != 1.f) {
+               const int physW = (int)(currentMode->w * currentMode->pixel_density + 0.5f);
+               const int physH = (int)(currentMode->h * currentMode->pixel_density + 0.5f);
+               for (int i = 0; i < nDisplayModes; ++i) {
+                  const SDL_DisplayMode* const m = displayModes[i];
+                  if (m->w == physW && m->h == physH && m->pixel_density == 1.f && m->refresh_rate == currentMode->refresh_rate) {
+                     nativeMode = m;
+                     break;
+                  }
+               }
+            }
+            nativePixelFullscreen = nativeMode != currentMode;
+            fullscreenDisplayMode = nativeMode;
+            m_screenwidth = nativeMode->w;
+            m_screenheight = nativeMode->h;
+            m_width = nativeMode->w;
+            m_height = nativeMode->h;
+            m_refreshrate = nativeMode->refresh_rate;
+            m_bitdepth = GetPixelFormatDepth(nativeMode->format);
         }
         else
         {
@@ -234,7 +254,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
-      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN;
+      // A native-resolution fullscreen mode already provides physical pixels; high pixel density would
+      // additionally scale by the display scale and oversize the backbuffer. Otherwise request it so windowed
+      // (and non-fractional) modes render at the native pixel density.
+      if (!nativePixelFullscreen)
+         wnd_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
       #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
          SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
       #endif
