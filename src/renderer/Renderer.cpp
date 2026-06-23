@@ -47,6 +47,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    , m_stereo3D(stereo3D)
    , m_table(table)
    , m_mvp(stereo3D == STEREO_OFF ? 1 : 2)
+   , m_initialMVP(stereo3D == STEREO_OFF ? 1 : 2)
 {
    m_stereo3Denabled = true; // m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
