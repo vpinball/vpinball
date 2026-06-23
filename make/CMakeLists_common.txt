@@ -1,7 +1,10 @@
-
 # common CMakeLists file shared by all build targets
 
 add_compile_definitions($<$<CONFIG:Release>:IMGUI_DISABLE_DEBUG_TOOLS>)
+add_compile_options(
+   $<$<CXX_COMPILER_ID:MSVC>:/we4172>
+   $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Werror=return-local-addr>
+)
 
 set(VPX_SOURCES
    plugins/plugins/MsgPlugin.h
