@@ -162,6 +162,19 @@ if "%vsv%" == "2026" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-inspector.vcxproj" "../.build/vsproject/plugin-inspector.vcxproj"
+copy /V /Y "plugin-inspector.vcxproj.filters" "../.build/vsproject/plugin-inspector.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-inspector.vcxproj" /out:"../.build/vsproject/plugin-inspector.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-inspector.vcxproj" /out:"../.build/vsproject/plugin-inspector.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-pinmame.vcxproj" "../.build/vsproject/plugin-pinmame.vcxproj"
 copy /V /Y "plugin-pinmame.vcxproj.filters" "../.build/vsproject/plugin-pinmame.vcxproj.filters"
 

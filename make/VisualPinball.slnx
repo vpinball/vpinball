@@ -18,6 +18,7 @@
   <Project Path="plugin-flexdmd.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77b" />
   <Project Path="plugin-helloscript.vcxproj" Id="bd05ba74-3676-42d7-ad6a-79c2de31100e" />
   <Project Path="plugin-helloworld.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af777" />
+  <Project Path="plugin-inspector.vcxproj" Id="82ABAE8C-59FB-4734-BA0B-AD6FB04D7B38" />
   <Project Path="plugin-pinmame.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77c" />
   <Project Path="plugin-pinup-events.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af779" />
   <Project Path="plugin-pup.vcxproj" Id="5dfb5344-b339-49bc-b93c-b3b8d307199b" />
