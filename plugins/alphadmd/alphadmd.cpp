@@ -512,24 +512,34 @@ static void RenderThread()
 
 static DisplayFrame GetRenderFrame(const CtlResId id)
 {
-   // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
+   // Snapshot the frame under sourceMutex (the render thread writes dmd128Frame/renderFrameId while
+   // holding it) into a per-consumer-thread buffer, so the returned frame can't be overwritten mid-read.
+   thread_local float frameCopy[128 * 32];
+   unsigned int frameId;
    {
       std::lock_guard lock(sourceMutex);
       renderRequested = true;
+      frameId = renderFrameId;
+      memcpy(frameCopy, dmd128Frame, sizeof(frameCopy));
    }
    updateCondVar.notify_one();
-   return { renderFrameId, dmd128Frame };
+   return { frameId, frameCopy };
 }
 
 static DisplayFrame GetIdentifyFrame(const CtlResId id)
 {
-   // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
+   // Snapshot the frame under sourceMutex (the render thread writes identifyFrame/identifyFrameId while
+   // holding it) into a per-consumer-thread buffer, so the returned frame can't be overwritten mid-read.
+   thread_local uint8_t frameCopy[128 * 32];
+   unsigned int frameId;
    {
       std::lock_guard lock(sourceMutex);
       renderRequested = true;
+      frameId = identifyFrameId;
+      memcpy(frameCopy, identifyFrame, sizeof(frameCopy));
    }
    updateCondVar.notify_one();
-   return { identifyFrameId, identifyFrame };
+   return { frameId, frameCopy };
 }
 
 static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* msgData)
