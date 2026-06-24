@@ -111,8 +111,7 @@ FEATURES:
   One can select any row of the listview and click a button on the dialog labeled 'Edit Control' and it will place
   that table object into the 'Properties' editor dialog for you.
 
-- VR/XR was rewritten and is now fully supported by VPX, using OpenXR in its BGFX variant.
-  Note that the previous OpenVR variant (using OpenGL) is deprecated and is unlikely to work well, as it does not include any of the improvements listed below and will be removed in upcoming VPX updates.
+- VR/XR was rewritten and is now fully supported by VPX, using OpenXR in its BGFX variant (The legacy OpenVR implementation was removed).
   . All OpenXR backends are supported (Virtual Desktop, SteamVR, Meta Quest Link, ...)
   . Layers (see below) now have properties to automatically show/hide parts depending on the player mode
   . Layers (see below) now have properties to perform adequate positioning & stretching, depending on player situation, allowing to keep room elements sized to the real world, while adjusting the pinball machine to user choice, eventually matching a real world cabinet or controller

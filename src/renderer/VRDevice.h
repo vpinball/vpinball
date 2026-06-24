@@ -2,11 +2,7 @@
 
 #pragma once
 
-#ifdef ENABLE_VR
-   #include <openvr.h>
-   class Sampler;
-
-#elif defined(ENABLE_XR)
+#if defined(ENABLE_XR)
    #include "bx/platform.h"
 
    #if defined(__ANDROID__) && BX_PLATFORM_WINDOWS
@@ -186,19 +182,6 @@ private:
    Viewpoint m_roomWorld;
    Matrix3D m_roomProj[2];
    Matrix3D m_sceneProj[2];
-
-#ifdef ENABLE_VR
-public:
-   static bool IsVRinstalled();
-   static bool IsVRturnedOn();
-   bool IsVRReady() const;
-   void SubmitFrame(const std::shared_ptr<Sampler>& leftEye, const std::shared_ptr<Sampler>& rightEye);
-
-private:
-   static vr::IVRSystem* m_pHMD;
-   vr::TrackedDevicePose_t m_hmdPosition;
-   vr::TrackedDevicePose_t* m_rTrackedDevicePose = nullptr;
-#endif
 
 #ifdef ENABLE_XR
 public:

@@ -558,7 +558,6 @@
 #define IDC_BALL_SPHERICAL_MAP          439
 #define IDC_BLOOM_STRENGTH              450
 #define IDC_IMAGE_MODE                  453
-#define IDC_SCALE_TO_CM                 453
 #define IDC_EDGE_FACTOR_UI              454
 #define IDC_REFLECT_ON_BALLS            455
 #define IDC_SHADOWS                     456
@@ -599,10 +598,7 @@
 #define IDD_PROPFLASHER_VISUALS         549
 #define IDS_LIGHTSOURCES                550
 #define IDD_PROPPRIMITIVE_PHYSICS       550
-#define IDC_VR_SLOPE                    550
 #define IDS_INPUT                       551
-#define IDC_VR_SCALE                    553
-#define IDC_NEAR_PLANE                  554
 #define IDC_USE_SCRIPT_DMD_CHECK        555
 #define IDC_ADDBLEND                    556
 #define IDC_DMD                         557
@@ -766,14 +762,10 @@
 #define IDC_OBJECT_SPACE_NORMALMAP      824
 #define IDC_STATIC_ELEMENTS             825
 #define IDC_PROP_TAB                    827
-#define IDC_VR_SLOPE_LABEL              827
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
 #define IDC_ASSIGN_BUTTON               833
-#define IDC_COMBO_TEXTURE               833
 #define IDC_EXPAND_COLLAPSE_BUTTON      834
-#define IDC_VR_SCALE_LABEL              835
 #define IDC_LAYER_TREEVIEW              837
-#define IDC_NEAR_LABEL                  837
 #define IDC_LAYER_FILTER_STATIC         838
 #define IDC_STATIC_ELEMENT_TYPE         839
 #define IDC_VR_MODE                     840

@@ -2643,16 +2643,6 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
    m_currentPass->Submit(cmd);
 }
 
-void RenderDevice::SubmitVR(RenderTarget* source)
-{
-   AddRenderTargetDependency(source);
-   RenderCommand* cmd = m_renderFrame->NewCommand();
-   cmd->SetSubmitVR(source);
-   cmd->m_dependency = m_nextRenderCommandDependency;
-   m_nextRenderCommandDependency = nullptr;
-   m_currentPass->Submit(cmd);
-}
-
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent, const float depth)
 {
    assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format

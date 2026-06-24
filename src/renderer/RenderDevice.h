@@ -124,7 +124,6 @@ public:
                          const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
                          const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
                          const int srcLayer = -1, const int dstLayer = -1);
-   void SubmitVR(RenderTarget* source);
    void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, std::shared_ptr<MeshBuffer> mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);

@@ -39,39 +39,10 @@ BOOL PlayerOptionsDialog::OnInitDialog()
    // VR section
    {
       AddToolTip(GetDlgItem(IDC_TURN_VR_ON), "Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.");
-      AddToolTip(GetDlgItem(IDC_COMBO_TEXTURE), "Pixel format for VR Rendering.");
 
-#if defined(ENABLE_XR) || defined(ENABLE_DX9)
-      GetDlgItem(IDC_SCALE_TO_CM).ShowWindow(SW_HIDE); // OpenXR always use fixed scale to real world lockbar width
-      GetDlgItem(IDC_VR_SCALE_LABEL).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_VR_SCALE).ShowWindow(SW_HIDE);
-
-      GetDlgItem(IDC_STATIC1).ShowWindow(SW_HIDE); // No performance/hack option for the time being
-      GetDlgItem(IDC_STATIC2).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_COMBO_TEXTURE).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_NEAR_LABEL).ShowWindow(SW_HIDE); // OpenXR use fixed near plane distance in real world unit
-      GetDlgItem(IDC_NEAR_PLANE).ShowWindow(SW_HIDE);
-
-      GetDlgItem(IDC_STATIC21).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_VR_SLOPE_LABEL).ShowWindow(SW_HIDE); // OpenXR only compensate the playfield slope (no additional user adjustment)
-      GetDlgItem(IDC_VR_SLOPE).ShowWindow(SW_HIDE);
-#endif
-
-#if defined(ENABLE_DX9)
+#if defined(ENABLE_DX9) || defined(ENABLE_OPENGL)
       GetDlgItem(IDC_TURN_VR_ON).EnableWindow(FALSE);
 #endif
-
-      const bool scaleToFixedWidth = settings.GetPlayerVR_ScaleToFixedWidth();
-      oldScaleValue = scaleToFixedWidth;
-      SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      scaleRelative = settings.GetPlayerVR_ScaleRelative();
-      scaleAbsolute = settings.GetPlayerVR_ScaleAbsolute();
-
-      SetDlgItemText(IDC_VR_SCALE, f2sz(scaleToFixedWidth ? scaleAbsolute : scaleRelative).c_str());
-
-      SetDlgItemText(IDC_NEAR_PLANE, f2sz(settings.GetPlayerVR_NearPlane()).c_str());
-      SetDlgItemText(IDC_VR_SLOPE, f2sz(settings.GetPlayerVR_Slope()).c_str());
 
       const int askToTurnOn = settings.GetPlayerVR_AskToTurnOn();
       HWND hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -80,17 +51,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
       ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "VR autodetect");
       ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "VR disabled");
       ::SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
-      ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-      //AMD Debugging
-      const int textureModeVR = settings.GetPlayerVR_EyeFBFormat();
-      hwnd = GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd();
-      ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "RGB 8");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "RGBA 8 (Recommended)");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "RGB 16F");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "RGBA 16F");
-      ::SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
    }
 
@@ -112,59 +72,10 @@ void PlayerOptionsDialog::OnOK()
 
    // VR section
    {
-      const size_t textureModeVR = SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_GETCURSEL, 0, 0);
-      settings.SetPlayerVR_EyeFBFormat((int)textureModeVR, false);
-
-      const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM) != 0;
-      settings.SetPlayerVR_ScaleToFixedWidth(scaleToFixedWidth, false);
-
-      if (scaleToFixedWidth)
-         settings.SetPlayerVR_ScaleAbsolute(sz2f(GetDlgItemText(IDC_VR_SCALE).GetString()), false);
-      else
-         settings.SetPlayerVR_ScaleRelative(sz2f(GetDlgItemText(IDC_VR_SCALE).GetString()), false);
-
-      settings.SetPlayerVR_NearPlane(sz2f(GetDlgItemText(IDC_NEAR_PLANE).GetString()), false);
-
-      //For compatibility keep these in Player instead of PlayerVR
-      settings.SetPlayerVR_Slope(sz2f(GetDlgItemText(IDC_VR_SLOPE).GetString()), false);
-
       const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
       settings.SetPlayerVR_AskToTurnOn((int)askToTurnOn, false);
    }
 
    settings.Save();
    CDialog::OnOK();
-}
-
-BOOL PlayerOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-   UNREFERENCED_PARAMETER(lParam);
-
-   switch (LOWORD(wParam))
-   {
-   case IDC_SCALE_TO_CM:
-   {
-#ifdef ENABLE_XR
-      // Disable the custom scale as we always scale against the real world lockbar width
-      GetDlgItem(IDC_VR_SCALE).ShowWindow(SW_HIDE);
-#else
-      const bool isScaleToLockbarWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM) > 0;
-      if (oldScaleValue != isScaleToLockbarWidth)
-      {
-         const float tmpf = sz2f(GetDlgItemText(IDC_VR_SCALE).GetString());
-         if (oldScaleValue)
-            scaleAbsolute = tmpf;
-         else
-            scaleRelative = tmpf;
-
-         SetDlgItemText(IDC_VR_SCALE, f2sz(isScaleToLockbarWidth ? scaleAbsolute : scaleRelative).c_str());
-         oldScaleValue = isScaleToLockbarWidth;
-      }
-#endif
-      return TRUE;
-   }
-
-   default: break;
-   }
-   return FALSE;
 }
