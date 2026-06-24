@@ -504,6 +504,13 @@ void DisplaySettingsPage::BuildWindowPage()
             .m_excludeFromDefault = true;
       }
 
+      // Window positioning is not honored by every backend (e.g. Wayland); skip the X/Y position
+      // controls and the drag hint below when the window manager will not let us move this window,
+      // as they would otherwise just show a useless slider stuck at 0.
+      Window* const posWnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+      if (!posWnd->CanSetPos())
+         return;
+
       Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
       AddItem(std::make_unique<InGameUIItem>(
                  Settings::m_propWindow_WndX[m_wndId], "%d"s, //

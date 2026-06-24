@@ -358,11 +358,32 @@ void Window::GetPos(int& x, int& y) const
    SDL_GetWindowPosition(m_nwnd, &x, &y);
 }
 
-void Window::SetPos(const int x, const int y)
+bool Window::SetPos(const int x, const int y)
 {
    if (m_isVR)
-      return;
-   SDL_SetWindowPosition(m_nwnd, x, y);
+      return false;
+   // SDL_SetWindowPosition reports failure when the backend cannot position windows (e.g. Wayland),
+   // which we cache so the UI can hide positioning controls without checking the video driver name.
+   const bool ok = SDL_SetWindowPosition(m_nwnd, x, y);
+   m_canSetPos = ok ? 1 : 0;
+   return ok;
+}
+
+bool Window::CanSetPos()
+{
+   if (m_canSetPos < 0)
+   {
+      if (m_isVR)
+         m_canSetPos = 0;
+      else
+      {
+         // Probe with a no-op move to the current position to learn the capability.
+         int x, y;
+         SDL_GetWindowPosition(m_nwnd, &x, &y);
+         SetPos(x, y);
+      }
+   }
+   return m_canSetPos == 1;
 }
 
 void Window::SetSize(const int x, const int y)

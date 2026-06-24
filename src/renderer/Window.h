@@ -69,7 +69,8 @@ public:
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
-   void SetPos(const int x, const int y);
+   bool SetPos(const int x, const int y); // Returns false if the window manager does not honor app-driven positioning (e.g. Wayland)
+   bool CanSetPos(); // Whether app-driven positioning is honored, probed once through SetPos
    void SetSize(const int w, const int h); // Request a new window size, applied asynchronously by the window manager (acknowledged through OnResized)
    void OnResized(); // To be called when the window manager resized the window: updates the cached sizes and recreates the swapchain of ancillary windows
    void Show(const bool show = true);
@@ -128,6 +129,7 @@ private:
 
    class RenderTarget* m_backBuffer = nullptr;
 
+   int m_canSetPos = -1; // Whether the window manager honors SetPos: -1 unknown, 0 unsupported, 1 supported
    uint64_t m_resizeRequestTick = 0; // Last unacknowledged resize request, 0 for none (see SetSize/OnResized)
    int m_pendingWidth = -1, m_pendingHeight = -1; // Size requested while another request was in flight
 
