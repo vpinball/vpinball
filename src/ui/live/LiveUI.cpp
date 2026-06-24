@@ -200,13 +200,13 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
 
 void LiveUI::UpdateScale()
 {
-   const float prevDPI = m_uiScale;
-   float overlayScale;
+   const float prevScale = m_uiScale;
+   float newScale, overlayScale;
    if (m_player->m_vrDevice)
    {
       // VR headset cover full view range, so use a relative part of the full range for the DPI
-      m_uiScale = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
-      overlayScale = m_uiScale;
+      newScale = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
+      overlayScale = newScale;
    }
    else
    {
@@ -214,31 +214,35 @@ void LiveUI::UpdateScale()
       // On macOS/iOS, keep m_uiScale at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
       // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_uiScale of 2.0 would cause the UI to scale at 400%.
       // See: https://wiki.libsdl.org/SDL3/README/highdpi
-      m_uiScale = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
-      overlayScale = m_uiScale;
+      newScale = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+      overlayScale = newScale;
 
       // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
       if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
       {
-         m_uiScale = max(m_uiScale, static_cast<float>(min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight())) / 750.f);
+         newScale = max(newScale, static_cast<float>(min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight())) / 750.f);
       }
    }
-   m_uiScale = min(m_uiScale, 10.f); // To avoid texture size overflows
+   newScale = min(newScale, 10.f); // To avoid texture size overflows
 #ifdef __LIBVPINBALL__
-   m_uiScale *= 1.35f;
+   newScale *= 1.35f;
 #endif
-   if (m_uiScale != prevDPI)
-   {
-      m_perfUI.SetUIScale(overlayScale);
-      m_plumbOverlay.SetUIScale(overlayScale);
-      // Rescale from the unscaled baseline rather than scaling the already-scaled live style:
-      // ScaleAllSizes() truncates every size to an integer, so applying it repeatedly to the
-      // current style accumulates rounding error and progressively shrinks spacing (e.g. when
-      // resizing the window or moving it to a different-DPI display). Re-running SetupImGuiStyle
-      // restores the baseline sizes first, then we scale them once.
-      SetupImGuiStyle(m_editorUI.IsOpened());
-      ImGui::GetStyle().ScaleAllSizes(m_uiScale);
-   }
+
+   // Ignore sub-pixel jitter: SDL_GetWindowPixelDensity wobbles slightly while a window is being
+   // resized, which (combined with the integer truncation in ScaleAllSizes below) would otherwise
+   // flip the style sizes back and forth every frame. Only react to a meaningful change.
+   if (prevScale != 0.f && fabsf(newScale - prevScale) < 0.01f * prevScale)
+      return;
+
+   m_uiScale = newScale;
+   m_perfUI.SetUIScale(overlayScale);
+   m_plumbOverlay.SetUIScale(overlayScale);
+   // Rescale from the unscaled baseline rather than scaling the already-scaled live style:
+   // ScaleAllSizes() truncates every size to an integer, so applying it repeatedly to the current
+   // style accumulates rounding error and progressively shrinks spacing. Re-running SetupImGuiStyle
+   // restores the baseline sizes first, then we scale them once.
+   SetupImGuiStyle(m_editorUI.IsOpened());
+   ImGui::GetStyle().ScaleAllSizes(m_uiScale);
 }
 
 void LiveUI::AddMousePosEvent(bool isTouch, float x, float y) const
