@@ -500,7 +500,15 @@ Window::DisplayConfig Window::GetDisplayConfig(const string& display)
 
 void Window::SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer)
 {
-   assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight));
+   if (rt != nullptr)
+   {
+      // The backbuffer is created from the actual swapchain extent, which the compositor may round to
+      // a slightly different size than SDL reports (SDL_GetWindowSizeInPixels) under fractional display
+      // scaling. The swapchain is what gets presented, so treat its size as authoritative and sync the
+      // window pixel size to it, keeping the renderer viewport aligned with the surface.
+      m_pixelWidth = rt->GetWidth();
+      m_pixelHeight = rt->GetHeight();
+   }
    m_backBuffer = rt;
    m_wcgBackbuffer = wcgBackbuffer;
 }
