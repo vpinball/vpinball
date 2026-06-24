@@ -277,10 +277,20 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
    m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
-   // Switch to request fullscreen display mode (must be done after window creation)
-   if (fullscreenDisplayMode)
+   // Activate fullscreen after window creation.
+   if (m_fullscreen)
    {
+#ifdef ENABLE_BGFX
+      // Borderless fullscreen desktop: cover the current display with no video mode change. A non-NULL
+      // mode requests exclusive fullscreen instead, and on macOS that path does not take over the menu
+      // bar and Dock for our borderless window, leaving it rendered behind them. NULL hides them as
+      // expected and matches the intent of "fullscreen without a video mode change" (see #3451). The
+      // target display is the one the window was created on (its center), so this stays per-display.
+      SDL_SetWindowFullscreenMode(m_nwnd, nullptr);
+#else
+      // Legacy backends keep exclusive fullscreen with the selected mode.
       SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
+#endif
       SDL_SetWindowFullscreen(m_nwnd, true);
       SDL_SyncWindow(m_nwnd);
    }
