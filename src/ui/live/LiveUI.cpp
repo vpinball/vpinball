@@ -231,10 +231,13 @@ void LiveUI::UpdateScale()
    {
       m_perfUI.SetUIScale(overlayScale);
       m_plumbOverlay.SetUIScale(overlayScale);
-      if (prevDPI == 0.f)
-         ImGui::GetStyle().ScaleAllSizes(m_uiScale);
-      else
-         ImGui::GetStyle().ScaleAllSizes(m_uiScale / prevDPI);
+      // Rescale from the unscaled baseline rather than scaling the already-scaled live style:
+      // ScaleAllSizes() truncates every size to an integer, so applying it repeatedly to the
+      // current style accumulates rounding error and progressively shrinks spacing (e.g. when
+      // resizing the window or moving it to a different-DPI display). Re-running SetupImGuiStyle
+      // restores the baseline sizes first, then we scale them once.
+      SetupImGuiStyle(m_editorUI.IsOpened());
+      ImGui::GetStyle().ScaleAllSizes(m_uiScale);
    }
 }
 
