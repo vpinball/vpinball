@@ -75,6 +75,11 @@ public:
    void AddWindow(VPX::Window* wnd);
    void RemoveWindow(VPX::Window* wnd);
 
+   // Stop the render thread's render loop and wait until it has left it, so render resources can be
+   // freed without racing an in-flight frame. Idempotent. Must be called before any render resource
+   // (render targets, shaders, textures, ...) is released during shutdown. The destructor calls it too.
+   void StopRenderLoop();
+
    #if defined(ENABLE_BGFX)
       enum PrimitiveTypes
       {
@@ -306,6 +311,7 @@ private:
    float m_renderLatency = 0.f;
 
    bool m_renderDeviceAlive;
+   bool m_renderLoopStopped = false; // guards StopRenderLoop() so it only stops the render loop once
    std::thread m_renderThread;
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;

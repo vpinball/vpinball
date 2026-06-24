@@ -1791,16 +1791,27 @@ RenderDevice::RenderDevice(
    m_renderFrame = std::make_unique<RenderFrame>(this);
 }
 
-RenderDevice::~RenderDevice()
+void RenderDevice::StopRenderLoop()
 {
    #if defined(ENABLE_BGFX)
-      // Suspend rendering before deleting anything that could be used
+      if (m_renderLoopStopped)
+         return;
+      m_renderLoopStopped = true;
+      // Suspend rendering before anything the render thread could still be using is freed.
       m_renderDeviceAlive = false;
       m_frameReadySem.release();
       // Wait for the render thread to actually leave its render loop: it may still be mid-frame (using the
-      // shaders, meshes and textures freed below) since it only re-checks m_renderDeviceAlive between frames
+      // render targets, shaders, meshes and textures freed during shutdown) since it only re-checks
+      // m_renderDeviceAlive between frames.
       m_renderThreadStopped.acquire();
    #endif
+}
+
+RenderDevice::~RenderDevice()
+{
+   // Render resources are freed below (and in Player teardown before this); make sure the render thread
+   // has left its render loop first. Normally already done by Player::~Player, this is the backstop.
+   StopRenderLoop();
 
    m_quadMeshBuffer = nullptr;
 

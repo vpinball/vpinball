@@ -986,6 +986,12 @@ Player::~Player()
    delete m_physics;
    m_physics = nullptr;
 
+   // Stop the render thread before releasing any render resource below (render targets are freed by the
+   // RenderRelease() calls). Otherwise an in-flight frame on the render thread can use a freed render
+   // target and crash on exit (most easily reproduced with a second fullscreen window). The render device
+   // destructor also calls this, but that happens too late, after the resources below are already gone.
+   m_renderer->m_renderDevice->StopRenderLoop();
+
    #ifdef ENABLE_DX9
       m_renderer->m_renderDevice->m_basicShader->UnbindSamplers();
       m_renderer->m_renderDevice->m_DMDShader->UnbindSamplers();
