@@ -68,6 +68,7 @@ static std::mutex renderMutex;
 static std::thread renderThread;
 static std::condition_variable updateCondVar;
 static bool isRunning = false;
+static bool renderRequested = false; // set by a frame consumer (GetRenderFrame/GetIdentifyFrame) to wake the render thread for a single update, instead of busy-spinning
 
 static DisplaySrcId dmd128Id;
 static float renderFrame[128 * 32] = {};
@@ -334,7 +335,8 @@ static void RenderThread()
    while (isRunning)
    {
       std::unique_lock lock(sourceMutex);
-      updateCondVar.wait(lock, [] { return true; });
+      updateCondVar.wait(lock, [] { return renderRequested || !isRunning; });
+      renderRequested = false;
 
       if (!isRunning || selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
          break;
@@ -512,7 +514,10 @@ static void RenderThread()
 static DisplayFrame GetRenderFrame(const CtlResId id)
 {
    // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
-   //std::lock_guard<std::mutex> lock(renderMutex);
+   {
+      std::lock_guard lock(sourceMutex);
+      renderRequested = true;
+   }
    updateCondVar.notify_one();
    return { renderFrameId, dmd128Frame };
 }
@@ -520,7 +525,10 @@ static DisplayFrame GetRenderFrame(const CtlResId id)
 static DisplayFrame GetIdentifyFrame(const CtlResId id)
 {
    // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
-   //std::lock_guard<std::mutex> lock(renderMutex);
+   {
+      std::lock_guard lock(sourceMutex);
+      renderRequested = true;
+   }
    updateCondVar.notify_one();
    return { identifyFrameId, identifyFrame };
 }
@@ -545,8 +553,15 @@ static void StopRenderThread()
 
 static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
 {
+   // A segment source change can mean a provider is being destroyed. Stop and join the ancillary
+   // render thread before touching the source list so it can no longer call a provider's GetState
+   // while that provider frees its frame buffers. This must be unconditional: when one display of a
+   // multi-display layout goes away the source set stays non-empty, so stopping only on an
+   // empty/non-empty transition would leave the render thread reading a freed source (crash).
+   StopRenderThread();
+
    std::unique_lock lock(sourceMutex);
-   bool wasRendering = !selectedSources.empty();
+   const bool wasRendering = !selectedSources.empty();
    selectedSources.clear();
 
    // Update list of segment sources and select sources (simply the first group for the time being, maybe we could have some user setup on this)
@@ -606,20 +621,23 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
       else
          LOGI(std::format("Matched layout {} ({} displays: {})", LayoutName(dmdLayout), selectedSources.size(), elements));
    }
+   const bool nowRendering = !selectedSources.empty();
    lock.unlock();
 
-   // If we are starting or stopping rendering, report it
-   if (wasRendering != (!selectedSources.empty()))
+   // Restart the ancillary render thread if there is still something to render.
+   if (nowRendering)
+   {
+      isRunning = true;
+      renderThread = std::thread(RenderThread);
+   }
+
+   // Update the DMD source subscription and notify consumers only on an actual start/stop transition.
+   if (wasRendering != nowRendering)
    {
       if (wasRendering)
          msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
-      StopRenderThread();
-      if (!selectedSources.empty())
-      {
-         isRunning = true;
-         renderThread = std::thread(RenderThread);
+      else
          msgApi->SubscribeMsg(endpointId, getDmdSrcId, OnGetDisplaySrc, nullptr);
-      }
       msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }
 }
