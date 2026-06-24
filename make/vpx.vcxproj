@@ -98,6 +98,9 @@
     <ProjectReference Include="plugin-helloworld.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-inspector.vcxproj">
+      <Project>{82ABAE8C-59FB-4734-BA0B-AD6FB04D7B38}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-pinmame.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
     </ProjectReference>
