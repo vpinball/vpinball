@@ -1736,6 +1736,7 @@ private:
          return;
 
       // Capture is finished, process result and exit
+      m_player->m_captureSucceeded = true;
       m_player->SetCloseState(Player::CloseState::CS_CLOSE_APP);
       if (!m_player->m_cutCaptureToLoop)
          return;
