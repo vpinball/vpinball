@@ -113,23 +113,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       break;
    }
 
-   case RC_SUBMIT_VR:
-   {
-      if (log) {
-         PLOGI << "> Submit VR";
-      }
-      #if defined(ENABLE_VR)
-         if (g_pplayer->m_vrDevice && g_pplayer->m_vrDevice->IsVRReady())
-         {
-            g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP); 
-            g_pplayer->m_vrDevice->SubmitFrame(g_pplayer->m_renderer->GetOffscreenVR(0)->GetColorSampler(), g_pplayer->m_renderer->GetOffscreenVR(1)->GetColorSampler());
-            g_pplayer->m_logicProfiler.OnPresented(usec());
-            g_pplayer->m_logicProfiler.ExitProfileSection();
-         }
-      #endif
-      break;
-   }
-
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
@@ -396,12 +379,6 @@ void RenderCommand::SetCopy(RenderTarget* from, RenderTarget* to, bool color, bo
    m_copyDstRect = vec4((const float)x2, (const float)y2, (const float)w2, (const float)h2);
    m_copySrcLayer = srcLayer;
    m_copyDstLayer = dstLayer;
-}
-
-void RenderCommand::SetSubmitVR(RenderTarget* from)
-{
-   m_command = Command::RC_SUBMIT_VR;
-   m_copyFrom = from;
 }
 
 void RenderCommand::SetDrawMesh(

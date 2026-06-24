@@ -32,12 +32,7 @@ void HomePage::BuildPage()
       AddItem(std::make_unique<InGameUIItem>("Table Options"s, ""s, "table/options"s));
 
    if (m_player->m_vrDevice)
-   {
-      #ifdef ENABLE_XR
-         // Legacy OpenVR does not support dynamic repositioning through LiveUI (especially overall scale, this would need to be rewritten but not done as this is planned for deprecation)
-         AddItem(std::make_unique<InGameUIItem>("VR Settings"s, ""s, "settings/vr"s));
-      #endif
-   }
+      AddItem(std::make_unique<InGameUIItem>("VR Settings"s, ""s, "settings/vr"s));
    else
       AddItem(std::make_unique<InGameUIItem>("Point Of View"s, ""s, "settings/pov"s));
 

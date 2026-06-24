@@ -95,9 +95,6 @@
 
 // VR Support
 
-#if !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
-#define ENABLE_VR
-#endif
 #if !defined(__STANDALONE__) && defined(ENABLE_BGFX)
 #define ENABLE_XR
 #endif

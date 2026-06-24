@@ -243,38 +243,31 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 #endif
 
    bool useVR = false;
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+   #if defined(ENABLE_XR)
       const int vrDetectionMode = m_ptable->m_settings.GetPlayerVR_AskToTurnOn();
-      #if defined(ENABLE_XR)
-         if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
+      if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
+      {
+         m_vrDevice = new VRDevice(m_ptable->m_settings);
+         if (m_vrDevice->IsOpenXRReady())
          {
-            m_vrDevice = new VRDevice(m_ptable->m_settings);
-            if (m_vrDevice->IsOpenXRReady())
+            m_vrDevice->SetupHMD();
+            if (m_vrDevice->IsOpenXRHMDReady())
+               useVR = true;
+            else if (vrDetectionMode == 0) // 0 is VR on
             {
-               m_vrDevice->SetupHMD();
-               if (m_vrDevice->IsOpenXRHMDReady())
-                  useVR = true;
-               else if (vrDetectionMode == 0) // 0 is VR on
-               {
-                  while (!m_vrDevice->IsOpenXRHMDReady() && (MessageBox(nullptr, "Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
-                     m_vrDevice->SetupHMD();
-                  useVR = m_vrDevice->IsOpenXRHMDReady();
-               }
-            }
-            else if (vrDetectionMode == 0) // 0 is VR on, tell the user that the choice will not be fullfilled
-               ShowError("VR mode activated but OpenXR initialization failed.");
-            if (!useVR)
-            {
-               delete m_vrDevice;
-               m_vrDevice = nullptr;
+               while (!m_vrDevice->IsOpenXRHMDReady() && (MessageBox(nullptr, "Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
+                  m_vrDevice->SetupHMD();
+               useVR = m_vrDevice->IsOpenXRHMDReady();
             }
          }
-      #elif defined(ENABLE_VR)
-         useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
-         if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
-            useVR = MessageBox(nullptr, "VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
-         m_vrDevice = useVR ? new VRDevice(m_ptable->m_settings) : nullptr;
-      #endif
+         else if (vrDetectionMode == 0) // 0 is VR on, tell the user that the choice will not be fullfilled
+            ShowError("VR mode activated but OpenXR initialization failed.");
+         if (!useVR)
+         {
+            delete m_vrDevice;
+            m_vrDevice = nullptr;
+         }
+      }
    #endif
 
    #ifdef ENABLE_DX9
@@ -309,7 +302,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       {
          m_playfieldWnd = new VPX::Window(m_vrDevice->GetEyeWidth(), m_vrDevice->GetEyeHeight());
 
-         // Disable VSync for VR (sync is performed by the OpenVR runtime)
+         // Disable VSync for VR (sync is performed by the VR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
          m_maxFramerate = 10000.f;
       }
@@ -1842,7 +1835,7 @@ void Player::UpdateGameLogic()
 
 void Player::GameLoop()
 {
-   // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   // Stereo must be run unthrottled to let VR set the frame pace according to the head set
    assert(!(m_renderer->m_stereo3D == STEREO_VR && (m_videoSyncMode != VideoSyncMode::VSM_NONE || m_maxFramerate < 1000.f)));
 
    // If we failed to initialize, returns immediately

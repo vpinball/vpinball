@@ -357,7 +357,6 @@ target_link_libraries(vpinball
    hid.lib
    setupapi.lib
 
-   openvr_api.lib
    SDL364.lib
    dinput8.lib
 
@@ -410,7 +409,6 @@ add_custom_command(TARGET vpinball POST_BUILD
 if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/freeimage64.dll" "$<TARGET_FILE_DIR:vpinball>"
-      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/openvr_api64.dll" "$<TARGET_FILE_DIR:vpinball>"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SciLexerVP64.dll" "$<TARGET_FILE_DIR:vpinball>"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "$<TARGET_FILE_DIR:vpinball>"
    )

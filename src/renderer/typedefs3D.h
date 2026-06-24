@@ -25,10 +25,6 @@
    #define D3DCOLOR_DEFINED
 #endif
 
-#ifdef ENABLE_VR
- #include "openvr.h"
-#endif
-
 enum deviceNumber {
    PRIMARY_DEVICE,
    SECONDARY_DEVICE

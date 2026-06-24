@@ -238,13 +238,6 @@ PropBool(PlayerVR, AddBackglass, "Add Backglass"s, "Add a default backglass disp
 PropFloatDyn(PlayerVR, ControllerCabYOffset, "Cabinet Y Offset"s, "Y offset to apply when using controller view centering"s, -150.f, 50.f, 0.f);
 PropFloatDyn(PlayerVR, ControllerLockbarScale, "Lockbar size ratio"s, "Lockbar size ratio to apply when using controller view centering"s, 0.5f, 2.0f, 1.f);
 PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
-// Legacy OpenVR settings (to be removed)
-PropEnum(PlayerVR, EyeFBFormat, "EyeFBFormat"s, "VR frame buffer format"s, int, 1, "RGB 8"s, "RGBA 8 (Recommended)"s, "RGB 16F"s, "RGBA 16F"s);
-PropFloatUnbounded(PlayerVR, Slope, "Slope"s, "VR view slope"s, 6.5f);
-PropBool(PlayerVR, ScaleToFixedWidth, "ScaleToFixedWidth"s, ""s, false);
-PropFloatUnbounded(PlayerVR, ScaleAbsolute, "ScaleAbsolute"s, ""s, 55.f);
-PropFloatUnbounded(PlayerVR, ScaleRelative, "ScaleRelative"s, ""s, 1.f);
-PropFloatUnbounded(PlayerVR, NearPlane, "NearPlane"s, "VR near plane offset"s, 5.f);
 
 // Physics override profiles
 PropFloatUnbounded(Player, FlipperPhysicsMass0, "FlipperPhysicsMass0"s, ""s, 1.f);
