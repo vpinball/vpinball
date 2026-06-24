@@ -99,8 +99,10 @@ public:
    {
       int top;
       int left;
-      int width;
+      int width;  // logical size (points); on Wayland fractional scaling this is smaller than the physical resolution
       int height;
+      int pixelWidth;  // native pixel resolution (largest fullscreen mode); equals width unless the display is scaled
+      int pixelHeight;
       int depth;
       float refreshrate;
       bool isPrimary; // Default display (used when no display is selected in the settings)

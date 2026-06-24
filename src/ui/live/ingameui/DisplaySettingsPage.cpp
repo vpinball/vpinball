@@ -83,7 +83,15 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
 {
    m_displays = VPX::Window::GetDisplays();
    for (const auto& display : m_displays)
-      m_displayNames.push_back((display.isPrimary ? '*' : ' ') + std::to_string(display.width) + 'x' + std::to_string(display.height) + " [" + display.displayName + ']');
+   {
+      string label = (display.isPrimary ? '*' : ' ') + std::to_string(display.pixelWidth) + 'x' + std::to_string(display.pixelHeight);
+      // Show the display scale when the panel is scaled, so the logical window sizes (smaller than the native
+      // resolution) make sense to the user, e.g. a 4K panel at 1.75x reads as 3840x2160 @175%.
+      if (display.width > 0 && display.pixelWidth != display.width)
+         label += " @" + std::to_string((display.pixelWidth * 100 + display.width / 2) / display.width) + '%';
+      label += " [" + display.displayName + ']';
+      m_displayNames.push_back(label);
+   }
    ResetARLock();
 }
 

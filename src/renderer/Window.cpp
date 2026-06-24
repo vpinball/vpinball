@@ -450,6 +450,13 @@ vector<Window::DisplayConfig> Window::GetDisplays()
          displayConf.height = displayBounds.h;
          displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
          const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(displayIDs[i]);
+         // The display bounds are in logical points (e.g. a 4K display at 1.75x reports 2194x1234). The
+         // native pixel resolution is the largest fullscreen mode, which is reported directly in pixels.
+         int modeCount = 0;
+         SDL_DisplayMode** modes = SDL_GetFullscreenDisplayModes(displayIDs[i], &modeCount);
+         displayConf.pixelWidth = modeCount > 0 ? modes[0]->w : displayBounds.w;
+         displayConf.pixelHeight = modeCount > 0 ? modes[0]->h : displayBounds.h;
+         SDL_free(modes);
          displayConf.depth = GetPixelFormatDepth(mode->format);
          displayConf.refreshrate = mode->refresh_rate;
          displays.push_back(displayConf);
