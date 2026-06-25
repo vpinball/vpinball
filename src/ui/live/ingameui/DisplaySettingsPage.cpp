@@ -290,10 +290,30 @@ void DisplaySettingsPage::BuildWindowPage()
    AddItem(std::make_unique<InGameUIItem>(
               Settings::m_propWindow_FullScreen[m_wndId], //
               [this]() { return m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId); }, //
-              [this](bool v)
+              [this, wndDisplay](bool v)
               {
+                 Settings& settings = m_player->m_ptable->m_settings;
+                 settings.SetWindow_FullScreen(m_wndId, v, false);
+#ifdef ENABLE_BGFX
+                 // Apply the borderless fullscreen toggle live. The render resolution is still set up for
+                 // the previous window size, so the main window output is stretched until the game is
+                 // restarted (ancillary windows recreate their swapchain on resize and are not affected).
+                 Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                 wnd->SetFullScreen(v);
+                 if (!v)
+                 { // Restore the stored windowed size and position when leaving fullscreen
+                    const int w = settings.GetWindow_Width(m_wndId);
+                    const int h = settings.GetWindow_Height(m_wndId);
+                    const int x = clamp(settings.GetWindow_WndX(m_wndId), 0, max(0, m_displays[wndDisplay].width - w));
+                    const int y = clamp(settings.GetWindow_WndY(m_wndId), 0, max(0, m_displays[wndDisplay].height - h));
+                    wnd->SetSize(w, h);
+                    wnd->SetPos(m_displays[wndDisplay].left + x, m_displays[wndDisplay].top + y);
+                 }
+                 if (m_isMainWindow)
+                    m_delayApplyNotifId = m_player->m_liveUI->PushNotification("Rendering will be stretched until you restart the game"s, 5000, m_delayApplyNotifId);
+#else
                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
-                 m_player->m_ptable->m_settings.SetWindow_FullScreen(m_wndId, v, false);
+#endif
                  RequestRebuild();
               }))
       .m_excludeFromDefault = true;

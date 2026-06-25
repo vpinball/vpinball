@@ -71,6 +71,7 @@ public:
 
    void SetPos(const int x, const int y);
    void SetSize(const int w, const int h); // Request a new window size, applied asynchronously by the window manager (acknowledged through OnResized)
+   void SetFullScreen(const bool fullscreen); // Toggle borderless fullscreen desktop at runtime (BGFX only)
    void OnResized(); // To be called when the window manager resized the window: updates the cached sizes and recreates the swapchain of ancillary windows
    void Show(const bool show = true);
    bool IsVisible() const;

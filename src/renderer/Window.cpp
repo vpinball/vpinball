@@ -397,6 +397,22 @@ void Window::SetSize(const int x, const int y)
    SDL_SetWindowSize(m_nwnd, x, y);
 }
 
+void Window::SetFullScreen(const bool fullscreen)
+{
+   if (m_isVR || fullscreen == m_fullscreen)
+      return;
+#ifdef ENABLE_BGFX
+   if (fullscreen)
+      // Borderless fullscreen desktop, matching the activation done at window creation: cover the
+      // current display with no video mode change (see the constructor for the rationale).
+      SDL_SetWindowFullscreenMode(m_nwnd, nullptr);
+   SDL_SetWindowFullscreen(m_nwnd, fullscreen);
+   SDL_SyncWindow(m_nwnd);
+   m_fullscreen = fullscreen;
+   OnResized();
+#endif
+}
+
 void Window::OnResized()
 {
    if (m_isVR)
