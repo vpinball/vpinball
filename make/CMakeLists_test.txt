@@ -1,0 +1,41 @@
+
+# Unit test target (doctest based). Opt-in via -DVPINBALL_BUILD_TESTS=ON.
+# Must be included after the `vpinball` target is defined: the test executable reuses
+# its include directories, compile definitions/options and link libraries verbatim.
+# doctest is the header-only library vendored at third-party/include/doctest, which is
+# already on the inherited include path, so the tests just #include <doctest/doctest.h>.
+
+# Reuse the exact translation units of the app target (whatever each platform added),
+# minus its entry points - the tests provide their own main(). Deriving the list from the
+# target keeps this portable across the standalone and native (Windows) build variants.
+get_target_property(VPX_TEST_ENGINE_SOURCES vpinball SOURCES)
+list(REMOVE_ITEM VPX_TEST_ENGINE_SOURCES
+   src/core/main.cpp          # console / WinMain entry point
+   standalone/macos/main.mm   # macOS NSApplication entry point
+)
+
+add_executable(vpx-test
+   ${VPX_TEST_ENGINE_SOURCES}
+
+   tests/unit/main.cpp
+   tests/unit/test_settings_defaults.cpp
+)
+
+target_include_directories(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,INCLUDE_DIRECTORIES>)
+target_compile_definitions(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,COMPILE_DEFINITIONS>)
+target_compile_options(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,COMPILE_OPTIONS>)
+target_link_directories(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,LINK_DIRECTORIES>)
+target_link_libraries(vpx-test PRIVATE $<TARGET_PROPERTY:vpinball,LINK_LIBRARIES>)
+
+# The shared libraries the engine links (bgfx, SDL3, ...) live in third-party/runtime-libs/<platform>.
+# Point the test executable's rpath there so it runs from the build tree on Linux and macOS; unlike
+# the app target it is not a bundle and does not get those libs staged next to it.
+# MSVC_RUNTIME_LIBRARY must match the app target and the prebuilt /MT libs (the inherited compile
+# flags do not carry this target property); it is a no-op on non-MSVC toolchains.
+set_target_properties(vpx-test PROPERTIES
+   INSTALL_RPATH "$<TARGET_PROPERTY:vpinball,LINK_DIRECTORIES>"
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+)
+
+enable_testing()
+add_test(NAME vpx-unit COMMAND vpx-test)

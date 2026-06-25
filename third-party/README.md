@@ -74,6 +74,12 @@ The version used for these libraries is defined by the SHA of the head commit in
 - Version: ?
 - License: ?
 
+### doctest
+
+- Upstream: https://github.com/doctest/doctest
+- Version: 2.4.11
+- License: MIT
+
 ### Fonts
 
 Droid Sans

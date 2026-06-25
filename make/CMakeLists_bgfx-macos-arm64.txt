@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+option(VPINBALL_BUILD_TESTS "Build the doctest based unit tests" OFF)
 
 message(STATUS "ENABLE_SANITIZERS: ${ENABLE_SANITIZERS}")
 
@@ -130,3 +131,7 @@ add_custom_command(TARGET vpinball POST_BUILD
 set(PluginPlatform "macos")
 set(PluginArch "arm64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
+
+if(VPINBALL_BUILD_TESTS)
+   include("${CMAKE_SOURCE_DIR}/make/CMakeLists_test.txt")
+endif()
