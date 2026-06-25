@@ -620,6 +620,13 @@ void InGameUIPage::Render(float elapsedS)
    const float circleTextWidth = ImGui::CalcTextSize(ICON_FK_CIRCLE, nullptr, true).x + style.FramePadding.x * 2.0f;
    for (int i = 0; i < (int)m_items.size(); i++)
    {
+      // A value change handled while rendering a previous item may have requested a page rebuild (e.g.
+      // switching a window output to embedded destroys the window that the following items query). The
+      // rebuild is deferred to the next frame, so stop here to avoid evaluating the now-stale items
+      // (their live getters would dereference freed state).
+      if (m_needsRebuild)
+         break;
+
       using enum InGameUIItem::Type;
       const auto& item = m_items[i];
 
