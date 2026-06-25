@@ -1742,7 +1742,8 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));
 
       // Postprocessed color keyed passthrough
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_passthrough, "vs_postprocess_st", "fs_pp_passthrough");
+      if (m_isStereo)
+         loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_passthrough, "vs_postprocess_st", "fs_pp_passthrough");
 
       // Postprocessed antialiasing
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, STEREO(vs_postprocess), STEREO(fs_pp_nfaa));
