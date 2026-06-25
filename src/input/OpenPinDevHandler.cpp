@@ -8,9 +8,10 @@
 // target platforms (particularly the mobile platforms) have limited or
 // no support for the sort of low-level HID access we need.
 
+#include "core/stdafx.h"
+
 #ifndef __LIBVPINBALL__
 
-#include "core/stdafx.h"
 #include "input/OpenPinDevHandler.h"
 
 #include "input/PlungerHandler.h"
