@@ -110,6 +110,30 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
 
    constexpr bool isExtCreatedWindow = g_isMobile && g_isIOS;
+
+   // Linux multi-monitor cabinet UX: when the requested window size matches its target
+   // display in size, the user is laying out a cabinet (each VPX window covers one display).
+   // The only protocol-level primitive that pins a toplevel to a specific monitor is
+   // xdg_toplevel.set_fullscreen(output) on Wayland (client positioning is forbidden by
+   // design) and _NET_WM_FULLSCREEN_MONITORS on X11 (Mutter routes borderless screen-sized
+   // NORMAL toplevels to the focused display irrespective of X/Y hints, so windowed mode
+   // cannot pin either). Auto-enable fullscreen here so the BGFX fullscreen path introduced
+   // in 56ab1edc3 (BGFX: Readd fullscreen without video mode change) takes care of the
+   // actual SDL setup -- this only auto-flips the toggle for the cabinet case, preserving
+   // the zero-config out-of-the-box experience without duplicating Vincent's mechanism.
+#if !defined(_MSC_VER) && !defined(__APPLE__) && !defined(__ANDROID__)
+   const char* const sdlDriverName = SDL_GetCurrentVideoDriver();
+   const bool isLinuxDesktop = (sdlDriverName != nullptr)
+                               && (strcmp(sdlDriverName, "wayland") == 0 || strcmp(sdlDriverName, "x11") == 0);
+   const bool linuxCabFullscreen = isLinuxDesktop
+                                   && m_width == selectedDisplay.width
+                                   && m_height == selectedDisplay.height;
+   if (linuxCabFullscreen && !m_fullscreen)
+      m_fullscreen = true;
+#else
+   constexpr bool linuxCabFullscreen = false;
+#endif
+
    if (m_fullscreen && !isExtCreatedWindow)
    {
 #ifndef ENABLE_BGFX
@@ -235,7 +259,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
-      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+      wnd_flags |= SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+      // Fullscreen state already implies no decoration drawn on both X11 and Wayland;
+      // SDL_WINDOW_BORDERLESS combined with SDL_WINDOW_FULLSCREEN is at best redundant and
+      // on some compositors prevents the fullscreen state machine from running cleanly.
+      if (!linuxCabFullscreen)
+         wnd_flags |= SDL_WINDOW_BORDERLESS;
       #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
          SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
       #endif
@@ -243,8 +272,11 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
 
       #if !defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-      // On Windows, always on top is not always respected and if using SDL_WINDOW_UTILITY windows may end up being hidden with no way to select and move them
-      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
+      // On Windows, always on top is not always respected and if using SDL_WINDOW_UTILITY windows may end up being hidden with no way to select and move them.
+      // On Mutter Wayland SDL_WINDOW_UTILITY maps to xdg_toplevel.set_parent, which triggers same-app_id
+      // regrouping onto a single output -- the exact failure mode we are pinning windows away from. Drop
+      // UTILITY (and ALWAYS_ON_TOP, redundant under fullscreen) for the Linux cabinet path.
+      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && !linuxCabFullscreen)
          wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
       #endif
 
