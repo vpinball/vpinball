@@ -328,6 +328,30 @@ void Window::SetSize(const int x, const int y)
    SDL_SetWindowSize(m_nwnd, x, y);
 }
 
+void Window::SetResizable(const bool resizable)
+{
+   if (m_isVR || m_nwnd == nullptr)
+      return;
+   // The display settings page rebuilds every frame, so guard against re-issuing the size hints (which
+   // would clobber an in-progress resize request every frame); only act on an actual state change.
+   if (((SDL_GetWindowFlags(m_nwnd) & SDL_WINDOW_RESIZABLE) != 0) == resizable)
+      return;
+   // The floating ancillary windows are created non-resizable, which on Wayland pins them to a fixed
+   // size (the compositor reverts SetSize on the next configure). They are made resizable only while
+   // their display settings page is open so resizes (slider or by hand) are honored; turning it back
+   // off makes SDL re-pin min==max at the current size, keeping it without allowing further resizing.
+   if (SDL_GetCurrentVideoDriver() == "wayland"sv)
+   {
+      SDL_SetWindowResizable(m_nwnd, resizable);
+      if (resizable)
+      {
+         // Drop any leftover fixed-size bounds so the window can be grown past its current size too.
+         SDL_SetWindowMinimumSize(m_nwnd, 0, 0);
+         SDL_SetWindowMaximumSize(m_nwnd, 0, 0);
+      }
+   }
+}
+
 void Window::OnResized()
 {
    if (m_isVR)
