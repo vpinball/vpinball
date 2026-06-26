@@ -321,8 +321,6 @@ enum option_names
    OPTION_PREFPATH,
    OPTION_LESSCPUTHREADS,
 #ifndef ENABLE_BGFX
-   OPTION_DISABLETRUEFULLSCREEN,
-   OPTION_ENABLETRUEFULLSCREEN,
    OPTION_GLES,
 #endif
    OPTION_INVALID,
@@ -371,8 +369,6 @@ static const CommandLineOption options[] = {
    { OPTION_PREFPATH, "PrefPath"s, "[path]  Use a custom preferences path instead of default"s },
    { OPTION_LESSCPUTHREADS, "LessCPUthreads"s, "Limit the amount of parallel execution"s },
 #ifndef ENABLE_BGFX
-   { OPTION_DISABLETRUEFULLSCREEN, "DisableTrueFullscreen"s, "Force-disable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
-   { OPTION_ENABLETRUEFULLSCREEN, "EnableTrueFullscreen"s, "Force-enable True Fullscreen setting [Deprecated, uses ini serttings instead]"s },
    { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini serttings instead]"s },
 #endif
 };
@@ -513,16 +509,6 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
          break;
 
 #ifndef ENABLE_BGFX
-      // FIXME remove as this is now handled by the ini system
-      case OPTION_DISABLETRUEFULLSCREEN:
-         g_app->m_disEnableTrueFullscreen = 0;
-         break;
-
-      // FIXME remove as this is now handled by the ini system
-      case OPTION_ENABLETRUEFULLSCREEN:
-         g_app->m_disEnableTrueFullscreen = 1;
-         break;
-
       // FIXME remove as this is now handled by the ini system
       case OPTION_GLES: // global emission scale parameter handling
          if (i + 1 < nArgs)

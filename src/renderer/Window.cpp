@@ -60,7 +60,7 @@ Window::Window(const int width, const int height)
    m_pixelHeight = height;
    m_screenwidth = width;
    m_screenheight = height;
-   m_fullscreen = true;
+   m_windowMode = WindowMode::ExclusiveFullscreen;
    //m_refreshrate;
    //m_bitdepth;
    m_sdrWhitePoint = 1.f;
@@ -74,106 +74,69 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
-   m_fullscreen = g_isMobile || settings.GetWindow_FullScreen(m_windowId);
-#ifndef ENABLE_BGFX
-   if (!g_isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
-   {
-      // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
-      if (g_app->m_disEnableTrueFullscreen == 0)
-         m_fullscreen = false;
-      else if (g_app->m_disEnableTrueFullscreen == 1)
-         m_fullscreen = true;
-   }
-#endif
-
+   m_windowMode = (WindowMode) settings.GetWindow_FullScreen(m_windowId);
+   if (g_isMobile)
+      m_windowMode = WindowMode::BorderlessFullscreen;
+   
    // Both fullscreen and windowed modes are anchored to a user selected display
    const string configuredDisplay = settings.GetWindow_Display((int)m_windowId);
    const DisplayConfig selectedDisplay = GetDisplayConfig(configuredDisplay);
-   if (selectedDisplay.displayName != configuredDisplay)
+   if (configuredDisplay.empty())
    {
-      if (configuredDisplay.empty())
-      {
-         PLOGI << "No display configured. Using display \"" << selectedDisplay.displayName << "\".";
-      }
-      else
-      {
-         PLOGW << "The selected display \"" << configuredDisplay << "\" is not available. Using display \"" << selectedDisplay.displayName << "\" instead.";
-      }
+      PLOGI << "No display configured. Using display \"" << selectedDisplay.displayName << "\".";
+   }
+   else if (selectedDisplay.displayName != configuredDisplay)
+   {
+      PLOGW << "The selected display \"" << configuredDisplay << "\" is not available. Using display \"" << selectedDisplay.displayName << "\" instead.";
    }
    int wnd_x = selectedDisplay.left;
    int wnd_y = selectedDisplay.top;
-   int nDisplayModes;
-   SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(selectedDisplay.display, &nDisplayModes);
 
-   // Search for the request fullscreen exclusive display mode, eventually fallback to windowed mode if we fail
+   // Search for the request fullscreen exclusive display mode, eventually falling back to windowed mode
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
-
-   constexpr bool isExtCreatedWindow = g_isMobile && g_isIOS;
-   if (m_fullscreen && !isExtCreatedWindow)
+   if (m_windowMode == WindowMode::ExclusiveFullscreen)
    {
-#ifndef ENABLE_BGFX
-      if (g_isAndroid)
-#endif
+      int nDisplayModes;
+      SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(selectedDisplay.display, &nDisplayModes);
+      const int requestedW = settings.GetWindow_FSWidth(m_windowId);
+      const int requestedH = settings.GetWindow_FSHeight(m_windowId);
+      const float requestedHz = settings.GetWindow_FSRefreshRate(m_windowId);
+      const int requestedDepth = settings.GetWindow_FSColorDepth(m_windowId);
+      for (int mode = 0; mode < nDisplayModes; mode++)
       {
-        const SDL_DisplayMode* currentMode = SDL_GetCurrentDisplayMode(selectedDisplay.display);
-        if (currentMode) {
-            fullscreenDisplayMode = currentMode;
-            m_screenwidth = currentMode->w;
-            m_screenheight = currentMode->h;
-            m_width = currentMode->w;
-            m_height = currentMode->h;
-            m_refreshrate = currentMode->refresh_rate;
-            m_bitdepth = GetPixelFormatDepth(currentMode->format);
-        }
-        else
-        {
-           m_fullscreen = false;
-        }
-      }
-#ifndef ENABLE_BGFX
-      else
-      {
-         const int requestedW = settings.GetWindow_FSWidth(m_windowId);
-         const int requestedH = settings.GetWindow_FSHeight(m_windowId);
-         const float requestedHz = settings.GetWindow_FSRefreshRate(m_windowId);
-         const int requestedDepth = settings.GetWindow_FSColorDepth(m_windowId);
-         for (int mode = 0; mode < nDisplayModes; mode++)
+         const SDL_DisplayMode* const sdlMode = displayModes[mode];
+         const int bitdepth = GetPixelFormatDepth((sdlMode->format));
+         if ((sdlMode->w == requestedW) && (sdlMode->h == requestedH) //
+               && ((requestedHz == 0.f) || (sdlMode->refresh_rate == requestedHz)) //
+               && ((requestedDepth == 0) || (bitdepth == requestedDepth)))
          {
-            const SDL_DisplayMode* const sdlMode = displayModes[mode];
-            const int bitdepth = GetPixelFormatDepth((sdlMode->format));
-            if ((sdlMode->w == requestedW) && (sdlMode->h == requestedH) //
-                  && ((requestedHz == 0.f) || (sdlMode->refresh_rate == requestedHz)) //
-                  && ((requestedDepth == 0) || (bitdepth == requestedDepth)))
-            {
-               fullscreenDisplayMode = sdlMode;
-               m_screenwidth = sdlMode->w;
-               m_screenheight = sdlMode->h;
-               m_width = sdlMode->w;
-               m_height = sdlMode->h;
-               m_refreshrate = sdlMode->refresh_rate;
-               m_bitdepth = bitdepth;
-               break;
-            }
+            fullscreenDisplayMode = sdlMode;
+            m_screenwidth = sdlMode->w;
+            m_screenheight = sdlMode->h;
+            m_refreshrate = sdlMode->refresh_rate;
+            m_bitdepth = bitdepth;
+            m_width = sdlMode->w;
+            m_height = sdlMode->h;
+            break;
          }
       }
       if (fullscreenDisplayMode == nullptr)
       {
-         PLOGE << "Requested fullscreen mode " << settings.GetWindow_Width(m_windowId) << 'x' << settings.GetWindow_Height(m_windowId) << " at "
-               << settings.GetWindow_FSRefreshRate(m_windowId) << "Hz, Bit depth: " << settings.GetWindow_FSColorDepth(m_windowId) << " is not available. Switching to windowed mode.";
+         PLOGE << std::format("Requested fullscreen mode {}x{} at {}Hz, Bit depth: {} is not available. Switching to windowed mode.", requestedW, requestedH, requestedHz, requestedDepth);
+         m_windowMode = WindowMode::BorderlessFullscreen;
       }
-#endif
+      SDL_free(displayModes);
    }
 
-   // Fullscreen failed or was not requested, setup windowed mode
-   if (!m_fullscreen || fullscreenDisplayMode == nullptr)
+   // Setup windowed mode
+   if (m_windowMode != WindowMode::ExclusiveFullscreen)
    {
-      m_screenwidth = selectedDisplay.width;
-      m_screenheight = selectedDisplay.height;
-      m_width = m_fullscreen ? m_screenwidth : settings.GetWindow_Width(m_windowId);
-      m_height = m_fullscreen ? m_screenheight : settings.GetWindow_Height(m_windowId);
-      m_refreshrate = selectedDisplay.refreshrate;
-      m_bitdepth = selectedDisplay.depth;
-      m_fullscreen = false;
+      m_screenwidth = selectedDisplay.videomode.width;
+      m_screenheight = selectedDisplay.videomode.height;
+      m_refreshrate = selectedDisplay.videomode.refreshrate;
+      m_bitdepth = selectedDisplay.videomode.depth;
+      m_width = m_windowMode == WindowMode::BorderlessFullscreen ? m_screenwidth : settings.GetWindow_Width(m_windowId);
+      m_height = m_windowMode == WindowMode::BorderlessFullscreen ? m_screenheight : settings.GetWindow_Height(m_windowId);
 
       // Constrain window to screen
       if (m_width > m_screenwidth)
@@ -189,18 +152,24 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       wnd_x += (m_screenwidth - m_width) / 2;
       wnd_y += (m_screenheight - m_height) / 2;
 
-      // Restore saved position of non fullscreen windows (saved as a relativ eposition inside the selected display)
+      // Restore saved position of non fullscreen windows (saved as a relative position inside the selected display)
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
          Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x - selectedDisplay.left));
          Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
          const int xn = settings.GetWindow_WndX(m_windowId);
          const int yn = settings.GetWindow_WndY(m_windowId);
-         if (0 <= xn && xn + m_width <= selectedDisplay.width)
+         if (0 <= xn && xn + m_width <= selectedDisplay.videomode.width)
             wnd_x = selectedDisplay.left + xn;
-         if (0 <= yn && yn + m_height <= selectedDisplay.height)
+         if (0 <= yn && yn + m_height <= selectedDisplay.videomode.height)
             wnd_y = selectedDisplay.top + yn;
       }
+   }
+
+   if (m_refreshrate <= 0)
+   {
+      PLOGE << "Failed to get display refresh rate. VPX will use a 60Hz default which may be wrong and cause bad video synchronization.";
+      m_refreshrate = 60;
    }
 
    // Create the window
@@ -208,15 +177,10 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    assert(m_height > 0 && m_height <= m_screenheight);
    assert(selectedDisplay.left <= wnd_x);
    assert(selectedDisplay.top <= wnd_y);
-   assert((wnd_x + m_width) <= (selectedDisplay.left + (m_fullscreen ? fullscreenDisplayMode->w : selectedDisplay.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
-   assert((wnd_y + m_height) <= (selectedDisplay.top + (m_fullscreen ? fullscreenDisplayMode->h : selectedDisplay.height)));
-   if (m_refreshrate <= 0)
-   {
-      PLOGE << "Failed to get display refresh rate. VPX will use a 60Hz default which may be wrong and cause bad video synchronization.";
-      m_refreshrate = 60;
-   }
+   assert((wnd_x + m_width) <= (selectedDisplay.left + (fullscreenDisplayMode ? fullscreenDisplayMode->w : selectedDisplay.videomode.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
+   assert((wnd_y + m_height) <= (selectedDisplay.top + (fullscreenDisplayMode ? fullscreenDisplayMode->h : selectedDisplay.videomode.height)));
    SDL_PropertiesID props;
-   if (isExtCreatedWindow)
+   if (g_isMobile && g_isIOS) // Window is already externally created
    {
       #ifdef __LIBVPINBALL__
          m_nwnd = VPinballLib::VPinballLib::Instance().GetWindow();
@@ -235,17 +199,11 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          // DX9 does not need any special flag either
       #endif
       wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-      #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-         SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
-      #endif
-      if (m_fullscreen)
+      if (m_windowMode != WindowMode::Windowed)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
 
-      #if !defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-      // On Windows, always on top is not always respected and if using SDL_WINDOW_UTILITY windows may end up being hidden with no way to select and move them
-      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
-         wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
-      #endif
+      // Request forced raising (standard behavior except on Windows)
+      SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
 
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -269,7 +227,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    // when dragged anywhere instead. Other platforms keep the settings UI drag (a full
    // surface hit test would swallow the mouse events it relies on, and make the windows
    // movable outside of the settings UI, e.g. by stray touches on a cabinet).
-   if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && !m_fullscreen && SDL_GetCurrentVideoDriver() == "wayland"sv)
+   if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowMode == Windowed && SDL_GetCurrentVideoDriver() == "wayland"sv)
       SDL_SetWindowHitTest(m_nwnd, [](SDL_Window*, const SDL_Point*, void*) -> SDL_HitTestResult { return SDL_HITTEST_DRAGGABLE; }, nullptr);
 
    props = SDL_GetWindowProperties(m_nwnd);
@@ -277,14 +235,13 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
    m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
-   // Switch to request fullscreen display mode (must be done after window creation)
+   // Switch to request exclusive fullscreen display mode (must be done after window creation)
    if (fullscreenDisplayMode)
    {
       SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
       SDL_SetWindowFullscreen(m_nwnd, true);
       SDL_SyncWindow(m_nwnd);
    }
-   SDL_free(displayModes);
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
 
@@ -301,19 +258,16 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       PLOGE << "Failed to load window icon: " << SDL_GetError();
    }
 
-   const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display);
-   if (displayMode) {
-      PLOGI << "Window #" << m_windowId << " (" << m_width << 'x' << m_height << ") was created on display " << selectedDisplay.displayName 
-         << " [" << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
+   if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)
+   {
+      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int) m_windowId, m_width, m_height, selectedDisplay.displayName.c_str(), displayMode->w, displayMode->h,
+         displayMode->refresh_rate, SDL_GetPixelFormatName(displayMode->format));
    }
 }
 
 Window::~Window()
 {
-   if (m_isVR)
-      return;
-
-   if (!g_isIOS)
+   if (!m_isVR && !(g_isMobile && g_isIOS))
       SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
 }
 
@@ -446,12 +400,12 @@ vector<Window::DisplayConfig> Window::GetDisplays()
          displayConf.displayName = SDL_GetDisplayName(displayIDs[i]);
          displayConf.top = displayBounds.y;
          displayConf.left = displayBounds.x;
-         displayConf.width = displayBounds.w;
-         displayConf.height = displayBounds.h;
+         displayConf.videomode.width = displayBounds.w;
+         displayConf.videomode.height = displayBounds.h;
          displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
          const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(displayIDs[i]);
-         displayConf.depth = GetPixelFormatDepth(mode->format);
-         displayConf.refreshrate = mode->refresh_rate;
+         displayConf.videomode.depth = GetPixelFormatDepth(mode->format);
+         displayConf.videomode.refreshrate = mode->refresh_rate;
          displays.push_back(displayConf);
       }
    }
@@ -494,7 +448,7 @@ Window::DisplayConfig Window::GetDisplayConfig(const string& display)
       if (dispConf.isPrimary) // Otherwise, try to default to the primary display
          selectedDisplay = dispConf;
    }
-   assert(selectedDisplay.width > 0); // We should at least have selected the default display
+   assert(selectedDisplay.videomode.width > 0); // We should at least have selected the default display
    return selectedDisplay;
 }
 
