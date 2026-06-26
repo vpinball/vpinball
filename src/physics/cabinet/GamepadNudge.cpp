@@ -18,7 +18,7 @@ namespace VPX::Physics
 // stable results on most hardwares/sensors (gamepad, desktop, cabinets, VR stub,... providing
 // position, velocity or acceleration). The drawback is that it only models 'impulse' nudging.
 //
-// Cabinet physic model is a simplified 2D second order oscillator fitted on real machine behavior.
+// Cabinet physics model is a simplified 2D second order oscillator fitted on real machine behavior.
 // Measurements show that modern (1990-2020) real pinball machines, weighting around 113kg,
 // oscillate at around 11Hz for a side nudge and 5.5Hz for a front nudge. Damping has also been
 // fitted to correspond to the observed decay of oscillation amplitude.
@@ -28,8 +28,7 @@ namespace VPX::Physics
 // Player intent is evaluated using a high pass filter on the acquired sensor value, and only react
 // on the inversion point of the filtered signal, considering it as the impulse that feeds the
 // model. As the expected natural oscillation is between 3..15Hz, the filter has a cut frequency of
-// 20Hz. The strength is derived from the ammplitude at the inversion point (depending on the
-// sensor type).
+// 20Hz. The strength is derived from the amplitude at the inversion point (depending on the sensor type).
 
 GamepadNudge::GamepadNudge(InputManager* inputManager)
    : m_xSensor(inputManager, "Side nudge sensor mapping", SensorMapping::Type::Acceleration)

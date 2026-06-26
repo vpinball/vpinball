@@ -203,14 +203,14 @@ PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
 // Plumb settings
 PropBool(Player, SimulatedPlumb, "Plumb Simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
-PropFloat(Player, PlumbDamping, "Plumb Damping"s, "Adjust plumb damping (how fast the pumb get back to rest)"s, 0.f, 2.f, 1.f);
-PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is caused"s, 0.5f, 4.f, 2.f);
+PropFloat(Player, PlumbDamping, "Plumb Damping"s, "Adjust plumb damping (how fast the pumb gets back to rest)"s, 0.f, 2.f, 1.f);
+PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is triggered"s, 0.5f, 4.f, 2.f);
 
 // Nudge settings
 PropEnum(Player, KeyboardNudgeMode, "Keyboard Nudge Mode"s, "Select how nudge is simulated when triggered from the keyboard."s, int, 2, "VP9 (simple push/retract)"s, "VPX 10.8 (cabinet model)"s, "VPX 10.9 (improved cabinet)"s);
 PropFloat(Player, KeyboardNudgeStrength, "Keyboard Nudge Strength"s, "Strength of the keyboard nudging mode"s, 0.f, 2.f, 1.f);
 PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table"s, 0.f, 2.f, 1.f);
-PropInt(Input, NudgeSensorCount, "Nudge Sensor Count"s, "Number of hardware nudge sensor defined"s, 0, 100, 0);
+PropInt(Input, NudgeSensorCount, "Nudge Sensor Count"s, "Number of hardware nudge sensors defined"s, 0, 100, 0);
 
 // Plunger settings
 PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s,

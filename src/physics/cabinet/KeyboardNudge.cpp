@@ -11,7 +11,7 @@ namespace VPX::Physics
 {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Legacy Keyboard Nudge used in VP9
+// Legacy Keyboard Nudge, as used in VP9
 //
 
 PushRetractKeyboardNudge::PushRetractKeyboardNudge(float nudgeStrength)
@@ -32,8 +32,8 @@ void PushRetractKeyboardNudge::Nudge(float angle, float force)
       return;
 
    const float a = ANGTORAD(angle);
-   m_impulse.x = sinf(a) * m_strength * force;
-   m_impulse.y = -cosf(a) * m_strength * force;
+   m_impulse.x =  sinf(a) * (m_strength * force);
+   m_impulse.y = -cosf(a) * (m_strength * force);
    m_nudgeTime = 100;
 }
 
@@ -117,8 +117,8 @@ void BoxModelKeyboardNudge::Nudge(float angle, float force)
 {
    m_deactivationDelay = 10000;
    const float a = ANGTORAD(angle);
-   m_cabinetVelocity.x += sinf(a) * m_strength * force;
-   m_cabinetVelocity.y += -cosf(a) * m_strength * force;
+   m_cabinetVelocity.x +=  sinf(a) * (m_strength * force);
+   m_cabinetVelocity.y += -cosf(a) * (m_strength * force);
 }
 
 // Note that this used to be mixed up with accelerator based nudging by replacing acceleration by the acquired one
@@ -144,8 +144,8 @@ const Vertex2D& BoxModelKeyboardNudge::GetCabinetOffset() const { return m_cabin
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Keyboard Nudge used since VP10.9
-// Cabinet model used by intent nudge system
+// Keyboard Nudge, used since VP10.9
+// Simulated cabinet model, used by the intent nudge system
 //
 
 CabModelKeyboardNudge::CabModelKeyboardNudge(float nudgeStrength)
@@ -162,8 +162,8 @@ void CabModelKeyboardNudge::Nudge(float angle, float force)
    m_deactivationDelay = 10000;
    const float a = ANGTORAD(angle);
    // 6 is a magic number to match the legacy force value, hardcoded to 2 (no unit), to the 12 m/s^2 observed on strong nudges
-   const float xForce = sinf(a) * force * m_strength * 6.f;
-   const float yForce = -cosf(a) * force * m_strength * 6.f;
+   const float xForce =  sinf(a) * (force * m_strength * 6.f);
+   const float yForce = -cosf(a) * (force * m_strength * 6.f);
    m_impulses.emplace_back(25, Vertex2D { xForce, yForce });
 }
 
@@ -178,7 +178,7 @@ Vertex2D CabModelKeyboardNudge::Impulse::GetImpulseAceleration() const
    if (!IsInProgress())
       return { 0.f, 0.f };
    const float t = static_cast<float>(m_impulseElapsed) / static_cast<float>(m_impulseLength);
-   return m_impulse * 0.5f * (1.0f - cosf(2.f * M_PIf * t));
+   return m_impulse * 0.5f * (1.0f - cosf((float)(2. * M_PI) * t));
 }
 
 void CabModelKeyboardNudge::StepOneMillisecond()

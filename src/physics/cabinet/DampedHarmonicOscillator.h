@@ -13,9 +13,9 @@ public:
    // zeta: Damping ratio (0 = undamped, 1 = critically damped)
    DampedHarmonicOscillator(float mass, float freq, float zeta)
       : m_mass(mass)
-      , m_omega0(2.0f * M_PIf * freq)
+      , m_omega0((float)(2.0 * M_PI) * freq)
       , m_k(mass * m_omega0 * m_omega0)
-      , m_damping(2.0f * zeta * mass * m_omega0)
+      , m_damping(2.0f * zeta * (mass * m_omega0))
    {
    }
 

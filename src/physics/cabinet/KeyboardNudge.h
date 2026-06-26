@@ -9,7 +9,7 @@
 namespace VPX::Physics
 {
 
-class PushRetractKeyboardNudge : public KeyboardNudge
+class PushRetractKeyboardNudge final : public KeyboardNudge
 {
 public:
    PushRetractKeyboardNudge(float nudgeStrength);
@@ -38,7 +38,7 @@ private:
 };
 
 
-class BoxModelKeyboardNudge : public KeyboardNudge
+class BoxModelKeyboardNudge final : public KeyboardNudge
 {
 public:
    BoxModelKeyboardNudge(float nudgeStrength);
@@ -71,7 +71,7 @@ private:
 };
 
 
-class CabModelKeyboardNudge : public KeyboardNudge
+class CabModelKeyboardNudge final : public KeyboardNudge
 {
 public:
    CabModelKeyboardNudge(float nudgeStrength);
@@ -91,7 +91,7 @@ public:
 private:
    float m_strength = 0.f;
 
-   class Impulse
+   class Impulse final
    {
    public:
       Impulse(const int length, Vertex2D impulse);

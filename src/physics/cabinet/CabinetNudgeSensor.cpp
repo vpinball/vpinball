@@ -17,7 +17,7 @@ CabinetNudgeSensor::CabinetNudgeSensor(InputManager* inputManager)
    , m_yAccSensor(inputManager, "Front nudge acceleration sensor", SensorMapping::Type::Acceleration)
    , m_kalmanX(MotionKalmanAxis::Config())
    , m_kalmanY(MotionKalmanAxis::Config())
-   , m_emaX(0.004f) // Time constant adjusted for default USB acquisition period is 8.125ms and limited latency
+   , m_emaX(0.004f) // Time constant adjusted for default USB acquisition period at 8.125ms and limited latency
    , m_emaY(0.004f)
 {
    m_cabinetAcceleration.SetZero();
@@ -259,8 +259,8 @@ void CabinetNudgeSensor::StepOneMillisecond()
    if (m_nudgeIntentHandler)
    {
       // Hacky empirical balancing of front vs side energy, needs some more physics study to validate this
-      m_nudgeIntentHandler->StepOneMillisecond(Vertex2D(m_kalmanX.GetAcceleration() * (4.f / 3.f), m_kalmanY.GetAcceleration()));
-      
+      m_nudgeIntentHandler->StepOneMillisecond(Vertex2D(m_kalmanX.GetAcceleration() * (float)(4. / 3.), m_kalmanY.GetAcceleration()));
+
       if (m_nudgeIntentHandler->IsImpulseInProgress())
          m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler->GetImpulseAceleration());
       else
@@ -279,7 +279,7 @@ void CabinetNudgeSensor::StepOneMillisecond()
       m_emaY.Update(m_kalmanY.GetAcceleration(), 0.001f);
       m_cabinetAcceleration.x = m_emaX.Get() * m_nudgeStrengthScale;
       m_cabinetAcceleration.y = m_emaY.Get() * m_nudgeStrengthScale;
-      
+
       // The acquired acceleration correspond to a force F = a.m where m is the real world cabinet mass. The acceleration computed here is the
       // one of the **virtual** cabinet which has a different mass corresponding to the simulated table.
       m_cabinetAcceleration *= m_nudgeStrengthScale * m_cabinetMass / m_cabinetModel.GetMass();

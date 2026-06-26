@@ -261,22 +261,23 @@ template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx
 
 static void DrawChar(const int x, const int y, const segDisplay& display, const float* const __restrict lum, const int nSeg)
 {
+   const int offset = 128*y + x;
    for (int seg = 0; seg < nSeg; seg++)
    {
       const float v = clamp(lum[seg], 0.01f, 1.f);
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
-         const int pos = 128 * (y + display.segs[seg].dots[i][1]) + (x + display.segs[seg].dots[i][0]);
+         const int pos = 128 * display.segs[seg].dots[i][1] + display.segs[seg].dots[i][0] + offset;
          // Clip dots that fall outside the 128x32 frame: some layouts place the bottom row of glyphs past
          // the end of renderFrame, and the unchecked write corrupted the globals stored right after it
          // (e.g. dmd128Id), which later crashed consumers of that display source descriptor
-         if (pos >= 0 && pos < 128 * 32)
+         if (/*pos >= 0 &&*/ (unsigned int)pos < 128u * 32u)
             renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
       }
    }
 }
 
-static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
+static void DrawDisplay(int x, const int y, float*& lum, int srcIndex, const bool large)
 {
    const SegSrcId& segSrc = selectedSources[srcIndex];
    for (unsigned int i = 0; i < segSrc.nElements; i++)

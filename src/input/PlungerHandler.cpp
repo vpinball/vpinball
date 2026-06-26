@@ -66,7 +66,7 @@ void PlungerHandler::AddSensor(std::unique_ptr<PlungerSensor>& sensor)
 
    const auto linearPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, std::format("Mapping.Plunger{}.Linear", sensorIndex),
       "Linear Sensor"s,
-      "Select between symmetric (linear) and assymetric (legacy) sensor\nPlunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for bawkard compatibility."s,
+      "Select between symmetric (linear) and asymetric (legacy) sensor\nThe plunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for backwards compatibility."s,
       false, true));
 
    const auto posFilterPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(
@@ -222,7 +222,7 @@ void PlungerSensor::Load(const Settings& settings, int sensorIndex)
 
    const auto linearPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, std::format("Mapping.Plunger{}.Linear", sensorIndex),
       "Linear Sensor"s,
-      "Select between symmetric (linear) and assymetric (legacy) sensor\nPlunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for bawkard compatibility."s,
+      "Select between symmetric (linear) and asymetric (legacy) sensor\nThe plunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for backwards compatibility."s,
       false, true));
    m_linearPlunger = settings.GetBool(linearPropId);
 

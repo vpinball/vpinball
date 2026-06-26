@@ -32,7 +32,7 @@ public:
       Header, // Not scrollable basic text, formated to split sections of the item list
       Markdown // Scrollable (therefore selectable), advanced formatting
    };
-   InGameUIItem(LabelType type, string label, string tooltip = "");
+   InGameUIItem(LabelType type, string label, string tooltip = ""s);
 
    InGameUIItem(const string& label, const string& tooltip, std::function<void(void)> runnable);
 

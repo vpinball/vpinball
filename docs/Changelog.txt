@@ -52,17 +52,17 @@ FEATURES:
 - add 'raytraced'/true ball motion blur (BGFX only, not supported in VR or headtracking)
 
 - nudging was redesigned with support for the following modes:
-  . gamecontroller nudge, a new mode designed for gamepad and VR controller which evaluates the intent of the player from stick moves and use a cabinet model to emulate the nudge
-  . cabinet sensor nudge which uses cabinet sensor to evaluate nudge, somewhat similar to what used to be hardware nudge but with the following changes:
+  . gamecontroller nudge, a new mode designed for gamepads and VR controllers, which evaluates the intent of the player from stick moves and uses a simulated cabinet model to emulate the nudge physically plausible
+  . cabinet sensor nudge, which uses the cabinet sensor to evaluate nudge, somewhat similar to what used to be hardware nudging but with the following changes:
     . the old filter was replaced by a custom filter to handle bias and noise, which is always applied,
-	. sensors may be setup as 'intent' sensors, that is to say to evaluate player intent using a cabinet model to precisely emulate the nudge. This improves nudge
-	  simulation on cabinets that do not perfectly match a real pinball cabinet (size, weight, stiffness) or have low-end sensors (biased, noisy, low frequency or low communication speed)
-	. it supports simultaneous acquisition of both velocity & acceleration for improved precision (when using this feature, the system will only use acceleration sensor on startup
-	  while calibrating gain between velocity and acceleration using the first player nudges)
-  . digital (keyboard) nudge can be setup to use 'legacy' VP9 keyboard nudge, VPX one, or the new based on the new cabinet physics model. All mode offers an option to adjust nudge strength.
+    . sensors may be setup as 'intent' sensors, that is to say to evaluate player intent using a cabinet model, to precisely emulate the nudge. This improves nudging
+      simulation on cabinets that do not perfectly match a real pinball cabinet (size, weight, stiffness) or have low-end sensors (biased, noisy, low frequency or low communication speed)
+    . it supports simultaneous acquisition of both velocity & acceleration for improved precision (when using this feature, the system will only use the acceleration sensor on startup
+      while calibrating gain between velocity and acceleration using the first player nudges)
+  . digital (keyboard) nudge can be setup to use 'legacy' VP9 keyboard nudge, the VPX one, or the new one based on the new cabinet physics model. All modes offer an option to adjust nudge strength.
   It is now possible to define multiple nudge sources (keyboard, gamepad, sensors,...). Only one will be considered active at a time.
-  The in-game UI was updated, allowing to adjust all settings with live feedback (dynamic plots and physic simulation).
-  
+  The in-game UI was updated, allowing to adjust all these settings with live feedback (dynamic plots and physics simulation).
+
 - move the plumb simulation to VPX's physics engine with an improved physics model. NudgePlugIn_xxx.vbs files that were used depending on each user setup are not needed anymore and were removed.
   Emulation of the plumb must be enabled in the settings, and adjusted to user setup. The LiveUI offers a dedicated UI with live feedback to ease this process.
   When plumb emulation is enabled, in the lower left corner, a little overlay with the live plumb position will fade in/out when the plumb is approaching the Tilt threshold.

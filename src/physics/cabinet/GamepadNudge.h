@@ -15,7 +15,7 @@ class Settings;
 namespace VPX::Physics
 {
 
-class GamepadNudge : public NudgeSensor
+class GamepadNudge final : public NudgeSensor
 {
 public:
    GamepadNudge(InputManager* inputManager);

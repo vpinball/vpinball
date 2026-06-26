@@ -50,7 +50,7 @@ public:
 
 
 // Manage a group of nudge sources and consolidate the value to be used inside the physics emulation
-class NudgeHandler
+class NudgeHandler final
 {
 public:
    NudgeHandler(InputManager* inputManager);

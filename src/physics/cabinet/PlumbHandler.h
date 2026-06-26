@@ -4,7 +4,7 @@
 namespace VPX::Physics
 {
 
-class PlumbHandler
+class PlumbHandler final
 {
 public:
    PlumbHandler(const Settings& settings);

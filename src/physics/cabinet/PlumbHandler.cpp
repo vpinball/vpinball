@@ -121,7 +121,7 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
    }
 
    PLOGD_IF(false) << std::format(
-      ";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y, m_plumbPos.x, m_plumbPos.y, 180.f * psi / M_PIf);
+      ";{:8.5f};{:8.5f};{:8.5f};{:8.5f}", g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y, m_plumbPos.x, m_plumbPos.y, psi * (float)(180. / M_PI));
 
    // Fire event (same as keyboard tilt)
    if (m_plumbTiltHigh != tilted)

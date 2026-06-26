@@ -16,7 +16,7 @@ namespace VPX::Physics
 //
 // Cabinet either moves freely (player resting is neglected) or forced when nudging.
 // 
-// For reference a firm nudge should result in around 3 to 5mm cabinet displacement, resulting
+// For reference, a firm nudge should result in around 3 to 5mm cabinet displacement, resulting
 // in a (initially static against metal) ball move more or less the double, so 6 to 10mm.
 class CabinetPhysics
 {
@@ -33,7 +33,7 @@ public:
 
 private:
    const float m_mass;
-   
+
    DampedHarmonicOscillator m_cabinetOscillatorX;
    DampedHarmonicOscillator m_cabinetOscillatorY;
 

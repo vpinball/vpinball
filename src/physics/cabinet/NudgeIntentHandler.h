@@ -8,7 +8,7 @@
 namespace VPX::Physics
 {
 
-class NudgeIntentHandler
+class NudgeIntentHandler final
 {
 public:
    NudgeIntentHandler(bool isGamepad);
@@ -38,6 +38,5 @@ private:
    float m_lastImpulseStrength = 0.f;
    uint64_t m_lastImpulseTime = 0;
 };
-
 
 }

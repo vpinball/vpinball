@@ -10,11 +10,11 @@ namespace VPX::Physics
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Nudge intent handler
 //
-// For cabinet, filter intent by detecting highest peaks in a sequence, discarding lower peaks as 
-// they likely correspond to natural cabinet oscillation.
+// For a cabinet, filter intent by detecting the highest peaks in a sequence, but discarding lower peaks, as 
+// these likely correspond to natural cabinet oscillation.
 //
-// For gamepad, evaluate player intent from gamepad stick move, only registering push (moving
-// outward) and considering strength as a combination of speed and depth of stick move.
+// For gamepads, evaluate the player intent from a gamepad stick move, only registering push (moving
+// outward) and considering strength as a combination of speed and depth of a stick move.
 
 NudgeIntentHandler::NudgeIntentHandler(bool isGamepad)
    : m_isGamepad(isGamepad)
@@ -29,7 +29,7 @@ Vertex2D NudgeIntentHandler::GetImpulseAceleration() const
    if (!IsImpulseInProgress())
       return { 0.f, 0.f };
    const float t = static_cast<float>(m_impulseElapsed) / static_cast<float>(m_impulseLength);
-   return m_impulse * 0.5f * (1.0f - cosf(2.f * M_PIf * t));
+   return m_impulse * 0.5f * (1.0f - cosf((float)(2. * M_PI) * t));
 }
 
 float NudgeIntentHandler::GetImpulseStrengthFactor() const

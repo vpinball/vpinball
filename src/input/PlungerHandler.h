@@ -7,7 +7,7 @@ class PhysicsSensor;
 class PlungerSensor;
 
 
-class PlungerHandler
+class PlungerHandler final
 {
 public:
    PlungerHandler(InputManager* inputManager);
@@ -43,7 +43,7 @@ private:
 };
 
 
-class PlungerSensor
+class PlungerSensor final
 {
 public:
    PlungerSensor(InputManager* inputManager);
@@ -79,5 +79,3 @@ private:
    float m_velocity = 0.f;
    int m_deactivationDelay = 0;
 };
-
-

@@ -198,7 +198,7 @@ bool InGameUIItem::IsSameValue(float a, float b) const
    if (const size_t dotPos = m_format.find('.'); dotPos != string::npos)
    {
       const int nDec = m_format[dotPos + 1] - '0';
-      const float threshold = (float)(0.5 * std::pow(10.f, -nDec));
+      const float threshold = (float)(0.5f * std::pow(10.f, -nDec));
       return fabs(validA - validB) * m_floatValueDisplayScale <= threshold;
    }
    else
