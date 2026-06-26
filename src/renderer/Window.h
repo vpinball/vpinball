@@ -56,6 +56,13 @@ public:
    Window(const int width, const int height); // VR Output
    ~Window();
 
+   enum WindowMode
+   {
+      Windowed,
+      BorderlessFullscreen, // Broderless window, covering the entire display, including operating system decorations
+      ExclusiveFullscreen // Not supported on all systems
+   };
+
    void GetPos(int& x, int& y) const;
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
@@ -63,7 +70,7 @@ public:
    int GetPixelHeight() const { return m_pixelHeight; }
    float GetAspectRatio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
    float GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
-   bool IsFullScreen() const { return m_fullscreen; }
+   WindowMode GetWindowMode() const { return m_windowMode; }
    int GetBitDepth() const { return m_bitdepth; }
    bool IsWCGDisplay() const { return m_wcgDisplay; } // Whether this window is on a WCG enabled display
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
@@ -93,16 +100,14 @@ public:
       int height;
       int depth;
       float refreshrate;
+      bool operator==(const VideoMode& o) { return o.width == width && o.height == height && o.depth == depth && o.refreshrate == refreshrate; }
    };
 
    struct DisplayConfig
    {
       int top;
       int left;
-      int width;
-      int height;
-      int depth;
-      float refreshrate;
+      VideoMode videomode;
       bool isPrimary; // Default display (used when no display is selected in the settings)
       string displayName; // User friendly display name, should be stable accross runs, therefore used for settings
       SDL_DisplayID display; // SDL display identifier (only valid for the lifetime of the SDL session)
@@ -116,7 +121,7 @@ private:
    int m_width, m_height;
    int m_pixelWidth, m_pixelHeight;
    int m_screenwidth, m_screenheight;
-   bool m_fullscreen;
+   WindowMode m_windowMode;
    float m_refreshrate;
    int m_bitdepth;
    const VPXWindowId m_windowId;

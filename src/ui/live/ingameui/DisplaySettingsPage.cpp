@@ -83,7 +83,7 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
 {
    m_displays = VPX::Window::GetDisplays();
    for (const auto& display : m_displays)
-      m_displayNames.push_back((display.isPrimary ? '*' : ' ') + std::to_string(display.width) + 'x' + std::to_string(display.height) + " [" + display.displayName + ']');
+      m_displayNames.push_back((display.isPrimary ? '*' : ' ') + std::to_string(display.videomode.width) + 'x' + std::to_string(display.videomode.height) + " [" + display.displayName + ']');
    ResetARLock();
 }
 
@@ -268,19 +268,19 @@ void DisplaySettingsPage::BuildWindowPage()
          if (!m_isMainWindow)
          { // Adjust window size if it does not fit in the new display
             // FIXME implement for main window (not resizable at runtime for the time being)
-            if (size.x > m_displays[v].width)
+            if (size.x > m_displays[v].videomode.width)
             {
-               size.y = (size.y * m_displays[v].width) / size.x;
-               size.x = m_displays[v].width;
+               size.y = (size.y * m_displays[v].videomode.width) / size.x;
+               size.x = m_displays[v].videomode.width;
             }
-            if (size.y > m_displays[v].height)
+            if (size.y > m_displays[v].videomode.height)
             {
-               size.x = (size.x * m_displays[v].height) / size.y;
-               size.y = m_displays[v].height;
+               size.x = (size.x * m_displays[v].videomode.height) / size.y;
+               size.y = m_displays[v].videomode.height;
             }
             wnd->SetSize(size.x, size.y);
          }
-         wnd->SetPos(m_displays[v].left + (m_displays[v].width - size.x) / 2, m_displays[v].top + (m_displays[v].height - size.y) / 2);
+         wnd->SetPos(m_displays[v].left + (m_displays[v].videomode.width - size.x) / 2, m_displays[v].top + (m_displays[v].videomode.height - size.y) / 2);
          RequestRebuild();
       }, //
       [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
@@ -290,7 +290,7 @@ void DisplaySettingsPage::BuildWindowPage()
    AddItem(std::make_unique<InGameUIItem>(
               Settings::m_propWindow_FullScreen[m_wndId], //
               [this]() { return m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId); }, //
-              [this](bool v)
+              [this](int, int v)
               {
                  m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
                  m_player->m_ptable->m_settings.SetWindow_FullScreen(m_wndId, v, false);
@@ -318,10 +318,7 @@ void DisplaySettingsPage::BuildWindowPage()
                best = fit;
             }
          }
-         if (mode.width == m_displays[wndDisplay].width //
-            && mode.height == m_displays[wndDisplay].height //
-            && mode.depth == m_displays[wndDisplay].depth //
-            && mode.refreshrate == m_displays[wndDisplay].refreshrate)
+         if (mode == m_displays[wndDisplay].videomode)
             defaultMode = i;
          if (mode.width == m_player->m_ptable->m_settings.GetWindow_FSWidth(m_wndId) //
             && mode.height == m_player->m_ptable->m_settings.GetWindow_FSHeight(m_wndId) //
@@ -352,10 +349,10 @@ void DisplaySettingsPage::BuildWindowPage()
    }
    else
    {
-      const int containerWidth = m_displays[wndDisplay].width;
-      const int containerHeight = m_displays[wndDisplay].height;
-      const int maxWidth = m_arLock == 0 ? m_displays[wndDisplay].width : min(containerWidth, (m_displays[wndDisplay].height * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y);
-      const int maxHeight = m_arLock == 0 ? m_displays[wndDisplay].height : min(containerHeight, (m_displays[wndDisplay].width * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x);
+      const int containerWidth = m_displays[wndDisplay].videomode.width;
+      const int containerHeight = m_displays[wndDisplay].videomode.height;
+      const int maxWidth = m_arLock == 0 ? m_displays[wndDisplay].videomode.width : min(containerWidth, (m_displays[wndDisplay].videomode.height * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y);
+      const int maxHeight = m_arLock == 0 ? m_displays[wndDisplay].videomode.height : min(containerHeight, (m_displays[wndDisplay].videomode.width * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x);
 
       vector<string> arNames;
       for (const int2& aspectRatio : aspectRatios)

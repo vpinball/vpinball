@@ -1435,7 +1435,7 @@ void Player::LockForegroundWindow(const bool enable)
 {
 #ifdef _MSC_VER
    // TODO how do we handle this situation with multiple windows, some being full-screen, other not ?
-   if (m_playfieldWnd && m_playfieldWnd->IsFullScreen()) // revert special tweaks of exclusive full-screen app
+   if (m_playfieldWnd && m_playfieldWnd->GetWindowMode() == Window::ExclusiveFullscreen) // revert special tweaks of exclusive full-screen app
       ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
 #endif
 }

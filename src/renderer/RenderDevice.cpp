@@ -366,11 +366,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
    init.resolution.reset |= BGFX_RESET_MAXANISOTROPY;
    //init.resolution.reset |= BGFX_RESET_FLUSH_AFTER_RENDER; // Not really needed as we are doing a present after submit which in turn triger sending the commands to the GPU
    init.resolution.reset |= BGFX_RESET_FLIP_AFTER_RENDER;
-   // Fullscreen is mostly deprecated since Windows 10 (BGFX offers a reset flag, but it is not internally implemented). The clean solution is to use a window
-   // covering the entire screen and relying on Windows FSO (fullscreen optimization) which in turn, rely on GPU multiplane overlay capabilities to actually 
-   // achieve zero-overhead backbuffer flips.
-   //if (rd->m_outputWnd[0]->IsFullScreen())
-   //   init.resolution.reset |= BGFX_RESET_FULLSCREEN;
+   // BGFX despite proposing a reset flag (BGFX_RESET_FULLSCREEN) does not implement exclusive fullscreen, so we do not support it on this backend (exclusive fullscreen is
+   // somewhat deprecated anyway as some OS do not offer it at all, and others implement it through GPU multiplane overlay to actually achieve zero-overhead backbuffer flips)
+   assert(rd->m_outputWnd[0]->GetWindowMode() != VPX::Window::WindowMode::ExclusiveFullscreen);
 
    const bool allowHDR10ColorSpace = true //
       && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract // Disable WCG colorspace as it causes issues with video recording for the time being
@@ -1342,7 +1340,7 @@ RenderDevice::RenderDevice(
    int channelDepth = m_outputWnd[0]->GetBitDepth() == 32 ?  8 :
                       m_outputWnd[0]->GetBitDepth() == 30 ? 10 :
                                                              5;
-   if (m_outputWnd[0]->IsFullScreen())
+   if (m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen)
    {
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, channelDepth);
       SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, channelDepth);
@@ -1527,7 +1525,7 @@ RenderDevice::RenderDevice(
 
     // get the current display format
     D3DFORMAT format;
-    if (!m_outputWnd[0]->IsFullScreen())
+    if (!m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen)
     {
        D3DDISPLAYMODE mode;
        CHECKD3D(m_pD3D->GetAdapterDisplayMode(adapterId, &mode));
@@ -1562,12 +1560,12 @@ RenderDevice::RenderDevice(
     params.MultiSampleQuality = 0;
     params.SwapEffect = D3DSWAPEFFECT_DISCARD;
     params.hDeviceWindow = m_outputWnd[0]->GetNativeHWND();
-    params.Windowed = !m_outputWnd[0]->IsFullScreen();
+    params.Windowed = m_outputWnd[0]->GetWindowMode() != VPX::Window::WindowMode::ExclusiveFullscreen;
     params.EnableAutoDepthStencil = FALSE;
     params.AutoDepthStencilFormat = D3DFMT_UNKNOWN; // ignored
     params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/
        ; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
-    params.FullScreen_RefreshRateInHz = m_outputWnd[0]->IsFullScreen() ? (UINT)m_outputWnd[0]->GetRefreshRate() : 0;
+    params.FullScreen_RefreshRateInHz = m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen ? (UINT)m_outputWnd[0]->GetRefreshRate() : 0;
     params.PresentationInterval = syncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
@@ -1615,7 +1613,7 @@ RenderDevice::RenderDevice(
    {
       D3DDISPLAYMODEEX mode;
       mode.Size = sizeof(D3DDISPLAYMODEEX);
-      if (m_outputWnd[0]->IsFullScreen())
+      if (m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen)
       {
          mode.Format = params.BackBufferFormat;
          mode.Width = params.BackBufferWidth;
@@ -1629,11 +1627,11 @@ RenderDevice::RenderDevice(
          devtype, m_outputWnd[0]->GetNativeHWND(),
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
-         m_outputWnd[0]->IsFullScreen() ? &mode : nullptr,
+         m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen ? &mode : nullptr,
          &m_pD3DDeviceEx);
       if (FAILED(hr))
       {
-         if (m_outputWnd[0]->IsFullScreen())
+         if (m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen)
          {
             const int result = GetSystemMetrics(SM_REMOTESESSION);
             const bool isRemoteSession = (result != 0);
@@ -1659,7 +1657,7 @@ RenderDevice::RenderDevice(
    // Retrieve a reference to the back buffer.
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
 
-   /*if (m_outputWnd[0]->IsFullScreen())
+   /*if (m_outputWnd[0]->GetWindowMode() == WindowMode::ExclusiveFullscreen)
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
 
