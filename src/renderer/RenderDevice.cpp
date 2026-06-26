@@ -600,8 +600,6 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
 
 void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
 {
-   int backBufferWidth = static_cast<int>(init.resolution.width);
-   int backBufferHeight = static_cast<int>(init.resolution.height);
    uint64_t lastSubmitTimestamp = 0;
    uint64_t lastSyncTimestamp = 0;
    bool bgfxVSync = false; // Is VSync requested on BGFX's Present operation (note that the VSync on Present will only block if the present queue is filled)
@@ -721,16 +719,11 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          if (nwh == nullptr)
             continue;
 #endif
-         const int windowWidth = m_outputWnd[0]->GetPixelWidth();
-         const int windowHeight = m_outputWnd[0]->GetPixelHeight();
-         if ((bgfxVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
+         if (bgfxVSync != needsVSync)
          {
-            //PLOGI << "Switched VSYNC to " << needsVSync;
             bgfxVSync = needsVSync;
-            backBufferWidth = windowWidth;
-            backBufferHeight = windowHeight;
-            bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
-            m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
+            bgfx::reset(m_outputWnd[0]->GetBackBuffer()->GetWidth(), m_outputWnd[0]->GetBackBuffer()->GetHeight(), init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE),
+               init.resolution.formatColor);
          }
       }
 
@@ -775,6 +768,33 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
          std::lock_guard lock(m_frameMutex);
          SubmitRenderFrame();
+
+         // Handle swapchain resize while we hold the mutex on the render frame and before the backbuffer rendertarget are used for rendering
+         for (VPX::Window* wnd : m_outputWnd)
+         {
+            const int windowWidth = wnd->GetPixelWidth();
+            const int windowHeight = wnd->GetPixelHeight();
+            const bool isMainSwpachain = wnd == m_outputWnd[0];
+            if ((windowWidth != wnd->GetBackBuffer()->GetWidth()) || (windowHeight != wnd->GetBackBuffer()->GetHeight()))
+            {
+               if (isMainSwpachain)
+               {
+                  bgfx::reset(windowWidth, windowHeight, init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
+                  m_outputWnd[0]->GetBackBuffer()->SetSize(windowWidth, windowHeight);
+               }
+               else
+               {
+                  auto backbuffer = wnd->GetBackBuffer();
+                  wnd->SetBackBuffer(nullptr);
+                  RemoveWindow(wnd);
+                  delete backbuffer;
+                  bgfx::frame(BGFX_FRAME_FLUSH); // We must destroy the swapchain before attaching a new swapchain
+                  AddWindow(wnd);
+                  break;
+               }
+            }
+         }
+
          m_framePending = false;
          g_pplayer->m_renderProfiler->ExitProfileSection();
          END_SPAN(tagSpan)

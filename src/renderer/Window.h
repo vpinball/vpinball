@@ -133,9 +133,6 @@ private:
 
    class RenderTarget* m_backBuffer = nullptr;
 
-   uint64_t m_resizeRequestTick = 0; // Last unacknowledged resize request, 0 for none (see SetSize/OnResized)
-   int m_pendingWidth = -1, m_pendingHeight = -1; // Size requested while another request was in flight
-
    SDL_Window* m_nwnd = nullptr;
 };
 
