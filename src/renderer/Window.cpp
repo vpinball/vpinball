@@ -278,12 +278,17 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
    // Switch to request fullscreen display mode (must be done after window creation)
+   // BGFX owns the fullscreen/mode decision internally; SDL must not request an exclusive
+   // mode change here (SDL_SetWindowFullscreenMode sets fullscreen_exclusive=true which
+   // overrides platform fullscreen behavior, e.g. bypassing macOS Spaces fullscreen).
+#ifndef ENABLE_BGFX
    if (fullscreenDisplayMode)
    {
       SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
       SDL_SetWindowFullscreen(m_nwnd, true);
       SDL_SyncWindow(m_nwnd);
    }
+#endif
    SDL_free(displayModes);
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
