@@ -82,8 +82,8 @@ set(VERSION_REV "${CMAKE_MATCH_1}")
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
 # Fail early with a clear message if the third-party deps aren't built yet (every backend needs SDL3)
-
-if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/third-party/include/SDL3/SDL.h")
+option(THIRD_PARTY_CHECK "Verify that third-party deps are built." ON)
+if(THIRD_PARTY_CHECK AND NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/third-party/include/SDL3/SDL.h")
    message(FATAL_ERROR "Third-party dependencies not found in third-party/. Build them for this target first:\n  platforms/${PLATFORM}-${ARCH}/external.sh")
 endif()
 
