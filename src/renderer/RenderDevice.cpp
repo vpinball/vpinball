@@ -1397,13 +1397,6 @@ RenderDevice::RenderDevice(
 
    SDL_GL_MakeCurrent(m_outputWnd[0]->GetCore(), m_sdl_context);
 
-   #if defined(ENABLE_OPENGL)
-   int drawableWidth, drawableHeight, windowWidth, windowHeight;
-   SDL_GetWindowSizeInPixels(m_outputWnd[0]->GetCore(), &drawableWidth, &drawableHeight); // Size in pixels
-   SDL_GetWindowSize(m_outputWnd[0]->GetCore(), &windowWidth, &windowHeight); // Size in screen coordinates (taking in account HiDPI)
-   PLOGI << "SDL drawable size: " << drawableWidth << 'x' << drawableHeight << " (window size: " << windowWidth << 'x' << windowHeight << ')';
-   #endif
-
    #ifndef __OPENGLES__
    if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
    #else
