@@ -132,12 +132,12 @@ static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
 
 typedef enum
 {
-   SegImg_Seg14DC_8x10,
-   SegImg_Seg14DC_6x10,
-   SegImg_Seg16_8x10,
-   SegImg_Seg9C_8x10,
-   SegImg_Seg9C_8x6,
-   SegImg_Seg9D_8x10,
+   SegImg_Seg14DC_8x11,
+   SegImg_Seg14DC_6x11,
+   SegImg_Seg16_7x11,
+   SegImg_Seg9C_8x11,
+   SegImg_Seg9C_8x7,
+   SegImg_Seg9D_8x11,
    SegImg_Invalid,
 } SegImgs;
 
@@ -156,7 +156,7 @@ typedef struct
 
 static constexpr segDisplay segDisplays[6] = {
    // 14 Segments + dot/comma
-   { 8, 10,
+   { 8, 11,
       {
          { 5, { { 1,  0 }, { 2,  0 }, { 3,  0 }, { 4,  0 }, { 5,  0 } } }, //  0 top
          { 5, { { 6,  0 }, { 6,  1 }, { 6,  2 }, { 6,  3 }, { 6,  4 } } }, //  1 right top
@@ -175,7 +175,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 5, { { 0, 10 }, { 2,  6 }, { 2,  7 }, { 1,  8 }, { 1,  9 } } }, // 14 diag bottom left
          { 1, { { 7, 10 }, { 0,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, // 15 dot
       } },
-   { 6, 10,
+   { 6, 11,
       {
          { 5, { { 0,  0 }, { 1,  0 }, { 2,  0 }, { 3,  0 }, { 4,  0 } } }, //  0 top
          { 5, { { 4,  0 }, { 4,  1 }, { 4,  2 }, { 4,  3 }, { 4,  4 } } }, //  1 top right
@@ -195,7 +195,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 1, { { 5, 10 }, { 0,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, // 15 comma
       } },
    // 16 Segments (split top/bottom)
-   { 8, 10,
+   { 7, 11,
       {
          { 2, { { 1,  0 }, { 2,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, //  0 top left
          { 2, { { 4,  0 }, { 5,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, //  1 top right
@@ -215,7 +215,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 2, { { 1,  5 }, { 2,  5 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, // 15 middle left
       } },
    // 9 Segments + comma
-   { 8, 10,
+   { 8, 11,
       {
          { 5, { { 1,  0 }, { 2,  0 }, { 3,  0 }, { 4,  0 }, { 5,  0 } } }, // 0 top
          { 5, { { 6,  0 }, { 6,  1 }, { 6,  2 }, { 6,  3 }, { 6,  4 } } }, // 1 right top
@@ -228,7 +228,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 5, { { 3,  0 }, { 3,  1 }, { 3,  2 }, { 3,  3 }, { 3,  4 } } }, // 8 center top
          { 5, { { 3,  6 }, { 3,  7 }, { 3,  8 }, { 3,  9 }, { 3, 10 } } }, // 9 center bottom
       } },
-   { 8, 6,
+   { 8, 7,
       {
          { 5, { { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 } } }, // 0 top
          { 2, { { 6, 1 }, { 6, 2 }, { 0, 0 }, { 0, 0 }, { 0, 0 } } }, // 1 top right
@@ -242,7 +242,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 3, { { 3, 4 }, { 3, 5 }, { 3, 6 }, { 0, 0 }, { 0, 0 } } }, // 9 center bottom
       } },
    // 9 Segments + dot
-   { 8, 10,
+   { 8, 11,
       {
          { 5, { { 1,  0 }, { 2,  0 }, { 3,  0 }, { 4,  0 }, { 5,  0 } } }, // 0 top
          { 5, { { 6,  0 }, { 6,  1 }, { 6,  2 }, { 6,  3 }, { 6,  4 } } }, // 1 right top
@@ -261,18 +261,16 @@ template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx
 
 static void DrawChar(const int x, const int y, const segDisplay& display, const float* const __restrict lum, const int nSeg)
 {
-   const int offset = 128*y + x;
+   assert((x >= 0) && (x + display.width <= 128));
+   assert((y >= 0) && (y + display.height <= 32));
+   const int offset = 128 * y + x;
    for (int seg = 0; seg < nSeg; seg++)
    {
       const float v = clamp(lum[seg], 0.01f, 1.f);
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
          const int pos = 128 * display.segs[seg].dots[i][1] + display.segs[seg].dots[i][0] + offset;
-         // Clip dots that fall outside the 128x32 frame: some layouts place the bottom row of glyphs past
-         // the end of renderFrame, and the unchecked write corrupted the globals stored right after it
-         // (e.g. dmd128Id), which later crashed consumers of that display source descriptor
-         if (/*pos >= 0 &&*/ (unsigned int)pos < 128u * 32u)
-            renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
+         renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
       }
    }
 }
@@ -286,19 +284,19 @@ static void DrawDisplay(int x, const int y, float*& lum, int srcIndex, const boo
       SegImgs img = SegImg_Invalid;
       switch (type)
       {
-      case CTLPI_SEG_LAYOUT_7:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_SEG_LAYOUT_7C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_SEG_LAYOUT_7D:   img =         SegImg_Seg9D_8x10;                         break;
-      case CTLPI_SEG_LAYOUT_9:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_SEG_LAYOUT_9C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_SEG_LAYOUT_14:   img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_SEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_SEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_SEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
+      case CTLPI_SEG_LAYOUT_7:    img = large ? SegImg_Seg9C_8x11   : SegImg_Seg9C_8x7;    break;
+      case CTLPI_SEG_LAYOUT_7C:   img = large ? SegImg_Seg9C_8x11   : SegImg_Seg9C_8x7;    break;
+      case CTLPI_SEG_LAYOUT_7D:   img =         SegImg_Seg9D_8x11;                         break;
+      case CTLPI_SEG_LAYOUT_9:    img = large ? SegImg_Seg9C_8x11   : SegImg_Seg9C_8x7;    break;
+      case CTLPI_SEG_LAYOUT_9C:   img = large ? SegImg_Seg9C_8x11   : SegImg_Seg9C_8x7;    break;
+      case CTLPI_SEG_LAYOUT_14:   img = large ? SegImg_Seg14DC_8x11 : SegImg_Seg14DC_6x11; break;
+      case CTLPI_SEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x11 : SegImg_Seg14DC_6x11; break;
+      case CTLPI_SEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x11 : SegImg_Seg14DC_6x11; break;
+      case CTLPI_SEG_LAYOUT_16:   img =         SegImg_Seg16_7x11;                         break;
       default: assert(false); return;
       }
       DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
-      x += segDisplays[img].width;
+      x += segDisplays[img].width + 1;
       lum += 16;
    }
 }
@@ -372,14 +370,14 @@ static void RenderThread()
       switch (dmdLayout)
       {
       case Layout_6x4_2x2: // S11 Bowl games
-         DrawDisplay( 0,  0, lum, 0, true);
-         DrawDisplay(80,  0, lum, 1, true);
-         DrawDisplay( 0, 11, lum, 2, true);
-         DrawDisplay(80, 11, lum, 3, true);
-         DrawDisplay( 0, 22, lum, 4, true);
-         DrawDisplay(80, 22, lum, 5, true);
-         DrawDisplay(56, 11, lum, 6, true);
-         DrawDisplay(56, 22, lum, 7, true);
+         DrawDisplay( 2,  2, lum, 0, false);
+         DrawDisplay(92,  2, lum, 1, false);
+         DrawDisplay( 2, 12, lum, 2, false);
+         DrawDisplay(92, 12, lum, 3, false);
+         DrawDisplay( 2, 22, lum, 4, false);
+         DrawDisplay(92, 22, lum, 5, false);
+         DrawDisplay(56,  7, lum, 6, false);
+         DrawDisplay(56, 20, lum, 7, false);
          break;
       case Layout_4x6_2x2: // Lots of games (4 players + credit/ball)
          DrawDisplay( 0,  0, lum, 0, true);
