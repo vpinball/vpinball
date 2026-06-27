@@ -142,9 +142,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       }
       else
       {
-         m_width = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Width(m_windowId)) * selectedDisplay.videomode.pixelDensity));
-         m_height = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Height(m_windowId)) * selectedDisplay.videomode.pixelDensity));
-         m_height = selectedDisplay.videomode.height;
+         m_width = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Width(m_windowId)) / selectedDisplay.videomode.pixelDensity));
+         m_height = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Height(m_windowId)) / selectedDisplay.videomode.pixelDensity));
       }
 
       // Constrain window to screen
@@ -164,10 +163,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       // Restore saved position of non fullscreen windows (saved as a relative position inside the selected display)
       if ((m_height != selectedDisplay.videomode.height) || (m_width != selectedDisplay.videomode.width))
       {
-         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x - selectedDisplay.left));
-         Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
-         const int xn = settings.GetWindow_WndX(m_windowId);
-         const int yn = settings.GetWindow_WndY(m_windowId);
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)
+               ->WithDefault(static_cast<int>(roundf(static_cast<float>((wnd_x - selectedDisplay.left) * selectedDisplay.videomode.pixelDensity)))));
+         Settings::GetRegistry().Register(
+            Settings::GetWindow_WndY_Property(m_windowId)->WithDefault(static_cast<int>(roundf(static_cast<float>((wnd_y - selectedDisplay.top) * selectedDisplay.videomode.pixelDensity)))));
+         const int xn = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_WndX(m_windowId)) / selectedDisplay.videomode.pixelDensity));
+         const int yn = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_WndY(m_windowId)) / selectedDisplay.videomode.pixelDensity));
          if (0 <= xn && xn + m_width <= selectedDisplay.videomode.width)
             wnd_x = selectedDisplay.left + xn;
          if (0 <= yn && yn + m_height <= selectedDisplay.videomode.height)

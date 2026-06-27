@@ -152,8 +152,8 @@ void Settings::UpdateDefaults()
          const auto& conf = VPX::Window::GetDisplayConfig(GetWindow_Display(i));
          reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.videomode.GetPixelWidth()));
          reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.videomode.GetPixelHeight()));
-         reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.videomode.width : (conf.videomode.width / 4)));
-         reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.videomode.height : min(conf.videomode.width * 4 / 9, conf.videomode.height)));
+         reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.videomode.GetPixelWidth() : (conf.videomode.GetPixelWidth() / 4)));
+         reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.videomode.GetPixelWidth() : min(conf.videomode.GetPixelWidth() * 4 / 9, conf.videomode.GetPixelHeight())));
          break;
       }
       case VPX::RenderOutput::OutputMode::OM_EMBEDDED:
