@@ -231,10 +231,7 @@ void LiveUI::UpdateScale()
    {
       m_perfUI.SetUIScale(overlayScale);
       m_plumbOverlay.SetUIScale(overlayScale);
-      if (prevDPI == 0.f)
-         ImGui::GetStyle().ScaleAllSizes(m_uiScale);
-      else
-         ImGui::GetStyle().ScaleAllSizes(m_uiScale / prevDPI);
+      SetupImGuiStyle(m_editorUI.IsOpened());
    }
 }
 
@@ -602,6 +599,10 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
    // Theme looking somewhat like Blender's style, based on 'Rounded Visual Studio' style by RedNicStone from ImThemes
    ImGuiStyle &style = ImGui::GetStyle();
 
+   // Reset to defaults to be able to use ScaleAllSize while not defining all style sizes
+   ImGuiStyle defaultStyle;
+   style = defaultStyle;
+
    style.Alpha = 1.0f;
    style.DisabledAlpha = 0.6f;
    style.WindowPadding = ImVec2(8.0f, 8.0f);
@@ -632,6 +633,8 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
    style.ColorButtonPosition = ImGuiDir_Right;
    style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
    style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
+
+   ImGui::GetStyle().ScaleAllSizes(m_uiScale);
 
    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.592f, 0.592f, 0.592f, 1.0f);
