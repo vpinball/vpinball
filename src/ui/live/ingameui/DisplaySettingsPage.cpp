@@ -83,7 +83,7 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
 {
    m_displays = VPX::Window::GetDisplays();
    for (const auto& display : m_displays)
-      m_displayNames.push_back((display.isPrimary ? '*' : ' ') + std::to_string(display.videomode.width) + 'x' + std::to_string(display.videomode.height) + " [" + display.displayName + ']');
+      m_displayNames.push_back(std::format("{}{}x{} [{}]", display.isPrimary ? '*' : ' ', display.videomode.GetPixelWidth(), display.videomode.GetPixelHeight(), display.displayName.c_str()));
    ResetARLock();
 }
 
@@ -231,6 +231,7 @@ void DisplaySettingsPage::BuildPage()
 
 void DisplaySettingsPage::BuildWindowPage()
 {
+   // All window placement is done in pixels (not logical units)
    int wndDisplay; // Index of the display hosting the edited window
    SDL_Point wndPos; // Relative position of the window inside the display (0,0 is top,left)
    SDL_Point wndSize;
@@ -245,8 +246,10 @@ void DisplaySettingsPage::BuildWindowPage()
       wnd->GetPos(wndPos.x, wndPos.y);
       wndPos.x -= m_displays[wndDisplay].left;
       wndPos.y -= m_displays[wndDisplay].top;
-      wndSize.x = wnd->GetWidth();
-      wndSize.y = wnd->GetHeight();
+      wndPos.x = wnd->LogicalToPixel(wndPos.x);
+      wndPos.y = wnd->LogicalToPixel(wndPos.y);
+      wndSize.x = wnd->GetPixelWidth();
+      wndSize.y = wnd->GetPixelHeight();
    }
 
    AddItem(std::make_unique<InGameUIItem>(
@@ -320,12 +323,12 @@ void DisplaySettingsPage::BuildWindowPage()
          }
          if (mode == m_displays[wndDisplay].videomode)
             defaultMode = i;
-         if (mode.width == m_player->m_ptable->m_settings.GetWindow_FSWidth(m_wndId) //
-            && mode.height == m_player->m_ptable->m_settings.GetWindow_FSHeight(m_wndId) //
+         if (mode.GetPixelWidth() == m_player->m_ptable->m_settings.GetWindow_FSWidth(m_wndId) //
+            && mode.GetPixelHeight() == m_player->m_ptable->m_settings.GetWindow_FSHeight(m_wndId) //
             && mode.depth == m_player->m_ptable->m_settings.GetWindow_FSColorDepth(m_wndId) //
             && mode.refreshrate == m_player->m_ptable->m_settings.GetWindow_FSRefreshRate(m_wndId))
             selectedMode = i;
-         modeNames.push_back(string_format("%d x %d (%.1fHz %d:%d)", mode.width, mode.height, mode.refreshrate, max(bestAR.y, bestAR.x), min(bestAR.x, bestAR.y)));
+         modeNames.push_back(string_format("%d x %d (%.1fHz %d:%d)", mode.GetPixelWidth(), mode.GetPixelHeight(), mode.refreshrate, max(bestAR.y, bestAR.x), min(bestAR.x, bestAR.y)));
          i++;
       }
 
@@ -338,8 +341,8 @@ void DisplaySettingsPage::BuildWindowPage()
          {
             m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
             vector<Window::VideoMode> modes = VPX::Window::GetDisplayModes(m_displays[wndDisplay]);
-            m_player->m_ptable->m_settings.SetWindow_FSWidth(m_wndId, modes[v].width, false);
-            m_player->m_ptable->m_settings.SetWindow_FSHeight(m_wndId, modes[v].height, false);
+            m_player->m_ptable->m_settings.SetWindow_FSWidth(m_wndId, modes[v].GetPixelWidth(), false);
+            m_player->m_ptable->m_settings.SetWindow_FSHeight(m_wndId, modes[v].GetPixelHeight(), false);
             m_player->m_ptable->m_settings.SetWindow_FSColorDepth(m_wndId, modes[v].depth, false);
             m_player->m_ptable->m_settings.SetWindow_FSRefreshRate(m_wndId, modes[v].refreshrate, false);
          }, //
@@ -349,10 +352,12 @@ void DisplaySettingsPage::BuildWindowPage()
    }
    else
    {
-      const int containerWidth = m_displays[wndDisplay].videomode.width;
-      const int containerHeight = m_displays[wndDisplay].videomode.height;
-      const int maxWidth = m_arLock == 0 ? m_displays[wndDisplay].videomode.width : min(containerWidth, (m_displays[wndDisplay].videomode.height * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y);
-      const int maxHeight = m_arLock == 0 ? m_displays[wndDisplay].videomode.height : min(containerHeight, (m_displays[wndDisplay].videomode.width * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x);
+      const int containerWidth = m_displays[wndDisplay].videomode.GetPixelWidth();
+      const int containerHeight = m_displays[wndDisplay].videomode.GetPixelHeight();
+      const int maxWidth = m_arLock == 0 ? m_displays[wndDisplay].videomode.GetPixelWidth()
+                                         : min(containerWidth, (m_displays[wndDisplay].videomode.GetPixelHeight() * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y);
+      const int maxHeight = m_arLock == 0 ? m_displays[wndDisplay].videomode.GetPixelHeight()
+                                          : min(containerHeight, (m_displays[wndDisplay].videomode.GetPixelWidth() * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x);
 
       vector<string> arNames;
       for (const int2& aspectRatio : aspectRatios)
@@ -429,13 +434,13 @@ void DisplaySettingsPage::BuildWindowPage()
          Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxWidth));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Width[m_wndId], "%d"s, //
-                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth(); }, //
+                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelWidth(); }, //
                     [this, containerWidth, containerHeight](int prev, int v)
                     {
                        // Apply AR constraint
                        Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                       SDL_Point prevSize { prev, wnd->GetHeight() };
-                       SDL_Point size { v, wnd->GetHeight() };
+                       SDL_Point prevSize { prev, wnd->GetPixelHeight() };
+                       SDL_Point size { v, wnd->GetPixelHeight() };
                        if (m_arLock != 0)
                        {
                           int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
@@ -453,11 +458,11 @@ void DisplaySettingsPage::BuildWindowPage()
                              = m_player->m_liveUI->PushNotification("You have changed main window size\nRendering will be stretched until you restart the game"s, 5000, m_delayApplyNotifId);
 
                        SDL_Point pos;
-                       wnd->GetPos(pos.x, pos.y);
+                       wnd->GetPixelPos(pos.x, pos.y);
                        pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, 0, containerWidth - size.x);
                        pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, 0, containerHeight - size.y);
-                       wnd->SetPos(pos.x, pos.y);
-                       wnd->SetSize(size.x, size.y);
+                       wnd->SetPixelPos(pos.x, pos.y);
+                       wnd->SetPixelSize(size.x, size.y);
                        OnStaticRenderDirty();
                        RequestRebuild();
                     }))
@@ -466,12 +471,12 @@ void DisplaySettingsPage::BuildWindowPage()
          Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)->WithRange(m_isMainWindow ? 320 : 0, maxHeight));
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Height[m_wndId], "%d"s, //
-                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetHeight(); }, //
+                    [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelHeight(); }, //
                     [this, containerWidth, containerHeight](int prev, int v)
                     {
                        Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                       SDL_Point prevSize { wnd->GetWidth(), prev };
-                       SDL_Point size { wnd->GetWidth(), v };
+                       SDL_Point prevSize { wnd->GetPixelWidth(), prev };
+                       SDL_Point size { wnd->GetPixelWidth(), v };
                        if (m_arLock != 0)
                        {
                           int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
@@ -489,11 +494,11 @@ void DisplaySettingsPage::BuildWindowPage()
                              = m_player->m_liveUI->PushNotification("You have changed main window size\nRendering will be stretched until you restart the game"s, 5000, m_delayApplyNotifId);
 
                        SDL_Point pos;
-                       wnd->GetPos(pos.x, pos.y);
+                       wnd->GetPixelPos(pos.x, pos.y);
                        pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, 0, containerWidth - size.x);
                        pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, 0, containerHeight - size.y);
-                       wnd->SetPos(pos.x, pos.y);
-                       wnd->SetSize(size.x, size.y);
+                       wnd->SetPixelPos(pos.x, pos.y);
+                       wnd->SetPixelSize(size.x, size.y);
 
                        OnStaticRenderDirty();
                        RequestRebuild();
@@ -508,20 +513,20 @@ void DisplaySettingsPage::BuildWindowPage()
                  {
                     SDL_Point pos;
                     const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    wnd->GetPos(pos.x, pos.y);
-                    return pos.x - m_displays[wndDisplay].left;
+                    wnd->GetPixelPos(pos.x, pos.y);
+                    return pos.x - wnd->LogicalToPixel(m_displays[wndDisplay].left);
                  }, //
                  [this, wndDisplay](int prev, int v)
                  {
                     Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
                     SDL_Point pos;
-                    wnd->GetPos(pos.x, pos.y);
-                    wnd->SetPos(m_displays[wndDisplay].left + v, pos.y);
+                    wnd->GetPixelPos(pos.x, pos.y);
+                    wnd->SetPixelPos(wnd->LogicalToPixel(m_displays[wndDisplay].left) + v, pos.y);
                     if (m_isMainWindow)
                     { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
                        SDL_FPoint mousePos;
                        SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-                       SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev), mousePos.y);
+                       SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev) / wnd->GetPixelDensity(), mousePos.y);
                     }
                     RequestRebuild();
                  }))
@@ -534,20 +539,20 @@ void DisplaySettingsPage::BuildWindowPage()
                  {
                     SDL_Point pos;
                     const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    wnd->GetPos(pos.x, pos.y);
-                    return pos.y - m_displays[wndDisplay].top;
+                    wnd->GetPixelPos(pos.x, pos.y);
+                    return pos.y - wnd->LogicalToPixel(m_displays[wndDisplay].top);
                  }, //
                  [this, wndDisplay](int prev, int v)
                  {
                     Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
                     SDL_Point pos;
-                    wnd->GetPos(pos.x, pos.y);
-                    wnd->SetPos(pos.x, m_displays[wndDisplay].top + v);
+                    wnd->GetPixelPos(pos.x, pos.y);
+                    wnd->SetPixelPos(pos.x, wnd->LogicalToPixel(m_displays[wndDisplay].top) + v);
                     if (m_isMainWindow)
                     { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
                        SDL_FPoint mousePos;
                        SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-                       SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev));
+                       SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev) / wnd->GetPixelDensity());
                     }
                     RequestRebuild();
                  }))

@@ -98,25 +98,25 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    {
       int nDisplayModes;
       SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(selectedDisplay.display, &nDisplayModes);
-      const int requestedW = settings.GetWindow_FSWidth(m_windowId);
+      const int requestedW = settings.GetWindow_FSWidth(m_windowId); // Pixel size
       const int requestedH = settings.GetWindow_FSHeight(m_windowId);
       const float requestedHz = settings.GetWindow_FSRefreshRate(m_windowId);
       const int requestedDepth = settings.GetWindow_FSColorDepth(m_windowId);
       for (int mode = 0; mode < nDisplayModes; mode++)
       {
          const SDL_DisplayMode* const sdlMode = displayModes[mode];
-         const int bitdepth = GetPixelFormatDepth((sdlMode->format));
-         if ((sdlMode->w == requestedW) && (sdlMode->h == requestedH) //
-               && ((requestedHz == 0.f) || (sdlMode->refresh_rate == requestedHz)) //
-               && ((requestedDepth == 0) || (bitdepth == requestedDepth)))
+         const VideoMode videomode = SDLtoVPXVideoMode(sdlMode);
+         if ((videomode.GetPixelWidth() == requestedW) && (videomode.GetPixelHeight() == requestedH) //
+            && ((requestedHz == 0.f) || (videomode.refreshrate == requestedHz)) //
+            && ((requestedDepth == 0) || (videomode.depth == requestedDepth)))
          {
             fullscreenDisplayMode = sdlMode;
-            m_screenwidth = sdlMode->w;
-            m_screenheight = sdlMode->h;
-            m_refreshrate = sdlMode->refresh_rate;
-            m_bitdepth = bitdepth;
-            m_width = sdlMode->w;
-            m_height = sdlMode->h;
+            m_screenwidth = videomode.GetPixelWidth();
+            m_screenheight = videomode.GetPixelHeight();
+            m_refreshrate = videomode.refreshrate;
+            m_bitdepth = videomode.depth;
+            m_width = videomode.width;
+            m_height = videomode.height;
             break;
          }
       }
@@ -131,29 +131,38 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    // Setup windowed mode
    if (m_windowMode != WindowMode::ExclusiveFullscreen)
    {
-      m_screenwidth = selectedDisplay.videomode.width;
-      m_screenheight = selectedDisplay.videomode.height;
+      m_screenwidth = selectedDisplay.videomode.GetPixelWidth();
+      m_screenheight = selectedDisplay.videomode.GetPixelHeight();
       m_refreshrate = selectedDisplay.videomode.refreshrate;
       m_bitdepth = selectedDisplay.videomode.depth;
-      m_width = m_windowMode == WindowMode::BorderlessFullscreen ? m_screenwidth : settings.GetWindow_Width(m_windowId);
-      m_height = m_windowMode == WindowMode::BorderlessFullscreen ? m_screenheight : settings.GetWindow_Height(m_windowId);
+      if (m_windowMode == WindowMode::BorderlessFullscreen)
+      {
+         m_width = selectedDisplay.videomode.width;
+         m_height = selectedDisplay.videomode.height;
+      }
+      else
+      {
+         m_width = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Width(m_windowId)) * selectedDisplay.videomode.pixelDensity));
+         m_height = static_cast<int>(roundf(static_cast<float>(settings.GetWindow_Height(m_windowId)) * selectedDisplay.videomode.pixelDensity));
+         m_height = selectedDisplay.videomode.height;
+      }
 
       // Constrain window to screen
-      if (m_width > m_screenwidth)
+      if (m_width > selectedDisplay.videomode.width)
       {
-         m_height = (m_height * m_screenwidth) / m_width;
-         m_width = m_screenwidth;
+         m_height = (m_height * selectedDisplay.videomode.width) / m_width;
+         m_width = selectedDisplay.videomode.width;
       }
-      if (m_height > m_screenheight)
+      if (m_height > selectedDisplay.videomode.height)
       {
-         m_width = (m_width * m_screenheight) / m_height;
-         m_height = m_screenheight;
+         m_width = (m_width * selectedDisplay.videomode.height) / m_height;
+         m_height = selectedDisplay.videomode.height;
       }
-      wnd_x += (m_screenwidth - m_width) / 2;
-      wnd_y += (m_screenheight - m_height) / 2;
+      wnd_x += (selectedDisplay.videomode.width - m_width) / 2;
+      wnd_y += (selectedDisplay.videomode.height - m_height) / 2;
 
       // Restore saved position of non fullscreen windows (saved as a relative position inside the selected display)
-      if ((m_height != m_screenheight) || (m_width != m_screenwidth))
+      if ((m_height != selectedDisplay.videomode.height) || (m_width != selectedDisplay.videomode.width))
       {
          Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x - selectedDisplay.left));
          Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
@@ -173,12 +182,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    }
 
    // Create the window
-   assert(m_width > 0 && m_width <= m_screenwidth);
-   assert(m_height > 0 && m_height <= m_screenheight);
    assert(selectedDisplay.left <= wnd_x);
    assert(selectedDisplay.top <= wnd_y);
-   assert((wnd_x + m_width) <= (selectedDisplay.left + (fullscreenDisplayMode ? fullscreenDisplayMode->w : selectedDisplay.videomode.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
-   assert((wnd_y + m_height) <= (selectedDisplay.top + (fullscreenDisplayMode ? fullscreenDisplayMode->h : selectedDisplay.videomode.height)));
+   assert(fullscreenDisplayMode || (m_width > 0 && m_width <= selectedDisplay.videomode.width));
+   assert(fullscreenDisplayMode || (m_height > 0 && m_height <= selectedDisplay.videomode.height));
+   assert(fullscreenDisplayMode || (wnd_x + m_width) <= (selectedDisplay.left + selectedDisplay.videomode.width));
+   assert(fullscreenDisplayMode || (wnd_y + m_height) <= (selectedDisplay.top + selectedDisplay.videomode.height));
    SDL_PropertiesID props;
    if (g_isMobile && g_isIOS) // Window is already externally created
    {
@@ -241,6 +250,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       SDL_SyncWindow(m_nwnd); // Wait for mode switch before gathering the window pixel size
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
+   m_pixelDensity = SDL_GetWindowPixelDensity(m_nwnd);
+   if (m_pixelDensity == 0.f)
+   {
+      PLOGE << "Failed to get pixel density, defaulting to 1";
+      m_pixelDensity = 1.f;
+   }
 
    if (auto icon = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "vpinball.png")); icon)
    {
@@ -257,8 +272,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)
    {
-      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_width, m_height, selectedDisplay.displayName.c_str(),
-         selectedDisplay.videomode.width, selectedDisplay.videomode.height, selectedDisplay.videomode.refreshrate, SDL_GetPixelFormatName(displayMode->format));
+      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_pixelWidth, m_pixelHeight, selectedDisplay.displayName.c_str(),
+         selectedDisplay.videomode.GetPixelWidth(), selectedDisplay.videomode.GetPixelHeight(), selectedDisplay.videomode.refreshrate, SDL_GetPixelFormatName(displayMode->format));
    }
 }
 
@@ -311,12 +326,21 @@ void Window::GetPos(int& x, int& y) const
    SDL_GetWindowPosition(m_nwnd, &x, &y);
 }
 
+void Window::GetPixelPos(int& x, int& y) const
+{
+   GetPos(x, y);
+   x = LogicalToPixel(x);
+   y = LogicalToPixel(y);
+}
+
 void Window::SetPos(const int x, const int y)
 {
    if (m_isVR)
       return;
    SDL_SetWindowPosition(m_nwnd, x, y);
 }
+
+void Window::SetPixelPos(const int x, const int y) { SetPos(PixelToLogical(x), PixelToLogical(y)); }
 
 void Window::SetSize(const int x, const int y)
 {
@@ -327,17 +351,25 @@ void Window::SetSize(const int x, const int y)
    SDL_SetWindowSize(m_nwnd, x, y);
 }
 
+void Window::SetPixelSize(const int w, const int h) { SetSize(PixelToLogical(w), PixelToLogical(h)); }
+
 void Window::OnResized()
 {
    if (m_isVR)
       return;
-   int width, height, pixelWidth, pixelHeight;
-   SDL_GetWindowSize(m_nwnd, &width, &height);
-   SDL_GetWindowSizeInPixels(m_nwnd, &pixelWidth, &pixelHeight);
-   m_width = width;
-   m_height = height;
-   m_pixelWidth = pixelWidth;
-   m_pixelHeight = pixelHeight;
+   SDL_GetWindowSize(m_nwnd, &m_width, &m_height);
+   SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
+}
+
+VPX::Window::VideoMode Window::SDLtoVPXVideoMode(const SDL_DisplayMode* mode)
+{
+   VPX::Window::VideoMode videomode;
+   videomode.pixelDensity = mode->pixel_density;
+   videomode.width = mode->w;
+   videomode.height = mode->h;
+   videomode.depth = GetPixelFormatDepth(mode->format);
+   videomode.refreshrate = mode->refresh_rate;
+   return videomode;
 }
 
 vector<Window::DisplayConfig> Window::GetDisplays()
@@ -358,10 +390,7 @@ vector<Window::DisplayConfig> Window::GetDisplays()
          displayConf.left = displayBounds.x; // Logical position
          displayConf.top = displayBounds.y;
          displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
-         displayConf.videomode.width = mode->w; // Physical size (pixel width/height)
-         displayConf.videomode.height = mode->h;
-         displayConf.videomode.depth = GetPixelFormatDepth(mode->format);
-         displayConf.videomode.refreshrate = mode->refresh_rate;
+         displayConf.videomode = SDLtoVPXVideoMode(mode);
          displays.push_back(displayConf);
       }
    }
@@ -373,20 +402,11 @@ vector<Window::DisplayConfig> Window::GetDisplays()
 vector<Window::VideoMode> Window::GetDisplayModes(const DisplayConfig& display)
 {
    vector<Window::VideoMode> modes;
-
    int count;
    SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(display.display, &count);
-   for (int mode = 0; mode < count; ++mode) {
-      const SDL_DisplayMode* const sdlMode = displayModes[mode];
-      VideoMode vmode = {};
-      vmode.width = sdlMode->w;
-      vmode.height = sdlMode->h;
-      vmode.depth = GetPixelFormatDepth((sdlMode->format));
-      vmode.refreshrate = sdlMode->refresh_rate;
-      modes.push_back(vmode);
-   }
+   for (int mode = 0; mode < count; ++mode)
+      modes.push_back(SDLtoVPXVideoMode(displayModes[mode]));
    SDL_free(displayModes);
-
    return modes;
 }
 

@@ -150,10 +150,8 @@ void Settings::UpdateDefaults()
             break;
 
          const auto& conf = VPX::Window::GetDisplayConfig(GetWindow_Display(i));
-         #ifndef ENABLE_BGFX
-         reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.videomode.width));
-         reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.videomode.height));
-         #endif
+         reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.videomode.GetPixelWidth()));
+         reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.videomode.GetPixelHeight()));
          reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.videomode.width : (conf.videomode.width / 4)));
          reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.videomode.height : min(conf.videomode.width * 4 / 9, conf.videomode.height)));
          break;
