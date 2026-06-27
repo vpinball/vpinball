@@ -777,6 +777,8 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
             const bool isMainSwpachain = wnd == m_outputWnd[0];
             if ((windowWidth != wnd->GetBackBuffer()->GetWidth()) || (windowHeight != wnd->GetBackBuffer()->GetHeight()))
             {
+               // Request BGFX to process the submitted render frame before reseting / deleting the swapchain it rely on
+               Flip();
                if (isMainSwpachain)
                {
                   bgfx::reset(windowWidth, windowHeight, init.resolution.reset | (bgfxVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
@@ -790,8 +792,8 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
                   delete backbuffer;
                   bgfx::frame(BGFX_FRAME_FLUSH); // We must destroy the swapchain before attaching a new swapchain
                   AddWindow(wnd);
-                  break;
                }
+               break;
             }
          }
 
