@@ -199,8 +199,6 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
          // DX9 does not need any special flag either
       #endif
       wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-      if (m_windowMode != WindowMode::Windowed)
-         wnd_flags |= SDL_WINDOW_FULLSCREEN;
 
       // Request forced raising (standard behavior except on Windows)
       SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
@@ -235,13 +233,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
    m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
-   // Switch to request exclusive fullscreen display mode (must be done after window creation)
-   if (fullscreenDisplayMode)
-   {
-      SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
+   // Define exclusive fullscreen mode if any, then switch to fullscreen
+   SDL_SetWindowFullscreenMode(m_nwnd, fullscreenDisplayMode);
+   if (m_windowMode != WindowMode::Windowed)
       SDL_SetWindowFullscreen(m_nwnd, true);
-      SDL_SyncWindow(m_nwnd);
-   }
+   if (m_windowMode != WindowMode::ExclusiveFullscreen)
+      SDL_SyncWindow(m_nwnd); // Wait for mode switch before gathering the window pixel size
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
 
@@ -260,8 +257,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)
    {
-      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int) m_windowId, m_width, m_height, selectedDisplay.displayName.c_str(), displayMode->w, displayMode->h,
-         displayMode->refresh_rate, SDL_GetPixelFormatName(displayMode->format));
+      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_width, m_height, selectedDisplay.displayName.c_str(),
+         selectedDisplay.videomode.width, selectedDisplay.videomode.height, selectedDisplay.videomode.refreshrate, SDL_GetPixelFormatName(displayMode->format));
    }
 }
 
@@ -293,6 +290,8 @@ void Window::RaiseAndFocus()
    if (m_isVR)
       return;
    SDL_RaiseWindow(m_nwnd);
+   if (m_windowMode != WindowMode::Windowed) // When window loose focus, it may loose its fullscreen state, so restore it
+      SDL_SetWindowFullscreen(m_nwnd, true);
 }
 
 bool Window::IsFocused() const {
