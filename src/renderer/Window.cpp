@@ -345,22 +345,21 @@ vector<Window::DisplayConfig> Window::GetDisplays()
    vector<Window::DisplayConfig> displays;
    const SDL_DisplayID primaryID = SDL_GetPrimaryDisplay();
 
-   int i = 0;
    int displayCount = 0;
    SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
-   for (; i < displayCount; ++i)
+   for (int i = 0; i < displayCount; ++i)
    {
       SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds)) {
+      if (const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(displayIDs[i]); SDL_GetDisplayBounds(displayIDs[i], &displayBounds) && mode != nullptr)
+      {
          DisplayConfig displayConf {};
          displayConf.display = displayIDs[i];
          displayConf.displayName = SDL_GetDisplayName(displayIDs[i]);
+         displayConf.left = displayBounds.x; // Logical position
          displayConf.top = displayBounds.y;
-         displayConf.left = displayBounds.x;
-         displayConf.videomode.width = displayBounds.w;
-         displayConf.videomode.height = displayBounds.h;
          displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
-         const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(displayIDs[i]);
+         displayConf.videomode.width = mode->w; // Physical size (pixel width/height)
+         displayConf.videomode.height = mode->h;
          displayConf.videomode.depth = GetPixelFormatDepth(mode->format);
          displayConf.videomode.refreshrate = mode->refresh_rate;
          displays.push_back(displayConf);
