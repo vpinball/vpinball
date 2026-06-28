@@ -93,7 +93,7 @@ private:
    // UI Context
    Player   *m_player;
    InputManager *m_pininput;
-   Renderer *m_renderer;
+   std::unique_ptr<Renderer>& m_renderer;
 
    // Rendering
    RenderDevice* const m_rd;
