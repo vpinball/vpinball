@@ -2406,36 +2406,23 @@ void PinTable::Load(IObjectReader& reader)
          case FID(AOSC): m_AOScale = reader.AsFloat(); break;
          case FID(SSSC): m_SSRScale = reader.AsFloat(); break;
          case FID(CLBH): m_groundToLockbarHeight = reader.AsFloat(); break;
-         case FID(PLST):
-            m_playfieldReflectionStrength = dequantizeUnsigned<8>(reader.AsInt());
-            break;
+         case FID(PLST): m_playfieldReflectionStrength = dequantizeUnsigned<8>(reader.AsInt()); break;
          case FID(BTRA):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            // FIXME Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             if (const int useTrailForBalls = reader.AsInt(); useTrailForBalls != -1 && !hasIni)
                m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
             break;
          case FID(BTST):
-            // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
+            // FIXME Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
             if (const int ballTrailStrength = reader.AsInt(); !hasIni) 
                m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
             break;
+         case FID(UAOC): m_enableAO = reader.AsInt() != 0; break; // Before 10.8, 1 would force AO
+         case FID(USSR): m_enableSSR = reader.AsInt() != 0; break; // Before 10.8, 1 would force SSR
          case FID(BPRS): m_ballPlayfieldReflectionStrength = reader.AsFloat(); break;
          case FID(DBIS): m_defaultBulbIntensityScaleOnBall = reader.AsFloat(); break;
-         // Obsolete pre-10.8 render settings (anti-aliasing, FXAA, synchronization) that were embedded in
-         // the .vpx and imported when no user ini existed, silently overriding the global configuration
-         // (see #2133, #1004). Read past for file format compatibility but no longer applied.
-         case FID(UAAL): reader.AsInt(); break;
-         case FID(UAOC):
-            // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-            m_enableAO = reader.AsInt() != 0;
-         break;
-         case FID(USSR):
-            // Before 10.8, this setting could be set to -1, meaning override table definition using video options instead
-            m_enableSSR = reader.AsInt() != 0;
-         break;
          case FID(TMAP): m_toneMapper = static_cast<ToneMapper>(reader.AsInt()); break;
          case FID(EXPO): m_exposure = reader.AsFloat(); break;
-         case FID(UFXA): reader.AsInt(); break; // obsolete, see UAAL
          case FID(BLST): m_bloom_strength = reader.AsFloat(); break;
          case FID(BCLR): m_colorbackdrop = reader.AsInt(); break;
          case FID(SECB): // old protection/encryption data
@@ -2463,15 +2450,7 @@ void PinTable::Load(IObjectReader& reader)
          case FID(SVOL): m_TableSoundVolume = reader.AsFloat(); break;
          case FID(BDMO): m_BallDecalMode = reader.AsBool(); break;
          case FID(MVOL): m_TableMusicVolume = reader.AsFloat(); break;
-         case FID(AVSY): reader.AsInt(); break; // obsolete, see UAAL
-         // Obsolete pre-10.8 table-embedded overrides of the global detail level (OGAC, the override flag for
-         // the ARAC value) and day/night (OGDN). They imported when no user ini existed, silently overriding
-         // the global configuration; dropped like the AA/FXAA/sync settings above. Read past for file format
-         // compatibility but no longer applied.
-         case FID(OGAC): reader.AsBool(); break;
-         case FID(OGDN): reader.AsBool(); break;
          case FID(GDAC): m_winEditorGrid = reader.AsBool(); break;
-         case FID(ARAC): reader.AsInt(); break; // obsolete detail level, see OGAC
          case FID(MASI): m_numMaterials = reader.AsInt(); break;
          case FID(MATE):
          {
@@ -2570,6 +2549,12 @@ void PinTable::Load(IObjectReader& reader)
          case FID(TLCK): m_tablelocked = reader.AsInt(); break;
 
          // Deprecated fields (kept for reference and to avoid reusing the same FID in future evolutions)
+         case FID(UAAL): reader.AsInt(); break; // Override AA factor
+         case FID(UFXA): reader.AsInt(); break; // Override postprocess AA mode
+         case FID(AVSY): reader.AsInt(); break; // Override video sync mode
+         case FID(OGDN): reader.AsBool(); break; // Override Global Day/Night
+         case FID(OGAC): reader.AsBool(); break; // Override Global Detail Level enable/disable
+         case FID(ARAC): reader.AsInt(); break; // Override Global Detail Level value
          case FID(REOP): reader.AsBool(); break; // Reflection on playfield (RenderProbes since 10.8)
          case FID(BREF): reader.AsInt(); break; // Enable ball reflection
          case FID(OGST): reader.AsBool(); break; // Overwrite global stereo
