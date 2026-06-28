@@ -1540,7 +1540,7 @@ RenderDevice::RenderDevice(
 
     // get the current display format
     D3DFORMAT format;
-    if (!m_outputWnd[0]->GetWindowMode() == VPX::Window::WindowMode::ExclusiveFullscreen)
+    if (m_outputWnd[0]->GetWindowMode() != VPX::Window::WindowMode::ExclusiveFullscreen)
     {
        D3DDISPLAYMODE mode;
        CHECKD3D(m_pD3D->GetAdapterDisplayMode(adapterId, &mode));
