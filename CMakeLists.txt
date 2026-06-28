@@ -81,12 +81,6 @@ string(REGEX MATCH "VP_VERSION_REV[ ]+([0-9]+)" _tmp "${_vpx_version}")
 set(VERSION_REV "${CMAKE_MATCH_1}")
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-# Fail early with a clear message if the third-party deps aren't built yet (every backend needs SDL3)
-
-if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/third-party/include/SDL3/SDL.h")
-   message(FATAL_ERROR "Third-party dependencies not found in third-party/. Build them for this target first:\n  platforms/${PLATFORM}-${ARCH}/external.sh")
-endif()
-
 message(STATUS "VPX build: RENDERER=${RENDERER} PLATFORM=${PLATFORM} ARCH=${ARCH}")
 
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
@@ -114,6 +108,26 @@ add_compile_options(
    $<$<CXX_COMPILER_ID:MSVC>:/we4172>
    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Werror=return-local-addr>
 )
+
+# Distro builds like Batocera do not use external.sh. They point these at their system/staging
+# tree, which is then searched before the bundled third-party/. Default OFF keeps external.sh
+# builds on the bundled tree.
+
+option(USE_SYSTEM_LIBS "Search system locations for third-party libs before the bundled tree" OFF)
+set(SYSTEM_LIBS_INCLUDE_DIR "/usr/include" CACHE PATH "System include dir searched first when USE_SYSTEM_LIBS")
+set(SYSTEM_LIBS_LIB_DIR "/usr/lib" CACHE PATH "System library dir searched first when USE_SYSTEM_LIBS")
+
+if(USE_SYSTEM_LIBS)
+   # include_directories(BEFORE) prepends each entry, so the resulting search order is the
+   # reverse of this list: libwinevbs/atl must shadow wine for atlbase.h/atlcom.h.
+   include_directories(BEFORE
+      "${SYSTEM_LIBS_INCLUDE_DIR}"
+      "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/wine"
+      "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atlmfc"
+      "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atl")
+   link_directories(BEFORE "${SYSTEM_LIBS_LIB_DIR}")
+   message(STATUS "USE_SYSTEM_LIBS: include=${SYSTEM_LIBS_INCLUDE_DIR} lib=${SYSTEM_LIBS_LIB_DIR}")
+endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_sources.txt")
 
