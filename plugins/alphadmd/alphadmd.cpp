@@ -68,7 +68,7 @@ static std::mutex renderMutex;
 static std::thread renderThread;
 static std::condition_variable updateCondVar;
 static bool isRunning = false;
-static bool renderRequested = false; // set by a frame consumer (GetRenderFrame/GetIdentifyFrame) to wake the render thread for a single update, instead of busy-spinning
+static bool renderRequested = false;
 
 static DisplaySrcId dmd128Id;
 static float renderFrame[128 * 32] = {};
@@ -150,7 +150,7 @@ typedef struct
 
 typedef struct
 {
-   int width;
+   int width; // The width includes the spacing before next character can be drawn (no additional spacing)
    int height;
    segLine segs[16];
 } segDisplay;
@@ -196,7 +196,7 @@ static constexpr segDisplay segDisplays[6] = {
          { 1, { { 5, 10 }, { 0,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, // 15 comma
       } },
    // 16 Segments (split top/bottom)
-   { 7, 11,
+   { 8, 11,
       {
          { 2, { { 1,  0 }, { 2,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, //  0 top left
          { 2, { { 4,  0 }, { 5,  0 }, { 0,  0 }, { 0,  0 }, { 0,  0 } } }, //  1 top right
@@ -297,7 +297,7 @@ static void DrawDisplay(int x, const int y, float*& lum, int srcIndex, const boo
       default: assert(false); return;
       }
       DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
-      x += segDisplays[img].width + 1;
+      x += segDisplays[img].width;
       lum += 16;
    }
 }
@@ -512,8 +512,6 @@ static void RenderThread()
 
 static DisplayFrame GetRenderFrame(const CtlResId id)
 {
-   // Snapshot the frame under sourceMutex (the render thread writes dmd128Frame/renderFrameId while
-   // holding it) into a per-consumer-thread buffer, so the returned frame can't be overwritten mid-read.
    thread_local float frameCopy[128 * 32];
    unsigned int frameId;
    {
@@ -528,8 +526,6 @@ static DisplayFrame GetRenderFrame(const CtlResId id)
 
 static DisplayFrame GetIdentifyFrame(const CtlResId id)
 {
-   // Snapshot the frame under sourceMutex (the render thread writes identifyFrame/identifyFrameId while
-   // holding it) into a per-consumer-thread buffer, so the returned frame can't be overwritten mid-read.
    thread_local uint8_t frameCopy[128 * 32];
    unsigned int frameId;
    {
@@ -562,13 +558,6 @@ static void StopRenderThread()
 
 static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
 {
-   // A segment source change can mean a provider is being destroyed. Stop and join the ancillary
-   // render thread before touching the source list so it can no longer call a provider's GetState
-   // while that provider frees its frame buffers. This must be unconditional: when one display of a
-   // multi-display layout goes away the source set stays non-empty, so stopping only on an
-   // empty/non-empty transition would leave the render thread reading a freed source (crash).
-   StopRenderThread();
-
    std::unique_lock lock(sourceMutex);
    const bool wasRendering = !selectedSources.empty();
    selectedSources.clear();
@@ -631,24 +620,26 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
          LOGI(std::format("Matched layout {} ({} displays: {})", LayoutName(dmdLayout), selectedSources.size(), elements));
    }
    const bool nowRendering = !selectedSources.empty();
-   lock.unlock();
 
-   // Restart the ancillary render thread if there is still something to render.
-   if (nowRendering)
+   // TODO to be fully clean we should clear states cached in the render thread is the source has changed
+   if (wasRendering == nowRendering)
+      return;
+
+   if (wasRendering)
+   {
+      msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
+      isRunning = false; // Prevent any processing while stopping as we will free the lock without any valid seg source anymore
+      lock.unlock();
+      StopRenderThread();
+   }
+   else
    {
       isRunning = true;
       renderThread = std::thread(RenderThread);
+      msgApi->SubscribeMsg(endpointId, getDmdSrcId, OnGetDisplaySrc, nullptr);
+      renderRequested = true;
    }
-
-   // Update the DMD source subscription and notify consumers only on an actual start/stop transition.
-   if (wasRendering != nowRendering)
-   {
-      if (wasRendering)
-         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc, nullptr);
-      else
-         msgApi->SubscribeMsg(endpointId, getDmdSrcId, OnGetDisplaySrc, nullptr);
-      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
-   }
+   msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
 }
 
 }
