@@ -366,7 +366,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    try
    {
-      m_renderer = new Renderer(m_ptable, m_playfieldWnd, m_videoSyncMode, stereo3D);
+      m_renderer = std::make_unique<Renderer>(m_ptable, m_playfieldWnd, m_videoSyncMode, stereo3D);
    }
    catch (HRESULT hr)
    {
@@ -692,7 +692,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderer->SetAnisoFiltering(m_ptable->m_settings.GetPlayer_ForceAnisotropicFiltering());
    m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
-      probe->RenderSetup(m_renderer);
+      probe->RenderSetup(m_renderer.get());
    for (auto editable : m_ptable->GetParts())
    {
       if (editable->GetItemType() == ItemTypeEnum::eItemBall)
@@ -701,7 +701,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       editable->TimerSetup(m_vht);
 
       if (auto ph = editable->GetIRenderable(); ph)
-         ph->RenderSetup(m_renderer);
+         ph->RenderSetup(m_renderer.get());
    }
 
    if (!IsEditorMode())
@@ -841,6 +841,9 @@ Player::~Player()
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
    }
+
+   // Acquire lock to avoid multithreading races between RenderThread using render ressources and Player freeing them
+   m_renderer->m_renderDevice->m_frameMutex.lock();
 
    delete m_liveUI;
    m_liveUI = nullptr;
@@ -1045,7 +1048,6 @@ Player::~Player()
    if (m_vrDevice)
       m_vrDevice->DiscardVisibilityMask();
    #endif
-   delete m_renderer;
    m_renderer = nullptr;
    LockForegroundWindow(false);
    delete m_playfieldWnd;
@@ -1237,7 +1239,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pBall->m_hitBall.m_d.m_vel = { vx, vy, vz };
    pBall->m_d.m_useTableRenderSettings = true;
    pBall->TimerSetup(m_vht);
-   pBall->RenderSetup(m_renderer);
+   pBall->RenderSetup(m_renderer.get());
    pBall->PhysicSetup(m_physics, false);
    m_vball.push_back(pBall);
    pBall->Release(); // The ball is owned by the table, not by the player

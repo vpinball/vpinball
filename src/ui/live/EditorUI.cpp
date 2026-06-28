@@ -80,12 +80,12 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T> &l
 
 EditorUI::EditorUI(LiveUI &liveUI)
    : m_liveUI(liveUI)
+   , m_player(g_pplayer)
+   , m_renderer(m_player->m_renderer)
 {
    m_StartTime_msec = msec();
-   m_player = g_pplayer;
    m_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
-   m_renderer = m_player->m_renderer;
 
    m_selection.type = Selection::SelectionType::S_NONE;
 

@@ -33,10 +33,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    , m_perfUI(g_pplayer)
    , m_editorUI(*this)
    , m_rd(rd)
+   , m_player(g_pplayer)
+   , m_renderer(m_player->m_renderer)
 {
-   m_player = g_pplayer;
    m_pininput = &(m_player->m_pininput);
-   m_renderer = m_player->m_renderer;
    
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();

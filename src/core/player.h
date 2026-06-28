@@ -188,7 +188,7 @@ public:
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_topperOutput;
-   Renderer *m_renderer = nullptr;
+   std::unique_ptr<Renderer> m_renderer;
    VRDevice *m_vrDevice = nullptr;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
    int GetAncillaryRendererPriority(VPXWindowId window, const string& id) const;
