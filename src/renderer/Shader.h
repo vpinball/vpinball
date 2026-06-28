@@ -683,6 +683,7 @@ public:
 
    void SetShader(Shader* shader)
    {
+      m_shader = shader;
       m_state.resize(shader->m_stateSize);
       m_stateOffsets = shader->m_stateOffsets;
       m_samplers.clear();
@@ -965,6 +966,34 @@ public:
    ShaderTechniques GetTechnique() const
    {
       return m_technique;
+   }
+
+   string ToString()
+   {
+      if (m_technique == ShaderTechniques::SHADER_TECHNIQUE_INVALID)
+      {
+         return "Shader State: no technique defined";
+      }
+      std::stringstream ss;
+      ss << "Shader State using technique " << m_shader->GetTechniqueName(m_technique) << "\n";
+      for (ShaderUniforms uniform : m_shader->m_uniforms[m_technique])
+      {
+         if (m_stateOffsets[uniform] != -1)
+         {
+            ss << ShaderUniform::coreUniforms[uniform].name;
+            switch (ShaderUniform::coreUniforms[uniform].type)
+            {
+            case SUT_Float4:
+            {
+               const auto pt = GetVector(uniform); 
+               ss << " (" << pt.x << ", " << pt.y << ", " << pt.z << ", " << pt.w << ')' << '\n';
+               break;
+            }
+            default: ss << " Log not yet implemented\n";
+            }
+         }
+      }
+      return ss.str();
    }
 
    vector<uint8_t> m_state;

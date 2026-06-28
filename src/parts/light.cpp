@@ -7,6 +7,7 @@
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/RenderCommand.h"
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
@@ -840,8 +841,10 @@ void Light::Render(const unsigned int renderMask)
          m_renderer->UpdateBasicShaderMatrix();
       }
       else
-         m_renderer->m_renderDevice->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos, m_desktopBackdrop ? 0.f : m_d.m_depthBias,
-            m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+      {
+         m_renderer->m_renderDevice->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_desktopBackdrop ? pos0 : haloPos,
+            m_desktopBackdrop ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+      }
    }
 }
 

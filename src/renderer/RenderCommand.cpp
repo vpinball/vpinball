@@ -38,13 +38,15 @@ bool RenderCommand::IsFullClear(const bool hasDepth) const
 
 void RenderCommand::Execute(const int nInstances, const bool log)
 {
+   if (log)
+   {
+      PLOGI << ToString(false);
+   }
+
    switch (m_command)
    {
    case RC_CLEAR:
    {
-      if (log) {
-         PLOGI << "> Clear";
-      }
       m_renderState.Apply(m_rd);
       constexpr float z = 1.0f;
       constexpr DWORD stencil = 0;
@@ -93,10 +95,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 
    case RC_COPY:
    {
-      if (log) {
-         PLOGI << "> Copy " << m_copyFrom->m_name << " => " << m_copyTo->m_name;
-      }
-
       // Original VPX code state that on DirectX 9 StretchRect must not be called between BeginScene/EndScene.
       // This does not seem to appear in Microsoft's docs and I could not find any glitch.
       #if defined(ENABLE_DX9)
@@ -322,25 +320,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       }
       m_shader->End();
 
-      if (log)
-      {
-         std::stringstream ss;
-         if (m_command == RC_DRAW_QUAD_PT)
-            ss << "> Draw Quad PT  ";
-         else if (m_command == RC_DRAW_QUAD_PNT)
-            ss << "> Draw Quad PNT ";
-         else if (m_command == RC_DRAW_MESH)
-            ss << "> Draw Mesh     ";
-         ss << (m_isTransparent ? "T "s : "O "s);
-         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderState->GetTechnique()) << std::setw(0) << ' ' << m_renderState.GetLog();
-         ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
-         if (m_command == RC_DRAW_MESH)
-         {
-            ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
-            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name;
-         }
-         PLOGI << ss.str();
-      }
       break;
    }
    }
@@ -430,4 +409,39 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    else
       m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
    m_shader->m_state->CopyTo(true, m_shaderState);
+}
+
+string RenderCommand::ToString(bool detailled) const
+{
+   std::stringstream ss;
+   switch (m_command)
+   {
+   case RC_CLEAR: ss << "> Clear"; break;
+
+   case RC_COPY: ss << "> Copy " << m_copyFrom->m_name << " => " << m_copyTo->m_name; break;
+
+   case RC_DRAW_QUAD_PT:
+   case RC_DRAW_QUAD_PNT:
+   case RC_DRAW_MESH:
+      if (m_command == RC_DRAW_QUAD_PT)
+         ss << "> Draw Quad PT  ";
+      else if (m_command == RC_DRAW_QUAD_PNT)
+         ss << "> Draw Quad PNT ";
+      else if (m_command == RC_DRAW_MESH)
+         ss << "> Draw Mesh     ";
+      ss << (m_isTransparent ? "T "s : "O "s);
+      ss << std::setw(40) << Shader::GetTechniqueName(m_shaderState->GetTechnique()) << std::setw(0) << ' ' << m_renderState.GetLog();
+      ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
+      if (m_command == RC_DRAW_MESH)
+      {
+         ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
+         ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name;
+      }
+      if (detailled)
+      {
+         ss << '\n' << m_shaderState->ToString();
+      }
+      break;
+   }
+   return ss.str();
 }
