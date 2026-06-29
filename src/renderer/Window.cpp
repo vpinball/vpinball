@@ -271,6 +271,14 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       PLOGE << "Failed to load window icon: " << SDL_GetError();
    }
 
+   // Check if the platform allows positionning windows (as Wayland forbids it...)
+   {
+      int x, y;
+      m_isPositionningSupported = true;
+      m_isPositionningSupported &= SDL_GetWindowPosition(m_nwnd, &x, &y);
+      m_isPositionningSupported &= SDL_SetWindowPosition(m_nwnd, x, y);
+   }
+
    if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)
    {
       PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_pixelWidth, m_pixelHeight, selectedDisplay.displayName.c_str(),
