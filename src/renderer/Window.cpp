@@ -277,12 +277,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       PLOGE << "Failed to load window icon: " << SDL_GetError();
    }
 
-   // Check if the platform allows positionning windows (as Wayland forbids it...)
+   // Check if the platform allows positioning windows (as Wayland forbids it...)
    {
       int x, y;
-      m_isPositionningSupported = true;
-      m_isPositionningSupported &= SDL_GetWindowPosition(m_nwnd, &x, &y);
-      m_isPositionningSupported &= SDL_SetWindowPosition(m_nwnd, x, y);
+      m_isPositioningSupported = true;
+      m_isPositioningSupported &= SDL_GetWindowPosition(m_nwnd, &x, &y);
+      m_isPositioningSupported &= SDL_SetWindowPosition(m_nwnd, x, y);
    }
 
    if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)

@@ -1048,7 +1048,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
          constexpr float lockbarToPlayfield = 5.f;
 
-         // Continuous space positionning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
+         // Continuous space positioning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
          if (m_controllerViewCentering)
          {
             bool leftControllerActive = false;
@@ -1090,7 +1090,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             }
          }
 
-         // Space positionning based on head pose (not continuous)
+         // Space positioning based on head pose (not continuous)
          if (m_headsetViewCentering)
          {
             // Compute the eye median pose in VPU coordinates

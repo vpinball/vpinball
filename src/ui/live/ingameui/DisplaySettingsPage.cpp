@@ -517,7 +517,7 @@ void DisplaySettingsPage::BuildWindowPage()
             .m_excludeFromDefault = true;
       }
 
-      if (const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow(); wnd->IsPositionningSupported())
+      if (const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow(); wnd->IsPositioningSupported())
       {
          Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
          AddItem(std::make_unique<InGameUIItem>(

@@ -972,10 +972,10 @@ public:
    {
       if (m_technique == ShaderTechniques::SHADER_TECHNIQUE_INVALID)
       {
-         return "Shader State: no technique defined";
+         return "Shader State: no technique defined"s;
       }
       std::stringstream ss;
-      ss << "Shader State using technique " << m_shader->GetTechniqueName(m_technique) << "\n";
+      ss << "Shader State using technique " << m_shader->GetTechniqueName(m_technique) << '\n';
       for (ShaderUniforms uniform : m_shader->m_uniforms[m_technique])
       {
          if (m_stateOffsets[uniform] != -1)

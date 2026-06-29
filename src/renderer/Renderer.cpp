@@ -138,9 +138,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    m_ancillaryRenderContext = VPXRenderContext2D {
       VPXWindowId::VPXWINDOW_Playfield, 0.f, 0.f, 0, 0.f, 0.f,
-      DrawImage, // Draw an image
-      DrawMatrixDisplay, // Draw a display (DMD, CRT, ...)
-      DrawSegmentDisplay, // Draw a segment display element (just one digit, using max blending to allow building a complete display)
+      DrawImage, // Draw an image // -> ctx->DrawImage
+      DrawMatrixDisplay, // Draw a display (DMD, CRT, ...) // -> ctx->DrawDisplay
+      DrawSegmentDisplay, // Draw a segment display element (just one digit, using max blending to allow building a complete display) // -> ctx->DrawSegDisplay
       &m_ancillaryRenderSetup // Custom rendering data
    };
 

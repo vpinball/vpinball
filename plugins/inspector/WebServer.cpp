@@ -2,6 +2,8 @@
 
 #include "WebServer.h"
 #include <cstdio>
+using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 namespace Inspector {
 
@@ -12,7 +14,7 @@ WebServer::WebServer()
 {
    m_run = false;
    m_pThread = nullptr;
-   m_treeJson = "[]";
+   m_treeJson = "[]"sv;
 }
 
 WebServer::~WebServer()
