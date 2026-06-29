@@ -989,7 +989,14 @@ void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
    InitLayout();
 }
 
-void Renderer::SetReflection(const Matrix3D& reflectionMatrix) { m_mvp.SetReflection(reflectionMatrix); }
+void Renderer::SetReflection(const Matrix3D& reflectionMatrix)
+{
+   m_mvp.SetReflection(reflectionMatrix);
+   // Invalidate MVP
+   PartGroupData::SpaceReference spaceReference = m_mvpSpaceReference;
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT;
+   SetSpaceReference(spaceReference);
+}
 
 void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
 {
