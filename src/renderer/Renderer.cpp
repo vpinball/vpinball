@@ -1623,6 +1623,50 @@ void Renderer::DrawWireframe(IEditable* const renderable, const vec4& fillColor,
    m_render_mask = prevRenderMask;
 }
 
+void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference)
+{
+   if (m_mvpSpaceReference == spaceReference)
+      return;
+
+#if defined(ENABLE_XR)
+   if (m_stereo3D == STEREO_VR)
+      g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, m_mvp);
+   else
+#endif
+   {
+      switch (spaceReference)
+      {
+      case PartGroupData::SpaceReference::SR_CABINET:
+      case PartGroupData::SpaceReference::SR_CABINET_FEET:
+      case PartGroupData::SpaceReference::SR_ROOM:
+         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+            m_mvp.SetView(eye, g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView[eye]);
+         break;
+
+      case PartGroupData::SpaceReference::SR_PLAYFIELD:
+      default:
+         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+            m_mvp.SetView(eye, m_playfieldView[eye]);
+         break;
+      }
+   }
+
+   // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
+   if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass())
+   {
+      if (const auto nudge = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset(); nudge.x != 0.f || nudge.y != 0.f)
+      {
+         const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(m_visualNudgeStrength * MTOVPU(nudge.x), m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
+         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+            m_mvp.SetView(eye, nudgeMat * m_mvp.GetView(eye));
+      }
+   }
+
+   m_mvpSpaceReference = spaceReference;
+   UpdateBasicShaderMatrix();
+   UpdateBallShaderMatrix();
+}
+
 void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
 {
    if (!editable->GetIRenderable()
@@ -1631,45 +1675,7 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
       return;
 
    const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
-   if (m_mvpSpaceReference != spaceReference)
-   {
-      #if defined(ENABLE_XR)
-      if (m_stereo3D == STEREO_VR)
-         g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, m_mvp);
-      else
-      #endif
-      {
-         switch (spaceReference)
-         {
-         case PartGroupData::SpaceReference::SR_CABINET:
-         case PartGroupData::SpaceReference::SR_CABINET_FEET:
-         case PartGroupData::SpaceReference::SR_ROOM:
-            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-               m_mvp.SetView(eye, g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView[eye]);
-            break;
-
-         case PartGroupData::SpaceReference::SR_PLAYFIELD:
-         default:
-            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-               m_mvp.SetView(eye, m_playfieldView[eye]);
-            break;
-         }
-      }
-      // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
-      if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass())
-      {
-         if (const auto nudge = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset(); nudge.x != 0.f || nudge.y != 0.f)
-         {
-            const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(m_visualNudgeStrength * MTOVPU(nudge.x), m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
-            for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-               m_mvp.SetView(eye, nudgeMat * m_mvp.GetView(eye));
-         }
-      }
-      m_mvpSpaceReference = spaceReference;
-      UpdateBasicShaderMatrix();
-      UpdateBallShaderMatrix();
-   }
-
+   SetSpaceReference(spaceReference);
    editable->GetIRenderable()->Render(m_render_mask);
 }
 
@@ -1911,9 +1917,11 @@ void Renderer::RenderDynamics()
 
    TRACE_FUNCTION();
 
+   SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD);
+
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
-   for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
-      m_table->m_vrenderprobe[i]->MarkDirty();
+   for (auto probe : m_table->m_vrenderprobe)
+      probe->MarkDirty();
 
    // Setup the projection matrices used for refraction
    Matrix3D matProj[2];
@@ -2557,13 +2565,19 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
 
 RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT, RenderTarget* outputBackBuffer)
 {
-   const bool SMAA = m_FXAA == Quality_SMAA;
+   const bool SMAA = m_FXAA == Quality_SMAA && m_stereo3D == STEREO_OFF;
    const bool DLAA = m_FXAA == Standard_DLAA;
    const bool NFAA = m_FXAA == Fast_NFAA;
    const bool FXAA1 = m_FXAA == Fast_FXAA;
    const bool FXAA2 = m_FXAA == Standard_FXAA;
    const bool FXAA3 = m_FXAA == Quality_FXAA;
    const bool FAAA = m_FXAA == Quality_FAAA;
+
+   if (m_FXAA == Quality_SMAA && m_stereo3D != STEREO_OFF)
+   {
+      static unsigned int notifId = 0;
+      notifId = g_pplayer->m_liveUI->PushNotification("SMAA is not supported in stereo modes", 5000, notifId);
+   }
 
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -2853,6 +2867,21 @@ void Renderer::RenderFrame()
    // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    SwapBackBufferRenderTargets();
 
+   // Setup initial MVP to setup shaders and rendering
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+#if defined(ENABLE_XR)
+   if (m_stereo3D == STEREO_VR)
+   {
+      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, m_mvp);
+   }
+   else
+#endif
+   {
+      m_mvp = m_initialMVP;
+      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+         m_playfieldView[eye] = m_mvp.GetView(eye);
+   }
+
    // Reinitialize parts that have been modified
    SetupShaders();
    for (auto renderable : m_renderableToInit)
@@ -2885,22 +2914,6 @@ void Renderer::RenderFrame()
    // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
    // m_renderDevice->AddRenderTargetDependency(m_renderDevice->GetPreviousBackBufferTexture());
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
-
-   // Update camera point of view
-#if defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
-   {
-      g_pplayer->m_vrDevice->UpdateVRPosition(PartGroupData::SpaceReference::SR_PLAYFIELD, m_mvp);
-      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
-   }
-   else
-#endif
-   {
-      m_mvp = m_initialMVP;
-      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-         m_playfieldView[eye] = m_mvp.GetView(eye);
-      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
-   }
 
    // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
    if (!m_disableStaticPrepass && m_visualNudgeStrength > 0.0f && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)

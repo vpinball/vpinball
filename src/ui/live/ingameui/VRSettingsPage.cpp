@@ -98,6 +98,11 @@ void VRSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous Settings"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_LockFeetToGround, //
+      [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
+      [this](bool v) { m_player->m_vrDevice->SetLockFeetToGround(v); }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_AddBackglass, //
       [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
       [this](bool v) { m_player->m_implicitVRBackglass->m_d.m_isVisible = v; }));
