@@ -203,7 +203,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       // is to make ancillary windows (backglass, score view, topper) output only. They must never grab input
       // focus, otherwise showing them (eventually lazily, when the script starts feeding them content) would
       // steal focus from the playfield and pause the table.
-      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
+      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview)
          wnd_flags |= SDL_WINDOW_NOT_FOCUSABLE;
 
       #if defined(ENABLE_OPENGL)
