@@ -2881,10 +2881,20 @@ void Renderer::RenderFrame()
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
 
    // Update camera point of view
-   m_mvp = m_initialMVP;
-   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-      m_playfieldView[eye] = m_mvp.GetView(eye);
-   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
+#if defined(ENABLE_XR)
+   if (m_stereo3D == STEREO_VR)
+   {
+      g_pplayer->m_vrDevice->UpdateVRPosition(PartGroupData::SpaceReference::SR_PLAYFIELD, m_mvp);
+      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+   }
+   else
+#endif
+   {
+      m_mvp = m_initialMVP;
+      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+         m_playfieldView[eye] = m_mvp.GetView(eye);
+      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT; // Force update
+   }
 
    // If using static prerendering, apply nudging by shaking the screen (otherwise, apply table displacement)
    if (!m_disableStaticPrepass && m_visualNudgeStrength > 0.0f && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
