@@ -92,6 +92,8 @@ public:
    void RaiseAndFocus();
    bool IsFocused() const;
 
+   bool IsPositionningSupported() const { return m_isPositionningSupported; } // If false, GetPos/GetPixelPos/SetPos/SetPixelPos will all fail, thanks Wayland
+
    void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false);
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
@@ -144,6 +146,7 @@ private:
    float m_hdrHeadRoom = 1.f;
    bool m_wcgDisplay = false;
    bool m_wcgBackbuffer = false;
+   bool m_isPositionningSupported = true;
    const bool m_isVR;
 
    class RenderTarget* m_backBuffer = nullptr;
