@@ -968,6 +968,9 @@ float Renderer::GetDisplayAspectRatio() const
 //
 void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
+   // We should not call this function when in VR mode in the first place
+   if (m_stereo3D != STEREO_VR)
+      return;
    TRACE_FUNCTION();
    const ViewSetup& viewSetup = m_table->GetViewSetup();
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
@@ -981,6 +984,7 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 
 void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
 {
+   assert(m_stereo3D != STEREO_VR);
    m_initialMVP.SetFlip(flipMode);
    InitLayout();
 }
@@ -989,6 +993,7 @@ void Renderer::SetReflection(const Matrix3D& reflectionMatrix) { m_mvp.SetReflec
 
 void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
 {
+   assert(m_stereo3D != STEREO_VR);
    m_initialMVP.SetView(0, view);
    m_initialMVP.SetView(1, view);
    m_initialMVP.SetProj(0, proj);
@@ -997,6 +1002,7 @@ void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
 
 Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point) const
 {
+   assert(m_stereo3D != STEREO_VR);
    Matrix3D invMVP = m_initialMVP.GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(

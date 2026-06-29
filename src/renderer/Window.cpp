@@ -60,7 +60,7 @@ Window::Window(const int width, const int height)
    m_pixelHeight = height;
    m_screenwidth = width;
    m_screenheight = height;
-   m_windowMode = WindowMode::ExclusiveFullscreen;
+   m_windowMode = WindowMode::BorderlessFullscreen;
    //m_refreshrate;
    //m_bitdepth;
    m_sdrWhitePoint = 1.f;
