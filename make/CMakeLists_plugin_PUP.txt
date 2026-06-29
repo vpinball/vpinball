@@ -104,6 +104,8 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
       if(PLATFORM STREQUAL "macos")
          set_target_properties(PUPPlugin PROPERTIES
             SUFFIX ".dylib"
+            BUILD_WITH_INSTALL_RPATH TRUE
+            INSTALL_RPATH "@loader_path"
          )
       endif()
       target_link_directories(PUPPlugin PUBLIC
@@ -193,6 +195,21 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/pup/libgcc_s_seh-1.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/pup/libstdc++-6.dll"
+         )
+      elseif(PLATFORM STREQUAL "macos")
+         file(GLOB PUP_MACOS_DYLIBS
+            "${RUNTIME_LIBS_DIR}/libSDL3*.dylib"
+            "${RUNTIME_LIBS_DIR}/libSDL3_image*.dylib"
+            "${RUNTIME_LIBS_DIR}/libSDL3_ttf*.dylib"
+            "${RUNTIME_LIBS_DIR}/libavcodec*.dylib"
+            "${RUNTIME_LIBS_DIR}/libavformat*.dylib"
+            "${RUNTIME_LIBS_DIR}/libavutil*.dylib"
+            "${RUNTIME_LIBS_DIR}/libswresample*.dylib"
+            "${RUNTIME_LIBS_DIR}/libswscale*.dylib"
+            "${RUNTIME_LIBS_DIR}/libpupdmd*.dylib"
+         )
+         add_custom_command(TARGET PUPPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy ${PUP_MACOS_DYLIBS} "${PLUGINS_DIR}/pup"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET PUPPlugin POST_BUILD

@@ -40,7 +40,7 @@ include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_WMP.txt")
 
 if(TARGET PUPPlugin AND TARGET AltSoundPlugin)
    add_custom_target(PPUCMediaPluginBundle
-      DEPENDS PUPPlugin AltSoundPlugin
       COMMENT "Build PPUC media plugin bundle in ${PLUGINS_DIR}"
    )
+   add_dependencies(PPUCMediaPluginBundle PUPPlugin AltSoundPlugin)
 endif()

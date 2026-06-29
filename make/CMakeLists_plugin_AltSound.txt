@@ -75,6 +75,8 @@ if(BUILD_SHARED)
       if(PLATFORM STREQUAL "macos")
          set_target_properties(AltSoundPlugin PROPERTIES
             SUFFIX ".dylib"
+            BUILD_WITH_INSTALL_RPATH TRUE
+            INSTALL_RPATH "@loader_path"
          )
       endif()
       target_link_directories(AltSoundPlugin PUBLIC
@@ -107,6 +109,13 @@ if(BUILD_SHARED)
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/altsound/libgcc_s_seh-1.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/altsound/libstdc++-6.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/altsound/libwinpthread-1.dll"
+         )
+      elseif(PLATFORM STREQUAL "macos")
+         file(GLOB ALTSOUND_MACOS_DYLIBS
+            "${RUNTIME_LIBS_DIR}/libaltsound*.dylib"
+         )
+         add_custom_command(TARGET AltSoundPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy ${ALTSOUND_MACOS_DYLIBS} "${PLUGINS_DIR}/altsound"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET AltSoundPlugin POST_BUILD

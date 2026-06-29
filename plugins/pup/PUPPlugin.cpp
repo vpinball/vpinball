@@ -330,4 +330,6 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
    scriptApi = nullptr;
    vpxApi = nullptr;
    msgApi = nullptr;
+
+   TTF_Quit();
 }

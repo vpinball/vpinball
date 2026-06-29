@@ -6,6 +6,7 @@
 #include <iostream>
 #include <filesystem>
 #include <chrono>
+#include <cstdio>
 
 #define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
@@ -185,8 +186,22 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
-   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
+   const std::list<CallbackEntry> callbacks = pm.m_msgs[msgId].callbacks;
+   for (const CallbackEntry& entry : callbacks)
+   {
+      if (entry.callback == nullptr || reinterpret_cast<uintptr_t>(entry.callback) < 4096)
+      {
+         const char* subscriber = "<unknown>";
+         if (1 <= entry.endpointId && entry.endpointId <= pm.m_plugins.size())
+            subscriber = pm.m_plugins[entry.endpointId - 1]->m_id.c_str();
+         std::fprintf(stderr,
+            "MsgPluginManager: skipping invalid callback=%p for %s.%s subscribed by endpoint=%u (%s)\n",
+            reinterpret_cast<void*>(entry.callback), pm.m_msgs[msgId].name_space.c_str(),
+            pm.m_msgs[msgId].name.c_str(), entry.endpointId, subscriber);
+         continue;
+      }
       entry.callback(msgId, entry.context, data);
+   }
 }
 
 void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
@@ -197,9 +212,21 @@ void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msg
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
-   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
+   const std::list<CallbackEntry> callbacks = pm.m_msgs[msgId].callbacks;
+   for (const CallbackEntry& entry : callbacks)
       if (entry.endpointId == targetEndpointId)
       {
+         if (entry.callback == nullptr || reinterpret_cast<uintptr_t>(entry.callback) < 4096)
+         {
+            const char* subscriber = "<unknown>";
+            if (1 <= entry.endpointId && entry.endpointId <= pm.m_plugins.size())
+               subscriber = pm.m_plugins[entry.endpointId - 1]->m_id.c_str();
+            std::fprintf(stderr,
+               "MsgPluginManager: skipping invalid callback=%p for %s.%s subscribed by endpoint=%u (%s)\n",
+               reinterpret_cast<void*>(entry.callback), pm.m_msgs[msgId].name_space.c_str(),
+               pm.m_msgs[msgId].name.c_str(), entry.endpointId, subscriber);
+            break;
+         }
          entry.callback(msgId, entry.context, data);
          break;
       }
