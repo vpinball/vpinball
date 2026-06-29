@@ -842,9 +842,6 @@ Player::~Player()
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
    }
 
-   // Acquire lock to avoid multithreading races between RenderThread using render ressources and Player freeing them
-   m_renderer->m_renderDevice->m_frameMutex.lock();
-
    delete m_liveUI;
    m_liveUI = nullptr;
 
@@ -1852,10 +1849,7 @@ void Player::GameLoop()
       m_logicProfiler.SetThreadLock();
 
       #ifdef __LIBVPINBALL__
-         auto gameLoop = [this]() {
-            MultithreadedGameLoop();
-         };
-         VPinballLib::VPinballLib::Instance().SetGameLoop(gameLoop);
+         VPinballLib::VPinballLib::Instance().SetGameLoop([this] { CallbackSteppedGameLoop(); });
       #else
          MultithreadedGameLoop();
       #endif
@@ -1869,30 +1863,37 @@ void Player::GameLoop()
    #endif
 }
 
+#ifdef ENABLE_BGFX
+bool Player::CallbackSteppedGameLoop()
+{
+   // Discard step if the player is not in one of the running states
+   if (GetCloseState() != CS_PLAYING && GetCloseState() != CS_USER_INPUT && GetCloseState() != CS_CLOSE_CAPTURE_SCREENSHOT)
+      return false;
+
+   // Continuously process input, synchronize with emulation and step physics to keep latency low
+   UpdateGameLogic();
+
+   // If rendering thread is ready, push a new frame as soon as possible
+   if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
+   {
+      FinishFrame();
+      m_lastFrameSyncOnFPS
+         = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
+      PrepareFrame();
+      m_renderer->m_renderDevice->m_framePending = true;
+      m_renderer->m_renderDevice->m_frameReadySem.release();
+      m_renderer->m_renderDevice->m_frameMutex.unlock();
+      return true;
+   }
+
+   return false;
+}
+
 void Player::MultithreadedGameLoop()
 {
-#ifdef ENABLE_BGFX
-   while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT
-#ifdef __LIBVPINBALL__
-      || GetCloseState() == CS_CLOSE_CAPTURE_SCREENSHOT
-#endif
-   )
+   while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT || GetCloseState() == CS_CLOSE_CAPTURE_SCREENSHOT)
    {
-      // Continuously process input, synchronize with emulation and step physics to keep latency low
-      UpdateGameLogic();
-
-      // If rendering thread is ready, push a new frame as soon as possible
-      if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
-      {
-         FinishFrame();
-         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
-         PrepareFrame();
-         m_renderer->m_renderDevice->m_framePending = true;
-         m_renderer->m_renderDevice->m_frameReadySem.release();
-         m_renderer->m_renderDevice->m_frameMutex.unlock();
-      }
-#ifndef __LIBVPINBALL__
-      else
+      if (!CallbackSteppedGameLoop())
       {
          m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
          // Sadly waiting is very imprecise (at least on Windows) and we suffer a bit from it.
@@ -1902,19 +1903,17 @@ void Player::MultithreadedGameLoop()
          // YieldProcessor();
          m_logicProfiler.ExitProfileSection();
       }
-#else
-      // Android and iOS use SDL main callbacks and use SDL_AppIterate
-      return;
-#endif
    }
 
    // Flush any pending frame
    {
-      std::lock_guard lock(m_renderer->m_renderDevice->m_frameMutex);
+      while (m_renderer->m_renderDevice->m_framePending || !m_renderer->m_renderDevice->m_frameMutex.try_lock())
+         uOverSleep(100000);
       FinishFrame();
+      m_renderer->m_renderDevice->m_frameMutex.unlock();
    }
-#endif
 }
+#endif
 
 void Player::GPUQueueStuffingGameLoop()
 {
