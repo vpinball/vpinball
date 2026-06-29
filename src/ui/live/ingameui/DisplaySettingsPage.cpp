@@ -123,8 +123,13 @@ void DisplaySettingsPage::ResetToDefaults()
 void DisplaySettingsPage::Close(bool isBackwardAnimation)
 {
    InGameUIPage::Close(isBackwardAnimation);
+
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
+
+   // Restore the output-only (non focusable) state so it stops competing with the playfield for input focus
+   if (!m_isMainWindow && GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
+      GetOutput(m_wndId).GetWindow()->SetFocusable(false);
 }
 
 void DisplaySettingsPage::OnStaticRenderDirty()
@@ -155,12 +160,18 @@ void DisplaySettingsPage::BuildPage()
 #else
    constexpr bool isSingleView = true;
 #endif
+
    // Main view is rendered by the main application and is always active
-   if (m_wndId == VPXWindowId::VPXWINDOW_Playfield || m_wndId == VPXWindowId::VPXWINDOW_VRPreview)
+   if (m_isMainWindow)
    {
       BuildWindowPage();
       return;
    }
+
+   // Ancillary windows are created non focusable so they never steal focus from the playfield. Allow focus while
+   // positioning them through this page, so the user can click and drag the window directly.
+   if (GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
+      GetOutput(m_wndId).GetWindow()->SetFocusable(true);
 
    // Additional views are rendered by plugins, when multiple are available, a priority defined by the user is used
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Renderer priority"s));

@@ -3405,10 +3405,7 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       else
       {
          if (!output.GetWindow()->IsVisible())
-         {
             output.GetWindow()->Show();
-            m_renderDevice->m_outputWnd[0]->RaiseAndFocus(); // Keep focus on playfield when showing an ancillary window
-         }
 
          if (isOutputLinear)
          {
