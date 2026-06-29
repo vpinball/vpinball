@@ -1146,7 +1146,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             // The table defines the height of the lockbar of its cabinet model, as well as the playfield base inclination.
             // This allows to fit the cabinet & playfield models to the real world space.
             // If user adjust the inclination, then the cab is rotated as it would in real life (still missing the legs stretching a bit using caster adjustments)
-            const float groundToPlayfieldHeight = m_scale * table->m_groundToLockbarHeight - m_scale * table->m_glassBottomHeight;
+            const float groundToPlayfieldHeight = m_scale * (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
             const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
 
             // Before 10.8.1, there weren't multiple space reference, so room used to be inclined to compensate the playfield inclination.
@@ -1178,7 +1178,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             // Feet are always touching the ground, scaled against the real world vs model defined playfield level
             // Note that since we are rotating the cabinet with its feet, the feet may slightly leave or enter the ground.
-            const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
+            constexpr float cabHeight = 0.4f * INCHESTOVPU(16.25f); // Magic value where the top of the leg should approximately stand (16.25" is the front height of a modern Stern cabinet)
+            const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - cabHeight) / (table->m_groundToLockbarHeight - cabHeight);
+            //const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - table->m_glassBottomHeight) / (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
+            //const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
             const Matrix3D pfToFeet = viewOrientationInv // Revert view orientation
                * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
                * Matrix3D::MatrixTranslate(
