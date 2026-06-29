@@ -198,7 +198,14 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    }
    else
    {
-      uint32_t wnd_flags = 0;
+      uint32_t wnd_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+      // So far, the only way to get a clean focus management on all platforms with fullscreen/windowed mode
+      // is to make ancillary windows (backglass, score view, topper) output only. They must never grab input
+      // focus, otherwise showing them (eventually lazily, when the script starts feeding them content) would
+      // steal focus from the playfield and pause the table.
+      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
+         wnd_flags |= SDL_WINDOW_NOT_FOCUSABLE;
+
       #if defined(ENABLE_OPENGL)
          wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
          // SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true); // Leads SDL_CreateWindowFrom to add SDL_WINDOW_OPENGL flag
@@ -208,7 +215,6 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
-      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
       // Request forced raising (standard behavior except on Windows)
       SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
@@ -324,7 +330,14 @@ bool Window::IsFocused() const {
    return m_nwnd == SDL_GetKeyboardFocus();
 }
 
-void Window::GetPos(int& x, int& y) const
+void Window::SetFocusable(const bool focusable)
+{
+   if (m_isVR)
+      return;
+   SDL_SetWindowFocusable(m_nwnd, focusable);
+}
+ 
+void Window::GetPos(int& x, int& y)const
 {
    if (m_isVR)
    {

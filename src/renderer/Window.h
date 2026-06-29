@@ -91,6 +91,7 @@ public:
    bool IsVisible() const;
    void RaiseAndFocus();
    bool IsFocused() const;
+   void SetFocusable(const bool focusable);
 
    bool IsPositionningSupported() const { return m_isPositionningSupported; } // If false, GetPos/GetPixelPos/SetPos/SetPixelPos will all fail, thanks Wayland
 
