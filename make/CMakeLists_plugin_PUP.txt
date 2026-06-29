@@ -123,6 +123,7 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
    endif()
 
    add_custom_command(TARGET PUPPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "${PLUGINS_DIR}/pup"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pup/plugin.cfg" "${PLUGINS_DIR}/pup/plugin.cfg"
       COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PUPPlugin>" "${PLUGINS_DIR}/pup"
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PUPPlugin>"

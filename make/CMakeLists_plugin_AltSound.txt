@@ -84,6 +84,7 @@ if(BUILD_SHARED)
    endif()
 
    add_custom_command(TARGET AltSoundPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E make_directory "${PLUGINS_DIR}/altsound"
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/altsound/plugin.cfg" "${PLUGINS_DIR}/altsound/plugin.cfg"
       COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AltSoundPlugin>" "${PLUGINS_DIR}/altsound"
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AltSoundPlugin>"
@@ -132,4 +133,3 @@ if(BUILD_STATIC)
       OUTPUT_NAME "plugin-altsound"
    )
 endif()
-
