@@ -968,8 +968,8 @@ float Renderer::GetDisplayAspectRatio() const
 //
 void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
-   // We should not call this function when in VR mode in the first place
-   if (m_stereo3D != STEREO_VR)
+   // TODO We should not call this function when in VR mode in the first place
+   if (m_stereo3D == STEREO_VR)
       return;
    TRACE_FUNCTION();
    const ViewSetup& viewSetup = m_table->GetViewSetup();
