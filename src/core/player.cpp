@@ -778,6 +778,20 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    wintimer_init();
    m_physics->StartPhysics();
+
+#if defined(__linux__) && !defined(__ANDROID__)
+   // On Wayland the playfield must be the FIRST toplevel mapped so it gets keyboard focus.
+   // RenderFrame() below lazily reveals the ancillary windows (backglass / score view / topper)
+   // as soon as they have content (Renderer::RenderAncillaryWindow). Those are SDL_WINDOW_NOT_FOCUSABLE,
+   // but Wayland hands the single startup activation token to whichever toplevel maps first: if that is
+   // an ancillary window, the token is consumed there and the playfield - mapped last at the Show()
+   // further down - never receives input focus. The sim is then gated off (willPlay = m_playing &&
+   // m_playfieldWnd->IsFocused()), so the table stays paused and the DMD / backglass never animate
+   // until the user manually clicks the playfield. Showing the playfield here, before the first frame,
+   // makes it the toplevel that grabs the activation token / focus. No-op on the later Show().
+   m_playfieldWnd->Show();
+#endif
+
    m_renderer->RenderFrame();
 
    // Reset the perf counter to start time when physics starts
