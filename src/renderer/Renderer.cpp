@@ -2282,6 +2282,8 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
    m_renderDevice->AddRenderTargetDependency(renderedRT);
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+   m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
+   m_renderDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
 
    if (m_table->m_bloom_strength > 0.0f && !m_bloomOff)
    {
