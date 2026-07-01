@@ -546,6 +546,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
 void VPXPluginAPIImpl::OnGameStart()
 {
    assert(m_dmdSources.empty());
+   m_globalDmdSrc = {};
    const auto& msgApi = m_msgApi;
 
    msgApi.SubscribeMsg(GetVPXEndPointId(), m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
@@ -589,6 +590,7 @@ void VPXPluginAPIImpl::OnGameEnd()
    msgApi.UnsubscribeMsg(m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
 
    m_dmdSources.clear();
+   m_globalDmdSrc = {};
 
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 
@@ -614,6 +616,19 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
          RemoveFromVectorSingle(m_dmdSources, flasher);
       }
    }
+   else
+   {
+      // Global script DMD: DMDPixels/DMDColoredPixels call this on every frame, but only the
+      // content changes, not the source set. Only broadcast when the descriptor actually changes
+      // (first appearance, or a size/format change), otherwise consumers re-scan/reset every frame.
+      const decltype(m_globalDmdSrc) cur = (g_pplayer && g_pplayer->m_dmdFrame)
+         ? decltype(m_globalDmdSrc){ true, g_pplayer->m_dmdFrame->width(), g_pplayer->m_dmdFrame->height(), g_pplayer->m_dmdFrame->m_format }
+         : decltype(m_globalDmdSrc){};
+      if (cur.present == m_globalDmdSrc.present && cur.width == m_globalDmdSrc.width
+         && cur.height == m_globalDmdSrc.height && cur.format == m_globalDmdSrc.format)
+         return;
+      m_globalDmdSrc = cur;
+   }
 
    const auto& msgApi = m_msgApi;
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
@@ -621,6 +636,12 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 {
+   // Keep the returned frame (texture or its SRGB alias) alive for the calling thread until its next
+   // call here. GetRenderFrame is called from consumer threads (e.g. the dmdutil worker), which read
+   // the returned pointer after this returns; without holding a reference the main thread could free
+   // the texture/alias (texture swap, alias cache clear) before the consumer copies it.
+   thread_local std::shared_ptr<BaseTexture> s_held;
+
    VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
 
    if ((g_pplayer == nullptr) || (id.endpointId != me.m_vpxPlugin->m_endpointId))
@@ -644,11 +665,12 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 
    switch (dmdFrame->m_format)
    {
-   case BaseTexture::BW_FP32: result.frame = dmdFrame->data(); break;
-   case BaseTexture::SRGB: result.frame = dmdFrame->data(); break;
-   case BaseTexture::SRGBA: result.frame = dmdFrame->GetAlias(BaseTexture::SRGB)->data(); break;
+   case BaseTexture::BW_FP32: s_held = dmdFrame; break;
+   case BaseTexture::SRGB: s_held = dmdFrame; break;
+   case BaseTexture::SRGBA: s_held = dmdFrame->GetAlias(BaseTexture::SRGB); break;
    default: assert(false); return { 0, nullptr };  // Not yet supported
    }
+   result.frame = s_held->data();
 
    return result;
 }
