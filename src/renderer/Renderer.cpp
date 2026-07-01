@@ -992,10 +992,7 @@ void Renderer::SetFlip(ModelViewProj::FlipMode flipMode)
 void Renderer::SetReflection(const Matrix3D& reflectionMatrix)
 {
    m_mvp.SetReflection(reflectionMatrix);
-   // Invalidate MVP
-   PartGroupData::SpaceReference spaceReference = m_mvpSpaceReference;
-   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_INHERIT;
-   SetSpaceReference(spaceReference);
+   SetSpaceReference(m_mvpSpaceReference, true);
 }
 
 void Renderer::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
@@ -1630,9 +1627,9 @@ void Renderer::DrawWireframe(IEditable* const renderable, const vec4& fillColor,
    m_render_mask = prevRenderMask;
 }
 
-void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference)
+void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force)
 {
-   if (m_mvpSpaceReference == spaceReference)
+   if (!force && m_mvpSpaceReference == spaceReference)
       return;
 
 #if defined(ENABLE_XR)
@@ -1659,7 +1656,7 @@ void Renderer::SetSpaceReference(PartGroupData::SpaceReference spaceReference)
    }
 
    // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
-   if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass())
+   if (spaceReference != PartGroupData::SpaceReference::SR_ROOM && !IsUsingStaticPrepass() && m_visualNudgeStrength > 0.f)
    {
       if (const auto nudge = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset(); nudge.x != 0.f || nudge.y != 0.f)
       {
@@ -1682,7 +1679,7 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
       return;
 
    const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
-   SetSpaceReference(spaceReference);
+   SetSpaceReference(spaceReference, false);
    editable->GetIRenderable()->Render(m_render_mask);
 }
 
@@ -1924,13 +1921,12 @@ void Renderer::RenderDynamics()
 
    TRACE_FUNCTION();
 
-   SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD);
-
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
    for (auto probe : m_table->m_vrenderprobe)
       probe->MarkDirty();
 
-   // Setup the projection matrices used for refraction
+   // Setup the projection matrices used for refraction and ball reflection
+   SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, false);
    Matrix3D matProj[2];
    const int nEyes = m_renderDevice->m_nEyes;
    for (int eye = 0; eye < nEyes; eye++)
@@ -2877,19 +2873,13 @@ void Renderer::RenderFrame()
    SwapBackBufferRenderTargets();
 
    // Setup initial MVP to setup shaders and rendering
-   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
-#if defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
-   {
-      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, m_mvp);
-   }
-   else
-#endif
+   if (m_stereo3D != STEREO_VR)
    {
       m_mvp = m_initialMVP;
       for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
          m_playfieldView[eye] = m_mvp.GetView(eye);
    }
+   SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
 
    // Reinitialize parts that have been modified
    SetupShaders();
