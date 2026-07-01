@@ -779,6 +779,13 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       m_dirty = true;
    }
 
+   // A text label is sized as a percentage of the output height, so the big backglass and the small
+   // scoreview need different pixel sizes from the same label. They share one cached texture, which
+   // would regenerate every frame as the two outputs alternate rect.h - each invalidating the other,
+   // the shared texture flickering between the two sizes. Prerender once at the largest height seen and
+   // scale the draw down to each output's height, so the cache is stable and neither output evicts it.
+   m_canonHeight = std::max(m_canonHeight, rect.h);
+
    if (m_pendingTextureUpdate.valid())
    {
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -789,7 +796,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       }
    }
    else if (m_dirty
-      || (m_szPath.empty() && rect.h != m_renderState.m_prerenderedHeight)
+      || (m_szPath.empty() && m_canonHeight != m_renderState.m_prerenderedHeight)
       || (m_szPath.empty() && fontColor != m_renderState.m_prerenderedColor))
    {
       m_dirty = false;
@@ -803,7 +810,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       else if (m_pFont)
          m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
             std::lock_guard lock(m_mutex);
-            return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, fontColor, m_shadowType, m_shadowColor, { m_xoffset, m_yoffset} );
+            return UpdateLabelTexture(m_canonHeight, m_pFont, m_szCaption, m_size, fontColor, m_shadowType, m_shadowColor, { m_xoffset, m_yoffset} );
          });
    }
 
@@ -866,10 +873,14 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    float width;
    float height;
+   // The text texture is prerendered at m_canonHeight (the largest output); scale it down to this
+   // output's height so a single shared cache serves every output without regenerating.
+   float textScale = 1.f;
    if (m_type == PUP_LABEL_TYPE_TEXT)
    {
-      width = m_renderState.m_width;
-      height = m_renderState.m_height;
+      textScale = m_renderState.m_prerenderedHeight > 0 ? static_cast<float>(rect.h) / static_cast<float>(m_renderState.m_prerenderedHeight) : 1.f;
+      width = m_renderState.m_width * textScale;
+      height = m_renderState.m_height * textScale;
    }
    else
    {
@@ -908,7 +919,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    const float yPosOffset = static_cast<float>(rect.h) * yposPercent;
    dest.y += yPosOffset;
 
-   const float alignHeight = (m_type == PUP_LABEL_TYPE_TEXT && m_renderState.m_logicalHeight > 0) ? m_renderState.m_logicalHeight : height;
+   const float alignHeight = (m_type == PUP_LABEL_TYPE_TEXT && m_renderState.m_logicalHeight > 0) ? m_renderState.m_logicalHeight * textScale : height;
    float alignOffset = 0.f;
    if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
       alignOffset = -(alignHeight / 2.f);
@@ -917,7 +928,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    dest.y += alignOffset;
 
    if (m_type == PUP_LABEL_TYPE_TEXT)
-      dest.y += m_renderState.m_baselineOffset;
+      dest.y += m_renderState.m_baselineOffset * textScale;
 
    if (m_shadowType == 2)
    {
