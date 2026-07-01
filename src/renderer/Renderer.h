@@ -203,7 +203,7 @@ public:
    VPXRenderContext2D& GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias);
 
 private:
-   void SetSpaceReference(PartGroupData::SpaceReference spaceReference);
+   void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
    void RenderItem(IEditable* const renderable, bool isNoBackdrop);
    void RenderStaticPrepass();
    void RenderDynamics();
