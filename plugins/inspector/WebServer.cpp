@@ -2,10 +2,17 @@
 
 #include "WebServer.h"
 #include <cstdio>
+#include <string>
+
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
-namespace Inspector {
+
+namespace Inspector
+{
+
+extern std::string GetInputStatesJson();
+extern std::string GetDeviceStatesJson();
 
 constexpr const char* HEADER_JSON = "Content-Type: application/json\r\n";
 constexpr int STATUS_OK = 200;
@@ -17,14 +24,12 @@ WebServer::WebServer()
    m_treeJson = "[]"sv;
 }
 
-WebServer::~WebServer()
-{
-   Stop();
-}
+WebServer::~WebServer() { Stop(); }
 
 void WebServer::Start(int port)
 {
-   if (m_run) {
+   if (m_run)
+   {
       printf("[Inspector] Web server already running\n");
       return;
    }
@@ -35,26 +40,31 @@ void WebServer::Start(int port)
 
    mg_mgr_init(&m_mgr);
 
-   if (mg_http_listen(&m_mgr, bindUrl.c_str(), &WebServer::EventHandler, this)) {
+   if (mg_http_listen(&m_mgr, bindUrl.c_str(), &WebServer::EventHandler, this))
+   {
       m_run = true;
       printf("[Inspector] Web server started\n");
 
-      m_pThread = std::make_unique<std::thread>([this]() {
-         while (m_run)
-            mg_mgr_poll(&m_mgr, 100);
+      m_pThread = std::make_unique<std::thread>(
+         [this]()
+         {
+            while (m_run)
+               mg_mgr_poll(&m_mgr, 100);
 
-         mg_mgr_free(&m_mgr);
-         printf("[Inspector] Web server closed\n");
-      });
+            mg_mgr_free(&m_mgr);
+            printf("[Inspector] Web server closed\n");
+         });
    }
-   else {
+   else
+   {
       printf("[Inspector] Unable to start web server\n");
    }
 }
 
 void WebServer::Stop()
 {
-   if (!m_run) {
+   if (!m_run)
+   {
       return;
    }
 
@@ -62,7 +72,7 @@ void WebServer::Stop()
 
    if (m_pThread && m_pThread->joinable())
       m_pThread->join();
-   
+
    m_pThread.reset();
 }
 
@@ -72,32 +82,38 @@ void WebServer::UpdateTreeJson(const std::string& json)
    m_treeJson = json;
 }
 
-void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
+void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
 {
    WebServer* webServer = (WebServer*)c->fn_data;
 
-   if (ev == MG_EV_HTTP_MSG) {
-      struct mg_http_message *hm = (struct mg_http_message *) ev_data;
+   if (ev == MG_EV_HTTP_MSG)
+   {
+      struct mg_http_message* hm = (struct mg_http_message*)ev_data;
 
       if (mg_match(hm->uri, mg_str("/info"), NULL))
          webServer->Info(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/tree"), NULL))
          webServer->ApiTree(c, hm);
+      else if (mg_match(hm->uri, mg_str("/api/input_states"), NULL))
+         webServer->ApiInputStates(c, hm);
+      else if (mg_match(hm->uri, mg_str("/api/device_states"), NULL))
+         webServer->ApiDeviceStates(c, hm);
       else if (mg_match(hm->uri, mg_str("/"), NULL))
          webServer->Root(c, hm);
-      else {
+      else
+      {
          mg_http_reply(c, 404, "", "Not found\n");
       }
    }
 }
 
-void WebServer::Info(struct mg_connection *c, struct mg_http_message* hm)
+void WebServer::Info(struct mg_connection* c, struct mg_http_message* hm)
 {
    const char* response = "{\"status\": \"ok\", \"plugin\": \"inspector\"}";
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response);
 }
 
-void WebServer::ApiTree(struct mg_connection *c, struct mg_http_message* hm)
+void WebServer::ApiTree(struct mg_connection* c, struct mg_http_message* hm)
 {
    std::string response;
    {
@@ -107,7 +123,19 @@ void WebServer::ApiTree(struct mg_connection *c, struct mg_http_message* hm)
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
 }
 
-void WebServer::Root(struct mg_connection *c, struct mg_http_message* hm)
+void WebServer::ApiInputStates(struct mg_connection* c, struct mg_http_message* hm)
+{
+   std::string response = GetInputStatesJson();
+   mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
+}
+
+void WebServer::ApiDeviceStates(struct mg_connection* c, struct mg_http_message* hm)
+{
+   std::string response = GetDeviceStatesJson();
+   mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
+}
+
+void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
 {
    const char* html = R"(<!DOCTYPE html>
 <html>
@@ -122,7 +150,7 @@ void WebServer::Root(struct mg_connection *c, struct mg_http_message* hm)
         .node-game { color: #4CAF50; font-weight: bold; }
         .node-controller { color: #2196F3; }
         .node-category { color: #FF9800; }
-        .node-item { color: #E0E0E0; font-size: 0.9em; margin-left: 20px; padding: 2px 0; }
+        .node-item { color: #E0E0E0; font-size: 0.9em; margin-left: 20px; padding: 2px 0; font-family: 'Consolas', 'Menlo', 'Courier New', monospace; }
         h1 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; }
     </style>
 </head>
@@ -131,6 +159,20 @@ void WebServer::Root(struct mg_connection *c, struct mg_http_message* hm)
     <div id="tree">Loading...</div>
 
     <script>
+        function formatMapping(mapping) {
+            const groupId = (mapping >>> 16) & 0xFFFF;
+            const deviceId = mapping & 0xFFFF;
+            return `${deviceId.toString(16).padStart(4, '0')}.${groupId.toString(16).padStart(4, '0')}`;
+        }
+
+        function formatBinaryState(state) {
+            return state ? '[X]' : '[ ]';
+        }
+
+        function formatFloatState(state) {
+            return state > 0.5 ? '[X]' : '[ ]';
+        }
+
         function buildNode(node) {
             if (!node || Object.keys(node).length === 0) return '<em>No active controllers</em>';
             if (Array.isArray(node)) {
@@ -141,10 +183,11 @@ void WebServer::Root(struct mg_connection *c, struct mg_http_message* hm)
                 }
                 return html;
             }
-            if (node.type === 'input' || node.type === 'device') {
-                return `<div class="node-item">${node.mapping}: ${node.name}</div>`;
-            }
-            else if (node.type === 'display' || node.type === 'seg_display') {
+            if (node.type === 'input') {
+                return `<div class="node-item" data-input-id="${node.mapping}" data-input-name="${node.name}">${formatBinaryState(node.state)} ${node.name} (Mapping: ${formatMapping(node.mapping)})</div>`;
+            } else if (node.type === 'device') {
+                return `<div class="node-item" data-device-id="${node.mapping}" data-device-name="${node.name}">${formatFloatState(node.state)} ${node.name} (Mapping: ${formatMapping(node.mapping)})</div>`;
+            } else if (node.type === 'display' || node.type === 'seg_display') {
                 return `<div class="node-item">${node.name}</div>`;
             }
             
@@ -158,14 +201,56 @@ void WebServer::Root(struct mg_connection *c, struct mg_http_message* hm)
             return html;
         }
 
-        fetch('/api/tree')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data)}</ul>`;
-            })
-            .catch(err => {
-                document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
-            });
+        function fetchTree() {
+            fetch('/api/tree')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data)}</ul>`;
+                })
+                .catch(err => {
+                    document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
+                });
+        }
+
+        function fetchInputStates() {
+            fetch('/api/input_states')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const el = document.querySelector(`[data-input-id="${item.id}"]`);
+                        if (el) {
+                            const name = el.dataset.inputName || '';
+                            el.textContent = `${formatBinaryState(item.state)} ${name} (Mapping: ${formatMapping(item.id)})`;
+                        }
+                    });
+                })
+                .catch(err => console.error('Input states error', err));
+            setTimeout(fetchInputStates, 30);
+        }
+
+        function fetchDeviceStates() {
+            fetch('/api/device_states')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const el = document.querySelector(`[data-device-id="${item.id}"]`);
+                        if (el) {
+                            const name = el.dataset.deviceName || '';
+                            el.textContent = `${formatFloatState(item.state)} ${name} (Mapping: ${formatMapping(item.id)})`;
+                        }
+                    });
+                })
+                .catch(err => console.error('Device states error', err));
+            setTimeout(fetchDeviceStates, 30);
+        }
+
+        // Initial load
+        fetchTree();
+
+        // Refresh states periodically
+        setTimeout(fetchInputStates, 30);
+        setTimeout(fetchDeviceStates, 30);
+
     </script>
 </body>
 </html>)";
