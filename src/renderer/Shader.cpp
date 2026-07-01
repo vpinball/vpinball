@@ -45,6 +45,7 @@ static vector<ShaderUniforms> InitTechUniforms() { return vector<ShaderUniforms>
 static vector<ShaderUniforms> InitTechUniforms(std::initializer_list<ShaderUniforms> args) { return vector<ShaderUniforms> { args }; }
 Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
+   SHADER_TECHNIQUE(LiveUI_mono, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
    SHADER_TECHNIQUE(RenderBall, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
       SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
       SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
@@ -1603,6 +1604,7 @@ void Shader::Load()
    {
    case UI_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_LiveUI, STEREO(vs_imgui), "fs_imgui");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_LiveUI_mono, "vs_imgui", "fs_imgui");
       break;
    case BASIC_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture,       STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_tex_noat_noclip));
