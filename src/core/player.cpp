@@ -728,13 +728,15 @@ Player::Player(PinTable *const table, const PlayMode playMode)
              editable->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
       }
       m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
-      m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
 
 #ifndef __STANDALONE__
       if (m_detectScriptHang && g_pvp)
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 #endif
    }
+
+   // Suspend play if started
+   SetPlayState(false);
 
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
    SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
@@ -774,41 +776,55 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_liveUI->OpenEditorUI();
    }
 
+   // Show the window (before rendering static part to avoid delaying too long)
+   m_playfieldWnd->Show();
+   m_playfieldWnd->RaiseAndFocus();
+
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
-   wintimer_init();
-   m_physics->StartPhysics();
-   m_renderer->RenderFrame();
+   if (m_renderer->IsUsingStaticPrepass())
+   {
+      // Perform a quick render to avoid displaying a blank screen while the static prerendering is performed
+      if (m_playfieldWnd->IsVisible())
+      {
+         m_renderer->DisableStaticPrePass(true);
+         PrepareFrame();
+         SubmitFrame();
+         FinishFrame();
+#ifdef ENABLE_BGFX
+         m_renderer->m_renderDevice->m_frameMutex.lock();
+#endif
+         m_renderer->DisableStaticPrePass(false);
+      }
+      // Static prerendering (can be lengthy, especially on first run when texture loading happens during static prerender instead of using cache list)
+      PrepareFrame();
+      SubmitFrame();
+      FinishFrame();
+#ifdef ENABLE_BGFX
+      m_renderer->m_renderDevice->m_frameMutex.lock();
+#endif
+   }
+
+   m_progressDialog.SetProgress("Starting..."s, 100);
 
    // Reset the perf counter to start time when physics starts
    wintimer_init();
    m_physics->StartPhysics();
 
-   m_progressDialog.SetProgress("Starting..."s, 100);
-   if (!IsEditorMode())
-      m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
-
    PLOGI << "Startup done"; // For profiling
 
+#ifndef __STANDALONE__
+   m_progressDialog.Destroy();
+#endif
 #ifdef __LIBVPINBALL__
    VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_STARTED, nullptr);
 #endif
 
-#ifndef __STANDALONE__
-   m_progressDialog.Destroy();
-   LockForegroundWindow(true);
-#endif
-
-   // Broadcast a message to notify front-ends that it is 
-   // time to reveal the playfield. 
 #ifdef _MSC_VER
-   UINT nMsgID = RegisterWindowMessage(_T("VPTableStart"));
-   ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
+   LockForegroundWindow(true);
+   // Broadcast a message to notify front-ends that it is time to reveal the playfield. 
+   ::PostMessage(HWND_BROADCAST, RegisterWindowMessage(_T("VPTableStart")), NULL, NULL);
 #endif
-
-   // Show the window 
-   m_playfieldWnd->Show();
-   m_playfieldWnd->RaiseAndFocus();
 
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
@@ -820,6 +836,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
+
+   SetPlayState(true);
 }
 
 Player::~Player()
@@ -1116,7 +1134,7 @@ bool Player::ShowStats() const
 
 void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs)
 {
-   const bool wasPlaying = IsPlaying();
+   const bool wasPlaying = IsPlaying(m_playfieldWnd->IsVisible());
    if (isPlaying || delayBeforePauseMs == 0)
    {
       m_pauseTimeTarget = 0;
@@ -1820,9 +1838,12 @@ void Player::UpdateGameLogic()
    else if (!IsEditorMode())
    {
       m_pininput.ProcessInput(); // Trigger key events to sync with controller
-      m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
-      // TODO These updates should also be done directly in the physics engine after collision events
-      FireTimers(-2); // Trigger script sync event (to sync solenoids back)
+      if (IsPlaying())
+      {
+         m_physics->UpdatePhysics(usec()); // Update physics (also triggering events, syncing with controller)
+         // TODO These updates should also be done directly in the physics engine after collision events
+         FireTimers(-2); // Trigger script sync event (to sync solenoids back)
+      }
    }
 
    m_pluginManager.ProcessAsyncCallbacks();
@@ -1880,9 +1901,7 @@ bool Player::CallbackSteppedGameLoop()
       m_lastFrameSyncOnFPS
          = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_renderProfiler->GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
       PrepareFrame();
-      m_renderer->m_renderDevice->m_framePending = true;
-      m_renderer->m_renderDevice->m_frameReadySem.release();
-      m_renderer->m_renderDevice->m_frameMutex.unlock();
+      SubmitFrame();
       return true;
    }
 
@@ -2147,15 +2166,21 @@ void Player::PrepareFrame()
 
 void Player::SubmitFrame()
 {
-   #ifdef MSVC_CONCURRENCY_VIEWER
-   span* tagSpan = new span(series, 1, _T("Submit"));
-   #endif
-   m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
-   m_renderer->m_renderDevice->SubmitRenderFrame();
-   m_renderProfiler->ExitProfileSection();
-
-   #ifdef MSVC_CONCURRENCY_VIEWER
-   delete tagSpan;
+   #ifdef ENABLE_BGFX
+      // We must own m_renderer->m_renderDevice->m_frameMutex
+      m_renderer->m_renderDevice->m_framePending = true;
+      m_renderer->m_renderDevice->m_frameReadySem.release();
+      m_renderer->m_renderDevice->m_frameMutex.unlock();
+   #else
+      #ifdef MSVC_CONCURRENCY_VIEWER
+         span *tagSpan = new span(series, 1, _T("Submit"));
+      #endif
+      m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
+      m_renderer->m_renderDevice->SubmitRenderFrame();
+      m_renderProfiler->ExitProfileSection();
+      #ifdef MSVC_CONCURRENCY_VIEWER
+         delete tagSpan;
+      #endif
    #endif
 }
 
