@@ -451,7 +451,12 @@ void LiveUI::RenderUI()
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
+   #ifdef ENABLE_BGFX
+   if (m_rd->GetCurrentPass()->m_rt->m_nLayers == 1)
+      m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI_mono);
+   else
+   #endif
+      m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
    int depthSort = -10000;
