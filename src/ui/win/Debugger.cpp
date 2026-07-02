@@ -109,7 +109,7 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case IDC_STEP:
         {
             const int ms = GetDlgItemInt(IDC_STEPAMOUNT, FALSE);
-            g_pplayer->SetPlayState(false, ms);
+            g_pplayer->SetPlayState(true, ms);
             return TRUE;
         }
         case IDC_EXPAND:
