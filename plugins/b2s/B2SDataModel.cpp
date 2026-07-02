@@ -94,6 +94,7 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
                parent = parent->Parent();
             }
             LOGE(std::format("Failed to decode image at line {} ({})", node->GetLineNum(), path));
+            return nullptr;
          }
          return CreateTexture(decoded.data(), static_cast<int>(decoded.size()));
       }
@@ -118,6 +119,8 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
 static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath) noexcept
 {
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
+   if (node == nullptr)
+      return B2SImage();
    return B2SImage(*node);
 }
 
@@ -242,6 +245,14 @@ B2SBulb::~B2SBulb()
    DeleteTexture(m_offImage);
 }
 
+
+B2SImage::B2SImage() noexcept
+   : m_image(nullptr)
+   , m_filename(""s)
+   , m_romId(0)
+   , m_romIdType(B2SRomIDType::NotDefined)
+{
+}
 
 B2SImage::B2SImage(const tinyxml2::XMLNode& root) noexcept
    : m_image(GetTextureAttribute(root, ""s, "Value"s))

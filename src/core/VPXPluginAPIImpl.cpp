@@ -231,7 +231,10 @@ VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
    VPXTextureBlock* tex = new VPXTextureBlock();
    tex->tex = BaseTexture::CreateFromData(rawData, size);
    if (tex->tex == nullptr)
+   {
+      delete tex;
       return nullptr;
+   }
    UpdateVPXTextureInfo(tex);
    return reinterpret_cast<VPXTexture>(tex);
 }
