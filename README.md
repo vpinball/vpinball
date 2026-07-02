@@ -34,3 +34,7 @@ An [unofficial wiki](https://github.com/dekay/vpinball-wiki) is currently being 
 ## How to build
 
 Build instructions are available in the [make directory README](make/README.md).
+
+## Participate
+
+Read through our [contribution](CONTRIBUTING.md) rules carefully before opening PRs, please.
