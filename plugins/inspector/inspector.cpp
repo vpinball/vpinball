@@ -219,8 +219,8 @@ std::string GetDeviceStatesJson()
    for (const auto& pair : deviceGetters) 
    {
       json dItem = json::object();
-      dItem["id"] = pair.first;
-      dItem["state"] = pair.second.second(pair.second.first);
+      dItem["id"s] = pair.first;
+      dItem["state"s] = pair.second.second(pair.second.first);
       root.push_back(dItem);
    }
    return root.dump();
@@ -234,8 +234,8 @@ std::string GetInputStatesJson()
    for (const auto& pair : inputGetters)
    {
       json dItem = json::object();
-      dItem["id"] = pair.first;
-      dItem["state"] = pair.second.second(pair.second.first) != 0;
+      dItem["id"s] = pair.first;
+      dItem["state"s] = pair.second.second(pair.second.first) != 0;
       root.push_back(dItem);
    }
    return root.dump();
