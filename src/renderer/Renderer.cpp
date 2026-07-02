@@ -2796,7 +2796,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
-      if (bgfx::getRendererType() != bgfx::RendererType::Vulkan)
+      if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
       {
          // FIXME no preview for Vulkan as we are not creating the desktop swapchain
 
