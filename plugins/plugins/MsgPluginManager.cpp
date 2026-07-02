@@ -185,8 +185,7 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
-   const std::list<CallbackEntry> callbacks = pm.m_msgs[msgId].callbacks;
-   for (const CallbackEntry& entry : callbacks)
+   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       entry.callback(msgId, entry.context, data);
 }
 
@@ -198,8 +197,7 @@ void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msg
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
 
-   const std::list<CallbackEntry> callbacks = pm.m_msgs[msgId].callbacks;
-   for (const CallbackEntry& entry : callbacks)
+   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId == targetEndpointId)
       {
          entry.callback(msgId, entry.context, data);
