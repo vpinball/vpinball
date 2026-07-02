@@ -128,6 +128,7 @@ VRDevice::VRDevice(const Settings& settings)
       // Relative scale factor and positioning
       m_lockbarWidth = settings.GetPlayer_LockbarWidth();
       m_lockbarHeight = settings.GetPlayer_LockbarHeight();
+      m_lockFeetToGround = settings.GetPlayerVR_LockFeetToGround();
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1048,7 +1049,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
          constexpr float lockbarToPlayfield = 5.f;
 
-         // Continuous space positionning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
+         // Continuous space positioning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
          if (m_controllerViewCentering)
          {
             bool leftControllerActive = false;
@@ -1090,7 +1091,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             }
          }
 
-         // Space positionning based on head pose (not continuous)
+         // Space positioning based on head pose (not continuous)
          if (m_headsetViewCentering)
          {
             // Compute the eye median pose in VPU coordinates
@@ -1146,7 +1147,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             // The table defines the height of the lockbar of its cabinet model, as well as the playfield base inclination.
             // This allows to fit the cabinet & playfield models to the real world space.
             // If user adjust the inclination, then the cab is rotated as it would in real life (still missing the legs stretching a bit using caster adjustments)
-            const float groundToPlayfieldHeight = m_scale * table->m_groundToLockbarHeight - m_scale * table->m_glassBottomHeight;
+            const float groundToPlayfieldHeight = m_scale * (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
             const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
 
             // Before 10.8.1, there weren't multiple space reference, so room used to be inclined to compensate the playfield inclination.
@@ -1178,17 +1179,26 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             // Feet are always touching the ground, scaled against the real world vs model defined playfield level
             // Note that since we are rotating the cabinet with its feet, the feet may slightly leave or enter the ground.
-            const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
-            const Matrix3D pfToFeet = viewOrientationInv // Revert view orientation
-               * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
-               * Matrix3D::MatrixTranslate(
-                  -CMTOVPU(m_tablePos.x),
-                   CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   CMTOVPU(m_tablePos.z)) // Feets are always at z=0 in real world, that is to say ground
-               * Matrix3D::MatrixScale(1.f, 1.f, feetScale) // Scale feets in order to match feet bottom to real world floor
-               * cabinetSlope // Apply cabinet slope
-               * viewOrientation; // Reapply view orientation
-            m_feetWorld.m_toWorld = m_pfWorld.m_toWorld * pfToFeet;
+            if (m_lockFeetToGround)
+            {
+               constexpr float cabHeight
+                  = 0.4f * INCHESTOVPU(16.25f); // Magic value where the top of the leg should approximately stand (16.25" is the front height of a modern Stern cabinet)
+               const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - cabHeight) / (table->m_groundToLockbarHeight - cabHeight);
+               //const float feetScale = (CMTOVPU(m_tablePos.z + m_lockbarHeight) / m_scale - table->m_glassBottomHeight) / (table->m_groundToLockbarHeight - table->m_glassBottomHeight);
+               //const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
+               const Matrix3D pfToFeet = viewOrientationInv // Revert view orientation
+                  * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
+                  * Matrix3D::MatrixTranslate(-CMTOVPU(m_tablePos.x), CMTOVPU(m_tablePos.y + lockbarToPlayfield),
+                     CMTOVPU(m_tablePos.z)) // Feets are always at z=0 in real world, that is to say ground
+                  * Matrix3D::MatrixScale(1.f, 1.f, feetScale) // Scale feets in order to match feet bottom to real world floor
+                  * cabinetSlope // Apply cabinet slope
+                  * viewOrientation; // Reapply view orientation
+               m_feetWorld.m_toWorld = m_pfWorld.m_toWorld * pfToFeet;
+            }
+            else
+            {
+               m_feetWorld.m_toWorld = m_cabWorld.m_toWorld;
+            }
 
             // Room does not apply the cabinet scaling nor any inclination, as it is the real world room
             const Matrix3D pfToRoom = viewOrientationInv // Revert view orientation

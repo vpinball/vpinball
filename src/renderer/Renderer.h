@@ -203,6 +203,7 @@ public:
    VPXRenderContext2D& GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias);
 
 private:
+   void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
    void RenderItem(IEditable* const renderable, bool isNoBackdrop);
    void RenderStaticPrepass();
    void RenderDynamics();
@@ -289,10 +290,10 @@ private:
 
    PinTable* const m_table;
 
-   ModelViewProj m_initialMVP; // Store the base Model / View / Projection
-   ModelViewProj m_mvp; // Store the active Model / View / Projection (includes visual nudge)
-   Matrix3D m_playfieldView[2]; // Store the base playfield view matrix computed at beginning of frame render
+   ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+   ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
+   Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode (unused in VR)
 
    bool m_isStaticPrepassDirty = true;
    int m_disableStaticPrepass = 0;

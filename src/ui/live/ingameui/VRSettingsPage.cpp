@@ -98,6 +98,11 @@ void VRSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous Settings"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_LockFeetToGround, //
+      [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
+      [this](bool v) { m_player->m_vrDevice->SetLockFeetToGround(v); }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_AddBackglass, //
       [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
       [this](bool v) { m_player->m_implicitVRBackglass->m_d.m_isVisible = v; }));
@@ -113,7 +118,7 @@ void VRSettingsPage::BuildPage()
       [this](bool v) { m_player->m_renderer->m_vrPreviewShrink = v; }));
 
 #ifdef ENABLE_XR
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positionning using controllers"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Cabinet positioning using controllers"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //

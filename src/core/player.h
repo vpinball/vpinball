@@ -122,7 +122,10 @@ private:
    unsigned int m_onPrepareFrameMsgId;
    const std::thread::id m_osThreadId;
 
+#ifdef ENABLE_BGFX
+   bool CallbackSteppedGameLoop();
    void MultithreadedGameLoop();
+#endif
    void FramePacingGameLoop();
    void GPUQueueStuffingGameLoop();
 #pragma endregion
@@ -261,9 +264,7 @@ public:
       CS_CLOSE_APP = 3,  // Close the application and get back to operating system
       CS_FORCE_STOP = 4, // Force close the application and get back to operating system
       CS_CLOSED = 5,     // Closing (or closed is called from another thread, but g_pplayer is null when closed)
-#ifdef __LIBVPINBALL__
       CS_CLOSE_CAPTURE_SCREENSHOT = 6 // Close and capture screenshot for table image
-#endif
    };
    void SetCloseState(CloseState state) { if (m_closing != CS_CLOSED) m_closing = state; }
    CloseState GetCloseState() const { return m_closing; }

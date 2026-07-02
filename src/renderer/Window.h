@@ -91,6 +91,9 @@ public:
    bool IsVisible() const;
    void RaiseAndFocus();
    bool IsFocused() const;
+   void SetFocusable(const bool focusable);
+
+   bool IsPositioningSupported() const { return m_isPositioningSupported; } // If false, GetPos/GetPixelPos/SetPos/SetPixelPos will all fail, thanks Wayland
 
    void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false);
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
@@ -144,6 +147,7 @@ private:
    float m_hdrHeadRoom = 1.f;
    bool m_wcgDisplay = false;
    bool m_wcgBackbuffer = false;
+   bool m_isPositioningSupported = true;
    const bool m_isVR;
 
    class RenderTarget* m_backBuffer = nullptr;

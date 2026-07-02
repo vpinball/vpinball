@@ -123,8 +123,13 @@ void DisplaySettingsPage::ResetToDefaults()
 void DisplaySettingsPage::Close(bool isBackwardAnimation)
 {
    InGameUIPage::Close(isBackwardAnimation);
+
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
+
+   // Restore the output-only (non focusable) state so it stops competing with the playfield for input focus
+   if (!m_isMainWindow && GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
+      GetOutput(m_wndId).GetWindow()->SetFocusable(false);
 }
 
 void DisplaySettingsPage::OnStaticRenderDirty()
@@ -155,12 +160,18 @@ void DisplaySettingsPage::BuildPage()
 #else
    constexpr bool isSingleView = true;
 #endif
+
    // Main view is rendered by the main application and is always active
-   if (m_wndId == VPXWindowId::VPXWINDOW_Playfield || m_wndId == VPXWindowId::VPXWINDOW_VRPreview)
+   if (m_isMainWindow)
    {
       BuildWindowPage();
       return;
    }
+
+   // Ancillary windows are created non focusable so they never steal focus from the playfield. Allow focus while
+   // positioning them through this page, so the user can click and drag the window directly.
+   if (GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
+      GetOutput(m_wndId).GetWindow()->SetFocusable(true);
 
    // Additional views are rendered by plugins, when multiple are available, a priority defined by the user is used
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Renderer priority"s));
@@ -506,59 +517,62 @@ void DisplaySettingsPage::BuildWindowPage()
             .m_excludeFromDefault = true;
       }
 
-      Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
-      AddItem(std::make_unique<InGameUIItem>(
-                 Settings::m_propWindow_WndX[m_wndId], "%d"s, //
-                 [this, wndDisplay]()
-                 {
-                    SDL_Point pos;
-                    const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    wnd->GetPixelPos(pos.x, pos.y);
-                    return pos.x - wnd->LogicalToPixel(m_displays[wndDisplay].left);
-                 }, //
-                 [this, wndDisplay](int prev, int v)
-                 {
-                    Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    SDL_Point pos;
-                    wnd->GetPixelPos(pos.x, pos.y);
-                    wnd->SetPixelPos(wnd->LogicalToPixel(m_displays[wndDisplay].left) + v, pos.y);
-                    if (m_isMainWindow)
-                    { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
-                       SDL_FPoint mousePos;
-                       SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-                       SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev) / wnd->GetPixelDensity(), mousePos.y);
-                    }
-                    RequestRebuild();
-                 }))
-         .m_excludeFromDefault = true;
+      if (const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow(); wnd->IsPositioningSupported())
+      {
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)->WithRange(0, containerWidth - wndSize.x));
+         AddItem(std::make_unique<InGameUIItem>(
+                    Settings::m_propWindow_WndX[m_wndId], "%d"s, //
+                    [this, wndDisplay]()
+                    {
+                       SDL_Point pos;
+                       const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       wnd->GetPixelPos(pos.x, pos.y);
+                       return pos.x - wnd->LogicalToPixel(m_displays[wndDisplay].left);
+                    }, //
+                    [this, wndDisplay](int prev, int v)
+                    {
+                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       SDL_Point pos;
+                       wnd->GetPixelPos(pos.x, pos.y);
+                       wnd->SetPixelPos(wnd->LogicalToPixel(m_displays[wndDisplay].left) + v, pos.y);
+                       if (m_isMainWindow)
+                       { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
+                          SDL_FPoint mousePos;
+                          SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
+                          SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev) / wnd->GetPixelDensity(), mousePos.y);
+                       }
+                       RequestRebuild();
+                    }))
+            .m_excludeFromDefault = true;
 
-      Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_wndId)->WithRange(0, containerHeight - wndSize.y));
-      AddItem(std::make_unique<InGameUIItem>(
-                 Settings::m_propWindow_WndY[m_wndId], "%d"s, //
-                 [this, wndDisplay]()
-                 {
-                    SDL_Point pos;
-                    const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    wnd->GetPixelPos(pos.x, pos.y);
-                    return pos.y - wnd->LogicalToPixel(m_displays[wndDisplay].top);
-                 }, //
-                 [this, wndDisplay](int prev, int v)
-                 {
-                    Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
-                    SDL_Point pos;
-                    wnd->GetPixelPos(pos.x, pos.y);
-                    wnd->SetPixelPos(pos.x, wnd->LogicalToPixel(m_displays[wndDisplay].top) + v);
-                    if (m_isMainWindow)
-                    { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
-                       SDL_FPoint mousePos;
-                       SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-                       SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev) / wnd->GetPixelDensity());
-                    }
-                    RequestRebuild();
-                 }))
-         .m_excludeFromDefault = true;
+         Settings::GetRegistry().Register(Settings::GetWindow_WndY_Property(m_wndId)->WithRange(0, containerHeight - wndSize.y));
+         AddItem(std::make_unique<InGameUIItem>(
+                    Settings::m_propWindow_WndY[m_wndId], "%d"s, //
+                    [this, wndDisplay]()
+                    {
+                       SDL_Point pos;
+                       const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       wnd->GetPixelPos(pos.x, pos.y);
+                       return pos.y - wnd->LogicalToPixel(m_displays[wndDisplay].top);
+                    }, //
+                    [this, wndDisplay](int prev, int v)
+                    {
+                       Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+                       SDL_Point pos;
+                       wnd->GetPixelPos(pos.x, pos.y);
+                       wnd->SetPixelPos(pos.x, wnd->LogicalToPixel(m_displays[wndDisplay].top) + v);
+                       if (m_isMainWindow)
+                       { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
+                          SDL_FPoint mousePos;
+                          SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
+                          SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev) / wnd->GetPixelDensity());
+                       }
+                       RequestRebuild();
+                    }))
+            .m_excludeFromDefault = true;
 
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
+      }
    }
 }
 

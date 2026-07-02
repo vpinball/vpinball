@@ -29,6 +29,8 @@ public:
 private:
    void Info(struct mg_connection *c, struct mg_http_message* hm);
    void ApiTree(struct mg_connection *c, struct mg_http_message* hm);
+   void ApiInputStates(struct mg_connection *c, struct mg_http_message *hm);
+   void ApiDeviceStates(struct mg_connection *c, struct mg_http_message *hm);
    void Root(struct mg_connection *c, struct mg_http_message* hm);
 
    std::mutex m_treeMutex;

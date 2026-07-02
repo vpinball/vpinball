@@ -895,6 +895,7 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
       FlexDMDPlugin
       HelloScriptPlugin
       HelloWorldPlugin
+      InspectorPlugin
       PinMAMEPlugin
       PUPPlugin
       RemoteControlPlugin

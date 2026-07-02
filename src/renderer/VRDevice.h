@@ -144,6 +144,8 @@ public:
    void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
    float GetLockbarHeight() const { return m_lockbarHeight; }
    void SetLockbarHeight(float height) { m_lockbarHeight = height; m_worldDirty = true; }
+   bool IsLockFeetToGround() const { return m_lockFeetToGround; }
+   void SetLockFeetToGround(bool lock) { m_lockFeetToGround = lock; m_worldDirty = true; }
 
    void OffsetTable(float dx, float dy, float dz);
    void RecenterTable();
@@ -164,6 +166,7 @@ private:
    float m_scale = 1.0f;
    float m_lockbarWidth = 57.0f; // Real world width of the lockbar in cm
    float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
+   bool m_lockFeetToGround = true;
    float m_orientation = 0.0f;
    Vertex3Ds m_tablePos;
    float m_slope = 0.0f;
