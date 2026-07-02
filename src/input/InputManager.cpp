@@ -513,6 +513,10 @@ void InputManager::HandleSDLEvent(const SDL_Event& e) { m_sdlHandler->HandleSDLE
 
 void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_t timestampNs, bool isPressed)
 {
+   // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
+   if (m_player->m_overall_frames < 5)
+      return;
+
    // Discard keyboard events when the UI is capturing the keyboard (e.g. for control input)
    if (deviceId == m_keyboardDeviceId && ImGui::GetIO().WantCaptureKeyboard)
       return;
@@ -553,6 +557,10 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
 void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t timestampNs, float position)
 {
    assert(-1.f <= position && position <= 1.f);
+
+   // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
+   if (m_player->m_overall_frames < 5)
+      return;
 
    uint32_t id = deviceId << 16 | axisId;
    if (auto it = m_sensorMappings.find(id); it != m_sensorMappings.end())
@@ -611,8 +619,13 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
 
 void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t timestampNs, bool isPressed)
 {
+   // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
+   if (m_player->m_overall_frames < 5)
+      return;
+
    if (m_player->IsVR())
       return;
+
    POINT point;
    point.x = (int)((float)m_player->m_playfieldWnd->GetWidth() * relativeX);
    point.y = (int)((float)m_player->m_playfieldWnd->GetHeight() * relativeY);
