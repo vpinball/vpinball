@@ -1132,92 +1132,81 @@ bool Player::ShowStats() const
    return mode == IF_FPS || mode == IF_PROFILING;
 }
 
-void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs)
-{
-   const bool wasPlaying = IsPlaying(m_playfieldWnd->IsVisible());
-   if (isPlaying || delayBeforePauseMs == 0)
-   {
-      m_pauseTimeTarget = 0;
-      const bool willPlay = isPlaying && m_playfieldWnd->IsFocused();
-      if (wasPlaying != willPlay)
-      {
-         ApplyPlayingState(willPlay);
-         m_playing = isPlaying;
-      }
-   }
-   else if (wasPlaying)
-      m_pauseTimeTarget = m_time_msec + delayBeforePauseMs;
-}
-
 void Player::OnFocusChanged()
 {
    // A lost focus event happens during player destruction when the main window is destroyed
    if (m_closing == CS_CLOSED)
       return;
-   const bool wasPlaying = IsPlaying();
-   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
-   if (wasPlaying != willPlay)
-   {
-      ApplyPlayingState(willPlay);
-      if (m_playfieldWnd->IsFocused())
-      {
-         PLOGI << "Playfield window gained focus";
-      }
-      else
-      {
-#ifdef _MSC_VER
-         HWND foregroundWnd = GetForegroundWindow();
-         if (foregroundWnd)
-         {
-            string focusedWnd = "undefined"s;
-            DWORD foregroundProcessId;
-            const DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
-            char tmp[MAXSTRING];
-            if (foregroundProcessId)
-            {
-               HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
-               if (foregroundProcess)
-               {
-                  if (GetProcessImageFileName(foregroundProcess, tmp, std::size(tmp)))
-                     focusedWnd = tmp;
-               }
-            }
-            GetWindowText(foregroundWnd, tmp, std::size(tmp));
-            PLOGI << "Playfield window lost focus to window with title: '" << tmp << "' created by application: " << focusedWnd;
-         }
-         else
-         {
-            PLOGI << "Playfield window lost focus.";
-         }
 
-#else
-         PLOGI << "Playfield window lost focus.";
-#endif
-      }
-   }
-}
+   SetPlayState(m_wantsToPlay);
 
-void Player::ApplyPlayingState(const bool play)
-{
-   #ifndef __STANDALONE__
-   if(m_debuggerDialog.IsWindow())
-      m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
-   #endif
-   if (play)
+   if (m_playfieldWnd->IsFocused())
    {
-      m_lastKnownGoodCounter++; // Reset hang script detection
-      m_noTimeCorrect = true;   // Disable physics engine time correction on next physic update
-      UnpauseMusic();
-      PLOGI << "Unpausing Game";
-      if (!IsEditorMode())
-         m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
+      PLOGI << "Playfield window gained focus";
    }
    else
    {
-      PauseMusic();
-      PLOGI << "Pausing Game";
-      if (!IsEditorMode())
-         m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
+#ifdef _MSC_VER
+      HWND foregroundWnd = GetForegroundWindow();
+      if (foregroundWnd)
+      {
+         string focusedWnd = "undefined"s;
+         DWORD foregroundProcessId;
+         const DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
+         char tmp[MAXSTRING];
+         if (foregroundProcessId)
+         {
+            HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
+            if (foregroundProcess)
+            {
+               if (GetProcessImageFileName(foregroundProcess, tmp, std::size(tmp)))
+                  focusedWnd = tmp;
+            }
+         }
+         GetWindowText(foregroundWnd, tmp, std::size(tmp));
+         PLOGI << "Playfield window lost focus to window with title: '" << tmp << "' created by application: " << focusedWnd;
+      }
+      else
+      {
+         PLOGI << "Playfield window lost focus.";
+      }
+#else
+      PLOGI << "Playfield window lost focus.";
+#endif
+   }
+}
+
+void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs)
+{
+   m_wantsToPlay = isPlaying;
+   m_pauseTimeTarget = (!isPlaying || delayBeforePauseMs == 0.f) ? 0 : (m_time_msec + delayBeforePauseMs);
+
+   const bool willPlay = IsPlaying(m_playfieldWnd->IsVisible());
+   if (m_playing != willPlay)
+   {
+      m_playing = willPlay;
+
+#ifndef __STANDALONE__
+      if (m_debuggerDialog.IsWindow())
+         m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+#endif
+
+      if (m_playing)
+      {
+         m_lastKnownGoodCounter++; // Reset hang script detection
+         m_noTimeCorrect = true; // Disable physics engine time correction on next physic update
+         UnpauseMusic();
+         PLOGI << "Unpausing Game";
+         if (!IsEditorMode())
+            m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
+      }
+      else
+      {
+         PauseMusic();
+         PLOGI << "Pausing Game";
+         if (!IsEditorMode())
+            m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
+      }
    }
 }
 
