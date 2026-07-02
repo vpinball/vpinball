@@ -148,6 +148,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          if (IEditable* const partGroup = EditableRegistry::CreateAndInit(eItemPartGroup, m_activeTable, 0, 0); partGroup)
          {
+            m_activeTable->GetUniqueName(ItemTypeEnum::eItemPartGroup, partGroup->GetIScriptable()->m_wzName);
             m_activeTable->AddPart(partGroup);
             partGroup->SetPartGroup(GetSelectedPartGroup());
             m_activeTable->BeginUndo();
