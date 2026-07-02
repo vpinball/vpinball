@@ -6,6 +6,7 @@
 #include "plugins/MsgPlugin.h"
 #include "plugins/ControllerPlugin.h"
 
+#include "PUPPlugin.h"
 #include "PUPManager.h"
 #include "PUPScreen.h"
 #include "PUPPinDisplay.h"
@@ -50,7 +51,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId;
-static unsigned int onControllerGameStartId, onGameEndId;
+static unsigned int onControllerGameStartId, onGameEndId, queueEventId;
 
 // The pup manager holds the overall state. It may be automatically created due to a PinMAME start event, or explicitely created
 // through script interface. The script interface gives access to this context even when it has been created due to PinMAME.
@@ -59,7 +60,6 @@ static std::unique_ptr<PUPManager> pupManager;
 LPI_IMPLEMENT_CPP // Implement shared log support
 
 MSGPI_STRING_VAL_SETTING(pupPathProp, "PUPFolder", "PinUp Player Folder", "", true, "", 1024);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
@@ -243,6 +243,13 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
    pupManager->Unload();
 }
 
+void OnQueueEvent(const unsigned int eventId, void* userData, void* eventData)
+{
+   const PUPQueueEventMsg* msg = static_cast<const PUPQueueEventMsg*>(eventData);
+   if (pupManager != nullptr && msg != nullptr)
+      pupManager->QueueDOFEvent(msg->source, msg->id, msg->value);
+}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -267,6 +274,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
 
    msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, queueEventId = msgApi->GetMsgID(PUPPI_NAMESPACE, PUPPI_MSG_QUEUE_EVENT), OnQueueEvent, nullptr);
 
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
 
@@ -305,12 +313,16 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 
    msgApi->ReleaseMsgID(onAudioUpdateId);
 
+   msgApi->UnsubscribeMsg(queueEventId, OnQueueEvent, nullptr);
    msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd, nullptr);
+   msgApi->ReleaseMsgID(queueEventId);
    msgApi->ReleaseMsgID(onControllerGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
 
    scriptApi = nullptr;
    vpxApi = nullptr;
    msgApi = nullptr;
+
+   TTF_Quit();
 }

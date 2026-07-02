@@ -11,6 +11,7 @@
 #include "MsgPlugin.h"
 
 #include <chrono>
+#include <deque>
 #include <list>
 #include <vector>
 #include <string>
@@ -154,7 +155,7 @@ private:
       unsigned int id;
       std::list<CallbackEntry> callbacks;
    };
-   std::vector<MsgEntry> m_msgs;
+   std::deque<MsgEntry> m_msgs;
 
    struct TimerEntry
    {
