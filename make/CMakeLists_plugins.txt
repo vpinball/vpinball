@@ -37,17 +37,3 @@ include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_Serum.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_VNI.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_UpscaleDMD.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_WMP.txt")
-
-set(PPUC_MEDIA_PLUGIN_TARGETS)
-foreach(PPUC_MEDIA_PLUGIN_TARGET PUPPlugin AltSoundPlugin B2SPlugin B2SLegacyPlugin)
-   if(TARGET ${PPUC_MEDIA_PLUGIN_TARGET})
-      list(APPEND PPUC_MEDIA_PLUGIN_TARGETS ${PPUC_MEDIA_PLUGIN_TARGET})
-   endif()
-endforeach()
-
-if(PPUC_MEDIA_PLUGIN_TARGETS)
-   add_custom_target(PPUCMediaPluginBundle
-      COMMENT "Build PPUC media plugin bundle in ${PLUGINS_DIR}"
-   )
-   add_dependencies(PPUCMediaPluginBundle ${PPUC_MEDIA_PLUGIN_TARGETS})
-endif()
