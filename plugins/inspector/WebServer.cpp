@@ -137,7 +137,7 @@ void WebServer::ApiDeviceStates(struct mg_connection* c, struct mg_http_message*
 
 void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
 {
-   const char* html = R"(<!DOCTYPE html>
+   const char* html = R"html(<!DOCTYPE html>
 <html>
 <head>
     <title>Inspector TreeView</title>
@@ -152,17 +152,49 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
         .node-category { color: #FF9800; }
         .node-item { color: #E0E0E0; font-size: 0.9em; margin-left: 20px; padding: 2px 0; font-family: 'Consolas', 'Menlo', 'Courier New', monospace; }
         h1 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        .matrix-content { margin: 8px 0 16px 20px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-top: 8px; }
+        .matrix-table { border-collapse: collapse; font-family: 'Consolas', 'Menlo', 'Courier New', monospace; font-size: 0.82em; }
+        .matrix-table td { border: 1px solid #333; padding: 5px 7px; min-width: 30px; text-align: center; background: #181818; }
+        .matrix-table td.active { background: #14381f; color: #9BE79B; }
+        .matrix-table td.inactive { color: #BDBDBD; }
+        .matrix-state { display: block; font-weight: bold; }
+        .matrix-mapping { display: block; color: #B0BEC5; }
+        .matrix-list {
+             height: var(--matrix-height, auto);
+             max-height: var(--matrix-height, none);
+             column-gap: 24px;
+             column-fill: auto;
+             column-width: 140px;
+             overflow: visible;
+             width: max-content;
+             font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+             font-size: 0.86em;
+        }
+        .matrix-list-item { break-inside: avoid; color: #E0E0E0; }
+        .matrix-list-mapping { color: #B0BEC5; }
+        .matrix-list-name { color: #FFFFFF; }
     </style>
 </head>
 <body>
     <h1>VPX Inspector</h1>
     <div id="tree">Loading...</div>
-
     <script>
-        function formatMapping(mapping) {
-            const groupId = (mapping >>> 16) & 0xFFFF;
-            const deviceId = mapping & 0xFFFF;
-            return `${deviceId.toString(16).padStart(4, '0')}.${groupId.toString(16).padStart(4, '0')}`;
+        const MATRIX_COLUMNS = 8;
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatMapping(mapping, deviceOnly) {
+            const deviceId = (mapping >>> 16) & 0xFFFF;
+            const groupId = mapping & 0xFFFF;
+            return deviceOnly ? `${deviceId.toString(16).padStart(4, '0')}` : `${groupId.toString(16).padStart(4, '0')}.${deviceId.toString(16).padStart(4, '0')}`;
         }
 
         function formatBinaryState(state) {
@@ -171,6 +203,89 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
 
         function formatFloatState(state) {
             return state > 0.5 ? '[X]' : '[ ]';
+        }
+
+        function formatState(node) {
+            return node.type === 'device' ? formatFloatState(node.state) : formatBinaryState(node.state);
+        }
+
+        function isActiveState(itemType, state) {
+            return itemType === 'device' ? state > 0.5 : !!state;
+        }
+
+        function updateMatrixListHeights() {
+            document.querySelectorAll('.matrix-content').forEach(content => {
+                const table = content.querySelector('.matrix-table');
+                const list = content.querySelector('.matrix-list');
+                if (!table || !list)
+                    return;
+                const height = table.getBoundingClientRect().height;
+                list.style.setProperty('--matrix-height', `${height}px`);
+            });
+        }
+
+        function updateVisualState(el, itemType, state) {
+            el.textContent = itemType === 'device' ? formatFloatState(state) : formatBinaryState(state);
+
+            const cell = el.closest('.matrix-cell');
+            if (cell) {
+                cell.classList.toggle('active', isActiveState(itemType, state));
+                cell.classList.toggle('inactive', !isActiveState(itemType, state));
+            }
+        }
+
+        function itemDataAttributes(node) {
+            const kind = node.type === 'device' ? 'device' : 'input';
+            return `data-${kind}-id="${node.mapping}" data-${kind}-name="${escapeHtml(node.name)}" data-state-kind="${kind}"`;
+        }
+
+        function isMatrixGroup(children) {
+            if (!Array.isArray(children) || children.length < 64 || children.length % MATRIX_COLUMNS !== 0) {
+                return false;
+            }
+
+            return children.every(child => child && (child.type === 'input' || child.type === 'device'));
+        }
+
+        function buildStateSpan(node) {
+            return `<span class="state-value" ${itemDataAttributes(node)}>${formatState(node)}</span>`;
+        }
+
+        function buildLeafNode(node) {
+            const mapping = formatMapping(node.mapping, false);
+            return `<div class="node-item">${buildStateSpan(node)} ${escapeHtml(node.name)} (Mapping: ${mapping})</div>`;
+        }
+
+        function buildMatrixGroup(node) {
+            const children = node.children;
+            const rows = children.length / MATRIX_COLUMNS;
+            let table = '<table class="matrix-table"><tbody>';
+
+            for (let row = 0; row < rows; ++row) {
+                table += '<tr>';
+                for (let col = 0; col < MATRIX_COLUMNS; ++col) {
+                    const child = children[row * MATRIX_COLUMNS + col];
+                    const mapping = (child.mapping>>> 16) & 0xFFFF;
+                    const activeClass = isActiveState(child.type, child.state) ? 'active' : 'inactive';
+                    table += `<td class="matrix-cell ${activeClass}" title="${escapeHtml(child.name)}">
+                        <span class="matrix-state">${buildStateSpan(child)}</span>
+                        <span class="matrix-mapping">${mapping}</span>
+                    </td>`;
+                }
+                table += '</tr>';
+            }
+            table += '</tbody></table>';
+
+            let list = '<div class="matrix-list">';
+            for (const child of children) {
+                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${(child.mapping>>> 16) & 0xFFFF}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
+            }
+            list += '</div>';
+
+            return `<details open>
+                <summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${children.length} items, ${rows}x${MATRIX_COLUMNS})</summary>
+                <div class="matrix-content">${table}${list}</div>
+            </details>`;
         }
 
         function buildNode(node) {
@@ -183,15 +298,18 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
                 }
                 return html;
             }
-            if (node.type === 'input') {
-                return `<div class="node-item" data-input-id="${node.mapping}" data-input-name="${node.name}">${formatBinaryState(node.state)} ${node.name} (Mapping: ${formatMapping(node.mapping)})</div>`;
-            } else if (node.type === 'device') {
-                return `<div class="node-item" data-device-id="${node.mapping}" data-device-name="${node.name}">${formatFloatState(node.state)} ${node.name} (Mapping: ${formatMapping(node.mapping)})</div>`;
+
+            if (node.type === 'input' || node.type === 'device') {
+                return buildLeafNode(node);
             } else if (node.type === 'display' || node.type === 'seg_display') {
-                return `<div class="node-item">${node.name}</div>`;
+                return `<div class="node-item">${escapeHtml(node.name)}</div>`;
             }
-            
-            let html = `<details open><summary class="node-${node.type}">${node.name}</summary><ul>`;
+
+            if (isMatrixGroup(node.children)) {
+                return buildMatrixGroup(node);
+            }
+
+            let html = `<details open><summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${node.children.length} items)</summary><ul>`;
             if (node.children) {
                 for (let child of node.children) {
                     html += `<li>${buildNode(child)}</li>`;
@@ -206,23 +324,26 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data)}</ul>`;
+                    updateMatrixListHeights();
                 })
                 .catch(err => {
                     document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
                 });
         }
 
+        function updateInputState(item) {
+            document.querySelectorAll(`[data-input-id="${item.id}"]`).forEach(el => updateVisualState(el, 'input', item.state));
+        }
+
+        function updateDeviceState(item) {
+            document.querySelectorAll(`[data-device-id="${item.id}"]`).forEach(el => updateVisualState(el, 'device', item.state));
+        }
+
         function fetchInputStates() {
             fetch('/api/input_states')
                 .then(res => res.json())
                 .then(data => {
-                    data.forEach(item => {
-                        const el = document.querySelector(`[data-input-id="${item.id}"]`);
-                        if (el) {
-                            const name = el.dataset.inputName || '';
-                            el.textContent = `${formatBinaryState(item.state)} ${name} (Mapping: ${formatMapping(item.id)})`;
-                        }
-                    });
+                    data.forEach(updateInputState);
                 })
                 .catch(err => console.error('Input states error', err));
             setTimeout(fetchInputStates, 30);
@@ -232,13 +353,7 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
             fetch('/api/device_states')
                 .then(res => res.json())
                 .then(data => {
-                    data.forEach(item => {
-                        const el = document.querySelector(`[data-device-id="${item.id}"]`);
-                        if (el) {
-                            const name = el.dataset.deviceName || '';
-                            el.textContent = `${formatFloatState(item.state)} ${name} (Mapping: ${formatMapping(item.id)})`;
-                        }
-                    });
+                    data.forEach(updateDeviceState);
                 })
                 .catch(err => console.error('Device states error', err));
             setTimeout(fetchDeviceStates, 30);
@@ -247,15 +362,15 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
         // Initial load
         fetchTree();
 
+        // Keep matrix legends constrained to matrix height when the layout changes
+        window.addEventListener('resize', updateMatrixListHeights);
+
         // Refresh states periodically
         setTimeout(fetchInputStates, 30);
         setTimeout(fetchDeviceStates, 30);
-
     </script>
 </body>
-</html>)";
-
+</html>)html";
    mg_http_reply(c, STATUS_OK, "Content-Type: text/html\r\n", "%s", html);
 }
-
 } // namespace Inspector
