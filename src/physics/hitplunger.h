@@ -19,7 +19,7 @@ public:
    void SetObjects(const float len);
 
    void PullBack(float speed);
-   void Fire(float startPos);
+   void Fire(float startPos); // startPos is a relative position (1.0 = fully retracted)
    void Fire() { Fire((m_pos - m_frameEnd) / (m_frameStart - m_frameEnd)); }
 
    void PullBackandRetract(float speed);
@@ -46,7 +46,7 @@ public:
    float m_speed;
 
    // Forward travel limit.  When we're about to collide with a ball,
-   // we'll temporarily set this so the collision location.  We set
+   // we'll temporarily set this to the collision location.  We set
    // this in HitTest(), and use it (and reset it) in the next call 
    // to UpdateDisplacements().  This is expressed in absolute
    // position coordinates, so the default value (which allows full
@@ -60,7 +60,7 @@ public:
    // collision.  But this was a bit limiting; the physical process
    // we're modeling is really a transfer of momentum, not velocity.
    // With the addition of the Momentum Transfer property and the new
-   // accounting for the relative mass ofthe ball, the ball can now
+   // accounting for the relative mass of the ball, the ball can now
    // come out of the collision with a slower speed than the plunger
    // had going in.)
    //
@@ -212,29 +212,6 @@ public:
    // exact end, and ensures that we don't fire the event repeatedly
    // if we stop at one of the ends for a while.
    bool m_strokeEventsArmed;
-
-   // Recent history of mechanical plunger readings.  We keep the
-   // last few distinct readings so that we can make a better guess
-   // at the true starting point of a release motion when we detect
-   // that the analog plunger is moving rapidly forward.  We
-   // usually detect a release motion by seeing a rapid forward
-   // position change between two consecutive USB samples.  However,
-   // the real plunger moves so quickly that the first of these
-   // two samples is usually already somewhat forward of the point
-   // where the release actually started.  The history lets us go
-   // back to the position where the plunger was hovering before
-   // being released.  In most cases, the user moves the plunger
-   // slowly enough for our USB samples to keep up and give us an
-   // accurate position reading; it's only on release that it starts
-   // moving too fast.
-   struct MechSample
-   {
-      float pos;
-      uint64_t ts;
-   };
-   std::array<MechSample, 32> m_mech {};
-   int m_mechPos = 0;
-   float m_mechSpeed = 0.f;
 
    // scatter velocity (degree of randomness in the impulse when
    // the plunger strikes the ball, to approximate the mechanical
