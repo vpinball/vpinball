@@ -12,6 +12,33 @@ namespace B2S {
 
 MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
 
+static uint16_t DigitToSegmentMask(const int digit) noexcept
+{
+   switch (digit)
+   {
+   case 0: return 0x003F;
+   case 1: return 0x0006;
+   case 2: return 0x005B;
+   case 3: return 0x004F;
+   case 4: return 0x0066;
+   case 5: return 0x006D;
+   case 6: return 0x007D;
+   case 7: return 0x0007;
+   case 8: return 0x007F;
+   case 9: return 0x006F;
+   default: return 0;
+   }
+}
+
+static std::array<float, 16> DigitToSegmentBrightness(const int digit) noexcept
+{
+   std::array<float, 16> brightness { };
+   const uint16_t mask = DigitToSegmentMask(digit);
+   for (size_t i = 0; i < brightness.size(); ++i)
+      brightness[i] = (mask & (1u << i)) != 0 ? 1.f : 0.f;
+   return brightness;
+}
+
 B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
    , m_msgApi(msgApi)
@@ -324,7 +351,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
          case B2SScoreRenderer::Dream7:
             // Asteroid Annie (Gottlieb 1980)
             {
-               std::array<float, 16> brightness;
+               std::array<float, 16> brightness = DigitToSegmentBrightness(digit);
                SegElementType segType = SegElementType::CTLPI_SEG_LAYOUT_14;
                VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
                VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
