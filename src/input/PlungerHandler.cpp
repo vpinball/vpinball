@@ -5,6 +5,8 @@
 
 #include "core/VPApp.h"
 
+#include <algorithm>
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plunger Handler
@@ -31,26 +33,52 @@ void PlungerHandler::StepOneMillisecond()
    for (const auto& sensor : m_sensors)
       sensor->StepOneMillisecond();
 
+   m_position = 0.f;
+   m_rawVelocity = 0.f;
+
    for (const auto& sensor : m_sensors)
    {
       if (sensor->IsActive())
       {
          m_position = sensor->GetPosition();
-         m_velocity = sensor->GetVelocity();
-         m_isLinear = sensor->IsLinear();
-         m_hasVelocity = sensor->HasVelocity();
+         m_rawVelocity = sensor->GetRawVelocity();
          break;
       }
    }
 }
 
-float PlungerHandler::GetVelocity() const { return m_velocity; }
+bool PlungerHandler::HasPlungerSensor() const
+{
+   for (const auto& sensor : m_sensors)
+      if (sensor->IsActive())
+         return true;
+   return false;
+}
 
-float PlungerHandler::GetPosition() const { return m_position; }
+float PlungerHandler::GetRawVelocity() const
+{
+   return m_rawVelocity;
+}
 
-bool PlungerHandler::IsLinear() const { return m_isLinear; }
+float PlungerHandler::GetHitVelocity(float restPos) const
+{
+   for (const auto& sensor : m_sensors)
+      if (sensor->IsActive())
+         return sensor->GetHitVelocity(restPos);
+   return 0.f;
+}
 
-bool PlungerHandler::HasVelocity() const { return m_hasVelocity; }
+float PlungerHandler::GetPosition(float restPos) const
+{
+   // Symmetric calibration: 0 is rest, 1 is fully retracted, scale is symmetric along rest position
+   // (The maximum forward position is not calibrated, in the negative side)
+   // -1 maps to restPos - (1 - restPos)
+   //  0 maps to restPos
+   //  1 maps to 1
+   // This lead to a range of [2 * restPos - 1, 1] for the plunger position, with 0 being the rest position.
+   assert(restPos >= 0.f && restPos <= 1.f);
+   return lerp(restPos, 1.f, m_position);
+}
 
 bool PlungerHandler::IsPullBackandRetract() const { return m_isPullBackAndRetract; }
 
@@ -63,15 +91,6 @@ const std::unique_ptr<PlungerSensor>& PlungerHandler::GetSensor(int index) const
 void PlungerHandler::AddSensor(std::unique_ptr<PlungerSensor>& sensor)
 {
    const int sensorIndex = static_cast<int>(m_sensors.size());
-
-   const auto linearPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, std::format("Mapping.Plunger{}.Linear", sensorIndex),
-      "Linear Sensor"s,
-      "Select between symmetric (linear) and asymetric (legacy) sensor\nThe plunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for backwards compatibility."s,
-      false, true));
-
-   const auto posFilterPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(
-      "Input"s, std::format("Mapping.Plunger{}.PosFilter", sensorIndex), "Filter position"s, "Apply a denoising filter on position sensor values."s, false, true));
-
    if (sensor)
    {
       sensor->Save(g_app->m_settings, sensorIndex);
@@ -176,41 +195,28 @@ void PlungerHandler::SetExternalPlunger(bool enableOverride, const float velocit
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// 4th-order Butterworth low-pass filter, 10 Hz passband, 1 kHz sampling rate
-// Implemented as Direct Form II Transposed for numerical stability
-//
-class PlungerPositionFilter final
-{
-public:
-   float Push(float x)
-   {
-      const float y = a[0] * x + s[0];
-      for (int i = 0; i < Order - 1; ++i)
-         s[i] = a[i + 1] * x - b[i + 1] * y + s[i + 1];
-      s[Order - 1] = a[Order] * x - b[Order] * y;
-      return y;
-   }
-
-   void Reset() { std::fill(std::begin(s), std::end(s), 0.f); }
-
-private:
-   static constexpr int Order = 4;
-
-   // Butterworth low-pass, Fc=10Hz, Fs=1000Hz
-   // Generated with: scipy.signal.butter(4, 10, fs=1000, output='ba')
-   static constexpr float a[Order + 1] = { 0.0048243445f, 0.019297378f, 0.028946068f, 0.019297378f, 0.0048243445f };
-   static constexpr float b[Order + 1] = { 1.00000000f, -2.369513f, 2.3139884f, -1.0546654f, 0.1873795f };
-
-   float s[Order] = {}; // delay state (N slots)
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plunger sensor
 //
 PlungerSensor::PlungerSensor(InputManager* inputManager)
    : m_positionSensor(std::make_unique<PhysicsSensor>(inputManager, "Plunger position sensor mapping", SensorMapping::Type::Position))
    , m_velocitySensor(std::make_unique<PhysicsSensor>(inputManager, "Plunger velocity sensor mapping", SensorMapping::Type::Velocity))
+   , m_emaPosition(0.008f) // Time constant adjusted for default USB acquisition period at 8.125ms and limited latency
+   , m_emaVelocity(0.008f)
 {
+   PlungerKalmanFilter::Config config;
+
+   config.positionMeasurementVariance = 1.0e-5f;
+   config.accelerationProcessNoise = 0.5f;
+
+   config.initialPositionVariance = 1.0e-4f;
+   config.initialVelocityVariance = 1.0e-2f;
+
+   config.enablePositionLimits = true;
+   config.minPosition = -m_kalmanUnitScale / 3.f; // Fully extended
+   config.maxPosition = m_kalmanUnitScale; // Fully retracted
+
+   m_pvKalmanFilter.SetConfig(config);
+   m_pvKalmanFilter.Reset(0.0f, 0.0f);
 }
 
 PlungerSensor::~PlungerSensor() { }
@@ -219,59 +225,127 @@ void PlungerSensor::Load(const Settings& settings, int sensorIndex)
 {
    m_positionSensor->LoadMapping(settings, std::format("Plunger{}.Position", sensorIndex));
    m_velocitySensor->LoadMapping(settings, std::format("Plunger{}.Velocity", sensorIndex));
-
-   const auto linearPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, std::format("Mapping.Plunger{}.Linear", sensorIndex),
-      "Linear Sensor"s,
-      "Select between symmetric (linear) and asymetric (legacy) sensor\nThe plunger used to be calibrated differently for pull and push. This is largely deprecated and only kept for backwards compatibility."s,
-      false, true));
-   m_linearPlunger = settings.GetBool(linearPropId);
-
-   const auto posFilterPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(
-      "Input"s, std::format("Mapping.Plunger{}.PosFilter", sensorIndex), "Filter position"s, "Apply a denoising filter on position sensor values."s, false, true));
-   if (settings.GetBool(posFilterPropId))
-      m_positionFilter = std::make_unique<PlungerPositionFilter>();
 }
 
 void PlungerSensor::Save(Settings& settings, int sensorIndex) const
 {
    m_positionSensor->SaveMapping(settings, std::format("Plunger{}.Position", sensorIndex));
    m_velocitySensor->SaveMapping(settings, std::format("Plunger{}.Velocity", sensorIndex));
-
-   auto linearPropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Plunger{}.Linear", sensorIndex));
-   assert(linearPropId.has_value());
-   settings.Set(linearPropId.value(), IsLinear() ? 1 : 0, false);
-
-   auto posFilterPropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Plunger{}.PosFilter", sensorIndex));
-   assert(posFilterPropId.has_value());
-   settings.Set(posFilterPropId.value(), IsPositionFilterEnabled() ? 1 : 0, false);
 }
-
-bool PlungerSensor::IsLinear() const { return m_linearPlunger; }
-
-void PlungerSensor::SetLinear(bool isLinear) { m_linearPlunger = isLinear; }
-
-bool PlungerSensor::IsPositionFilterEnabled() const { return m_positionFilter != nullptr; }
-
-void PlungerSensor::EnablePositionFilter(bool enable)
-{
-   if (enable != IsPositionFilterEnabled())
-      m_positionFilter = enable ? std::make_unique<PlungerPositionFilter>() : nullptr;
-}
-
-bool PlungerSensor::HasVelocity() const { return m_velocitySensor->IsMapped(); }
 
 bool PlungerSensor::IsActive() const { return m_deactivationDelay > 0; }
 
 void PlungerSensor::StepOneMillisecond()
 {
-   m_position = m_positionSensor->GetValue();
-   if (m_positionFilter)
-      m_position = m_positionFilter->Push(m_position);
+   m_timeNs += 1000'000ull;
 
-   m_velocity = m_velocitySensor->GetValue();
-
-   if (abs(m_position) > 0.01f)
-      m_deactivationDelay = 10000;
    if (m_deactivationDelay)
       m_deactivationDelay--;
+
+   if (!m_positionSensor->IsMapped())
+      return;
+
+   // Detect rest state
+   if (fabs(m_positionSensor->GetValue()) < 0.01f)
+      m_nRestSamples++;
+   else
+      m_nRestSamples = 0;
+   if (m_nRestSamples < 10)
+      m_deactivationDelay = 10000; // Activate for the next 10s after a movement
+   const bool isPlungerAtRest = m_nRestSamples > 30;
+
+   // Position evaluation
+   // 
+   // We recreate a continuous 1ms position estimation from irregular sensor sampling, usually done at default USB rate (125Hz) 
+   // with repeated report when not moving or not, and eventual custom processing (for example Pinscape will report continuously 
+   // the first value it sees when crossing from retracted to extended during 75ms...). To do so, we use a simple Kalman state 
+   // estimator that continuously predicts the position and velocity, and is updated when a new sample is acquired.
+   if (uint64_t timestampNS = m_positionSensor->GetMapping().GetRawValueTimestampNs() + m_clockDeltaNs; timestampNS > m_lastTimestampNs)
+   {
+      if (timestampNS > m_timeNs)
+      {
+         // Acquisition is evaluated to be in the future of the Kalman filter master clock, so we realign the sensor clock to the Kalman filter clock
+         timestampNS = m_timeNs;
+         m_clockDeltaNs = static_cast<int64_t>(timestampNS) - static_cast<int64_t>(m_positionSensor->GetMapping().GetRawValueTimestampNs());
+      }
+      m_lastTimestampNs = timestampNS;
+      m_pvKalmanFilter.UpdatePosition(m_lastTimestampNs, m_positionSensor->GetValue() * m_kalmanUnitScale);
+   }
+   else if (m_timeNs > m_lastTimestampNs + 10'000'000ull)
+   {
+      // Don't let the estimator runs freely too long by periodically repeating last sample
+      m_lastTimestampNs = m_timeNs - 5'000'000ull;
+      m_pvKalmanFilter.UpdatePosition(m_lastTimestampNs, m_positionSensor->GetValue() * m_kalmanUnitScale);
+   }
+   m_pvKalmanFilter.PredictTo(m_timeNs);
+   if (isPlungerAtRest)
+      m_pvKalmanFilter.UpdateVelocityZero(1.0e-4f);
+
+   m_emaVelocity.Update(m_pvKalmanFilter.GetVelocity() / m_kalmanUnitScale, 0.001f);
+   m_position = m_emaPosition.Update(m_pvKalmanFilter.GetPosition() / m_kalmanUnitScale, 0.001f);
+   m_prevPosition[m_PrevPositionPos] = m_position;
+   m_PrevPositionPos = (m_PrevPositionPos + 1) % m_prevPosition.size();
+
+   // Log for debugging purposes as CSV
+   if (false && IsActive())
+   {
+      const float restPos = 0.f;
+      const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
+      const float hitSpeed = (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f) ? 0.f : -max(0.f, releaseApex - restPos) * 100.f / 13.0f;
+      PLOGD << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{};{};{}", //
+         m_positionSensor->GetValue(), m_velocitySensor->GetValue(), // Sensors
+         m_position, // Estimated position
+         m_emaVelocity.Get(), hitSpeed, // Estimated speeds (raw and hit speed)
+         (int)(m_timeNs / 1000'000ull), (int)(m_lastTimestampNs / 1000'000ull), (int)this);
+   }
+}
+
+// Hit velocity evaluation
+//
+// The position state estimator allows to derive a continuous velocity, but we are only interested by the velocity when the plunger
+// hit the ball which may not happen most of the time.
+// 
+// When we only have a position sensor, the acquired release motion of a physical plunger is much faster than our sampling rate can
+// keep up with, so we can't just use the joystick readings directly.  The problem is that a real plunger can shoot all the way forward,
+// bounce all the way back, and shoot forward again in the time between two consecutive samples.  A real plunger moves at around 3-5m/s,
+// which translates to 3-5mm/ms, or 30-50mm per 10ms sampling period.  The whole plunger travel distance is ~65mm. So in one reading,
+// we can travel almost the whole range!  This means that samples are effectively random during a release motion.  We might happen to get
+// lucky and have our sample timing align perfectly with a release, so that we get one reading at the retracted position just before a
+// release and the very next reading at the full forward position.  Or we might get unlikely and catch one reading halfway down the initial
+// lunge and the next reading at the very apex of the bounce back - and if we took those two readings at face value, we'd be fooled into
+// thinking the plunger was stationary at the halfway point!
+// 
+// Luckily, we only need to evaluate speed when plunger actually hit the ball. This happens in 2 situations:
+// . plunger is at rest and ball either is stationary (ball rest on plunger) or hits the plunger (ball fall from the plunger lane on the plunger)
+// . plunger moves and hits the ball
+// 
+// We can use the same strategy for both these situations:
+// . either a custom hardware is measuring velocity at a high rate and providing us with the velocity and we can just use it (for example
+//   Pinscape that provides either the speed of the plunger after a release when it crosses the park zone, or a stable rest state speed)
+// . either we compute a velocity from the position where the plunger was released if any, leading to either no velocity or a peak standard
+//   speed, matching the one we would have obtained from a keyboard plunger
+float PlungerSensor::GetHitVelocity(float restPos) const
+{
+   if (m_velocitySensor->IsMapped())
+   {
+      return m_velocitySensor->GetValue();
+   }
+   else
+   {
+      // Use the position & speed derived from the position sensor to filter out rest state from plunges
+      if (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f)
+         return 0.f;
+
+      // Evaluate the velocity by supposing the player did a 'free' release, that is to say the plunger was retracted to a given position then entirely free to move.
+      // 
+      // In this scheme the speed is a consequence of 2 parameters (beside physical constants like spring stiffness, damping,...):
+      // . the retracted position when the plunger was released (apex). Measures on real hardware show that the the retracted to extended move last around 50ms, and that the next
+      //   oscillation to extended position happens roughly 100ms after the first. This lead to search the apex within the last 100ms
+      // . the actual hit position that we guess to be at the park position
+      // So we figure the release speed as a fraction of the fire speed property, linearly proportional to the starting distance.
+      // The 100/13 factor is a magic conversion factor that matches what is used for keyboard driven plunger.
+      const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
+      const float hitSpeed = - max(0.f, releaseApex - restPos) * 100.f / 13.0f;
+      return hitSpeed;
+   }
 }

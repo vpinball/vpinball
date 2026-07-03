@@ -192,10 +192,15 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
       // Velocities must be provided to the engine in m/s (acquired value x scale => m/s)
       // We propose some default scales, that is to say 20mm/s (which is what Pinscape boards use)
       if (m_velUnit < 0)
-         m_velUnit = abs(liveScale - 0.020f) < 0.01f ? 1 :  0;
+         m_velUnit = abs(liveScale - 0.020f) < 0.01f ? 1 : abs(liveScale - 12.5f) < 0.01f ? 2 : 0;
       isCustomScale = m_velUnit == 0;
       m_page->AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0, vector { "Custom unit"s, "20 mm/s"s }),
+         VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0,
+            vector {
+               "Custom unit"s, // See below
+               "20 mm/s [Pinscape nudge velocity]"s, // FIXME 20mm/s is what is advertised but it seems not to match the actual Pinscape velocity (another scaling factor ? for example 4096 out of 32768 range ?)
+               "12.5 p.u/s [Pinscape plunger velocity]"s // Plunger velocity is a per unit velocity regarding full plunger frame length (so no direct length unit)
+            }),
          [this]() { return m_velUnit; }, // Live
          [this](const Settings& settings) { return m_velUnit; }, // Stored
          [this, liveScale](int, int v)
@@ -204,7 +209,8 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
             const float sign = liveScale < 0.f ? -1.f : 1.f;
             switch (v)
             {
-            case 1: m_sensor->GetMapping().SetScale(sign * 20.f); break;
+            case 1: m_sensor->GetMapping().SetScale(sign * 0.020f); break;
+            case 2: m_sensor->GetMapping().SetScale(sign * 12.5f); break;
             }
             m_rebuildPage();
          },

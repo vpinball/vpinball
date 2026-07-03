@@ -31,15 +31,8 @@ void PlungerSensorSettingsPage::BuildPage()
    if (m_removed)
       return;
 
-   auto linearPropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Plunger{}.Linear", m_sensorIndex));
-   auto posFilterPropId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Mapping.Plunger{}.PosFilter", m_sensorIndex));
-   if (!linearPropId.has_value() || !posFilterPropId.has_value())
-      return;
-
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Position sensor"s));
    m_sideAxisSection.AppendSection(this, GetSensor()->GetPositionSensor().get(), std::format("Plunger{}.Position", m_sensorIndex), 0x01, [this]() { RequestRebuild(); });
-   AddItem(std::make_unique<InGameUIItem>(posFilterPropId.value(), [this]() { return GetSensor()->IsPositionFilterEnabled(); }, [this](bool v) { GetSensor()->EnablePositionFilter(v); }));
-   AddItem(std::make_unique<InGameUIItem>(linearPropId.value(), [this]() { return GetSensor()->IsLinear(); }, [this](bool v) { GetSensor()->SetLinear(v); }));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Velocity sensor"s));
    m_frontAxisSection.AppendSection(this, GetSensor()->GetVelocitySensor().get(), std::format("Plunger{}.Velocity", m_sensorIndex), 0x02, [this]() { RequestRebuild(); });
@@ -71,8 +64,8 @@ void PlungerSensorSettingsPage::Close(bool isBackwardAnimation)
 void PlungerSensorSettingsPage::AppendPlot()
 {
    const float t = static_cast<float>((double)msec() / 1000.);
-   m_positionPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetPosition());
-   m_velocityPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetVelocity());
+   m_positionPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetPosition(0.f));
+   m_velocityPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetHitVelocity(0.f));
    if (const auto& pos = GetSensor()->GetPositionSensor(); pos->IsMapped())
       m_positionRawPlot.AddPoint(t, pos->GetValue());
    if (const auto& vel = GetSensor()->GetVelocitySensor(); vel->IsMapped())
@@ -128,15 +121,15 @@ void PlungerSensorSettingsPage::Render(float elapsed)
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_velocityPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always);
-      if (GetSensor()->GetVelocitySensor()->IsMapped() && m_velocityRawPlot.HasData())
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always);
+      if (m_velocityRawPlot.HasData())
       {
-         ImPlot::PlotLine(std::format("Velocity Sensor - {}", GetSensor()->GetVelocitySensor()->GetMappingLabel()).c_str(), &m_velocityRawPlot.m_data[0].x, &m_velocityRawPlot.m_data[0].y,
+         ImPlot::PlotLine(std::format("Hit Velocity Sensor - {}", GetSensor()->GetVelocitySensor()->GetMappingLabel()).c_str(), &m_velocityRawPlot.m_data[0].x, &m_velocityRawPlot.m_data[0].y,
             m_velocityRawPlot.m_data.size(), { ImPlotProp_Offset, m_velocityRawPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       }
       if (m_velocityPlot.HasData())
       {
-         ImPlot::PlotLine("Velocity", &m_velocityPlot.m_data[0].x, &m_velocityPlot.m_data[0].y, m_velocityPlot.m_data.size(),
+         ImPlot::PlotLine("Hit Velocity", &m_velocityPlot.m_data[0].x, &m_velocityPlot.m_data[0].y, m_velocityPlot.m_data.size(),
             { ImPlotProp_Offset, m_velocityPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       }
       ImPlot::EndPlot();
