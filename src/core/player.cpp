@@ -555,7 +555,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
    };
    #else
-   auto LockFrameMutex = [this]();
+   auto LockFrameMutex = []() { };
    #endif
 
    {
