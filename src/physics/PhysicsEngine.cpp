@@ -34,12 +34,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
    m_pendingHitObjects->clear();
    for (IEditable *const pe : table->GetParts())
       if (IHitable *const ph = pe->GetIHitable(); ph)
-      {
-         #ifdef DEBUGPHYSICS
-         g_pplayer->m_progressDialog.SetProgress("Initializing Object-Physics " + pe->GetName() + "...");
-         #endif
          ph->PhysicSetup(this, false);
-      }
 
    AddCabinetBoundingHitShapes(table);
    for (HitObject *const pho : *m_pendingHitObjects)

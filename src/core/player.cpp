@@ -98,6 +98,13 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    g_pplayer = this;
    m_ptable->AddRef();
 
+   constexpr float progressStartupLength = 5.f;
+   constexpr float progressRendererLength = 30.f;
+   constexpr float progressPhysicLength = 10.f;
+   constexpr float progressTextureLength = 40.f;
+   constexpr float progressVisualLength = 5.f;
+   constexpr float progressScriptLength = 10.f;
+
    // Initialize the SDL video subsystem before anything that needs a display. This is done here
    // (rather than at application startup) so headless commands, which never create a Player, run
    // without a working video driver. It must happen before the Win32 SDL_RegisterApp / window
@@ -210,7 +217,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
    #endif
 
-   m_progressDialog.SetProgress("Creating Player..."s, 1);
+   m_progressDialog.SetProgress("Creating Player..."s, 0.f);
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
    constexpr int denormalBitMask = 1 << 24;
@@ -349,7 +356,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    set_lowest_possible_win_timer_resolution();
 
-   m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
+   m_progressDialog.SetProgress("Initializing Renderer..."s, m_progressDialog.GetProgress() + progressStartupLength);
 
    m_PlayMusic = m_ptable->m_settings.GetPlayer_PlayMusic();
    m_PlaySound = m_ptable->m_settings.GetPlayer_PlaySound();
@@ -485,7 +492,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    }
 
    PLOGI << "Initializing physics"; // For profiling
-   m_progressDialog.SetProgress("Initializing Physics..."s, 30);
+   m_progressDialog.SetProgress("Initializing Physics..."s, m_progressDialog.GetProgress() + progressRendererLength);
    // Need to set timecur here, for init functions that set timers
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
@@ -538,7 +545,18 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_renderer->SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
 
-   m_progressDialog.SetProgress("Loading Textures..."s, 50);
+   #ifdef ENABLE_BGFX
+   auto LockFrameMutex = [this]()
+   {
+      while (!m_renderer->m_renderDevice->m_frameMutex.try_lock())
+      {
+         ProcessOSMessages();
+         Sleep(0);
+      }
+   };
+   #else
+   auto LockFrameMutex = [this]();
+   #endif
 
    {
       tinyxml2::XMLDocument xmlDoc;
@@ -567,10 +585,12 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       }
 
       std::mutex mutex;
+      int nLoadPerformed = 0;
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
       const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.GetPlayer_MaxTexDimension());
-      auto loadImage = [maxTexDim, &mutex, &nLoadInProgress, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
+      auto loadImage = [progressPos = m_progressDialog.GetProgress() + progressPhysicLength, maxTexDim, &mutex, &nLoadInProgress, &nLoadPerformed, preloadCache, this, &failedPreloads](
+                          Texture *image, bool resizeOnLowMem)
       {
          bool readyToLoad = false;
          while (!readyToLoad)
@@ -649,6 +669,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
                {
                   failedPreloads.push_back(image);
                }
+               nLoadPerformed++;
+               m_progressDialog.SetProgress("Loading Textures..."s, progressPos + progressTextureLength * static_cast<float>(nLoadPerformed) / (static_cast<float>(m_ptable->m_vimage.size()) - 1.f));
             }
          }
          {
@@ -664,15 +686,14 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
       for (auto image : m_ptable->m_vimage)
          pool.enqueue(loadImage, image, false);
-      pool.wait_until_empty();
-      pool.wait_until_nothing_in_flight();
-      #ifdef ENABLE_BGFX
-      while (!m_renderer->m_renderDevice->m_frameMutex.try_lock())
+      while (pool.has_work_in_flight())
       {
          ProcessOSMessages();
          Sleep(0);
       }
-      #endif
+      pool.wait_until_empty();
+      pool.wait_until_nothing_in_flight();
+      LockFrameMutex();
 
       // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
       for (auto image : failedPreloads)
@@ -682,7 +703,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    //----------------------------------------------------------------------------------
 
    PLOGI << "Initializing renderer"; // For profiling
-   m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
+   m_progressDialog.SetProgress("Initializing Visuals..."s);
 
    // Setup rendering and timers
    RenderState state;
@@ -707,7 +728,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
-      m_progressDialog.SetProgress("Starting Game Scripts..."s);
+      m_progressDialog.SetProgress("Starting Game Scripts..."s, m_progressDialog.GetProgress() + progressVisualLength);
 
       // Setup script interpreter and run the main script
       CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);
@@ -776,6 +797,23 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       m_liveUI->OpenEditorUI();
    }
 
+   m_progressDialog.SetProgress("Starting..."s, 100);
+
+   if (m_renderer->IsUsingStaticPrepass())
+   {
+      // Perform a quick render to avoid displaying a blank screen while the static prerendering will be performed
+      m_renderer->DisableStaticPrePass(true);
+      PrepareFrame();
+      SubmitFrame();
+      FinishFrame();
+      LockFrameMutex();
+      m_renderer->DisableStaticPrePass(false);
+   }
+
+#ifndef __STANDALONE__
+   m_progressDialog.Destroy();
+#endif
+
    // Show the window (before rendering static part to avoid delaying too long)
    m_playfieldWnd->Show();
    m_playfieldWnd->RaiseAndFocus();
@@ -784,28 +822,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    if (m_renderer->IsUsingStaticPrepass())
    {
-      // Perform a quick render to avoid displaying a blank screen while the static prerendering is performed
-      if (m_playfieldWnd->IsVisible())
-      {
-         m_renderer->DisableStaticPrePass(true);
-         PrepareFrame();
-         SubmitFrame();
-         FinishFrame();
-#ifdef ENABLE_BGFX
-         m_renderer->m_renderDevice->m_frameMutex.lock();
-#endif
-         m_renderer->DisableStaticPrePass(false);
-      }
-      // Static prerendering (can be lengthy, especially on first run when texture loading happens during static prerender instead of using cache list)
       PrepareFrame();
       SubmitFrame();
       FinishFrame();
-#ifdef ENABLE_BGFX
-      m_renderer->m_renderDevice->m_frameMutex.lock();
-#endif
+      LockFrameMutex();
    }
-
-   m_progressDialog.SetProgress("Starting..."s, 100);
 
    // Reset the perf counter to start time when physics starts
    wintimer_init();
@@ -813,9 +834,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    PLOGI << "Startup done"; // For profiling
 
-#ifndef __STANDALONE__
-   m_progressDialog.Destroy();
-#endif
 #ifdef __LIBVPINBALL__
    VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_STARTED, nullptr);
 #endif

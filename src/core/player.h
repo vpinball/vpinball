@@ -78,8 +78,6 @@ public:
    bool IsEditorMode() const { return m_playMode == PlayMode::FullEdit; }
    const PlayMode m_playMode;
 
-   ProgressDialog m_progressDialog;
-
    uint64_t m_timeUpdateTimeStamp = 0; // Timestamp in computer time that correspond to last update of game time
    double m_time_sec = 0.0; // current physics time
    uint32_t m_time_msec = 0; // current physics time
@@ -94,6 +92,8 @@ public:
 private:
    bool m_wantsToPlay = true; // If we want the player to play beside the player focus state
    bool m_playing = true; // If the player is actually playing or not
+
+   ProgressDialog m_progressDialog;
 
 #pragma region Main Loop
 public:
