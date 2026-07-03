@@ -1733,8 +1733,6 @@ void Renderer::RenderStaticPrepass()
       span* tagSpan = new span(series, 1, _T("PreRender"));
       #endif
 
-      int progress = 70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1)));
-      g_pplayer->m_progressDialog.SetProgress("Prerendering Static Parts..."s, progress);
 #ifdef __LIBVPINBALL__
       VPinballLib::ProgressData progressData = { (n_iter - iter) * 100 / n_iter };
       VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PRERENDERING, &progressData);
