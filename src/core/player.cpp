@@ -711,7 +711,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_renderer->m_renderDevice->CopyRenderStates(false, state);
    m_renderer->m_renderDevice->SetDefaultRenderState();
    m_renderer->SetAnisoFiltering(m_ptable->m_settings.GetPlayer_ForceAnisotropicFiltering());
-   m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer.get());
    for (auto editable : m_ptable->GetParts())
@@ -762,6 +761,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
    SetCabinetAutoFitMode(m_ptable->m_settings.GetPlayer_CabinetAutofitMode());
    SetCabinetAutoFitPos(m_ptable->m_settings.GetPlayer_CabinetAutofitPos());
+   m_renderer->InitLayout();
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();
