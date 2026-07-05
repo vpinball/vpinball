@@ -292,11 +292,11 @@ void PlungerSensor::StepOneMillisecond()
       const float restPos = 0.f;
       const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
       const float hitSpeed = (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f) ? 0.f : -max(0.f, releaseApex - restPos) * 100.f / 13.0f;
-      PLOGD << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{};{};{}", //
+      PLOGD << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{};{}", //
          m_positionSensor->GetValue(), m_velocitySensor->GetValue(), // Sensors
          m_position, // Estimated position
          m_emaVelocity.Get(), hitSpeed, // Estimated speeds (raw and hit speed)
-         (int)(m_timeNs / 1000'000ull), (int)(m_lastTimestampNs / 1000'000ull), (int)this);
+         (int)(m_timeNs / 1000'000ull), (int)(m_lastTimestampNs / 1000'000ull));
    }
 }
 
