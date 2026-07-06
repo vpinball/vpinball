@@ -92,7 +92,7 @@ float PinTableWnd::GetZoom() const { return m_table->m_winEditorZoom; }
 
 void PinTableWnd::SetZoom(float zoom)
 {
-   m_table->m_winEditorZoom = zoom;
+   m_table->m_winEditorZoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
    SetMyScrollInfo();
 }
 
@@ -803,14 +803,9 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
-      if (GetZoom() < MAX_ZOOM)
-      {
-         SetViewOffset(m_table->TransformPoint(x, y));
-
-         SetZoom(GetZoom() * (zoomIn ? 1.5f : 0.5f));
-
-         m_table->SetDirtyDraw();
-      }
+      SetViewOffset(m_table->TransformPoint(x, y));
+      SetZoom(GetZoom() * (zoomIn ? 1.5f : 0.5f));
+      m_table->SetDirtyDraw();
    }
    else
    {
@@ -926,13 +921,9 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000))
    {
-      if (GetZoom() > MIN_ZOOM)
-      {
-         SetViewOffset(m_table->TransformPoint(x, y));
-         SetZoom(GetZoom() * 0.5f);
-
-         m_table->SetDirtyDraw();
-      }
+      SetViewOffset(m_table->TransformPoint(x, y));
+      SetZoom(GetZoom() * 0.5f);
+      m_table->SetDirtyDraw();
    }
    else
    {
