@@ -58,6 +58,9 @@
 #include "parts/rubber.h"
 #include "parts/PartGroup.h"
 
+#ifndef __STANDALONE__
+#include "ui/win/WinEditor.h"
+#endif
 
 #ifndef OVERRIDE
 #ifndef __STANDALONE__
@@ -364,8 +367,12 @@ BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
       TCHAR className[256];
       if (hwndFocus && GetClassName(hwndFocus, className, 256))
       {
-         // If it's an Edit control, skip accelerators
-         if (_tcscmp(className, _T("Edit")) == 0)
+         // Skip accelerators for Edit control of the main editor (property pane edits)
+         if (g_pvp 
+            && g_pvp->IsWindow() 
+            && g_pvp->GetFocus() != NULL 
+            && (g_pvp->GetFocus() == g_pvp->GetHwnd() || g_pvp->IsChild(g_pvp->GetFocus()))
+            && _tcscmp(className, _T("Edit")) == 0)
             return FALSE;
       }
    }
