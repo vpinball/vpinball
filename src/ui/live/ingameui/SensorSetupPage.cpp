@@ -194,17 +194,19 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
    else if (liveMapping->GetType() == SensorMapping::Type::Velocity)
    {
       // Velocities must be provided to the engine in m/s (acquired value x scale => m/s)
-      // We propose some default scales, that is to say 20mm/s (which is what Pinscape boards use)
-      int velUnit = abs(liveScale - 0.020f) < 0.001f ? 1 //
-         : abs(liveScale - 12.5f) < 0.001f           ? 2 //
-                                                     : 0;
+      // We propose some default scales (derived from Pinscape firmware)
+      constexpr float pinscapeDefaultNudge = 4096.f / (20.f * 1000.f); // Pinscape measure in mm/s then multiply by 20 and send a -4096/4096 range (this scale can be overriden)
+      constexpr float pinscapeDefaultPlunger = 12.5f;
+      int velUnit = fabs(liveScale/pinscapeDefaultNudge - 1.f) < 0.005f   ? 1 //
+                  : fabs(liveScale/pinscapeDefaultPlunger - 1.f) < 0.005f ? 2 //
+                                                                          : 0;
       if (m_velUnit < 0)
          m_velUnit = velUnit;
       m_page->AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0,
             vector {
                "Custom unit"s, // See below
-               "20 mm/s [Pinscape nudge velocity]"s, // FIXME 20mm/s is what is advertised but it seems not to match the actual Pinscape velocity (another scaling factor ? for example 4096 out of 32768 range ?)
+               "0.2048 m/s [Pinscape nudge velocity]"s, // The value is surprising but this is really the result of the default scaling (20x)
                "12.5 p.u/s [Pinscape plunger velocity]"s // Plunger velocity is a per unit velocity regarding full plunger frame length (so no direct length unit)
             }),
          [this, velUnit]() { return velUnit; }, // Live
@@ -214,8 +216,8 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
             const float sign = liveScale < 0.f ? -1.f : 1.f;
             switch (v)
             {
-            case 1: m_sensor->GetMapping().SetScale(sign * 0.020f); break;
-            case 2: m_sensor->GetMapping().SetScale(sign * 12.5f); break;
+            case 1: m_sensor->GetMapping().SetScale(sign * pinscapeDefaultNudge); break;
+            case 2: m_sensor->GetMapping().SetScale(sign * pinscapeDefaultPlunger); break;
             }
             m_rebuildPage();
          },
