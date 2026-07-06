@@ -134,44 +134,69 @@ void PaintSur::Polygon(const vector<RenderVertex> &rgv)
    }
 }
 
-void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void PaintSur::PolygonImage(
+   const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
-   const int ix = SCALEXf(left);
-   const int iy = SCALEYf(top);
-   const int ix2 = SCALEXf(right);
-   const int iy2 = SCALEYf(bottom);
+   int ix = SCALEXf(left);
+   int iy = SCALEYf(top);
+   int ix2 = SCALEXf(right);
+   int iy2 = SCALEYf(bottom);
+
+   // Clamp destination rect to a safe GDI range (with margin)
+   constexpr int GDI_LIMIT = 16383; // GDI is based on shorts, within -32768 / 32767. We apply simple limits that leads to height/width within this range (twice the limit)
+   const int cix = std::max(ix, -GDI_LIMIT);
+   const int ciy = std::max(iy, -GDI_LIMIT);
+   const int cix2 = std::min(ix2, GDI_LIMIT);
+   const int ciy2 = std::min(iy2, GDI_LIMIT);
+
+   if (cix2 <= cix || ciy2 <= ciy)
+      return; // nothing visible
+
+   // Map source rect proportionally to the clamped destination
+   const double sx = bitmapwidth / double(ix2 - ix);
+   const double sy = bitmapheight / double(iy2 - iy);
+   const int six = (int)std::lround((cix - ix) * sx);
+   const int siy = (int)std::lround((ciy - iy) * sy);
+   const int six2 = (int)std::lround((cix2 - ix) * sx);
+   const int siy2 = (int)std::lround((ciy2 - iy) * sy);
 
    try
    {
-   CDC dc;
-   dc.CreateCompatibleDC(m_hdc);
-   const CBitmap hbmOld = dc.SelectObject(hbm);
+      CDC dc;
+      dc.CreateCompatibleDC(m_hdc);
+      const CBitmap hbmOld = dc.SelectObject(hbm);
 
-   vector<POINT> rgpt(rgv.size());
-   for (size_t i = 0; i < rgv.size(); i++)
-   {
-      rgpt[i].x = SCALEXf(rgv[i].x);
-      rgpt[i].y = SCALEYf(rgv[i].y);
+      vector<POINT> rgpt(rgv.size());
+      for (size_t i = 0; i < rgv.size(); i++)
+      {
+         rgpt[i].x = SCALEXf(rgv[i].x);
+         rgpt[i].y = SCALEYf(rgv[i].y);
+      }
+
+      const HRGN hrgn = CreatePolygonRgn(rgpt.data(), (int)rgv.size(), WINDING);
+      if (!hrgn)
+      {
+         ShowError("CreatePolygonRgn failed");
+         dc.SelectObject(hbmOld);
+         return;
+      }
+      SelectClipRgn(m_hdc, hrgn);
+
+      constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+      const BOOL ok = AlphaBlend(m_hdc, cix, ciy, cix2 - cix, ciy2 - ciy, dc.GetHDC(), six, siy, six2 - six, siy2 - siy, blendf);
+      if (!ok)
+         ShowError("AlphaBlend failed, err=" + std::to_string(GetLastError()));
+
+      SelectClipRgn(m_hdc, nullptr);
+      DeleteObject(hrgn);
+
+      dc.SelectObject(hbmOld);
    }
-
-   // use the alpha in the bitmap (RGB needs to be premultiplied with alpha, too, then! see CopyTo_ConvertAlpha())
-   const HRGN hrgn = CreatePolygonRgn(rgpt.data(), (int)rgv.size(), WINDING);
-   SelectClipRgn(m_hdc, hrgn);
-
-   constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-   AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, blendf);
-
-   SelectClipRgn(m_hdc, nullptr);
-   DeleteObject(hrgn);
-
-   dc.SelectObject(hbmOld);
-   }
-   catch(...)
+   catch (...)
    {
       ShowError("Error in PolygonImage");
    }
 }
-
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 {
    SelectObject(m_hdc, m_hpnLine);
