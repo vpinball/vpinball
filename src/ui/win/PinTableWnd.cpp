@@ -83,17 +83,30 @@ void PinTableWnd::SetDefaultView()
 }
 
 bool PinTableWnd::GetDisplayGrid() const { return m_table->m_winEditorGrid; }
-void PinTableWnd::SetDisplayGrid(const bool display) { m_table->m_winEditorGrid = display; }
+
+void PinTableWnd::SetDisplayGrid(const bool display)
+{
+   m_table->m_winEditorGrid = display;
+   Redraw();
+}
 bool PinTableWnd::GetDisplayBackdrop() const { return m_table->m_winEditorBackdrop; }
-void PinTableWnd::SetDisplayBackdrop(const bool backdrop) { m_table->m_winEditorBackdrop = backdrop; }
+
+void PinTableWnd::SetDisplayBackdrop(const bool backdrop)
+{
+   m_table->m_winEditorBackdrop = backdrop;
+   Redraw();
+}
 const Vertex2D &PinTableWnd::GetViewOffset() const { return m_table->m_winEditorViewOffset; }
+
 void PinTableWnd::SetViewOffset(const Vertex2D &offset) { m_table->m_winEditorViewOffset = offset; }
+
 float PinTableWnd::GetZoom() const { return m_table->m_winEditorZoom; }
 
 void PinTableWnd::SetZoom(float zoom)
 {
    m_table->m_winEditorZoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
    SetMyScrollInfo();
+   Redraw();
 }
 
 void PinTableWnd::GetViewRect(FRect *const pfrect) const
@@ -503,7 +516,7 @@ BOOL PinTableWnd::OnEraseBkgnd(CDC &dc) { return TRUE; }
 void PinTableWnd::OnSize()
 {
    SetMyScrollInfo();
-   m_table->SetDirtyDraw();
+   Redraw();
 }
 
 LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -596,7 +609,7 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          break;
       }
       }
-      m_table->SetDirtyDraw();
+      Redraw();
       SetMyScrollInfo();
       return FinalWindowProc(uMsg, wParam, lParam);
    }
@@ -619,7 +632,7 @@ LRESULT PinTableWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          break;
       }
       }
-      m_table->SetDirtyDraw();
+      Redraw();
       SetMyScrollInfo();
       return FinalWindowProc(uMsg, wParam, lParam);
    }
@@ -777,7 +790,7 @@ void PinTableWnd::OnKeyDown(int key)
          }
       }
       m_table->EndUndo();
-      m_table->SetDirtyDraw();
+      Redraw();
    }
    break;
    }
@@ -805,7 +818,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
    {
       SetViewOffset(m_table->TransformPoint(x, y));
       SetZoom(GetZoom() * (zoomIn ? 1.5f : 0.5f));
-      m_table->SetDirtyDraw();
+      Redraw();
    }
    else
    {
@@ -909,7 +922,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
             delete phrs;
          }
       }
-      m_table->SetDirtyDraw();
+      Redraw();
    }
 }
 
@@ -923,7 +936,7 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
    {
       SetViewOffset(m_table->TransformPoint(x, y));
       SetZoom(GetZoom() * 0.5f);
-      m_table->SetDirtyDraw();
+      Redraw();
    }
    else
    {
@@ -1042,7 +1055,7 @@ void PinTableWnd::OnMouseWheel(const short x, const short y, const short zDelta)
    else
    {
       m_table->m_winEditorViewOffset.y -= (float)zDelta / GetZoom(); // change to orientation to match windows default
-      m_table->SetDirtyDraw();
+      Redraw();
       SetMyScrollInfo();
    }
 }
