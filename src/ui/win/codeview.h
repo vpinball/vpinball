@@ -48,8 +48,8 @@ public:
 
    void ShowFindDialog();
    void ShowFindReplaceDialog();
-   void Find(const FINDREPLACE * const pfr);
-   void Replace(const FINDREPLACE * const pfr);
+   void Find();
+   void Replace();
    void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash);
    void SetCaption(const string& szCaption);
 
@@ -121,15 +121,12 @@ public:
 
    HWND m_hwndMain = nullptr;
    HWND m_hwndScintilla = nullptr;
-   HWND m_hwndFind = nullptr;
    HWND m_hwndStatus = nullptr;
    HWND m_hwndFunctionList = nullptr;
 
    HACCEL m_haccel = nullptr; // Accelerator keys
 
    int m_errorLineNumber = -1;
-
-   FINDREPLACE m_findreplaceold; // the last thing found/replaced
 
 protected:
    void PreCreate(CREATESTRUCT& cs) final;
@@ -182,16 +179,13 @@ private:
    void SetLastErrorTextW(const LPCWSTR text);
    void AppendLastErrorTextW(const wstring& text);
 
-   FINDREPLACE m_findreplacestruct;
-   char szFindString[MAX_FIND_LENGTH];
-   char szReplaceString[MAX_FIND_LENGTH];
    char szCaretTextBuff[MAX_FIND_LENGTH];
 
-#ifndef __STANDALONE__
-   UINT m_findMsgString; // Windows message for the FindText dialog
-#endif
-
    string m_validChars;
+
+#ifndef __STANDALONE__
+   CFindReplaceDialog m_findReplace;
+#endif
 
    // CodeViewer Preferences
    CVPreference *prefDefault = nullptr;

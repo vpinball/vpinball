@@ -84,15 +84,7 @@ CodeViewer::CodeViewer(PinTable* psh)
 {
    m_table = psh;
 
-   szFindString[0] = '\0';
-   szReplaceString[0] = '\0';
    szCaretTextBuff[0] = '\0';
-
-#ifndef __STANDALONE__
-   m_findMsgString = RegisterWindowMessage(FINDMSGSTRING);
-#endif
-
-   m_findreplaceold.lStructSize = 0; // So we know nothing has been searched for yet
 }
 
 CodeViewer::~CodeViewer()
@@ -590,11 +582,8 @@ void CodeViewer::SetVisible(const bool visible)
       g_app->m_settings.SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
    }
 
-   if (m_hwndFind && !visible)
-   {
-      DestroyWindow(m_hwndFind);
-      m_hwndFind = nullptr;
-   }
+   if (m_findReplace.IsWindow() && !visible)
+      m_findReplace.Destroy();
 
    if (IsIconic())
    {
@@ -919,8 +908,6 @@ void CodeViewer::Destroy()
 	m_currentMembers.clear();
 	m_VPcoreDict.clear();
 
-	if (m_hwndFind) DestroyWindow(m_hwndFind);
-
 	CWnd::Destroy();
 #endif
 }
@@ -933,6 +920,8 @@ void CodeViewer::SetScript(const string& script)
       string copy(script); // As the provided string is modified by the call
       ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)copy.c_str());
    }
+   if (m_findReplace.IsWindow())
+      m_findReplace.Destroy();
    // Allow updates to take, now that we know the script size
    UpdateScinFromPrefs();
 #endif
@@ -944,7 +933,7 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
    if (!IsWindow())
       return FALSE;
    
-   if (m_hwndFind && ::IsDialogMessage(m_hwndFind, &msg))
+   if (m_findReplace.IsWindow() && m_findReplace.IsDialogMessage(msg))
       return TRUE;
 
    if (IsDialogMessage(msg))
@@ -987,65 +976,34 @@ void CodeViewer::AddToDebugOutput(const string &szText)
 void CodeViewer::ShowFindDialog()
 {
 #ifndef __STANDALONE__
-   if (m_hwndFind == nullptr)
-   {
-      GetWordUnderCaret(szFindString);
-
-      m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
-      m_findreplacestruct.hwndOwner = m_hwndMain;
-      m_findreplacestruct.hInstance = nullptr;
-      m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
-      m_findreplacestruct.lpstrFindWhat = szFindString;
-      m_findreplacestruct.lpstrReplaceWith = nullptr;
-      m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
-      m_findreplacestruct.wReplaceWithLen = 0;
-      m_findreplacestruct.lCustData = 0;
-      m_findreplacestruct.lpfnHook = nullptr;
-      m_findreplacestruct.lpTemplateName = nullptr;
-
-      m_hwndFind = FindText(&m_findreplacestruct);
-   }
+   if (m_findReplace.IsWindow())
+      m_findReplace.Destroy();
+   char szFindString[MAX_FIND_LENGTH];
+   GetWordUnderCaret(szFindString);
+   m_findReplace.Create(true, szFindString, nullptr, FR_DOWN | FR_HIDEWHOLEWORD | FR_ENABLEHOOK, m_hwndMain);
 #endif
 }
 
 void CodeViewer::ShowFindReplaceDialog()
 {
 #ifndef __STANDALONE__
-   if (m_hwndFind == nullptr)
-   {
-      GetWordUnderCaret(szFindString);
-
-      m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
-      m_findreplacestruct.hwndOwner = m_hwndMain;
-      m_findreplacestruct.hInstance = nullptr;
-      m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
-      m_findreplacestruct.lpstrFindWhat = szFindString;
-      m_findreplacestruct.lpstrReplaceWith = szReplaceString;
-      m_findreplacestruct.wFindWhatLen = MAX_FIND_LENGTH-1;
-      m_findreplacestruct.wReplaceWithLen = MAX_FIND_LENGTH-1;
-      m_findreplacestruct.lCustData = 0;
-      m_findreplacestruct.lpfnHook = nullptr;
-      m_findreplacestruct.lpTemplateName = nullptr;
-
-      m_hwndFind = ReplaceText(&m_findreplacestruct);
-   }
+   if (m_findReplace.IsWindow())
+      m_findReplace.Destroy();
+   char szFindString[MAX_FIND_LENGTH];
+   GetWordUnderCaret(szFindString);
+   m_findReplace.Create(false, szFindString, nullptr, FR_DOWN | FR_HIDEWHOLEWORD | FR_ENABLEHOOK, m_hwndMain);
 #endif
 }
 
-void CodeViewer::Find(const FINDREPLACE * const pfr)
+void CodeViewer::Find()
 {
 #ifndef __STANDALONE__
-   if (pfr->lStructSize == 0) // Our built-in signal that we are doing 'find next' and nothing has been searched for yet
-      return;
-
-   m_findreplaceold = *pfr;
-
    const size_t selstart = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    const size_t selend = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
 
    size_t startChar, stopChar;
 
-   if (pfr->Flags & FR_DOWN)
+   if (m_findReplace.SearchDown())
    {
       const size_t len = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
       startChar = selend;
@@ -1057,14 +1015,13 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       stopChar = 0;
    }
 
-   const int scinfindflags = ((pfr->Flags & FR_WHOLEWORD) ? SCFIND_WHOLEWORD : 0) |
-      ((pfr->Flags & FR_MATCHCASE) ? SCFIND_MATCHCASE : 0) /*|
-                                                           ((pfr->Flags & 0) ? SCFIND_REGEXP : 0)*/;
+   CString findWhat = m_findReplace.GetFindString();
+   const int scinfindflags = (m_findReplace.MatchWholeWord() ? SCFIND_WHOLEWORD : 0) | (m_findReplace.MatchCase() ? SCFIND_MATCHCASE : 0);
 
    ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
    ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    ::SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
-   LRESULT posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, strlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+   LRESULT posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, findWhat.GetLength(), (LPARAM)findWhat.c_str());
 
    bool wrapped = false;
 
@@ -1072,7 +1029,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    {
       // Not found, try looping the document
       wrapped = true;
-      if (pfr->Flags & FR_DOWN)
+      if (m_findReplace.SearchDown())
       {
          startChar = 0;
          stopChar = selstart;
@@ -1087,7 +1044,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
       ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
 
-      posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, strlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+      posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, findWhat.GetLength(), (LPARAM)findWhat.c_str());
    }
 
    if (posFind != -1)
@@ -1108,12 +1065,12 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    else
    {
       MessageBeep(MB_ICONEXCLAMATION);
-      ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_FINDFAILED).m_szbuffer) + pfr->lpstrFindWhat + LocalString(IDS_FINDFAILED2).m_szbuffer).c_str());
+      ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_FINDFAILED).m_szbuffer) + findWhat.c_str() + LocalString(IDS_FINDFAILED2).m_szbuffer).c_str());
    }
 #endif
 }
 
-void CodeViewer::Replace(const FINDREPLACE * const pfr)
+void CodeViewer::Replace()
 {
 #ifndef __STANDALONE__
    const size_t selstart = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
@@ -1124,16 +1081,17 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
    FINDTEXTEX ft;
    ft.chrg.cpMax = (LONG)len;			// search through end of the text
    ft.chrg.cpMin = (LONG)selstart;
-   if (!(pfr->Flags & (FR_REPLACE | FR_REPLACEALL)))
+   if (!m_findReplace.ReplaceCurrent() && !m_findReplace.ReplaceAll())
       ft.chrg.cpMin = (LONG)selend;
-   ft.lpstrText = pfr->lpstrFindWhat;
+   CString replaceWhat = m_findReplace.GetFindString();
+   ft.lpstrText = replaceWhat.c_str();
 
    LONG cszReplaced = 0;
    bool replace = true;
    while (replace)
    {
       replace = false;
-      const size_t cpMatch = ::SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
+      const size_t cpMatch = ::SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(m_findReplace.GetParameters().Flags), (LPARAM)&ft);
       if ((SSIZE_T)cpMatch < 0)
       {
          MessageBeep(MB_ICONEXCLAMATION);
@@ -1147,10 +1105,11 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
          ft.chrg.cpMin = ft.chrgText.cpMin;
          ft.chrg.cpMax = ft.chrgText.cpMax;
          ::SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
-         if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
+         if ((m_findReplace.ReplaceCurrent() && cszReplaced == 0) || m_findReplace.ReplaceAll())
          {
-            ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
-            ft.chrg.cpMin = (LONG)(cpMatch + strlen(pfr->lpstrReplaceWith));
+            CString replaceWith = m_findReplace.GetReplaceString();
+            ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)replaceWith.c_str());
+            ft.chrg.cpMin = (LONG)(cpMatch + replaceWith.GetLength());
             ft.chrg.cpMax = (LONG)len;	// search through end of the text
             cszReplaced++;
             replace = true;
@@ -2278,7 +2237,7 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
       case ID_REPLACE:
          pcv->ShowFindReplaceDialog(); return TRUE;
       case ID_EDIT_FINDNEXT:
-         pcv->Find(&pcv->m_findreplaceold); return TRUE;
+         pcv->Find(); return TRUE;
       case ID_EDIT_UNDO:
          ::SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0); return TRUE;
       case ID_EDIT_COPY:
@@ -2315,7 +2274,7 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
       case ID_TABLE_PLAY:
          pcv->m_table->DoCodeViewCommand(id); return TRUE;
       case ID_EDIT_FINDNEXT:
-         pcv->Find(&pcv->m_findreplaceold); return TRUE;
+         pcv->Find(); return TRUE;
       case ID_REPLACE:
          pcv->ShowFindReplaceDialog(); return TRUE;
       case ID_EDIT_UNDO:
@@ -2365,22 +2324,20 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #ifndef __STANDALONE__
    CodeViewer* const pcv = GetCodeViewerPtr();
 
-   if (uMsg == m_findMsgString)
+   if (uMsg == UWM_FINDMSGSTRING)
    {
-      FINDREPLACE * const pfr = (FINDREPLACE *)lParam;
-      if (pfr->Flags & FR_DIALOGTERM)
+      if (m_findReplace.FindNext())
+         pcv->Find();
+      if (m_findReplace.ReplaceCurrent() || m_findReplace.ReplaceAll())
+         pcv->Replace();
+      if (m_findReplace.IsTerminating())
       {
-         pcv->m_hwndFind = nullptr;
          const size_t selstart = ::SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
          const size_t selend = ::SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
          ::SetFocus(pcv->m_hwndScintilla);
          ::SendMessage(pcv->m_hwndScintilla, SCI_SETSEL, selstart, selend);
          return 0;
       }
-      if (pfr->Flags & FR_FINDNEXT)
-         pcv->Find(pfr);
-      if ((pfr->Flags & FR_REPLACE) || (pfr->Flags & FR_REPLACEALL))
-         pcv->Replace(pfr);
    }
 
    switch (uMsg)
