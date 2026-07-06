@@ -1705,7 +1705,11 @@ void Renderer::RenderStaticPrepass()
    const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
-   delete m_staticPrepassRT;
+   // Defer deletion to the render thread end-of-frame: already submitted frames may still hold copy
+   // commands sourcing this RT (e.g. the static prepass flush blit), and a synchronous delete here
+   // races their execution (dangling source -> crash in RenderTarget::CopyTo).
+   if (m_staticPrepassRT)
+      m_renderDevice->AddEndOfFrameCmd([rt = m_staticPrepassRT]() { delete rt; });
    m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
    assert(!m_staticPrepassRT->IsMSAA());
 
