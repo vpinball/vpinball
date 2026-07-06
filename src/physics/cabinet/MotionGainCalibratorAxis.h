@@ -17,13 +17,13 @@ public:
       float m_initialGain = 1.0f;
 
       // Segment acceptance criteria
-      uint64_t m_minSegmentDurationUs = 30000;   // 30 ms
-      uint64_t m_maxSegmentDurationUs = 2000000; // 2 s
+      uint64_t m_minSegmentDurationNs = 30000000; // 30 ms
+      uint64_t m_maxSegmentDurationNs = 2000000000; // 2 s
       size_t m_minSampleCount = 8;
 
       // Minimum excitation required to accept a segment
-      float m_minVelocityPeakToPeak = 0.02f;      // in velocity sensor units
-      float m_minIntegratedAccelPeakToPeak = 0.002f; // in integrated accel raw units
+      float m_minVelocityPeakToPeak = 0.002f; // m/s
+      float m_minIntegratedAccelPeakToPeak = 0.02f; // m/s^2
       float m_minRegressionDenominator = 1.0e-6f;
 
       // Forgetting factor for accumulation across segments.
@@ -51,24 +51,24 @@ public:
    {
       bool m_accepted = false;
 
-      uint64_t m_durationUs = 0;
+      uint64_t m_durationNs = 0;
       size_t m_sampleCount = 0;
 
-      float m_segmentGain = 1.0f;          // best gain for this segment alone
-      float m_segmentQuality = 0.0f;       // 0..1
-      float m_segmentResidualRms = 0.0f;   // after fitting
+      float m_segmentGain = 1.0f; // best gain for this segment alone
+      float m_segmentQuality = 0.0f; // 0..1
+      float m_segmentResidualRms = 0.0f; // after fitting
       float m_velocityPeakToPeak = 0.0f;
       float m_integratedAccelPeakToPeak = 0.0f;
 
       // Regression sufficient statistics of the accepted segment
-      float m_segmentNumerator = 0.0f;     // sum(w*x*y)
-      float m_segmentDenominator = 0.0f;   // sum(w*x*x)
+      float m_segmentNumerator = 0.0f; // sum(w*x*y)
+      float m_segmentDenominator = 0.0f; // sum(w*x*x)
    };
 
 private:
    struct Sample
    {
-      uint64_t m_timeUs = 0;
+      uint64_t m_timeNs = 0;
       float m_velocity = 0.0f;
       float m_acceleration = 0.0f;
    };
@@ -88,10 +88,7 @@ public:
       m_gain = clamp(m_gain, m_config.m_minGain, m_config.m_maxGain);
    }
 
-   const Config& GetConfig() const
-   {
-      return m_config;
-   }
+   const Config& GetConfig() const { return m_config; }
 
    void Reset()
    {
@@ -106,26 +103,17 @@ public:
       m_acceptedSegmentCount = 0;
       m_rejectedSegmentCount = 0;
 
-      m_totalAcceptedDurationUs = 0;
-      m_lastResult = SegmentResult{};
+      m_totalAcceptedDurationNs = 0;
+      m_lastResult = SegmentResult {};
       m_globalConfidence = 0.0f;
    }
 
-   bool IsSegmentActive() const
-   {
-      return m_segmentActive;
-   }
+   bool IsSegmentActive() const { return m_segmentActive; }
 
-   float GetGain() const
-   {
-      return m_gain;
-   }
+   float GetGain() const { return m_gain; }
 
    // Convenience helpers
-   float ScaleAcceleration(float rawAcceleration) const
-   {
-      return m_gain * rawAcceleration;
-   }
+   float ScaleAcceleration(float rawAcceleration) const { return m_gain * rawAcceleration; }
 
    float ScaleVelocityToAccelerationUnits(float rawVelocity) const
    {
@@ -134,44 +122,26 @@ public:
       return rawVelocity / m_gain;
    }
 
-   size_t GetStartedSegmentCount() const
-   {
-      return m_startedSegmentCount;
-   }
+   size_t GetStartedSegmentCount() const { return m_startedSegmentCount; }
 
-   size_t GetAcceptedSegmentCount() const
-   {
-      return m_acceptedSegmentCount;
-   }
+   size_t GetAcceptedSegmentCount() const { return m_acceptedSegmentCount; }
 
-   size_t GetRejectedSegmentCount() const
-   {
-      return m_rejectedSegmentCount;
-   }
+   size_t GetRejectedSegmentCount() const { return m_rejectedSegmentCount; }
 
-   uint64_t GetTotalAcceptedDurationUs() const
-   {
-      return m_totalAcceptedDurationUs;
-   }
+   uint64_t GetTotalAcceptedDurationNs() const { return m_totalAcceptedDurationNs; }
 
-   float GetGlobalConfidence() const
-   {
-      return m_globalConfidence;
-   }
+   float GetGlobalConfidence() const { return m_globalConfidence; }
 
-   const SegmentResult& GetLastSegmentResult() const
-   {
-      return m_lastResult;
-   }
+   const SegmentResult& GetLastSegmentResult() const { return m_lastResult; }
 
    // Start a new segment, typically when leaving rest.
    // If a segment is already active, it is discarded and restarted.
-   void StartSegment(uint64_t timeUs)
+   void StartSegment(uint64_t timeNs)
    {
       m_segmentActive = true;
       m_samples.clear();
       m_startedSegmentCount++;
-      m_segmentStartUs = timeUs;
+      m_segmentStartNs = timeNs;
    }
 
    // Add a synchronized pair of raw samples.
@@ -185,18 +155,18 @@ public:
    //   - acceleration in acceleration-sensor units
    //
    // The calibrator estimates the gain that scales acceleration to the velocity channel.
-   bool AddSample(uint64_t timeUs, float rawVelocity, float rawAcceleration)
+   bool AddSample(uint64_t timeNs, float rawVelocity, float rawAcceleration)
    {
       if (!m_segmentActive)
          return false;
 
-      if (!m_samples.empty() && timeUs <= m_samples.back().m_timeUs)
+      if (!m_samples.empty() && timeNs <= m_samples.back().m_timeNs)
       {
          // Reject non-monotonic timestamps for safety
          return false;
       }
 
-      m_samples.push_back(Sample{ timeUs, rawVelocity, rawAcceleration });
+      m_samples.push_back(Sample { timeNs, rawVelocity, rawAcceleration });
       return true;
    }
 
@@ -206,7 +176,7 @@ public:
    {
       if (!m_segmentActive)
       {
-         m_lastResult = SegmentResult{};
+         m_lastResult = SegmentResult {};
          return false;
       }
 
@@ -224,11 +194,9 @@ public:
       // Recursive accumulation with forgetting factor
       const double lambda = static_cast<double>(clamp(m_config.m_forgettingFactor, 0.0f, 1.0f));
 
-      m_accumulatedNumerator = lambda * m_accumulatedNumerator
-                             + static_cast<double>(m_lastResult.m_segmentNumerator);
+      m_accumulatedNumerator = lambda * m_accumulatedNumerator + static_cast<double>(m_lastResult.m_segmentNumerator);
 
-      m_accumulatedDenominator = lambda * m_accumulatedDenominator
-                               + static_cast<double>(m_lastResult.m_segmentDenominator);
+      m_accumulatedDenominator = lambda * m_accumulatedDenominator + static_cast<double>(m_lastResult.m_segmentDenominator);
 
       if (m_accumulatedDenominator > static_cast<double>(m_config.m_epsilon))
       {
@@ -237,7 +205,7 @@ public:
       }
 
       m_acceptedSegmentCount++;
-      m_totalAcceptedDurationUs += m_lastResult.m_durationUs;
+      m_totalAcceptedDurationNs += m_lastResult.m_durationNs;
       m_globalConfidence = ComputeGlobalConfidence();
 
       m_samples.clear();
@@ -253,7 +221,7 @@ private:
 
       const float segFactor = 1.0f - std::exp(-0.25f * static_cast<float>(m_acceptedSegmentCount));
 
-      const float durationS = static_cast<float>(m_totalAcceptedDurationUs) * 1.0e-6f;
+      const float durationS = static_cast<float>(m_totalAcceptedDurationNs) * 1.0e-9f;
       const float durationFactor = 1.0f - std::exp(-durationS * 0.5f);
 
       const float denomFactor = 1.0f - std::exp(-static_cast<float>(m_accumulatedDenominator) * 0.25f);
@@ -263,21 +231,27 @@ private:
 
    SegmentResult EvaluateCurrentSegment() const
    {
-      SegmentResult result{};
+      SegmentResult result {};
 
       const size_t n = m_samples.size();
       result.m_sampleCount = n;
 
       if (n < m_config.m_minSampleCount)
+      {
+         // PLOGD << "Calibration segment rejected due to low sample count";
          return result;
+      }
 
-      const uint64_t startUs = m_samples.front().m_timeUs;
-      const uint64_t endUs = m_samples.back().m_timeUs;
-      const uint64_t durationUs = endUs - startUs;
-      result.m_durationUs = durationUs;
+      const uint64_t startNs = m_samples.front().m_timeNs;
+      const uint64_t endNs = m_samples.back().m_timeNs;
+      const uint64_t durationNs = endNs - startNs;
+      result.m_durationNs = durationNs;
 
-      if (durationUs < m_config.m_minSegmentDurationUs || durationUs > m_config.m_maxSegmentDurationUs)
+      if (durationNs < m_config.m_minSegmentDurationNs || durationNs > m_config.m_maxSegmentDurationNs)
+      {
+         // PLOGD << "Calibration segment rejected due to out of range segment length: " << durationNs;
          return result;
+      }
 
       // -------------------------------------------------------------------
       // Build:
@@ -298,15 +272,18 @@ private:
       std::vector<float> integAccel(n, 0.0f);
       std::vector<float> integAccelDetrended(n, 0.0f);
 
-      const double totalDurationS = static_cast<double>(durationUs) * 1.0e-6;
+      const double totalDurationS = static_cast<double>(durationNs) * 1.0e-9;
       if (totalDurationS <= 0.0)
+      {
+         // PLOGD << "Calibration segment rejected due to invalid segment length: " << totalDurationS;
          return result;
+      }
 
       // Copy velocity samples and normalized time
       for (size_t i = 0; i < n; ++i)
       {
-         const double relUs = static_cast<double>(m_samples[i].m_timeUs - startUs);
-         tNorm[i] = static_cast<float>(relUs / static_cast<double>(durationUs)); // [0..1]
+         const double relNs = static_cast<double>(m_samples[i].m_timeNs - startNs);
+         tNorm[i] = static_cast<float>(relNs / static_cast<double>(durationNs)); // [0..1]
          vel[i] = m_samples[i].m_velocity;
       }
 
@@ -314,7 +291,7 @@ private:
       integAccel[0] = 0.0f;
       for (size_t i = 1; i < n; ++i)
       {
-         const float dt = static_cast<float>(m_samples[i].m_timeUs - m_samples[i - 1].m_timeUs) * 1.0e-6f;
+         const float dt = static_cast<float>(m_samples[i].m_timeNs - m_samples[i - 1].m_timeNs) * 1.0e-9f;
          const float a0 = m_samples[i - 1].m_acceleration;
          const float a1 = m_samples[i].m_acceleration;
          integAccel[i] = integAccel[i - 1] + 0.5f * (a0 + a1) * dt;
@@ -343,10 +320,16 @@ private:
       result.m_integratedAccelPeakToPeak = PeakToPeak(integAccelDetrended);
 
       if (result.m_velocityPeakToPeak < m_config.m_minVelocityPeakToPeak)
+      {
+         // PLOGD << "Calibration segment rejected due to low velocity peak to peak: " << result.m_velocityPeakToPeak;
          return result;
+      }
 
       if (result.m_integratedAccelPeakToPeak < m_config.m_minIntegratedAccelPeakToPeak)
+      {
+         // PLOGD << "Calibration segment rejected due to low acceleration peak to peak: " << result.m_integratedAccelPeakToPeak;
          return result;
+      }
 
       // -------------------------------------------------------------------
       // Weighted least-squares fit through the origin:
@@ -379,7 +362,10 @@ private:
       result.m_segmentDenominator = static_cast<float>(denominator);
 
       if (denominator < static_cast<double>(m_config.m_minRegressionDenominator))
+      {
+         // PLOGD << "Calibration segment rejected due to low regression denominator: " << denominator;
          return result;
+      }
 
       const double segmentGain = numerator / denominator;
       result.m_segmentGain = static_cast<float>(segmentGain);
@@ -468,7 +454,7 @@ private:
    Config m_config;
 
    bool m_segmentActive = false;
-   uint64_t m_segmentStartUs = 0;
+   uint64_t m_segmentStartNs = 0;
    std::vector<Sample> m_samples;
 
    float m_gain = 1.0f;
@@ -481,7 +467,7 @@ private:
    size_t m_acceptedSegmentCount = 0;
    size_t m_rejectedSegmentCount = 0;
 
-   uint64_t m_totalAcceptedDurationUs = 0;
+   uint64_t m_totalAcceptedDurationNs = 0;
 
    SegmentResult m_lastResult;
    float m_globalConfidence = 0.0f;

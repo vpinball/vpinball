@@ -46,6 +46,9 @@ public:
       // dt bounds
       float m_minDt = 1.0e-6f;
       float m_maxDt = 0.001f;
+
+      // Number of history snapshots retained for rewind support.
+      int m_historyCapacity = 64;
    };
 
    explicit MotionKalmanAxis(const Config& config)
@@ -60,12 +63,12 @@ public:
 
    bool IsInitialized() const { return m_initialized; }
 
-   uint64_t GetTimeUs() const { return m_timeUs; }
+   uint64_t GetTimeNs() const { return m_timeNs; }
 
-   void Reset(uint64_t timeUs, float position = 0.0f, float velocity = 0.0f, float acceleration = 0.0f, float velocityBias = 0.0f, float accelerationBias = 0.0f)
+   void Reset(uint64_t timeNs, float position = 0.0f, float velocity = 0.0f, float acceleration = 0.0f, float velocityBias = 0.0f, float accelerationBias = 0.0f)
    {
       m_initialized = true;
-      m_timeUs = timeUs;
+      m_timeNs = timeNs;
 
       m_state = Vector5f(position, velocity, acceleration, velocityBias, accelerationBias);
 
@@ -75,6 +78,10 @@ public:
       m_P.m[STATE_ACCELERATION][STATE_ACCELERATION] = m_config.m_initialAccelerationVariance;
       m_P.m[STATE_VELOCITY_BIAS][STATE_VELOCITY_BIAS] = m_config.m_initialVelocityBiasVariance;
       m_P.m[STATE_ACCELERATION_BIAS][STATE_ACCELERATION_BIAS] = m_config.m_initialAccelerationBiasVariance;
+
+      m_historyHead = 0;
+      m_historyCount = 0;
+      SaveSnapshot();
    }
 
    void SetState(float position, float velocity, float acceleration, float velocityBias, float accelerationBias)
@@ -100,16 +107,22 @@ public:
 
    float GetBiasedAcceleration() const { return m_state[STATE_ACCELERATION] + m_state[STATE_ACCELERATION_BIAS]; }
 
-   void PredictTo(uint64_t timeUs)
+   void PredictTo(uint64_t timeNs)
    {
       if (!m_initialized)
          return;
 
-      if (timeUs <= m_timeUs)
+      if (timeNs <= m_timeNs)
          return;
 
-      const uint64_t deltaUs = timeUs - m_timeUs;
-      float remainingDt = static_cast<float>(deltaUs) * 1.0e-6f;
+      SaveSnapshot();
+      PredictInternal(timeNs);
+   }
+
+   void PredictInternal(uint64_t timeNs)
+   {
+      const uint64_t deltaNs = timeNs - m_timeNs;
+      float remainingDt = static_cast<float>(deltaNs) * 1.0e-9f;
 
       while (remainingDt > 0.0f)
       {
@@ -118,116 +131,141 @@ public:
          remainingDt -= dt;
       }
 
-      m_timeUs = timeUs;
+      m_timeNs = timeNs;
+   }
+
+   template <typename ApplyMeasurementFunc> void RewindAndUpdate(uint64_t timeNs, ApplyMeasurementFunc applyFunc)
+   {
+      if (timeNs >= m_timeNs)
+      {
+         if (timeNs > m_timeNs)
+         {
+            PredictTo(timeNs);
+         }
+         applyFunc();
+      }
+      else
+      {
+         const uint64_t presentNs = m_timeNs;
+         if (!RestoreSnapshot(timeNs))
+         {
+            // Cannot rewind: apply measurement to current state as a best effort.
+            applyFunc();
+         }
+         else
+         {
+            if (m_timeNs < timeNs)
+            {
+               PredictInternal(timeNs);
+            }
+            applyFunc();
+         }
+
+         if (m_timeNs < presentNs)
+         {
+            SaveSnapshot();
+            PredictInternal(presentNs);
+         }
+      }
    }
 
    // Real velocity measurement:
    // z = v + b_v + noise
-   void UpdateVelocity(uint64_t timeUs, float velocity)
+   void UpdateVelocity(uint64_t timeNs, float velocity)
    {
       if (!m_initialized)
       {
          // Practical idle-start assumption:
          // first measured velocity is bias-dominated
-         Reset(timeUs, 0.0f, 0.0f, 0.0f, velocity, 0.0f);
+         Reset(timeNs, 0.0f, 0.0f, 0.0f, velocity, 0.0f);
          m_P.m[STATE_VELOCITY_BIAS][STATE_VELOCITY_BIAS] = m_config.m_velocityMeasurementVariance;
+         UpdateLatestSnapshot();
          return;
       }
-
-      PredictTo(timeUs);
 
       Vector5f H;
       H.SetZero();
       H[STATE_VELOCITY] = 1.0f;
       H[STATE_VELOCITY_BIAS] = 1.0f;
 
-      UpdateScalarMeasurement(H, velocity, m_config.m_velocityMeasurementVariance);
+      RewindAndUpdate(timeNs, [&]() { UpdateScalarMeasurement(H, velocity, m_config.m_velocityMeasurementVariance); });
    }
 
    // Real acceleration measurement:
    // z = a + b_a + noise
-   void UpdateAcceleration(uint64_t timeUs, float acceleration)
+   void UpdateAcceleration(uint64_t timeNs, float acceleration)
    {
       if (!m_initialized)
       {
          // Practical idle-start assumption:
          // first measured acceleration is bias-dominated
-         Reset(timeUs, 0.0f, 0.0f, 0.0f, 0.0f, acceleration);
+         Reset(timeNs, 0.0f, 0.0f, 0.0f, 0.0f, acceleration);
          m_P.m[STATE_ACCELERATION_BIAS][STATE_ACCELERATION_BIAS] = m_config.m_accelerationMeasurementVariance;
+         UpdateLatestSnapshot();
          return;
       }
-
-      PredictTo(timeUs);
 
       Vector5f H;
       H.SetZero();
       H[STATE_ACCELERATION] = 1.0f;
       H[STATE_ACCELERATION_BIAS] = 1.0f;
 
-      UpdateScalarMeasurement(H, acceleration, m_config.m_accelerationMeasurementVariance);
+      RewindAndUpdate(timeNs, [&]() { UpdateScalarMeasurement(H, acceleration, m_config.m_accelerationMeasurementVariance); });
    }
 
    // Rest pseudo-measurement: true position = 0
-   void UpdateZeroPosition(uint64_t timeUs)
+   void UpdateZeroPosition(uint64_t timeNs)
    {
       if (!m_initialized)
          return;
-
-      PredictTo(timeUs);
 
       Vector5f H;
       H.SetZero();
       H[STATE_POSITION] = 1.0f;
 
-      UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroPositionMeasurementVariance);
+      RewindAndUpdate(timeNs, [&]() { UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroPositionMeasurementVariance); });
    }
 
    // Rest pseudo-measurement: true velocity = 0
-   void UpdateZeroVelocity(uint64_t timeUs)
+   void UpdateZeroVelocity(uint64_t timeNs)
    {
       if (!m_initialized)
          return;
-
-      PredictTo(timeUs);
 
       Vector5f H;
       H.SetZero();
       H[STATE_VELOCITY] = 1.0f;
 
-      UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroVelocityMeasurementVariance);
+      RewindAndUpdate(timeNs, [&]() { UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroVelocityMeasurementVariance); });
    }
 
    // Rest pseudo-measurement: true acceleration = 0
-   void UpdateZeroAcceleration(uint64_t timeUs)
+   void UpdateZeroAcceleration(uint64_t timeNs)
    {
       if (!m_initialized)
          return;
-
-      PredictTo(timeUs);
 
       Vector5f H;
       H.SetZero();
       H[STATE_ACCELERATION] = 1.0f;
 
-      UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroAccelerationMeasurementVariance);
+      RewindAndUpdate(timeNs, [&]() { UpdateScalarMeasurement(H, 0.0f, m_config.m_zeroAccelerationMeasurementVariance); });
    }
 
    // Convenience method for confirmed rest periods
-   void UpdateRestConstraints(uint64_t timeUs, bool applyPositionConstraint = true, bool applyVelocityConstraint = true, bool applyAccelerationConstraint = true)
+   void UpdateRestConstraints(uint64_t timeNs, bool applyPositionConstraint = true, bool applyVelocityConstraint = true, bool applyAccelerationConstraint = true)
    {
       if (!m_initialized)
          return;
 
-      PredictTo(timeUs);
-
       if (applyVelocityConstraint)
-         UpdateZeroVelocity(timeUs);
+         UpdateZeroVelocity(timeNs);
 
       if (applyAccelerationConstraint)
-         UpdateZeroAcceleration(timeUs);
+         UpdateZeroAcceleration(timeNs);
 
       if (applyPositionConstraint)
-         UpdateZeroPosition(timeUs);
+         UpdateZeroPosition(timeNs);
    }
 
 private:
@@ -369,9 +407,11 @@ private:
    void ClearState()
    {
       m_initialized = false;
-      m_timeUs = 0;
+      m_timeNs = 0;
       m_state.SetZero();
       m_P.SetZero();
+      m_historyHead = 0;
+      m_historyCount = 0;
    }
 
    Matrix5f BuildTransitionMatrix(float dt) const
@@ -494,11 +534,130 @@ private:
    Config m_config;
 
    bool m_initialized = false;
-   uint64_t m_timeUs = 0;
+   uint64_t m_timeNs = 0;
 
    // State = [position, velocity, acceleration, velocityBias, accelerationBias]
    Vector5f m_state;
    Matrix5f m_P;
+
+   // -------------------------------------------------------------------------
+   // History buffer for rewind support
+   // -------------------------------------------------------------------------
+
+   // Maximum history slots.  The true capacity used is m_config.historyCapacity,
+   // clamped to this compile-time upper bound to keep this class allocation-free.
+   static constexpr int k_maxHistoryCapacity = 256;
+
+   struct HistoryEntry
+   {
+      uint64_t timeNs;
+      Vector5f state;
+      Matrix5f P;
+   };
+
+   // Circular buffer of past filter states for rewind support.
+   HistoryEntry m_historyBuffer[k_maxHistoryCapacity];
+
+   // Index of the next write slot in m_historyBuffer.
+   int m_historyHead = 0;
+
+   // Number of valid entries currently in m_historyBuffer.
+   int m_historyCount = 0;
+
+   // Save a snapshot of the current state *before* the next prediction step.
+   void SaveSnapshot()
+   {
+      const int cap = std::max(1, std::min(m_config.m_historyCapacity, k_maxHistoryCapacity));
+
+      HistoryEntry& entry = m_historyBuffer[m_historyHead];
+      entry.timeNs = m_timeNs;
+      entry.state = m_state;
+      entry.P = m_P;
+
+      m_historyHead = (m_historyHead + 1) % cap;
+      if (m_historyCount < cap)
+         ++m_historyCount;
+   }
+
+   // Update the most recently saved snapshot (useful after post-Reset manual updates).
+   void UpdateLatestSnapshot()
+   {
+      if (m_historyCount > 0)
+      {
+         const int cap = std::max(1, std::min(m_config.m_historyCapacity, k_maxHistoryCapacity));
+         const int lastSlot = (m_historyHead - 1 + cap) % cap;
+         m_historyBuffer[lastSlot].state = m_state;
+         m_historyBuffer[lastSlot].P = m_P;
+      }
+   }
+
+   // Restore the most recent saved state whose timestamp <= targetNs.
+   //
+   // Returns true if a suitable entry was found and restored; the filter
+   // time is set to that entry's timestamp.
+   // Returns false if the buffer is empty (no rewind possible).
+   bool RestoreSnapshot(const uint64_t targetNs)
+   {
+      const int cap = std::max(1, std::min(m_config.m_historyCapacity, k_maxHistoryCapacity));
+
+      if (m_historyCount == 0)
+         return false;
+
+      // Walk backwards through the circular buffer (most-recent first) to find
+      // the latest snapshot at or before targetNs.
+      int bestSlot = -1;
+      uint64_t bestTs = 0ull;
+
+      for (int i = 0; i < m_historyCount; ++i)
+      {
+         // Index of the i-th most-recent entry.
+         const int slot = ((m_historyHead - 1 - i) % cap + cap) % cap;
+         const uint64_t ts = m_historyBuffer[slot].timeNs;
+
+         if (ts <= targetNs)
+         {
+            if (bestSlot == -1 || ts > bestTs)
+            {
+               bestSlot = slot;
+               bestTs = ts;
+            }
+            // Since we walk newest-first, the first match is always the best.
+            break;
+         }
+      }
+
+      if (bestSlot == -1)
+      {
+         // All snapshots are newer than targetNs: fall back to the oldest.
+         const int oldestSlot = ((m_historyHead - m_historyCount) % cap + cap) % cap;
+         bestSlot = oldestSlot;
+         bestTs = m_historyBuffer[oldestSlot].timeNs;
+      }
+
+      m_state = m_historyBuffer[bestSlot].state;
+      m_P = m_historyBuffer[bestSlot].P;
+      m_timeNs = bestTs;
+
+      // Truncate the history to entries up to and including bestSlot so that
+      // SaveSnapshot() starts fresh from the rewound point.
+      // Compute how many entries to keep (from oldest up to bestSlot inclusive).
+      // We do this by resetting head to bestSlot+1 and adjusting count.
+      //
+      // Walk forward from oldest to find bestSlot's distance from oldest.
+      int keepCount = 0;
+      for (int i = 0; i < m_historyCount; ++i)
+      {
+         const int slot = ((m_historyHead - m_historyCount + i) % cap + cap) % cap;
+         keepCount = i + 1;
+         if (slot == bestSlot)
+            break;
+      }
+
+      m_historyCount = keepCount;
+      m_historyHead = (bestSlot + 1) % cap;
+
+      return true;
+   }
 };
 
 };
