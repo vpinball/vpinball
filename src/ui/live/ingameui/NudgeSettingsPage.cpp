@@ -166,8 +166,8 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
       ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeXPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -5.f, 5.f, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // mm/s^2
+      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
       ImPlot::PlotLine("X Position (mm)", &m_cabXPlot.m_data[0].x, &m_cabXPlot.m_data[0].y, m_cabXPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
@@ -183,8 +183,8 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
       ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeYPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -5.f, 5.f, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // mm/s^2
+      ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
       ImPlot::PlotLine("Y Position (mm)", &m_cabYPlot.m_data[0].x, &m_cabYPlot.m_data[0].y, m_cabYPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });

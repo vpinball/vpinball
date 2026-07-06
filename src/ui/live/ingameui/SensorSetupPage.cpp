@@ -163,17 +163,21 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
       // Accelerations must be provided to the engine in m/s^2 (acquired value x scale => m/s^2)
       // We propose some default scales, that is to say 1/2/4/8g (which is what Pinscape boards propose)
       constexpr float g = 9.80665f;
+      int accUnit = abs(liveScale - g) < 0.01f ? 1 //
+         : abs(liveScale - 2.f * g) < 0.01f    ? 2 //
+         : abs(liveScale - 4.f * g) < 0.01f    ? 3 //
+         : abs(liveScale - 8.f * g) < 0.01f    ? 4 //
+                                               : 0;
       if (m_accUnit < 0)
-         m_accUnit = abs(liveScale - g) < 0.01f ? 1 : abs(liveScale - 2.f * g) < 0.01f ? 2 : abs(liveScale - 4.f * g) < 0.01f ? 3 : abs(liveScale - 8.f * g) < 0.01f ? 4 : 0;
+         m_accUnit = accUnit;
       isCustomScale = m_accUnit == 0;
       m_page->AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(
             ""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0, vector { "Custom unit"s, "1 Gravity"s, "2 Gravity"s, "4 Gravity"s, "8 Gravity"s }),
-         [this]() { return m_accUnit; }, // Live
+         [this, accUnit]() { return accUnit; }, // Live
          [this](const Settings& settings) { return m_accUnit; }, // Stored
          [this, liveScale, g](int, int v)
          {
-            m_accUnit = v;
             const float sign = liveScale < 0.f ? -1.f : 1.f;
             switch (v)
             {
@@ -185,15 +189,17 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
             m_rebuildPage();
          },
          [](Settings& settings) { /* Already performed in first page item */ }, // Reset
-         [](int v, Settings& settings, bool isTableOverride) { /* Already performed in first page item */ })); // Save
+         [this, accUnit](int v, Settings& settings, bool isTableOverride) { m_accUnit = accUnit; })); // Save
    }
    else if (liveMapping->GetType() == SensorMapping::Type::Velocity)
    {
       // Velocities must be provided to the engine in m/s (acquired value x scale => m/s)
       // We propose some default scales, that is to say 20mm/s (which is what Pinscape boards use)
+      int velUnit = abs(liveScale - 0.020f) < 0.001f ? 1 //
+         : abs(liveScale - 12.5f) < 0.001f           ? 2 //
+                                                     : 0;
       if (m_velUnit < 0)
-         m_velUnit = abs(liveScale - 0.020f) < 0.01f ? 1 : abs(liveScale - 12.5f) < 0.01f ? 2 : 0;
-      isCustomScale = m_velUnit == 0;
+         m_velUnit = velUnit;
       m_page->AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0,
             vector {
@@ -201,11 +207,10 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
                "20 mm/s [Pinscape nudge velocity]"s, // FIXME 20mm/s is what is advertised but it seems not to match the actual Pinscape velocity (another scaling factor ? for example 4096 out of 32768 range ?)
                "12.5 p.u/s [Pinscape plunger velocity]"s // Plunger velocity is a per unit velocity regarding full plunger frame length (so no direct length unit)
             }),
-         [this]() { return m_velUnit; }, // Live
+         [this, velUnit]() { return velUnit; }, // Live
          [this](const Settings& settings) { return m_velUnit; }, // Stored
          [this, liveScale](int, int v)
          {
-            m_velUnit = v;
             const float sign = liveScale < 0.f ? -1.f : 1.f;
             switch (v)
             {
@@ -215,15 +220,15 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
             m_rebuildPage();
          },
          [](Settings& settings) { /* Already performed in first page item */ }, // Reset
-         [](int v, Settings& settings, bool isTableOverride) { /* Already performed in first page item */ })); // Save
+         [this, velUnit](int v, Settings& settings, bool isTableOverride) { m_velUnit = velUnit; })); // Save
    }
    else if (liveMapping->GetType() == SensorMapping::Type::Position)
    {
       // Positions are unit less:
-      // . plunger is somewhat ackward with +1 for fully retracted and -1 being either symmetric (linear mode) or a custom scaling (legacy)
+      // . plunger is +1 for fully retracted, 0 at rest and -1 for fully extended (symmetric from the rest..retracted range)
       // . nudge only uses position for gamepad nudging where the units does not mean anything (it is just used to evaluate the player intent)
    }
-   if (isCustomScale)
+   if (m_velUnit == 0)
    {
       m_page->AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, "Scale the acquired value by the selected scale."s, false, 0.f, 5.f, 0.f, 1.f), 100.f,
