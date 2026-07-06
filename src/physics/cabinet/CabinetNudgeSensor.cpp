@@ -17,7 +17,7 @@ CabinetNudgeSensor::CabinetNudgeSensor(InputManager* inputManager)
    , m_yAccSensor(inputManager, "Front nudge acceleration sensor", SensorMapping::Type::Acceleration)
    , m_kalmanX(MotionKalmanAxis::Config())
    , m_kalmanY(MotionKalmanAxis::Config())
-   , m_emaX(0.004f) // Time constant adjusted for default USB acquisition period at 8.125ms and limited latency
+   , m_emaX(0.004f) // Time constant adjusted for default USB acquisition period of 125Hz and limited latency
    , m_emaY(0.004f)
 {
    m_cabinetAcceleration.SetZero();

@@ -200,8 +200,8 @@ void PlungerHandler::SetExternalPlunger(bool enableOverride, const float velocit
 PlungerSensor::PlungerSensor(InputManager* inputManager)
    : m_positionSensor(std::make_unique<PhysicsSensor>(inputManager, "Plunger position sensor mapping", SensorMapping::Type::Position))
    , m_velocitySensor(std::make_unique<PhysicsSensor>(inputManager, "Plunger velocity sensor mapping", SensorMapping::Type::Velocity))
-   , m_emaPosition(0.008f) // Time constant adjusted for default USB acquisition period at 8.125ms and limited latency
-   , m_emaVelocity(0.008f)
+   , m_emaPosition(0.004f) // Time constant adjusted for default USB acquisition period of 125Hz and limited latency
+   , m_emaVelocity(0.004f)
 {
    PlungerKalmanFilter::Config config;
 
