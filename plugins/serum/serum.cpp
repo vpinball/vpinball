@@ -49,6 +49,8 @@ static DisplaySrcId dmdId = {};
 static Serum_Frame_Struc* pSerum = nullptr;
 static unsigned int lastRawFrameId = 0;
 
+static constexpr uint32_t SERUM_MAX_ROTATION_DELAY_MS = 2048;
+
 static std::minstd_rand std_rand;
 
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
@@ -144,7 +146,7 @@ static void ColorizeThread()
          // We received a new identify frame to match & colorize
          lastFrameId = frame.frameId;
          const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(static_cast<const uint8_t*>(frame.frame)));
-         if (firstrot != IDENTIFY_NO_FRAME)
+         if (firstrot != IDENTIFY_NO_FRAME && firstrot != IDENTIFY_SAME_FRAME)
          {
             // New frame, eventually starting a new animation
             std::lock_guard<std::mutex> lock2(stateMutex);
@@ -161,11 +163,12 @@ static void ColorizeThread()
                newState = true;
             }
             
-            state->m_hasAnimation = firstrot != 0;
+            const uint32_t firstDelayMs = firstrot & 0x0000ffff;
+            state->m_hasAnimation = (firstDelayMs != 0) && (firstDelayMs < SERUM_MAX_ROTATION_DELAY_MS);
             if (state->m_hasAnimation)
             {
                state->m_animationTick = std::chrono::high_resolution_clock::now();
-               state->m_animationNextTick = state->m_animationTick + std::chrono::milliseconds(firstrot);
+               state->m_animationNextTick = state->m_animationTick + std::chrono::milliseconds(firstDelayMs);
             }
             if (pSerum->SerumVersion == SERUM_V1)
                state->UpdateFrameV1();
@@ -185,7 +188,7 @@ static void ColorizeThread()
                msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr); }, nullptr);
          }
       }
-      else if (state && state->m_hasAnimation)
+      if (state && state->m_hasAnimation)
       {
          // Perform current animation (catching up to the current time point)
          const auto now = std::chrono::high_resolution_clock::now();
@@ -193,19 +196,19 @@ static void ColorizeThread()
          {
             const uint32_t nextrot = Serum_Rotate();
             const uint32_t delayMs = nextrot & 0x0000ffff;
-            if (delayMs == 0)
-            {
-               state->m_hasAnimation = false;
-               break;
-            }
-            state->m_animationTick = state->m_animationNextTick;
-            state->m_animationNextTick = state->m_animationNextTick + std::chrono::milliseconds(delayMs);
             if ((pSerum->SerumVersion == SERUM_V1) && (nextrot & FLAG_RETURNED_V1_ROTATED))
                state->UpdateFrameV1();
             if ((pSerum->SerumVersion == SERUM_V2) && (nextrot & FLAG_RETURNED_V2_ROTATED32))
                state->UpdateFrame32V2();
             if ((pSerum->SerumVersion == SERUM_V2) && (nextrot & FLAG_RETURNED_V2_ROTATED64))
                state->UpdateFrame64V2();
+            if (delayMs == 0 || delayMs >= SERUM_MAX_ROTATION_DELAY_MS)
+            {
+               state->m_hasAnimation = false;
+               break;
+            }
+            state->m_animationTick = state->m_animationNextTick;
+            state->m_animationNextTick = state->m_animationNextTick + std::chrono::milliseconds(delayMs);
          }
       }
    }
