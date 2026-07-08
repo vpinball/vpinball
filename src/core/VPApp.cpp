@@ -363,18 +363,14 @@ BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
 {
    if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
    {
-      HWND hwndFocus = GetFocus();
-      TCHAR className[256];
-      if (hwndFocus && GetClassName(hwndFocus, className, 256))
-      {
-         // Skip accelerators for Edit control of the main editor (property pane edits)
-         if (g_pvp 
-            && g_pvp->IsWindow() 
-            && g_pvp->GetFocus() != NULL 
-            && (g_pvp->GetFocus() == g_pvp->GetHwnd() || g_pvp->IsChild(g_pvp->GetFocus()))
-            && _tcscmp(className, _T("Edit")) == 0)
-            return FALSE;
-      }
+      // Skip accelerators for Edit control of the main editor (property pane edits)
+      if (g_pvp // Main editor exists
+         && g_pvp->IsWindow()  // Main edutor is created
+         && g_pvp->GetFocus() != NULL // Main editor is focused
+         && (g_pvp->GetFocus() == g_pvp->GetHwnd() || g_pvp->IsChild(g_pvp->GetFocus())) // Is a child of main editor
+         && (msg.wParam == VK_DELETE || msg.wParam == VK_BACK || msg.wParam == VK_ESCAPE || msg.wParam == VK_RETURN) // Only discard keys that would interfere
+         && g_pvp->GetFocus().GetClassName().GetString() == "Edit")
+         return FALSE;
    }
    return __super::PreTranslateMessage(msg);
 }
