@@ -149,9 +149,6 @@ void PaintSur::PolygonImage(
    const int cix2 = std::min(ix2, GDI_LIMIT);
    const int ciy2 = std::min(iy2, GDI_LIMIT);
 
-   if (cix2 <= cix || ciy2 <= ciy)
-      return; // nothing visible
-
    // Map source rect proportionally to the clamped destination
    const double sx = bitmapwidth / double(ix2 - ix);
    const double sy = bitmapheight / double(iy2 - iy);
@@ -159,6 +156,9 @@ void PaintSur::PolygonImage(
    const int siy = (int)std::lround((ciy - iy) * sy);
    const int six2 = (int)std::lround((cix2 - ix) * sx);
    const int siy2 = (int)std::lround((ciy2 - iy) * sy);
+
+   if (cix2 <= cix || ciy2 <= ciy || six2 <= six || siy2 <= siy)
+      return; // nothing visible
 
    try
    {
@@ -185,7 +185,11 @@ void PaintSur::PolygonImage(
       constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
       const BOOL ok = AlphaBlend(m_hdc, cix, ciy, cix2 - cix, ciy2 - ciy, dc.GetHDC(), six, siy, six2 - six, siy2 - siy, blendf);
       if (!ok)
-         ShowError("AlphaBlend failed, err=" + std::to_string(GetLastError()));
+      {
+         assert(false);
+         PLOGE << std::format("AlphaBlend failed, err={}", GetLastError());
+         return;
+      }
 
       SelectClipRgn(m_hdc, nullptr);
       DeleteObject(hrgn);
@@ -194,7 +198,8 @@ void PaintSur::PolygonImage(
    }
    catch (...)
    {
-      ShowError("Error in PolygonImage");
+      assert(false);
+      PLOGE << "Error in PolygonImage";
    }
 }
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
