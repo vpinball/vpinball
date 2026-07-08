@@ -95,6 +95,12 @@ void PlungerSensorSettingsPage::Render(float elapsed)
 
    AppendPlot();
 
+   const float now = static_cast<float>(static_cast<double>(msec()) / 1000.);
+   const float lastHitDelayMs = static_cast<float>(static_cast<double>(g_pplayer->m_time_msec - m_player->m_LastPlungerHit) / 1000.);
+   const float tLastHit = (lastHitDelayMs < m_positionPlot.m_timeSpan) && (fmodf(now, m_positionPlot.m_timeSpan) >= fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan))
+      ? fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan)
+      : 0.f;
+
    // Plot Position
    if (ImPlot::BeginPlot("##PlungerPos", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
@@ -112,6 +118,8 @@ void PlungerSensorSettingsPage::Render(float elapsed)
          ImPlot::PlotLine("Position", &m_positionPlot.m_data[0].x, &m_positionPlot.m_data[0].y, m_positionPlot.m_data.size(),
             { ImPlotProp_Offset, m_positionPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       }
+      if (tLastHit > 0.f)
+         ImPlot::PlotInfLines("Hit", &tLastHit, 1);
       ImPlot::EndPlot();
    }
 
@@ -132,6 +140,8 @@ void PlungerSensorSettingsPage::Render(float elapsed)
          ImPlot::PlotLine("Hit Velocity", &m_velocityPlot.m_data[0].x, &m_velocityPlot.m_data[0].y, m_velocityPlot.m_data.size(),
             { ImPlotProp_Offset, m_velocityPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       }
+      if (tLastHit > 0.f)
+         ImPlot::PlotInfLines("Hit", &tLastHit, 1);
       ImPlot::EndPlot();
    }
 
