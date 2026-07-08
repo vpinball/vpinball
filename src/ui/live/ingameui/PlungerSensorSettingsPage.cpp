@@ -64,12 +64,13 @@ void PlungerSensorSettingsPage::Close(bool isBackwardAnimation)
 void PlungerSensorSettingsPage::AppendPlot()
 {
    const float t = static_cast<float>((double)msec() / 1000.);
-   m_positionPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetPosition(0.f));
-   m_velocityPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetHitVelocity(0.f));
+   constexpr float visualRestPos = 0.1666666f;
+   m_positionPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetPosition(visualRestPos) + visualRestPos);
+   m_velocityPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetHitVelocity(visualRestPos));
    if (const auto& pos = GetSensor()->GetPositionSensor(); pos->IsMapped())
-      m_positionRawPlot.AddPoint(t, pos->GetValue());
+      m_positionRawPlot.AddPoint(t, -pos->GetValue());
    if (const auto& vel = GetSensor()->GetVelocitySensor(); vel->IsMapped())
-      m_velocityRawPlot.AddPoint(t, vel->GetValue());
+      m_velocityRawPlot.AddPoint(t, -vel->GetValue());
 }
 
 void PlungerSensorSettingsPage::Render(float elapsed)

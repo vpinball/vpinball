@@ -80,8 +80,9 @@ void PlungerSettingsPage::Close(bool isBackwardAnimation)
 void PlungerSettingsPage::AppendPlot()
 {
    const float t = static_cast<float>((double)msec() / 1000.);
-   m_positionPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetPosition(0.f));
-   m_velocityPlot.AddPoint(t, m_player->m_pininput.m_plungerHandler->GetHitVelocity(0.f));
+   constexpr float visualRestPos = 0.1666666f;
+   m_positionPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetPosition(visualRestPos) + visualRestPos);
+   m_velocityPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetHitVelocity(visualRestPos));
 }
 
 void PlungerSettingsPage::Render(float elapsed)
