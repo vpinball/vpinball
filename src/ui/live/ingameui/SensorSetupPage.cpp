@@ -157,7 +157,6 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
    // Scale is defined as a custom scale applied on a selected unit.
    const float liveScale = liveMapping->GetScale();
    const float storedScale = storedMapping ? storedMapping->GetScale() : 1.f;
-   bool isCustomScale = true;
    if (liveMapping->GetType() == SensorMapping::Type::Acceleration)
    {
       // Accelerations must be provided to the engine in m/s^2 (acquired value x scale => m/s^2)
@@ -170,7 +169,6 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
                                                : 0;
       if (m_accUnit < 0)
          m_accUnit = accUnit;
-      isCustomScale = m_accUnit == 0;
       m_page->AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(
             ""s, ""s, "Sensor unit"s, "Unit used by the sensor or custom scaling."s, false, 0, 0, vector { "Custom unit"s, "1 Gravity"s, "2 Gravity"s, "4 Gravity"s, "8 Gravity"s }),
@@ -230,22 +228,19 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
       // . plunger is +1 for fully retracted, 0 at rest and -1 for fully extended (symmetric from the rest..retracted range)
       // . nudge only uses position for gamepad nudging where the units does not mean anything (it is just used to evaluate the player intent)
    }
-   if (m_velUnit == 0)
-   {
-      m_page->AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, "Scale the acquired value by the selected scale."s, false, 0.f, 5.f, 0.f, 1.f), 100.f,
-         "%4.1f %%", //
-         [liveScale]() { return fabs(liveScale); }, // Live
-         [storedScale](const Settings&) { return fabs(storedScale); }, // Stored
-         [this, liveScale](float, float v)
-         {
-            const bool reversed = liveScale < 0.f;
-            m_sensor->GetMapping().SetScale(reversed ? -v : v);
-            m_rebuildPage();
-         }, //
-         [](Settings&) { /* Already performed in first page item */ }, // Reset
-         [](float, Settings&, bool) { /* Already performed in first page item */ })); // Save
-   }
+   m_page->AddItem(std::make_unique<InGameUIItem>(
+      VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, "Scale the acquired value by the selected scale."s, false, 0.f, 20.f, 0.f, 1.f), 100.f,
+      "%4.1f %%", //
+      [liveScale]() { return fabs(liveScale); }, // Live
+      [storedScale](const Settings&) { return fabs(storedScale); }, // Stored
+      [this, liveScale](float, float v)
+      {
+         const bool reversed = liveScale < 0.f;
+         m_sensor->GetMapping().SetScale(reversed ? -v : v);
+         m_rebuildPage();
+      }, //
+      [](Settings&) { /* Already performed in first page item */ }, // Reset
+      [](float, Settings&, bool) { /* Already performed in first page item */ })); // Save
 
    m_page->AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::BoolPropertyDef(""s, ""s, "Reversed axis"s, "Toggle axis direction"s, false, false), //
