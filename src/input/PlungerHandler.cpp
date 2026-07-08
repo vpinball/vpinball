@@ -331,12 +331,8 @@ float PlungerSensor::GetHitVelocity(float restPos) const
    }
    else
    {
-      // Use the position & speed derived from the position sensor to filter out rest state from plunges
-      if (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f)
-         return 0.f;
-
       // Evaluate the velocity by supposing the player did a 'free' release, that is to say the plunger was retracted to a given position then entirely free to move.
-      // 
+      //
       // In this scheme the speed is a consequence of 2 parameters (beside physical constants like spring stiffness, damping,...):
       // . the retracted position when the plunger was released (apex). Measures on real hardware show that the the retracted to extended move last around 50ms, and that the next
       //   oscillation to extended position happens roughly 100ms after the first. This lead to search the apex within the last 100ms
@@ -344,7 +340,13 @@ float PlungerSensor::GetHitVelocity(float restPos) const
       // So we figure the release speed as a fraction of the fire speed property, linearly proportional to the starting distance.
       // The 100/13 factor is a magic conversion factor that matches what is used for keyboard driven plunger.
       const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
-      const float hitSpeed = - max(0.f, releaseApex - restPos) * 100.f / 13.0f;
+      const float hitSpeed = -max(0.f, releaseApex - restPos) * 100.f / 13.0f;
+
+      // If the plunger is not far enough from the release apex, then we're not in a fire situation
+      const float currentPos = clamp(lerp(restPos, 1.f, GetPosition()), 0.f, 1.f);
+      if (currentPos > releaseApex - 0.1f)
+         return 0.f;
+
       return hitSpeed;
    }
 }
