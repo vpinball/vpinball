@@ -163,16 +163,16 @@ void NudgeSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
-      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y2, "Position (mm)", ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeXPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // mm/s^2
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // mm/s^2 (covers 1G)
       ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-      ImPlot::PlotLine("X Position (mm)", &m_cabXPlot.m_data[0].x, &m_cabXPlot.m_data[0].y, m_cabXPlot.m_data.size(),
+      ImPlot::PlotLine("X Position", &m_cabXPlot.m_data[0].x, &m_cabXPlot.m_data[0].y, m_cabXPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-      ImPlot::PlotLine("X Acceleration (m/s^2)", &m_nudgeXPlot.m_data[0].x, &m_nudgeXPlot.m_data[0].y, m_nudgeXPlot.m_data.size(),
+      ImPlot::PlotLine("X Acceleration", &m_nudgeXPlot.m_data[0].x, &m_nudgeXPlot.m_data[0].y, m_nudgeXPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
    }
@@ -180,16 +180,16 @@ void NudgeSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeY", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
-      ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y2, "Position (mm)", ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeYPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // mm/s^2
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // mm/s^2 (covers 1G)
       ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
-      ImPlot::PlotLine("Y Position (mm)", &m_cabYPlot.m_data[0].x, &m_cabYPlot.m_data[0].y, m_cabYPlot.m_data.size(),
+      ImPlot::PlotLine("Y Position", &m_cabYPlot.m_data[0].x, &m_cabYPlot.m_data[0].y, m_cabYPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0.25f, 0), ImPlotProp_Offset, m_cabYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
-      ImPlot::PlotLine("Y Acceleration (m/s^2)", &m_nudgeYPlot.m_data[0].x, &m_nudgeYPlot.m_data[0].y, m_nudgeYPlot.m_data.size(),
+      ImPlot::PlotLine("Y Acceleration", &m_nudgeYPlot.m_data[0].x, &m_nudgeYPlot.m_data[0].y, m_nudgeYPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
    }

@@ -260,28 +260,34 @@ void NudgeSensorSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeXPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // no unit or m/s^2
       ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
-      ImPlot::SetupAxisLimits(ImAxis_Y2, -10.2f, 10.2f, ImGuiCond_Always); // mm/s
-      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // m/s^2 (covers 1G)
 
       if (VPX::Physics::GamepadNudge* gamepadSensor = dynamic_cast<VPX::Physics::GamepadNudge*>(GetSensor().get()); gamepadSensor)
       {
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -1.2f, 1.2f, ImGuiCond_Always); // no unit
          if (gamepadSensor->GetXSensor().IsMapped() && m_nudgeXRawPlot1.HasData())
+         {
+            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
             ImPlot::PlotLine(std::format("Sensor X - {}", gamepadSensor->GetXSensor().GetMappingLabel()).c_str(),
-            &m_nudgeXRawPlot1.m_data[0].x, //
-            &m_nudgeXRawPlot1.m_data[0].y, //
-            m_nudgeXRawPlot1.m_data.size(), { ImPlotProp_Offset, m_nudgeXRawPlot1.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+               &m_nudgeXRawPlot1.m_data[0].x, //
+               &m_nudgeXRawPlot1.m_data[0].y, //
+               m_nudgeXRawPlot1.m_data.size(), { ImPlotProp_Offset, m_nudgeXRawPlot1.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+         }
       }
       else if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
       {
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -20.2f, 20.2f, ImGuiCond_Always); // mm/s
          if (cabSensor->GetXAccSensor().IsMapped() && m_nudgeXRawPlot1.HasData())
+         {
+            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
             ImPlot::PlotLine(std::format("Acc. Sensor X - {} (m/s^2)", cabSensor->GetXAccSensor().GetMappingLabel()).c_str(),
                &m_nudgeXRawPlot1.m_data[0].x, //
                &m_nudgeXRawPlot1.m_data[0].y, //
                m_nudgeXRawPlot1.m_data.size(), { ImPlotProp_Offset, m_nudgeXRawPlot1.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+         }
          if (cabSensor->GetXVelSensor().IsMapped() && m_nudgeXRawPlot2.HasData())
          {
             ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
@@ -289,12 +295,12 @@ void NudgeSensorSettingsPage::Render(float elapsed)
                &m_nudgeXRawPlot2.m_data[0].x, //
                &m_nudgeXRawPlot2.m_data[0].y, //
                m_nudgeXRawPlot2.m_data.size(), { ImPlotProp_Offset, m_nudgeXRawPlot2.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
-            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
          }
       }
 
+      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       ImPlot::PlotLine("Cabinet Acceleration X (m/s^2)", &m_nudgeXPlot.m_data[0].x, &m_nudgeXPlot.m_data[0].y, m_nudgeXPlot.m_data.size(),
-            { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+         { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeXPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
    }
    ImGui::PopFont();
@@ -355,28 +361,36 @@ void NudgeSensorSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeY", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeYPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // no unit or m/s^2
       ImPlot::SetupAxis(ImAxis_Y2, nullptr, ImPlotAxisFlags_Opposite);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // m/s^2 (covers 1G)
+
       ImPlot::SetupAxisLimits(ImAxis_Y2, -10.2f, 10.2f, ImGuiCond_Always); // mm/s
-      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
 
       if (VPX::Physics::GamepadNudge* gamepadSensor = dynamic_cast<VPX::Physics::GamepadNudge*>(GetSensor().get()); gamepadSensor)
       {
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -1.2f, 1.2f, ImGuiCond_Always); // no unit
          if (gamepadSensor->GetYSensor().IsMapped() && m_nudgeYRawPlot1.HasData())
+         {
+            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
             ImPlot::PlotLine(std::format("Sensor Y - {}", gamepadSensor->GetYSensor().GetMappingLabel()).c_str(),
                &m_nudgeYRawPlot1.m_data[0].x, //
                &m_nudgeYRawPlot1.m_data[0].y, //
                m_nudgeYRawPlot1.m_data.size(), { ImPlotProp_Offset, m_nudgeYRawPlot1.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+         }
       }
       else if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
       {
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -20.2f, 20.2f, ImGuiCond_Always); // mm/s
          if (cabSensor->GetYAccSensor().IsMapped() && m_nudgeYRawPlot1.HasData())
+         {
+            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
             ImPlot::PlotLine(std::format("Acc. Sensor Y - {} (m/s^2)", cabSensor->GetYAccSensor().GetMappingLabel()).c_str(),
                &m_nudgeYRawPlot1.m_data[0].x, //
                &m_nudgeYRawPlot1.m_data[0].y, //
                m_nudgeYRawPlot1.m_data.size(), { ImPlotProp_Offset, m_nudgeYRawPlot1.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
+         }
          if (cabSensor->GetYVelSensor().IsMapped() && m_nudgeYRawPlot2.HasData())
          {
             ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
@@ -384,10 +398,10 @@ void NudgeSensorSettingsPage::Render(float elapsed)
                &m_nudgeYRawPlot2.m_data[0].x, //
                &m_nudgeYRawPlot2.m_data[0].y, //
                m_nudgeYRawPlot2.m_data.size(), { ImPlotProp_Offset, m_nudgeYRawPlot2.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
-            ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
          }
       }
 
+      ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       ImPlot::PlotLine("Cabinet Acceleration Y (m/s^2)", &m_nudgeYPlot.m_data[0].x, &m_nudgeYPlot.m_data[0].y, m_nudgeYPlot.m_data.size(),
          { ImPlotProp_FillColor, ImVec4(1, 0, 0, 0.25f), ImPlotProp_Offset, m_nudgeYPlot.m_offset, ImPlotProp_Stride, 2 * (int)sizeof(float) });
       ImPlot::EndPlot();
