@@ -107,11 +107,9 @@ bool GamepadNudge::IsActive() const { return m_deactivationDelay > 0; }
 
 void GamepadNudge::StepOneMillisecond()
 {
-   // Convert stick position to acceleration
-   // 12m/s^2 for firm front nudge, resulting in a 5mm cabinet move, side nudge needs a somewhat higher energy for the same move
-   // (Hacky empirical balancing of front vs side energy, needs some more physics study to validate this)
-   const float xSensor = m_xSensor.GetValue() * m_nudgeStrengthScale * 16.f;
-   const float ySensor = m_ySensor.GetValue() * m_nudgeStrengthScale * 12.f;
+   // Convert stick position to acceleration. Completely magic values here, evaluated from tests.
+   const float xSensor = m_xSensor.GetValue() * m_nudgeStrengthScale * 8.f;
+   const float ySensor = m_ySensor.GetValue() * m_nudgeStrengthScale * 8.f;
 
    static bool m_isImpulseInProgress = false;
    static Vertex2D m_initialCabinetPosition;
