@@ -72,12 +72,11 @@ float PlungerHandler::GetPosition(float restPos) const
 {
    // Symmetric calibration: 0 is rest, 1 is fully retracted, scale is symmetric along rest position
    // (The maximum forward position is not calibrated, in the negative side)
-   // -1 maps to restPos - (1 - restPos)
+   // -1 maps to restPos - (1 - restPos), clamped at 0 (as the plunger may not go past the frame end)
    //  0 maps to restPos
    //  1 maps to 1
-   // This lead to a range of [2 * restPos - 1, 1] for the plunger position, with 0 being the rest position.
    assert(restPos >= 0.f && restPos <= 1.f);
-   return lerp(restPos, 1.f, m_position);
+   return clamp(lerp(restPos, 1.f, m_position), 0.f, 1.f);
 }
 
 bool PlungerHandler::IsPullBackandRetract() const { return m_isPullBackAndRetract; }

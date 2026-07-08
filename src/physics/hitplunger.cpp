@@ -20,7 +20,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 
    m_plungerMover.m_frameEnd = frameTop;
    m_plungerMover.m_frameStart = frameBottom;
-   const float frameLen = m_plungerMover.m_frameLen = frameBottom - frameTop;
+   m_plungerMover.m_frameLen = frameBottom - frameTop;
 
    m_plungerMover.m_pullForce = 0.0f;
    m_plungerMover.m_reverseImpulse = 0.0f;
@@ -33,11 +33,9 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungerMover.m_travelLimit = frameTop;
    m_plungerMover.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
 
-   const float restPos = pPlunger->m_d.m_parkPosition; // The rest position is taken from the "park position" property
+   m_plungerMover.m_restPos = pPlunger->m_d.m_parkPosition; // The rest position is taken from the "park position" property
 
-   // start at the rest position
-   m_plungerMover.m_restPos = restPos;
-   m_plungerMover.m_pos = frameTop + (restPos * frameLen);
+   m_plungerMover.m_pos = frameTop + (m_plungerMover.m_restPos * m_plungerMover.m_frameLen); // start at the rest position
 
    m_hitBBox.zlow  = zheight;
    m_hitBBox.zhigh = zheight + PLUNGERHEIGHT;
@@ -470,14 +468,6 @@ void PlungerMoverObject::UpdateVelocities()
 
       // add any reverse impulse to the result
       m_speed += m_reverseImpulse;
-
-      // Do not allow a speed that would push past the frame bounds
-      if (m_speed < 0.f)
-      {
-         const float decayZone = max(0.01f, m_restPos);
-         if (pos <= decayZone)
-            m_speed *= powf(pos / decayZone, 4.f);
-      }
    }
 
    // cancel any reverse impulse
