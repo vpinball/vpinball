@@ -482,18 +482,11 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
    float hittime = dtime; //start time
    bool hit = false;
 
-   // If we got here, then the ball is close enough to the plunger
-   // to where we should animate the button's light.
-   // Save the time so we can tell the button when to turn on/off.  
-   g_pplayer->m_LastPlungerHit = g_pplayer->m_time_msec;
-
-   // We are close enable the plunger light.
    CollisionEvent ce;
    float newtime;
 
-   // Check for hits on the non-moving parts, like the side of back
-   // of the plunger.  These are just like hitting a wall.
-   // Check all and find the nearest collision.
+   // Check for hits on the non-moving parts, like the side of back of the plunger.
+   // These are just like hitting a wall. Check all and find the nearest collision.
 
    newtime = m_plungerMover.m_linesegBase.HitTest(ball, dtime, ce);
    if (newtime >= 0.f && newtime <= hittime)
@@ -662,6 +655,10 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
          coll.m_hitvel.y = impulse;
       }
    }
+
+   // Save the last hit time for LiveUI feedback and legacy UShock light feedback
+   if (hit)
+      g_pplayer->m_LastPlungerHit = g_pplayer->m_time_msec;
 
    // check only if the plunger is not in a controlled retract motion
    // and check for a hit
