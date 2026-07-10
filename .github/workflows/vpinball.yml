@@ -254,9 +254,13 @@ jobs:
             security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
             security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
             security list-keychain -d user -s $KEYCHAIN_PATH
-            find VPinballX_${{ matrix.type }}.app/Contents/Resources/plugins -type f -name '*.dylib' -exec \
-               codesign --verbose --timestamp --options runtime --force --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" {} \;
-            codesign --verbose --timestamp --options runtime --deep --force --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" VPinballX_${{ matrix.type }}.app
+            codesign --verbose --timestamp --options runtime --force \
+              --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
+              VPinballX_${{ matrix.type }}.app/Contents/Resources/plugins/*/*.dylib
+            codesign --verbose --timestamp --options runtime --deep --force \
+              --entitlements ../../standalone/macos/VPinballX.entitlements \
+              --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
+              VPinballX_${{ matrix.type }}.app
             ditto -c -k --rsrc --keepParent VPinballX_${{ matrix.type }}.app VPinballX_${{ matrix.type }}.zip
             xcrun notarytool submit VPinballX_${{ matrix.type }}.zip  \
               --wait \
