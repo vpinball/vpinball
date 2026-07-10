@@ -132,9 +132,12 @@ void NudgeSettingsPage::Close(bool isBackwardAnimation)
 void NudgeSettingsPage::AppendPlot()
 {
    const float t = static_cast<float>((double)msec() / 1000.);
+   constexpr float g = 9.80665f;
+
    Vertex2D nudge = m_player->m_pininput.m_nudgeHandler->GetCabinetAcceleration();
-   m_nudgeXPlot.AddPoint(t, nudge.x);
-   m_nudgeYPlot.AddPoint(t, nudge.y);
+   m_nudgeXPlot.AddPoint(t, nudge.x / g);
+   m_nudgeYPlot.AddPoint(t, nudge.y / g);
+
    Vertex2D pos = m_player->m_pininput.m_nudgeHandler->GetCabinetOffset();
    m_cabXPlot.AddPoint(t, pos.x * 1000.f);
    m_cabYPlot.AddPoint(t, pos.y * 1000.f);
@@ -163,10 +166,10 @@ void NudgeSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (g)", ImPlotAxisFlags_None);
       ImPlot::SetupAxis(ImAxis_Y2, "Position (mm)", ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeXPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // mm/s^2 (covers 1G)
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // g
       ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
       ImPlot::PlotLine("X Position", &m_cabXPlot.m_data[0].x, &m_cabXPlot.m_data[0].y, m_cabXPlot.m_data.size(),
@@ -180,10 +183,10 @@ void NudgeSettingsPage::Render(float elapsed)
    if (ImPlot::BeginPlot("##NudgeY", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
-      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (m/s^2)", ImPlotAxisFlags_None);
+      ImPlot::SetupAxis(ImAxis_Y1, "Acceleration (g)", ImPlotAxisFlags_None);
       ImPlot::SetupAxis(ImAxis_Y2, "Position (mm)", ImPlotAxisFlags_Opposite);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_nudgeYPlot.m_timeSpan, ImGuiCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, -10.2f, 10.2f, ImGuiCond_Always); // mm/s^2 (covers 1G)
+      ImPlot::SetupAxisLimits(ImAxis_Y1, -1.2f, 1.2f, ImGuiCond_Always); // g
       ImPlot::SetupAxisLimits(ImAxis_Y2, -5.f, 5.f, ImGuiCond_Always); // mm
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y2);
       ImPlot::PlotLine("Y Position", &m_cabYPlot.m_data[0].x, &m_cabYPlot.m_data[0].y, m_cabYPlot.m_data.size(),
