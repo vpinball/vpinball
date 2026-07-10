@@ -489,8 +489,10 @@ void HitBall::UpdateVelocities()
          m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
 
          // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
+         const float slope = ANGTORAD(m_pBall->GetPTable()->GetPlayfieldSlope()); // nudge acceleration is in the horizontal cabinet plane, reference frame is the playfield
          m_d.m_vel.x -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().x);
-         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y);
+         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) * cosf(slope);
+         m_d.m_vel.z -= (float)PHYS_FACTOR * MS2TOVPUVPT2(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration().y) * sinf(slope);
       }
    }
 
