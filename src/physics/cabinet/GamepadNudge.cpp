@@ -108,8 +108,9 @@ bool GamepadNudge::IsActive() const { return m_deactivationDelay > 0; }
 void GamepadNudge::StepOneMillisecond()
 {
    // Convert stick position to acceleration. Completely magic values here, evaluated from tests.
-   const float xSensor = m_xSensor.GetValue() * m_nudgeStrengthScale * 8.f;
-   const float ySensor = m_ySensor.GetValue() * m_nudgeStrengthScale * 8.f;
+   constexpr float g = 9.80665f;
+   const float xSensor = m_xSensor.GetValue() * m_nudgeStrengthScale * g * 0.5f;
+   const float ySensor = m_ySensor.GetValue() * m_nudgeStrengthScale * g * 0.5f;
 
    static bool m_isImpulseInProgress = false;
    static Vertex2D m_initialCabinetPosition;

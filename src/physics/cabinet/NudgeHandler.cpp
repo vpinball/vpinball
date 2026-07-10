@@ -114,7 +114,7 @@ void NudgeHandler::AddSensor(std::unique_ptr<NudgeSensor>& sensor)
 
    Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, std::format("Mapping.Nudge{}.Type", sensorIndex),
       "Nudge Sensor Type"s,
-      "Game controller use stick position to evaluate player nudge intent.\nIntent Sensor uses sensor to evaluate player nudge intent while Cabinet Sensor directy maps sensor to emulated nudge (only valid on a real pinball cabinet with high frequency, low latency, noise free sensor on a high speed communication port)."s,
+      "Game controller use stick position to evaluate player nudge intent. Intent Sensor uses sensor to evaluate player nudge intent while Cabinet Sensor directy maps sensor to emulated nudge (only valid on a real pinball cabinet with high frequency, low latency, noise free sensor on a high speed communication port)."s,
       true, 0, 0, vector { "Game Controller"s, "Intent Sensor"s, "Cabinet Sensor"s }));
 
    Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(

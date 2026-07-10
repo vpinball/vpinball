@@ -229,7 +229,12 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
       // . nudge only uses position for gamepad nudging where the units does not mean anything (it is just used to evaluate the player intent)
    }
    m_page->AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, "Scale the acquired value by the selected scale."s, false, 0.f, 20.f, 0.f, 1.f), 100.f,
+      VPX::Properties::FloatPropertyDef(""s, ""s, "Unit scale"s,
+         liveMapping->GetType() == SensorMapping::Type::Acceleration  ? "Scale to apply to the value acquired to convert it to m/s^2"s
+            : liveMapping->GetType() == SensorMapping::Type::Velocity ? "Scale to apply to the value acquired to convert it to m/s or p.u./s"s
+                                                                      : "Scale to apply to acquired value"s,
+         false, 0.f, 20.f, 0.f, 1.f),
+      100.f,
       "%4.1f %%", //
       [liveScale]() { return fabs(liveScale); }, // Live
       [storedScale](const Settings&) { return fabs(storedScale); }, // Stored
