@@ -7,6 +7,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="../../plugins/inspector/common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/inspector/inspector.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -18,6 +21,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/inspector/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/inspector/WebServer.h">
       <Filter>source</Filter>
     </ClInclude>

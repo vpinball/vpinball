@@ -19,7 +19,7 @@ public:
    WebServer();
    ~WebServer();
 
-   void Start(int port);
+   void Start(int port, const std::string& assetPath);
    void Stop();
 
    void UpdateTreeJson(const std::string& json);
@@ -35,6 +35,7 @@ private:
 
    std::mutex m_treeMutex;
    std::string m_treeJson;
+   std::string m_assetPath;
 
    struct mg_mgr m_mgr;
    bool m_run;

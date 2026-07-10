@@ -1,8 +1,13 @@
 // license:GPLv3+
 
+#include "common.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "WebServer.h"
+
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
 
 #include <format>
 #include <vector>
@@ -279,8 +284,18 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
    msgApi->SubscribeMsg(endpointId, onSegSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG), onSrcChanged, nullptr);
    msgApi->RegisterSetting(endpointId, &portSetting);
 
+   std::filesystem::path path;
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+   VPXInfo vpxInfo;
+   vpxApi->GetVpxInfo(&vpxInfo);
+   path = std::filesystem::path(vpxInfo.path) / "plugins"sv / "inspector"sv;
+#else
+   path = GetPluginPath();
+#endif
+   path = path / "assets"sv;
+
    webServer = std::make_unique<WebServer>();
-   webServer->Start(portSetting_Get());
+   webServer->Start(portSetting_Get(), path.string());
    UpdateTreeCache();
 }
 
