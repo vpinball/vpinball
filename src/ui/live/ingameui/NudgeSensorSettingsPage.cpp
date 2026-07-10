@@ -280,7 +280,7 @@ void NudgeSensorSettingsPage::Render(float elapsed)
       }
       else if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
       {
-         ImPlot::SetupAxisLimits(ImAxis_Y2, -20.2f, 20.2f, ImGuiCond_Always); // mm/s
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -100.2f, 100.2f, ImGuiCond_Always); // mm/s
          if (cabSensor->GetXAccSensor().IsMapped() && m_nudgeXRawPlot1.HasData())
          {
             ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
@@ -381,7 +381,7 @@ void NudgeSensorSettingsPage::Render(float elapsed)
       }
       else if (VPX::Physics::CabinetNudgeSensor* cabSensor = dynamic_cast<VPX::Physics::CabinetNudgeSensor*>(GetSensor().get()); cabSensor)
       {
-         ImPlot::SetupAxisLimits(ImAxis_Y2, -20.2f, 20.2f, ImGuiCond_Always); // mm/s
+         ImPlot::SetupAxisLimits(ImAxis_Y2, -100.2f, 100.2f, ImGuiCond_Always); // mm/s
          if (cabSensor->GetYAccSensor().IsMapped() && m_nudgeYRawPlot1.HasData())
          {
             ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);

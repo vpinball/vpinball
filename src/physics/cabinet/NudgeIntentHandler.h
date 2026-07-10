@@ -15,7 +15,7 @@ public:
 
    void StepOneMillisecond(const Vertex2D& nudgeAcceleration); // m/s^2
 
-   bool IsImpulseInProgress() const { return m_impulseElapsed <= m_impulseLength; }
+   bool IsImpulseInProgress() const { return m_impulseElapsed <= (m_impulseLength + m_impulseDelay); }
 
    Vertex2D GetImpulseAceleration() const; // m/s^2
 
@@ -23,10 +23,12 @@ private:
    const bool m_isGamepad;
    const int m_impulseLength;
    
+   int GetImpulseDelay(float impulseStrength) const;
    float GetImpulseStrengthFactor() const;
    void EvaluateImpulse(const Vertex2D& impulse);
 
    int m_impulseElapsed;
+   int m_impulseDelay;
    Vertex2D m_impulse;
 
    uint64_t m_time = 0;

@@ -20,15 +20,16 @@ NudgeIntentHandler::NudgeIntentHandler(bool isGamepad)
    : m_isGamepad(isGamepad)
    , m_impulseLength(25)
    , m_impulseElapsed(m_impulseLength + 1)
+   , m_impulseDelay(0)
 {
    m_impulse.SetZero();
 }
 
 Vertex2D NudgeIntentHandler::GetImpulseAceleration() const
 {
-   if (!IsImpulseInProgress())
+   if (!IsImpulseInProgress() || m_impulseElapsed < m_impulseDelay)
       return { 0.f, 0.f };
-   const float t = static_cast<float>(m_impulseElapsed) / static_cast<float>(m_impulseLength);
+   const float t = static_cast<float>(m_impulseElapsed - m_impulseDelay) / static_cast<float>(m_impulseLength);
    return m_impulse * 0.5f * (1.0f - cosf((float)(2. * M_PI) * t));
 }
 
@@ -40,24 +41,35 @@ float NudgeIntentHandler::GetImpulseStrengthFactor() const
    return 1.f;
 }
 
+int NudgeIntentHandler::GetImpulseDelay(float impulseStrength) const
+{
+   constexpr float noDelayStrength = 5.f; // 5m/s^2 is a 0.5g strong nudge, do not delay if we are already near a tilt threshold
+   const float firmness = clamp(impulseStrength / noDelayStrength, 0.f, 1.f);
+   // Delay impulse to avoid missing the input apex. The length is pure magic here (if we knew the sensor update rate, we could do better)
+   const float inputPollPeriod = m_isGamepad ? 16.f : 8.f;
+   return (int)lerp(3.f * inputPollPeriod, inputPollPeriod, firmness);
+}
+
 void NudgeIntentHandler::EvaluateImpulse(const Vertex2D& impulse)
 {
-   // Send impulse early to limit latency, taking the risk of missing the peak apex if it does not happens during the impulse length (length of contact physics)
+   assert(!m_segmentImpulseSent);
+
+   // Filter cabinet oscillation (smaller peaks shortly after a stronger one)
+   if (!m_isGamepad && (m_segmentStrength <= m_lastImpulseStrength) && (m_segmentEnd - m_lastImpulseTime <= 300))
+      return;
+
+   // Send the impulse early, but with a raising edge that depends on how strong the nudge is (delay on soft nudge where the risk of missing the apex is high)
+   // This is needed as physically impulse are very short (around 25ms) while gamepad / sensor USB acquisition range from 8ms (standard USB 125Hz sensor polling rate) to 16ms (Xbox bluetooth controller)
    const float impulseThreshold = 1.0f; // m/s^2
    const float strengthFactor = GetImpulseStrengthFactor();
-   bool fireImpulse = (strengthFactor * m_segmentStrength) > impulseThreshold;
-   if (!m_isGamepad) // Filter cabinet oscillation (smaller peaks shortly after a stronger one)
-      fireImpulse &= (m_segmentStrength > m_lastImpulseStrength) || (m_segmentEnd - m_lastImpulseTime > 300);
-   if (fireImpulse)
+   const float impulseStrength = strengthFactor * m_segmentStrength;
+   if (impulseStrength > impulseThreshold)
    {
       m_impulse = strengthFactor * impulse;
       m_impulseElapsed = 0;
+      m_impulseDelay = GetImpulseDelay(impulseStrength);
       m_segmentImpulseSent = true;
-      //PLOGD << std::format("Impulse sent: {:8.5f}, {:8.5f} (strength factor: {:8.5f})", m_impulse.x, m_impulse.y, GetImpulseStrengthFactor());
-   }
-   else
-   {
-      //PLOGD << std::format("Impulse not sent: {:8.5f}, {:8.5f} => {:8.5f} (strength factor: {:8.5f})", impulse.x, impulse.y, m_segmentStrength, GetImpulseStrengthFactor());
+      PLOGD_IF(false) << std::format("Impulse sent: {:8.5f}, {:8.5f} (strength factor: {:8.5f}) with delay:{:2d}ms", m_impulse.x, m_impulse.y, GetImpulseStrengthFactor(), m_impulseDelay);
    }
 }
 
@@ -80,18 +92,22 @@ void NudgeIntentHandler::StepOneMillisecond(const Vertex2D& nudgeAcceleration)
          {
             EvaluateImpulse(nudge);
          }
-         else if (const Vertex2D newImpulse = GetImpulseStrengthFactor() * nudge; newImpulse.LengthSquared() > m_impulse.LengthSquared())
+         else if (IsImpulseInProgress())
          {
-            m_impulse = newImpulse; // Update strength and direction of ongoing impulse
-            //PLOGD << std::format("Impulse updated: {:8.5f}, {:8.5f} (strength factor: {:8.5f})", m_impulse.x, m_impulse.y, GetImpulseStrengthFactor());
+            const Vertex2D newImpulse = GetImpulseStrengthFactor() * nudge; 
+            const float impulseStrengthSqr = newImpulse.LengthSquared(); 
+            if (impulseStrengthSqr > m_impulse.LengthSquared())
+            {
+               m_impulse = newImpulse; // Update strength and direction of ongoing impulse
+               if (m_impulseElapsed < m_impulseDelay)
+                  m_impulseDelay = max(m_impulseElapsed, GetImpulseDelay(sqrtf(impulseStrengthSqr)));
+               PLOGD_IF(false) << std::format("Impulse updated: {:8.5f}, {:8.5f} (strength factor: {:8.5f}) at pos: {:d}ms, delay: {:d}ms", m_impulse.x, m_impulse.y, GetImpulseStrengthFactor(),
+                  m_impulseElapsed - m_impulseDelay, m_impulseDelay);
+            }
          }
       }
       else if (strength < m_segmentStrength * 0.9f) // Peak is finished, switch to rearm mode
       {
-         if (m_segmentImpulseSent)
-         {
-            //PLOGD << std::format("Last impulse strength: {:8.5f}, {:8.5f}", m_impulse.x, m_impulse.y);
-         }
          m_lastImpulseTime = m_segmentEnd;
          m_lastImpulseStrength = m_segmentStrength;
          m_segmentStrength = strength;
