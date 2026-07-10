@@ -26,12 +26,13 @@ if(BUILD_SHARED)
       )
    endif()
 
+   target_include_directories(ScoreViewPlugin PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      plugins
+      plugins/scoreview
+   )
+
    if(PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw")
-      target_include_directories(ScoreViewPlugin PUBLIC
-         ${CMAKE_SOURCE_DIR}/third-party/include
-		 plugins
-         plugins/scoreview
-      )
       if(MSVC)
          set_target_properties(ScoreViewPlugin PROPERTIES
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
@@ -71,11 +72,6 @@ if(BUILD_SHARED)
          OUTPUT_NAME "$<IF:$<STREQUAL:${ARCH},x64>,plugin-scoreview64,plugin-scoreview>"
       )
    else()
-      target_include_directories(ScoreViewPlugin PUBLIC
-         ${CMAKE_SOURCE_DIR}/third-party/include
-		 plugins
-         plugins/scoreview
-      )
       set_target_properties(ScoreViewPlugin PROPERTIES
          PREFIX ""
          OUTPUT_NAME "plugin-scoreview"

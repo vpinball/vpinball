@@ -43,7 +43,7 @@
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/scoreview;$(SolutionDir)../../third-party/include/;$(SolutionDir)../../src/core</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/scoreview;$(SolutionDir)../../third-party/include/;$(SolutionDir)../../src/core</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <PropertyGroup>

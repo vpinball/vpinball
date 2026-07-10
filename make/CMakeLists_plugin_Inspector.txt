@@ -8,6 +8,8 @@ set(CMAKE_C_STANDARD 99)
 set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}")
 
 set(INSPECTOR_PLUGIN_SOURCES
+   plugins/inspector/common.cpp
+   plugins/inspector/common.h
    plugins/inspector/inspector.cpp
    plugins/inspector/WebServer.h
    plugins/inspector/WebServer.cpp
@@ -17,6 +19,12 @@ set(INSPECTOR_PLUGIN_SOURCES
 
 if(BUILD_SHARED)
    add_library(InspectorPlugin MODULE ${INSPECTOR_PLUGIN_SOURCES})
+
+   if(NOT (PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw"))
+      target_compile_definitions(InspectorPlugin PRIVATE
+         "__forceinline=__attribute__((always_inline)) inline"
+      )
+   endif()
 
    target_include_directories(InspectorPlugin PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
@@ -81,6 +89,7 @@ if(BUILD_SHARED)
    add_custom_command(TARGET InspectorPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/inspector/plugin.cfg" "${PLUGINS_DIR}/inspector/plugin.cfg"
       COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:InspectorPlugin>" "${PLUGINS_DIR}/inspector"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/inspector/assets" "${PLUGINS_DIR}/inspector/assets"
       COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:InspectorPlugin>"
    )
 
@@ -101,6 +110,10 @@ if(BUILD_STATIC)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/inspector
+   )
+
+   target_compile_definitions(InspectorPlugin PRIVATE
+      "__forceinline=__attribute__((always_inline)) inline"
    )
 
    set_target_properties(InspectorPlugin PROPERTIES

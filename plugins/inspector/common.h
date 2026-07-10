@@ -1,0 +1,61 @@
+// license:GPLv3+
+
+#pragma once
+
+#include <cassert>
+#include <cstdio>
+#include <cstdarg>
+#include <filesystem>
+#include <format>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <tchar.h>
+#include <locale>
+#include <codecvt>
+#endif
+
+#ifndef _WIN32
+#include <dlfcn.h>
+#include <climits>
+#include <unistd.h>
+#endif
+
+#include <string>
+using namespace std::string_literals;
+using namespace std::string_view_literals;
+using std::string;
+
+#include <vector>
+using std::vector;
+
+// Shared logging
+#include "plugins/LoggingPlugin.h"
+
+// VPX main API
+#include "plugins/VPXPlugin.h"
+
+namespace Inspector
+{
+
+#ifdef _MSC_VER
+#define PATH_SEPARATOR_CHAR '\\'
+#else
+#define PATH_SEPARATOR_CHAR '/'
+#endif
+
+template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+template <typename T> constexpr __forceinline T saturate(const T x) { return std::max(std::min(x, T { 1 }), T { 0 }); }
+
+string TrimLeading(const string& str, const string& whitespace);
+string TrimTrailing(const string& str, const string& whitespace);
+bool try_parse_float(const string& str, float& value);
+bool try_parse_int(const string& str, int& value);
+std::filesystem::path lowerCase(std::filesystem::path input);
+std::filesystem::path GetPluginPath();
+
+}
