@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <thread>
 
+
 namespace PinMAME {
 
 class Game;

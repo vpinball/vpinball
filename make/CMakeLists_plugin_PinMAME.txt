@@ -34,6 +34,12 @@ set(PINMAME_PLUGIN_SOURCES
 if(BUILD_SHARED)
    add_library(PinMAMEPlugin MODULE ${PINMAME_PLUGIN_SOURCES})
 
+   if(NOT (PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw"))
+      target_compile_definitions(PinMAMEPlugin PRIVATE
+         "__forceinline=__attribute__((always_inline)) inline"
+      )
+   endif()
+
    target_include_directories(PinMAMEPlugin PUBLIC
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
@@ -139,6 +145,10 @@ if(BUILD_STATIC)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/pinmame
+   )
+
+   target_compile_definitions(PinMAMEPlugin PRIVATE
+      "__forceinline=__attribute__((always_inline)) inline"
    )
 
    set_target_properties(PinMAMEPlugin PROPERTIES
