@@ -56,6 +56,7 @@ static unsigned int onInputSrcChangedId;
 
 static std::mutex sourceMutex;
 static bool isRunning = false;
+static bool isReady = false;
 static DevSrcId pinmameDevSrc = {};
 static InputSrcId pinmameInputSrc = {};
 static DevSrcId b2sDevSrc = {};
@@ -135,6 +136,13 @@ static void PollThread(const string& tablePath, const string& gameId)
       {
          std::lock_guard lock(sourceMutex);
 
+         if (!isReady)
+         {
+            for (unsigned int i = 0; i < b2sDevSrc.nDevices; i++)
+               pDOF->DataReceive('E', b2sDevSrc.deviceDefs[i].id.deviceId, b2sDevSrc.GetFloatState(i) > 0.5f ? 1 : 0);
+            isReady = true;
+         }
+
          isInitialState |= wireStates.size() != pinmameInputSrc.nInputs;
          isInitialState |= pinmameDeviceStates.size() != pinmameDevSrc.nDevices;
 
@@ -180,13 +188,17 @@ static void PollThread(const string& tablePath, const string& gameId)
       // Fixed update at 60 FPS
       std::this_thread::sleep_for(std::chrono::microseconds(16666));
    }
+   {
+      std::lock_guard lock(sourceMutex);
+      isReady = false;
+   }
    pDOF->Finish();
 }
 
 static void MSGPIAPI OnB2SStateChg(unsigned int index, void* context)
 {
    std::lock_guard lock(sourceMutex);
-   if (index < b2sDevSrc.nDevices && pDOF != nullptr)
+   if (isReady && index < b2sDevSrc.nDevices && pDOF != nullptr)
    {
       float state = b2sDevSrc.GetFloatState(index);
       // LOGD(std::format("B2S state change E{:d} = {:f}", b2sDevSrc.deviceDefs[index].id.deviceId, state));
