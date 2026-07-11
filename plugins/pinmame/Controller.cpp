@@ -10,17 +10,27 @@
 
 namespace PinMAME {
 
+__forceinline uint8_t saturatedByte(float v) { return (uint8_t)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
+
 Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config)
    : m_msgApi(api)
    , m_endpointId(endpointId)
+   , m_threadLock(std::this_thread::get_id())
 {
    PinmameSetConfig(&config);
-   // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use libpinmame controller messages
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
 
    m_vpmPath = config.vpmPath;
 
+   m_getInputSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
+   m_onInputChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onInputChangedMsgId, OnInputSrcChanged, this);
+
+   m_getDeviceSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+   m_onDeviceChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onDeviceChangedMsgId, OnDeviceSrcChanged, this);
+  
    m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnDmdSrcChanged, this);
@@ -28,10 +38,22 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
 
 Controller::~Controller()
 {
+   assert(m_threadLock == std::this_thread::get_id());
+
    Stop();
+   
+   m_msgApi->UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged, this);
+   m_msgApi->ReleaseMsgID(m_onInputChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getInputSrcMsgId);
+
+   m_msgApi->UnsubscribeMsg(m_onDeviceChangedMsgId, OnDeviceSrcChanged, this);
+   m_msgApi->ReleaseMsgID(m_onDeviceChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getDeviceSrcMsgId);
+
    m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
+
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
    for (const auto& settings : m_gameSettings)
@@ -228,15 +250,284 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
    return m_soundCommands;
 }
 
+// Inputs
+
+void Controller::OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   Controller* me = static_cast<Controller*>(userData);
+   assert(me->m_threadLock == std::this_thread::get_id());
+   me->m_inputUpdatePending = true;
+}
+
+void Controller::UpdateInputSrc() const
+{
+   assert(m_threadLock == std::this_thread::get_id());
+   if (!m_inputUpdatePending)
+      return;
+
+   m_inputUpdatePending = false;
+   m_inputs = { };
+   m_switches.clear();
+   m_switchMap.clear();
+   m_dipSwitches.clear();
+   m_dipSwitchMap.clear();
+
+   GetInputSrcMsg getInputMsg = { 0, 0, nullptr };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getInputSrcMsgId, &getInputMsg);
+   vector<InputSrcId> inputSources(getInputMsg.count);
+   getInputMsg = { getInputMsg.count, 0, inputSources.data() };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getInputSrcMsgId, &getInputMsg);
+   for (const InputSrcId& src : inputSources)
+   {
+      if (src.id.endpointId == m_endpointId)
+      {
+         m_inputs = src;
+         break;
+      }
+   }
+
+   for (unsigned int i = 0; i < m_inputs.nInputs; i++)
+   {
+      switch (m_inputs.inputDefs[i].id.groupId)
+      {
+      case 0x0001:
+         m_switches.push_back(i);
+         if (m_switchMap.size() < m_inputs.inputDefs[i].id.deviceId + 1)
+            m_switchMap.resize(m_inputs.inputDefs[i].id.deviceId + 1, UINT_MAX);
+         m_switchMap[m_inputs.inputDefs[i].id.deviceId] = i;
+         if (m_inputs.inputDefs[i].id.deviceId < m_switchStates.size())
+            m_inputs.SetInputState(i, m_switchStates[m_inputs.inputDefs[i].id.deviceId]);
+         break;
+      case 0x0002:
+         m_dipSwitches.push_back(i);
+         if (m_dipSwitchMap.size() < m_inputs.inputDefs[i].id.deviceId + 1)
+            m_dipSwitchMap.resize(m_inputs.inputDefs[i].id.deviceId + 1, UINT_MAX);
+         m_dipSwitchMap[m_inputs.inputDefs[i].id.deviceId] = i;
+         if (m_inputs.inputDefs[i].id.deviceId < m_dipSwitchStates.size())
+            m_inputs.SetInputState(i, m_dipSwitchStates[m_inputs.inputDefs[i].id.deviceId]);
+         break;
+      }
+   }
+}
+
+bool Controller::GetSwitch(int switchNo) const
+{ 
+   if (switchNo < 0)
+      return false;
+
+   UpdateInputSrc();
+
+   if (switchNo < m_switchMap.size())
+      if (const unsigned int index = m_switchMap[switchNo]; index < m_inputs.nInputs)
+         return m_inputs.GetInputState(index) != 0;
+
+   return switchNo < m_switchStates.size() ? m_switchStates[switchNo] : false;
+}
+
+void Controller::SetSwitch(int switchNo, bool state)
+{
+   if (switchNo < 0)
+      return;
+
+   UpdateInputSrc();
+
+   if (m_switchStates.size() < switchNo + 1)
+      m_switchStates.resize(switchNo + 1, false);
+   m_switchStates[switchNo] = state;
+
+   if (switchNo < m_switchMap.size())
+      if (const unsigned int index = m_switchMap[switchNo]; index < m_inputs.nInputs)
+         m_inputs.SetInputState(index, state ? 1 : 0);
+}
+
+int Controller::GetDip(int dipSwitchNo) const
+{
+   if (dipSwitchNo < 0)
+      return false;
+
+   UpdateInputSrc();
+
+   if (dipSwitchNo < m_dipSwitchMap.size())
+      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_inputs.nInputs)
+         return m_inputs.GetInputState(index) != 0;
+
+   return dipSwitchNo < m_dipSwitchStates.size() ? m_dipSwitchStates[dipSwitchNo] : false;
+}
+
+void Controller::SetDip(int dipSwitchNo, int state)
+{
+   if (dipSwitchNo < 0)
+      return;
+
+   UpdateInputSrc();
+
+   if (m_dipSwitchStates.size() < dipSwitchNo + 1)
+      m_dipSwitchStates.resize(dipSwitchNo + 1, false);
+   m_dipSwitchStates[dipSwitchNo] = state;
+
+   if (dipSwitchNo < m_dipSwitchMap.size())
+      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_inputs.nInputs)
+         m_inputs.SetInputState(index, state ? 1 : 0);
+}
+
+
+// Devices
+
+void Controller::OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   Controller* me = static_cast<Controller*>(userData);
+   assert(me->m_threadLock == std::this_thread::get_id());
+   me->m_deviceUpdatePending = true;
+}
+
+void Controller::UpdateDeviceSrc() const
+{
+   assert(m_threadLock == std::this_thread::get_id());
+   if (!m_deviceUpdatePending)
+      return;
+
+   m_deviceUpdatePending = false;
+   m_devices = { };
+   m_solenoids.clear();
+   m_solenoidMap.clear();
+   m_gis.clear();
+   m_giMap.clear();
+   m_lamps.clear();
+   m_lampMap.clear();
+
+   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getDeviceSrcMsgId, &getSrcMsg);
+   vector<DevSrcId> deviceSources(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, deviceSources.data() };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getDeviceSrcMsgId, &getSrcMsg);
+   for (const DevSrcId& src : deviceSources)
+   {
+      if (src.id.endpointId == m_endpointId)
+      {
+         m_devices = src;
+         break;
+      }
+   }
+
+   for (unsigned int i = 0; i < m_devices.nDevices; i++)
+   {
+      switch (m_devices.deviceDefs[i].id.groupId & 0xFF00)
+      {
+      case 0x0000:
+         m_solenoids.push_back(i);
+         if (m_solenoidMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
+            m_solenoidMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
+         m_solenoidMap[m_devices.deviceDefs[i].id.deviceId] = i;
+         break;
+      case 0x0100:
+         m_gis.push_back(i);
+         if (m_giMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
+            m_giMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
+         m_giMap[m_devices.deviceDefs[i].id.deviceId] = i;
+         break;
+      case 0x0200:
+         m_lamps.push_back(i);
+         if (m_lampMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
+            m_lampMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
+         m_lampMap[m_devices.deviceDefs[i].id.deviceId] = i;
+         break;
+      case 0x0300: break; // TODO Mech
+      }
+   }
+}
+
+bool Controller::GetSolenoid(int solenoid) const
+{
+   UpdateDeviceSrc();
+   
+   if (solenoid < 0 || solenoid >= m_solenoidMap.size())
+      return false;
+   
+   if (const unsigned int index = m_solenoidMap[solenoid]; index < m_devices.nDevices)
+      return m_devices.GetFloatState(index) != 0.f;
+
+   return false;
+}
+
+bool Controller::GetLamp(int lamp) const
+{
+   UpdateDeviceSrc();
+
+   if (lamp < 0 || lamp >= m_lampMap.size())
+      return false;
+
+   if (const unsigned int index = m_lampMap[lamp]; index < m_devices.nDevices)
+      return m_devices.GetFloatState(index) != 0.f;
+
+   return false;
+}
+
+int Controller::GetGIString(int giString) const
+{
+   UpdateDeviceSrc();
+
+   if (giString < 0 || giString >= m_giMap.size())
+      return false;
+   
+   if (const unsigned int index = m_giMap[giString]; index < m_devices.nDevices)
+      return m_devices.GetFloatState(index) != 0.f;
+
+   return false;
+}
+
 const vector<PinmameLampState>& Controller::GetChangedLamps()
 {
-   m_lampStates.resize(PinmameGetMaxLamps()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedLamps(m_lampStates.data());
-   if (count < 0) // report error ?
-      count = 0;
-   m_lampStates.resize(count);
+   UpdateDeviceSrc();
+   m_prevDeviceState.resize(m_devices.nDevices, 0);
+   m_lampStates.clear();
+   for (int lampIndex : m_lamps)
+   {
+      const uint8_t state = saturatedByte(m_devices.GetFloatState(lampIndex));
+      if (m_prevDeviceState[lampIndex] != state)
+      {
+         m_lampStates.emplace_back(m_devices.deviceDefs[lampIndex].id.deviceId, state);
+         m_prevDeviceState[lampIndex] = state;
+      }
+   }
    return m_lampStates;
 }
+
+const vector<PinmameGIState>& Controller::GetChangedGIStrings()
+{
+   UpdateDeviceSrc();
+   m_prevDeviceState.resize(m_devices.nDevices, 0);
+   m_giStates.clear();
+   for (int giIndex : m_gis)
+   {
+      const uint8_t state = saturatedByte(m_devices.GetFloatState(giIndex));
+      if (m_prevDeviceState[giIndex] != state)
+      {
+         m_giStates.emplace_back(m_devices.deviceDefs[giIndex].id.deviceId, state);
+         m_prevDeviceState[giIndex] = state;
+      }
+   }
+   return m_giStates;
+}
+
+const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
+{
+   UpdateDeviceSrc();
+   m_prevDeviceState.resize(m_devices.nDevices, 0);
+   m_solenoidStates.clear();
+   for (int solIndex : m_solenoids)
+   {
+      const uint8_t state = saturatedByte(m_devices.GetFloatState(solIndex));
+      if (m_prevDeviceState[solIndex] != state)
+      {
+         m_solenoidStates.emplace_back(m_devices.deviceDefs[solIndex].id.deviceId, state);
+         m_prevDeviceState[solIndex] = state;
+      }
+   }
+   return m_solenoidStates;
+}
+
+
+// Segment Displays
 
 const vector<PinmameLEDState>& Controller::GetChangedLEDs(int nHigh, int nLow, int nnHigh, int nnLow)
 {
@@ -250,49 +541,36 @@ const vector<PinmameLEDState>& Controller::GetChangedLEDs(int nHigh, int nLow, i
    return m_ledStates;
 }
 
-const vector<PinmameGIState>& Controller::GetChangedGIStrings()
-{
-   m_giStates.resize(PinmameGetMaxGIs()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedGIs(m_giStates.data());
-   if (count < 0) // report error ?
-      count = 0;
-   m_giStates.resize(count);
-   return m_giStates;
-}
 
-const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
-{
-   m_solenoidStates.resize(PinmameGetMaxSolenoids()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedSolenoids(m_solenoidStates.data());
-   if (count < 0) // report error ?
-      count = 0;
-   m_solenoidStates.resize(count);
-   return m_solenoidStates;
-}
+// DMD Displays
 
 void Controller::OnDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Controller* me = static_cast<Controller*>(userData);
-   me->m_defaultDmd.id.id = 0;
+   assert(me->m_threadLock == std::this_thread::get_id());
+   me->m_dmdUpdatePending = true;
 }
 
 void Controller::UpdateDmdSrc()
 {
-   if (m_defaultDmd.id.id == 0)
+   assert(m_threadLock == std::this_thread::get_id());
+   if (!m_dmdUpdatePending)
+      return;
+
+   m_dmdUpdatePending = false;
+   m_defaultDmd = { };
+   unsigned int largest = 128;
+   GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
+   vector<DisplaySrcId> displaySources(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, displaySources.data() };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
+   for (const DisplaySrcId& src : displaySources)
    {
-      unsigned int largest = 128;
-      GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
-      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
-      vector<DisplaySrcId> displaySources(getSrcMsg.count);
-      getSrcMsg = { getSrcMsg.count, 0, displaySources.data() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
-      for (const DisplaySrcId& src : displaySources)
+      if (src.id.endpointId == m_endpointId && src.width >= largest)
       {
-         if (src.id.endpointId == m_endpointId && src.width >= largest)
-         {
-            m_defaultDmd = src;
-            largest = src.width;
-         }
+         m_defaultDmd = src;
+         largest = src.width;
       }
    }
 }
