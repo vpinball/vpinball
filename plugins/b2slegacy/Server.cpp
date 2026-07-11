@@ -806,14 +806,13 @@ void Server::MyB2SSetData(int id, int value)
       UpdateDevSrc();
    }
    else
-   {
       it->second = static_cast<float>(value);
-      const auto chgIt = m_stateChgCallbacks.find(id);
-      if (chgIt != m_stateChgCallbacks.end())
-      {
-         for (const auto& cb : chgIt->second)
-            cb.m_callback(cb.m_index, cb.m_context);
-      }
+
+   const auto chgIt = m_stateChgCallbacks.find(id);
+   if (chgIt != m_stateChgCallbacks.end())
+   {
+      for (const auto& cb : chgIt->second)
+         cb.m_callback(cb.m_index, cb.m_context);
    }
 
    if (m_pB2SData->IsBackglassRunning()) {

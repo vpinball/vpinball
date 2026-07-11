@@ -259,14 +259,13 @@ void B2SServer::B2SSetData(int b2sId, int value)
       UpdateDevSrc();
    }
    else
-   {
       it->second = static_cast<float>(value);
-      const auto chgIt = m_stateChgCallbacks.find(b2sId);
-      if (chgIt != m_stateChgCallbacks.end())
-      {
-         for (const auto& cb : chgIt->second)
-            cb.m_callback(cb.m_index, cb.m_context);
-      }
+
+   const auto chgIt = m_stateChgCallbacks.find(b2sId);
+   if (chgIt != m_stateChgCallbacks.end())
+   {
+      for (const auto& cb : chgIt->second)
+         cb.m_callback(cb.m_index, cb.m_context);
    }
 }
 
