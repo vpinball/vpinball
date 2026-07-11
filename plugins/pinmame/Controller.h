@@ -6,6 +6,7 @@
 #include "plugins/ControllerPlugin.h"
 
 #include <unordered_map>
+#include <thread>
 
 namespace PinMAME {
 
@@ -62,35 +63,38 @@ public:
    void SetTimeFence(double fenceIns) { PinmameSetTimeFence(fenceIns); }
    void Stop();
 
-   // Emulated machine state access
+   std::vector<uint8_t> GetNVRAM() const;
+   const vector<PinmameNVRAMState>& GetChangedNVRAM();
+   const vector<PinmameSoundCommand>& GetNewSoundCommands();
+
+   // Inputs
+   bool GetSwitch(int nSwitchNo) const;
+   void SetSwitch(int nSwitchNo, bool state);
+   int GetDip(int nNo) const;
+   void SetDip(int nNo, int state);
+
+   // Devices
+   bool GetSolenoid(int nSolenoid) const;
+   bool GetLamp(int nLamp) const;
+   int GetGIString(int nString) const;
    int GetGetMech(int mechNo) const { return PinmameGetMech(mechNo); }
    void SetMech(int mechNo, int newVal);
-   bool GetSwitch(int nSwitchNo) const { return PinmameGetSwitch(nSwitchNo); }
-   void SetSwitch(int nSwitchNo, bool state) { PinmameSetSwitch(nSwitchNo, state ? 1 : 0); }
-   int GetDip(int nNo) const { return PinmameGetDIP(nNo); }
-   void SetDip(int nNo, int state) { PinmameSetDIP(nNo, state); }
-   bool GetSolenoid(int nSolenoid) const { return PinmameGetSolenoid(nSolenoid); }
-   bool GetLamp(int nLamp) const { return PinmameGetLamp(nLamp); }
-   int GetGIString(int nString) const { return PinmameGetGI(nString); }
-   std::vector<uint8_t> GetNVRAM() const;
+   const vector<PinmameLampState>& GetChangedLamps();
+   const vector<PinmameGIState>& GetChangedGIStrings();
+   const vector<PinmameSolenoidState>& GetChangedSolenoids();
+
+   // Segment displays
+   const vector<PinmameLEDState>& GetChangedLEDs(int nHigh, int nLow, int nnHigh = 0, int nnLow = 0);
+
+   // DMD displays
    int GetRawDmdWidth();
    int GetRawDmdHeight();
    std::vector<uint8_t> GetRawDmdPixels();
    std::vector<uint32_t> GetRawDmdColoredPixels();
-   const vector<PinmameNVRAMState>& GetChangedNVRAM();
-   const vector<PinmameSoundCommand>& GetNewSoundCommands();
-   const vector<PinmameLampState>& GetChangedLamps();
-   const vector<PinmameLEDState>& GetChangedLEDs(int nHigh, int nLow, int nnHigh = 0, int nnLow = 0);
-   const vector<PinmameGIState>& GetChangedGIStrings();
-   const vector<PinmameSolenoidState>& GetChangedSolenoids();
-
-   // TODO should we bridge this ? but to what as External dmddevice.dll is handled through the plugin bus ?
-   bool GetShowPinDMD() const { LOGE("ShowPinDMD is not implemented"s); return false; }
-   void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is not implemented"s); }
-
-   // TODO should we bridge this ? but to what as Windows DMD is handled through the plugin bus ?
-   bool GetShowWinDMD() const { LOGE("ShowWinDMD is not implemented"s); return false; }
-   void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is not implemented"s); }
+   bool GetShowPinDMD() const { LOGE("ShowPinDMD is not deprecated"s); return false; } // Deprecated as this must not be part of the table script but of the global setup
+   void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is not deprecated"s); } // Deprecated as this must not be part of the table script but of the global setup
+   bool GetShowWinDMD() const { LOGE("ShowWinDMD is not deprecated"s); return false; } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+   void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is not deprecated"s); } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
 
    // All these properties/methods are part of the VPinMAME IDL but doesn't seem to be used anywhere (or are deprecated)
    //STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
@@ -164,27 +168,56 @@ private:
    Settings* m_settings = nullptr;
    PinmameGame* m_pPinmameGame = nullptr;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
-   vector<PinmameLampState> m_lampStates;
    vector<PinmameLEDState> m_ledStates;
    vector<PinmameNVRAMState> m_nvramStates;
    vector<PinmameSoundCommand> m_soundCommands;
-   vector<PinmameGIState> m_giStates;
-   vector<PinmameSolenoidState> m_solenoidStates;
    string m_splashInfoLine; // Info line shown during startup
    bool m_hidden = true; // Show/Hide PinMAME window
 
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
+
+   unsigned int m_getInputSrcMsgId, m_onInputChangedMsgId;
+   mutable bool m_inputUpdatePending = true;
+   mutable InputSrcId m_inputs { };
+   mutable vector<int> m_switches;
+   mutable vector<bool> m_switchStates;
+   mutable vector<unsigned int> m_switchMap;
+   mutable vector<int> m_dipSwitches;
+   mutable vector<bool> m_dipSwitchStates;
+   mutable vector<unsigned int> m_dipSwitchMap;
+   static void OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   void UpdateInputSrc() const;
+
+   unsigned int m_getDeviceSrcMsgId, m_onDeviceChangedMsgId;
+   vector<uint8_t> m_prevDeviceState;
+   mutable bool m_deviceUpdatePending = true;
+   mutable DevSrcId m_devices { };
+   mutable vector<int> m_solenoids;
+   mutable vector<unsigned int> m_solenoidMap;
+   mutable vector<PinmameSolenoidState> m_solenoidStates;
+   mutable vector<int> m_gis;
+   mutable vector<unsigned int> m_giMap;
+   mutable vector<PinmameGIState> m_giStates;
+   mutable vector<int> m_lamps;
+   mutable vector<unsigned int> m_lampMap;
+   mutable vector<PinmameLampState> m_lampStates;
+   static void OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   void UpdateDeviceSrc() const;
+
    unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
-   DisplaySrcId m_defaultDmd {};
-   void UpdateDmdSrc();
+   bool m_dmdUpdatePending = true;
+   DisplaySrcId m_defaultDmd { };
    static void OnDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   void UpdateDmdSrc();
 
    void (*m_onDestroyHandler)(Controller*) = nullptr;
    void (*m_onGameStartHandler)(Controller*) = nullptr;
    void (*m_onGameEndHandler)(Controller*) = nullptr;
 
    bool m_cheat = false;
+
+   const std::thread::id m_threadLock;
 };
 
 }
