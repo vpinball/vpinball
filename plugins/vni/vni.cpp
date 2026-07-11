@@ -93,7 +93,8 @@ static void ColorizeThread()
       if (frame.frameId != lastFrameId)
       {
          lastFrameId = frame.frameId;
-         const uint32_t result = Vni_Colorize(pVni, static_cast<const uint8_t*>(frame.frame), dmdId.width, dmdId.height, 2);
+         const uint8_t bitlen = dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 ? 4 : 2;
+         const uint32_t result = Vni_Colorize(pVni, static_cast<const uint8_t*>(frame.frame), dmdId.width, dmdId.height, bitlen);          
          if (result)
          {
             const Vni_Frame_Struc* vniFrame = Vni_GetFrame(pVni);
