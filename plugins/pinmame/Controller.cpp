@@ -436,6 +436,44 @@ void Controller::UpdateDeviceSrc() const
    }
 }
 
+long Controller::GetSolMask(int nLow) const
+{
+   switch (nLow)
+   {
+   case 0: return m_solMask & 0x0FFFFFFFFULL;
+   case 1: return (m_solMask >> 32) & 0x0FFFFFFFFULL;
+   case 2: return m_deviceMode;
+   default: return -1;
+   }
+}
+
+void Controller::SetSolMask(int nLow, long newVal)
+{
+   switch (nLow)
+   {
+   case 0: m_solMask = (m_solMask & 0xFFFFFFFF00000000ULL) | newVal; break;
+   case 1: m_solMask = (m_solMask & 0x00000000FFFFFFFFULL) | (((uint64_t)newVal) << 32); break;
+   case 2:
+      if (DM_BINARY <= newVal && newVal <= DM_PHYSOUT)
+      {
+         m_deviceMode = (DeviceMode)newVal;
+         PinmameSetSolenoidMask(2, newVal);
+      }
+      break;
+   }
+}
+
+int Controller::GetModOutputType(int output, int no) const
+{
+   return output != static_cast<PINMAME_MOD_OUTPUT_TYPE>(PINMAME_MOD_OUTPUT_TYPE_SOLENOID) ? 0 : PinmameGetModOutputType(output, no);
+}
+
+void Controller::SetModOutputType(int output, int no, int newVal)
+{
+   if (output == static_cast<PINMAME_MOD_OUTPUT_TYPE>(PINMAME_MOD_OUTPUT_TYPE_SOLENOID))
+      PinmameSetModOutputType(output, no, static_cast<PINMAME_MOD_OUTPUT_TYPE>(newVal));
+}
+
 bool Controller::GetSolenoid(int solenoid) const
 {
    UpdateDeviceSrc();
@@ -519,7 +557,8 @@ const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
       const uint8_t state = saturatedByte(m_devices.GetFloatState(solIndex));
       if (m_prevDeviceState[solIndex] != state)
       {
-         m_solenoidStates.emplace_back(m_devices.deviceDefs[solIndex].id.deviceId, state);
+         if (solIndex >= 64 || (m_solMask & 1ULL << solIndex) != 0)
+            m_solenoidStates.emplace_back(m_devices.deviceDefs[solIndex].id.deviceId, state);
          m_prevDeviceState[solIndex] = state;
       }
    }
