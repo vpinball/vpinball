@@ -233,9 +233,13 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
          liveMapping->GetType() == SensorMapping::Type::Acceleration  ? "Scale to apply to the value acquired to convert it to m/s^2"s
             : liveMapping->GetType() == SensorMapping::Type::Velocity ? "Scale to apply to the value acquired to convert it to m/s or p.u./s"s
                                                                       : "Scale to apply to acquired value"s,
-         false, 0.f, 20.f, 0.f, 1.f),
-      100.f,
-      "%4.1f %%", //
+         false, 0.f,
+         liveMapping->GetType() == SensorMapping::Type::Acceleration  ? 80.f
+            : liveMapping->GetType() == SensorMapping::Type::Velocity ? 20.f
+                                                                      : 10.f,
+         0.f, 1.f),
+      1.f,
+      "%4.3f", //
       [liveScale]() { return fabs(liveScale); }, // Live
       [storedScale](const Settings&) { return fabs(storedScale); }, // Stored
       [this, liveScale](float, float v)
