@@ -41,20 +41,11 @@ public:
    string GetSplashInfoLine() const { return m_splashInfoLine; }
    void SetSplashInfoLine(const string& text) { m_splashInfoLine = text; }
 
-   bool GetHandleKeyboard() const { return PinmameGetHandleKeyboard(); }
-   void SetHandleKeyboard(const bool handle) {PinmameSetHandleKeyboard(handle); }
-
    bool GetHandleMechanics() const { return PinmameGetHandleMechanics(); }
    void SetHandleMechanics(const bool handle) { PinmameSetHandleMechanics(handle); }
 
    bool GetHidden() const { return m_hidden; }
    void SetHidden(const bool hidden) { m_hidden = hidden; }
-
-   int GetModOutputType(int output, int no) const { return output != static_cast<PINMAME_MOD_OUTPUT_TYPE>(PINMAME_MOD_OUTPUT_TYPE_SOLENOID) ? 0 : PinmameGetModOutputType(output, no); }
-   void SetModOutputType(int output, int no, int newVal) { if (output == static_cast<PINMAME_MOD_OUTPUT_TYPE>(PINMAME_MOD_OUTPUT_TYPE_SOLENOID)) PinmameSetModOutputType(output, no, static_cast<PINMAME_MOD_OUTPUT_TYPE>(newVal)); }
-
-   long GetSolMask(int nLow) const { return PinmameGetSolenoidMask(nLow); }
-   void SetSolMask(int nLow, long newVal) { if ((0 <= nLow && nLow <= 2) || (1000 <= nLow && nLow < 2999)) PinmameSetSolenoidMask(nLow, newVal); }
 
    void Run(long hParentWnd = 0L, int nMinVersion = 100);
    bool GetRunning() const { return PinmameIsRunning(); }
@@ -74,6 +65,10 @@ public:
    void SetDip(int nNo, int state);
 
    // Devices
+   long GetSolMask(int nLow) const;
+   void SetSolMask(int nLow, long newVal); // Define device emulation mode, or mask applied to GetChangedSolenoids
+   int GetModOutputType(int output, int no) const; // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
+   void SetModOutputType(int output, int no, int newVal); // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
    bool GetSolenoid(int nSolenoid) const;
    bool GetLamp(int nLamp) const;
    int GetGIString(int nString) const;
@@ -91,10 +86,15 @@ public:
    int GetRawDmdHeight();
    std::vector<uint8_t> GetRawDmdPixels();
    std::vector<uint32_t> GetRawDmdColoredPixels();
-   bool GetShowPinDMD() const { LOGE("ShowPinDMD is not deprecated"s); return false; } // Deprecated as this must not be part of the table script but of the global setup
-   void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is not deprecated"s); } // Deprecated as this must not be part of the table script but of the global setup
-   bool GetShowWinDMD() const { LOGE("ShowWinDMD is not deprecated"s); return false; } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
-   void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is not deprecated"s); } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+   bool GetShowPinDMD() const { LOGE("ShowPinDMD is deprecated"s); return false; } // Deprecated as this must not be part of the table script but of the global setup
+   void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is deprecated"s); } // Deprecated as this must not be part of the table script but of the global setup
+   bool GetShowWinDMD() const { LOGE("ShowWinDMD is deprecated"s); return false; } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+   void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is deprecated"s); } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+
+   // Note: we force input handling to be always disabled as it would lead to setup problems and conflicts.
+   // All interactions must be performed through the script or plugin API
+   bool GetHandleKeyboard() const { LOGE("GetHandleKeyboard is deprecated"s); return false; }
+   void SetHandleKeyboard(const bool handle) { LOGE("SetHandleKeyboard is deprecated"s); }
 
    // All these properties/methods are part of the VPinMAME IDL but doesn't seem to be used anywhere (or are deprecated)
    //STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
@@ -189,6 +189,14 @@ private:
    static void OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    void UpdateInputSrc() const;
 
+   enum DeviceMode
+   {
+      DM_BINARY,
+      DM_MODOUT,
+      DM_PHYSOUT
+   };
+   uint64_t m_solMask = 0xFFFFFFFFFFFFFFFFULL; // Mask applied to (and only to) GetChangedSolenoids
+   DeviceMode m_deviceMode = DM_BINARY;
    unsigned int m_getDeviceSrcMsgId, m_onDeviceChangedMsgId;
    vector<uint8_t> m_prevDeviceState;
    mutable bool m_deviceUpdatePending = true;
