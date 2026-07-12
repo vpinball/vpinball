@@ -252,6 +252,9 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 
 // Inputs
 
+// Some PinMAME drivers defines a virtual matrix column for cabinet switches and use negative indices to access it (Whitestar for example)
+static constexpr int SWITCH_OFFSET = 8;
+
 void Controller::OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Controller* me = static_cast<Controller*>(userData);
@@ -291,13 +294,17 @@ void Controller::UpdateInputSrc() const
       switch (m_inputs.inputDefs[i].id.groupId)
       {
       case 0x0001:
+      {
          m_switches.push_back(i);
-         if (m_switchMap.size() < m_inputs.inputDefs[i].id.deviceId + 1)
-            m_switchMap.resize(m_inputs.inputDefs[i].id.deviceId + 1, UINT_MAX);
-         m_switchMap[m_inputs.inputDefs[i].id.deviceId] = i;
-         if (m_inputs.inputDefs[i].id.deviceId < m_switchStates.size())
-            m_inputs.SetInputState(i, m_switchStates[m_inputs.inputDefs[i].id.deviceId]);
+         const int switchOfs = static_cast<int16_t>(m_inputs.inputDefs[i].id.deviceId) + SWITCH_OFFSET;
+         assert(switchOfs >= 0);
+         if (m_switchMap.size() < switchOfs + 1)
+            m_switchMap.resize(switchOfs + 1, UINT_MAX);
+         m_switchMap[switchOfs] = i;
+         if (switchOfs < m_switchStates.size())
+            m_inputs.SetInputState(i, m_switchStates[switchOfs]);
          break;
+      }
       case 0x0002:
          m_dipSwitches.push_back(i);
          if (m_dipSwitchMap.size() < m_inputs.inputDefs[i].id.deviceId + 1)
@@ -311,32 +318,34 @@ void Controller::UpdateInputSrc() const
 }
 
 bool Controller::GetSwitch(int switchNo) const
-{ 
-   if (switchNo < 0)
+{
+   const int switchNoOfs = switchNo + SWITCH_OFFSET;
+   if (switchNoOfs < 0)
       return false;
 
    UpdateInputSrc();
 
-   if (switchNo < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNo]; index < m_inputs.nInputs)
+   if (switchNoOfs < m_switchMap.size())
+      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_inputs.nInputs)
          return m_inputs.GetInputState(index) != 0;
 
-   return switchNo < m_switchStates.size() ? m_switchStates[switchNo] : false;
+   return switchNoOfs < m_switchStates.size() ? m_switchStates[switchNoOfs] : false;
 }
 
 void Controller::SetSwitch(int switchNo, bool state)
 {
-   if (switchNo < 0)
+   const int switchNoOfs = switchNo + SWITCH_OFFSET;
+   if (switchNoOfs < 0)
       return;
 
    UpdateInputSrc();
 
-   if (m_switchStates.size() < switchNo + 1)
-      m_switchStates.resize(switchNo + 1, false);
-   m_switchStates[switchNo] = state;
+   if (m_switchStates.size() < switchNoOfs + 1)
+      m_switchStates.resize(switchNoOfs + 1, false);
+   m_switchStates[switchNoOfs] = state;
 
-   if (switchNo < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNo]; index < m_inputs.nInputs)
+   if (switchNoOfs < m_switchMap.size())
+      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_inputs.nInputs)
          m_inputs.SetInputState(index, state ? 1 : 0);
 }
 
