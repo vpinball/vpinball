@@ -20,6 +20,13 @@ enum class B2SRomIDType
 class B2SImage final
 {
 public:
+   // Used when the corresponding element is missing from the .directb2s: the
+   // On/Off backglass and DMD images are all optional.
+   B2SImage() noexcept
+      : m_image(nullptr)
+      , m_romId(0)
+      , m_romIdType(B2SRomIDType::NotDefined)
+   { }
    explicit B2SImage(const tinyxml2::XMLNode& root) noexcept;
    ~B2SImage();
 
