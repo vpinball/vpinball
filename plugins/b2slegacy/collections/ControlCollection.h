@@ -15,7 +15,7 @@ public:
 
 private:
    int m_digits = 0;
-   int m_score = 0;
+   int m_score = -1;
 };
 
 }
