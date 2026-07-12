@@ -8,6 +8,7 @@ namespace B2SLegacy {
 
 B2SReelDisplay::B2SReelDisplay()
 {
+   // create timers
    m_pTimerRR = new Timer(17, std::bind(&B2SReelDisplay::TimerRRTick, this, std::placeholders::_1));
    m_pTimerIA = new Timer(17, std::bind(&B2SReelDisplay::TimerIATick, this, std::placeholders::_1));
 }
@@ -51,12 +52,12 @@ void B2SReelDisplay::SetScore_(int score, int startAtIndex)
 
       int j = 1;
       for (int i = m_startDigit + m_digits - startAtIndex - 1; i >= m_startDigit; i--) {
-         const auto& it = m_reels.find(i);
-         if (it != m_reels.end()) {
-            const int value = it->second->GetCurrentText();
+         if (m_reels.contains(i)) {
+            B2SReelBox* pReelbox = m_reels[i];
+            const int value = pReelbox->GetCurrentText();
             const int newvalue = scoreAsStringX[i - m_startDigit] - '0'; // convert char to int
             const bool nextReelShouldWait = (value > newvalue && score > 0);
-            it->second->SetText(scoreAsStringX[i - m_startDigit] - '0', true);
+            m_reels[i]->SetText(scoreAsStringX[i - m_startDigit] - '0', true);
             // maybe get out here since the current reel is rolling over '9'
             if (nextReelShouldWait) {
                StartTimer(i, newvalue, score, j);
@@ -67,6 +68,8 @@ void B2SReelDisplay::SetScore_(int score, int startAtIndex)
       }
    }
 }
+
+// reel rolling timer stuff
 
 void B2SReelDisplay::StartTimer(int index, int newvalue, int score, int restartfromright)
 {

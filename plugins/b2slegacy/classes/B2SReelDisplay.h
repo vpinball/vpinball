@@ -34,6 +34,8 @@ private:
    int m_digits = 0;
    int m_score = -1;
    int m_nextScore = -1;
+
+   // reel rolling timer stuff
    int m_currentindex = 0;
    int m_currentnewvalue = 0;
    int m_currentscore = 0;
