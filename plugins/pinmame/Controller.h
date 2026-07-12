@@ -70,8 +70,8 @@ public:
    void SetSolMask(int nLow, long newVal); // Define device emulation mode, or mask applied to GetChangedSolenoids
    int GetModOutputType(int output, int no) const; // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
    void SetModOutputType(int output, int no, int newVal); // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
-   bool GetSolenoid(int nSolenoid) const;
-   bool GetLamp(int nLamp) const;
+   int GetSolenoid(int nSolenoid) const;
+   int GetLamp(int nLamp) const;
    int GetGIString(int nString) const;
    int GetGetMech(int mechNo) const { return PinmameGetMech(mechNo); }
    void SetMech(int mechNo, int newVal);
@@ -213,6 +213,8 @@ private:
    mutable vector<PinmameLampState> m_lampStates;
    static void OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    void UpdateDeviceSrc() const;
+   uint8_t GetLampValue(uint8_t value) const { return m_deviceMode == DM_PHYSOUT ? value : (value != 0 ? 1 : 0); }
+   uint8_t GetSolenoidValue(uint8_t value) const { return m_deviceMode != DM_BINARY ? value : (value != 0 ? 1 : 0); } // FIXME backward compatibility is more complex here as MODOUT was only available for a bunch of hardware (and buggy on some)
 
    unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
    bool m_dmdUpdatePending = true;

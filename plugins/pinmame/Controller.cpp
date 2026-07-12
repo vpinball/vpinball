@@ -474,30 +474,30 @@ void Controller::SetModOutputType(int output, int no, int newVal)
       PinmameSetModOutputType(output, no, static_cast<PINMAME_MOD_OUTPUT_TYPE>(newVal));
 }
 
-bool Controller::GetSolenoid(int solenoid) const
+int Controller::GetSolenoid(int solenoid) const
 {
    UpdateDeviceSrc();
    
    if (solenoid < 0 || solenoid >= m_solenoidMap.size())
-      return false;
+      return 0;
    
    if (const unsigned int index = m_solenoidMap[solenoid]; index < m_devices.nDevices)
-      return m_devices.GetFloatState(index) != 0.f;
+      return GetSolenoidValue(m_devices.GetByteState(index));
 
-   return false;
+   return 0;
 }
 
-bool Controller::GetLamp(int lamp) const
+int Controller::GetLamp(int lamp) const
 {
    UpdateDeviceSrc();
 
    if (lamp < 0 || lamp >= m_lampMap.size())
-      return false;
+      return 0;
 
    if (const unsigned int index = m_lampMap[lamp]; index < m_devices.nDevices)
-      return m_devices.GetFloatState(index) != 0.f;
+      return GetLampValue(m_devices.GetByteState(index));
 
-   return false;
+   return 0;
 }
 
 int Controller::GetGIString(int giString) const
@@ -508,19 +508,22 @@ int Controller::GetGIString(int giString) const
       return false;
    
    if (const unsigned int index = m_giMap[giString]; index < m_devices.nDevices)
-      return m_devices.GetFloatState(index) != 0.f;
+      return m_devices.GetByteState(index);
 
-   return false;
+   return 0;
 }
 
 const vector<PinmameLampState>& Controller::GetChangedLamps()
 {
    UpdateDeviceSrc();
-   m_prevDeviceState.resize(m_devices.nDevices, 0);
+
+   if (m_devices.nDevices > m_prevDeviceState.size())
+      m_prevDeviceState.resize(m_devices.nDevices, 0);
+
    m_lampStates.clear();
    for (int lampIndex : m_lamps)
    {
-      const uint8_t state = saturatedByte(m_devices.GetFloatState(lampIndex));
+      const uint8_t state = GetLampValue(m_devices.GetByteState(lampIndex));
       if (m_prevDeviceState[lampIndex] != state)
       {
          m_lampStates.emplace_back(m_devices.deviceDefs[lampIndex].id.deviceId, state);
@@ -533,11 +536,14 @@ const vector<PinmameLampState>& Controller::GetChangedLamps()
 const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 {
    UpdateDeviceSrc();
-   m_prevDeviceState.resize(m_devices.nDevices, 0);
+
+   if (m_devices.nDevices > m_prevDeviceState.size())
+      m_prevDeviceState.resize(m_devices.nDevices, 0);
+
    m_giStates.clear();
    for (int giIndex : m_gis)
    {
-      const uint8_t state = saturatedByte(m_devices.GetFloatState(giIndex));
+      const uint8_t state = m_devices.GetByteState(giIndex);
       if (m_prevDeviceState[giIndex] != state)
       {
          m_giStates.emplace_back(m_devices.deviceDefs[giIndex].id.deviceId, state);
@@ -550,14 +556,17 @@ const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
 {
    UpdateDeviceSrc();
-   m_prevDeviceState.resize(m_devices.nDevices, 0);
+
+   if (m_devices.nDevices > m_prevDeviceState.size())
+      m_prevDeviceState.resize(m_devices.nDevices, 0);
+
    m_solenoidStates.clear();
    for (int solIndex : m_solenoids)
    {
-      const uint8_t state = saturatedByte(m_devices.GetFloatState(solIndex));
+      const uint8_t state = GetSolenoidValue(m_devices.GetByteState(solIndex));
       if (m_prevDeviceState[solIndex] != state)
       {
-         if (solIndex >= 64 || (m_solMask & 1ULL << solIndex) != 0)
+         if (m_devices.deviceDefs[solIndex].id.deviceId >= 64 || (m_solMask & (1ULL << m_devices.deviceDefs[solIndex].id.deviceId)) != 0)
             m_solenoidStates.emplace_back(m_devices.deviceDefs[solIndex].id.deviceId, state);
          m_prevDeviceState[solIndex] = state;
       }
