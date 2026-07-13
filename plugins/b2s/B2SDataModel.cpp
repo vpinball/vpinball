@@ -118,7 +118,7 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
 static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath) noexcept
 {
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   return B2SImage(*node);
+   return node ? B2SImage(*node) : B2SImage();
 }
 
 template <class T> static vector<T> GetList(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& subNodeName) noexcept
@@ -242,6 +242,14 @@ B2SBulb::~B2SBulb()
    DeleteTexture(m_offImage);
 }
 
+
+B2SImage::B2SImage()
+   : m_image(nullptr)
+   , m_filename(""s)
+   , m_romId(0)
+   , m_romIdType(B2SRomIDType::NotDefined)
+{
+}
 
 B2SImage::B2SImage(const tinyxml2::XMLNode& root) noexcept
    : m_image(GetTextureAttribute(root, ""s, "Value"s))
