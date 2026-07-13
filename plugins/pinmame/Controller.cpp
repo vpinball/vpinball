@@ -445,6 +445,33 @@ void Controller::UpdateDeviceSrc() const
    }
 }
 
+uint8_t Controller::GetGIValue(float value) const
+{
+   // Recreate legacy VPinMAME values which depends on hardware generation and bulb integration mode
+   if (m_deviceMode == DM_PHYSOUT)
+      return saturatedByte(value);
+   else if (PinmameGetHardwareGen() & 0x00000000000ff) // All WPC: GI level is 0..8
+      return static_cast<uint8_t>(value * 8.f);
+   else
+      return value != 0.f ? 9 : 0; // Whitestar and SAM GI levels are either 0 or 9
+}
+
+uint8_t Controller::GetSolenoidValue(int solIndex, uint8_t value) const
+{
+   // Recreate legacy VPinMAME values which depends on hardware generation, output index and integration mode
+   switch (m_deviceMode)
+   {
+   case DM_BINARY: return value != 0 ? 1 : 0; // Original integration to binary state
+   case DM_MODSOL: // Simple linear integration added to the first 32 solenoids of WPC & SAM hardwares
+      if (solIndex <= 32 && (PinmameGetHardwareGen() & 0x01000000000ff))
+         return value;
+      else
+         return value != 0 ? 1 : 0;
+   case DM_PHYSOUT: return value; // Bulb integration to linear luminance 0..255
+   default: assert(false); return 0;
+   }
+}
+
 long Controller::GetSolMask(int nLow) const
 {
    switch (nLow)
@@ -491,7 +518,7 @@ int Controller::GetSolenoid(int solenoid) const
       return 0;
    
    if (const unsigned int index = m_solenoidMap[solenoid]; index < m_devices.nDevices)
-      return GetSolenoidValue(m_devices.GetByteState(index));
+      return GetSolenoidValue(solenoid, m_devices.GetByteState(index));
 
    return 0;
 }
@@ -514,10 +541,10 @@ int Controller::GetGIString(int giString) const
    UpdateDeviceSrc();
 
    if (giString < 0 || giString >= m_giMap.size())
-      return false;
+      return 0;
    
    if (const unsigned int index = m_giMap[giString]; index < m_devices.nDevices)
-      return m_devices.GetByteState(index);
+      return GetGIValue(m_devices.GetFloatState(index));
 
    return 0;
 }
@@ -552,7 +579,7 @@ const vector<PinmameGIState>& Controller::GetChangedGIStrings()
    m_giStates.clear();
    for (int giIndex : m_gis)
    {
-      const uint8_t state = m_devices.GetByteState(giIndex);
+      const uint8_t state = GetGIValue(m_devices.GetFloatState(giIndex));
       if (m_prevDeviceState[giIndex] != state)
       {
          m_giStates.emplace_back(m_devices.deviceDefs[giIndex].id.deviceId, state);
@@ -572,7 +599,7 @@ const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
    m_solenoidStates.clear();
    for (int solIndex : m_solenoids)
    {
-      const uint8_t state = GetSolenoidValue(m_devices.GetByteState(solIndex));
+      const uint8_t state = GetSolenoidValue(m_devices.deviceDefs[solIndex].id.deviceId, m_devices.GetByteState(solIndex));
       if (m_prevDeviceState[solIndex] != state)
       {
          if (m_devices.deviceDefs[solIndex].id.deviceId >= 64 || (m_solMask & (1ULL << m_devices.deviceDefs[solIndex].id.deviceId)) != 0)
