@@ -150,7 +150,7 @@ PSC_CLASS_START(B2S_Server, B2SServer)
    PSC_PROXY_PROP_RW(me, string, SplashInfoLine)
    PSC_PROXY_PROP_RW(me, bool, ShowTitle)
    PSC_PROXY_PROP_RW(me, bool, HandleKeyboard)
-   PSC_PROXY_PROP_RW(me, bool, HandleMechanics)
+   PSC_PROXY_PROP_RW(me, int32, HandleMechanics)
    PSC_PROXY_PROP_R(me, B2S_Settings, Settings)
    PSC_PROXY_PROP_RW_ARRAY1(me, int32, SolMask, int)
    // Run/Pause/Stop
