@@ -193,7 +193,7 @@ private:
    enum DeviceMode
    {
       DM_BINARY,
-      DM_MODOUT,
+      DM_MODSOL,
       DM_PHYSOUT
    };
    uint64_t m_solMask = 0xFFFFFFFFFFFFFFFFULL; // Mask applied to (and only to) GetChangedSolenoids
@@ -213,8 +213,9 @@ private:
    mutable vector<PinmameLampState> m_lampStates;
    static void OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    void UpdateDeviceSrc() const;
+   uint8_t GetGIValue(float value) const;
    uint8_t GetLampValue(uint8_t value) const { return m_deviceMode == DM_PHYSOUT ? value : (value != 0 ? 1 : 0); }
-   uint8_t GetSolenoidValue(uint8_t value) const { return m_deviceMode != DM_BINARY ? value : (value != 0 ? 1 : 0); } // FIXME backward compatibility is more complex here as MODOUT was only available for a bunch of hardware (and buggy on some)
+   uint8_t GetSolenoidValue(int solIndex, uint8_t value) const;
 
    unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
    bool m_dmdUpdatePending = true;
