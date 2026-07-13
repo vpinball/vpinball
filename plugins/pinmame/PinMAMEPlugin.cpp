@@ -139,7 +139,7 @@ PSC_CLASS_START(PinMAME_Controller, Controller)
    PSC_PROP_R(string, ROMName)
    PSC_PROP_RW(string, SplashInfoLine)
    PSC_PROP_RW(bool, HandleKeyboard)
-   PSC_PROP_RW(bool, HandleMechanics)
+   PSC_PROP_RW(int32, HandleMechanics)
    PSC_PROP_R(PinMAME_Settings, Settings)
    PSC_PROP_RW_ARRAY1(int32, SolMask, int)
    // Run/Pause/Stop

@@ -42,8 +42,8 @@ public:
    string GetSplashInfoLine() const { return m_splashInfoLine; }
    void SetSplashInfoLine(const string& text) { m_splashInfoLine = text; }
 
-   bool GetHandleMechanics() const { return PinmameGetHandleMechanics(); }
-   void SetHandleMechanics(const bool handle) { PinmameSetHandleMechanics(handle); }
+   int GetHandleMechanics() const { return PinmameGetHandleMechanics(); }
+   void SetHandleMechanics(const int handle) { PinmameSetHandleMechanics(handle); } // -1 will reset, 0/1 will disable/enable
 
    bool GetHidden() const { return m_hidden; }
    void SetHidden(const bool hidden) { m_hidden = hidden; }
@@ -107,8 +107,6 @@ public:
    //STDMETHOD(get_GIStrings)(/*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(get_Solenoids)(/*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(get_ChangedGIStrings)(/*[out, retval]*/ VARIANT *pVal);
-   //STDMETHOD(get_HandleMechanics)(/*[out, retval]*/ int *pVal);
-   //STDMETHOD(put_HandleMechanics)(/*[in]*/ int newVal);
    //STDMETHOD(get_Machines)(/*[in]*/ BSTR sMachine, /*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(get_Switches)(/*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(put_Switches)(/*[out, retval]*/ VARIANT newVal);
