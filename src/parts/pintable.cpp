@@ -1546,6 +1546,26 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
             feedback.AboutToProcessTable(csubobj + csounds + ctextures + cfonts);
 
+            // Load collection before resolving part names to handle name conflicts
+            for (int i = 0; i < ccollection; i++)
+            {
+               const wstring wStmName = L"Collection" + std::to_wstring(i);
+
+               IStream *pstmItem;
+               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               {
+                  CComObject<Collection> *pcol;
+                  CComObject<Collection>::CreateInstance(&pcol);
+                  pcol->AddRef();
+                  BiffReader reader(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
+                  pcol->Load(reader);
+                  AddCollection(pcol);
+                  pcol->Release();
+                  pstmItem->Release();
+                  pstmItem = nullptr;
+               }
+            }
+
             ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
             vector<IEditable *> parts;
             parts.resize(csubobj);
@@ -1821,25 +1841,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   ppf->Load(reader);
                   m_vfont.push_back(ppf);
                   ppf->Register();
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-            }
-
-            for (int i = 0; i < ccollection; i++)
-            {
-               const wstring wStmName = L"Collection" + std::to_wstring(i);
-
-               IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  CComObject<Collection> *pcol;
-                  CComObject<Collection>::CreateInstance(&pcol);
-                  pcol->AddRef();
-                  BiffReader reader(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
-                  pcol->Load(reader);
-                  AddCollection(pcol);
-                  pcol->Release();
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
