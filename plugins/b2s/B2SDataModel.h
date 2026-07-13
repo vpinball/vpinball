@@ -20,6 +20,7 @@ enum class B2SRomIDType
 class B2SImage final
 {
 public:
+   B2SImage();
    explicit B2SImage(const tinyxml2::XMLNode& root) noexcept;
    ~B2SImage();
 
