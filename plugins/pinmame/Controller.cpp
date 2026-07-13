@@ -253,7 +253,7 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 // Inputs
 
 // Some PinMAME drivers defines a virtual matrix column for cabinet switches and use negative indices to access it (Whitestar for example)
-static constexpr int SWITCH_OFFSET = 8;
+static constexpr int SWITCH_OFFSET = 16;
 
 void Controller::OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
