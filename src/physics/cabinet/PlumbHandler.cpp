@@ -28,14 +28,13 @@ PlumbHandler::~PlumbHandler()
 
 float PlumbHandler::GetPlumbDamping() const
 {
-   return m_plumbAngularDamping0 / 2.5f;
-   //return m_plumbAngularDamping1 / 1.5f;
+   return m_plumbAngularDamping0 / m_dampingCoef0;
 }
 
 void PlumbHandler::SetPlumbDamping(float v)
 {
    m_plumbAngularDamping0 = m_dampingCoef0 * v;
-   m_plumbAngularDamping1 = m_dampingCoef0 * v;
+   m_plumbAngularDamping1 = m_dampingCoef1 * v;
 }
 
 void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
