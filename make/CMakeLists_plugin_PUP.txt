@@ -9,12 +9,13 @@ set(BUILD_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/build-libs/${PLATFORM}-${ARC
 set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}")
 
 set(PUP_PLUGIN_SOURCES
+   plugins/plugins/B2SPluginEventStream.h
+   plugins/plugins/B2SPluginEventStream.cpp
+   
    plugins/pup/common.h
    plugins/pup/common.cpp
    plugins/pup/common.cpp
    plugins/pup/LibAv.h
-   plugins/pup/DOFStreamEvent.h
-   plugins/pup/DOFStreamEvent.cpp
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
    plugins/pup/PUPCustomPos.cpp

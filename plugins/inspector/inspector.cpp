@@ -28,8 +28,8 @@ VPXPluginAPI* vpxApi = nullptr;
 
 uint32_t endpointId;
 unsigned int getVpxApiId;
-unsigned int onCtlGameStartId, onCtlGameEndId;
-unsigned int onInputSrcChgId, onDeviceSrcChgId, onDisplaySrcChgId, onSegSrcChgId;
+unsigned int onControllerGameStartId, onControllerGameEndId;
+unsigned int onStateSrcChgId, onDisplaySrcChgId, onSegSrcChgId;
 
 std::vector<std::string> runningGames;
 
@@ -38,10 +38,13 @@ MSGPI_INT_VAL_SETTING(portSetting, "port", "Web Server Port", "Port used by the 
 std::unique_ptr<WebServer> webServer;
 
 std::mutex deviceStatesMutex;
-typedef float(MSGPIAPI* GetFloatState)(const unsigned int);
-std::map<uint32_t, std::pair<unsigned int, GetFloatState>> deviceGetters;
-typedef int(MSGPIAPI* GetInputState)(const unsigned int);
-std::map<uint32_t, std::pair<unsigned int, GetInputState>> inputGetters;
+typedef struct
+{
+   unsigned int index;
+   int typeMask;
+   int(MSGPIAPI* GetState)(unsigned int index, int type, void* pResult);
+} StateProvider;
+std::map<uint32_t, StateProvider> stateGetters;
 
 void UpdateTreeCache()
 {
@@ -49,8 +52,7 @@ void UpdateTreeCache()
       return;
 
    std::lock_guard lock(deviceStatesMutex);
-   deviceGetters.clear();
-   inputGetters.clear();
+   stateGetters.clear();
 
    json root = json::array();
 
@@ -80,85 +82,68 @@ void UpdateTreeCache()
          return controllers[epId];
       };
 
-      auto getGroup = [](std::map<uint32_t, json>& groups, uint16_t groupId, const std::string& name) -> json&
+      // States
       {
-         if (groups.find(groupId) == groups.end())
+         auto getGroup = [](std::map<uint32_t, json>& groups, uint16_t groupId, const std::string& name) -> json&
          {
-            json cNode = json::object();
-            cNode["id"s] = groupId;
-            cNode["name"s] = name;
-            cNode["type"s] = "group";
-            cNode["children"s] = json::array();
-            groups[groupId] = cNode;
-         }
-         return groups[groupId];
-      };
-
-      // Inputs
-      {
-         unsigned int getInputsMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
-         GetInputSrcMsg inMsg = { 0, 0, nullptr };
-         msgApi->BroadcastMsg(endpointId, getInputsMsgId, &inMsg);
-         std::vector<InputSrcId> inputDefs(inMsg.count);
-         inMsg = { static_cast<unsigned int>(inputDefs.size()), 0, inputDefs.data() };
-         msgApi->BroadcastMsg(endpointId, getInputsMsgId, &inMsg);
-         for (unsigned int i = 0; i < inMsg.count; i++)
-         {
-            auto& cNode = getController(inMsg.entries[i].id.endpointId);
-            json catNode = json::object();
-            catNode["name"s] = "Inputs";
-            catNode["type"s] = "category";
-            catNode["children"s] = json::array();
-            std::map<uint32_t, json> groups;
-            for (unsigned int j = 0; j < inMsg.entries[i].nInputs; j++)
+            if (groups.find(groupId) == groups.end())
             {
-               json item = json::object();
-               item["name"s] = inMsg.entries[i].inputDefs[j].name ? inMsg.entries[i].inputDefs[j].name : ("Input " + std::to_string(j));
-               item["mapping"s] = inMsg.entries[i].inputDefs[j].id.mappingId;
-               item["type"s] = "input";
-               auto& cGroup = getGroup(groups, inMsg.entries[i].inputDefs[j].id.groupId, std::format("Input Group 0x{:04x}", inMsg.entries[i].inputDefs[j].id.groupId));
-               cGroup["children"s].push_back(item);
-               inputGetters[inMsg.entries[i].inputDefs[j].id.mappingId] = { j, inMsg.entries[i].GetInputState };
+               json cNode = json::object();
+               cNode["id"s] = groupId;
+               cNode["name"s] = name;
+               cNode["type"s] = "group";
+               cNode["children"s] = json::array();
+               groups[groupId] = cNode;
             }
-            for (auto& pair : groups)
-               catNode["children"s].push_back(pair.second);
-            cNode["children"s].push_back(catNode);
-         }
-         msgApi->ReleaseMsgID(getInputsMsgId);
-      }
+            return groups[groupId];
+         };
 
-      // Devices
-      {
-         unsigned int getDevicesMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-         GetDevSrcMsg devMsg = { 0, 0, nullptr };
-         msgApi->BroadcastMsg(endpointId, getDevicesMsgId, &devMsg);
-         std::vector<DevSrcId> deviceDefs(devMsg.count);
-         devMsg = { static_cast<unsigned int>(deviceDefs.size()), 0, deviceDefs.data() };
-         msgApi->BroadcastMsg(endpointId, getDevicesMsgId, &devMsg);
+         unsigned int getStateMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
+         GetStateSrcMsg devMsg = { 0, 0, nullptr };
+         msgApi->BroadcastMsg(endpointId, getStateMsgId, &devMsg);
+         std::vector<StateSrcId> stateDefs(devMsg.count);
+         devMsg = { static_cast<unsigned int>(stateDefs.size()), 0, stateDefs.data() };
+         msgApi->BroadcastMsg(endpointId, getStateMsgId, &devMsg);
          for (unsigned int i = 0; i < devMsg.count; i++)
          {
             auto& cNode = getController(devMsg.entries[i].id.endpointId);
             json catNode = json::object();
-            catNode["name"s] = "Devices";
+            catNode["name"s] = "Game States";
             catNode["type"s] = "category";
             catNode["children"s] = json::array();
             std::map<uint32_t, json> groups;
-            for (unsigned int j = 0; j < devMsg.entries[i].nDevices; j++)
+            for (unsigned int j = 0; j < devMsg.entries[i].nStates; j++)
             {
                json item = json::object();
-               item["type"s] = "device";
-               item["name"s] = devMsg.entries[i].deviceDefs[j].name ? devMsg.entries[i].deviceDefs[j].name : ("Device " + std::to_string(j));
-               item["mapping"s] = devMsg.entries[i].deviceDefs[j].id.mappingId;
-               item["state"s] = devMsg.entries[i].GetFloatState(j);
-               auto& cGroup = getGroup(groups, devMsg.entries[i].deviceDefs[j].id.groupId, std::format("Device Group 0x{:04x}", devMsg.entries[i].deviceDefs[j].id.groupId));
-               cGroup["children"s].push_back(item);
-               deviceGetters[devMsg.entries[i].deviceDefs[j].id.mappingId] = { j, devMsg.entries[i].GetFloatState };
+               item["type"s] = "state";
+               item["name"s] = devMsg.entries[i].stateDefs[j].name ? devMsg.entries[i].stateDefs[j].name : ("Device " + std::to_string(j));
+               item["mapping"s] = devMsg.entries[i].stateDefs[j].id.mappingId;
+               item["writable"s] = devMsg.entries[i].stateDefs[j].writable;
+               item["dataType"s] = devMsg.entries[i].stateDefs[j].typeMask;
+               float state;
+               devMsg.entries[i].GetState(j, CTLPI_STATE_TYPE_FLOAT, &state);
+               item["state"s] = state;
+               int groupIndex = -1;
+               for (unsigned int k = 0; k < devMsg.entries[i].nGroups; k++)
+               {
+                  if (devMsg.entries[i].groupDefs[k].id == devMsg.entries[i].stateDefs[j].id.groupId)
+                  {
+                     groupIndex = k;
+                     break;
+                  }
+               }
+               if (groupIndex >= 0)
+               {
+                  auto& cGroup = getGroup(groups, devMsg.entries[i].stateDefs[j].id.groupId, devMsg.entries[i].groupDefs[groupIndex].name);
+                  cGroup["children"s].push_back(item);
+                  stateGetters[devMsg.entries[i].stateDefs[j].id.mappingId] = { j, devMsg.entries[i].stateDefs[j].typeMask, devMsg.entries[i].GetState };
+               }
             }
             for (auto& pair : groups)
                catNode["children"s].push_back(pair.second);
             cNode["children"s].push_back(catNode);
          }
-         msgApi->ReleaseMsgID(getDevicesMsgId);
+         msgApi->ReleaseMsgID(getStateMsgId);
       }
 
       // Displays
@@ -216,37 +201,34 @@ void UpdateTreeCache()
    webServer->UpdateTreeJson(root.dump());
 }
 
-std::string GetDeviceStatesJson()
+std::string GetStatesJson()
 {
    std::lock_guard lock(deviceStatesMutex);
 
    json root = json::array();
-   for (const auto& pair : deviceGetters) 
+   for (const auto& pair : stateGetters) 
    {
       json dItem = json::object();
       dItem["id"s] = pair.first;
-      dItem["state"s] = pair.second.second(pair.second.first);
-      root.push_back(dItem);
+      if ((pair.second.typeMask & CTLPI_STATE_TYPE_FLOAT) != 0)
+      {
+         float state;
+         pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_FLOAT, &state);
+         dItem["state"s] = state;
+         root.push_back(dItem);
+      }
+      else if ((pair.second.typeMask & CTLPI_STATE_TYPE_UINT8) != 0)
+      {
+         uint8_t state;
+         pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_UINT8, &state);
+         dItem["state"s] = static_cast<float>(state) / 255.f;
+         root.push_back(dItem);
+      }
    }
    return root.dump();
 }
 
-std::string GetInputStatesJson()
-{
-   std::lock_guard lock(deviceStatesMutex);
-
-   json root = json::array();
-   for (const auto& pair : inputGetters)
-   {
-      json dItem = json::object();
-      dItem["id"s] = pair.first;
-      dItem["state"s] = pair.second.second(pair.second.first) != 0;
-      root.push_back(dItem);
-   }
-   return root.dump();
-}
-
-void onCtlGameStart(const unsigned int eventId, void* userData, void* msgData)
+void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
    assert(msg && msg->gameId);
@@ -254,7 +236,7 @@ void onCtlGameStart(const unsigned int eventId, void* userData, void* msgData)
    UpdateTreeCache();
 }
 
-void onCtlGameEnd(const unsigned int eventId, void* userData, void* msgData)
+void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
    if (const auto it = std::find(runningGames.begin(), runningGames.end(), msg->gameId); it != runningGames.end())
@@ -264,7 +246,7 @@ void onCtlGameEnd(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateTreeCache(); }
+void OnSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateTreeCache(); }
 
 } // namespace Inspector
 
@@ -276,13 +258,12 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
    endpointId = sessionId;
    msgApi->BroadcastMsg(endpointId, getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &vpxApi);
 
-   msgApi->SubscribeMsg(endpointId, onCtlGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), onCtlGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onCtlGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), onCtlGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
 
-   msgApi->SubscribeMsg(endpointId, onInputSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG), onSrcChanged, nullptr);
-   msgApi->SubscribeMsg(endpointId, onDeviceSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG), onSrcChanged, nullptr);
-   msgApi->SubscribeMsg(endpointId, onDisplaySrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), onSrcChanged, nullptr);
-   msgApi->SubscribeMsg(endpointId, onSegSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG), onSrcChanged, nullptr);
+   msgApi->SubscribeMsg(endpointId, onStateSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG), OnSrcChanged, nullptr);
+   msgApi->SubscribeMsg(endpointId, onDisplaySrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), OnSrcChanged, nullptr);
+   msgApi->SubscribeMsg(endpointId, onSegSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG), OnSrcChanged, nullptr);
    msgApi->RegisterSetting(endpointId, &portSetting);
 
    std::filesystem::path path;
@@ -308,18 +289,16 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginUnload()
       webServer.reset();
    }
 
-   msgApi->UnsubscribeMsg(onCtlGameStartId, onCtlGameStart, nullptr);
-   msgApi->UnsubscribeMsg(onCtlGameEndId, onCtlGameEnd, nullptr);
-   msgApi->UnsubscribeMsg(onInputSrcChgId, onSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onDeviceSrcChgId, onSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onDisplaySrcChgId, onSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onSegSrcChgId, onSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
+   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
+   msgApi->UnsubscribeMsg(onStateSrcChgId, OnSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onDisplaySrcChgId, OnSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onSegSrcChgId, OnSrcChanged, nullptr);
 
    msgApi->ReleaseMsgID(getVpxApiId);
-   msgApi->ReleaseMsgID(onCtlGameStartId);
-   msgApi->ReleaseMsgID(onCtlGameEndId);
-   msgApi->ReleaseMsgID(onInputSrcChgId);
-   msgApi->ReleaseMsgID(onDeviceSrcChgId);
+   msgApi->ReleaseMsgID(onControllerGameStartId);
+   msgApi->ReleaseMsgID(onControllerGameEndId);
+   msgApi->ReleaseMsgID(onStateSrcChgId);
    msgApi->ReleaseMsgID(onDisplaySrcChgId);
    msgApi->ReleaseMsgID(onSegSrcChgId);
 

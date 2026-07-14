@@ -115,7 +115,7 @@ public:
    void SetSwitch(int switchId, bool value);
    void CheckGetMech(int number, int mech);
    int OnRender(VPXRenderContext2D* const renderCtx, void* context);
-   void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
 
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override { m_pinmameApi.HandleCall(memberIndex, pArgs, pRet); }
 
@@ -173,28 +173,21 @@ private:
    string m_szPath = "./";
    Timer* m_pTimer = nullptr;
 
-   DevSrcId m_deviceStateSrc {};
+   StateSrcId m_pinmameStateSrc { };
 
    static Server* m_singleton;
    ankerl::unordered_dense::map<int, float> m_b2sStates;
    const unsigned int m_onGameStartId;
    const unsigned int m_onGameEndId;
    bool m_gameRunning = false;
-   const unsigned int m_onGetDevSrcId;
-   DevSrcId m_devSrc {};
-   vector<string> m_devSrcNames;
-   void UpdateDevSrc();
-   struct ChgCallback
-   {
-      ctlpi_chg_callback m_callback;
-      unsigned int m_index;
-      void* m_context;
-   };
-   ankerl::unordered_dense::map<int, vector<ChgCallback>> m_stateChgCallbacks;
-   static void OnGetDevSrc(const unsigned int, void*, void* msgData);
-   static uint8_t MSGPIAPI GetByteState(const unsigned int deviceIndex);
-   static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
-   static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
+   const unsigned int m_onGetStateSrcId;
+   const unsigned int m_onStateChangeEventId;
+   StateSrcId m_stateSrc { };
+   vector<string> m_stateSrcNames;
+   void UpdateStateSrc();
+   static void OnGetStateSrc(const unsigned int, void*, void* msgData);
+   static int MSGPIAPI GetStateAPI(unsigned int inputIndex, int type, void* pResult);
+   static int MSGPIAPI SetStateAPI(unsigned int inputIndex, int type, void* pResult);
 
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
@@ -202,7 +195,7 @@ private:
 
    const unsigned int m_onGetAuxRendererId;
    const unsigned int m_onAuxRendererChgId;
-   const unsigned int m_onDevChangedMsgId;
+   const unsigned int m_onStateChangedMsgId;
 
    PinMAMEAPI m_pinmameApi;
 
@@ -210,7 +203,7 @@ private:
 
    static int OnRenderStatic(VPXRenderContext2D* ctx, void* userData);
    static void OnGetRendererStatic(const unsigned int, void*, void* msgData);
-   static void OnDevSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData);
+   static void OnStateSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData);
 
    bool m_ready = false;
 };

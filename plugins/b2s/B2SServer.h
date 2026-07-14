@@ -137,22 +137,15 @@ private:
    ankerl::unordered_dense::map<int, float> m_states;
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, int> m_scoreDigits;
-   const unsigned int m_onGetDevSrcId;
-   const unsigned int m_onDevSrcChgId;
-   DevSrcId m_devSrc {};
-   vector<string> m_devSrcNames;
-   void UpdateDevSrc();
-   struct ChgCallback
-   {
-      ctlpi_chg_callback m_callback;
-      unsigned int m_index;
-      void* m_context;
-   };
-   ankerl::unordered_dense::map<int, vector<ChgCallback>> m_stateChgCallbacks;
-   static void OnGetDevSrc(const unsigned int, void*, void* msgData);
-   static uint8_t MSGPIAPI GetByteState(const unsigned int deviceIndex);
-   static float MSGPIAPI GetFloatState(const unsigned int deviceIndex);
-   static void MSGPIAPI RegisterStateChangeCallback(unsigned int deviceIndex, int isRegister, ctlpi_chg_callback cb, void* ctx);
+   const unsigned int m_onGetStateSrcId;
+   const unsigned int m_onStateSrcChgId;
+   const unsigned int m_onStateChangeEventId;
+   StateSrcId m_stateSrc { };
+   vector<string> m_stateSrcNames;
+   void UpdateStateSrc();
+   static void OnGetStateSrc(const unsigned int, void*, void* msgData);
+   static int MSGPIAPI GetState(unsigned int inputIndex, int type, void* pResult);
+   static int MSGPIAPI SetState(unsigned int inputIndex, int type, void* pResult);
 };
 
 }

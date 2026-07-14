@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "plugins/VPXPlugin.h"
+#include "pinmame/PinMAMEPlugin.h"
 #include <altsound.h>
 
 using namespace std::string_literals;
@@ -31,8 +32,9 @@ static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onControllerGameStartId;
 static unsigned int onControllerGameEndId;
+static unsigned int getMachineStateId = 0;
+static unsigned int onAudioCmdId = 0;
 static unsigned int onAudioUpdateId = 0;
-static unsigned int onSoundCommandId = 0;
 static unsigned int onAudioSrcChangedId = 0;
 static unsigned int getAudioSrcId = 0;
 
@@ -134,8 +136,8 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
         AltSoundSetAudioCallback(AudioCallback, nullptr);
         AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(hardwareGen));
 
-        currentGameId = gameId;
         isRunning = true;
+        currentGameId = gameId;
 
         UpdatePinmameAudioId();
         audioSrcDef.id = audioResId;
@@ -181,64 +183,71 @@ static void StopAltSound()
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
 
-   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
+   // We only support PinMAME sound board commands for the time being
+   unsigned int pinmameEndPoint = msgApi->GetPluginEndpoint("PinMAME");
+   if (pinmameEndPoint == 0 || msg->ctrlEndpointId != pinmameEndPoint)
+      return;
 
-   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
-    if (isRunning)
-    {
-        LOGW("Ignoring game start, already running"s);
-        return;
-    }
+   if (isRunning)
+   {
+      LOGE("BUG: PinMAME sent a game start while AltSound was already started."s);
+      assert(false);
+      StopAltSound();
+   }
 
-    VPXTableInfo tableInfo;
-    vpxApi->GetTableInfo(&tableInfo);
-    std::filesystem::path tablePath = tableInfo.path;
+   VPXTableInfo tableInfo;
+   vpxApi->GetTableInfo(&tableInfo);
+   std::filesystem::path tablePath = tableInfo.path;
 
-    std::filesystem::path basePath;
+   std::filesystem::path basePath;
+   string gameId = msg->gameId;
 
-    // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
-    if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / msg->gameId); !path1.empty())
-        basePath = tablePath.parent_path();
-    // Priority 2: pinmame/altsound/<rom>
-    else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / msg->gameId); !path2.empty())
-        basePath = tablePath.parent_path() / "pinmame"sv;
-    // Priority 3: global setting
-    else
-    {
-        std::filesystem::path altsoundFolder = altsoundFolderProp_Get();
-        if (!altsoundFolder.empty())
-            basePath = altsoundFolder.parent_path();
-    }
+   // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / gameId); !path1.empty())
+      basePath = tablePath.parent_path();
+   // Priority 2: pinmame/altsound/<rom>
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / gameId); !path2.empty())
+      basePath = tablePath.parent_path() / "pinmame"sv;
+   // Priority 3: global setting
+   else
+   {
+      std::filesystem::path altsoundFolder = altsoundFolderProp_Get();
+      if (!altsoundFolder.empty())
+         basePath = altsoundFolder.parent_path();
+   }
 
-    if (!basePath.empty()) {
-        std::filesystem::path altsoundGamePath = basePath / "altsound"sv / msg->gameId;
-        if (std::filesystem::exists(altsoundGamePath)) {
-            LOGI(std::format("Found altsound directory for game: {} at {}", msg->gameId, altsoundGamePath.string()));
-            StartAltSound(msg->gameId, basePath.string(), msg->hardwareGen);
-        }
-    }
+   if (!basePath.empty())
+   {
+      std::filesystem::path altsoundGamePath = basePath / "altsound"sv / gameId;
+      if (std::filesystem::exists(altsoundGamePath))
+      {
+         LOGI(std::format("Found altsound directory for game: {} at {}", gameId, altsoundGamePath.string()));
+         PinMAMEMachineStateMsg state { };
+         state.version = 1;
+         msgApi->BroadcastMsg(endpointId, getMachineStateId, &state);
+         StartAltSound(gameId, basePath.string(), state.hardwareGen);
+      }
+   }
 }
 
-static void OnSoundCommand(const unsigned int eventId, void* userData, void* msgData)
+static void OnGameEvent(const unsigned int eventId, void* userData, void* msgData)
 {
-    if (!isRunning)
-        return;
-
-    const CtlOnSoundCommandMsg* msg = static_cast<const CtlOnSoundCommandMsg*>(msgData);
-    if (msg != nullptr)
-        AltSoundProcessCommand(msg->cmd, 0);
+   if (isRunning)
+      AltSoundProcessCommand(static_cast<const PinMAMEChildBoardEventMsg*>(msgData)->cmd, 0);
 }
 
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
 
-   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
+   // We only support PinMAME sound board commands for the time being
+   unsigned int pinmameEndPoint = msgApi->GetPluginEndpoint("PinMAME");
+   if (pinmameEndPoint == 0 || msg->ctrlEndpointId != pinmameEndPoint)
+      return;
 
-   StopAltSound();
+   if (isRunning)
+      StopAltSound();
 }
 
 }
@@ -272,7 +281,8 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
 
     msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
     msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
-    msgApi->SubscribeMsg(endpointId, onSoundCommandId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_SOUND_COMMAND), OnSoundCommand, nullptr);
+    msgApi->SubscribeMsg(endpointId, onAudioCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD), OnGameEvent, nullptr);
+    getMachineStateId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
 }
 
 MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
@@ -286,10 +296,16 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
             msgApi->ReleaseMsgID(onControllerGameStartId);
             onControllerGameStartId = 0;
         }
-        if (onSoundCommandId != 0) {
-            msgApi->UnsubscribeMsg(onSoundCommandId, OnSoundCommand, nullptr);
-            msgApi->ReleaseMsgID(onSoundCommandId);
-            onSoundCommandId = 0;
+        if (getMachineStateId != 0)
+        {
+           msgApi->ReleaseMsgID(getMachineStateId);
+           getMachineStateId = 0;
+        }
+        if (onAudioCmdId != 0)
+        {
+           msgApi->UnsubscribeMsg(onAudioCmdId, OnGameEvent, nullptr);
+           msgApi->ReleaseMsgID(onAudioCmdId);
+           onAudioCmdId = 0;
         }
         if (onControllerGameEndId != 0) {
             msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);

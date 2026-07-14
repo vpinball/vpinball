@@ -11,8 +11,7 @@ using namespace std::string_view_literals;
 namespace Inspector
 {
 
-extern std::string GetInputStatesJson();
-extern std::string GetDeviceStatesJson();
+extern std::string GetStatesJson();
 
 constexpr const char* HEADER_JSON = "Content-Type: application/json\r\n";
 constexpr int STATUS_OK = 200;
@@ -95,10 +94,8 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
          webServer->Info(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/tree"), NULL))
          webServer->ApiTree(c, hm);
-      else if (mg_match(hm->uri, mg_str("/api/input_states"), NULL))
-         webServer->ApiInputStates(c, hm);
-      else if (mg_match(hm->uri, mg_str("/api/device_states"), NULL))
-         webServer->ApiDeviceStates(c, hm);
+      else if (mg_match(hm->uri, mg_str("/api/states"), NULL))
+         webServer->ApiStates(c, hm);
       else if (mg_match(hm->uri, mg_str("/"), NULL))
          webServer->Root(c, hm);
       else
@@ -124,15 +121,9 @@ void WebServer::ApiTree(struct mg_connection* c, struct mg_http_message* hm)
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
 }
 
-void WebServer::ApiInputStates(struct mg_connection* c, struct mg_http_message* hm)
+void WebServer::ApiStates(struct mg_connection* c, struct mg_http_message* hm)
 {
-   std::string response = GetInputStatesJson();
-   mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
-}
-
-void WebServer::ApiDeviceStates(struct mg_connection* c, struct mg_http_message* hm)
-{
-   std::string response = GetDeviceStatesJson();
+   std::string response = GetStatesJson();
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
 }
 

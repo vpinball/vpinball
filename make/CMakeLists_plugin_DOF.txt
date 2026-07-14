@@ -10,6 +10,9 @@ set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-$
 
 set(DOF_PLUGIN_SOURCES
    plugins/dof/DOFPlugin.cpp
+
+   plugins/plugins/B2SPluginEventStream.h
+   plugins/plugins/B2SPluginEventStream.cpp
 )
 
 if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))

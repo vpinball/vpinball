@@ -53,6 +53,7 @@
     <ClCompile Include="..\..\plugins\b2slegacy\utils\Timer.cpp" />
     <ClCompile Include="..\..\plugins\b2slegacy\utils\VPXGraphics.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
+    <ClCompile Include="../../plugins/plugins/B2SPluginEventStream.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +106,7 @@
     <ClInclude Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\Timer.h" />
     <ClInclude Include="..\..\plugins\b2slegacy\utils\VPXGraphics.h" />
+    <ClInclude Include="../../plugins/plugins/B2SPluginEventStream.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>
