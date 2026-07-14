@@ -10,6 +10,14 @@
     <ClCompile Include="../../plugins/dof/DOFPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/plugins/B2SPluginEventStream.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../plugins/plugins/B2SPluginEventStream.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="../../plugins/dof/plugin.cfg">

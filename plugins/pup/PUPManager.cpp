@@ -73,8 +73,8 @@ void PUPManager::Start()
 {
    LOGI("PUP Manager start"s);
    assert(!IsRunning());
-   m_dofEventStream = std::make_unique<DOFEventStream>(m_msgApi, m_endpointId, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
-   m_dofEventStream->SetDMDHandler(
+   m_B2SPluginEventStream = std::make_unique<B2SPluginEventStream>(m_msgApi, m_endpointId, [this](char c, int id, int value) { QueueDOFEvent(c, id, value); });
+   m_B2SPluginEventStream->SetDMDHandler(
       [](const GetDisplaySrcMsg& sources)
       {
          DisplaySrcId selected {};
@@ -96,7 +96,7 @@ void PUPManager::Stop()
 {
    LOGI("PUP Manager stop"s);
    assert(IsRunning());
-   m_dofEventStream = nullptr;
+   m_B2SPluginEventStream = nullptr;
 }
 
 void PUPManager::SetGameDir(const string& szRomName)

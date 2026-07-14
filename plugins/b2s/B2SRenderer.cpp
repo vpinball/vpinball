@@ -5,6 +5,8 @@
 #include "B2SRenderer.h"
 #include "B2SServer.h"
 
+#include "pinmame/PinMAMEPlugin.h"
+
 #include <vector>
 #include <algorithm>
 
@@ -16,7 +18,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    : m_b2s(b2s)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
-   , m_resURIResolver(*msgApi, endpointId, true, false, false, false)
+   , m_resURIResolver(*msgApi, endpointId, true, false, false)
    , m_scoreViewDmdOverlay(m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
    , m_backglassDmdOverlay(m_resURIResolver, m_dmdTex,
         m_b2s->m_backglassImage.m_image         ? m_b2s->m_backglassImage.m_image
@@ -32,10 +34,10 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
    m_dmdHeight = dmdTexInfo ? static_cast<float>(dmdTexInfo->height) : 768.f;
 
-   m_getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-   m_onDevChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onDevChangedMsgId, OnDevSrcChanged, this);
-   OnDevSrcChanged(m_onDevChangedMsgId, this, nullptr);
+   m_getStateSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
+   m_onStateChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onStateChangedMsgId, OnStateSrcChanged, this);
+   OnStateSrcChanged(m_onStateChangedMsgId, this, nullptr);
 
    m_getSegSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
    m_onSegChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
@@ -45,10 +47,10 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
 
 B2SRenderer::~B2SRenderer()
 {
-   m_msgApi->UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged, this);
-   m_msgApi->ReleaseMsgID(m_onDevChangedMsgId);
-   m_msgApi->ReleaseMsgID(m_getDevSrcMsgId);
-   delete[] m_deviceStateSrc.deviceDefs;
+   m_msgApi->UnsubscribeMsg(m_onStateChangedMsgId, OnStateSrcChanged, this);
+   m_msgApi->ReleaseMsgID(m_onStateChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getStateSrcMsgId);
+   delete[] m_deviceStateSrc.stateDefs;
 
    m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
@@ -84,10 +86,10 @@ void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
    }
 }
 
-void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
+void B2SRenderer::OnStateSrcChanged(const unsigned int, void* userData, void*)
 {
    auto me = static_cast<B2SRenderer*>(userData);
-   delete[] me->m_deviceStateSrc.deviceDefs;
+   delete[] me->m_deviceStateSrc.stateDefs;
    memset(&me->m_deviceStateSrc, 0, sizeof(me->m_deviceStateSrc));
    if (me->m_b2s->m_backglassOnImage.m_image)
       me->m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
@@ -98,26 +100,26 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
    if (pinmameEndpoint == 0)
       return;
 
-   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
-   vector<DevSrcId> entries(getSrcMsg.count);
+   GetStateSrcMsg getSrcMsg = { 0, 0, nullptr };
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   vector<StateSrcId> entries(getSrcMsg.count);
    getSrcMsg = { getSrcMsg.count, 0, entries.data() };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcMsgId, pinmameEndpoint, &getSrcMsg);
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
-      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint)
+      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint && getSrcMsg.entries[i].nStates > 0 && getSrcMsg.entries[i].stateDefs[0].writable == 0)
       {
          me->m_deviceStateSrc = getSrcMsg.entries[i];
-         if (getSrcMsg.entries[i].deviceDefs)
+         if (getSrcMsg.entries[i].stateDefs)
          {
-            me->m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
-            memcpy(me->m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
+            me->m_deviceStateSrc.stateDefs = new StateDef[getSrcMsg.entries[i].nStates];
+            memcpy(me->m_deviceStateSrc.stateDefs, getSrcMsg.entries[i].stateDefs, getSrcMsg.entries[i].nStates * sizeof(StateDef));
          }
          break;
       }
    }
 
-   if (me->m_deviceStateSrc.deviceDefs == nullptr)
+   if (me->m_deviceStateSrc.stateDefs == nullptr)
       return;
 
    if (me->m_b2s->m_backglassOnImage.m_image)
@@ -134,25 +136,25 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
 {
-   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
+   for (unsigned int i = 0; i < m_deviceStateSrc.nStates; i++)
    {
-      if (romId == m_deviceStateSrc.deviceDefs[i].id.deviceId)
+      if (romId == m_deviceStateSrc.stateDefs[i].id.stateId)
       {
          bool found;
-         switch (m_deviceStateSrc.deviceDefs[i].id.groupId & 0xFF00)
+         switch (m_deviceStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK)
          {
-         case 0x0000: found = romIdType == B2SRomIDType::Solenoid; break;
-         case 0x0100: found = romIdType == B2SRomIDType::GIString; break;
-         case 0x0200: found = romIdType == B2SRomIDType::Lamp; break;
-         case 0x0300: found = romIdType == B2SRomIDType::Mech; break;
+         case PMPI_GROUP_SOLENOID: found = romIdType == B2SRomIDType::Solenoid; break;
+         case PMPI_GROUP_GI: found = romIdType == B2SRomIDType::GIString; break;
+         case PMPI_GROUP_LAMP: found = romIdType == B2SRomIDType::Lamp; break;
+         case PMPI_GROUP_MECH: found = romIdType == B2SRomIDType::Mech; break;
          default: found = false; break;
          }
          if (found)
          {
             if (romInverted)
-               return [this, value, i]() { *value = 1.f - m_deviceStateSrc.GetFloatState(i); };
+               return [this, value, i]() { float r = 0.f; m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, &r); *value = 1.f - r; };
             else
-               return [this, value, i]() { *value = m_deviceStateSrc.GetFloatState(i); };
+               return [this, value, i]() { float r = 0.f; m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, &r); *value = r; };
          }
       }
    }

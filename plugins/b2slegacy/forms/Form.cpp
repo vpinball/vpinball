@@ -13,7 +13,7 @@ Form::Form(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SD
      m_pB2SData(pB2SData)
 {
    if (!overlayType.empty()) {
-      m_pResURIResolver = new ResURIResolver(*msgApi, m_endpointId, true, false, false, false);
+      m_pResURIResolver = new ResURIResolver(*msgApi, m_endpointId, true, false, false);
       m_pDmdOverlay = new DMDOverlay(*m_pResURIResolver, m_dmdTex, nullptr, m_vpxApi);
       m_pDmdOverlay->LoadSettings(overlayType == "ScoreView");
    }

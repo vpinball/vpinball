@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include "DOFStreamEvent.h"
-
 #include "common.h"
 
+#include "plugins/B2SPluginEventStream.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
 
@@ -94,7 +93,7 @@ public:
    void SetGameDir(const string& szRomName);
    void LoadConfig(const string& szRomName);
    void Unload();
-   bool IsRunning() const { return m_dofEventStream != nullptr; }
+   bool IsRunning() const { return m_B2SPluginEventStream != nullptr; }
    const std::filesystem::path& GetPath() const { return m_szPath; }
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
@@ -143,7 +142,7 @@ private:
    static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
 
    std::mutex m_eventMutex;
-   std::unique_ptr<DOFEventStream> m_dofEventStream;
+   std::unique_ptr<B2SPluginEventStream> m_B2SPluginEventStream;
 
    int m_duckMasterScreen = -1;
    ankerl::unordered_dense::map<int, float> m_preDuckVolumes;

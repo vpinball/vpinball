@@ -36,14 +36,10 @@
 //   . '/seg' path allows to access alphanumeric segment displays
 //     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
 //     - 'sub=xx' is used to select the xx-th element of the display (0-based)
-//   . '/device' path allows to access controlled device states
+//   . '/state' path allows to access game states
 //     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
 //     - 'grp=xx' where xx is the device group defined by the plugin
 //     - 'io=xx' where xx is the device mapping id (user friendly number, defined by the plugin, unique inside the device group)
-//   . '/input' path allows to access input states
-//     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
-//     - 'grp=xx' where xx is the input group defined by the plugin
-//     - 'io=xx' where xx is the input mapping id (user friendly number, defined by the plugin, unique inside the input group)
 //
 //   examples:
 //   - ctrl://default/display                  => Default DMD or display
@@ -60,7 +56,7 @@
 class ResURIResolver final
 {
 public:
-   ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices);
+   ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackStates);
    ~ResURIResolver();
 
    float GetFloatState(const std::string &link);
@@ -85,15 +81,10 @@ private:
    const MsgPluginAPI& m_msgAPI;
    const unsigned int m_endpointId;
 
-   const unsigned int m_getDevSrcMsgId;
-   const unsigned int m_onDevChangedMsgId;
-   static void OnDevSrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   std::vector<DevSrcId> m_deviceSources;
-
-   const unsigned int m_getInputSrcMsgId;
-   const unsigned int m_onInputChangedMsgId;
-   static void OnInputSrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   std::vector<InputSrcId> m_inputSources;
+   const unsigned int m_getStateSrcMsgId;
+   const unsigned int m_onStateChangedMsgId;
+   static void OnStateSrcChanged(const unsigned int msgId, void *userData, void *msgData);
+   std::vector<StateSrcId> m_stateSources;
 
    using floatCacheLambda = std::function<float(const std::string &)>;
    ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;

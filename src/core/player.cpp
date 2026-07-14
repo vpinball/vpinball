@@ -91,7 +91,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    , m_pininput(this)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
         table->m_settings.GetPlayer_SoundDeviceBG(), table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->m_settings.GetPlayer_Sound3D())))
-   , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true, true)
+   , m_resURIResolver(m_pluginManager.GetMsgAPI(), m_pluginAPI.GetVPXEndPointId(), true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);

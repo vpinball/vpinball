@@ -3,13 +3,16 @@
 #include "Controller.h"
 #include "Game.h"
 #include "Settings.h"
+#include "pinmame/PinMAMEPlugin.h"
+
 #include <thread>
 #include <format>
 
 #include "plugins/VPXPlugin.h" // Only used for optional feature (visual feedback on error)
 #include <climits>
 
-namespace PinMAME {
+namespace PinMAME
+{
 
 __forceinline uint8_t saturatedByte(float v) { return (uint8_t)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
@@ -24,14 +27,10 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
 
    m_vpmPath = config.vpmPath;
 
-   m_getInputSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG);
-   m_onInputChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onInputChangedMsgId, OnInputSrcChanged, this);
+   m_getStateSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
+   m_onStateSrcChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onStateSrcChangedMsgId, OnStateSrcChanged, this);
 
-   m_getDeviceSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
-   m_onDeviceChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onDeviceChangedMsgId, OnDeviceSrcChanged, this);
-  
    m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnDmdSrcChanged, this);
@@ -42,14 +41,10 @@ Controller::~Controller()
    assert(m_threadLock == std::this_thread::get_id());
 
    Stop();
-   
-   m_msgApi->UnsubscribeMsg(m_onInputChangedMsgId, OnInputSrcChanged, this);
-   m_msgApi->ReleaseMsgID(m_onInputChangedMsgId);
-   m_msgApi->ReleaseMsgID(m_getInputSrcMsgId);
 
-   m_msgApi->UnsubscribeMsg(m_onDeviceChangedMsgId, OnDeviceSrcChanged, this);
-   m_msgApi->ReleaseMsgID(m_onDeviceChangedMsgId);
-   m_msgApi->ReleaseMsgID(m_getDeviceSrcMsgId);
+   m_msgApi->UnsubscribeMsg(m_onStateSrcChangedMsgId, OnStateSrcChanged, this);
+   m_msgApi->ReleaseMsgID(m_onStateSrcChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getStateSrcMsgId);
 
    m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
@@ -94,11 +89,14 @@ Game* Controller::GetGames(const string& name) const
       Game* game;
    };
    GameCBData cbData { this, settings, nullptr };
-   PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData)
+   PinmameGetGame(
+      name.c_str(),
+      [](PinmameGame* pPinmameGame, void* const pUserData)
       {
          GameCBData* pGame = static_cast<GameCBData*>(pUserData);
          pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame, pGame->settings);
-      }, &cbData);
+      },
+      &cbData);
    return cbData.game;
 }
 
@@ -114,11 +112,15 @@ void Controller::SetGameName(const string& name)
 {
    m_szGameName = name;
    m_szRomName.clear();
-   PINMAME_STATUS status = PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData) {
-      Controller* me = static_cast<Controller*>(pUserData);
-      me->m_szRomName = pPinmameGame->name;
-      LOGI(std::format("Game found: name={}, description={}, manufacturer={}, year={}", pPinmameGame->name, pPinmameGame->description, pPinmameGame->manufacturer, pPinmameGame->year));
-   }, this);
+   PINMAME_STATUS status = PinmameGetGame(
+      name.c_str(),
+      [](PinmameGame* pPinmameGame, void* const pUserData)
+      {
+         Controller* me = static_cast<Controller*>(pUserData);
+         me->m_szRomName = pPinmameGame->name;
+         LOGI(std::format("Game found: name={}, description={}, manufacturer={}, year={}", pPinmameGame->name, pPinmameGame->description, pPinmameGame->manufacturer, pPinmameGame->year));
+      },
+      this);
    if (status == PINMAME_STATUS_OK)
    {
       //m_hidden = false;
@@ -147,9 +149,10 @@ void Controller::Run(long hParentWnd, int nMinVersion)
    // Trigger startup, status will be either 2 (staring), 1 (running), 0 (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_szGameName.c_str());
    while (PinmameIsRunning() == 2) // Wait until the machine is either running or stopped
-      std::this_thread::sleep_for(std::chrono::milliseconds(75)); 
+      std::this_thread::sleep_for(std::chrono::milliseconds(75));
 
-   if ((PinmameIsRunning() == 1) && status == PINMAME_STATUS_OK) {
+   if ((PinmameIsRunning() == 1) && status == PINMAME_STATUS_OK)
+   {
       if (m_onGameStartHandler)
          m_onGameStartHandler(this);
    }
@@ -163,7 +166,8 @@ void Controller::Run(long hParentWnd, int nMinVersion)
       if (vpxApi)
          vpxApi->PushNotification(("Failed to start emulation of rom '"s + m_szRomName + '\'').c_str(), 10000);
    }
-   if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING) {
+   if (status == PINMAME_STATUS_GAME_ALREADY_RUNNING)
+   {
       LOGE("Game already running."s);
    }
 }
@@ -253,63 +257,103 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 // Some PinMAME drivers defines a virtual matrix column for cabinet switches and use negative indices to access it (Whitestar for example)
 static constexpr int SWITCH_OFFSET = 16;
 
-void Controller::OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+void Controller::OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Controller* me = static_cast<Controller*>(userData);
    assert(me->m_threadLock == std::this_thread::get_id());
-   me->m_inputUpdatePending = true;
+   me->m_stateUpdatePending = true;
 }
 
-void Controller::UpdateInputSrc() const
+void Controller::UpdateStateSrc() const
 {
    assert(m_threadLock == std::this_thread::get_id());
-   if (!m_inputUpdatePending)
+   if (!m_stateUpdatePending)
       return;
 
-   m_inputUpdatePending = false;
-   m_inputs = { };
+   m_stateUpdatePending = false;
+   m_states = { };
    m_switches.clear();
    m_switchMap.clear();
    m_dipSwitches.clear();
    m_dipSwitchMap.clear();
+   m_solenoids.clear();
+   m_solenoidMap.clear();
+   m_gis.clear();
+   m_giMap.clear();
+   m_lamps.clear();
+   m_lampMap.clear();
 
-   GetInputSrcMsg getInputMsg = { 0, 0, nullptr };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getInputSrcMsgId, &getInputMsg);
-   vector<InputSrcId> inputSources(getInputMsg.count);
-   getInputMsg = { getInputMsg.count, 0, inputSources.data() };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getInputSrcMsgId, &getInputMsg);
-   for (const InputSrcId& src : inputSources)
+   GetStateSrcMsg getStateMsg = { 0, 0, nullptr };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getStateSrcMsgId, &getStateMsg);
+   vector<StateSrcId> stateSources(getStateMsg.count);
+   getStateMsg = { getStateMsg.count, 0, stateSources.data() };
+   m_msgApi->BroadcastMsg(m_endpointId, m_getStateSrcMsgId, &getStateMsg);
+   for (const StateSrcId& src : stateSources)
    {
       if (src.id.endpointId == m_endpointId)
       {
-         m_inputs = src;
+         m_states = src;
          break;
       }
    }
 
-   for (unsigned int i = 0; i < m_inputs.nInputs; i++)
+   m_prevState.resize(m_states.nStates, 0);
+
+   for (unsigned int i = 0; i < m_states.nStates; i++)
    {
-      switch (m_inputs.inputDefs[i].id.groupId)
+      switch (m_states.stateDefs[i].id.groupId & PMPI_GROUP_MASK)
       {
-      case 0x0001:
+      case PMPI_GROUP_SOLENOID:
+         m_solenoids.push_back(i);
+         if (m_solenoidMap.size() < m_states.stateDefs[i].id.stateId + 1)
+            m_solenoidMap.resize(m_states.stateDefs[i].id.stateId + 1, UINT_MAX);
+         m_solenoidMap[m_states.stateDefs[i].id.stateId] = i;
+         break;
+
+      case PMPI_GROUP_GI:
+         m_gis.push_back(i);
+         if (m_giMap.size() < m_states.stateDefs[i].id.stateId + 1)
+            m_giMap.resize(m_states.stateDefs[i].id.stateId + 1, UINT_MAX);
+         m_giMap[m_states.stateDefs[i].id.stateId] = i;
+         break;
+
+      case PMPI_GROUP_LAMP:
+         m_lamps.push_back(i);
+         if (m_lampMap.size() < m_states.stateDefs[i].id.stateId + 1)
+            m_lampMap.resize(m_states.stateDefs[i].id.stateId + 1, UINT_MAX);
+         m_lampMap[m_states.stateDefs[i].id.stateId] = i;
+         break;
+
+      case PMPI_GROUP_MECH:
+         // TODO Mech
+         break;
+
+      case PMPI_GROUP_SWITCH:
       {
          m_switches.push_back(i);
-         const int switchOfs = static_cast<int16_t>(m_inputs.inputDefs[i].id.deviceId) + SWITCH_OFFSET;
+         const int switchOfs = static_cast<int16_t>(m_states.stateDefs[i].id.stateId) + SWITCH_OFFSET;
          assert(switchOfs >= 0);
          if (m_switchMap.size() < switchOfs + 1)
             m_switchMap.resize(switchOfs + 1, UINT_MAX);
          m_switchMap[switchOfs] = i;
          if (switchOfs < m_switchStates.size())
-            m_inputs.SetInputState(i, m_switchStates[switchOfs]);
+         {
+            uint8_t bv = m_switchStates[switchOfs] ? 0xFF : 0;
+            m_states.SetState(i, CTLPI_STATE_TYPE_UINT8, &bv);
+         }
          break;
       }
-      case 0x0002:
+
+      case PMPI_GROUP_DIPSWITCH:
          m_dipSwitches.push_back(i);
-         if (m_dipSwitchMap.size() < m_inputs.inputDefs[i].id.deviceId + 1)
-            m_dipSwitchMap.resize(m_inputs.inputDefs[i].id.deviceId + 1, UINT_MAX);
-         m_dipSwitchMap[m_inputs.inputDefs[i].id.deviceId] = i;
-         if (m_inputs.inputDefs[i].id.deviceId < m_dipSwitchStates.size())
-            m_inputs.SetInputState(i, m_dipSwitchStates[m_inputs.inputDefs[i].id.deviceId]);
+         if (m_dipSwitchMap.size() < m_states.stateDefs[i].id.stateId + 1)
+            m_dipSwitchMap.resize(m_states.stateDefs[i].id.stateId + 1, UINT_MAX);
+         m_dipSwitchMap[m_states.stateDefs[i].id.stateId] = i;
+         if (m_states.stateDefs[i].id.stateId < m_dipSwitchStates.size())
+         {
+            uint8_t bv = m_dipSwitchStates[m_states.stateDefs[i].id.stateId] ? 0xFF : 0;
+            m_states.SetState(i, CTLPI_STATE_TYPE_UINT8, &bv);
+         }
          break;
       }
    }
@@ -321,11 +365,15 @@ bool Controller::GetSwitch(int switchNo) const
    if (switchNoOfs < 0)
       return false;
 
-   UpdateInputSrc();
+   UpdateStateSrc();
 
    if (switchNoOfs < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_inputs.nInputs)
-         return m_inputs.GetInputState(index) != 0;
+      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_states.nStates)
+      {
+         uint8_t state = 0;
+         m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
+         return state != 0;
+      }
 
    return switchNoOfs < m_switchStates.size() ? m_switchStates[switchNoOfs] : false;
 }
@@ -336,15 +384,18 @@ void Controller::SetSwitch(int switchNo, bool state)
    if (switchNoOfs < 0)
       return;
 
-   UpdateInputSrc();
+   UpdateStateSrc();
 
    if (m_switchStates.size() < switchNoOfs + 1)
       m_switchStates.resize(switchNoOfs + 1, false);
    m_switchStates[switchNoOfs] = state;
 
    if (switchNoOfs < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_inputs.nInputs)
-         m_inputs.SetInputState(index, state ? 1 : 0);
+      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_states.nStates)
+      {
+         uint8_t bv = state ? 0xFF : 0;
+         m_states.SetState(index, CTLPI_STATE_TYPE_UINT8, &bv);
+      }
 }
 
 int Controller::GetDip(int dipSwitchNo) const
@@ -352,11 +403,15 @@ int Controller::GetDip(int dipSwitchNo) const
    if (dipSwitchNo < 0)
       return false;
 
-   UpdateInputSrc();
+   UpdateStateSrc();
 
    if (dipSwitchNo < m_dipSwitchMap.size())
-      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_inputs.nInputs)
-         return m_inputs.GetInputState(index) != 0;
+      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
+      {
+         uint8_t state = 0;
+         m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
+         return state != 0;
+      }
 
    return dipSwitchNo < m_dipSwitchStates.size() ? m_dipSwitchStates[dipSwitchNo] : false;
 }
@@ -366,108 +421,18 @@ void Controller::SetDip(int dipSwitchNo, int state)
    if (dipSwitchNo < 0)
       return;
 
-   UpdateInputSrc();
+   UpdateStateSrc();
 
    if (m_dipSwitchStates.size() < dipSwitchNo + 1)
       m_dipSwitchStates.resize(dipSwitchNo + 1, false);
    m_dipSwitchStates[dipSwitchNo] = state;
 
    if (dipSwitchNo < m_dipSwitchMap.size())
-      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_inputs.nInputs)
-         m_inputs.SetInputState(index, state ? 1 : 0);
-}
-
-
-// Devices
-
-void Controller::OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData)
-{
-   Controller* me = static_cast<Controller*>(userData);
-   assert(me->m_threadLock == std::this_thread::get_id());
-   me->m_deviceUpdatePending = true;
-}
-
-void Controller::UpdateDeviceSrc() const
-{
-   assert(m_threadLock == std::this_thread::get_id());
-   if (!m_deviceUpdatePending)
-      return;
-
-   m_deviceUpdatePending = false;
-   m_devices = { };
-   m_solenoids.clear();
-   m_solenoidMap.clear();
-   m_gis.clear();
-   m_giMap.clear();
-   m_lamps.clear();
-   m_lampMap.clear();
-
-   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getDeviceSrcMsgId, &getSrcMsg);
-   vector<DevSrcId> deviceSources(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, deviceSources.data() };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getDeviceSrcMsgId, &getSrcMsg);
-   for (const DevSrcId& src : deviceSources)
-   {
-      if (src.id.endpointId == m_endpointId)
+      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
       {
-         m_devices = src;
-         break;
+         uint8_t bv = (state != 0) ? 0xFF : 0;
+         m_states.SetState(index, CTLPI_STATE_TYPE_UINT8, &bv);
       }
-   }
-
-   for (unsigned int i = 0; i < m_devices.nDevices; i++)
-   {
-      switch (m_devices.deviceDefs[i].id.groupId & 0xFF00)
-      {
-      case 0x0000:
-         m_solenoids.push_back(i);
-         if (m_solenoidMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
-            m_solenoidMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
-         m_solenoidMap[m_devices.deviceDefs[i].id.deviceId] = i;
-         break;
-      case 0x0100:
-         m_gis.push_back(i);
-         if (m_giMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
-            m_giMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
-         m_giMap[m_devices.deviceDefs[i].id.deviceId] = i;
-         break;
-      case 0x0200:
-         m_lamps.push_back(i);
-         if (m_lampMap.size() < m_devices.deviceDefs[i].id.deviceId + 1)
-            m_lampMap.resize(m_devices.deviceDefs[i].id.deviceId + 1, UINT_MAX);
-         m_lampMap[m_devices.deviceDefs[i].id.deviceId] = i;
-         break;
-      case 0x0300: break; // TODO Mech
-      }
-   }
-}
-
-uint8_t Controller::GetGIValue(float value) const
-{
-   // Recreate legacy VPinMAME values which depends on hardware generation and bulb integration mode
-   if (m_deviceMode == DM_PHYSOUT)
-      return saturatedByte(value);
-   else if (PinmameGetHardwareGen() & 0x00000000000ff) // All WPC: GI level is 0..8
-      return static_cast<uint8_t>(value * 8.f);
-   else
-      return value != 0.f ? 9 : 0; // Whitestar and SAM GI levels are either 0 or 9
-}
-
-uint8_t Controller::GetSolenoidValue(int solIndex, uint8_t value) const
-{
-   // Recreate legacy VPinMAME values which depends on hardware generation, output index and integration mode
-   switch (m_deviceMode)
-   {
-   case DM_BINARY: return value != 0 ? 1 : 0; // Original integration to binary state
-   case DM_MODSOL: // Simple linear integration added to the first 32 solenoids of WPC & SAM hardwares
-      if (solIndex <= 32 && (PinmameGetHardwareGen() & 0x01000000000ff))
-         return value;
-      else
-         return value != 0 ? 1 : 0;
-   case DM_PHYSOUT: return value; // Bulb integration to linear luminance 0..255
-   default: assert(false); return 0;
-   }
 }
 
 long Controller::GetSolMask(int nLow) const
@@ -510,58 +475,68 @@ void Controller::SetModOutputType(int output, int no, int newVal)
 
 int Controller::GetSolenoid(int solenoid) const
 {
-   UpdateDeviceSrc();
-   
+   UpdateStateSrc();
+
    if (solenoid < 0 || solenoid >= m_solenoidMap.size())
       return 0;
-   
-   if (const unsigned int index = m_solenoidMap[solenoid]; index < m_devices.nDevices)
-      return GetSolenoidValue(solenoid, m_devices.GetByteState(index));
+
+   if (const unsigned int index = m_solenoidMap[solenoid]; index < m_states.nStates)
+   {
+      uint8_t state = 0;
+      m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
+      return state;
+   }
 
    return 0;
 }
 
 int Controller::GetLamp(int lamp) const
 {
-   UpdateDeviceSrc();
+   UpdateStateSrc();
 
    if (lamp < 0 || lamp >= m_lampMap.size())
       return 0;
 
-   if (const unsigned int index = m_lampMap[lamp]; index < m_devices.nDevices)
-      return GetLampValue(m_devices.GetByteState(index));
+   if (const unsigned int index = m_lampMap[lamp]; index < m_states.nStates)
+   {
+      uint8_t state = 0;
+      m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
+      return state;
+   }
 
    return 0;
 }
 
 int Controller::GetGIString(int giString) const
 {
-   UpdateDeviceSrc();
+   UpdateStateSrc();
 
    if (giString < 0 || giString >= m_giMap.size())
       return 0;
-   
-   if (const unsigned int index = m_giMap[giString]; index < m_devices.nDevices)
-      return GetGIValue(m_devices.GetFloatState(index));
+
+   if (const unsigned int index = m_giMap[giString]; index < m_states.nStates)
+   {
+      uint8_t state = 0;
+      m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
+      return state;
+   }
 
    return 0;
 }
 
 const vector<PinmameLampState>& Controller::GetChangedLamps()
 {
-   UpdateDeviceSrc();
-
-   if (m_devices.nDevices > m_prevDeviceState.size())
-      m_prevDeviceState.resize(m_devices.nDevices, 0);
+   UpdateStateSrc();
 
    m_lampStates.clear();
    for (int lampIndex : m_lamps)
    {
-      const uint8_t state = GetLampValue(m_devices.GetByteState(lampIndex));
-      if (m_prevDeviceState[lampIndex] != state)
+      uint8_t state = 0;
+      m_states.GetState(lampIndex, CTLPI_STATE_TYPE_UINT8, &state);
+      if (m_prevState[lampIndex] != state)
       {
-         m_lampStates.emplace_back(m_devices.deviceDefs[lampIndex].id.deviceId, state);
-         m_prevDeviceState[lampIndex] = state;
+         m_lampStates.emplace_back(m_states.stateDefs[lampIndex].id.stateId, state);
+         m_prevState[lampIndex] = state;
       }
    }
    return m_lampStates;
@@ -569,19 +544,17 @@ const vector<PinmameLampState>& Controller::GetChangedLamps()
 
 const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 {
-   UpdateDeviceSrc();
-
-   if (m_devices.nDevices > m_prevDeviceState.size())
-      m_prevDeviceState.resize(m_devices.nDevices, 0);
+   UpdateStateSrc();
 
    m_giStates.clear();
    for (int giIndex : m_gis)
    {
-      const uint8_t state = GetGIValue(m_devices.GetFloatState(giIndex));
-      if (m_prevDeviceState[giIndex] != state)
+      uint8_t state = 0;
+      m_states.GetState(giIndex, CTLPI_STATE_TYPE_UINT8, &state);
+      if (m_prevState[giIndex] != state)
       {
-         m_giStates.emplace_back(m_devices.deviceDefs[giIndex].id.deviceId, state);
-         m_prevDeviceState[giIndex] = state;
+         m_giStates.emplace_back(m_states.stateDefs[giIndex].id.stateId, state);
+         m_prevState[giIndex] = state;
       }
    }
    return m_giStates;
@@ -589,20 +562,18 @@ const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 
 const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
 {
-   UpdateDeviceSrc();
-
-   if (m_devices.nDevices > m_prevDeviceState.size())
-      m_prevDeviceState.resize(m_devices.nDevices, 0);
+   UpdateStateSrc();
 
    m_solenoidStates.clear();
    for (int solIndex : m_solenoids)
    {
-      const uint8_t state = GetSolenoidValue(m_devices.deviceDefs[solIndex].id.deviceId, m_devices.GetByteState(solIndex));
-      if (m_prevDeviceState[solIndex] != state)
+      uint8_t state = 0;
+      m_states.GetState(solIndex, CTLPI_STATE_TYPE_UINT8, &state);
+      if (m_prevState[solIndex] != state)
       {
-         if (m_devices.deviceDefs[solIndex].id.deviceId >= 64 || (m_solMask & (1ULL << m_devices.deviceDefs[solIndex].id.deviceId)) != 0)
-            m_solenoidStates.emplace_back(m_devices.deviceDefs[solIndex].id.deviceId, state);
-         m_prevDeviceState[solIndex] = state;
+         if (m_states.stateDefs[solIndex].id.stateId >= 64 || (m_solMask & (1ULL << (m_states.stateDefs[solIndex].id.stateId - 1))) != 0)
+            m_solenoidStates.emplace_back(m_states.stateDefs[solIndex].id.stateId, state);
+         m_prevState[solIndex] = state;
       }
    }
    return m_solenoidStates;
@@ -715,8 +686,7 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3] << 16) 
-            | ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1] << 8)
+         pixels[i] = ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3] << 16) | ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1] << 8)
             | (static_cast<const uint8_t*>(frame.frame)[i * 3 + 2]);
    }
    return pixels;

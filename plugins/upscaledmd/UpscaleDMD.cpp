@@ -433,7 +433,7 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
    msgApi = api;
    endpointId = sessionId;
    LPISetup(endpointId, api);
-   resURIResolver = std::make_unique<ResURIResolver>(*api, endpointId, true, false, false, false);
+   resURIResolver = std::make_unique<ResURIResolver>(*api, endpointId, true, false, false);
    resURIResolver->SetDisplayFilter([](const DisplaySrcId& src){ return src.id.endpointId != endpointId; });
    onDisplaySrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);

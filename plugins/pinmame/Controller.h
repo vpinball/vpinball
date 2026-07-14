@@ -176,17 +176,12 @@ private:
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
 
-   unsigned int m_getInputSrcMsgId, m_onInputChangedMsgId;
-   mutable bool m_inputUpdatePending = true;
-   mutable InputSrcId m_inputs { };
-   mutable vector<int> m_switches;
-   mutable vector<bool> m_switchStates;
-   mutable vector<unsigned int> m_switchMap;
-   mutable vector<int> m_dipSwitches;
-   mutable vector<bool> m_dipSwitchStates;
-   mutable vector<unsigned int> m_dipSwitchMap;
-   static void OnInputSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   void UpdateInputSrc() const;
+   unsigned int m_getStateSrcMsgId, m_onStateSrcChangedMsgId;
+   mutable bool m_stateUpdatePending = true;
+   static void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   void UpdateStateSrc() const;
+   mutable StateSrcId m_states { };
+   mutable vector<uint8_t> m_prevState;
 
    enum DeviceMode
    {
@@ -196,24 +191,26 @@ private:
    };
    uint64_t m_solMask = 0xFFFFFFFFFFFFFFFFULL; // Mask applied to (and only to) GetChangedSolenoids
    DeviceMode m_deviceMode = DM_BINARY;
-   unsigned int m_getDeviceSrcMsgId, m_onDeviceChangedMsgId;
-   vector<uint8_t> m_prevDeviceState;
-   mutable bool m_deviceUpdatePending = true;
-   mutable DevSrcId m_devices { };
+
+   mutable vector<int> m_switches;
+   mutable vector<bool> m_switchStates;
+   mutable vector<unsigned int> m_switchMap;
+
+   mutable vector<int> m_dipSwitches;
+   mutable vector<bool> m_dipSwitchStates;
+   mutable vector<unsigned int> m_dipSwitchMap;
+
    mutable vector<int> m_solenoids;
    mutable vector<unsigned int> m_solenoidMap;
    mutable vector<PinmameSolenoidState> m_solenoidStates;
+
    mutable vector<int> m_gis;
    mutable vector<unsigned int> m_giMap;
    mutable vector<PinmameGIState> m_giStates;
+
    mutable vector<int> m_lamps;
    mutable vector<unsigned int> m_lampMap;
    mutable vector<PinmameLampState> m_lampStates;
-   static void OnDeviceSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   void UpdateDeviceSrc() const;
-   uint8_t GetGIValue(float value) const;
-   uint8_t GetLampValue(uint8_t value) const { return m_deviceMode == DM_PHYSOUT ? value : (value != 0 ? 1 : 0); }
-   uint8_t GetSolenoidValue(int solIndex, uint8_t value) const;
 
    unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
    bool m_dmdUpdatePending = true;

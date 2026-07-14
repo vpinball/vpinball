@@ -2,18 +2,18 @@
 
 #pragma once
 
-#include <future>
-#include <chrono>
-
 #include "common.h"
 #include "B2SDataModel.h"
 #include "B2SDMDOverlay.h"
 
 #include "plugins/ControllerPlugin.h"
-
 #include "plugins/ResURIResolver.h"
 
-namespace B2S {
+#include <future>
+#include <chrono>
+
+namespace B2S
+{
 
 class B2SRenderer final
 {
@@ -36,10 +36,10 @@ private:
 
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
-   unsigned int m_getDevSrcMsgId = 0;
-   unsigned int m_onDevChangedMsgId = 0;
-   static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   DevSrcId m_deviceStateSrc {};
+   unsigned int m_getStateSrcMsgId = 0;
+   unsigned int m_onStateChangedMsgId = 0;
+   static void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+   StateSrcId m_deviceStateSrc {};
 
    unsigned int m_getSegSrcMsgId = 0;
    unsigned int m_onSegChangedMsgId = 0;
