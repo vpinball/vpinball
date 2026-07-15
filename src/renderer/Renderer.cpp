@@ -2763,60 +2763,60 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       }
 
       // Blit preview
-      assert(m_renderDevice->m_outputWnd.size() == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
-      RenderTarget* previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
-      m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
+      // FIXME no preview for Vulkan as we are not creating the desktop swapchain
+      RenderTarget* previewRT = nullptr; 
+      if (bgfx::getRendererType() != bgfx::RendererType::Vulkan)
+      {
+         assert(m_renderDevice->m_outputWnd.size() == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
+         m_renderDevice->m_outputWnd[1]->GetBackBuffer();
+         m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
 
-      m_renderDevice->AddRenderTargetDependency(renderedRT);
-      const int previewW = m_vrPreview == VRPREVIEW_BOTH ? previewRT->GetWidth() / 2 : previewRT->GetWidth(), previewH = previewRT->GetHeight();
-      const float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
-      int x = 0, y = 0;
-      int fw = w, fh = h;
-      if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))
-      { // Fit on Y
-         const int scaledW = (int)((float)h * previewAr);
-         x = (w - scaledW) / 2;
-         fw = scaledW;
-      }
-      else
-      { // Fit on X
-         const int scaledH = (int)((float)w / previewAr);
-         y = (h - scaledH) / 2;
-         fh = scaledH;
-      }
-      if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
-         m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+         m_renderDevice->AddRenderTargetDependency(renderedRT);
+         const int previewW = m_vrPreview == VRPREVIEW_BOTH ? previewRT->GetWidth() / 2 : previewRT->GetWidth(), previewH = previewRT->GetHeight();
+         const float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
+         int x = 0, y = 0;
+         int fw = w, fh = h;
+         if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))
+         { // Fit on Y
+            const int scaledW = (int)((float)h * previewAr);
+            x = (w - scaledW) / 2;
+            fw = scaledW;
+         }
+         else
+         { // Fit on X
+            const int scaledH = (int)((float)w / previewAr);
+            y = (h - scaledH) / 2;
+            fh = scaledH;
+         }
+         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+            m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
-      Vertex3D_TexelOnly verts[4] =
-      {
-         { -1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
-         {  1.0f,  1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y     ) / h },
-         { -1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
-         {  1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
-      };
-      m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
-      if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
-      {
-         // FIXME no preview for Vulkan as we are not creating the desktop swapchain
-
-      }
-      else if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
-      {
-         m_renderDevice->m_FBShader->SetInt(SHADER_layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
-         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
-      }
-      else if (m_vrPreview == VRPREVIEW_BOTH)
-      {
-         verts[0].x = verts[2].x = -1.f;
-         verts[1].x = verts[3].x = 0.f;
-         m_renderDevice->m_FBShader->SetInt(SHADER_layer, 0);
-         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
-         verts[0].x = verts[2].x = 0.f;
-         verts[1].x = verts[3].x = 1.f;
-         m_renderDevice->m_FBShader->SetInt(SHADER_layer, 1);
-         m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+         Vertex3D_TexelOnly verts[4] =
+         {
+            { -1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
+            {  1.0f,  1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y     ) / h },
+            { -1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
+            {  1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
+         };
+         m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
+         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+         {
+            m_renderDevice->m_FBShader->SetInt(SHADER_layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+         }
+         else if (m_vrPreview == VRPREVIEW_BOTH)
+         {
+            verts[0].x = verts[2].x = -1.f;
+            verts[1].x = verts[3].x = 0.f;
+            m_renderDevice->m_FBShader->SetInt(SHADER_layer, 0);
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+            verts[0].x = verts[2].x = 0.f;
+            verts[1].x = verts[3].x = 1.f;
+            m_renderDevice->m_FBShader->SetInt(SHADER_layer, 1);
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+         }
       }
 
       if (m_vrApplyColorKey)
@@ -2827,7 +2827,8 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
          // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
          // color key after blending).
          m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
-         m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
+         if (previewRT)
+            m_renderDevice->AddRenderTargetDependency(previewRT); // Add a dependency on the preview to ensure color keying is done after preview copy
          m_renderDevice->AddRenderTargetDependency(renderedRT);
          m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
          m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
