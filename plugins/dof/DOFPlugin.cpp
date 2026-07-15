@@ -208,8 +208,10 @@ static void MSGPIAPI OnB2SStateChg(unsigned int index, void* context)
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
-   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME implement multiple ontroller sources (PinMAME, B2S, PuP, ...)
 
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (isRunning)
@@ -231,7 +233,13 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (pDOF) {
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
+
+   if (pDOF)
+   {
       LOGI("OnControllerGameEnd"s);
       isRunning = false;
       if (pollThread.joinable())

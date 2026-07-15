@@ -180,14 +180,17 @@ static void StopAltSound()
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
-    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
+
+   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
     if (isRunning)
     {
         LOGW("Ignoring game start, already running"s);
         return;
     }
-    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
-    assert(msg != nullptr && msg->gameId != nullptr);
 
     VPXTableInfo tableInfo;
     vpxApi->GetTableInfo(&tableInfo);
@@ -230,7 +233,12 @@ static void OnSoundCommand(const unsigned int eventId, void* userData, void* msg
 
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
-    StopAltSound();
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
+
+   StopAltSound();
 }
 
 }

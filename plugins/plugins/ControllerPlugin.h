@@ -69,17 +69,18 @@ typedef struct DeviceDef
 // Controller state
 //
 
-#define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStartMsg struct
-#define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends
+#define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStateChgMsg struct
+#define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends, msgData is a pointer to a CtlOnGameStateChgMsg struct
 #define CTLPI_EVT_ON_SOUND_COMMAND    "OnSoundCommand"    // Broadcasted when controller receives sound command, msgData is a pointer to a CtlOnSoundCommandMsg struct
 
-struct CtlOnGameStartMsg
+struct CtlOnGameStateChgMsg
 {
+   unsigned int ctrlEndpointId;
    const char* gameId;
-   uint64_t hardwareGen;
+   uint64_t hardwareGen; // FIXME remove from generic controller interface: this is a PinMAME concept only
 };
 
-struct CtlOnSoundCommandMsg
+struct CtlOnSoundCommandMsg // FIXME replace by generic game events
 {
    unsigned int boardNo;
    unsigned int cmd;
