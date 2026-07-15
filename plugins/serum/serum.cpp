@@ -335,6 +335,13 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
 
+   // The gameId can be an empty string on an early game-start broadcast.
+   if (msg->gameId[0] == '\0')
+   {
+      LOGW("Ignoring game start with empty gameId"s);
+      return;
+   }
+
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    std::filesystem::path tablePath = tableInfo.path;
