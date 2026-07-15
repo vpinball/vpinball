@@ -79,7 +79,10 @@ B2SServer::~B2SServer()
    m_renderer = nullptr;
 
    if (m_gameRunning)
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   {
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+   }
    m_msgApi->ReleaseMsgID(m_onGameStartId);
    m_msgApi->ReleaseMsgID(m_onGameEndId);
 
@@ -110,11 +113,14 @@ void B2SServer::SetB2SName(const std::string& b2sName) {
    if (b2sName == m_b2sName)
       return;
    if (m_gameRunning)
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   {
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+   }
    m_b2sName = b2sName;
    if (m_gameRunning)
    {
-      CtlOnGameStartMsg msg = { m_b2sName.c_str(), 0 };
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str(), 0 };
       m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
    }
 }
@@ -134,12 +140,13 @@ void B2SServer::UpdateDevSrc()
    if (m_gameRunning && m_states.empty())
    {
       m_gameRunning = false;
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
    }
    else if (!m_gameRunning && !m_states.empty())
    {
       m_gameRunning = true;
-      CtlOnGameStartMsg msg = { m_b2sName.c_str(), 0 };
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str(), 0 };
       m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
    }
 

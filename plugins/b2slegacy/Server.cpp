@@ -65,7 +65,10 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
 Server::~Server()
 {
    if (m_gameRunning)
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   {
+      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+   }
    m_msgApi->ReleaseMsgID(m_onGameStartId);
    m_msgApi->ReleaseMsgID(m_onGameEndId);
 
@@ -181,12 +184,13 @@ void Server::UpdateDevSrc()
    if (m_gameRunning && m_b2sStates.empty())
    {
       m_gameRunning = false;
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
    }
    else if (!m_gameRunning && !m_b2sStates.empty())
    {
       m_gameRunning = true;
-      CtlOnGameStartMsg msg = { GetB2SName().c_str(), 0 };
+      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str(), 0 };
       m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
    }
 
@@ -379,13 +383,16 @@ void Server::SetB2SName(const string& b2sName)
       return;
 
    if (m_gameRunning)
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, nullptr);
+   {
+      CtlOnGameStateChgMsg msg = { m_endpointId, m_pB2SSettings->GetB2SName().c_str(), 0 };
+      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+   }
 
    m_pB2SSettings->SetB2SName(b2sName);
 
    if (m_gameRunning)
    {
-      CtlOnGameStartMsg msg = { GetB2SName().c_str(), 0 };
+      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str(), 0 };
       m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
    }
 }

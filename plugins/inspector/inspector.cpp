@@ -248,19 +248,20 @@ std::string GetInputStatesJson()
 
 void onCtlGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
-   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
-   std::string gameId = msg && msg->gameId ? msg->gameId : "Unknown Game";
-   runningGames.push_back(gameId);
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg && msg->gameId);
+   runningGames.push_back(msg->gameId);
    UpdateTreeCache();
 }
 
 void onCtlGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (!runningGames.empty())
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   if (const auto it = std::find(runningGames.begin(), runningGames.end(), msg->gameId); it != runningGames.end())
    {
-      runningGames.pop_back();
+      runningGames.erase(it);
+      UpdateTreeCache();
    }
-   UpdateTreeCache();
 }
 
 void onSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateTreeCache(); }

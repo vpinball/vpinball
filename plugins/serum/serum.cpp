@@ -324,6 +324,11 @@ static void StopColorization()
 
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME handle multiple controller running (PinMAME, B2S, ...)
+
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (isRunning)
    {
@@ -331,10 +336,8 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
       return;
    }
    StopColorization();
-   // Setup Serum on the selected DMD
-   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
 
+   // Setup Serum on the selected DMD
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    std::filesystem::path tablePath = tableInfo.path;
@@ -384,6 +387,11 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 
 static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME handle multiple controller running (PinMAME, B2S, ...)
+
    StopColorization();
 }
 

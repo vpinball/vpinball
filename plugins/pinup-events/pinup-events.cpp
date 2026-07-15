@@ -196,8 +196,10 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
    if (!mainDMDFound)
       return;
 
+   // FIXME handle multiple controller running (PinMAME, B2S, ...)
+
    // Find PUP interface dll and set it up
-   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
    HMODULE hm = nullptr;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PinUpEventsPluginLoad"), &hm) == 0)

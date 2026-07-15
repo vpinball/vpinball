@@ -220,14 +220,18 @@ void StopAudioStream(const CtlResId& id)
 
 void OnControllerGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
+   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(eventData);
+   assert(msg != nullptr && msg->gameId != nullptr);
+
+   // FIXME handle multiple controller running (PinMAME, B2S, ...)
+
    // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
    if (pupManager->IsRunning())
    {
       LOGW("PinUpPlayer was instantiated and initialized from the table script before table init; skipping automated PuP loading. Initialize PuP during table init to avoid relying on uninitialized table state."s);
       return;
    }
-   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
-   assert(msg != nullptr && msg->gameId != nullptr);
+
    // Early B2S broadcasts may fire with an empty gameId before the B2S name is committed;
    // don't let those poison the manager state.
    if (msg->gameId[0] == '\0')
