@@ -59,6 +59,8 @@ private:
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;
+   bool m_firstRenderPending = false;
+   double m_lastDecodedPts = 0.0;
 
    AVFormatContext* m_pFormatContext = nullptr;
 
@@ -72,6 +74,7 @@ private:
    {
       bool valid = false;
       AVFrame* frame = nullptr;
+      uint8_t* buffer = nullptr;
       VPXTexture texture = nullptr;
       double pts = -1.0;
       bool uploaded = false;
@@ -79,6 +82,7 @@ private:
    };
    vector<FrameInfo> m_frames;
    SwsContext* m_swsContext = nullptr;
+   uint64_t m_lastRenderTicks = 0;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_scaledMask;
