@@ -189,6 +189,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
          m_videoPtsBase = 0.0;
          m_audioStream = audioStream;
          m_pAudioContext = pAudioContext;
+         m_firstRenderPending = pVideoContext != nullptr;
+         m_lastDecodedPts = 0.0;
+         m_lastRenderTicks = 0;
          m_running = true;
          m_thread = std::thread(&PUPMediaPlayer::Run, this);
       }
@@ -247,10 +250,13 @@ void PUPMediaPlayer::StopBlocking()
    {
       if (frame.frame)
          m_libAv._av_frame_free(&frame.frame);
+      if (frame.buffer)
+         m_libAv._av_free(frame.buffer);
       if (frame.texture)
          DeleteTexture(frame.texture);
       frame.valid = false;
       frame.frame = nullptr;
+      frame.buffer = nullptr;
       frame.texture = nullptr;
       frame.uploaded = false;
       frame.pts = -1.0;
@@ -320,6 +326,28 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
    std::lock_guard lock(m_mutex);
 
+   const uint64_t nowTicks = SDL_GetTicks();
+   const uint64_t renderGap = m_lastRenderTicks != 0 ? (nowTicks - m_lastRenderTicks) : 0;
+   m_lastRenderTicks = nowTicks;
+
+   // The playback clock only advances while the screen is actually being rendered: start the
+   // timeline at the first render, and shift it across render stalls (table load, ...) so the
+   // video holds and resumes instead of skipping ahead
+   if (!m_paused)
+   {
+      if (m_firstRenderPending)
+      {
+         m_firstRenderPending = false;
+         const double late = GetPlayTime();
+         if (late > 0.0)
+            m_startTimestamp += late;
+      }
+      else if (renderGap > 250)
+      {
+         m_startTimestamp += static_cast<double>(renderGap) / 1000.0;
+      }
+   }
+
    const double playPts = m_paused ? m_pauseTimestamp : GetPlayTime();
 
    // Search for the best frame to display (the one nearest to our play time), also ageing all slots to let the decoder select the eldest used slot
@@ -337,16 +365,22 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
    if (selectedFrameSlot == -1)
       return;
    FrameInfo& selectedFrame = m_frames[selectedFrameSlot];
-   //LOGD(std::format("{} Render with Play time: {:5.3f} / Video PTS: {:5.3f} / Slot: {}", m_filename.filename().string(), playPts, selectedFrame.pts, selectedFrameSlot));
 
    if (!selectedFrame.uploaded)
    {
-      // To optimize a bit more we could update & upload a texture on a frame, then use it on the following render, this would remove the barrier between
-      // the GPU upload/mipmap generation and the GPU render use, allowing more parallelism. Note that for the time being upload is only done on use
+      // Hand a fresh texture over for each new frame: the previous texture may still be referenced
+      // by a pending GPU upload, so it is released (kept alive by the pending reference until
+      // consumed) instead of being updated in place
       selectedFrame.uploaded = true;
-      const VPXTextureInfo* texInfo = GetTextureInfo(selectedFrame.texture);
-      UpdateTexture(&selectedFrame.texture, texInfo->width, texInfo->height, texInfo->format, texInfo->data);
+      if (selectedFrame.texture != nullptr)
+      {
+         DeleteTexture(selectedFrame.texture);
+         selectedFrame.texture = nullptr;
+      }
+      UpdateTexture(&selectedFrame.texture, selectedFrame.frame->width, selectedFrame.frame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, selectedFrame.frame->data[0]);
    }
+   if (selectedFrame.texture == nullptr)
+      return;
 
    const VPXTextureInfo* texInfo = GetTextureInfo(selectedFrame.texture);
    ctx->DrawImage(ctx, selectedFrame.texture, 1.f, 1.f, 1.f, alpha, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, 0.f,
@@ -406,8 +440,31 @@ void PUPMediaPlayer::Run()
       const int rfRet = m_libAv._av_read_frame(m_pFormatContext, pPacket);
       if (rfRet == AVERROR_EOF)
       {
+         // Drain both decoders so the last buffered frames are not dropped at the loop point or at the natural end
+         if (m_pVideoContext)
+         {
+            m_libAv._avcodec_send_packet(m_pVideoContext, nullptr);
+            while (m_libAv._avcodec_receive_frame(m_pVideoContext, pFrame) >= 0)
+            {
+               pFrame->opaque = reinterpret_cast<void*>(static_cast<uintptr_t>(m_playIndex));
+               HandleVideoFrame(pFrame);
+            }
+         }
+         if (m_pAudioContext)
+         {
+            m_libAv._avcodec_send_packet(m_pAudioContext, nullptr);
+            while (m_libAv._avcodec_receive_frame(m_pAudioContext, pFrame) >= 0)
+            {
+               pFrame->opaque = reinterpret_cast<void*>(static_cast<uintptr_t>(m_playIndex));
+               HandleAudioFrame(pFrame, m_pVideoContext == nullptr);
+            }
+         }
          if (!loop)
+         {
+            while (m_running && !m_paused && m_pVideoContext && GetPlayTime() < m_lastDecodedPts + 0.05)
+               SDL_Delay(8);
             break;
+         }
          if (m_pVideoContext)
          {
             if (m_libAv._av_seek_frame(m_pFormatContext, m_videoStream, 0, 0) < 0)
@@ -426,11 +483,30 @@ void PUPMediaPlayer::Run()
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
          m_playIndex++;
-         m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+         double duration = 0.0;
+         if (m_videoStream >= 0)
+         {
+            const AVStream* vs = m_pFormatContext->streams[m_videoStream];
+            if (vs->duration > 0)
+               duration = static_cast<double>(vs->duration) * vs->time_base.num / vs->time_base.den;
+         }
          {
             std::lock_guard lock(m_mutex);
-            for (auto& frame : m_frames)
-               frame.valid = false;
+            if (duration > 0.0)
+            {
+               // Keep the timeline continuous across the loop: the tail frames stay valid at
+               // negative pts and play out while the next iteration's frames (pts 0..) decode
+               m_startTimestamp += duration;
+               m_lastDecodedPts -= duration;
+               for (auto& frame : m_frames)
+                  frame.pts -= duration;
+            }
+            else
+            {
+               m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+               for (auto& frame : m_frames)
+                  frame.valid = false;
+            }
          }
          continue;
       }
@@ -513,6 +589,12 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
             selectedFrameSlot = i;
             break;
          }
+         else if (m_frames[i].pts + 0.5 < playPTS)
+         { // Far behind play time => reclaim regardless of age (screens that are never rendered do not age their slots)
+            maxAge = 2;
+            selectedFrameSlot = i;
+            break;
+         }
          else if ((m_frames[i].age > maxAge) && (m_frames[i].pts < playPTS))
          { // Search for the oldest slot with a frame behind play time
             maxAge = m_frames[i].age;
@@ -541,9 +623,12 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    if ((selectedFrame.frame != nullptr) && ((selectedFrame.frame->width != targetWidth) || (selectedFrame.frame->height != targetHeight)))
    {
       m_libAv._av_frame_free(&selectedFrame.frame);
+      if (selectedFrame.buffer != nullptr)
+         m_libAv._av_free(selectedFrame.buffer);
       if (selectedFrame.texture != nullptr)
          DeleteTexture(selectedFrame.texture);
       selectedFrame.frame = nullptr;
+      selectedFrame.buffer = nullptr;
       selectedFrame.texture = nullptr;
    }
    if (selectedFrame.frame == nullptr)
@@ -555,11 +640,11 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
          m_running = false;
          return;
       }
-      // Precreate the texture and uses its backing buffer to avoid copying on each update
-      assert(selectedFrame.texture == nullptr);
-      UpdateTexture(&selectedFrame.texture, targetWidth, targetHeight, VPXTextureFormat::VPXTEXFMT_sRGBA8, nullptr);
-      const uint8_t* frameBuffer = static_cast<uint8_t*>(GetTextureInfo(selectedFrame.texture)->data);
-      if (frameBuffer == nullptr)
+      // Decode into a slot private buffer: the texture backing store must not be touched as it
+      // may still be referenced by a pending GPU upload
+      const int bufferSize = m_libAv._av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
+      selectedFrame.buffer = static_cast<uint8_t*>(m_libAv._av_malloc(bufferSize));
+      if (selectedFrame.buffer == nullptr)
       {
          LOGE("Failed to allocate RGB buffer"s);
          m_running = false;
@@ -568,7 +653,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       selectedFrame.frame->width = targetWidth;
       selectedFrame.frame->height = targetHeight;
       selectedFrame.frame->format = targetFormat;
-      m_libAv._av_image_fill_arrays(selectedFrame.frame->data, selectedFrame.frame->linesize, frameBuffer, targetFormat, targetWidth, targetHeight, 1);
+      m_libAv._av_image_fill_arrays(selectedFrame.frame->data, selectedFrame.frame->linesize, selectedFrame.buffer, targetFormat, targetWidth, targetHeight, 1);
    }
 
    // Create/Update conversion context when source format is known (so after decoding at least one frame)
@@ -625,7 +710,14 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       selectedFrame.pts = framePtsSeconds - m_videoPtsBase;
       selectedFrame.uploaded = false;
       selectedFrame.valid = true;
-      //LOGD(std::format("{} Decoded with Video PTS: {:5.3f} / Slot: {}", m_filename.filename().string(), selectedFrame.pts, selectedFrameSlot));
+      m_lastDecodedPts = selectedFrame.pts;
+      // If playback ran ahead of decoding, resync the clock to the freshest frame instead of
+      // fast-forwarding through the deficit. Only when rendering is current (or never happened,
+      // which throttles decoding for screens that are not displayed) - render stalls are
+      // compensated at render resume so correcting them here too would double count
+      const double deficit = GetPlayTime() - selectedFrame.pts;
+      if (deficit > 0.25 && (m_lastRenderTicks == 0 || SDL_GetTicks() - m_lastRenderTicks < 250))
+         m_startTimestamp += deficit;
    }
 }
 
