@@ -213,7 +213,13 @@ std::filesystem::path FileLocator::GetAppPath(AppSubFolder sub, const std::files
    // Readonly deployment files, always located along executable file
    case FileLocator::AppSubFolder::Root: path = m_appPath; break;
    case FileLocator::AppSubFolder::Assets: path = m_appPath / "assets"sv; break;
-   case FileLocator::AppSubFolder::Plugins: path = m_appPath / "plugins"sv; break;
+   case FileLocator::AppSubFolder::Plugins:
+#if defined(__APPLE__) && defined(TARGET_OS_OSX) && TARGET_OS_OSX
+      path = (m_appPath / ".."sv / "PlugIns"sv).lexically_normal();
+#else
+      path = m_appPath / "plugins"sv;
+#endif
+      break;
    case FileLocator::AppSubFolder::GLShaders: path = m_appPath / ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV)); break;
    case FileLocator::AppSubFolder::Docs:
       // A bit hacky as doc files have moved over time, so we check the various locations they may be in
