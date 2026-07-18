@@ -256,7 +256,7 @@ jobs:
             security list-keychain -d user -s $KEYCHAIN_PATH
             codesign --verbose --timestamp --options runtime --force \
               --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
-              VPinballX_${{ matrix.type }}.app/Contents/Resources/plugins/*/*.dylib
+              VPinballX_${{ matrix.type }}.app/Contents/PlugIns/*/*.dylib
             codesign --verbose --timestamp --options runtime --deep --force \
               --entitlements ../../standalone/macos/VPinballX.entitlements \
               --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \

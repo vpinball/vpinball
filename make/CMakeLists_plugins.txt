@@ -11,7 +11,8 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STRE
 endif()
 
 if(PLATFORM STREQUAL "macos")
-   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources/plugins")
+   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../PlugIns")
+   set(CMAKE_INSTALL_RPATH "@loader_path/../../Frameworks;@loader_path;@executable_path")
 else()
    set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
 endif()
