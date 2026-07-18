@@ -11,6 +11,19 @@
 
 namespace PUP {
 
+/*
+ * swscale SIMD paths may read/write past the end of image planes, so destination buffers
+ * must be over-allocated. 64 matches FFmpeg's internal STRIDE_ALIGN (AVX-512 store width)
+ * and Chromium's kFFmpegBufferAddressAlignment on x86.
+ *
+ * https://ffmpeg.org/doxygen/trunk/structAVFrame.html ("some filters and swscale can read
+ * up to 16 bytes beyond the planes")
+ * https://trac.ffmpeg.org/ticket/9254 (sws_scale writes out of buffer, ssse3 YUV->RGB)
+ * https://trac.ffmpeg.org/ticket/10852 (sws_scale overflows buffer for some resolutions)
+ * https://source.chromium.org/chromium/chromium/src/+/main:media/base/limits.h
+ */
+#define PUP_SWS_DST_PADDING 64
+
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -134,9 +147,10 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume)
       if (videoStream >= 0)
       {
          audioStream = m_libAv._av_find_best_stream(pFormatContext, AVMEDIA_TYPE_AUDIO, -1, videoStream, NULL, 0);
-         if (audioStream == AVERROR_DECODER_NOT_FOUND)
+         if (audioStream < 0)
          {
-            LOGE("No audio stream found: filename=" + filename.string());
+            if (audioStream == AVERROR_DECODER_NOT_FOUND)
+               LOGE("No audio stream found: filename=" + filename.string());
             audioStream = -1;
          }
       }
@@ -643,7 +657,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       // Decode into a slot private buffer: the texture backing store must not be touched as it
       // may still be referenced by a pending GPU upload
       const int bufferSize = m_libAv._av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
-      selectedFrame.buffer = static_cast<uint8_t*>(m_libAv._av_malloc(bufferSize));
+      selectedFrame.buffer = static_cast<uint8_t*>(m_libAv._av_malloc(bufferSize + PUP_SWS_DST_PADDING));
       if (selectedFrame.buffer == nullptr)
       {
          LOGE("Failed to allocate RGB buffer"s);
@@ -680,14 +694,16 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       if (sdlMask)
       {
          SDL_LockSurface(sdlMask);
-         const uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
-         uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(selectedFrame.frame->data[0]);
+         const uint8_t* __restrict maskRow = static_cast<const uint8_t*>(sdlMask->pixels);
+         uint8_t* __restrict frameRow = selectedFrame.frame->data[0];
          for (int i = 0; i < sdlMask->h; i++)
          {
+            const uint32_t* __restrict mask = reinterpret_cast<const uint32_t*>(maskRow);
+            uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(frameRow);
             for (int j = 0; j < sdlMask->w; j++, mask++, frame2++)
                *frame2 = *mask ? *frame2 : 0x00000000u;
-            mask += sdlMask->pitch - sdlMask->w * sizeof(uint32_t);
-            frame2 += selectedFrame.frame->linesize[0] - sdlMask->w * sizeof(uint32_t);
+            maskRow += sdlMask->pitch;
+            frameRow += selectedFrame.frame->linesize[0];
          }
          SDL_UnlockSurface(sdlMask);
       }
