@@ -446,7 +446,7 @@ void DisplaySettingsPage::BuildWindowPage()
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Width[m_wndId], "%d"s, //
                     [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelWidth(); }, //
-                    [this, containerWidth, containerHeight](int prev, int v)
+                    [this, containerWidth, containerHeight, wndDisplay](int prev, int v)
                     {
                        // Apply AR constraint
                        Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
@@ -470,8 +470,10 @@ void DisplaySettingsPage::BuildWindowPage()
 
                        SDL_Point pos;
                        wnd->GetPixelPos(pos.x, pos.y);
-                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, 0, containerWidth - size.x);
-                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, 0, containerHeight - size.y);
+                       const int displayLeft = wnd->LogicalToPixel(m_displays[wndDisplay].left);
+                       const int displayTop = wnd->LogicalToPixel(m_displays[wndDisplay].top);
+                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, displayLeft + containerWidth - size.x);
+                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, displayTop + containerHeight - size.y);
                        wnd->SetPixelPos(pos.x, pos.y);
                        wnd->SetPixelSize(size.x, size.y);
                        OnStaticRenderDirty();
@@ -483,7 +485,7 @@ void DisplaySettingsPage::BuildWindowPage()
          AddItem(std::make_unique<InGameUIItem>(
                     Settings::m_propWindow_Height[m_wndId], "%d"s, //
                     [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetPixelHeight(); }, //
-                    [this, containerWidth, containerHeight](int prev, int v)
+                    [this, containerWidth, containerHeight, wndDisplay](int prev, int v)
                     {
                        Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
                        SDL_Point prevSize { wnd->GetPixelWidth(), prev };
@@ -506,8 +508,10 @@ void DisplaySettingsPage::BuildWindowPage()
 
                        SDL_Point pos;
                        wnd->GetPixelPos(pos.x, pos.y);
-                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, 0, containerWidth - size.x);
-                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, 0, containerHeight - size.y);
+                       const int displayLeft = wnd->LogicalToPixel(m_displays[wndDisplay].left);
+                       const int displayTop = wnd->LogicalToPixel(m_displays[wndDisplay].top);
+                       pos.x = clamp(pos.x - (size.x - prevSize.x) / 2, displayLeft, displayLeft + containerWidth - size.x);
+                       pos.y = clamp(pos.y - (size.y - prevSize.y) / 2, displayTop, displayTop + containerHeight - size.y);
                        wnd->SetPixelPos(pos.x, pos.y);
                        wnd->SetPixelSize(size.x, size.y);
 
