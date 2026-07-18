@@ -548,7 +548,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    #ifdef ENABLE_BGFX
    auto LockFrameMutex = [this]()
    {
-      while (!m_renderer->m_renderDevice->m_frameMutex.try_lock())
+      while (m_renderer->m_renderDevice->m_framePending || !m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          ProcessOSMessages();
          Sleep(0);
@@ -828,8 +828,6 @@ Player::Player(PinTable *const table, const PlayMode playMode)
       LockFrameMutex();
    }
 
-   // Reset the perf counter to start time when physics starts
-   wintimer_init();
    m_physics->StartPhysics();
 
    PLOGI << "Startup done"; // For profiling
