@@ -2,6 +2,19 @@
 
 namespace Flex {
 
+/*
+ * swscale SIMD paths may read/write past the end of image planes, so destination buffers
+ * must be over-allocated. 64 matches FFmpeg's internal STRIDE_ALIGN (AVX-512 store width)
+ * and Chromium's kFFmpegBufferAddressAlignment on x86.
+ *
+ * https://ffmpeg.org/doxygen/trunk/structAVFrame.html ("some filters and swscale can read
+ * up to 16 bytes beyond the planes")
+ * https://trac.ffmpeg.org/ticket/9254 (sws_scale writes out of buffer, ssse3 YUV->RGB)
+ * https://trac.ffmpeg.org/ticket/10852 (sws_scale overflows buffer for some resolutions)
+ * https://source.chromium.org/chromium/chromium/src/+/main:media/base/limits.h
+ */
+#define FLEX_SWS_DST_PADDING 64
+
 Video::Video(FlexDMD* pFlexDMD, const string& name)
    : AnimatedActor(pFlexDMD, name)
    , m_libAv(LibAV::LibAV::GetInstance())
@@ -65,7 +78,7 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
                m_pVideoConversionContext = m_libAv._sws_getCachedContext(nullptr, w, h, m_pCodecContext->pix_fmt, w, h, AV_PIX_FMT_RGBA, SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 
             int bufSize = m_libAv._av_image_get_buffer_size(AV_PIX_FMT_RGBA, w, h, 1);
-            uint8_t* pBuffer = (uint8_t*)m_libAv._av_malloc(bufSize);
+            uint8_t* pBuffer = (uint8_t*)m_libAv._av_malloc(bufSize + FLEX_SWS_DST_PADDING);
             uint8_t* dst[4] = { pBuffer, nullptr, nullptr, nullptr };
             int dstLines[4] = { 4 * w, 0, 0, 0 };
             m_libAv._sws_scale(m_pVideoConversionContext, pFrame->data, pFrame->linesize, 0, h, dst, dstLines);
