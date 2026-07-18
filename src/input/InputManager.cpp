@@ -126,6 +126,9 @@ InputManager::~InputManager()
       PLOGE << "Failed to persist input devices in settings";
    }
    m_inputHandlers.clear();
+   m_inputActions.clear();
+   m_nudgeHandler = nullptr;
+   m_plungerHandler = nullptr;
    m_sdlHandler = nullptr;
    m_player->m_pluginAPI.ReleaseMsgID(m_onActionEventMsgId);
 
