@@ -118,6 +118,11 @@ static void UpdateThread()
          continue;
 
       const DisplayFrame frame = selectedDmdId.GetRenderFrame(selectedDmdId.id);
+
+      // frame.frame can be null (no frame yet, or the source torn down mid-race); every
+      // branch below dereferences it. Skip without marking seen, so the frameId re-arrives.
+      if (frame.frame == nullptr)
+         continue;
       if (lastFrameID == frame.frameId)
          continue;
       lastFrameID = frame.frameId;
