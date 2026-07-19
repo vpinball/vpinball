@@ -2768,7 +2768,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       if (bgfx::getRendererType() != bgfx::RendererType::Vulkan)
       {
          assert(m_renderDevice->m_outputWnd.size() == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
-         m_renderDevice->m_outputWnd[1]->GetBackBuffer();
+         previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
          m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
 
          m_renderDevice->AddRenderTargetDependency(renderedRT);
