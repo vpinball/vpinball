@@ -271,6 +271,11 @@ bgfx::TextureFormat::Enum RenderDevice::SelectBackBufferFormat(const VPX::Window
             heuristic += bgfx::TextureFormat::Enum(fmt) == defaultFormat ? 200: 0; // To avoid switching uselessly, and to favor display format
             heuristic += bimg::isCompressed(fmt) ? -1000 : 0;
             heuristic += bimg::isFloat(fmt) ? -1000 : 0;
+#if defined(__ANDROID__)
+            // Temporary: prefer RGBA8 over BGRA8 as some Android drivers reject BGRA8 Vulkan swapchains,
+            // until the swapchain format is negotiated against vkGetPhysicalDeviceSurfaceFormatsKHR in bgfx
+            heuristic += fmt == bimg::TextureFormat::RGBA8 ? 1 : 0;
+#endif
             if (allowHDR10) // This needs a display that support RGB10A2 backbuffer and the HDR10 colorspace (see DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
                heuristic += fmt == bimg::TextureFormat::RGB10A2 ? 50000 : 0;
             // Note that RGB16F is not supported as BGFX does not report the swapchain capability (see DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709) and we don't have a tonemapper for this colorspace
