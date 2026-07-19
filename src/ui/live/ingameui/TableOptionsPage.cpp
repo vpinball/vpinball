@@ -16,7 +16,7 @@ TableOptionsPage::TableOptionsPage()
 const PinTable::TableOption* TableOptionsPage::GetOption(VPX::Properties::PropertyRegistry::PropId id) const
 {
    for (const PinTable::TableOption& option : m_player->m_ptable->GetOptions())
-      if (option.id.index == id.index)
+      if ((option.id.type == id.type) && (option.id.index == id.index))
          return &option;
    return nullptr;
 }
