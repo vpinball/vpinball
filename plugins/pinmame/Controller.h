@@ -37,7 +37,7 @@ public:
 
    string GetGameName() const { return m_szGameName; }
    void SetGameName(const string& name);
-   string GetROMName() const { if (m_pPinmameGame) return m_pPinmameGame->name; else return string(); }
+   string GetROMName() const { return m_szRomName; }
 
    string GetSplashInfoLine() const { return m_splashInfoLine; }
    void SetSplashInfoLine(const string& text) { m_splashInfoLine = text; }
@@ -162,10 +162,10 @@ public:
 
 private:
    string m_vpmPath;
-   string m_szGameName;
+   string m_szGameName; // Requested game name (may be an alias registered through alias.txt)
+   string m_szRomName; // Resolved driver name
    mutable std::unordered_map<string, GameSettings*> m_gameSettings; // shared per game so settings survive repeated Games(name) accesses
    Settings* m_settings = nullptr;
-   PinmameGame* m_pPinmameGame = nullptr;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
    vector<PinmameLEDState> m_ledStates;
    vector<PinmameNVRAMState> m_nvramStates;
