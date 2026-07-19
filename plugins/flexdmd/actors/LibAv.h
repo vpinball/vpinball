@@ -8,9 +8,6 @@ extern "C" {
    #include "libswresample/swresample.h"
 }
 
-namespace LibAV
-{
-
 #ifdef _WIN32
 // As LibAvCodec is fairly heavy, we only load it when used to limit startup time impact
 #ifndef WIN32_LEAN_AND_MEAN
@@ -24,6 +21,9 @@ namespace LibAV
 #define LIBAV_STR_(x) _T(#x)
 #define LIBAV_STR(x) LIBAV_STR_(x)
 #endif
+
+namespace LibAV
+{
 
 #ifdef CDECL
 #undef CDECL
