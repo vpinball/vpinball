@@ -6623,7 +6623,10 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    {
       if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
       {
-         *param = option.value;
+         if (Settings::GetRegistry().GetProperty(option.id)->m_type == VPX::Properties::PropertyDef::Type::Bool)
+            *param = minValue + option.value;
+         else
+            *param = option.value;
          return S_OK;
       }
    }
@@ -6636,7 +6639,10 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    auto prop = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
    if (!prop.has_value())
       return E_FAIL;
-   m_settings.Set(prop.value(), val, true);
+   if (Settings::GetRegistry().GetProperty(prop.value())->m_type == VPX::Properties::PropertyDef::Type::Bool)
+      m_settings.Set(prop.value(), val != minValue, true);
+   else
+      m_settings.Set(prop.value(), val, true);
    return S_OK;
 }
 
