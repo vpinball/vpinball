@@ -474,53 +474,30 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
 
    if (src.width <= 256 && src.height == 64) // should be 192x64 or 256x64
    {
-      // Resize with a triangle filter to mimic what original implementation in Freezy's DmdExt (https://github.com/freezy/dmd-extensions)
-      // does, that is to say:
-      // - convert from luminance to RGB (with hue = 0, sat = 1)
-      // - resize using Windows 8.1 API which in turn uses IWICBitmapScaler with Fant interpolation mode (hence the triangle filter)
-      // - convert back from RGB to HSL and send luminance to PinUp
+      // The PuP capture reference images for these DMDs are 128x32: a 256x64 source maps to
+      // a full 128x32 frame, a 192x64 source to a 96x32 image centered in the 128x32 frame.
+      // Each output pixel is the 2x2 box sum of the source.
       //
-      // Some references regarding Fant scaling:
-      // - https://github.com/sarnold/urt/blob/master/tools/fant.c
-      // - https://photosauce.net/blog/post/examining-iwicbitmapscaler-and-the-wicbitmapinterpolationmode-values
-      //
-      // The Baywatch Pup pack was used to validate this (the filter is still a guess since Windows code is not available)
-      //
-      //
-      // This boils down to a 2x2 box filter in this case (256(or lower) x 64 -> 128 x 32), also no border checking needed then
-      // (which is also the same thing that PinMAME used internally to drive PinDMDs and the like for 256x64)
-      // (for the 192x64 case, only every 2nd pixel was filtered there in order to also output 128x32, while this routine here outputs a centered 96x32 image)
+      // Comparing captured frames against the pack reference images shows the capture does
+      // not round the box sum to the nearest level. For a 2 bit (4 level) DMD the 0..12 box
+      // sum is quantized at 3/6/11, not at the round-to-nearest 2/6/10 - this shifts the
+      // darkest and brightest steps. Rounding instead leaves glyph edges one level off, so
+      // the indexed frame hash never matches and capture triggers never fire (e.g. Baywatch).
+      const bool fourLevel = (src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2);
       const unsigned int ofsX = (128 - (src.width / 2)) / 2;
       for (unsigned int y = 0; y < 32; y++)
       {
          for (unsigned int x = 0; x < src.width / 2; x++)
          {
-#if 0 // keep this code around, in case at some point a radius greater than 1 is needed
-            float lum = 0., sum = 0.;
-            constexpr int radius = 1;
-            for (int dx = 1 - radius; dx <= radius; dx++)
-            {
-               const int px = x * 2 + dx;
-               for (int dy = 1 - radius; dy <= radius; dy++)
-               {
-                  const int py = y * 2 + dy;
-                  const float weight = radius * radius - fabsf((float)dx - 0.5f) * fabsf((float)dy - 0.5f);
-                  if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < src.width //
-                     && /*py >= 0 &&*/ static_cast<unsigned int>(py) < src.height) // unsigned int tests include the >= 0 ones
-                     lum += static_cast<float>(frame[py * src.width + px]) * weight;
-                  sum += weight;
-               }
-            }
-            m_idFrame[y * 128 + ofsX + x] = (uint8_t)(lum / sum + 0.5f);
-#else
             const unsigned int px = x * 2;
             const unsigned int py = y * (2 * src.width);
-            uint32_t lum = frame[py + px];
-            lum += frame[py + px + 1];
-            lum += frame[py + px + src.width];
-            lum += frame[py + px + src.width + 1];
-            m_idFrame[y * 128 + ofsX + x] = (uint8_t)((lum + 2) >> 2);
-#endif
+            const uint32_t sum = frame[py + px] + frame[py + px + 1] + frame[py + px + src.width] + frame[py + px + src.width + 1];
+            uint8_t value;
+            if (fourLevel)
+               value = sum < 3 ? 0 : sum < 6 ? 1 : sum < 11 ? 2 : 3;
+            else
+               value = static_cast<uint8_t>((sum + 2) >> 2);
+            m_idFrame[y * 128 + ofsX + x] = value;
          }
       }
       return static_cast<int>(m_dmd->MatchIndexed(m_idFrame.data(), 128, 32));
