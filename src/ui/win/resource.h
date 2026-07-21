@@ -632,7 +632,6 @@
 #define IDD_PROPHITTARGET_VISUALS       620
 #define IDD_PROPHITTARGET_PHYSICS       622
 #define IDC_BG_FSS                      625
-#define IDC_ENABLE_CAMERA_FLY_AROUND    626
 #define IDD_SOUND_POSITION_DIALOG       629
 #define IDD_TOOLBAR                     630
 #define IDD_PROPERTY_DIALOG             647

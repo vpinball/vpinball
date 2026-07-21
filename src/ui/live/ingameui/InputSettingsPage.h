@@ -16,6 +16,7 @@ private:
    void BuildPage() override;
    InputManager& GetInput() const { return m_player->m_pininput; }
 
+   unsigned int m_difficultyNotification = 0;
 };
 
 }
