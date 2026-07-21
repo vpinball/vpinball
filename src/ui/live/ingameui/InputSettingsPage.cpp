@@ -39,11 +39,21 @@ void InputSettingsPage::BuildPage()
    for (auto& action : input.GetInputActions())
       AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Rumble feedback"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous settings"s));
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_RumbleMode, //
       [this]() { return m_player->m_pininput.IsRumbleFeedbackEnabled() ? 3 : 0; }, //
       [this](int, int v) { m_player->m_pininput.EnableRumbleFeedback(v == 3); }));
+   // FIXME deprecated, just remove
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_EnableCameraModeFlyAround, //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayer_EnableCameraModeFlyAround(); }, //
+      [this](bool v)
+      {
+         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         m_player->m_ptable->m_settings.SetPlayer_EnableCameraModeFlyAround(v, false);
+      }));
 }
 
 }
