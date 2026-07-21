@@ -229,4 +229,5 @@ void UndoRecord::MarkForDelete(IEditable *const pie)
    }
 
    m_vieDelete.push_back(pie);
+   pie->AddRef();
 }
