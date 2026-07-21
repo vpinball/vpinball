@@ -40,7 +40,6 @@
 #include <iostream>
 #include "FreeImage.h"
 #include "dialogs/DrawingOrderDialog.h"
-#include "ui/win/dialogs/PlayerOptionsDialog.h"
 #else
 #include "standalone/FreeImage.h"
 #endif
@@ -807,13 +806,6 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
          ptCur->SetDirtyDraw();
       return true;
-
-   case ID_EDIT_PLAYEROPTIONS:
-   {
-      PlayerOptionsDialog playerOptsgDlg;
-      playerOptsgDlg.DoModal();
-      return true;
-   }
 
    case ID_TABLE_TABLEINFO:
       if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)

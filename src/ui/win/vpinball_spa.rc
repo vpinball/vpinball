@@ -176,7 +176,6 @@ BEGIN
     END
     POPUP "&Preferencias"
     BEGIN
-        MENUITEM "Opciones de &Player...",       ID_EDIT_PLAYEROPTIONS
     END
     POPUP "&Ventana"
     BEGIN
