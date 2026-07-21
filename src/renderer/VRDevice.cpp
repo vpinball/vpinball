@@ -1103,9 +1103,19 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             XrPosef_ToMatrix3D(&medianView, &medianPoseInVPU);
 
             m_headsetViewCentering = false;
-            m_orientation = RADTOANG(atan2f(medianView.m[0][2], medianView.m[0][0]));
-            m_tablePos.x = g_app->m_settings.GetPlayer_ScreenPlayerX() - VPUTOCM(medianPoseInVPU.position.x);
-            m_tablePos.y = g_app->m_settings.GetPlayer_ScreenPlayerY() - VPUTOCM(medianPoseInVPU.position.z);
+            const float angle = atan2f(medianView.m[0][2], medianView.m[0][0]);
+            const float c = cosf(angle);
+            const float s = sinf(angle);
+            const float dx = -VPUTOCM(medianPoseInVPU.position.x);
+            const float dy = -VPUTOCM(medianPoseInVPU.position.z);
+            const Settings& settings = g_pplayer->m_ptable->m_settings;
+
+            // Rotate the tracking-space translation into the table's yaw frame, just as
+            // controller centering does. Player X/Y is the desired standing position
+            // relative to the lockbar, so add it after transforming the headset pose.
+            m_orientation = RADTOANG(angle);
+            m_tablePos.x = dx * c - dy * s + settings.GetPlayer_ScreenPlayerX();
+            m_tablePos.y = dx * s + dy * c + settings.GetPlayer_ScreenPlayerY();
             m_tablePos.z = 0.f;
             //m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
             m_worldDirty = true;
