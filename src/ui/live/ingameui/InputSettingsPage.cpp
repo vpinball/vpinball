@@ -38,6 +38,12 @@ void InputSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Action mappings"s));
    for (auto& action : input.GetInputActions())
       AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Rumble feedback"s));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumbleMode, //
+      [this]() { return m_player->m_pininput.IsRumbleFeedbackEnabled() ? 3 : 0; }, //
+      [this](int, int v) { m_player->m_pininput.EnableRumbleFeedback(v == 3); }));
 }
 
 }

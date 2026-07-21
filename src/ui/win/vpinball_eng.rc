@@ -415,9 +415,6 @@ BEGIN
     LTEXT           "VR Mode",IDC_VR_MODE,10,23,38,10
     COMBOBOX        IDC_TURN_VR_ON,160,22,77,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-    LTEXT           "Controller Rumble Behavior",IDC_LABEL_RUMBLE,10,43,110,8
-    COMBOBOX        IDC_COMBO_RUMBLE,160,42,77,64,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Tweak Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,62,235,10
 
