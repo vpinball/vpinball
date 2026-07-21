@@ -7,6 +7,7 @@
 #include <format>
 
 #include "plugins/VPXPlugin.h" // Only used for optional feature (visual feedback on error)
+#include <climits>
 
 namespace PinMAME {
 
