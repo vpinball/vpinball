@@ -51,6 +51,8 @@ private:
     CButton m_primitiveButton;
     CButton m_flasherButton;
     CButton m_rubberButton;
+
+    CComboBox m_vrCombo;
 };
 
 class CContainToolbar final : public CDockContainer

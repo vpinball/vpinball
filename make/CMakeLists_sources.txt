@@ -499,8 +499,6 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/dialogs/EditorOptionsDialog.h
    src/ui/win/dialogs/ImageDialog.cpp
    src/ui/win/dialogs/ImageDialog.h
-   src/ui/win/dialogs/PlayerOptionsDialog.cpp
-   src/ui/win/dialogs/PlayerOptionsDialog.h
    src/ui/win/dialogs/LayersListDialog.cpp
    src/ui/win/dialogs/LayersListDialog.h
    src/ui/win/dialogs/MaterialDialog.cpp

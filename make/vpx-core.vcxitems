@@ -959,7 +959,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/DrawingOrderDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/EditorOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/ImageDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/PlayerOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/LayersListDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/MaterialDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/NotesDialog.cpp" />
@@ -1790,7 +1789,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/DrawingOrderDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/EditorOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/ImageDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/PlayerOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/LayersListDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/MaterialDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/NotesDialog.h" />

@@ -936,7 +936,6 @@
 #define ID_WALLMENU_ADDPOINT            32801
 #define ID_HELP_ABOUT                   32802
 #define ID_EDIT_SCRIPT                  32803
-#define ID_EDIT_PLAYEROPTIONS           32804
 #define ID_TABLE_FONTMANAGER            32805
 #define ID_WALLMENU_TRANSLATE           32807
 #define ID_EDIT_COPY                    32811
