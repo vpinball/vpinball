@@ -803,8 +803,6 @@
 #define IDC_SCRIPT_STOP                 871
 #define IDC_SUPPRESS_ERRORS_CHECK       872
 #define ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY 873
-#define IDC_COMBO_RUMBLE                876
-#define IDC_LABEL_RUMBLE                877
 #define IDC_RESET_WINDOW_POS            878
 #define IDC_GLASS_DOT_LIGHT             881
 #define IDC_GLASS_PAD_TOP               882

@@ -25,15 +25,6 @@ BOOL PlayerOptionsDialog::OnInitDialog()
    {
       bool on = g_app->m_settings.GetPlayer_EnableCameraModeFlyAround();
       SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-      const int rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
-      const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
-      ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Off");
-      ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Table only (N/A yet)"); //!! not supported yet
-      ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Generic only (N/A yet)"); //!! not supported yet
-      ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM) "Table with generic fallback");
-      ::SendMessage(hwndRumble, CB_SETCURSEL, rumbleMode, 0);
-
-      const bool overwiteBallImage = settings.GetPlayer_OverwriteBallImage();
    }
 
    // VR section
@@ -65,9 +56,6 @@ void PlayerOptionsDialog::OnOK()
    {
       size_t selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
       settings.SetPlayer_EnableCameraModeFlyAround(selected != 0, false);
-
-      const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
-      settings.SetPlayer_RumbleMode(rumble, false);
    }
 
    // VR section
