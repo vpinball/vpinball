@@ -300,6 +300,7 @@ public:
    int m_nFrameToCapture = 0;
    int m_frameCaptureFPS = 0;
    bool m_cutCaptureToLoop = true;
+   bool m_captureSucceeded = false; // set once all requested attract frames were captured; otherwise the capture was cancelled (e.g. on a script error)
 
    CComObject<ScriptInterpreter>* m_scriptInterpreter = nullptr;
    unsigned int m_nScriptErrorNotification = 0;
