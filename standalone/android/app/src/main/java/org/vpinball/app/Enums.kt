@@ -31,7 +31,7 @@ enum class Link(val url: String) {
 enum class Credit(val displayName: String, val authors: String? = null, val link: Link? = null) {
     VPINBALL(
         "Visual Pinball",
-        "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi, evilwraith, gitfool",
+        "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, francisdb, bcd, cupidsf, djrobx, brandrew2, mjrgh, koadic76, shagendo, Nicals, horseyhorsey, CraftedCart, superhac, snail_gary, Matthias Buecher, Le-Syl21, baxelrod-bdai, YellowLabrador, claytgreene, markmon, JockeJarre, WildCoder, ScaryG, nkissebe, mkalkbrenner, freezy, Wylted1, WizardsHat, RandyDavis2000, ntleverenz, latsao, Chickenzilla, Yuki, teamsuperpanda, surtarso, RockfordRoe, ravarcade, poiuyterry, omigeot, manofwar32, LeHaine, KutsuyaYuki, kaicherry, joni999, jmarzka, droscoe, cschmidtpxc, CapitaineSheridan, Billiam, andremichi, evilwraith, gitfool, cwick, Pyrrvs, hughfitzgerald, dekay, dynajoe",
         Link.VPINBALL,
     ),
     PINMAME(
@@ -42,8 +42,8 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
     LIBALTSOUND("libaltsound", "droscoe, jsm174, toxieainc, francisdb", Link.LIBALTSOUND),
     LIBDMDUTIL("libdmdutil", "mkalkbrenner, jsm174, toxieainc, francisdb, bartdesign, freezy", Link.LIBDMDUTIL),
     LIBZEDMD("libzedmd", "mkalkbrenner, jsm174, zesinger, Cpasjuste, bartdesign", Link.LIBZEDMD),
-    LIBSERUM("libserum", "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc", Link.LIBSERUM),
-    LIBDOF("libdof", "jsm174, dekay", Link.LIBDOF),
+    LIBSERUM("libserum", "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc, PastorL69", Link.LIBSERUM),
+    LIBDOF("libdof", "jsm174, dekay, dynajoe, dejaloomer, patsoffice, superhac", Link.LIBDOF),
     LIBVNI("libvni", "mkalkbrenner, freezy, jsm174", Link.LIBVNI),
     LIBWINEVBS("libwinevbs", "jsm174, francisdb, gitfool", Link.LIBWINEVBS),
     ARTWORK("Artwork", "smillard316 (Table placeholder), adam.co (App icon enhancements)"),
