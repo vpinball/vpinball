@@ -3155,11 +3155,17 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
    const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { //
+   Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, // 
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+#if defined(ENABLE_BGFX)
+   if (!ctx->is2D)
+      // The DMD shader is camera-relative and takes world-space vertices,
+      // so apply the model transform on the CPU
+      g_pplayer->m_renderer->GetMVP().GetModel().TransformPositions(vertices, vertices, 4);
+#endif
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
@@ -3191,11 +3197,17 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
    const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { // 
+   Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+#if defined(ENABLE_BGFX)
+   if (!ctx->is2D)
+      // The DMD shader is camera-relative and takes world-space vertices,
+      // so apply the model transform on the CPU
+      g_pplayer->m_renderer->GetMVP().GetModel().TransformPositions(vertices, vertices, 4);
+#endif
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
