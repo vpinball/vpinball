@@ -799,6 +799,36 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    m_progressDialog.SetProgress("Starting..."s, 100);
 
+#if defined(__linux__) && !defined(__ANDROID__) && defined(ENABLE_BGFX)
+   // Priming frame for Wayland: a toplevel is only mapped when its first buffer is
+   // committed (the first Vulkan present, not SDL_ShowWindow), and the compositor
+   // gives keyboard focus to the last mapped toplevel of the active application
+   // (SDL_WINDOW_NOT_FOCUSABLE cannot be honored by the protocol). Ancillary windows
+   // normally present their first frame seconds after the playfield, when their
+   // content shows up, which steals the playfield focus and pauses the table.
+   // So present a black frame on every ancillary window NOW, before the playfield's
+   // first present: they get mapped first and the playfield, committed last through
+   // the same ordered client socket, naturally ends up with the keyboard focus.
+   {
+      bool primed = false;
+      for (VPX::RenderOutput* out : { &m_backglassOutput, &m_scoreViewOutput, &m_topperOutput })
+      {
+         if (out->GetMode() == VPX::RenderOutput::OM_WINDOW && out->GetWindow() != nullptr)
+         {
+            out->GetWindow()->Show();
+            m_renderer->m_renderDevice->SetRenderTarget("Prime Ancillary"s, out->GetWindow()->GetBackBuffer(), false, true);
+            m_renderer->m_renderDevice->Clear(clearType::TARGET, 0x00000000);
+            primed = true;
+         }
+      }
+      if (primed)
+      {
+         SubmitFrame();
+         LockFrameMutex();
+      }
+   }
+#endif
+
    if (m_renderer->IsUsingStaticPrepass())
    {
       // Perform a quick render to avoid displaying a blank screen while the static prerendering will be performed
@@ -1188,6 +1218,20 @@ void Player::OnFocusChanged()
       }
 #else
       PLOGI << "Playfield window lost focus.";
+
+      #if defined(__linux__) && !defined(__ANDROID__)
+      // On Wayland SDL_WINDOW_NOT_FOCUSABLE cannot be honored (the protocol has no way for
+      // a client to refuse keyboard focus, and the compositor focuses the last mapped
+      // toplevel of the focused application), so lazily revealing an ancillary window
+      // steals focus from the playfield and pauses the table. When the focus went to
+      // another window of this application (never a legitimate user target since all
+      // ancillary windows are output only), take it back.
+      if (SDL_GetKeyboardFocus() != nullptr)
+      {
+         PLOGI << "Focus was taken by an ancillary window, handing it back to the playfield";
+         m_playfieldWnd->RaiseAndFocus();
+      }
+      #endif
 #endif
    }
 }
