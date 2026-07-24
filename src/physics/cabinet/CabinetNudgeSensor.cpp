@@ -265,7 +265,7 @@ void CabinetNudgeSensor::StepOneMillisecond()
    if (m_nudgeIntentHandler)
    {
       // Hacky empirical balancing of front vs side energy, needs some more physics study to validate this
-      m_nudgeIntentHandler->StepOneMillisecond(Vertex2D(m_kalmanX.GetAcceleration() * (float)(4. / 3.), m_kalmanY.GetAcceleration()));
+      m_nudgeIntentHandler->StepOneMillisecond(Vertex2D(m_kalmanX.GetAcceleration() * m_nudgeStrengthScale * (float)(4. / 3.), m_kalmanY.GetAcceleration() * m_nudgeStrengthScale));
 
       if (m_nudgeIntentHandler->IsImpulseInProgress())
          m_cabinetModel.StepOneMillisecond(m_cabinetModel.GetMass() * m_nudgeIntentHandler->GetImpulseAceleration());
