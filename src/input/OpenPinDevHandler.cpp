@@ -307,7 +307,7 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                         if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
                            && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
                            && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0
-                           && strBuf == L"OpenPinballDeviceStruct/"sv)
+                           && std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv))
                         {
                            // matched
                            found = true;
@@ -326,11 +326,11 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            const uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev"s, InputManager::DeviceType::OpenPinDev, "OpenPinDev"s);
                            m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game"s);
                            m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game"s);
-                           m_inputManager.RegisterElementName(deviceId, false, 2, "Coin"s);
-                           m_inputManager.RegisterElementName(deviceId, false, 3, "Coin 2"s);
-                           m_inputManager.RegisterElementName(deviceId, false, 4, "Coin 3"s);
-                           m_inputManager.RegisterElementName(deviceId, false, 5, "Coin 4"s);
-                           m_inputManager.RegisterElementName(deviceId, false, 6, "Extra Ball"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 2, "Extra Ball"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 3, "Coin"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 4, "Coin 2"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 5, "Coin 3"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 6, "Coin 4"s);
                            m_inputManager.RegisterElementName(deviceId, false, 7, "Launch Ball"s);
                            m_inputManager.RegisterElementName(deviceId, false, 8, "Fire Button"s);
                            m_inputManager.RegisterElementName(deviceId, false, 9, "Left Flipper"s);
@@ -351,7 +351,8 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            m_inputManager.RegisterElementName(deviceId, false, 24, "Right Nudge"s);
                            m_inputManager.RegisterElementName(deviceId, false, 25, "Audio Up"s);
                            m_inputManager.RegisterElementName(deviceId, false, 26, "Audio Down"s);
-                           for (int i = 0; i < 32; i++)
+                           // Generic OPD buttons are numbered 1 through 32 by the protocol.
+                           for (int i = 1; i <= 32; i++)
                               m_inputManager.RegisterElementName(deviceId, false, static_cast<uint16_t>(0x0100 | i), "Button #" + std::to_string(i));
                            m_inputManager.RegisterElementName(deviceId, true, 0x0200, "Plunger Position"s);
                            m_inputManager.RegisterElementName(deviceId, true, 0x0201, "Plunger Speed"s);
@@ -363,11 +364,11 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            {
                               map.MapAction(ButtonMapping::Create(deviceId, 0), m_inputManager.GetStartActionId()); // Start (start game)
                               map.MapAction(ButtonMapping::Create(deviceId, 1), m_inputManager.GetExitGameActionId()); // Exit (end game)
-                              map.MapAction(ButtonMapping::Create(deviceId, 2), m_inputManager.GetAddCreditActionId(0)); // Coin 1 (left coin chute)
-                              map.MapAction(ButtonMapping::Create(deviceId, 3), m_inputManager.GetAddCreditActionId(1)); // Coin 2 (middle coin chute)
-                              map.MapAction(ButtonMapping::Create(deviceId, 4), m_inputManager.GetAddCreditActionId(2)); // Coin 3 (right coin chute)
-                              map.MapAction(ButtonMapping::Create(deviceId, 5), m_inputManager.GetAddCreditActionId(3)); // Coin 4 (fourth coin chute/dollar bill acceptor)
-                              map.MapAction(ButtonMapping::Create(deviceId, 6), m_inputManager.GetExtraBallActionId()); // Extra Ball/Buy-In
+                              map.MapAction(ButtonMapping::Create(deviceId, 2), m_inputManager.GetExtraBallActionId()); // Extra Ball/Buy-In
+                              map.MapAction(ButtonMapping::Create(deviceId, 3), m_inputManager.GetAddCreditActionId(0)); // Coin 1 (left coin chute)
+                              map.MapAction(ButtonMapping::Create(deviceId, 4), m_inputManager.GetAddCreditActionId(1)); // Coin 2 (middle coin chute)
+                              map.MapAction(ButtonMapping::Create(deviceId, 5), m_inputManager.GetAddCreditActionId(2)); // Coin 3 (right coin chute)
+                              map.MapAction(ButtonMapping::Create(deviceId, 6), m_inputManager.GetAddCreditActionId(3)); // Coin 4 (fourth coin chute/dollar bill acceptor)
                               map.MapAction(ButtonMapping::Create(deviceId, 7), m_inputManager.GetLaunchBallActionId()); // Launch Ball
                               map.MapAction(ButtonMapping::Create(deviceId, 8), m_inputManager.GetLockbarActionId()); // Fire button (lock bar top button)
                               map.MapAction(ButtonMapping::Create(deviceId, 9), m_inputManager.GetLeftFlipperActionId()); // Left flipper button primary switch
@@ -405,7 +406,7 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                               [this](const OpenPinDev *const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)
                            {
                               const uint64_t timestampNs = report.timestamp * 1000ULL;
-                              for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 27; ++buttonNum, bit <<= 1)
+                              for (unsigned int buttonNum = 0, bit = 1; buttonNum < 27; ++buttonNum, bit <<= 1)
                               {
                                  const bool isDown = (report.pinballButtons & bit) != 0;
                                  const bool wasDown = (prevReport.pinballButtons & bit) != 0;
