@@ -291,7 +291,7 @@ void CabinetNudgeSensor::StepOneMillisecond()
 
       // The acquired acceleration correspond to a force F = a.m where m is the real world cabinet mass. The acceleration computed here is the
       // one of the **virtual** cabinet which has a different mass corresponding to the simulated table.
-      m_cabinetAcceleration *= m_nudgeStrengthScale * m_cabinetMass / m_cabinetModel.GetMass();
+      m_cabinetAcceleration *= m_cabinetMass / m_cabinetModel.GetMass();
 
       // Since the position state in the Kalman filter is not good enough (double integration resulting in drift + snap when enforcing rest conditions),
       // we use the cabinet model directly driven by Kalman acceleration for visual feedback
