@@ -431,7 +431,9 @@ cp -r bgfx/bgfx.cmake/bimg/include/bimg ../../../third-party/include/
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp -a pinmame/pinmame/build/libpinmame.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
-cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
+mkdir -p ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
 
 cp -a libdmdutil/libdmdutil/build/libdmdutil.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/

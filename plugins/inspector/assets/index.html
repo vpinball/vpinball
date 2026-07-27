@@ -4,14 +4,25 @@
     <title>Inspector TreeView</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #121212; color: #ffffff; padding: 20px; }
-        ul { list-style-type: none; }
+        ul { list-style-type: none; padding-left: 18px; margin: 0; }
         .tree-root { padding-left: 0; }
         details > summary { cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s; }
         details > summary:hover { background: #222222; }
         .node-game { color: #4CAF50; font-weight: bold; }
         .node-controller { color: #2196F3; }
         .node-category { color: #FF9800; }
-        .node-item { color: #E0E0E0; font-size: 0.9em; margin-left: 20px; padding: 2px 0; font-family: 'Consolas', 'Menlo', 'Courier New', monospace; }
+        .node-item {
+            color: #E0E0E0;
+            font-size: 0.9em;
+            padding: 2px 0;
+            font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+        .node-item .node-mapping { flex: 0 0 5em; text-align: right; color: #B0BEC5; }
+        .node-item .node-state { flex: 0 0 6em; text-align: right; }
+        .node-item .node-name { color: #E0E0E0; }
         h1 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
         .matrix-content { margin: 8px 0 16px 20px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-top: 8px; }
@@ -52,11 +63,19 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function formatMapping(mapping, deviceOnly) {
-            const stateId = (mapping >>> 16) & 0xFFFF;
-            const groupId = mapping & 0xFFFF;
-            return deviceOnly ? `${stateId.toString(16).padStart(4, '0')}` : `${groupId.toString(16).padStart(4, '0')}.${stateId.toString(16).padStart(4, '0')}`;
-        }
+		async function fetchWithTimeout(url, options = {}, timeoutMs = 3000) {
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+			try {
+				const res = await fetch(url, { ...options, signal: controller.signal });
+				return res;
+			} finally {
+				clearTimeout(timeoutId); // don't leave a dangling timer if the fetch resolves first
+			}
+		}
+
+		// Render state value
 
         function formatBinaryState(state) {
             return state ? '[X]' : '[ ]';
@@ -66,16 +85,80 @@
             return state > 0.5 ? '[X]' : '[ ]';
         }
 
-        function updateVisualState(el, state) {
-            el.textContent = formatFloatState(state);
-
+        function updateVisualState(el, type, state) {
             const cell = el.closest('.matrix-cell');
-            if (cell) {
-                cell.classList.toggle('active', !!state);
-                cell.classList.toggle('inactive', !!!state);
-            }
+			if (type == 'float')
+			{
+				el.textContent = formatFloatState(state);
+				if (cell) {
+					cell.classList.toggle('active', state > 0.5);
+					cell.classList.toggle('inactive', state <= 0.5);
+				}
+			}
+			else if (type == 'uint8')
+			{
+				el.textContent = formatFloatState(state / 255.0);
+				if (cell) {
+					cell.classList.toggle('active', state > 127);
+					cell.classList.toggle('inactive', state <= 127);
+				}
+			}
+			else if (type == 'int32')
+			{
+				el.textContent = state;
+			}
+			else if (type == 'int64')
+			{
+				el.textContent = state;
+			}
+			else if (type == 'string')
+			{
+				el.textContent = state;
+			}
         }
 
+        function updateState(item) {
+            document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.type, item.state));
+        }
+
+		let currentTreeId = -1;
+		let currentDelay = 30;
+        function fetchStates() {
+            fetchWithTimeout('/api/states', {}, 500)
+                .then(res => {
+					if (!res.ok) throw new Error(`HTTP ${res.status}`);
+					return res.json();
+				})
+                .then(data => {
+					if (data.treeId != currentTreeId)
+						currentTreeId = -1;
+					else
+						data.states.forEach(updateState);
+					currentDelay = 30;
+				})
+                .catch(err => {
+					console.error('States error', err);
+					currentDelay = Math.min(currentDelay * 2, 1000);
+				})
+				.finally(() => {
+					if (currentTreeId == -1 || currentDelay == 1000)
+						fetchTree();
+					else
+						setTimeout(fetchStates, currentDelay);
+				});
+        }
+
+		// Generate main layout
+		
+		function formatMapping(mapping, stateOnly) {
+			const m = BigInt(mapping);
+			const groupId = Number(m & 0xFFFFFFFFn);
+			const stateId = Number((m >> 32n) & 0xFFFFFFFFn);
+			return stateOnly
+				? `${stateId.toString(16).padStart(2, '0')}`
+				: `${groupId.toString(16).padStart(4, '0')}.${stateId.toString(16).padStart(4, '0')}`;
+		}
+		
         function updateMatrixListHeights() {
             document.querySelectorAll('.matrix-content').forEach(content => {
                 const table = content.querySelector('.matrix-table');
@@ -103,10 +186,15 @@
             return `<span class="state-value" ${itemDataAttributes(node)}></span>`;
         }
 
-        function buildLeafNode(node) {
-            return `<div class="node-item">${buildStateSpan(node)} ${escapeHtml(node.name)} (Mapping: ${formatMapping(node.mapping, false)})</div>`;
-        }
-
+		function buildLeafNode(node) {
+			const titleAttr = node.desc ? ` title="${escapeHtml(node.desc)}"` : '';
+			return `<div class="node-item">
+				<span class="node-mapping">${formatMapping(node.mapping, false)}</span>
+				<span class="node-state">${buildStateSpan(node)}</span>
+				<span class="node-name"${titleAttr}>${escapeHtml(node.name)}</span>
+				</div>`;
+		}
+		
         function buildMatrixGroup(node) {
             const children = node.children;
             const rows = children.length / MATRIX_COLUMNS;
@@ -116,7 +204,7 @@
                 table += '<tr>';
                 for (let col = 0; col < MATRIX_COLUMNS; ++col) {
                     const child = children[row * MATRIX_COLUMNS + col];
-                    const mapping = (child.mapping>>> 16) & 0xFFFF;
+                    const mapping = formatMapping(child.mapping, true);
                     const activeClass = 'inactive';
                     table += `<td class="matrix-cell ${activeClass}" title="${escapeHtml(child.name)}">
                         <span class="matrix-state">${buildStateSpan(child)}</span>
@@ -129,7 +217,8 @@
 
             let list = '<div class="matrix-list">';
             for (const child of children) {
-                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${(child.mapping>>> 16) & 0xFFFF}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
+				const mapping = formatMapping(child.mapping, true);
+                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${mapping}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
             }
             list += '</div>';
 
@@ -171,29 +260,25 @@
         }
 
         function fetchTree() {
-            fetch('/api/tree')
+            fetchWithTimeout('/api/tree', {}, 1000)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data)}</ul>`;
-                    updateMatrixListHeights();
-                })
+					currentTreeId = data.treeId;
+					if (data.tree) {
+						document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data.tree)}</ul>`;
+						updateMatrixListHeights();
+						fetchStates();
+					}
+				})
                 .catch(err => {
-                    document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
+					if (err.name === 'AbortError') {
+						document.getElementById('tree').innerHTML = `Failed to connect to VPX. Retrying...`;
+					}
+					else {
+						document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
+					}
+					setTimeout(fetchTree, 1000);
                 });
-        }
-
-        function updateState(item) {
-            document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.state));
-        }
-
-        function fetchStates() {
-            fetch('/api/states')
-                .then(res => res.json())
-                .then(data => {
-                    data.forEach(updateState);
-                })
-                .catch(err => console.error('States error', err));
-            setTimeout(fetchStates, 30);
         }
 
         // Initial load
@@ -201,9 +286,6 @@
 
         // Keep matrix legends constrained to matrix height when the layout changes
         window.addEventListener('resize', updateMatrixListHeights);
-
-        // Refresh states periodically
-        setTimeout(fetchStates, 30);
     </script>
 </body>
 </html>

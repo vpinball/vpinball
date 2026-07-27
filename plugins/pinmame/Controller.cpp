@@ -5,27 +5,32 @@
 #include "Settings.h"
 #include "pinmame/PinMAMEPlugin.h"
 
+#include "nlohmann/json.hpp"
+
 #include <thread>
 #include <format>
+#include <fstream>
 
 #include "plugins/VPXPlugin.h" // Only used for optional feature (visual feedback on error)
 #include <climits>
+
+using json = nlohmann::json;
 
 namespace PinMAME
 {
 
 __forceinline uint8_t saturatedByte(float v) { return (uint8_t)(255.0f * (v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v)); }
 
-Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config)
-   : m_msgApi(api)
+Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const PinmameConfig& config, const std::filesystem::path& memmapPath)
+   : m_vpmPath(config.vpmPath)
+   , m_memmapPath(memmapPath)
+   , m_msgApi(api)
    , m_endpointId(endpointId)
    , m_threadLock(std::this_thread::get_id())
 {
    PinmameSetConfig(&config);
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
-
-   m_vpmPath = config.vpmPath;
 
    m_getStateSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
    m_onStateSrcChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG);
@@ -146,7 +151,66 @@ void Controller::Run(long hParentWnd, int nMinVersion)
 
    PinmameSetCheat(m_cheat);
 
-   // Trigger startup, status will be either 2 (staring), 1 (running), 0 (stopped, likely after failure)
+   // Search and load a memory map with its platform if provided (see https://github.com/tomlogic/pinmame-nvram-maps)
+   if (std::error_code ec; std::filesystem::exists(m_memmapPath, ec))
+   {
+      std::filesystem::recursive_directory_iterator it(m_memmapPath, std::filesystem::directory_options::skip_permission_denied);
+      std::filesystem::recursive_directory_iterator end;
+      for (; it != end; ++it)
+      {
+         if (!it->is_regular_file(ec) || ec)
+            continue;
+         if (it->path().filename() == "index.json")
+         {
+            std::ifstream indexFile(it->path());
+            if (indexFile.is_open())
+            {
+               json index;
+               try
+               {
+                  indexFile >> index;
+                  if (index.is_object() && index.contains(m_szRomName) && index[m_szRomName].is_string())
+                  {
+                     // Load memmap
+                     const std::filesystem::path subPath(index[m_szRomName].get<string>());
+                     std::ifstream memmapFile(m_memmapPath / subPath, std::ios::binary | std::ios::ate);
+                     std::streamsize memmapSize = memmapFile.tellg();
+                     memmapFile.seekg(0, std::ios::beg);
+                     vector<uint8_t> memmap(memmapSize);
+                     memmapFile.read(reinterpret_cast<char*>(memmap.data()), memmapSize);
+
+                     // Find platform reference and loads it (if any)
+                     vector<uint8_t> platform;
+                     string memmapString(memmap.data(), memmap.data() + memmapSize);
+                     json memMapDef = json::parse(memmapString);
+                     if (memMapDef.is_object() && memMapDef.contains("_metadata") && memMapDef["_metadata"].is_object() && memMapDef["_metadata"].contains("platform")
+                        && memMapDef["_metadata"]["platform"].is_string())
+                     {
+                        string platformFilename = memMapDef["_metadata"]["platform"].get<string>() + ".json";
+                        if (!platformFilename.empty() && std::filesystem::exists(m_memmapPath / "platforms" / platformFilename))
+                        {
+                           std::ifstream platformFile(m_memmapPath / "platforms" / platformFilename, std::ios::binary | std::ios::ate);
+                           std::streamsize platformSize = platformFile.tellg();
+                           platformFile.seekg(0, std::ios::beg);
+                           platform.resize(platformSize);
+                           platformFile.read(reinterpret_cast<char*>(platform.data()), platformSize);
+                        }
+                     }
+
+                     PinmameSetMemMap(platform.data(), platform.size(), memmap.data(), memmap.size());
+                  }
+               }
+               catch (const json::parse_error& e)
+               {
+                  LOGE("JSON parse error while parsing memmap in "s + it->path().string() + ": " + e.what());
+               }
+            }
+            break;
+         }
+      }
+   }
+
+   // Trigger startup, status will be either 2 (starting), 1 (running), 0 (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_szGameName.c_str());
    while (PinmameIsRunning() == 2) // Wait until the machine is either running or stopped
       std::this_thread::sleep_for(std::chrono::milliseconds(75));

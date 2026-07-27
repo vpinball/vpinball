@@ -44,17 +44,20 @@ typedef struct
    int typeMask;
    int(MSGPIAPI* GetState)(unsigned int index, int type, void* pResult);
 } StateProvider;
-std::map<uint32_t, StateProvider> stateGetters;
+std::map<uint64_t, StateProvider> stateGetters;
+unsigned int treeId = 0;
 
 void UpdateTreeCache()
 {
+   treeId++;
    if (!webServer)
       return;
 
    std::lock_guard lock(deviceStatesMutex);
    stateGetters.clear();
 
-   json root = json::array();
+   json root = json::object();
+   root["treeId"] = treeId;
 
    if (!msgApi)
    {
@@ -62,6 +65,7 @@ void UpdateTreeCache()
       return;
    }
 
+   json tree = json::array();
    if (!runningGames.empty())
    {
       std::map<uint32_t, json> controllers;
@@ -117,12 +121,10 @@ void UpdateTreeCache()
                json item = json::object();
                item["type"s] = "state";
                item["name"s] = devMsg.entries[i].stateDefs[j].name ? devMsg.entries[i].stateDefs[j].name : ("Device " + std::to_string(j));
-               item["mapping"s] = devMsg.entries[i].stateDefs[j].id.mappingId;
+               item["desc"s] = devMsg.entries[i].stateDefs[j].desc ? devMsg.entries[i].stateDefs[j].desc : "No description available";
+               item["mapping"s] = std::to_string(devMsg.entries[i].stateDefs[j].id.mappingId);
                item["writable"s] = devMsg.entries[i].stateDefs[j].writable;
                item["dataType"s] = devMsg.entries[i].stateDefs[j].typeMask;
-               float state;
-               devMsg.entries[i].GetState(j, CTLPI_STATE_TYPE_FLOAT, &state);
-               item["state"s] = state;
                int groupIndex = -1;
                for (unsigned int k = 0; k < devMsg.entries[i].nGroups; k++)
                {
@@ -195,8 +197,9 @@ void UpdateTreeCache()
       }
 
       for (auto& pair : controllers)
-         root.push_back(pair.second);
+         tree.push_back(pair.second);
    }
+   root["tree"] = tree;
 
    webServer->UpdateTreeJson(root.dump());
 }
@@ -205,26 +208,61 @@ std::string GetStatesJson()
 {
    std::lock_guard lock(deviceStatesMutex);
 
-   json root = json::array();
+   json states = json::array();
    for (const auto& pair : stateGetters) 
    {
       json dItem = json::object();
-      dItem["id"s] = pair.first;
+      dItem["id"s] = std::to_string(pair.first);
       if ((pair.second.typeMask & CTLPI_STATE_TYPE_FLOAT) != 0)
       {
-         float state;
-         pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_FLOAT, &state);
-         dItem["state"s] = state;
-         root.push_back(dItem);
+         if (float state; pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_FLOAT, &state) == 0)
+         {
+            dItem["type"s] = "float";
+            dItem["state"s] = state;
+            states.push_back(dItem);
+         }
       }
       else if ((pair.second.typeMask & CTLPI_STATE_TYPE_UINT8) != 0)
       {
-         uint8_t state;
-         pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_UINT8, &state);
-         dItem["state"s] = static_cast<float>(state) / 255.f;
-         root.push_back(dItem);
+         if (uint8_t state; pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_UINT8, &state) == 0)
+         {
+            dItem["type"s] = "uint8";
+            dItem["state"s] = state;
+            states.push_back(dItem);
+         }
+      }
+      else if ((pair.second.typeMask & CTLPI_STATE_TYPE_INT32) != 0)
+      {
+         if (int32_t state; pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_INT32, &state) == 0)
+         {
+            dItem["type"s] = "int32";
+            dItem["state"s] = state;
+            states.push_back(dItem);
+         }
+      }
+      else if ((pair.second.typeMask & CTLPI_STATE_TYPE_INT64) != 0)
+      {
+         if (int64_t state; pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_INT64, &state) == 0)
+         {
+            dItem["type"s] = "int64";
+            dItem["state"s] = std::to_string(state);
+            states.push_back(dItem);
+         }
+      }
+      else if ((pair.second.typeMask & CTLPI_STATE_TYPE_STRING) != 0)
+      {
+         if (char* state; pair.second.GetState(pair.second.index, CTLPI_STATE_TYPE_STRING, &state) == 0)
+         {
+            dItem["type"s] = "int64";
+            dItem["state"s] = std::string(state);
+            states.push_back(dItem);
+         }
       }
    }
+
+   json root = json::object();
+   root["treeId"] = treeId;
+   root["states"] = states;
    return root.dump();
 }
 

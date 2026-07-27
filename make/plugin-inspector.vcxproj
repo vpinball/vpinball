@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ClCompile Include="../../plugins/inspector/common.cpp" />
-    <ClCompile Include="../../plugins/inspector/inspector.cpp" />
+    <ClCompile Include="../../plugins/inspector/InspectorPlugin.cpp" />
     <ClCompile Include="../../plugins/inspector/WebServer.cpp" />
     <ClCompile Include="../../third-party/include/mongoose/mongoose.c" />
   </ItemGroup>

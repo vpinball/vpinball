@@ -476,7 +476,9 @@ cp bgfx/bgfx.cmake/build/cmake/bx/libbx64.a ../../../third-party/build-libs/wind
 
 cp pinmame/pinmame/build/pinmame64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp pinmame/pinmame/build/libpinmame64.dll.a ../../../third-party/build-libs/windows-mingw-x64
-cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
+mkdir -p ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
 
 cp openxr/openxr/build/src/loader/openxr_loader64.dll ../../../third-party/runtime-libs/windows-mingw-x64
 cp openxr/openxr/build/src/loader/libopenxr_loader64.dll.a ../../../third-party/build-libs/windows-mingw-x64

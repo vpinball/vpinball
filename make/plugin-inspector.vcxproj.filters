@@ -10,7 +10,7 @@
     <ClCompile Include="../../plugins/inspector/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/inspector/inspector.cpp">
+    <ClCompile Include="../../plugins/inspector/InspectorPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/inspector/WebServer.cpp">

@@ -420,6 +420,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
       // Define pinmame directory (for ROM, NVRAM, ... eventually using VPX API if available)
       std::filesystem::path pinmamePath;
+      std::filesystem::path memmapPath;
       VPXPluginAPI* vpxApi = nullptr;
       msgApi->BroadcastMsg(endpointId, getVpxApiMsgId, &vpxApi);
       
@@ -432,11 +433,14 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          pinmamePath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "roms"sv);
          if (!pinmamePath.empty())
             pinmamePath = pinmamePath.parent_path();
+         memmapPath = find_case_insensitive_directory_path(tablePath.parent_path() / "pinmame"sv / "memmaps"sv);
       }
 
       // Defaults to the global setting
       if (pinmamePath.empty())
          pinmamePath = pinMAMEPathProp_Get();
+      if (memmapPath.empty())
+         memmapPath = std::filesystem::path(pinMAMEPathProp_Get()) / "memmaps"sv;
 
       // Custom platforms defaults
       #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
@@ -457,7 +461,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       else
          strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, (pinmamePath / ""sv).string().c_str());
 
-      Controller* pController = new Controller(msgApi, endpointId, config);
+      Controller* pController = new Controller(msgApi, endpointId, config, memmapPath);
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);

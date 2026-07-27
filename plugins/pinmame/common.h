@@ -18,7 +18,7 @@ using std::string;
 #include <vector>
 using std::vector;
 
-#include "libpinmame.h"
+#include "pinmame/libpinmame.h"
 
 // Shared logging
 #include "plugins/LoggingPlugin.h"

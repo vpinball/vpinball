@@ -498,7 +498,9 @@ cp bgfx/bgfx.cmake/build/cmake/bx/libbx.a ../../../third-party/build-libs/androi
 cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/libpinmame.so ../../../third-party/runtime-libs/android-arm64-v8a
-cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
+mkdir -p ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinmame
+cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
 
 cp openxr/openxr/build/src/loader/libopenxr_loader.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r openxr/openxr/include/openxr ../../../third-party/include
