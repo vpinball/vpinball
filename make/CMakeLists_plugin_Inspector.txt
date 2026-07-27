@@ -10,7 +10,7 @@ set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-$
 set(INSPECTOR_PLUGIN_SOURCES
    plugins/inspector/common.cpp
    plugins/inspector/common.h
-   plugins/inspector/inspector.cpp
+   plugins/inspector/InspectorPlugin.cpp
    plugins/inspector/WebServer.h
    plugins/inspector/WebServer.cpp
    third-party/include/mongoose/mongoose.h
