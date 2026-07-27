@@ -156,18 +156,28 @@ void UpdateTreeCache()
          std::vector<DisplaySrcId> displayDefs(dispMsg.count);
          dispMsg = { static_cast<unsigned int>(displayDefs.size()), 0, displayDefs.data() };
          msgApi->BroadcastMsg(endpointId, getDisplaysMsgId, &dispMsg);
+         std::map<uint32_t, json> displayCats;
          for (unsigned int i = 0; i < dispMsg.count; i++)
          {
-            auto& cNode = getController(dispMsg.entries[i].id.endpointId);
-            json catNode = json::object();
-            catNode["name"s] = "Displays";
-            catNode["type"s] = "category";
-            catNode["children"s] = json::array();
+            uint32_t epId = dispMsg.entries[i].id.endpointId;
+            if (displayCats.find(epId) == displayCats.end())
+            {
+               json catNode = json::object();
+               catNode["name"s] = "Displays";
+               catNode["type"s] = "category";
+               catNode["children"s] = json::array();
+               displayCats[epId] = catNode;
+            }
             json item = json::object();
             item["name"s] = std::format("Display {} {}x{}", dispMsg.entries[i].id.resId, dispMsg.entries[i].width, dispMsg.entries[i].height);
             item["type"s] = "display";
-            catNode["children"s].push_back(item);
-            cNode["children"s].push_back(catNode);
+            item["mapping"s] = std::to_string(dispMsg.entries[i].id.id);
+            displayCats[epId]["children"s].push_back(item);
+         }
+         for (auto& pair : displayCats)
+         {
+            auto& cNode = getController(pair.first);
+            cNode["children"s].push_back(pair.second);
          }
          msgApi->ReleaseMsgID(getDisplaysMsgId);
       }
