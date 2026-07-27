@@ -2,7 +2,11 @@
 
 #include "WebServer.h"
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
+#include <vector>
+#include <cstdint>
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -12,6 +16,7 @@ namespace Inspector
 {
 
 extern std::string GetStatesJson();
+extern std::vector<uint8_t> GetDisplayImage(uint64_t mapping);
 
 constexpr const char* HEADER_JSON = "Content-Type: application/json\r\n";
 constexpr int STATUS_OK = 200;
@@ -96,6 +101,8 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
          webServer->ApiTree(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/states"), NULL))
          webServer->ApiStates(c, hm);
+      else if (mg_match(hm->uri, mg_str("/api/display"), NULL))
+         webServer->ApiDisplay(c, hm);
       else if (mg_match(hm->uri, mg_str("/"), NULL))
          webServer->Root(c, hm);
       else
@@ -125,6 +132,36 @@ void WebServer::ApiStates(struct mg_connection* c, struct mg_http_message* hm)
 {
    std::string response = GetStatesJson();
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
+}
+
+void WebServer::ApiDisplay(struct mg_connection* c, struct mg_http_message* hm)
+{
+   char idBuf[32];
+   const int idLen = mg_http_get_var(&hm->query, "id", idBuf, sizeof(idBuf) - 1);
+   if (idLen <= 0)
+   {
+      mg_http_reply(c, 400, "", "Missing or invalid 'id' parameter\n");
+      return;
+   }
+   idBuf[idLen] = '\0';
+
+   const uint64_t mapping = std::strtoull(idBuf, nullptr, 10);
+   const std::vector<uint8_t> image = GetDisplayImage(mapping);
+   if (image.empty())
+   {
+      mg_http_reply(c, 404, "", "Display not found or not yet available\n");
+      return;
+   }
+
+   mg_printf(c,
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: image/bmp\r\n"
+      "Content-Length: %zu\r\n"
+      "Cache-Control: no-store\r\n"
+      "\r\n",
+      image.size());
+   mg_send(c, image.data(), image.size());
+   mg_mgr_poll(&m_mgr, 0);
 }
 
 void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
