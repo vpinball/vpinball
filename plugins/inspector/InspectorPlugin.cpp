@@ -12,6 +12,7 @@
 #include <format>
 #include <vector>
 #include <mutex>
+#include <cstring>
 
 #include <string>
 using namespace std::string_literals;
@@ -45,6 +46,15 @@ typedef struct
    int(MSGPIAPI* GetState)(unsigned int index, int type, void* pResult);
 } StateProvider;
 std::map<uint64_t, StateProvider> stateGetters;
+typedef struct
+{
+   CtlResId id;
+   unsigned int width;
+   unsigned int height;
+   unsigned int frameFormat;
+   DisplayFrame(MSGPIAPI* GetRenderFrame)(const CtlResId id);
+} DisplayProvider;
+std::map<uint64_t, DisplayProvider> displayGetters;
 unsigned int treeId = 0;
 
 void UpdateTreeCache()
@@ -55,6 +65,7 @@ void UpdateTreeCache()
 
    std::lock_guard lock(deviceStatesMutex);
    stateGetters.clear();
+   displayGetters.clear();
 
    json root = json::object();
    root["treeId"] = treeId;
@@ -173,6 +184,8 @@ void UpdateTreeCache()
             item["type"s] = "display";
             item["mapping"s] = std::to_string(dispMsg.entries[i].id.id);
             displayCats[epId]["children"s].push_back(item);
+            displayGetters[dispMsg.entries[i].id.id]
+               = { dispMsg.entries[i].id, dispMsg.entries[i].width, dispMsg.entries[i].height, dispMsg.entries[i].frameFormat, dispMsg.entries[i].GetRenderFrame };
          }
          for (auto& pair : displayCats)
          {
@@ -219,7 +232,7 @@ std::string GetStatesJson()
    std::lock_guard lock(deviceStatesMutex);
 
    json states = json::array();
-   for (const auto& pair : stateGetters) 
+   for (const auto& pair : stateGetters)
    {
       json dItem = json::object();
       dItem["id"s] = std::to_string(pair.first);
@@ -274,6 +287,143 @@ std::string GetStatesJson()
    root["treeId"] = treeId;
    root["states"] = states;
    return root.dump();
+}
+
+namespace
+{
+   // Writes `value` (little-endian) into `out` at `offset`. Uses memcpy rather
+   // than a reinterpret_cast<T*> dereference to avoid unaligned-access UB.
+   template <typename T> void PutLE(std::vector<uint8_t>& out, size_t offset, T value) { std::memcpy(out.data() + offset, &value, sizeof(T)); }
+
+   // Converts a raw DisplayFrame (as produced by DisplaySrcId::GetRenderFrame)
+   // into a top-down 24bpp RGB buffer. Returns an empty vector for unsupported
+   // frame formats.
+   std::vector<uint8_t> ConvertFrameToRgb24(unsigned int width, unsigned int height, unsigned int frameFormat, const void* frame)
+   {
+      const size_t count = static_cast<size_t>(width) * static_cast<size_t>(height);
+      std::vector<uint8_t> rgb(count * 3);
+
+      if (frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
+      {
+         std::memcpy(rgb.data(), frame, count * 3);
+      }
+      else if (frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565)
+      {
+         const uint16_t* src = static_cast<const uint16_t*>(frame);
+         for (size_t i = 0; i < count; i++)
+         {
+            const uint16_t px = src[i];
+            const uint8_t r5 = static_cast<uint8_t>((px >> 11) & 0x1F);
+            const uint8_t g6 = static_cast<uint8_t>((px >> 5) & 0x3F);
+            const uint8_t b5 = static_cast<uint8_t>(px & 0x1F);
+            rgb[i * 3 + 0] = static_cast<uint8_t>((r5 * 255 + 15) / 31);
+            rgb[i * 3 + 1] = static_cast<uint8_t>((g6 * 255 + 31) / 63);
+            rgb[i * 3 + 2] = static_cast<uint8_t>((b5 * 255 + 15) / 31);
+         }
+      }
+      else if (frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
+      {
+         const float* src = static_cast<const float*>(frame);
+         for (size_t i = 0; i < count; i++)
+         {
+            float v = src[i];
+            if (v < 0.f)
+               v = 0.f;
+            if (v > 1.f)
+               v = 1.f;
+            const uint8_t l = static_cast<uint8_t>(v * 255.f + 0.5f);
+            rgb[i * 3 + 0] = l;
+            rgb[i * 3 + 1] = l;
+            rgb[i * 3 + 2] = l;
+         }
+      }
+      else
+      {
+         return { }; // unsupported/unknown frame format
+      }
+      return rgb;
+   }
+
+   std::vector<uint8_t> EncodeBmp(unsigned int width, unsigned int height, const uint8_t* rgb)
+   {
+      if (width == 0 || height == 0 || rgb == nullptr)
+      {
+         return { };
+      }
+
+      const uint32_t rowSize = (width * 3u + 3u) & ~3u; // rows padded to a multiple of 4 bytes
+      const uint32_t dataSize = rowSize * height;
+      const uint32_t fileSize = 54u + dataSize;
+
+      std::vector<uint8_t> out(fileSize, 0);
+
+      // BITMAPFILEHEADER (14 bytes)
+      out[0] = 'B';
+      out[1] = 'M';
+      PutLE(out, 2, fileSize);
+      out[4] = 0;
+      out[5] = 0; // Reserved (unused)
+      out[6] = 0;
+      out[7] = 0; // Reserved (unused)
+      PutLE(out, 10, uint32_t { 54 }); // Pixel data offset
+
+      // BITMAPINFOHEADER (40 bytes)
+      PutLE(out, 14, uint32_t { 40 }); // Header size
+      PutLE(out, 18, static_cast<int32_t>(width));
+      PutLE(out, 22, static_cast<int32_t>(height)); // Positive = bottom-up
+      PutLE(out, 26, uint16_t { 1 }); // Color planes
+      PutLE(out, 28, uint16_t { 24 }); // Bits per pixel
+      PutLE(out, 30, uint32_t { 0 }); // Compression (BI_RGB = 0)
+      PutLE(out, 34, dataSize); // Image size (bytes)
+      PutLE(out, 38, uint32_t { 0 }); // X pixels per meter (optional)
+      PutLE(out, 42, uint32_t { 0 }); // Y pixels per meter (optional)
+      PutLE(out, 46, uint32_t { 0 }); // Colors used (0 = all)
+      PutLE(out, 50, uint32_t { 0 }); // Important colors (0 = all)
+
+      // BMP pixel rows are stored bottom-up and in BGR order.
+      for (unsigned int y = 0; y < height; y++)
+      {
+         uint8_t* dst = out.data() + 54 + static_cast<size_t>(y) * rowSize;
+         const uint8_t* src = rgb + static_cast<size_t>(height - 1 - y) * width * 3;
+         for (unsigned int x = 0; x < width; x++)
+         {
+            dst[x * 3 + 0] = src[x * 3 + 2]; // B
+            dst[x * 3 + 1] = src[x * 3 + 1]; // G
+            dst[x * 3 + 2] = src[x * 3 + 0]; // R
+         }
+      }
+      return out;
+   }
+}
+
+// Looks up the display registered under `mapping` (the same CtlResId.id sent
+// to the client as the display node's "mapping" field), pulls its current
+// frame via GetRenderFrame, and encodes it as a BMP image. Returns an empty
+// vector if the mapping is unknown, the source has no frame yet, or the
+// frame format isn't supported.
+std::vector<uint8_t> GetDisplayImage(uint64_t mapping)
+{
+   DisplayProvider provider;
+   {
+      std::lock_guard lock(deviceStatesMutex);
+      auto it = displayGetters.find(mapping);
+      if (it == displayGetters.end())
+         return { };
+      provider = it->second;
+   }
+
+   if (!provider.GetRenderFrame || provider.width == 0 || provider.height == 0)
+      return { };
+
+   const DisplayFrame frame = provider.GetRenderFrame(provider.id);
+   if (!frame.frame)
+      return { };
+
+   const std::vector<uint8_t> rgb = ConvertFrameToRgb24(provider.width, provider.height, provider.frameFormat, frame.frame);
+   if (rgb.empty())
+      return { };
+
+   return EncodeBmp(provider.width, provider.height, rgb.data());
 }
 
 void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)

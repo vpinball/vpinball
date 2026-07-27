@@ -23,6 +23,15 @@
         .node-item .node-mapping { flex: 0 0 5em; text-align: right; color: #B0BEC5; }
         .node-item .node-state { flex: 0 0 6em; text-align: right; }
         .node-item .node-name { color: #E0E0E0; }
+        .node-display { align-items: flex-start; }
+        .display-image {
+            max-width: 512px;
+            width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            background: #000000;
+            border: 1px solid #333;
+        }
         h1 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
         .matrix-content { margin: 8px 0 16px 20px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-top: 8px; }
@@ -121,6 +130,16 @@
             document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.type, item.state));
         }
 
+		function refreshDisplayImages() {
+			document.querySelectorAll('.display-image').forEach(img => {
+				if (img.dataset.loading === '1') return; // previous request still in flight — skip this cycle
+				const mapping = img.dataset.mapping;
+				img.dataset.loading = '1';
+				img.onload = img.onerror = () => { img.dataset.loading = '0'; };
+				img.src = `/api/display?id=${mapping}&t=${Date.now()}`;
+			});
+		}
+		
 		let currentTreeId = -1;
 		let currentDelay = 30;
         function fetchStates() {
@@ -132,8 +151,10 @@
                 .then(data => {
 					if (data.treeId != currentTreeId)
 						currentTreeId = -1;
-					else
+					else {
 						data.states.forEach(updateState);
+						refreshDisplayImages();
+					}
 					currentDelay = 30;
 				})
                 .catch(err => {
@@ -195,6 +216,13 @@
 				</div>`;
 		}
 		
+		function buildDisplayNode(node) {
+			return `<div class="node-item node-display">
+				<span class="node-mapping">${formatMapping(node.mapping, false)}</span>
+				<img class="display-image" data-mapping="${node.mapping}" alt="${escapeHtml(node.name)}" title="${escapeHtml(node.name)}" src="" />
+			</div>`;
+		}
+
         function buildMatrixGroup(node) {
             const children = node.children;
             const rows = children.length / MATRIX_COLUMNS;
@@ -241,7 +269,9 @@
 
             if (node.type === 'state') {
                 return buildLeafNode(node);
-            } else if (node.type === 'display' || node.type === 'seg_display') {
+            } else if (node.type === 'display') {
+                return buildDisplayNode(node);
+            } else if (node.type === 'seg_display') {
                 return `<div class="node-item">${escapeHtml(node.name)}</div>`;
             }
 
