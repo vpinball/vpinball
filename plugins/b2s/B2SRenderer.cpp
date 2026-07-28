@@ -136,26 +136,23 @@ void B2SRenderer::OnStateSrcChanged(const unsigned int, void* userData, void*)
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
 {
+   int groupId;
+   switch (romIdType)
+   {
+   case B2SRomIDType::Solenoid: groupId = PMPI_GROUP_SOLENOID; break;
+   case B2SRomIDType::GIString: groupId = PMPI_GROUP_GI; break;
+   case B2SRomIDType::Lamp: groupId = PMPI_GROUP_LAMP; break;
+   case B2SRomIDType::Mech: groupId = PMPI_GROUP_MECH; break;
+   default: return []() { /* No ROM source */ };
+   }
    for (unsigned int i = 0; i < m_deviceStateSrc.nStates; i++)
    {
-      if (romId == m_deviceStateSrc.stateDefs[i].id.stateId)
+      if (romId == m_deviceStateSrc.stateDefs[i].id.stateId && groupId == (m_deviceStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK))
       {
-         bool found;
-         switch (m_deviceStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK)
-         {
-         case PMPI_GROUP_SOLENOID: found = romIdType == B2SRomIDType::Solenoid; break;
-         case PMPI_GROUP_GI: found = romIdType == B2SRomIDType::GIString; break;
-         case PMPI_GROUP_LAMP: found = romIdType == B2SRomIDType::Lamp; break;
-         case PMPI_GROUP_MECH: found = romIdType == B2SRomIDType::Mech; break;
-         default: found = false; break;
-         }
-         if (found)
-         {
-            if (romInverted)
-               return [this, value, i]() { float r = 0.f; m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, &r); *value = 1.f - r; };
-            else
-               return [this, value, i]() { float r = 0.f; m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, &r); *value = r; };
-         }
+         if (romInverted)
+            return [this, value, i]() { m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, value); *value = 1.f - *value; };
+         else
+            return [this, value, i]() { m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, value); };
       }
    }
    return []() { /* No ROM source */ };
@@ -177,7 +174,7 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
    {
       if (bulb->m_b2sId >= 0 && server)
       {
-         bulb->m_brightness = server->GetState(bulb->m_b2sId);
+         bulb->m_brightness = server->GetLampState(bulb->m_b2sId);
       }
       else
       {

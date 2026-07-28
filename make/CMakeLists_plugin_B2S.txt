@@ -20,8 +20,6 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SServer.h
    plugins/b2s/B2SServer.cpp
    
-   plugins/plugins/B2SPluginEventStream.h
-   plugins/plugins/B2SPluginEventStream.cpp
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
    
