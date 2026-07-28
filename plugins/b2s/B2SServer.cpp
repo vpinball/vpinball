@@ -7,6 +7,8 @@
 namespace B2S
 {
 
+extern const char* B2SGetGlobalPath();
+
 B2SServer* B2SServer::m_singleton = nullptr;
 
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
@@ -39,6 +41,18 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
       std::filesystem::path folderName = tablePath.parent_path().filename();
       folderName += ".directb2s"sv;
       b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / folderName);
+   }
+
+   // Fallback: search in the global B2S path setting (for Android SAF workaround)
+   if (b2sFilename.empty())
+   {
+       const std::string b2sBasePath = B2SGetGlobalPath();
+      if (!b2sBasePath.empty())
+      {
+         const std::filesystem::path b2sPath(b2sBasePath);
+         const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
+         b2sFilename = find_case_insensitive_file_path(b2sPath / b2sFile);
+      }
    }
 
    if (!b2sFilename.empty())

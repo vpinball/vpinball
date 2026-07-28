@@ -26,6 +26,8 @@
 
 namespace B2SLegacy {
 
+extern const char* B2SLegacyGetGlobalPath();
+
 FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
    : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"s),
      m_pB2SSettings(pB2SData->GetB2SSettings())
@@ -327,7 +329,20 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 void FormBackglass::LoadB2SData()
 {
    const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
-   const std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+
+   // Fallback: search in the global B2S path setting (for Android SAF workaround)
+   if (b2sFilename.empty())
+   {
+      const std::string b2sBasePath = B2SLegacyGetGlobalPath();
+      if (!b2sBasePath.empty())
+      {
+         const std::filesystem::path b2sPath(b2sBasePath);
+         const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
+         b2sFilename = find_case_insensitive_file_path(b2sPath / b2sFile);
+      }
+   }
+
    if (b2sFilename.empty()) {
       LOGD("No directb2s file found"s);
       throw std::exception();
