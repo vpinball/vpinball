@@ -106,8 +106,6 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/forms/FormDMD.h
    plugins/b2slegacy/forms/FormDMD.cpp
 
-   plugins/plugins/B2SPluginEventStream.h
-   plugins/plugins/B2SPluginEventStream.cpp
    plugins/plugins/ResURIResolver.h
    plugins/plugins/ResURIResolver.cpp
 

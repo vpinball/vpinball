@@ -11,7 +11,6 @@
     <ClCompile Include="../../plugins/b2s/B2SDMDOverlay.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp" />
-    <ClCompile Include="../../plugins/plugins/B2SPluginEventStream.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
@@ -21,7 +20,6 @@
     <ClInclude Include="../../plugins/b2s/B2SDMDOverlay.h" />
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h" />
     <ClInclude Include="../../plugins/b2s/B2SServer.h" />
-    <ClInclude Include="../../plugins/plugins/B2SPluginEventStream.h" />
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>

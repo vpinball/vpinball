@@ -515,6 +515,7 @@ public:
    }
 
    const ScriptClassDef* GetBaseClassDef() const { return m_baseClassDef; }
+   const ScriptClassDef* GetProxyClassDef() const { return m_proxyClassDef; }
 
 private:
    inline bool IsNameMatch(const std::string_view& proxyName, const std::string_view& className) const
@@ -582,6 +583,8 @@ public:
       if (m_classProxy.GetBaseClassDef() && m_instance)
          PSC_RELEASE(m_classProxy.GetBaseClassDef(), m_instance);
    }
+   
+   ScriptClassProxy& GetProxyClass() const { return m_classProxy; }
 
    // Forward a call on the object to the one we proxied, eventually creating the proxied instance if needed
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override
