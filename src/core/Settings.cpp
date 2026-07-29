@@ -153,7 +153,7 @@ void Settings::UpdateDefaults()
          reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.videomode.GetPixelWidth()));
          reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.videomode.GetPixelHeight()));
          reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.videomode.GetPixelWidth() : (conf.videomode.GetPixelWidth() / 4)));
-         reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.videomode.GetPixelWidth() : min(conf.videomode.GetPixelWidth() * 4 / 9, conf.videomode.GetPixelHeight())));
+         reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.videomode.GetPixelHeight() : min(conf.videomode.GetPixelWidth() * 4 / 9, conf.videomode.GetPixelHeight())));
          break;
       }
       case VPX::RenderOutput::OutputMode::OM_EMBEDDED:
