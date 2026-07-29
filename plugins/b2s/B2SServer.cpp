@@ -33,7 +33,10 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
 
    // Search for an exact match (same file name with .directb2s extension)
    const std::filesystem::path tablePath(tableInfo.path);
+   LOGI("B2S: Searching for directb2s for table: " + tablePath.string());
+   LOGI("B2S: table parent: " + tablePath.parent_path().string() + ", filename: " + tablePath.filename().string());
    std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   LOGI("B2S: Local search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
 
    // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
    if (b2sFilename.empty())
@@ -41,17 +44,22 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
       std::filesystem::path folderName = tablePath.parent_path().filename();
       folderName += ".directb2s"sv;
       b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / folderName);
+      LOGI("B2S: Folder-name search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
    }
 
    // Fallback: search in the global B2S path setting (for Android SAF workaround)
    if (b2sFilename.empty())
    {
        const std::string b2sBasePath = B2SGetGlobalPath();
+       LOGI("B2S: B2SPath fallback value: '" + b2sBasePath + "'");
       if (!b2sBasePath.empty())
       {
          const std::filesystem::path b2sPath(b2sBasePath);
          const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
-         b2sFilename = find_case_insensitive_file_path(b2sPath / b2sFile);
+         const std::filesystem::path searchPath = b2sPath / b2sFile;
+         LOGI("B2S: Searching B2SPath: " + searchPath.string());
+         b2sFilename = find_case_insensitive_file_path(searchPath);
+         LOGI("B2S: B2SPath search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
       }
    }
 

@@ -329,26 +329,33 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 void FormBackglass::LoadB2SData()
 {
    const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
+   LOGI("B2SLegacy: Searching for directb2s for table: " + tablePath.string());
+   LOGI("B2SLegacy: table parent: " + tablePath.parent_path().string() + ", filename: " + tablePath.filename().string());
    std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   LOGI("B2SLegacy: Local search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
 
    // Fallback: search in the global B2S path setting (for Android SAF workaround)
    if (b2sFilename.empty())
    {
       const std::string b2sBasePath = B2SLegacyGetGlobalPath();
+      LOGI("B2SLegacy: B2SPath fallback value: '" + b2sBasePath + "'");
       if (!b2sBasePath.empty())
       {
          const std::filesystem::path b2sPath(b2sBasePath);
          const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
-         b2sFilename = find_case_insensitive_file_path(b2sPath / b2sFile);
+         const std::filesystem::path searchPath = b2sPath / b2sFile;
+         LOGI("B2SLegacy: Searching B2SPath: " + searchPath.string());
+         b2sFilename = find_case_insensitive_file_path(searchPath);
+         LOGI("B2SLegacy: B2SPath search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
       }
    }
 
    if (b2sFilename.empty()) {
-      LOGD("No directb2s file found"s);
+      LOGI("B2SLegacy: No directb2s file found for: " + tablePath.filename().string());
       throw std::exception();
    }
 
-   LOGI("directb2s file found at: " + b2sFilename.string());
+   LOGI("B2SLegacy: directb2s file found at: " + b2sFilename.string());
 
    m_pB2SData->SetBackglassFileName(b2sFilename.string());
 
