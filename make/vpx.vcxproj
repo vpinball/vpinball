@@ -104,9 +104,6 @@
     <ProjectReference Include="plugin-pinmame.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-pinup-events.vcxproj" Condition="'$(Platform)'=='x64'">
-      <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
-    </ProjectReference>
     <ProjectReference Include="plugin-pup.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
     </ProjectReference>
