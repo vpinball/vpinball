@@ -1,22 +1,22 @@
 // license:GPLv3+
 
-#include <cassert>
-#include <cstdlib>
-#include <chrono>
-#include <cstring>
-#include <mutex>
-#include <thread>
-#include <random>
-
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "plugins/ControllerPlugin.h"
+#include "plugins/LoggingPlugin.h"
+#include "pinmame/PinMAMEPlugin.h"
 #include "common.h"
 #include "vni.h"
 
+#include <cassert>
+#include <chrono>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
-
-#include "plugins/LoggingPlugin.h"
+#include <mutex>
+#include <thread>
+#include <random>
+#include <vector>
 
 namespace Vni {
 
@@ -26,8 +26,11 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 
 static uint32_t endpointId;
-static unsigned int onControllerGameStartId, onControllerGameEndId;
-static unsigned int onDmdSrcChangedId, getDmdSrcId;
+static unsigned int onControllersChangedId;
+static unsigned int getControllersId;
+static string currentGameId;
+static unsigned int onDmdSrcChangedId;
+static unsigned int getDmdSrcId;
 
 static bool isRunning = false;
 static std::mutex sourceMutex;
@@ -196,76 +199,92 @@ static void StopColorization()
    dmdId.id.id = 0;
 }
 
-static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
+static void OnControllersChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
-
-   // FIXME handle multiple controller running (PinMAME, B2S, ...)
-
-   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
-   if (isRunning)
+   // Enumerate and select the first controller exposing a PinMAME compatible game
+   string selectedGameId;
+   GetControllersMsg getControllersMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+   if (getControllersMsg.count > 0)
    {
-      LOGW("Ignoring game start, already running"s);
-      return;
+      const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+      std::vector<ControllerDef> controllers(getControllersMsg.count);
+      getControllersMsg = { getControllersMsg.count, 0, controllers.data() };
+      msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+      for (const auto& controller : controllers)
+      {
+         string gameId = controller.gameId;
+         if (gameId.starts_with(pinmamePrefix))
+         {
+            selectedGameId = gameId.substr(pinmamePrefix.length());
+            if (!selectedGameId.empty())
+               break;
+         }
+      }
    }
-   StopColorization();
+   if (currentGameId == selectedGameId)
+      return;
 
+   // Setup on the selected game if any
+   StopColorization();
+   currentGameId = selectedGameId;
+   if (currentGameId.empty())
+      return;
+   
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    std::filesystem::path tablePath = tableInfo.path;
 
    std::filesystem::path vniBasePath = vniPathProp_Get();
-   const std::string gameId = msg->gameId;
-   const std::filesystem::path palFile = gameId + ".pal";
-   const std::filesystem::path vniFile = gameId + ".vni";
+   const std::filesystem::path palFile = currentGameId + ".pal";
+   const std::filesystem::path vniFile = currentGameId + ".vni";
    const std::filesystem::path pin2dmdPal = "pin2dmd.pal"s;
    const std::filesystem::path pin2dmdVni = "pin2dmd.vni"s;
 
    std::filesystem::path palPath, vniPath;
 
    // Priority 1: vni/<rom>/<rom>.pal and vni/<rom>/<rom>.vni
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / gameId / palFile); !path1.empty())
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / palFile); !path1.empty())
    {
       palPath = path1;
-      if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / gameId / vniFile); !path2.empty())
+      if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / vniFile); !path2.empty())
          vniPath = path2;
    }
    // Priority 2: vni/<rom>/pin2dmd.pal and vni/<rom>/pin2dmd.vni
-   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / gameId / pin2dmdPal); !path3.empty())
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdPal); !path3.empty())
    {
       palPath = path3;
-      if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / gameId / pin2dmdVni); !path4.empty())
+      if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdVni); !path4.empty())
          vniPath = path4;
    }
    // Priority 3: pinmame/altcolor/<rom>/<rom>.pal and pinmame/altcolor/<rom>/<rom>.vni
-   else if (auto path5 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / palFile); !path5.empty())
+   else if (auto path5 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / palFile); !path5.empty())
    {
       palPath = path5;
-      if (auto path6 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / vniFile); !path6.empty())
+      if (auto path6 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / vniFile); !path6.empty())
          vniPath = path6;
    }
    // Priority 4: pinmame/altcolor/<rom>/pin2dmd.pal and pinmame/altcolor/<rom>/pin2dmd.vni
-   else if (auto path7 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / pin2dmdPal); !path7.empty())
+   else if (auto path7 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdPal); !path7.empty())
    {
       palPath = path7;
-      if (auto path8 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / pin2dmdVni); !path8.empty())
+      if (auto path8 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdVni); !path8.empty())
          vniPath = path8;
    }
    // Priority 5: global setting path
    else if (!vniBasePath.empty())
    {
-      if (auto path9 = find_case_insensitive_file_path(vniBasePath / gameId / palFile); !path9.empty())
+      if (auto path9 = find_case_insensitive_file_path(vniBasePath / currentGameId / palFile); !path9.empty())
       {
          palPath = path9;
-         if (auto path10 = find_case_insensitive_file_path(vniBasePath / gameId / vniFile); !path10.empty())
+         if (auto path10 = find_case_insensitive_file_path(vniBasePath / currentGameId / vniFile); !path10.empty())
             vniPath = path10;
       }
    }
 
    if (palPath.empty())
    {
-      LOGI("No PAL file found for " + gameId);
+      LOGI("No PAL file found for " + currentGameId);
       return;
    }
 
@@ -287,16 +306,6 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    }
 }
 
-static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
-{
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
-
-   // FIXME handle multiple controller running (PinMAME, B2S, ...)
-
-   StopColorization();
-}
-
 }
 
 using namespace Vni;
@@ -314,10 +323,13 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), OnDmdSrcChanged, nullptr);
    msgApi->SubscribeMsg(endpointId, getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), OnGetRenderDMDSrc, nullptr);
+
+   onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
+   getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
+   msgApi->SubscribeMsg(endpointId, onControllersChangedId, OnControllersChanged, nullptr);
+   OnControllersChanged(onControllersChangedId, nullptr, nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
@@ -325,10 +337,9 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
    StopColorization();
    msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc, nullptr);
    msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
-   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
-   msgApi->ReleaseMsgID(onControllerGameStartId);
-   msgApi->ReleaseMsgID(onControllerGameEndId);
+   msgApi->UnsubscribeMsg(onControllersChangedId, OnControllersChanged, nullptr);
+   msgApi->ReleaseMsgID(onControllersChangedId);
+   msgApi->ReleaseMsgID(getControllersId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->FlushPendingCallbacks(endpointId);

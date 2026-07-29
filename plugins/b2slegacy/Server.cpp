@@ -25,14 +25,16 @@ using namespace std::string_view_literals;
 #include "classes/B2SScreen.h"
 #include "utils/PinMAMEAPI.h"
 
+#include <random>
+
 
 namespace B2SLegacy {
 
 Server* Server::m_singleton = nullptr;
 
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
-   : m_onGameStartId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START))
-   , m_onGameEndId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END))
+   : m_onControllersChangedId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG))
+   , m_getControllersId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG))
    , m_onGetStateSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG)) 
    , m_msgApi(msgApi)
    , m_vpxApi(vpxApi)
@@ -60,22 +62,22 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_stateSrc.GetState = GetStateAPI;
    m_stateSrc.SetState = SetStateAPI;
 
-   msgApi->SubscribeMsg(endpointId, m_onGetAuxRendererId, OnGetRendererStatic, this);
-   msgApi->SubscribeMsg(endpointId, m_onStateChangedMsgId, OnStateSrcChangedStatic, this);
-   msgApi->SubscribeMsg(endpointId, m_onGetStateSrcId, OnGetStateSrc, this);
-   msgApi->BroadcastMsg(endpointId, m_onAuxRendererChgId, nullptr);
+   m_msgApi->SubscribeMsg(m_endpointId, m_getControllersId, OnGetControllers, this);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onGetAuxRendererId, OnGetRendererStatic, this);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onStateChangedMsgId, OnStateSrcChangedStatic, this);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onGetStateSrcId, OnGetStateSrc, this);
+   m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 }
 
 Server::~Server()
 {
    if (m_gameRunning)
    {
-      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+      m_gameRunning = false;
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
-   m_msgApi->ReleaseMsgID(m_onGameStartId);
-   m_msgApi->ReleaseMsgID(m_onGameEndId);
 
+   m_msgApi->UnsubscribeMsg(m_getControllersId, OnGetControllers, this);
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic, this);
    m_msgApi->UnsubscribeMsg(m_onStateChangedMsgId, OnStateSrcChangedStatic, this);
    m_msgApi->UnsubscribeMsg(m_onGetStateSrcId, OnGetStateSrc, this);
@@ -140,6 +142,20 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
    return 0;
 }
 
+void Server::OnGetControllers(const unsigned int msgId, void* userData, void* msgData)
+{
+   if (auto me = static_cast<Server*>(userData); me->m_gameRunning)
+   {
+      auto msg = static_cast<GetControllersMsg*>(msgData);
+      if (msg->count < msg->maxEntryCount)
+      {
+         msg->entries[msg->count].ctrlEndpointId = me->m_endpointId;
+         msg->entries[msg->count].gameId = me->m_controllerGameId.c_str();
+      }
+      msg->count++;
+   }
+}
+
 void Server::OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    delete[] m_pinmameStateSrc.stateDefs;
@@ -176,6 +192,11 @@ void Server::OnStateSrcChanged(const unsigned int msgId, void* userData, void* m
    LOGI(std::format("Device state updated - {} devices", m_pinmameStateSrc.nStates));
 }
 
+void Server::OnStateSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData)
+{
+   static_cast<Server*>(userData)->OnStateSrcChanged(msgId, userData, msgData);
+}
+
 void Server::OnGetStateSrc(const unsigned int, void* userData, void* msgData)
 {
    auto me = static_cast<Server*>(userData);
@@ -187,17 +208,16 @@ void Server::OnGetStateSrc(const unsigned int, void* userData, void* msgData)
 
 void Server::UpdateStateSrc()
 {
+   // TODO this should be performed when controller start/stop, not when states are declared
    if (m_gameRunning && m_b2sStates.empty())
    {
       m_gameRunning = false;
-      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
    else if (!m_gameRunning && !m_b2sStates.empty())
    {
       m_gameRunning = true;
-      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
 
    delete[] m_stateSrc.stateDefs;
@@ -263,9 +283,6 @@ void Server::OnGetRendererStatic(const unsigned int, void* userData, void* msgDa
       msg->count++;
    }
 }
-
-void Server::OnStateSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData)
-{ static_cast<Server*>(userData)->OnStateSrcChanged(msgId, userData, msgData); }
 
 void Server::TimerElapsed(Timer* pTimer)
 {
@@ -355,6 +372,31 @@ const string& Server::GetB2SServerDirectory() const
    return m_szPath;
 }
 
+static std::string CreateGuidString()
+{
+   std::random_device rd;
+   std::mt19937_64 gen(rd());
+   std::uniform_int_distribution<uint64_t> dist;
+
+   uint64_t hi = dist(gen);
+   uint64_t lo = dist(gen);
+
+   // Set UUID version (4) and variant bits per RFC 4122
+   hi = (hi & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;
+   lo = (lo & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+
+   char buf[37];
+   std::snprintf(buf, sizeof(buf),
+      "%08llx-%04llx-%04llx-%04llx-%012llx",
+      (hi >> 32) & 0xFFFFFFFFULL,
+      (hi >> 16) & 0xFFFFULL,
+      hi & 0xFFFFULL,
+      (lo >> 48) & 0xFFFFULL,
+      lo & 0xFFFFFFFFFFFFULL);
+
+   return std::string(buf);
+}
+
 const string& Server::GetB2SName() const
 {
    return m_pB2SSettings->GetB2SName();
@@ -365,19 +407,16 @@ void Server::SetB2SName(const string& b2sName)
    if (b2sName == m_pB2SSettings->GetB2SName())
       return;
 
-   if (m_gameRunning)
-   {
-      CtlOnGameStateChgMsg msg = { m_endpointId, m_pB2SSettings->GetB2SName().c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
-   }
-
    m_pB2SSettings->SetB2SName(b2sName);
 
+   string id = trim_string(b2sName);
+   if (id.empty())
+      m_controllerGameId = "b2s::"s + CreateGuidString();
+   else
+      m_controllerGameId = "b2s::"s + string_to_lower(id);
+
    if (m_gameRunning)
-   {
-      CtlOnGameStateChgMsg msg = { m_endpointId, GetB2SName().c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
-   }
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
 }
 
 const string& Server::GetTableName() const

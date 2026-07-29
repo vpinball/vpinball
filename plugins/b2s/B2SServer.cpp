@@ -4,6 +4,9 @@
 
 #include "B2SServer.h"
 
+#include <random>
+
+
 namespace B2S
 {
 
@@ -18,8 +21,8 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_ancillaryRendererDef({ "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", this, OnRender })
-   , m_onGameStartId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START))
-   , m_onGameEndId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END))
+   , m_onControllersChangedId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG))
+   , m_getControllersId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG))
    , m_onGetStateSrcId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG))
    , m_onStateSrcChgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG))
    , m_onStateChangeEventId(msgApi->GetMsgID("B2S", "OnStateChange"))
@@ -63,6 +66,8 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
       m_loadedB2S = std::async(std::launch::async, loadFile, b2sFilename);
    }
 
+   m_msgApi->SubscribeMsg(m_endpointId, m_getControllersId, OnGetControllers, this);
+
    m_msgApi->SubscribeMsg(m_endpointId, m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 
@@ -73,6 +78,9 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    m_stateSrc.SetState = SetState;
    m_msgApi->SubscribeMsg(m_endpointId, m_onGetStateSrcId, OnGetStateSrc, this);
    UpdateStateSrc();
+   
+   m_b2sName = "b2s::";
+   SetB2SName("");
 }
 
 B2SServer::~B2SServer()
@@ -83,11 +91,12 @@ B2SServer::~B2SServer()
 
    if (m_gameRunning)
    {
-      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+      m_gameRunning = false;
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
-   m_msgApi->ReleaseMsgID(m_onGameStartId);
-   m_msgApi->ReleaseMsgID(m_onGameEndId);
+   m_msgApi->ReleaseMsgID(m_onControllersChangedId);
+   m_msgApi->ReleaseMsgID(m_getControllersId);
+   m_msgApi->UnsubscribeMsg(m_getControllersId, OnGetControllers, this);
 
    if (m_lampStates.size() > 0)
    {
@@ -112,26 +121,46 @@ B2SServer::~B2SServer()
    m_singleton = nullptr;
 }
 
+static std::string CreateGuidString()
+{
+   std::random_device rd;
+   std::mt19937_64 gen(rd());
+   std::uniform_int_distribution<uint64_t> dist;
+
+   uint64_t hi = dist(gen);
+   uint64_t lo = dist(gen);
+
+   // Set UUID version (4) and variant bits per RFC 4122
+   hi = (hi & 0xFFFFFFFFFFFF0FFFULL) | 0x0000000000004000ULL;
+   lo = (lo & 0x3FFFFFFFFFFFFFFFULL) | 0x8000000000000000ULL;
+
+   char buf[37];
+   std::snprintf(buf, sizeof(buf),
+      "%08llx-%04llx-%04llx-%04llx-%012llx",
+      (hi >> 32) & 0xFFFFFFFFULL,
+      (hi >> 16) & 0xFFFFULL,
+      hi & 0xFFFFULL,
+      (lo >> 48) & 0xFFFFULL,
+      lo & 0xFFFFFFFFFFFFULL);
+
+   return std::string(buf);
+}
+
 string B2SServer::GetB2SName() const { return m_b2sName; }
 
 void B2SServer::SetB2SName(const std::string& b2sName)
 {
    if (b2sName == m_b2sName)
       return;
-   if (m_gameRunning)
-   {
-      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
-   }
    m_b2sName = b2sName;
+   string id = trim_string(b2sName);
+   if (id.empty())
+      m_controllerGameId = "b2s::"s + CreateGuidString();
+   else
+      m_controllerGameId = "b2s::"s + string_to_lower(id);
    if (m_gameRunning)
-   {
-      CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str() };
-      m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
-   }
+      m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
 }
-
-int MSGPIAPI B2SServer::SetState(unsigned int inputIndex, int type, void* pResult) { return -1; }
 
 int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
 {
@@ -181,8 +210,7 @@ void B2SServer::ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, Scr
       if (!m_gameRunning)
       {
          m_gameRunning = true;
-         CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str() };
-         m_msgApi->BroadcastMsg(m_endpointId, m_onGameStartId, reinterpret_cast<void*>(&msg));
+         m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
       }
    }
    else if (methodName == "Stop"sv)
@@ -190,9 +218,24 @@ void B2SServer::ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, Scr
       if (m_gameRunning)
       {
          m_gameRunning = false;
-         CtlOnGameStateChgMsg msg = { m_endpointId, m_b2sName.c_str() };
-         m_msgApi->BroadcastMsg(m_endpointId, m_onGameEndId, reinterpret_cast<void*>(&msg));
+         m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
       }
+   }
+}
+
+// Controller
+
+void B2SServer::OnGetControllers(const unsigned int, void* userData, void* msgData)
+{
+   if (auto me = static_cast<B2SServer*>(userData); me->m_gameRunning)
+   {
+      auto msg = static_cast<GetControllersMsg*>(msgData);
+      if (msg->count < msg->maxEntryCount)
+      {
+         msg->entries[msg->count].ctrlEndpointId = me->m_endpointId;
+         msg->entries[msg->count].gameId = me->m_controllerGameId.c_str();
+      }
+      msg->count++;
    }
 }
 
@@ -250,8 +293,7 @@ void B2SServer::UpdateStateSrc()
       m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0001;
       m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
-      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_DOUBLE | CTLPI_STATE_TYPE_UINT8 | CTLPI_STATE_TYPE_UINT16 | CTLPI_STATE_TYPE_UINT32
-         | CTLPI_STATE_TYPE_UINT64 | CTLPI_STATE_TYPE_INT8 | CTLPI_STATE_TYPE_INT16 | CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_UINT8;
       m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
@@ -264,8 +306,7 @@ void B2SServer::UpdateStateSrc()
       m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0002;
       m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
-      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_DOUBLE | CTLPI_STATE_TYPE_UINT8 | CTLPI_STATE_TYPE_UINT16 | CTLPI_STATE_TYPE_UINT32
-         | CTLPI_STATE_TYPE_UINT64 | CTLPI_STATE_TYPE_INT8 | CTLPI_STATE_TYPE_INT16 | CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
       m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
@@ -276,8 +317,7 @@ void B2SServer::UpdateStateSrc()
       m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0003;
       m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
-      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_DOUBLE | CTLPI_STATE_TYPE_UINT8 | CTLPI_STATE_TYPE_UINT16 | CTLPI_STATE_TYPE_UINT32
-         | CTLPI_STATE_TYPE_UINT64 | CTLPI_STATE_TYPE_INT8 | CTLPI_STATE_TYPE_INT16 | CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
       m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
@@ -300,29 +340,34 @@ int MSGPIAPI B2SServer::GetState(unsigned int inputIndex, int type, void* pResul
    if (B2SServer::m_singleton == nullptr || inputIndex >= m_singleton->m_stateSrc.nStates)
       return -1;
    const int id = m_singleton->m_stateSrc.stateDefs[inputIndex].id.stateId;
-   double val;
    switch (m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId)
    {
-   case 0x0001: val = static_cast<double>(m_singleton->GetLampState(id)); break;
-   case 0x0002: val = static_cast<double>(m_singleton->GetPlayerScore(id)); break;
-   case 0x0003: val = static_cast<double>(m_singleton->GetScoreDigit(id)); break;
-   default: return -1;
-   }
-   switch (type)
+   case 0x0001:
    {
-   case CTLPI_STATE_TYPE_UINT8: *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(val); return 0;
-   case CTLPI_STATE_TYPE_UINT16: *static_cast<uint16_t*>(pResult) = static_cast<uint16_t>(val); return 0;
-   case CTLPI_STATE_TYPE_UINT32: *static_cast<uint32_t*>(pResult) = static_cast<uint32_t>(val); return 0;
-   case CTLPI_STATE_TYPE_UINT64: *static_cast<uint64_t*>(pResult) = static_cast<uint64_t>(val); return 0;
-   case CTLPI_STATE_TYPE_INT8: *static_cast<int8_t*>(pResult) = static_cast<int8_t>(val); return 0;
-   case CTLPI_STATE_TYPE_INT16: *static_cast<int16_t*>(pResult) = static_cast<int16_t>(val); return 0;
-   case CTLPI_STATE_TYPE_INT32: *static_cast<int32_t*>(pResult) = static_cast<int32_t>(val); return 0;
-   case CTLPI_STATE_TYPE_INT64: *static_cast<int64_t*>(pResult) = static_cast<int64_t>(val); return 0;
-   case CTLPI_STATE_TYPE_FLOAT: *static_cast<float*>(pResult) = static_cast<float>(val); return 0;
-   case CTLPI_STATE_TYPE_DOUBLE: *static_cast<double*>(pResult) = val; return 0;
-   default: return -1;
+      // Normalized lamps 0..1 or 0..255
+      float val = m_singleton->GetLampState(id); break;
+      switch (type)
+      {
+      case CTLPI_STATE_TYPE_UINT8: *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(val * 255.f); return 0;
+      case CTLPI_STATE_TYPE_FLOAT: *static_cast<float*>(pResult) = val; return 0;
+      }
    }
+   case 0x0002:
+   case 0x0003:
+   {
+      // Scores, credits and other generic states
+      int val = m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId == 0x0002 ? m_singleton->GetPlayerScore(id) : m_singleton->GetScoreDigit(id);
+      switch (type)
+      {
+      case CTLPI_STATE_TYPE_INT32: *static_cast<int32_t*>(pResult) = static_cast<int32_t>(val); return 0;
+      case CTLPI_STATE_TYPE_INT64: *static_cast<int64_t*>(pResult) = static_cast<int64_t>(val); return 0;
+      }
+   }
+   }
+   return -1;
 }
+
+int MSGPIAPI B2SServer::SetState(unsigned int inputIndex, int type, void* pResult) { return -1; }
 
 
 // B2SSetScore / B2SSetScorePlayer

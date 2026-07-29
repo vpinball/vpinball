@@ -115,7 +115,6 @@ public:
    void SetSwitch(int switchId, bool value);
    void CheckGetMech(int number, int mech);
    int OnRender(VPXRenderContext2D* const renderCtx, void* context);
-   void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
 
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override { m_pinmameApi.HandleCall(memberIndex, pArgs, pRet); }
 
@@ -177,9 +176,10 @@ private:
 
    static Server* m_singleton;
    ankerl::unordered_dense::map<int, float> m_b2sStates;
-   const unsigned int m_onGameStartId;
-   const unsigned int m_onGameEndId;
+   string m_controllerGameId;
    bool m_gameRunning = false;
+   const unsigned int m_onControllersChangedId;
+   const unsigned int m_getControllersId;
    const unsigned int m_onGetStateSrcId;
    const unsigned int m_onStateChangeEventId;
    StateSrcId m_stateSrc { };
@@ -202,7 +202,9 @@ private:
    std::function<void(Server*)> m_onDestroyHandler;
 
    static int OnRenderStatic(VPXRenderContext2D* ctx, void* userData);
-   static void OnGetRendererStatic(const unsigned int, void*, void* msgData);
+   static void OnGetRendererStatic(const unsigned int msgId, void* userData, void* msgData);
+   static void OnGetControllers(const unsigned int msgId, void* userData, void* msgData);
+   void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    static void OnStateSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData);
 
    bool m_ready = false;

@@ -75,6 +75,7 @@ constexpr inline char cLower(char c)
    return c;
 }
 
+string trim_string(const string& str);
 string string_to_lower(string str);
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path &searchedFile);
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);

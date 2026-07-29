@@ -279,7 +279,11 @@
                 return buildMatrixGroup(node);
             }
 
-            let html = `<details open><summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${node.children.length} items)</summary><ul>`;
+            let html = `<details open><summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${node.children.length} items)</summary>`;
+            html += `<ul>`;
+            if (node.type === 'controller') {
+                html += `<li class="node-game">Game: '${escapeHtml(node.game)}'</li>`;
+			}			
             if (node.children) {
                 for (let child of node.children) {
                     html += `<li>${buildNode(child)}</li>`;

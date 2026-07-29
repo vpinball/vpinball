@@ -51,10 +51,11 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 
-static unsigned int onControllerGameStartId;
-static unsigned int onControllerGameEndId;
+static unsigned int onControllersChangedId;
+static unsigned int getControllersId;
+static string currentGameId;
 
-static std::unique_ptr<B2SPluginEventStream> m_b2sPluginEventStream;
+static std::unique_ptr<B2SPluginEventStream> b2sPluginEventStream;
 
 static std::unique_ptr<DOF::DOF> pDOF;
 
@@ -194,39 +195,42 @@ private:
 
 static std::unique_ptr<DOFEventConsumer> dofThread;
 
-
-static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
+static void OnControllersChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
-
-   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
-
-   // FIXME: Temp fix for issues 3298, 3309, and maybe 3322?
-   if (dofThread)
+   // Enumerate and select the first controller exposing a PinMAME compatible game
+   string selectedGameId;
+   GetControllersMsg getControllersMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+   if (getControllersMsg.count > 0)
    {
-      LOGW("Ignoring game start, already running"s);
-      return;
+      const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+      vector<ControllerDef> controllers(getControllersMsg.count);
+      getControllersMsg = { getControllersMsg.count, 0, controllers.data() };
+      msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+      for (const auto& controller : controllers)
+      {
+         string gameId = controller.gameId;
+         if (gameId.starts_with(pinmamePrefix))
+         {
+            selectedGameId = gameId.substr(pinmamePrefix.length());
+            if (!selectedGameId.empty())
+               break;
+         }
+      }
    }
+   if (currentGameId == selectedGameId)
+      return;
 
-   if (pDOF) {
-      LOGI("OnControllerGameStart: gameId="s + msg->gameId);
+   // Setup on the selected game if any
+   currentGameId = selectedGameId;
+   dofThread = nullptr;
+   if (!currentGameId.empty() && pDOF) {
+      LOGI("New PinMAME game started: gameId="s + currentGameId);
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
       string path = tableInfo.path;
-      string gameId = msg->gameId;
-      dofThread = std::make_unique<DOFEventConsumer>(path, gameId);
+      dofThread = std::make_unique<DOFEventConsumer>(path, currentGameId);
    }
-}
-
-static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
-{
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-   assert(msg != nullptr && msg->gameId != nullptr);
-
-   // FIXME implement multiple controller sources (PinMAME, B2S, PuP, ...)
-
-   dofThread = nullptr;
 }
 
 }
@@ -244,10 +248,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
-
-   m_b2sPluginEventStream = std::make_unique<B2SPluginEventStream>(msgApi, endpointId, [](char type, int index, int value) { dofThread->PostEvent({ static_cast<uint8_t>(type), index, value }); });
+   b2sPluginEventStream = std::make_unique<B2SPluginEventStream>(msgApi, endpointId, [](char type, int index, int value) { dofThread->PostEvent({ static_cast<uint8_t>(type), index, value }); });
 
    VPXInfo vpxInfo;
    vpxApi->GetVpxInfo(&vpxInfo);
@@ -257,21 +258,24 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
    pConfig->SetBasePath(vpxInfo.prefPath);
 
    pDOF = std::make_unique<DOF::DOF>();
+
+   onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
+   getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
+   msgApi->SubscribeMsg(endpointId, onControllersChangedId, OnControllersChanged, nullptr);
+   OnControllersChanged(onControllersChangedId, nullptr, nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
 {
    dofThread = nullptr;
-
    pDOF = nullptr;
+   b2sPluginEventStream = nullptr;
+   currentGameId.clear();
 
-   m_b2sPluginEventStream = nullptr;
-
-   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
-   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
-
-   msgApi->ReleaseMsgID(onControllerGameStartId);
-   msgApi->ReleaseMsgID(onControllerGameEndId);
+   msgApi->UnsubscribeMsg(onControllersChangedId, OnControllersChanged, nullptr);
+   msgApi->ReleaseMsgID(onControllersChangedId);
+   msgApi->ReleaseMsgID(getControllersId);
 
    msgApi = nullptr;
+   vpxApi = nullptr;
 }

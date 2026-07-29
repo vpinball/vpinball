@@ -21,7 +21,7 @@ typedef int ssize_t;
 namespace B2SLegacy
 {
 
-static string trim_string(const string& str)
+string trim_string(const string& str)
 {
    size_t start = 0;
    size_t end = str.length();
@@ -44,6 +44,12 @@ bool StrCompareNoCase(const string& strA, const string& strB)
    return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(),
          [](char a, char b) { return cLower(a) == cLower(b); });
+}
+
+string string_to_lower(string str)
+{
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
+   return str;
 }
 
 std::filesystem::path find_case_insensitive_file_path(const std::filesystem::path& searchedFile)
