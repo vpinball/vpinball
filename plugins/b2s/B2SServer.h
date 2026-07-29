@@ -139,9 +139,11 @@ private:
 
    // Controller state
    string m_b2sName;
-   const unsigned int m_onGameStartId;
-   const unsigned int m_onGameEndId;
+   string m_controllerGameId;
    bool m_gameRunning = false;
+   const unsigned int m_onControllersChangedId;
+   const unsigned int m_getControllersId;
+   static void OnGetControllers(const unsigned int, void*, void* msgData);
    uint64_t m_defaultStateNameMask = 0;
    ankerl::unordered_dense::map<int, float> m_lampStates;
    ankerl::unordered_dense::map<int, int> m_playerScores;

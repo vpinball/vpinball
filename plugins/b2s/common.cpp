@@ -22,6 +22,17 @@ typedef int ssize_t;
 namespace B2S
 {
 
+string trim_string(const string& str)
+{
+   size_t start = 0;
+   size_t end = str.length();
+   while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
+      ++start;
+   while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
+      --end;
+   return str.substr(start, end - start);
+}
+
 static inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });

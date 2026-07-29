@@ -30,8 +30,8 @@ static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 
 static uint32_t endpointId;
-static unsigned int onControllerGameStartId;
-static unsigned int onControllerGameEndId;
+static unsigned int onControllersChangedId;
+static unsigned int getControllersId;
 static unsigned int getMachineStateId = 0;
 static unsigned int onAudioCmdId = 0;
 static unsigned int onAudioUpdateId = 0;
@@ -137,7 +137,6 @@ static void StartAltSound(const string& gameId, const string& basePath, uint64_t
         AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(hardwareGen));
 
         isRunning = true;
-        currentGameId = gameId;
 
         UpdatePinmameAudioId();
         audioSrcDef.id = audioResId;
@@ -160,7 +159,6 @@ static void StopAltSound()
 
     isRunning = false;
     AltSoundShutdown();
-    currentGameId.clear();
 
     AudioUpdateMsg* pAudioUpdateMsg = new AudioUpdateMsg();
     pAudioUpdateMsg->id = audioResId;
@@ -180,34 +178,58 @@ static void StopAltSound()
     msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
 }
 
-static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
+static void OnGameEvent(const unsigned int eventId, void* userData, void* msgData)
 {
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
+   if (isRunning)
+      AltSoundProcessCommand(static_cast<const PinMAMEChildBoardEventMsg*>(msgData)->cmd, 0);
+}
 
-   // We only support PinMAME sound board commands for the time being
-   unsigned int pinmameEndPoint = msgApi->GetPluginEndpoint("PinMAME");
-   if (pinmameEndPoint == 0 || msg->ctrlEndpointId != pinmameEndPoint)
+static void OnControllersChanged(const unsigned int eventId, void* userData, void* msgData)
+{
+   // Enumerate and select the first controller exposing a PinMAME compatible game
+   string selectedGameId;
+   GetControllersMsg getControllersMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+   if (getControllersMsg.count > 0)
+   {
+      const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+      std::vector<ControllerDef> controllers(getControllersMsg.count);
+      getControllersMsg = { getControllersMsg.count, 0, controllers.data() };
+      msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
+      for (const auto& controller : controllers)
+      {
+         string gameId = controller.gameId;
+         if (gameId.starts_with(pinmamePrefix))
+         {
+            selectedGameId = gameId.substr(pinmamePrefix.length());
+            if (!selectedGameId.empty())
+               break;
+         }
+      }
+   }
+   if (currentGameId == selectedGameId)
       return;
 
+   // Setup on the selected game if any
+   currentGameId = selectedGameId;
+   
    if (isRunning)
-   {
-      LOGE("BUG: PinMAME sent a game start while AltSound was already started."s);
-      assert(false);
       StopAltSound();
-   }
+   
+   if (currentGameId.empty())
+      return;
 
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    std::filesystem::path tablePath = tableInfo.path;
 
    std::filesystem::path basePath;
-   string gameId = msg->gameId;
 
    // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / gameId); !path1.empty())
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "altsound"sv / currentGameId); !path1.empty())
       basePath = tablePath.parent_path();
    // Priority 2: pinmame/altsound/<rom>
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / gameId); !path2.empty())
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altsound"sv / currentGameId); !path2.empty())
       basePath = tablePath.parent_path() / "pinmame"sv;
    // Priority 3: global setting
    else
@@ -219,35 +241,16 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
 
    if (!basePath.empty())
    {
-      std::filesystem::path altsoundGamePath = basePath / "altsound"sv / gameId;
+      std::filesystem::path altsoundGamePath = basePath / "altsound"sv / currentGameId;
       if (std::filesystem::exists(altsoundGamePath))
       {
-         LOGI(std::format("Found altsound directory for game: {} at {}", gameId, altsoundGamePath.string()));
+         LOGI(std::format("Found altsound directory for game: {} at {}", currentGameId, altsoundGamePath.string()));
          PinMAMEMachineStateMsg state { };
          state.version = 1;
          msgApi->BroadcastMsg(endpointId, getMachineStateId, &state);
-         StartAltSound(gameId, basePath.string(), state.hardwareGen);
+         StartAltSound(currentGameId, basePath.string(), state.hardwareGen);
       }
    }
-}
-
-static void OnGameEvent(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (isRunning)
-      AltSoundProcessCommand(static_cast<const PinMAMEChildBoardEventMsg*>(msgData)->cmd, 0);
-}
-
-static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
-{
-   const CtlOnGameStateChgMsg* msg = static_cast<const CtlOnGameStateChgMsg*>(msgData);
-
-   // We only support PinMAME sound board commands for the time being
-   unsigned int pinmameEndPoint = msgApi->GetPluginEndpoint("PinMAME");
-   if (pinmameEndPoint == 0 || msg->ctrlEndpointId != pinmameEndPoint)
-      return;
-
-   if (isRunning)
-      StopAltSound();
 }
 
 }
@@ -279,8 +282,11 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
     msgApi->SubscribeMsg(endpointId, getAudioSrcId, OnGetAudioSrc, nullptr);
     msgApi->SubscribeMsg(endpointId, onAudioSrcChangedId, OnAudioSrcChanged, nullptr);
 
-    msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
-    msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
+    onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
+    getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
+    msgApi->SubscribeMsg(endpointId, onControllersChangedId, OnControllersChanged, nullptr);
+    OnControllersChanged(onControllersChangedId, nullptr, nullptr);
+    
     msgApi->SubscribeMsg(endpointId, onAudioCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD), OnGameEvent, nullptr);
     getMachineStateId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
 }
@@ -289,44 +295,22 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
 {
     StopAltSound();
 
-    if (msgApi) {
-        msgApi->FlushPendingCallbacks(endpointId);
-        if (onControllerGameStartId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart, nullptr);
-            msgApi->ReleaseMsgID(onControllerGameStartId);
-            onControllerGameStartId = 0;
-        }
-        if (getMachineStateId != 0)
-        {
-           msgApi->ReleaseMsgID(getMachineStateId);
-           getMachineStateId = 0;
-        }
-        if (onAudioCmdId != 0)
-        {
-           msgApi->UnsubscribeMsg(onAudioCmdId, OnGameEvent, nullptr);
-           msgApi->ReleaseMsgID(onAudioCmdId);
-           onAudioCmdId = 0;
-        }
-        if (onControllerGameEndId != 0) {
-            msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd, nullptr);
-            msgApi->ReleaseMsgID(onControllerGameEndId);
-            onControllerGameEndId = 0;
-        }
-        if (onAudioUpdateId != 0) {
-            msgApi->ReleaseMsgID(onAudioUpdateId);
-            onAudioUpdateId = 0;
-        }
-        if (getAudioSrcId != 0) {
-            msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
-            msgApi->ReleaseMsgID(getAudioSrcId);
-            getAudioSrcId = 0;
-        }
-        if (onAudioSrcChangedId != 0) {
-            msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged, nullptr);
-            msgApi->ReleaseMsgID(onAudioSrcChangedId);
-            onAudioSrcChangedId = 0;
-        }
-    }
+    msgApi->FlushPendingCallbacks(endpointId);
+     
+    msgApi->UnsubscribeMsg(onControllersChangedId, OnControllersChanged, nullptr);
+    msgApi->ReleaseMsgID(onControllersChangedId);
+    msgApi->ReleaseMsgID(getControllersId);
+    
+    msgApi->ReleaseMsgID(getMachineStateId);
+
+    msgApi->UnsubscribeMsg(onAudioCmdId, OnGameEvent, nullptr);
+    msgApi->ReleaseMsgID(onAudioUpdateId);
+    msgApi->ReleaseMsgID(onAudioCmdId);
+    
+    msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
+    msgApi->UnsubscribeMsg(onAudioSrcChangedId, OnAudioSrcChanged, nullptr);
+    msgApi->ReleaseMsgID(onAudioSrcChangedId);
+    msgApi->ReleaseMsgID(getAudioSrcId);
 
     vpxApi = nullptr;
     msgApi = nullptr;

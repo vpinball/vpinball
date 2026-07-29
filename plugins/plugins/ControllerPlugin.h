@@ -50,22 +50,34 @@ typedef union CtlResId
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Controller state
+// Controllers
 //
 
-#define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStateChgMsg struct
-#define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends, msgData is a pointer to a CtlOnGameStateChgMsg struct
+// Broadcasted after a controller has been added, modified or removed, there is no message data
+#define CTLPI_CONTROLLERS_ON_CHG_MSG    "OnControllersChanged"
 
-struct CtlOnGameStateChgMsg
+// Request subscribers to fill up an array with the list of controller definition blocks, message data is a pointer to a GetControllersMsg structure
+#define CTLPI_CONTROLLERS_GET_MSG       "GetControllers"
+
+typedef struct ControllerDef
 {
-   unsigned int ctrlEndpointId;
-   const char* gameId;
-};
+   uint32_t ctrlEndpointId; // Note that an endpoint may only expose one controller (a plugin may implement multiple endpoint if needed)
+   const char* gameId;      // Must be unique and allow to identify what is emulated and how it is exposed, not who is the controller emulating it (never null)
+} ControllerDef;
+
+typedef struct GetControllersMsg
+{
+   // Request
+   unsigned int maxEntryCount; // see below
+   // Response
+   unsigned int count; // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
+   ControllerDef* entries; // Pointer to an array of maxEntryCount entries to be filled
+} GetControllersMsg;
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Game state
+// Game states
 //
 
 // Broadcasted after a controller state source has been added, modified or removed, there is no message data
@@ -142,7 +154,8 @@ typedef struct GetStateSrcMsg
 //   disappear at runtime (like PinMAME, FlexDMD, alphanumeric to DMD renderer,
 //   UltraDMD, VPinSpa,...)
 // - declare and provide improved variants of a display frame source, for 
-//   example providing upscaling or colorization support.
+//   example providing upscaling or colorization support, replacing a DMD by
+//   an LCD animated display,...
 //
 
 // Broadcasted after a display source has been added, modified or removed, there is no message data

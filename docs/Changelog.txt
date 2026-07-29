@@ -165,6 +165,7 @@ FEATURES:
   . DMDUtil: supports rendering to physical DMDs (ZeDMD,...)
   . DOF: a preliminary port of the Direct Output Framework which allows to drive all kinds of physical feedback hardware (lights, shaker, fan,...)
   . FlexDMD: a port of FlexDMD & UltraDMD, which are tools to render and animate DMDs for original/homebrew tables
+  . Inspector: opens a local web server that shows dynamic played machine game states
   . PinMAME: a direct interface to PinMAME with some exclusive bonus features like full alphanumeric segment fading
   . PinUp: a preliminary port of PinUp Player that renders and animates video backglass, topper and fullDMD display
   . Remote Control: a plugin that allows to control an instance of VPX from another running instance. For example running VPX on a little controller PC that communicates with a more powerful computer that runs VPX driving a VR headset
