@@ -208,8 +208,8 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_primitiveButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_flasherButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_rubberButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_VR_MODE), CResizer::topleft, 0);
-    m_resizer.AddChild(m_vrCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_VR_MODE), CResizer::center, 0);
+    m_resizer.AddChild(m_vrCombo, CResizer::center, RD_STRETCH_WIDTH);
 
     m_resizer.RecalcLayout();
 
