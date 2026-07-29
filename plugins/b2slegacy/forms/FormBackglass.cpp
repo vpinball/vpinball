@@ -329,33 +329,55 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 void FormBackglass::LoadB2SData()
 {
    const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
-   LOGI("B2SLegacy: Searching for directb2s for table: " + tablePath.string());
-   LOGI("B2SLegacy: table parent: " + tablePath.parent_path().string() + ", filename: " + tablePath.filename().string());
    std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
-   LOGI("B2SLegacy: Local search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
 
    // Fallback: search in the global B2S path setting (for Android SAF workaround)
+   // Uses direct std::filesystem::exists() instead of find_case_insensitive_file_path
+   // because the recursive parent traversal breaks on Android SAF directories
    if (b2sFilename.empty())
    {
       const std::string b2sBasePath = B2SLegacyGetGlobalPath();
-      LOGI("B2SLegacy: B2SPath fallback value: '" + b2sBasePath + "'");
       if (!b2sBasePath.empty())
       {
          const std::filesystem::path b2sPath(b2sBasePath);
          const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
+
+         // Try exact path first
          const std::filesystem::path searchPath = b2sPath / b2sFile;
-         LOGI("B2SLegacy: Searching B2SPath: " + searchPath.string());
-         b2sFilename = find_case_insensitive_file_path(searchPath);
-         LOGI("B2SLegacy: B2SPath search result: " + (b2sFilename.empty() ? "EMPTY" : b2sFilename.string()));
+         std::error_code ec;
+         if (std::filesystem::exists(searchPath, ec))
+         {
+            b2sFilename = searchPath;
+         }
+         else
+         {
+            // Try case-insensitive directory scan (only the target directory, not recursive parent)
+            for (const auto& entry : std::filesystem::directory_iterator(b2sPath, ec))
+            {
+               if (!ec && entry.path().extension() == ".directb2s")
+               {
+                  const std::string entryStem = entry.path().stem().string();
+                  const std::string tableStem = b2sFile.stem().string();
+                  // Case-insensitive comparison
+                  if (entryStem.size() == tableStem.size() &&
+                      std::equal(entryStem.begin(), entryStem.end(), tableStem.begin(),
+                         [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
+                  {
+                     b2sFilename = entry.path();
+                     break;
+                  }
+               }
+            }
+         }
       }
    }
 
    if (b2sFilename.empty()) {
-      LOGI("B2SLegacy: No directb2s file found for: " + tablePath.filename().string());
+      LOGD("No directb2s file found"s);
       throw std::exception();
    }
 
-   LOGI("B2SLegacy: directb2s file found at: " + b2sFilename.string());
+   LOGI("directb2s file found at: " + b2sFilename.string());
 
    m_pB2SData->SetBackglassFileName(b2sFilename.string());
 
