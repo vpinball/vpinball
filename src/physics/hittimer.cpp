@@ -20,8 +20,8 @@ void HitTimer::SetInterval(int intervalMs)
 
 void HitTimer::Defer()
 {
-   // Fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
-   m_nextfire = g_pplayer->m_time_msec + 0xFFFFFFFF;
+   // Fake disabling the timer by scheduling it in the far future until m_changed_vht cleans it up
+   m_nextfire = 0xFFFFFFFF;
 }
 
 void HitTimer::Update(const unsigned int simulationTime)
