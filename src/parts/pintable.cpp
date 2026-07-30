@@ -3986,6 +3986,10 @@ void PinTable::OnDelete()
    {
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
       m_vseldelete.push_back(m_vmultisel.ElementAt(i));
+      if (m_vmultisel.ElementAt(i)->GetItemType() == ItemTypeEnum::eItemPartGroup)
+         for (auto part : m_vedit)
+            if (part->GetPartGroup() == m_vmultisel.ElementAt(i) && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
+               m_vseldelete.push_back(part->GetISelect());
    }
 
    ClearMultiSel();
