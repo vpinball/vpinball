@@ -1330,8 +1330,8 @@ static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const std::filesystem::
    return tex.get();
 }
 
-void Renderer::SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-   const vec4& glassArea, const vec3& glassAmbient)
+void Renderer::SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness,
+   ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassTint_Roughness, glassTint.x, glassTint.y, glassTint.z, // Glass tint
       glassRougness); // Glass roughness (high roughness leads to emitted light 'glowing' on glass)
@@ -1372,8 +1372,9 @@ void Renderer::SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vert
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
 }
 
-void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
+   const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
+   const vec4& glassArea, const vec3& glassAmbient)
 {
    SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient);
 
@@ -1416,7 +1417,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices,
    const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
@@ -1460,8 +1461,8 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
 }
 
 void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha,
-   const ColorSpace colorSpace, Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea,
-   const vec3& glassAmbient)
+   const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
+   const vec4& glassArea, const vec3& glassAmbient)
 {
    SetupDisplayRenderer(isBackdrop, vertices, emitterPad, glassTint, glassRougness, glassTex, glassArea, glassAmbient);
 
@@ -3136,31 +3137,32 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   const float vx1 = srcX / ctx->srcWidth;
+   const float vy1 = 1.f - srcY / ctx->srcHeight;
+   const float vx2 = (srcX + srcW) / ctx->srcWidth;
+   const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
+   const Vertex3D_NoTex2 vertices[4] = { //
+      { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
+      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+      { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+   };
    if (style == VPXDMDStyle_Pixelated || style == VPXDMDStyle_Smoothed || style == VPXDMDStyle_CRT)
    {
       g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
-         nullptr, // No parallax
-         vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
+         vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
+         vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
          vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    }
    else
    {
       g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
-         nullptr, // No parallax
-         vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
+         vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
+         vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
          vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    }
-   const float vx1 = srcX / ctx->srcWidth;
-   const float vy1 = 1.f - srcY / ctx->srcHeight;
-   const float vx2 = (srcX + srcW) / ctx->srcWidth;
-   const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { //
-      { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, // 
-      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
-      { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  //
-      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
@@ -3183,20 +3185,19 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   g_pplayer->m_renderer->SetupSegmentRenderer(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
-      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
-      nullptr, // No parallax
-      vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
-      vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    const float vx1 = srcX / ctx->srcWidth;
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
    const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { // 
+   const Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
-      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+   };
+   g_pplayer->m_renderer->SetupSegmentRenderer(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
+      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB),
+      glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 

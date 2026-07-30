@@ -80,18 +80,21 @@ public:
    };
 
 private:
-   void SetupDisplayRenderer(const bool isBackdrop, Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
-      const vec4& glassArea, const vec3& glassAmbient);
+   void SetupDisplayRenderer(const bool isBackdrop, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness,
+      ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
 
    ShadeMode m_shadeMode = ShadeMode::Default;
 
 public:
-   void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-      const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
-      const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
+   void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
+      const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
+      const vec4& glassArea, const vec3& glassAmbient);
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace,
+      const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea,
+      const vec3& glassAmbient);
    void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const ColorSpace colorSpace,
-      Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
+      const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea,
+      const vec3& glassAmbient);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
