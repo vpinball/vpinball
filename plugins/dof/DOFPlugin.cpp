@@ -248,7 +248,10 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   b2sPluginEventStream = std::make_unique<B2SPluginEventStream>(msgApi, endpointId, [](char type, int index, int value) { dofThread->PostEvent({ static_cast<uint8_t>(type), index, value }); });
+   b2sPluginEventStream = std::make_unique<B2SPluginEventStream>(msgApi, endpointId, [](char type, int index, int value) {
+      if (DOFEventConsumer* consumer = dofThread.get())
+         consumer->PostEvent({ static_cast<uint8_t>(type), index, value });
+   });
 
    VPXInfo vpxInfo;
    vpxApi->GetVpxInfo(&vpxInfo);
