@@ -745,7 +745,6 @@ set(VPX_GL_SHADERS
    BasicShader.glfx
    ClassicLightShader.glfx
    DMDShader.glfx
-   DMDShaderVR.glfx
    FBShader.fxh
    FBShader.glfx
    FlasherShader.glfx

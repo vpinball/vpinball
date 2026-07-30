@@ -507,7 +507,7 @@ public:
 class Shader final
 {
 public:
-   enum ShaderId { UI_SHADER, BALL_SHADER, BASIC_SHADER, DMD_SHADER, DMD_VR_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
+   enum ShaderId { UI_SHADER, BALL_SHADER, BASIC_SHADER, DMD_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
    Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo);
    ~Shader();
 

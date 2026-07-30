@@ -1342,9 +1342,6 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.glfx">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
-      <FileType>Document</FileType>
-    </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.glfx">
       <FileType>Document</FileType>
     </None>

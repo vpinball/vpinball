@@ -3082,9 +3082,6 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
-      <Filter>shaders\hlsl_glsl</Filter>
-    </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FAAA.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
