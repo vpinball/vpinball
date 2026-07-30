@@ -148,9 +148,12 @@ void B2SPluginEventStream::OnSegSrcChanged(const unsigned int eventId, void* use
       me->m_pmSegSrc.resize(1024);
       GetSegSrcMsg getSrcMsg = { static_cast<unsigned int>(me->m_pmSegSrc.size()), 0, me->m_pmSegSrc.data() };
       me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcId, me->m_pinmameEndPoint, &getSrcMsg);
-      me->m_pmSegSrc.resize(getSrcMsg.count);
-      me->m_pmLastSegFrame.resize(getSrcMsg.count);
-      me->m_pmLastSegFrameId.resize(getSrcMsg.count);
+      me->m_pmSegSrc.resize(std::min(getSrcMsg.count, static_cast<unsigned int>(me->m_pmSegSrc.size())));
+      me->m_pmLastSegFrameId.resize(me->m_pmSegSrc.size());
+      size_t nElements = 0;
+      for (const auto& segSrc : me->m_pmSegSrc)
+         nElements += segSrc.nElements;
+      me->m_pmLastSegFrame.resize(nElements);
    }
 }
 
@@ -259,7 +262,7 @@ void B2SPluginEventStream::StatePollingThread()
             {
                uint16_t elementState = 0;
                for (int j = 0; j < 16; j++)
-                  if (segFrame.frame[j] > 0.5f)
+                  if (segFrame.frame[i * 16 + j] > 0.5f)
                      elementState |= 1u << j;
                if (elementState != m_pmLastSegFrame[segDisplayIndex])
                {
