@@ -220,6 +220,8 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
       SetThreadName("VPX.SoundPlayer ["s.append(filename).append(1, ']'));
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
+      if (engine == nullptr)
+         return;
 
       // Add custom node for channel mixing
       m_vpxMixNode = std::make_unique<vpx_node>();
@@ -272,6 +274,8 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
       SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
+      if (engine == nullptr)
+         return;
 
       // Add custom node for channel mixing
       m_vpxMixNode = std::make_unique<vpx_node>();

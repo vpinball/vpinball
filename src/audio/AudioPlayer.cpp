@@ -278,9 +278,19 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
          engineConfig.noAutoStart = MA_TRUE;
          m_backglassEngine = std::make_unique<ma_engine>();
          result = ma_engine_init(&engineConfig, m_backglassEngine.get());
-         m_backglassDevice->device.onData = ma_engine_data_callback_internal;
-         m_backglassDevice->device.pUserData = m_backglassEngine.get();
-         ma_engine_start(m_backglassEngine.get());
+         if (result == MA_SUCCESS)
+         {
+            m_backglassDevice->device.onData = ma_engine_data_callback_internal;
+            m_backglassDevice->device.pUserData = m_backglassEngine.get();
+            ma_engine_start(m_backglassEngine.get());
+         }
+         else
+         {
+            PLOGE << "Failed to initialize miniaudio engine for backglass sounds";
+            m_backglassEngine = nullptr;
+            ma_device_uninit(&m_backglassDevice->device);
+            m_backglassDevice = nullptr;
+         }
       }
       else
       {
@@ -312,9 +322,19 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
          engineConfig.noAutoStart = MA_TRUE;
          m_playfieldEngine = std::make_unique<ma_engine>();
          result = ma_engine_init(&engineConfig, m_playfieldEngine.get());
-         m_playfieldDevice->device.onData = ma_engine_data_callback_internal;
-         m_playfieldDevice->device.pUserData = m_playfieldEngine.get();
-         ma_engine_start(m_playfieldEngine.get());
+         if (result == MA_SUCCESS)
+         {
+            m_playfieldDevice->device.onData = ma_engine_data_callback_internal;
+            m_playfieldDevice->device.pUserData = m_playfieldEngine.get();
+            ma_engine_start(m_playfieldEngine.get());
+         }
+         else
+         {
+            PLOGE << "Failed to initialize miniaudio engine for playfield sounds";
+            m_playfieldEngine = nullptr;
+            ma_device_uninit(&m_playfieldDevice->device);
+            m_playfieldDevice = nullptr;
+         }
       }
       else
       {
@@ -508,6 +528,12 @@ SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
       return specs;
    specs.nChannels = decoder.outputChannels;
    specs.sampleFrequency = decoder.outputSampleRate;
+
+   if (m_backglassEngine == nullptr)
+   {
+      ma_decoder_uninit(&decoder);
+      return specs;
+   }
 
    ma_sound maSound;
    ma_sound_config config = ma_sound_config_init_2(m_backglassEngine.get());
