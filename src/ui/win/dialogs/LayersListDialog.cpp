@@ -11,6 +11,8 @@
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
+#include <unordered_set>
+
 
 #define WM_TREE_SEL_CHANGED (WM_USER + 1)
 
@@ -160,28 +162,10 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       return TRUE;
 
    case IDC_DELETE_LAYER_BUTTON:
-      if (m_activeTable && GetSelectedPartGroup())
+      if (PartGroup* toDelete = GetSelectedPartGroup(); m_activeTable && toDelete)
       {
-         PartGroup* oldParent = GetSelectedPartGroup();
-         PartGroup* newParent = oldParent->GetPartGroup();
-         if (newParent == nullptr)
-         {
-            auto existing = std::ranges::find_if(m_activeTable->GetParts(), [oldParent](const IEditable* e)
-               { return (e->GetItemType() == eItemPartGroup) && (oldParent != e); });
-            if (existing == m_activeTable->GetParts().end())
-               return FALSE;
-            newParent = static_cast<PartGroup*>(*existing);
-         }
-         m_activeTable->BeginUndo();
-         std::ranges::for_each(m_activeTable->GetParts(),
-            [oldParent, newParent](IEditable* e)
-            {
-               if (e->GetPartGroup() == oldParent)
-                  e->SetPartGroup(newParent);
-            });
-         oldParent->Delete();
-         m_activeTable->EndUndo();
-         Update();
+         m_activeTable->SelectItem(toDelete);
+         m_activeTable->OnDelete();
       }
       return TRUE;
 
@@ -335,6 +319,11 @@ void LayerTreeView::Update()
    // Build new content list (in the end, a tree is a hierarchically displayed list)
    vector<TreeEntry> newContent;
    const string filter = m_isCaseSensitiveFilter ? m_filter : lowerCase(m_filter);
+
+   std::unordered_set<const IEditable*> liveEditables;
+   for (const auto& editable : m_activeTable->GetParts())
+      liveEditables.insert(editable);
+
    for (const auto& editable : m_activeTable->GetParts())
    {
       const string name = editable->GetName();
@@ -411,8 +400,11 @@ void LayerTreeView::Update()
             {
                for (auto& te : m_content)
                {
+                  if (!liveEditables.contains(te.editable))
+                     continue; // stale entry referencing a since-deleted object - skip, will be purged below
+
                   const PartGroup* pg = te.editable->GetPartGroup();
-                  while (pg != nullptr)
+                  while (pg != nullptr && liveEditables.contains(pg))
                   {
                      if (pg == existing->editable)
                      {
