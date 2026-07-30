@@ -1327,7 +1327,7 @@ void PinTableWnd::OnPartChanged(IEditable *part)
 void PinTableWnd::ShowSearchSelectDlg()
 {
 #ifndef __STANDALONE__
-   if (m_searchSelectDlg == nullptr)
+   if (m_searchSelectDlg == nullptr || !m_searchSelectDlg->IsWindow())
    {
       m_searchSelectDlg = std::make_unique<SearchSelectDialog>(this);
       m_searchSelectDlg->Create(GetHwnd());
