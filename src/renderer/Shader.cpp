@@ -1653,9 +1653,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_clip), STEREO(fs_ball_debug_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_trail_clip), STEREO(fs_ball_trail_clip), true);
       break;
-   case DMD_VR_SHADER:
    case DMD_SHADER:
-      // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         STEREO(vs_dmd_noworld),      "fs_dmd_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_clip", true);
@@ -1674,9 +1672,6 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_DMD_world,       STEREO(vs_dmd_world_clip), "fs_display_dmd_clip", true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_Seg_world,       STEREO(vs_dmd_world_clip), "fs_display_seg_clip", true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_CRT_world,       STEREO(vs_dmd_world_clip), "fs_display_crt_clip", true);
-      break;
-   //case DMD_VR_SHADER:
-      //assert(false);
       break;
    case FLASHER_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher_noclip), "fs_flasher_noclip");
@@ -2204,7 +2199,6 @@ void Shader::Load()
    case BASIC_SHADER: Load("BasicShader.glfx"s); break;
    case BALL_SHADER: Load("BallShader.glfx"s); break;
    case DMD_SHADER: Load("DMDShader.glfx"s); break;
-   case DMD_VR_SHADER: Load("DMDShaderVR.glfx"s); break;
    case FLASHER_SHADER: Load("FlasherShader.glfx"s); break;
    case LIGHT_SHADER: Load("LightShader.glfx"s); break;
    case STEREO_SHADER: Load("StereoShader.glfx"s); break;
@@ -2337,7 +2331,6 @@ void Shader::Load()
    case BASIC_SHADER: m_shaderCodeName = "BasicShader.hlsl"sv; code = g_basicShaderCode; codeSize = sizeof(g_basicShaderCode); break;
    case BALL_SHADER: m_shaderCodeName = "BallShader.hlsl"sv; code = g_ballShaderCode; codeSize = sizeof(g_ballShaderCode); break;
    case DMD_SHADER: m_shaderCodeName = "DMDShader.hlsl"sv; code = g_dmdShaderCode; codeSize = sizeof(g_dmdShaderCode); break;
-   case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER: m_shaderCodeName = "FlasherShader.hlsl"sv; code = g_flasherShaderCode; codeSize = sizeof(g_flasherShaderCode); break;
    case LIGHT_SHADER: m_shaderCodeName = "LightShader.hlsl"sv; code = g_lightShaderCode; codeSize = sizeof(g_lightShaderCode); break;
    case POSTPROCESS_SHADER: m_shaderCodeName = "FBShader.hlsl"sv; code = g_FBShaderCode; codeSize = sizeof(g_FBShaderCode); break;

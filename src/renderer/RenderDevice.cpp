@@ -1777,7 +1777,7 @@ RenderDevice::RenderDevice(
    m_uiShader = new Shader(this, Shader::UI_SHADER, m_nEyes == 2);
    m_basicShader = new Shader(this, Shader::BASIC_SHADER, m_nEyes == 2);
    m_ballShader = new Shader(this, Shader::BALL_SHADER, m_nEyes == 2);
-   m_DMDShader = new Shader(this, m_isVR ? Shader::DMD_VR_SHADER : Shader::DMD_SHADER, m_nEyes == 2);
+   m_DMDShader = new Shader(this, Shader::DMD_SHADER, m_nEyes == 2);
    m_flasherShader = new Shader(this, Shader::FLASHER_SHADER, m_nEyes == 2);
    m_lightShader = new Shader(this, Shader::LIGHT_SHADER, m_nEyes == 2);
    m_stereoShader = m_nEyes == 2 ? new Shader(this, Shader::STEREO_SHADER, true) : nullptr;
