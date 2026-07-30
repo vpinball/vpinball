@@ -1103,6 +1103,7 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matView, &m_mvp.GetView(0), m_mvp.m_nEyes);
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &m_mvp.GetModelView(0), m_mvp.m_nEyes);
    m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &m_mvp.GetModelViewInverseTranspose(0), m_mvp.m_nEyes);
+   m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorld, &m_mvp.GetModel());
 
    // Camera-relative uniforms. The shader subtracts cameraPosWorld from the world
    // position on the GPU, then applies (viewRotation x proj). This avoids Adreno (Quest) f32
