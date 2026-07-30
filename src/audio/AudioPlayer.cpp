@@ -481,9 +481,15 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
    //   - if 'usesame' is true, search for the first player for the given sound and reuse it if any (even is it is playing), create a new one otherwise
    //   - if 'usesame' is false, always create a new player for the given sound
    // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
+   // - if restart is true, all playing sounds would be stopped and a new one would be started
+   
+   if (restart)
+      for (const auto& soundPlayer : players)
+         soundPlayer->Stop();
+   
    for (const auto& soundPlayer : players)
    {
-      if (useSame || !soundPlayer->IsPlaying())
+      if (useSame || restart || !soundPlayer->IsPlaying())
       {
          player = soundPlayer.get();
          break;
@@ -501,8 +507,6 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 
    float pan = dequantizeSignedPercent(sound->GetPan()) + panOffset;
 
-   if (restart)
-      player->Stop();
    player->Play(
       dequantizeSignedPercent(sound->GetVolume()) + volumeOffset,
       randomPitch,
