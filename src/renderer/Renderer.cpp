@@ -3147,11 +3147,12 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
+   const Vertex3D_NoTex2* const parallaxVertices = ctx->is2D ? nullptr : vertices;
    if (style == VPXDMDStyle_Pixelated || style == VPXDMDStyle_Smoothed || style == VPXDMDStyle_CRT)
    {
       g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
-         vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
+         parallaxVertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
          vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    }
@@ -3159,7 +3160,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    {
       g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
-         vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
+         parallaxVertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
          vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    }
@@ -3195,9 +3196,10 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
+   const Vertex3D_NoTex2* const parallaxVertices = ctx->is2D ? nullptr : vertices;
    g_pplayer->m_renderer->SetupSegmentRenderer(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
-      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB),
-      glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, parallaxVertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB),
+      vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
