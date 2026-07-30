@@ -1694,8 +1694,21 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
                      if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
                      {
+                        bool hasBackglassFlasher = false;
+                        for (auto existing : parts)
+                        {
+                           if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
+                           {
+                              if (Flasher *const exBackglass = (Flasher *)existing;
+                                 exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
+                              {
+                                 hasBackglassFlasher = true;
+                                 break;
+                              }
+                           }
+                        }
                         Primitive * const primitive = (Primitive *)part;
-                        if (primitive->m_d.m_use3DMesh)
+                        if (!hasBackglassFlasher && primitive->m_d.m_use3DMesh)
                         {
                            // We need to reduce the primitive to a flasher rectangle. The algorithm is:
                            // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
