@@ -294,19 +294,19 @@ void Textbox::Render(const unsigned int renderMask)
    {
       m_renderer->m_renderDevice->ResetRenderState();
       m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      m_renderer->m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
 
-      Vertex3D_NoTex2 vertices[4] = {
-         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
-         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
-         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+      const float vx1 = x * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth();
+      const float vy1 = y * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight();
+      const float vx2 = vx1 + w * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth();
+      const float vy2 = vy1 + h * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight();
+      Vertex3D_NoTex2 vertices[4] = { //
+         { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
+         { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+         { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+         { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+      };
 
-      for (unsigned int i = 0; i < 4; ++i)
-      {
-         vertices[i].x = (vertices[i].x * w + x) * 2.0f - 1.0f;
-         vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
-      }
+      m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true);
 
       ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
       if (dmd.state.frame == nullptr)
@@ -324,6 +324,8 @@ void Textbox::Render(const unsigned int renderMask)
       m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_DMDShader, vertices);
       m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
       m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+
+      m_renderer->UpdateBasicShaderMatrix();
    }
    else if (m_texture)
    {
