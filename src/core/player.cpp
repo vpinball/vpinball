@@ -2357,7 +2357,18 @@ void Player::OnAudioSrcChanged(const unsigned int msgId, void *userData, void *m
          continue;
       seenIds.insert(audioSrc.id.id);
       if (!me->m_audioLanes.contains(audioSrc.id.id))
-         me->m_audioLanes[audioSrc.id.id] = { audioSrc, false, 1.f };
+      {
+         MsgEndpointInfo info { };
+         me->m_pluginManager.GetMsgAPI().GetEndpointInfo(audioSrc.id.endpointId, &info);
+         const string endpointId = info.id ? info.id : std::to_string(audioSrc.id.endpointId);
+         const string endpointName = audioSrc.name ? audioSrc.name : info.name ? info.name : endpointId;
+         const string propId = std::format("AudioSource.{}.Gain", endpointId);
+         const auto propPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(
+            "Player"s, propId, std::format("{} Gain", endpointName), std::format("Volume gain applied to audio from '{}'.", endpointName), true, 0.f, 2.f, 0.f, 1.f));
+         const float persistedVolume = me->m_ptable->m_settings.GetFloat(propPropId);
+         me->m_audioLanes[audioSrc.id.id] = { audioSrc, false, persistedVolume };
+      }
+
    }
    for (auto it = me->m_audioLanes.begin(); it != me->m_audioLanes.end();)
    {
@@ -2433,6 +2444,21 @@ void Player::OnAudioUpdated(const unsigned int msgId, void *userData, void *msgD
          me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
    }
+}
+
+float Player::GetAudioLaneMixerVolume(uint64_t laneId) const
+{
+   std::lock_guard lock(m_audioSourceMutex);
+   const auto it = m_audioLanes.find(laneId);
+   return it != m_audioLanes.end() ? it->second.mixerVolume : 1.f;
+}
+
+void Player::SetAudioLaneMixerVolume(uint64_t laneId, float volume)
+{
+   std::lock_guard lock(m_audioSourceMutex);
+   const auto it = m_audioLanes.find(laneId);
+   if (it != m_audioLanes.end())
+      it->second.mixerVolume = volume;
 }
 
 void Player::UpdateVolume() { m_audioPlayer->SetMainVolume(m_backglassVolume, m_playfieldVolume); }
