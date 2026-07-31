@@ -18,7 +18,7 @@ void AudioSettingsPage::BuildPage()
    for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
       m_devices.push_back(device.name);
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Sound level"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Global Sound Levels"s));
 
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield main volume simultaneaously"s, false, true), //
@@ -50,7 +50,30 @@ void AudioSettingsPage::BuildPage()
          m_player->UpdateVolume();
       }));
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware setup"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Audio Source Levels"s));
+
+   unsigned int getAudioSrcMsgId = m_player->m_pluginManager.GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
+   for (const auto& audioSrc : GetCtrlItems<AudioSrcId>(&m_player->m_pluginManager.GetMsgAPI(), m_player->m_pluginAPI.GetVPXEndPointId(), getAudioSrcMsgId))
+   {
+      MsgEndpointInfo info { };
+      m_player->m_pluginManager.GetMsgAPI().GetEndpointInfo(audioSrc.id.endpointId, &info);
+      const string endpointId = info.id ? info.id : std::to_string(audioSrc.id.endpointId);
+      const string endpointName = audioSrc.name ? audioSrc.name : info.name ? info.name : endpointId;
+      const string propId = std::format("AudioSource.{}.Gain", endpointId);
+      const auto propPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(
+         "Player"s, propId, std::format("{} Gain", endpointName), std::format("Volume gain applied to audio from '{}'.", endpointName), true, 0.f, 2.f, 0.f, 1.f));
+      const uint64_t laneId = audioSrc.id.id;
+      AddItem(std::make_unique<InGameUIItem>(
+         *Settings::GetRegistry().GetFloatProperty(propPropId), 100.f, "%3.0f %%"s,
+         [this, laneId]() { return m_player->GetAudioLaneMixerVolume(laneId); },
+         [propPropId](const Settings& settings) { return settings.GetFloat(propPropId); },
+         [this, laneId](float, float v) { m_player->SetAudioLaneMixerVolume(laneId, v); },
+         [propPropId](Settings& settings) { settings.Reset(propPropId); },
+         [propPropId](float v, Settings& settings, bool isTableOverride) { settings.Set(propPropId, v, isTableOverride); }));
+   }
+   m_player->m_pluginManager.GetMsgAPI().ReleaseMsgID(getAudioSrcMsgId);
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware Setup"s));
 
    AddItem(std::make_unique<InGameUIItem>(
               VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, false, 0, 0, m_devices), //

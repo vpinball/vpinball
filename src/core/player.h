@@ -235,6 +235,9 @@ public:
    float m_backglassVolume;
    float m_playfieldVolume;
 
+   float GetAudioLaneMixerVolume(uint64_t laneId) const;
+   void SetAudioLaneMixerVolume(uint64_t laneId, float volume);
+
    std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
 
 private:
@@ -245,7 +248,7 @@ private:
    unsigned int m_onAudioUpdatedMsgId;
    unsigned int m_onAudioSrcChangedMsgId;
    unsigned int m_getAudioSrcMsgId;
-   std::mutex m_audioSourceMutex;
+   mutable std::mutex m_audioSourceMutex;
    struct AudioLane
    {
       AudioSrcId source = { };
