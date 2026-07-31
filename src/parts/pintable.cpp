@@ -1756,8 +1756,8 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
                         float minx = FLT_MAX; // min/max along the x axis
                         float miny = FLT_MAX; // min/max along planeYAxis
-                        float maxx = FLT_MIN;
-                        float maxy = FLT_MIN;
+                        float maxx = -FLT_MAX;
+                        float maxy = -FLT_MAX;
                         const vec3 planeYAxis(0.f, planeNormal.z, -planeNormal.y); //= CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
                         for (const unsigned int idx : primitive->m_mesh.m_indices)
                            if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
@@ -1765,7 +1765,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                               const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
                               const float py = vertices[idx].Dot(planeYAxis);
                               minx = min(minx, px);
-                              maxx = max(miny, px);
+                              maxx = max(maxx, px);
                               miny = min(miny, py);
                               maxy = max(maxy, py);
                            }

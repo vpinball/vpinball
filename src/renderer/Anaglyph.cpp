@@ -266,7 +266,7 @@ static Vertex3Ds EvaluateGlassFilter(const Matrix3& M, const float eps = 1e-6f)
       float minZero = FLT_MAX;
       for (int row = 0; row < 3; ++row)
       {
-         float maxRow = FLT_MIN;
+         float maxRow = -FLT_MAX;
          for (int col = 0; col < 3; ++col)
             maxRow = max(maxRow, std::abs(A.m_d[row][col]));
          if (maxRow > eps)
@@ -286,7 +286,7 @@ static Vertex3Ds EvaluateGlassFilter(const Matrix3& M, const float eps = 1e-6f)
       float minZero = FLT_MAX;
       for (int col = 0; col < 3; ++col)
       {
-         float maxCol = FLT_MIN;
+         float maxCol = -FLT_MAX;
          for (int row = 0; row < 3; ++row)
             maxCol = max(maxCol, std::abs(A.m_d[row][col]));
          if (maxCol < minZero)
