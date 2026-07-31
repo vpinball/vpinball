@@ -232,10 +232,8 @@ public:
    void UnpauseMusic();
    void UpdateVolume();
 
-   bool m_PlayMusic;
-   bool m_PlaySound;
-   int m_MusicVolume; // -100..100
-   int m_SoundVolume; // -100..100
+   float m_backglassVolume;
+   float m_playfieldVolume;
 
    std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
 

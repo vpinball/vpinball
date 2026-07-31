@@ -4143,7 +4143,7 @@ VPX::Sound *PinTable::GetSound(const string &name) const
 
 STDMETHODIMP PinTable::PlaySound(BSTR soundName, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
-   if (g_pplayer == nullptr || !g_pplayer->m_PlaySound)
+   if (g_pplayer == nullptr)
       return S_OK;
    const string name = MakeString(soundName);
    if (StrCompareNoCase("knock"s, name) || StrCompareNoCase("knocker"s, name)) // FIXME remove or port to plugin
@@ -4163,7 +4163,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR soundName, int loopcount, float volume, fl
 
 STDMETHODIMP PinTable::StopSound(BSTR soundName)
 {
-   if (g_pplayer == nullptr || !g_pplayer->m_PlaySound)
+   if (g_pplayer == nullptr)
       return S_OK;
    const string name = MakeString(soundName);
    VPX::Sound *sound = GetSound(name);
