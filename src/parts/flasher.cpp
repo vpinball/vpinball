@@ -1399,24 +1399,27 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), m_d.m_depthBias - m_d.m_height, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
             m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
             // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
+            Matrix3D transform;
             if (m_desktopBackdrop)
-               m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true, //
-                  Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
-                  * Matrix3D::MatrixScale(width, height, 0.f) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height (and a z scale at 0)
-                  * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) //
-                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f));
+            {
+               m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true);
+               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
+                  * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
+                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f);
+            }
             else
-               m_renderer->UpdateBasicShaderMatrix( //
-                  Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) //
-                  * Matrix3D::MatrixScale(width, height, 0.f) //
+            {
+               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
                   * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
-                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height));
+                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height);
+            }
             VPXRenderContext2D &context
-               = m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height);
+               = m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height, transform);
             for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
                if (renderer.Render(&context, renderer.context))
                   break;
-            m_renderer->UpdateBasicShaderMatrix();
+            if (m_desktopBackdrop)
+               m_renderer->UpdateBasicShaderMatrix();
          }
          break;
       }
