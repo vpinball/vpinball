@@ -112,7 +112,7 @@ void UpdateTreeCache()
          cNode["name"s] = info.name ? info.name : (info.id ? info.id : "Unknown Controller");
          cNode["type"s] = "controller";
          cNode["children"s] = json::array();
-         const auto ctrlDef = std::ranges::find_if(controllerDefs, [epId](const auto& ctrl) { return ctrl.ctrlEndpointId == epId; });
+         const auto ctrlDef = std::ranges::find_if(controllerDefs, [epId](const auto& ctrl) { return ctrl.endpointId == epId; });
          cNode["game"s] = ctrlDef == controllerDefs.end() ? "" : ctrlDef->gameId;
          controllers[epId] = cNode;
       }

@@ -58,7 +58,12 @@ private:
    ma_uint32 m_channels;
    string m_loadedFile;
 
-   CtlResId m_audioResId;
+   const unsigned int m_getAudioSrcId;
+   const unsigned int m_onAudioSrcChangedId;
+   const AudioSrcId m_audioSrcDef;
+   const CtlResId m_streamId;
+   static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData);
+
    static constexpr size_t BUFFER_SIZE_FRAMES = 128;
 };
 

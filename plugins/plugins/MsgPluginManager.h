@@ -121,6 +121,8 @@ public:
 
    void UpdateAPIThread() { m_apiThread = std::this_thread::get_id(); }
 
+   void AssertAPIThread();
+
 private:
    static MsgPluginManager* m_pluginManager;
 

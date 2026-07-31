@@ -232,7 +232,7 @@ void B2SServer::OnGetControllers(const unsigned int, void* userData, void* msgDa
       auto msg = static_cast<GetControllersMsg*>(msgData);
       if (msg->count < msg->maxEntryCount)
       {
-         msg->entries[msg->count].ctrlEndpointId = me->m_endpointId;
+         msg->entries[msg->count].endpointId = me->m_endpointId;
          msg->entries[msg->count].gameId = me->m_controllerGameId.c_str();
       }
       msg->count++;

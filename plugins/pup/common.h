@@ -85,8 +85,8 @@ extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void *image);
 extern void DeleteTexture(VPXTexture texture);
 
-extern CtlResId UpdateAudioStream(AudioUpdateMsg *msg);
-extern void StopAudioStream(const CtlResId& id);
+extern void UpdateAudioStream(AudioUpdateMsg *msg);
+extern void StopAudioStream(uint32_t streamId);
 
 string trim_string(const string &str);
 

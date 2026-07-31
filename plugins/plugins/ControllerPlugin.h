@@ -20,20 +20,24 @@
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
 // This file defines a few core identifiers, messages and struct to ease plugin
-// collaboration around 3 common controller's state data:
+// collaboration around audio streaming and 3 common controller's state data:
 // - Machine state (switch, controlled device, logic game states),
 // - Alphanumeric segment displays,
 // - Matrix displays (dot matrix, CRT,...).
 // 
-// The overall design is based around a service discovery approach: a GetSource
-// message is defined for each feature CTLPI_xxx_GET_SRC_MSG), together with a
-// SourceChangeEvent (CTLPI_xxx_ON_SRC_CHG_MSG). Sources are advertised with the 
-// function hooks that allow to request their state. These function hooks define
-// if they are thread safe or not. The overall scheme is that they are not thread
-// safe excepted for state getter/setter.
-//
-// Audio stream output is also supported through a simple broadcast message.
-//
+// The design is based around a simple service discovery:
+// - a GetSource message is defined for each feature CTLPI_xxx_GET_SRC_MSG), 
+//   together with a SourceChangeEvent (CTLPI_xxx_ON_SRC_CHG_MSG).
+// - Data provided as an answer to a GetSource message **MUST** remain valid
+//   until the next SourceChangeEvent is broadcasted.
+// - Sources are advertised with the function hooks that allow to request them.
+//   Unless explicitely specified, these hooks are not thread safe and must be
+//   called on the plugin API thread (the one calling plugin's Load/Unload).
+// - Some source may have an overrideId that allow a plugin to provide a source
+//   variant. It is up to the host to decide which one to use.
+// - GetSource messages use the same design as Vulkan to evaluate the needed
+//   array size: the count field is increased to the number of items while
+//   only maxEntryCount are actually copied into the output array.
 
 #define CTLPI_NAMESPACE               "Controller"
 
@@ -46,6 +50,15 @@ typedef union CtlResId
    };
    uint64_t id;
 } CtlResId;
+
+typedef struct GetCtrlSrcMsg
+{
+   // Request
+   unsigned int maxEntryCount; // see below
+   // Response
+   unsigned int count; // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
+   void* entries; // Pointer to an array of maxEntryCount entries to be filled
+} GetCtrlSrcMsg;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,7 +74,7 @@ typedef union CtlResId
 
 typedef struct ControllerDef
 {
-   uint32_t ctrlEndpointId; // Note that an endpoint may only expose one controller (a plugin may implement multiple endpoint if needed)
+   uint32_t endpointId;     // Note that an endpoint may only expose one controller (a plugin may implement multiple endpoint if needed)
    const char* gameId;      // Must be unique and allow to identify what is emulated and how it is exposed, not who is the controller emulating it (never null)
 } ControllerDef;
 
@@ -70,8 +83,8 @@ typedef struct GetControllersMsg
    // Request
    unsigned int maxEntryCount; // see below
    // Response
-   unsigned int count; // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
-   ControllerDef* entries; // Pointer to an array of maxEntryCount entries to be filled
+   unsigned int count;         // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
+   ControllerDef* entries;     // Pointer to an array of maxEntryCount entries to be filled
 } GetControllersMsg;
 
 
@@ -302,21 +315,27 @@ typedef struct GetSegSrcMsg
 //
 // Audio streams (backglass, pinsound/altsound/gsound, ...)
 //
-// API supports multiple audio sources with priority override chain (similar to displays).
-// When multiple sources exist, the host walks the override chain to select the active source.
-//
+// An endpoint may expose multiple audio sources. The audio sources are likely
+// to be exposed to the user for mixer levels. Audio sources may be overriden
+// (similar to displays) allowing plugins to upgrade/replace audio sources of
+// other plugins.
+// 
+// An audio source must be referenced by each audio stream to allow the host
+// to handle overiding, global mixer, and routing to the right output.
 
 // Broadcasted after an audio source has been added, modified or removed, there is no message data
-#define CTLPI_AUDIO_ON_SRC_CHG_MSG "OnAudioChanged"
+#define CTLPI_AUDIO_ON_SRC_CHG_MSG "OnAudioSrcChanged"
 
 // Request subscribers to fill up an array with the list of audio sources, message data is a pointer to a GetAudioSrcMsg structure
-#define CTLPI_AUDIO_GET_SRC_MSG    "GetAudio"
+#define CTLPI_AUDIO_GET_SRC_MSG    "GetAudioSrc"
 
 // Broadcasted when an audio stream is updated with new samples
 #define CTLPI_AUDIO_ON_UPDATE_MSG  "AudioUpdate"
 
-#define CTLPI_AUDIO_SRC_BACKGLASS_MONO       0
-#define CTLPI_AUDIO_SRC_BACKGLASS_STEREO     1
+#define CTLPI_AUDIO_TARGET_BACKGLASS         0
+
+#define CTLPI_AUDIO_FORMAT_CHANNEL_MONO      0
+#define CTLPI_AUDIO_FORMAT_CHANNEL_STEREO    1
 
 #define CTLPI_AUDIO_FORMAT_SAMPLE_INT16      0
 #define CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT      1
@@ -325,9 +344,9 @@ typedef struct AudioSrcId
 {
    CtlResId id;                  // Unique Id of the audio source
    CtlResId overrideId;          // If this source overrides another source, id of the overridden source, 0 otherwise
-   unsigned int type;            // The type of audio source (see CTLPI_AUDIO_SRC_xxx)
-   unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
-   double sampleRate;            // The sample rate
+   const char* name;             // User friendly name of this source, owned by controller
+   const char* desc;             // User friendly description of this source, owned by controller
+   unsigned int target;          // Audio output target (see CTLPI_AUDIO_TARGET_xxx)
 } AudioSrcId;
 
 typedef struct GetAudioSrcMsg
@@ -339,13 +358,60 @@ typedef struct GetAudioSrcMsg
    AudioSrcId* entries;          // Pointer to an array of maxEntryCount entries to be filled
 } GetAudioSrcMsg;
 
+// This message can be sent for 3 use cases:
+// - New audio stream: all fields must be defined/not null
+// - Enqueueing in an existing stream: bufferSize & buffer and volume must be defined (other fields are ignored)
+// - Destroying an existing stream: buffer must be null (other fields are ignored)
+// For all these use cases, source and stream must always be defined and valid.
 typedef struct AudioUpdateMsg
 {
-   CtlResId id;                  // Unique Id of the audio source
-   unsigned int type;            // The type of audio source (see CTLPI_AUDIO_SRC_xxx)
-   unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
+   CtlResId sourceId;            // Unique Id of the audio source
+   CtlResId streamId;            // Unique Id of this stream
+   unsigned int channelFormat;   // The type of audio source (CTLPI_AUDIO_FORMAT_CHANNEL_xxx)
+   unsigned int sampleFormat;    // The sample data format (see CTLPI_AUDIO_FORMAT_SAMPLE_xxx)
    double sampleRate;            // The sample rate
-   float volume;                 // Dynamic playback volume (0..1)
+   float volume; // Volume to be applied on this stream
    unsigned int bufferSize;      // The size of the audio buffer
    uint8_t* buffer;              // The sample data, or null for immediate stream destruction
 } AudioUpdateMsg;
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// The following helper macros are designed to easily use the API in standard C++
+//
+#ifdef __cplusplus
+#include <vector>
+
+template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId, std::vector<T>& list)
+{
+   GetCtrlSrcMsg getMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   if (getMsg.count > 0)
+   {
+      list.resize(getMsg.count);
+      getMsg = { getMsg.count, 0, list.data() };
+      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   }
+   else
+   {
+      list.clear();
+   }
+}
+
+template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId)
+{
+   std::vector<T> list;
+   GetCtrlSrcMsg getMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   if (getMsg.count > 0)
+   {
+      list.resize(getMsg.count);
+      getMsg = { getMsg.count, 0, list.data() };
+      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   }
+   return list;
+}
+#endif

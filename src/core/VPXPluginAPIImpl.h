@@ -30,7 +30,7 @@ public:
    ~VPXPluginAPIImpl();
 
    const VPXPluginAPI& getAPI() const { return m_api; }
-   unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
+   uint32_t GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
    void BroadcastVPXMsg(const unsigned int msgId, void* data) const;
 
    unsigned int GetMsgID(const char* name_space, const char* name);

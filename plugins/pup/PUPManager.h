@@ -135,11 +135,17 @@ private:
    std::array<uint8_t, 128 * 32> m_idFrame;
    int ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame);
    
-   unsigned int m_getAuxRendererId = 0;
-   unsigned int m_onAuxRendererChgId = 0;
-   unsigned int m_getVpxApiId = 0;
+   const unsigned int m_getVpxApiId;
+
+   const unsigned int m_getAuxRendererId;
+   const unsigned int m_onAuxRendererChgId;
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
+
+   const unsigned int m_getAudioSrcId;
+   const unsigned int m_onAudioSrcChangedId;
+   const AudioSrcId m_audioSrcDef;
+   static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData);
 
    std::mutex m_eventMutex;
    std::unique_ptr<B2SPluginEventStream> m_B2SPluginEventStream;
