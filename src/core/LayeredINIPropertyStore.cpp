@@ -274,7 +274,7 @@ void LayeredINIPropertyStore::GenerateTemplate(const std::filesystem::path& path
             {
             case PropertyDef::Type::Float:
                file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false);
-               if (dynamic_cast<const FloatPropertyDef*>(prop)->m_min != FLT_MIN && dynamic_cast<const FloatPropertyDef*>(prop)->m_max != FLT_MAX)
+               if (dynamic_cast<const FloatPropertyDef*>(prop)->m_min != -FLT_MAX && dynamic_cast<const FloatPropertyDef*>(prop)->m_max != FLT_MAX)
                   file << " in " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_min, false) << " .. " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_max, false);
                if (dynamic_cast<const FloatPropertyDef*>(prop)->m_step != 0.f)
                   file << " by " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_step, false) << " steps";
