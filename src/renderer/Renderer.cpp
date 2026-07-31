@@ -1229,7 +1229,7 @@ void Renderer::UpdateBallShaderMatrix()
 #endif
 }
 
-void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD, const Matrix3D& objectTrafo)
+void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD)
 {
    Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
    matWorldViewProj[0].SetIdentity();
@@ -1237,7 +1237,7 @@ void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool fl
    matWorldViewProj[0]._41 = -1.0f;
    matWorldViewProj[0]._22 = -2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight();
    matWorldViewProj[0]._42 = 1.0f;
-   matWorldViewProj[0] = objectTrafo * matWorldViewProj[0];
+   matWorldViewProj[0] = matWorldViewProj[0];
    const int eyes = m_renderDevice->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -3115,6 +3115,7 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
       const Matrix3D matRot = Matrix3D::MatrixTranslate(-px, -py, 0.f) * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) * Matrix3D::MatrixTranslate(px, py, 0.f);
       matRot.TransformPositions(vertices, vertices, 4);
    }
+   static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
    rdl->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_with_texture);
    rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
    if (alpha != 1.f || tintR != 1.f || tintG != 1.f || tintB != 1.f)
@@ -3141,15 +3142,24 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
    const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { //
+   Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
+   static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
+   if (ctx->is2D)
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         vertices[i].x = 2.f * vertices[i].x - 1.f;
+         vertices[i].y = 1.f - 2.f * vertices[i].y;
+      }
+   }
    if (style == VPXDMDStyle_Pixelated || style == VPXDMDStyle_Smoothed || style == VPXDMDStyle_CRT)
    {
-      g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+      g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
          vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
@@ -3157,7 +3167,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    }
    else
    {
-      g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+      g_pplayer->m_renderer->SetupDMDRender(style, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
          vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
@@ -3189,13 +3199,22 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
    const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
-   const Vertex3D_NoTex2 vertices[4] = { //
+   Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
       { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
-   g_pplayer->m_renderer->SetupSegmentRenderer(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
+   static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
+   if (ctx->is2D)
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         vertices[i].x = 2.f * vertices[i].x - 1.f;
+         vertices[i].y = 1.f - 2.f * vertices[i].y;
+      }
+   }
+   g_pplayer->m_renderer->SetupSegmentRenderer(style, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
       isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB),
       glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), vec3(glassAmbientR, glassAmbientG, glassAmbientB));
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
@@ -3370,7 +3389,7 @@ void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::Rende
    UpdateBasicShaderMatrix();
 }
 
-VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias)
+VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias, const Matrix3D& displayTransform)
 {
    // Ancillary rendering is single threaded, on the main thread, therefore we store render context and state directly in a unique state object owned by the renderer
    m_ancillaryRenderSetup.isOutputLinear = isOutputLinear;
@@ -3381,6 +3400,7 @@ VPXRenderContext2D& Renderer::GetAncillaryRenderContext(VPXWindowId window, floa
    m_ancillaryRenderContext.srcHeight = height;
    m_ancillaryRenderContext.outWidth = width;
    m_ancillaryRenderContext.outHeight = height;
+   m_ancillaryRenderSetup.displayTransform = displayTransform;
    return m_ancillaryRenderContext;
 }
 

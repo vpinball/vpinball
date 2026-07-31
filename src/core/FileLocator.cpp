@@ -297,9 +297,11 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
                string type;
                switch (sub)
                {
+               case TableSubFolder::Root: type = "Root"sv; break;
                case TableSubFolder::Music: type = "Music"sv; break;
                case TableSubFolder::Cache: type = "Cache"sv; break;
                case TableSubFolder::User: type = "User"sv; break;
+               case TableSubFolder::AutoSave: type = "Autosave"sv; break;
                }
                PLOGI << type << " folder was created for table '" << table->m_filename << "': " << path;
             }

@@ -38,7 +38,7 @@ public:
    void MarkShaderDirty() { m_shaderDirty = true; }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
-   void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD, const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
+   void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD);
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
@@ -203,7 +203,8 @@ public:
 
    unsigned int GetPlayerModeVisibilityMask() const { return m_visibilityMask; }
 
-   VPXRenderContext2D& GetAncillaryRenderContext(VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias);
+   VPXRenderContext2D& GetAncillaryRenderContext(
+      VPXWindowId window, float width, float height, bool is2D, bool isOutputLinear, float depthbias, const Matrix3D& displayTransform = Matrix3D::MatrixIdentity());
 
 private:
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
@@ -245,10 +246,11 @@ private:
    void RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers);
    std::unique_ptr<RenderTarget> m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1];
    bool m_ancillaryWndRendered[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether a renderer claimed the window on the last frame
-   struct
+   struct AncillaryRenderSetup
    {
       bool isOutputLinear;
       float depthbias;
+      Matrix3D displayTransform;
    } m_ancillaryRenderSetup;
    VPXRenderContext2D m_ancillaryRenderContext;
 
