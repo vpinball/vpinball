@@ -40,7 +40,7 @@ public:
    bool GetIsSupported() const { return true; /* Not yet implemented */ }
    Roms *GetRoms() const { return nullptr; /* Not yet implemented */ }
    GameSettings* GetSettings() { m_settings->AddRef(); return m_settings; }
-   int ShowInfoDlg(int nShowOptions, void *hParentWnd) const { return 0; /* Not yet implemented */ }
+   int ShowInfoDlg(int nShowOptions, void* hParentWnd) const { LOGE("Game.ShowInfoDlg is not implemented."); return 0; }
 
 private:
    PinmameGame m_pinmameGame;
