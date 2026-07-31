@@ -358,10 +358,8 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    m_progressDialog.SetProgress("Initializing Renderer..."s, m_progressDialog.GetProgress() + progressStartupLength);
 
-   m_PlayMusic = m_ptable->m_settings.GetPlayer_PlayMusic();
-   m_PlaySound = m_ptable->m_settings.GetPlayer_PlaySound();
-   m_MusicVolume = m_ptable->m_settings.GetPlayer_MusicVolume();
-   m_SoundVolume = m_ptable->m_settings.GetPlayer_SoundVolume();
+   m_backglassVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_MusicVolume());
+   m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->m_settings.GetPlayer_SoundVolume());
    UpdateVolume();
 
    //
@@ -2437,12 +2435,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void *userData, void *msgD
    }
 }
 
-void Player::UpdateVolume()
-{
-   const float backglassVolume = m_PlayMusic ? dequantizeSignedPercent(m_MusicVolume) : 0.f;
-   const float playfieldVolume = m_PlaySound ? dequantizeSignedPercent(m_SoundVolume) : 0.f;
-   m_audioPlayer->SetMainVolume(backglassVolume, playfieldVolume);
-}
+void Player::UpdateVolume() { m_audioPlayer->SetMainVolume(m_backglassVolume, m_playfieldVolume); }
 
 void Player::PauseMusic()
 {

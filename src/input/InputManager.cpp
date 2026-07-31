@@ -819,10 +819,10 @@ void InputManager::CreateInputActions()
       {
          if (!isPressed)
             return;
-         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume - 1, 0, 100);
-         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume - 1, 0, 100);
+         m_player->m_backglassVolume = clamp(m_player->m_backglassVolume - 0.01f, 0.f, 1.f);
+         m_player->m_playfieldVolume = clamp(m_player->m_playfieldVolume - 0.01f, 0.f, 1.f);
          m_player->UpdateVolume();
-         m_volumeNotificationId = m_player->m_liveUI->PushNotification("Volume: " + std::to_string(m_player->m_MusicVolume) + '%', 500, m_volumeNotificationId);
+         m_volumeNotificationId = m_player->m_liveUI->PushNotification(std::format("Volume: {:3.0f}%", m_player->m_backglassVolume * 100.f), 500, m_volumeNotificationId);
       }));
    volumeDown->SetRepeatPeriod(75);
    m_volumeDownActionId = volumeDown->GetActionId();
@@ -832,10 +832,10 @@ void InputManager::CreateInputActions()
       {
          if (!isPressed)
             return;
-         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + 1, 0, 100);
-         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + 1, 0, 100);
+         m_player->m_backglassVolume = clamp(m_player->m_backglassVolume + 0.01f, 0.f, 1.f);
+         m_player->m_playfieldVolume = clamp(m_player->m_playfieldVolume + 0.01f, 0.f, 1.f);
          m_player->UpdateVolume();
-         m_volumeNotificationId = m_player->m_liveUI->PushNotification("Volume: " + std::to_string(m_player->m_MusicVolume) + '%', 500, m_volumeNotificationId);
+         m_volumeNotificationId = m_player->m_liveUI->PushNotification(std::format("Volume: {:3.0f}%", m_player->m_backglassVolume * 100.f), 500, m_volumeNotificationId);
       }));
    volumeUp->SetRepeatPeriod(75);
    m_volumeUpActionId = volumeUp->GetActionId();

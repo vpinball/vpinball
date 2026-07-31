@@ -113,7 +113,7 @@ STDMETHODIMP ScriptGlobalTable::StopSound(BSTR soundName)
 
 STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 {
-   if (g_pplayer && g_pplayer->m_PlayMusic)
+   if (g_pplayer)
    {
       EndMusic();
 

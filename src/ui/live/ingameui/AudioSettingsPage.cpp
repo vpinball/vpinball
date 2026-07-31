@@ -15,8 +15,13 @@ AudioSettingsPage::AudioSettingsPage()
 
 void AudioSettingsPage::BuildPage()
 {
+   for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
+      m_devices.push_back(device.name);
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Sound level"s));
+
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, false, true), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield main volume simultaneaously"s, false, true), //
       [this]() { return m_lockVolume; }, //
       [this](const Settings&) { return m_lockVolume; }, //
       [this](bool v) { m_lockVolume = v; }, //
@@ -25,68 +30,50 @@ void AudioSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MusicVolume, "%3d %%"s, //
-      [this]() { return m_player->m_MusicVolume; },
+      [this]() { return quantizeSignedPercent(m_player->m_backglassVolume); },
       [this](int prev, int v)
       {
-         m_player->m_MusicVolume = v;
+         m_player->m_backglassVolume = dequantizeSignedPercent(v);
          if (m_lockVolume)
-            m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + v - prev, 0, 100);
+            m_player->m_playfieldVolume = clamp(m_player->m_playfieldVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
          m_player->UpdateVolume();
       }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_SoundVolume, "%3d %%"s, //
-      [this]() { return m_player->m_SoundVolume; },
+      [this]() { return quantizeSignedPercent(m_player->m_playfieldVolume); },
       [this](int prev, int v)
       {
-         m_player->m_SoundVolume = v;
+         m_player->m_playfieldVolume = dequantizeSignedPercent(v);
          if (m_lockVolume)
-            m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + v - prev, 0, 100);
+            m_player->m_backglassVolume = clamp(m_player->m_backglassVolume + dequantizeSignedPercent(v - prev), 0.f, 1.f);
          m_player->UpdateVolume();
       }));
 
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_PlayMusic, //
-      [this]() { return m_player->m_PlayMusic; }, //
-      [this](bool v)
-      {
-         m_player->m_PlayMusic = v;
-         m_player->UpdateVolume();
-      }));
-
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_PlaySound, //
-      [this]() { return m_player->m_PlaySound; }, //
-      [this](bool v)
-      {
-         m_player->m_PlaySound = v;
-         m_player->UpdateVolume();
-      }));
-
-   for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
-      m_devices.push_back(device.name);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware setup"s));
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, false, 0, 0, m_devices), //
-      [this]()
-      {
-         auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
-         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
-      }, // Live
-      [this](const Settings& settings)
-      {
-         auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceBG());
-         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
-      }, // Stored
-      [this](int, int v)
-      {
-         m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
-            m_devices[v], //
-            m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
-            static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
-      }, //
-      [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
-      [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); })).m_excludeFromDefault = true;
+              VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, false, 0, 0, m_devices), //
+              [this]()
+              {
+                 auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
+                 return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+              }, // Live
+              [this](const Settings& settings)
+              {
+                 auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceBG());
+                 return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+              }, // Stored
+              [this](int, int v)
+              {
+                 m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
+                    m_devices[v], //
+                    m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
+                    static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
+              }, //
+              [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
+              [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); }))
+      .m_excludeFromDefault = true;
 
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, false, 0, 0, m_devices), //
