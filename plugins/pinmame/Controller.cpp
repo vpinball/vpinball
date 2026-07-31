@@ -27,8 +27,12 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
    , m_msgApi(api)
    , m_endpointId(endpointId)
    , m_threadLock(std::this_thread::get_id())
+   , m_pinmameConfig({ })
 {
-   PinmameSetConfig(&config);
+   memcpy(&m_pinmameConfig, &config, sizeof(m_pinmameConfig));
+   memcpy(const_cast<char*>(m_pinmameConfig.vpmPath), config.vpmPath, sizeof(m_pinmameConfig.vpmPath));
+
+   PinmameSetConfig(&m_pinmameConfig);
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
 
@@ -150,6 +154,25 @@ void Controller::Run(long hParentWnd, int nMinVersion)
       return;
 
    PinmameSetCheat(m_cheat);
+
+   // Disable sound if requested through game's settings object
+   Game* game = GetGames(m_szGameName);
+   if (game)
+   {
+      GameSettings* settings = game->GetSettings();
+      int sound = settings->GetValue("sound");
+      if (sound == 0)
+      {
+         PinmameConfig* pinmameConfig = new PinmameConfig({ });
+         memcpy(pinmameConfig, &m_pinmameConfig, sizeof(m_pinmameConfig));
+         memcpy(const_cast<char*>(pinmameConfig->vpmPath), m_pinmameConfig.vpmPath, sizeof(m_pinmameConfig.vpmPath));
+         *const_cast<int*>(&pinmameConfig->sampleRate) = 0;
+         PinmameSetConfig(pinmameConfig);
+         delete pinmameConfig;
+      }
+      settings->Release();
+      game->Release();
+   }
 
    // Search and load a memory map with its platform if provided (see https://github.com/tomlogic/pinmame-nvram-maps)
    if (std::error_code ec; std::filesystem::exists(m_memmapPath, ec))

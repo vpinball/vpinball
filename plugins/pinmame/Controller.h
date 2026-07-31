@@ -167,6 +167,7 @@ private:
    string m_szRomName; // Resolved driver name
    mutable std::unordered_map<string, GameSettings*> m_gameSettings; // shared per game so settings survive repeated Games(name) accesses
    Settings* m_settings = nullptr;
+   PinmameConfig m_pinmameConfig;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
    vector<PinmameLEDState> m_ledStates;
    vector<PinmameNVRAMState> m_nvramStates;

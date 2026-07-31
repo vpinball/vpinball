@@ -18,25 +18,15 @@ public:
 
    PSC_IMPLEMENT_REFCOUNT()
 
-   void Clear() { m_values.clear(); }
+   void Clear();
+   int GetValue(const string& key) const;
+   void SetValue(const string& key, int v);
    // FIXME implement a dynamically typed variant
    //ScriptVariant GetValue(const string& name) const { return {}; /* Not yet implemented */ }
    //void PutValue(const string& name, ScriptVariant v) { /* Not yet implemented */ }
-   int GetValue(const string& key) const
-   {
-      const string k = string_to_lower(key);
-      const auto it = m_values.find(k);
-      if (it != m_values.end())
-         return it->second;
-      int v;
-      if (TryGetSettingDefault(k, v))
-         return v;
-      LOGW(std::format("Unknown game setting '{}', returning 0", key));
-      return 0;
-   }
-   void SetValue(const string& key, int v) { m_values[string_to_lower(key)] = v; }
-   void SetDisplayPosition(float newValX, float newValY, void* hWnd = nullptr) { /* Not yet implemented */ }
-   void ShowSettingsDlg(void* hParentWnd = nullptr) { /* Not yet implemented */ }
+
+   void SetDisplayPosition(float newValX, float newValY, void* hWnd = nullptr) { LOGE("Game.GameSettings.SetDisplayPosition is deprecated (display position is defined in user settings, not through script)."); }
+   void ShowSettingsDlg(void* hParentWnd = nullptr) { LOGE("Game.GameSettings.ShowSettingsDlg is deprecated (settings are managed by the host application, not through script)."); }
 
 private:
    std::unordered_map<string, int> m_values;
