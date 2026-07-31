@@ -32,6 +32,8 @@ namespace PUP {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+std::atomic<uint32_t> PUPMediaPlayer::m_nextAudioStreamId = 0;
+
 PUPMediaPlayer::PUPMediaPlayer(const string& name)
    : m_name(name)
    , m_frames(3)
@@ -40,6 +42,7 @@ PUPMediaPlayer::PUPMediaPlayer(const string& name)
    , m_commandQueue(1)
 {
    assert(m_libAv.isLoaded);
+   m_audioStreamId = m_nextAudioStreamId.fetch_add(1);
    SetName(name);
 }
 
@@ -290,8 +293,7 @@ void PUPMediaPlayer::StopBlocking()
       m_libAv._swr_free(&m_pAudioConversionContext);
    m_pAudioConversionContext = nullptr;
 
-   StopAudioStream(m_audioResId);
-   m_audioResId.id = 0;
+   StopAudioStream(m_audioStreamId);
 }
 
 void PUPMediaPlayer::SetLoop(bool loop)
@@ -577,8 +579,7 @@ void PUPMediaPlayer::Run()
       std::lock_guard lock(m_mutex);
       LOGD(std::format("Player stopped: name={}, file={}", m_name, m_filename.filename().string()));
       m_running = false;
-      StopAudioStream(m_audioResId);
-      m_audioResId.id = 0;
+      StopAudioStream(m_audioStreamId);
       m_onEndCallback();
    }
 }
@@ -832,14 +833,14 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
    if (nConverted > 0 && m_volume > 0.0f)
    {
       AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
-      audioUpdate->id.id = m_audioResId.id;
-      audioUpdate->type = CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
-      audioUpdate->format = (destFmt == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->streamId.resId = m_audioStreamId;
+      audioUpdate->channelFormat = CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
+      audioUpdate->sampleFormat = (destFmt == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
       audioUpdate->sampleRate = destFreq;
       audioUpdate->bufferSize = nConverted * destChLayout.nb_channels * m_libAv._av_get_bytes_per_sample(destFmt);
       audioUpdate->buffer = pBuffer;
       audioUpdate->volume = m_volume / 100.0f;
-      m_audioResId = UpdateAudioStream(audioUpdate);
+      UpdateAudioStream(audioUpdate);
    }
 }
 

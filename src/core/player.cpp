@@ -2346,113 +2346,102 @@ void Player::SetAncillaryRendererPriority(VPXWindowId window, const string& id, 
    OnAuxRendererChanged(0, this, nullptr);
 }
 
-void Player::UpdateVolume()
+void Player::OnAudioSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
-   m_audioPlayer->SetMainVolume(m_PlayMusic ? dequantizeSignedPercent(m_MusicVolume) : 0.f, m_PlaySound ? dequantizeSignedPercent(m_SoundVolume) : 0.f);
+   Player *me = static_cast<Player *>(userData);
+   me->m_pluginManager.AssertAPIThread();
+   std::lock_guard lock(me->m_audioSourceMutex);
+
+   ankerl::unordered_dense::set<uint64_t> seenIds;
+   for (const auto &audioSrc : GetCtrlItems<AudioSrcId>(&me->m_pluginManager.GetMsgAPI(), me->m_pluginAPI.GetVPXEndPointId(), me->m_getAudioSrcMsgId))
+   {
+      if (audioSrc.target != CTLPI_AUDIO_TARGET_BACKGLASS)
+         continue;
+      seenIds.insert(audioSrc.id.id);
+      if (!me->m_audioLanes.contains(audioSrc.id.id))
+         me->m_audioLanes[audioSrc.id.id] = { audioSrc, false, 1.f };
+   }
+   for (auto it = me->m_audioLanes.begin(); it != me->m_audioLanes.end();)
+   {
+      if (!seenIds.contains(it->first))
+      {
+         for (const auto &[streamId, stream] : it->second.streams)
+            me->m_audioPlayer->CloseAudioStream(stream, false);
+         it->second.streams.clear();
+         it = me->m_audioLanes.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
+
+   // Note that we do not handle the seldom situations where a source would be overriden twice (needs user interaction)
+   for (auto &[_, source] : me->m_audioLanes)
+      source.overriden = false;
+   for (const auto &[_, source] : me->m_audioLanes)
+      if (source.source.overrideId.id != 0)
+         if (auto laneIt = me->m_audioLanes.find(source.source.overrideId.id); laneIt != me->m_audioLanes.end())
+            laneIt->second.overriden = true;
 }
 
-void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
+void Player::OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData)
 {
    Player *me = static_cast<Player *>(userData);
    AudioUpdateMsg &msg = *static_cast<AudioUpdateMsg *>(msgData);
+   std::lock_guard lock(me->m_audioSourceMutex);
 
-   if (me->m_activeAudioSourceId == 0)
-      me->UpdateActiveAudioSource();
-
-   if (me->m_activeAudioSourceId != 0 && msg.id.id != me->m_activeAudioSourceId)
+   auto laneIt = me->m_audioLanes.find(msg.sourceId.id);
+   if (laneIt == me->m_audioLanes.end() || laneIt->second.overriden)
       return;
+   AudioLane &lane = laneIt->second;
 
-   const auto &entry = me->m_audioStreams.find(msg.id.id);
-   if (entry != me->m_audioStreams.end() && me->m_audioPlayer->IsOpened(entry->second))
+   auto entry = lane.streams.find(msg.streamId.id);
+   if (entry != lane.streams.end() && me->m_audioPlayer->IsOpened(entry->second))
    {
       VPX::AudioPlayer::AudioStreamID const stream = entry->second;
       if (msg.buffer != nullptr && msg.bufferSize != 0)
       {
-         me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
+         me->m_audioPlayer->SetStreamVolume(stream, msg.volume * laneIt->second.mixerVolume);
          me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
       else
       {
          me->m_audioPlayer->CloseAudioStream(stream, false);
-         me->m_audioStreams.erase(entry);
+         lane.streams.erase(entry);
       }
    }
    else if (msg.buffer != nullptr)
    {
-      MsgEndpointInfo info;
-      me->m_pluginManager.GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
-      const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-      VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
+      int nChannels;
+      switch (msg.channelFormat)
+      {
+      case CTLPI_AUDIO_FORMAT_CHANNEL_MONO: nChannels = 1; break;
+      case CTLPI_AUDIO_FORMAT_CHANNEL_STEREO: nChannels = 2; break;
+      default: return;
+      }
+      bool isFloat;
+      switch (msg.sampleFormat)
+      {
+      case CTLPI_AUDIO_FORMAT_SAMPLE_INT16: isFloat = false; break;
+      case CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT: isFloat = true; break;
+      default: return;
+      }
+      const auto stream = me->m_audioPlayer->OpenAudioStream(std::format("{}.{:04X}", laneIt->second.source.name, msg.streamId.resId), static_cast<int>(msg.sampleRate), nChannels, isFloat);
       if (stream)
       {
-         me->m_audioStreams[msg.id.id] = stream;
-         me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
+         lane.streams[msg.streamId.id] = stream;
+         me->m_audioPlayer->SetStreamVolume(stream, msg.volume * laneIt->second.mixerVolume);
          me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
    }
 }
 
-void Player::OnAudioSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+void Player::UpdateVolume()
 {
-   Player *me = static_cast<Player *>(userData);
-   me->UpdateActiveAudioSource();
-}
-
-void Player::UpdateActiveAudioSource()
-{
-   const MsgPluginAPI &msgApi = m_pluginManager.GetMsgAPI();
-
-   GetAudioSrcMsg getSrcMsg = { 0, 0, nullptr };
-   msgApi.BroadcastMsg(m_pluginAPI.GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
-
-   if (getSrcMsg.count == 0)
-   {
-      m_activeAudioSourceId = 0;
-      return;
-   }
-
-   vector<AudioSrcId> sources(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, sources.data() };
-   msgApi.BroadcastMsg(m_pluginAPI.GetVPXEndPointId(), m_getAudioSrcMsgId, &getSrcMsg);
-
-   uint64_t activeId = 0;
-   for (const auto& src : sources)
-   {
-      if (src.overrideId.id == 0)
-      {
-         activeId = src.id.id;
-         break;
-      }
-   }
-
-   bool walkDownOverrides = (activeId != 0);
-   while (walkDownOverrides)
-   {
-      walkDownOverrides = false;
-      for (const auto& src : sources)
-      {
-         if (src.overrideId.id == activeId)
-         {
-            activeId = src.id.id;
-            walkDownOverrides = true;
-            break;
-         }
-      }
-   }
-
-   if (m_activeAudioSourceId != activeId)
-   {
-      if (m_activeAudioSourceId != 0)
-      {
-         const auto &entry = m_audioStreams.find(m_activeAudioSourceId);
-         if (entry != m_audioStreams.end() && m_audioPlayer->IsOpened(entry->second))
-         {
-            m_audioPlayer->CloseAudioStream(entry->second, false);
-            m_audioStreams.erase(entry);
-         }
-      }
-      m_activeAudioSourceId = activeId;
-   }
+   const float backglassVolume = m_PlayMusic ? dequantizeSignedPercent(m_MusicVolume) : 0.f;
+   const float playfieldVolume = m_PlaySound ? dequantizeSignedPercent(m_SoundVolume) : 0.f;
+   m_audioPlayer->SetMainVolume(backglassVolume, playfieldVolume);
 }
 
 void Player::PauseMusic()

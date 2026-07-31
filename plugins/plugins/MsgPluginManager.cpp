@@ -86,6 +86,8 @@ MsgPluginManager::~MsgPluginManager()
 ///////////////////////////////////////////////////////////////////////////////
 // Message API
 
+void MsgPluginManager::AssertAPIThread() { assert(m_apiThread == std::this_thread::get_id()); }
+
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
@@ -105,7 +107,7 @@ unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
@@ -120,7 +122,7 @@ void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInf
 unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
 
    MsgEntry* freeMsg = nullptr;
    const std::string_view namespaceView { name_space };
@@ -149,7 +151,7 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
 void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
@@ -163,7 +165,7 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
 void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
@@ -180,7 +182,7 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
 void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
@@ -192,7 +194,7 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
 void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId <= pm.m_plugins.size());
@@ -224,7 +226,7 @@ void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
 void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    if (pm.m_settingHandler == nullptr)
       return;
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
@@ -281,7 +283,7 @@ void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double d
 void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
 {
    MsgPluginManager& pm = *MsgPluginManager::m_pluginManager;
-   assert(std::this_thread::get_id() == pm.m_apiThread);
+   pm.AssertAPIThread();
    
    bool modified = true; // The callbacks may result in new callbacks being registered, so continue until we have no more pending ones
    while (modified)
@@ -310,7 +312,7 @@ void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
 
 void MsgPluginManager::ProcessAsyncCallbacks()
 {
-   assert(std::this_thread::get_id() == m_apiThread);
+   AssertAPIThread();
    if (m_timers.empty())
       return;
    std::list<TimerEntry> timers;

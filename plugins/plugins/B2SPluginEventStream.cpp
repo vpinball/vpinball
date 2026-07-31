@@ -101,9 +101,9 @@ void B2SPluginEventStream::OnControllersChanged(const unsigned int eventId, void
       {
          string gameId = controller.gameId;
          if (gameId.starts_with(pinmamePrefix))
-            pinmameEndPoint = controller.ctrlEndpointId;
+            pinmameEndPoint = controller.endpointId;
          else if (gameId.starts_with(b2sPrefix))
-            b2sEndPoint = controller.ctrlEndpointId;
+            b2sEndPoint = controller.endpointId;
          if (pinmameEndPoint != 0 && b2sEndPoint != 0)
             break;
       }

@@ -26,14 +26,23 @@ WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsign
    , m_volume(0.5f)
    , m_sampleRate(44100)
    , m_channels(2)
+   , m_getAudioSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG))
+   , m_onAudioSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG))
+   , m_audioSrcDef({ .id = { endpointId, nextAudioResId }, .overrideId = { 0, 0 }, .name = "WMP Player", .desc = "WMP Player audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS })
+   , m_streamId({ endpointId, nextAudioResId })
 {
-   m_audioResId.endpointId = m_endpointId;
-   m_audioResId.resId = nextAudioResId++;
+   nextAudioResId++;
+   m_msgApi->SubscribeMsg(m_endpointId, m_getAudioSrcId, OnGetAudioSrc, this);
+   m_msgApi->BroadcastMsg(m_endpointId, m_onAudioSrcChangedId, nullptr);
 }
 
 WMPAudioPlayer::~WMPAudioPlayer()
 {
    UnloadFile();
+   m_msgApi->UnsubscribeMsg(m_getAudioSrcId, OnGetAudioSrc, this);
+   m_msgApi->BroadcastMsg(m_endpointId, m_onAudioSrcChangedId, nullptr);
+   m_msgApi->ReleaseMsgID(m_getAudioSrcId);
+   m_msgApi->ReleaseMsgID(m_onAudioSrcChangedId);
 }
 
 bool WMPAudioPlayer::LoadFile(const string& filepath)
@@ -261,12 +270,21 @@ void WMPAudioPlayer::OnEngineProcess(float* pFramesOut, ma_uint64 frameCount)
    }
 }
 
+void WMPAudioPlayer::OnGetAudioSrc(const unsigned int eventId, void* context, void* msgData)
+{
+   auto me = static_cast<WMPAudioPlayer*>(context);
+   auto msg = static_cast<GetAudioSrcMsg*>(msgData);
+   if (msg->count < msg->maxEntryCount)
+      msg->entries[msg->count] = me->m_audioSrcDef;
+   msg->count++;
+}
+
 void WMPAudioPlayer::SendClear()
 {
    AudioUpdateMsg* pAudioUpdateMsg = new AudioUpdateMsg();
-   pAudioUpdateMsg->id = m_audioResId;
+   pAudioUpdateMsg->sourceId = m_audioSrcDef.id;
+   pAudioUpdateMsg->streamId = m_streamId;
    pAudioUpdateMsg->buffer = nullptr;
-   pAudioUpdateMsg->bufferSize = 0;
 
    AudioCallbackData* cbData = new AudioCallbackData{m_msgApi, m_endpointId, m_onAudioUpdateId, pAudioUpdateMsg};
 
@@ -286,9 +304,10 @@ void WMPAudioPlayer::SendAudioChunk(const float* samples, size_t frameCount)
    const size_t bufferSizeBytes = frameCount * m_channels * sizeof(float);
 
    AudioUpdateMsg* pAudioUpdateMsg = new AudioUpdateMsg();
-   pAudioUpdateMsg->id = m_audioResId;
-   pAudioUpdateMsg->type = (m_channels == 1) ? CTLPI_AUDIO_SRC_BACKGLASS_MONO : CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
-   pAudioUpdateMsg->format = CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
+   pAudioUpdateMsg->sourceId = m_audioSrcDef.id;
+   pAudioUpdateMsg->streamId = m_streamId;
+   pAudioUpdateMsg->channelFormat = (m_channels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
+   pAudioUpdateMsg->sampleFormat = CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
    pAudioUpdateMsg->sampleRate = m_sampleRate;
    pAudioUpdateMsg->volume = m_volume.load();
    pAudioUpdateMsg->bufferSize = static_cast<unsigned int>(bufferSizeBytes);

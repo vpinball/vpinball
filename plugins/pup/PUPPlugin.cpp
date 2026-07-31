@@ -163,58 +163,45 @@ void DeleteTexture(VPXTexture texture)
 //
 
 static unsigned int onAudioUpdateId;
-static vector<uint32_t> freeAudioStreamId;
-uint32_t nextAudioStreamId = 1;
 
-CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
+void UpdateAudioStream(AudioUpdateMsg* msg)
 {
    if (msg->volume == 0.0f)
    {
-      StopAudioStream(msg->id);
-      return {};
+      StopAudioStream(msg->streamId.resId);
    }
-   CtlResId id = msg->id;
-   if (id.id == 0)
+   else
    {
-      id.endpointId = endpointId;
-      if (freeAudioStreamId.empty())
-      {
-         id.resId = nextAudioStreamId;
-         nextAudioStreamId++;
-      }
-      else
-      {
-         id.resId = freeAudioStreamId.back();
-         freeAudioStreamId.pop_back();
-      }
-      msg->id = id;
+      msg->sourceId = { endpointId, 0 };
+      msg->streamId.endpointId = endpointId;
+      msgApi->RunOnMainThread(
+         endpointId, 0,
+         [](void* userData)
+         {
+            AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+            msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
+            if (LibAV::LibAV::GetInstance().isLoaded)
+               LibAV::LibAV::GetInstance()._av_free(msg->buffer);
+            delete msg;
+         },
+         msg);
    }
+}
+
+void StopAudioStream(uint32_t streamId)
+{
+   if (streamId == 0)
+      return;
+
+   AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
+   pendingAudioUpdate->sourceId = { endpointId, 0 };
+   pendingAudioUpdate->streamId = { endpointId, streamId };
+   pendingAudioUpdate->buffer = nullptr;
    msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
       AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
       msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-      if (LibAV::LibAV::GetInstance().isLoaded)
-         LibAV::LibAV::GetInstance()._av_free(msg->buffer);
       delete msg;
-   }, msg);
-   return id;
-}
-
-void StopAudioStream(const CtlResId& id)
-{
-   if (id.id != 0)
-   {
-      // Recycle stream id
-      freeAudioStreamId.push_back(id.resId);
-      // Send an end of stream message
-      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
-      memset(pendingAudioUpdate, 0, sizeof(AudioUpdateMsg));
-      pendingAudioUpdate->id.id = id.id;
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
-         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-         delete msg;
-      }, pendingAudioUpdate);
-   }
+   }, pendingAudioUpdate);
 }
 
 
@@ -226,25 +213,18 @@ static void OnControllersChanged(const unsigned int eventId, void* userData, voi
 {
    // Enumerate and select the first controller exposing a PinMAME compatible game
    string selectedGameId;
-   GetControllersMsg getControllersMsg = { 0, 0, nullptr };
-   msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
-   if (getControllersMsg.count > 0)
+   const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+   for (const auto& controller : GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
    {
-      const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-      vector<ControllerDef> controllers(getControllersMsg.count);
-      getControllersMsg = { getControllersMsg.count, 0, controllers.data() };
-      msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
-      for (const auto& controller : controllers)
+      string gameId = controller.gameId;
+      if (gameId.starts_with(pinmamePrefix))
       {
-         string gameId = controller.gameId;
-         if (gameId.starts_with(pinmamePrefix))
-         {
-            selectedGameId = gameId.substr(pinmamePrefix.length());
-            if (!selectedGameId.empty())
-               break;
-         }
+         selectedGameId = gameId.substr(pinmamePrefix.length());
+         if (!selectedGameId.empty())
+            break;
       }
    }
+
    if (currentGameId == selectedGameId)
       return;
    

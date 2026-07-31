@@ -7,10 +7,6 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h" // Only used for optional feature (locating PinMAME files along a VPX table)
 
-#include <filesystem>
-#include <cassert>
-#include <charconv>
-
 #include "Rom.h"
 #include "Roms.h"
 #include "Settings.h"
@@ -20,7 +16,13 @@
 #include "ControllerSettings.h"
 #include "Controller.h"
 
-namespace PinMAME {
+#include <filesystem>
+#include <cassert>
+#include <charconv>
+#include <mutex>
+
+namespace PinMAME
+{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Scriptable object definitions
@@ -242,62 +244,68 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
 static unsigned int onAudioUpdateId;
 static unsigned int onAudioSrcChangedId;
 static unsigned int getAudioSrcId;
-static AudioUpdateMsg* audioSrc = nullptr;
-static AudioSrcId audioSrcDef = {};
+static std::unique_ptr<AudioUpdateMsg> audioUpdate;
+static std::mutex audioMutex;
+static AudioSrcId audioSrcDef = { .id = { 0, 0 }, .overrideId = { 0, 0 }, .name = "PinMAME", .desc = "PinMAME audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS };
 
 static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData)
 {
+   // MsgAPI thread
+   std::lock_guard lock(audioMutex);
+   if (audioUpdate == nullptr)
+      return;
+
    GetAudioSrcMsg* msg = static_cast<GetAudioSrcMsg*>(msgData);
-   if (audioSrc != nullptr && msg->count < msg->maxEntryCount)
+   if (msg->count < msg->maxEntryCount)
       memcpy(&msg->entries[msg->count], &audioSrcDef, sizeof(AudioSrcId));
-   if (audioSrc != nullptr)
-      msg->count++;
+   msg->count++;
 }
 
 static void StopAudioStream()
 {
-   if (audioSrc != nullptr)
-   {
-      // Send an end of stream message
-      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
-      memcpy(pendingAudioUpdate, audioSrc, sizeof(AudioUpdateMsg));
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-            AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
-            msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-            delete msg;
-         }, pendingAudioUpdate);
-      delete audioSrc;
-      audioSrc = nullptr;
-      memset(&audioSrcDef, 0, sizeof(audioSrcDef));
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-            msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
-         }, nullptr);
-   }
+   // MsgAPI or PinMAME thread
+   std::unique_lock lock(audioMutex);
+   if (audioUpdate == nullptr)
+      return;
+
+   AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
+   pendingAudioUpdate->sourceId = audioUpdate->sourceId;
+   pendingAudioUpdate->streamId = audioUpdate->streamId;
+   pendingAudioUpdate->buffer = nullptr;
+   audioUpdate = nullptr;
+   lock.unlock();
+
+   msgApi->RunOnMainThread(
+      endpointId, 0,
+      [](void* userData)
+      {
+         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg); // End of stream
+         msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr); // Audio source change
+         delete msg;
+      },
+      pendingAudioUpdate);
 }
 
 int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData)
 {
-   LOGI(std::format("format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}", p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT",
-      p_audioInfo->channels, p_audioInfo->sampleRate,
-      p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame, p_audioInfo->bufferSize));
-   if (((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT))
-      && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
+   // PinMAME thread
+   LOGI(std::format("format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}",
+      p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT", p_audioInfo->channels, p_audioInfo->sampleRate, p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame,
+      p_audioInfo->bufferSize));
+   if (((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT)) && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
    {
-      audioSrc = new AudioUpdateMsg();
-      audioSrc->volume = 1.0f;
-      audioSrc->id = { endpointId, 0 };
-      audioSrc->type = (p_audioInfo->channels == 1) ? CTLPI_AUDIO_SRC_BACKGLASS_MONO : CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
-      audioSrc->format = (p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) ? CTLPI_AUDIO_FORMAT_SAMPLE_INT16 : CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
-      audioSrc->sampleRate = p_audioInfo->sampleRate;
+      std::unique_lock lock(audioMutex);
+      audioUpdate = std::make_unique<AudioUpdateMsg>();
+      audioUpdate->volume = 1.0f;
+      audioUpdate->sourceId = { endpointId, 0 }; // Source is always tied to endpoint
+      audioUpdate->streamId = { endpointId, 0 }; // Single stream source
+      audioUpdate->channelFormat = (p_audioInfo->channels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
+      audioUpdate->sampleFormat = (p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) ? CTLPI_AUDIO_FORMAT_SAMPLE_INT16 : CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
+      audioUpdate->sampleRate = p_audioInfo->sampleRate;
+      lock.unlock();
 
-      audioSrcDef.id = audioSrc->id;
-      audioSrcDef.overrideId = { 0, 0 };
-      audioSrcDef.type = audioSrc->type;
-      audioSrcDef.format = audioSrc->format;
-      audioSrcDef.sampleRate = audioSrc->sampleRate;
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-            msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr);
-         }, nullptr);
+      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr); }, nullptr);
    }
    else
    {
@@ -308,24 +316,28 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const 
 
 int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUserData)
 {
-   if (audioSrc != nullptr)
-   {
-      // This callback is invoked on the emulation thread, with data only valid in the context of the call.
-      // Therefore, we need to copy the data to feed them on the message thread.
-      const int bytePerSample = (audioSrc->format == CTLPI_AUDIO_FORMAT_SAMPLE_INT16) ? 2 : 4;
-      const int nChannels = (audioSrc->type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
-      memcpy(pendingAudioUpdate, audioSrc, sizeof(AudioUpdateMsg));
-      pendingAudioUpdate->bufferSize = samples * bytePerSample * nChannels;
-      pendingAudioUpdate->buffer = new uint8_t[pendingAudioUpdate->bufferSize];
-      memcpy(pendingAudioUpdate->buffer, p_buffer, pendingAudioUpdate->bufferSize);
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-            AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
-            msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-            delete[] msg->buffer;
-            delete msg;
-         }, pendingAudioUpdate);
-   }
+   // PinMAME thread
+   std::unique_lock lock(audioMutex);
+   if (audioUpdate == nullptr)
+      return samples;
+
+   AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
+   memcpy(pendingAudioUpdate, audioUpdate.get(), sizeof(AudioUpdateMsg));
+   lock.unlock();
+
+   // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
+   const int bytePerSample = (audioUpdate->sampleFormat == CTLPI_AUDIO_FORMAT_SAMPLE_INT16) ? 2 : 4;
+   const int nChannels = (audioUpdate->channelFormat == CTLPI_AUDIO_FORMAT_CHANNEL_MONO) ? 1 : 2;
+   pendingAudioUpdate->bufferSize = samples * bytePerSample * nChannels;
+   pendingAudioUpdate->buffer = new uint8_t[pendingAudioUpdate->bufferSize];
+   memcpy(pendingAudioUpdate->buffer, p_buffer, pendingAudioUpdate->bufferSize);
+
+   msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
+         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
+         delete[] msg->buffer;
+         delete msg;
+      }, pendingAudioUpdate);
    return samples;
 }
 
@@ -369,6 +381,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
+
+   audioSrcDef.id.endpointId = endpointId;
 
    msgApi->RegisterSetting(endpointId, &enableSoundProp);
    msgApi->RegisterSetting(endpointId, &pinMAMEPathProp);

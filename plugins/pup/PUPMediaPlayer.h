@@ -93,7 +93,8 @@ private:
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
    void* m_pAudioLoop = nullptr;
    int m_audioFreq = 0;
-   CtlResId m_audioResId {};
+   uint32_t m_audioStreamId;
+   static std::atomic<uint32_t> m_nextAudioStreamId;
 
    std::mutex m_mutex;
    std::thread m_thread;
