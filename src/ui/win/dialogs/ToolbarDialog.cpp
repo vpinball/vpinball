@@ -65,6 +65,11 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_INSERT_RUBBER, m_rubberButton);
     AttachItem(IDC_TURN_VR_ON, m_vrCombo);
 
+#ifndef ENABLE_BGFX
+    GetDlgItem(IDC_VR_MODE).ShowWindow(SW_HIDE);
+    m_vrCombo.ShowWindow(SW_HIDE);
+#endif
+
     m_tooltip.Create(GetHwnd());
     m_tooltip.AddTool(m_magnifyButton, _T("Zoom in/out"));
     m_tooltip.AddTool(m_selectButton, _T("Select Element"));
@@ -266,8 +271,6 @@ void ToolbarDialog::EnableButtons()
         m_lightButton.EnableWindow(FALSE);
         m_timerButton.EnableWindow(FALSE);
         m_lightseqButton.EnableWindow(FALSE);
-
-        m_vrCombo.EnableWindow(FALSE);
     }
     else
     {
@@ -304,8 +307,6 @@ void ToolbarDialog::EnableButtons()
         m_kickerButton.EnableWindow(lockableNoBG);
         m_primitiveButton.EnableWindow(lockableNoBG);
         m_rubberButton.EnableWindow(lockableNoBG);
-
-        m_vrCombo.EnableWindow(TRUE);
     }
 }
 
