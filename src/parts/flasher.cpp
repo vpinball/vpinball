@@ -1395,31 +1395,41 @@ void Flasher::Render(const unsigned int renderMask)
          {
             const float width = m_maxx - m_minx;
             const float height = m_maxy - m_miny;
-            m_renderer->m_renderDevice->ResetRenderState();
             m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             // Draw a solid black background using the common flasher mesh and transform
+            m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
             m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
-            m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, Vertex3Ds(0.f, 0.f, 0.f), m_d.m_depthBias - m_d.m_height, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_renderer->m_renderDevice->DrawMesh(
+               m_renderer->m_renderDevice->m_basicShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
             m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
             // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
             Matrix3D transform;
+            VPXRenderContext2D *context;
             if (m_desktopBackdrop)
             {
-               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
+               const float sx = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth()) / static_cast<float>(EDITOR_BG_WIDTH);
+               const float sy = static_cast<float>(m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight()) / static_cast<float>(EDITOR_BG_HEIGHT);
+               const float w = width * sx;
+               const float h = height * sy;
+               transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(w, h, 0.f) //
                   * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
-                  * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f);
+                  * Matrix3D::MatrixTranslate(m_minx * sx + 0.5f * w, m_miny * sy + 0.5f * h, 0.f); //
+               context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
+               context->outWidth = w;
+               context->outHeight = h;
             }
             else
             {
                transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
                   * ((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX))) //
                   * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, m_d.m_height);
+               context = &m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - pos.z, transform);
+               context->outWidth = width;
+               context->outHeight = height;
             }
-            VPXRenderContext2D &context
-               = m_renderer->GetAncillaryRenderContext(static_cast<VPXWindowId>(m_d.m_renderStyle), width, height, m_desktopBackdrop, true, m_d.m_depthBias - m_d.m_height, transform);
             for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
-               if (renderer.Render(&context, renderer.context))
+               if (renderer.Render(context, renderer.context))
                   break;
          }
          break;

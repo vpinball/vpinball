@@ -3080,8 +3080,6 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
    rdl->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
    rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
@@ -3104,8 +3102,8 @@ void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const floa
    const float ty2 = 1.f - (texY + texH) / (float)tex->height();
    Vertex3D_NoTex2 vertices[4] = { //
       { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 }, //
-      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 }, //
       { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 }, //
+      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 }, //
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 }
    };
    if (rotation != 0.f)
@@ -3134,10 +3132,8 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    rdl->ResetRenderState();
-   rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
    const float vx1 = srcX / ctx->srcWidth;
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
@@ -3180,13 +3176,11 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
    // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
    rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
    rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
    rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
    rdl->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    const float vx1 = srcX / ctx->srcWidth;
    const float vy1 = 1.f - srcY / ctx->srcHeight;
    const float vx2 = (srcX + srcW) / ctx->srcWidth;
