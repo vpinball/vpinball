@@ -293,7 +293,8 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const 
    LOGI(std::format("format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}",
       p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT", p_audioInfo->channels, p_audioInfo->sampleRate, p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame,
       p_audioInfo->bufferSize));
-   if (((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT)) && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
+   if (p_audioInfo->sampleRate > 0 && ((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT))
+      && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
    {
       std::unique_lock lock(audioMutex);
       audioUpdate = std::make_unique<AudioUpdateMsg>();
