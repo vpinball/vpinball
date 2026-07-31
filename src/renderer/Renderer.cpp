@@ -1414,7 +1414,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
    m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<const vec4*>(segs), 4);
    m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, true, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
-   m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
+   m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_Seg_world);
 }
 
 void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices,
@@ -1430,8 +1430,8 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f);
       m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
-      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd.get());
+      m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world);
    }
    // New DMD renderer
    else
@@ -1456,7 +1456,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
          0.5f + 0.5f * (m_dmdDotProperties[profile].x * (1.0f - m_dmdDotProperties[profile].y) /* Dot border darkening */), // Dot internal SDF threshold
          0.f); // Unused
       m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, dmd.get());
-      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_DMD : SHADER_TECHNIQUE_display_DMD_world);
+      m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_DMD_world);
    }
 }
 
@@ -1478,7 +1478,7 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
       static_cast<float>(4 * crt->width()), static_cast<float>(4 * crt->height()), // Output size
       0.f); // Unused
    m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, crt.get(), profile != 1 ? SF_NONE : SF_ANISOTROPIC);
-   m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_CRT : SHADER_TECHNIQUE_display_CRT_world);
+   m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_CRT_world);
 }
 
 void Renderer::DrawBulbLightBuffer()
@@ -3149,14 +3149,6 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
    static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
-   if (ctx->is2D)
-   {
-      for (int i = 0; i < 4; i++)
-      {
-         vertices[i].x = 2.f * vertices[i].x - 1.f;
-         vertices[i].y = 1.f - 2.f * vertices[i].y;
-      }
-   }
    if (style == VPXDMDStyle_Pixelated || style == VPXDMDStyle_Smoothed || style == VPXDMDStyle_CRT)
    {
       g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
@@ -3206,14 +3198,6 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
       { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
    };
    static_cast<AncillaryRenderSetup*>(ctx->rendererData)->displayTransform.TransformVertices(vertices, vertices, 4);
-   if (ctx->is2D)
-   {
-      for (int i = 0; i < 4; i++)
-      {
-         vertices[i].x = 2.f * vertices[i].x - 1.f;
-         vertices[i].y = 1.f - 2.f * vertices[i].y;
-      }
-   }
    g_pplayer->m_renderer->SetupSegmentRenderer(style, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
       isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB),
       glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), vec3(glassAmbientR, glassAmbientG, glassAmbientB));
@@ -3360,6 +3344,7 @@ void Renderer::DrawEmbeddedQuad(RenderTarget* outputRT, int x, int y, int w, int
    rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
    rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+   rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, 1.f, 1.f, 1.f, 1.f);
 }
 
 void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT)
@@ -3445,7 +3430,6 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       DrawEmbeddedQuad(outputRT, m_outputX, m_outputY + m_outputH - border, m_outputW, border, fr, fg, fb); // Bottom
       DrawEmbeddedQuad(outputRT, m_outputX, m_outputY + border, border, m_outputH - 2 * border, fr, fg, fb); // Left
       DrawEmbeddedQuad(outputRT, m_outputX + m_outputW - border, m_outputY + border, border, m_outputH - 2 * border, fr, fg, fb); // Right
-      UpdateBasicShaderMatrix();
    }
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
