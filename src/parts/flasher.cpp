@@ -1198,7 +1198,11 @@ void Flasher::Render(const unsigned int renderMask)
          Vertex3D_NoTex2 vert = m_vertices[i];
          tempMatrix.MultiplyVector(vert);
          if (m_desktopBackdrop)
+         {
+            vert.x = vert.x * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetWidth() / EDITOR_BG_WIDTH;
+            vert.y = vert.y * m_renderer->m_renderDevice->GetCurrentRenderTarget()->GetHeight() / EDITOR_BG_HEIGHT;
             vert.z = 1.f;
+         }
          m_transformedVertices[i] = vert;
          buf[i] = vert;
       }
@@ -1331,7 +1335,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
             const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-            m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupDMDRender(dmdProfile, m_desktopBackdrop, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
@@ -1356,7 +1360,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
-            m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupCRTRender(crtProfile, m_desktopBackdrop, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
@@ -1376,7 +1380,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
             const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
-            m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
+            m_renderer->SetupSegmentRenderer(renderStyle, m_desktopBackdrop, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
                m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices.data(),
                vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
@@ -1402,7 +1406,6 @@ void Flasher::Render(const unsigned int renderMask)
             Matrix3D transform;
             if (m_desktopBackdrop)
             {
-               m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true);
                transform = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixScale(width, height, 0.f) //
                   * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) // Desktop backdrop must be rendered with z=0, so no X and y rotation nor height, and a z scale at 0
                   * Matrix3D::MatrixTranslate(m_minx + 0.5f * width, m_miny + 0.5f * height, 0.f);
@@ -1418,8 +1421,6 @@ void Flasher::Render(const unsigned int renderMask)
             for (auto &renderer : g_pplayer->m_ancillaryWndRenderers[m_d.m_renderStyle])
                if (renderer.Render(&context, renderer.context))
                   break;
-            if (m_desktopBackdrop)
-               m_renderer->UpdateBasicShaderMatrix();
          }
          break;
       }
