@@ -1,0 +1,16 @@
+# Layout for Bally's game with a 192x256 CRT used 
+
+Width: 192
+Height: 256
+Fit: Contain
+
+Visuals:
+	- Screen:
+		Rect: [0,0,192,256]
+		Style: CRT
+		Size: [192, 256]
+		Glass:
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [128,0,192,256]
+			Ambient:   [0.2,0.2,0.2]

@@ -1,0 +1,11 @@
+# Default layout for 16x9 LCD displays like Stern's Spike
+
+Width: 16
+Height: 9
+Fit: Contain
+
+Visuals:
+	- Screen:
+		Rect: [0,0,16,9]
+		Style: LCD
+		Size: [16, 9]

@@ -185,7 +185,22 @@ void ScoreView::Parse(const std::filesystem::path& path)
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
          visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
          visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
-         visual->dmdSize = ivec2(-1, -1);
+         visual->displaySize = ivec2(-1, -1);
+      }
+      else if (key == "- Screen")
+      {
+         CHECK_FIELD(indent == 1);
+         expectedIndent = indent + 1;
+         layout.visuals.push_back({ VisualType::Screen });
+         visual = &layout.visuals.back();
+         visual->srcUri = "ctrl://default/display";
+         visual->liveStyle = 1; // Default to LCD
+         visual->tint = vec3(1.f, 1.f, 1.f);
+         visual->glassTint = vec3(1.f, 1.f, 1.f);
+         visual->glassAmbient = vec3(1.f, 1.f, 1.f);
+         visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->displaySize = ivec2(-1, -1);
       }
       else if (key == "- SegDisplay")
       {
@@ -258,6 +273,18 @@ void ScoreView::Parse(const std::filesystem::path& path)
                CHECK_FIELD(false);
             }
          }
+         else if (visual->type == VisualType::Screen)
+         {
+            if (value == "LCD")
+               visual->liveStyle = 1;
+            else if (value == "CRT")
+               visual->liveStyle = 2;
+            else
+            {
+               // Invalid style
+               CHECK_FIELD(false);
+            }
+         }
          else if (visual->type == VisualType::SegDisplay)
          {
             if (value == "Auto")
@@ -292,11 +319,11 @@ void ScoreView::Parse(const std::filesystem::path& path)
       }
       else if (key == "Size")
       {
-         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::DMD)); // DMD size
+         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::DMD || visual->type == VisualType::Screen)); // DMD & Screen size
          const auto size = parseArray(value);
          CHECK_FIELD(size.size() == 2);
-         visual->dmdSize.x = static_cast<int>(size[0]);
-         visual->dmdSize.y = static_cast<int>(size[1]);
+         visual->displaySize.x = static_cast<int>(size[0]);
+         visual->displaySize.y = static_cast<int>(size[1]);
       }
       else if (key == "Type")
       {
@@ -378,9 +405,17 @@ void ScoreView::Parse(const std::filesystem::path& path)
       switch (visual.type)
       {
       case VisualType::DMD:
-         if (visual.dmdSize.x < 0 || visual.dmdSize.y < 0)
+         if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
          {
             LOGE("DMD display needs Size to be defined in ScoreView file " + path.string());
+            return;
+         }
+         break;
+
+      case VisualType::Screen:
+         if (visual.displaySize.x < 0 || visual.displaySize.y < 0)
+         {
+            LOGE("Screen display needs Size to be defined in ScoreView file " + path.string());
             return;
          }
          break;
@@ -413,7 +448,7 @@ void ScoreView::Parse(const std::filesystem::path& path)
 
 void ScoreView::LoadGlass(Visual& visual)
 {
-   assert((visual.type == VisualType::DMD) || (visual.type == VisualType::SegDisplay));
+   assert((visual.type == VisualType::DMD) || (visual.type == VisualType::Screen) || (visual.type == VisualType::SegDisplay));
    if ((visual.glass == nullptr) && !visual.glassPath.empty())
    {
       auto texImage = m_images.find(visual.glassPath);
@@ -466,11 +501,27 @@ void ScoreView::Select(const float scoreW, const float scoreH)
          {
          case VisualType::DMD:
             display = m_resURIResolver.GetDisplayState(visual.srcUri);
-            if ((display.source == nullptr) || (display.source->width * visual.dmdSize.y != visual.dmdSize.x * display.source->height))
+            if ((display.source == nullptr) || (display.source->width * visual.displaySize.y != visual.displaySize.x * display.source->height)
+               || ((display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_UNKNOWN
+                  && (display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_NEON_PLASMA
+                  && (display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_RED_LED
+                  && (display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_RGB_LED))
                layout.unmatchedVisuals++;
             else
                layout.matchedVisuals += 10; // To favor DMD over alphanumeric seg displays
             break;
+
+         case VisualType::Screen:
+            display = m_resURIResolver.GetDisplayState(visual.srcUri);
+            if ((display.source == nullptr) || (display.source->width * visual.displaySize.y != visual.displaySize.x * display.source->height)
+               || ((display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_UNKNOWN
+                  && (display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY
+                  && (display.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK) != CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY))
+               layout.unmatchedVisuals++;
+            else
+               layout.matchedVisuals++;
+            break;
+
          case VisualType::SegDisplay:
             segDisplay = m_resURIResolver.GetSegDisplayState(visual.srcUri);
             if ((segDisplay.source == nullptr) || (segDisplay.source->nElements != visual.nElements))
@@ -478,6 +529,7 @@ void ScoreView::Select(const float scoreW, const float scoreH)
             else
                layout.matchedVisuals++;
             break;
+
          case VisualType::Image:
             break;
          }
@@ -538,6 +590,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
       switch (visual.type)
       {
       case VisualType::DMD:
+      case VisualType::Screen:
       {
          ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(visual.srcUri);
          if (dmd.state.frame == nullptr)
@@ -559,7 +612,19 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             glassArea.z = visual.glassArea.z / static_cast<float>(texInfo->width);
             glassArea.w = visual.glassArea.w / static_cast<float>(texInfo->height);
          }
-         ctx->DrawDisplay(ctx, static_cast<VPXDisplayRenderStyle>(visual.liveStyle),
+         VPXDisplayRenderStyle style;
+         if (visual.type == VisualType::DMD)
+            style = static_cast<VPXDisplayRenderStyle>(visual.liveStyle);
+         else
+         {
+            switch (visual.liveStyle)
+            {
+            case 1: style = VPXDMDStyle_Pixelated; break;
+            case 2: style = VPXDMDStyle_CRT; break;
+            default: style = VPXDMDStyle_Smoothed; break;
+            }
+         }
+         ctx->DrawDisplay(ctx, style,
             // First layer: glass
             visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
             glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
