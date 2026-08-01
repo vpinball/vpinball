@@ -84,7 +84,7 @@ private:
    };
    enum VisualType
    {
-      DMD, SegDisplay, Image
+      DMD, Screen, SegDisplay, Image
    };
    struct Visual
    {
@@ -105,8 +105,8 @@ private:
       VPXSegDisplayHint segFamilyHint;
       int nElements;
       std::vector<float> xOffsets;
-      // For DMD displays
-      ivec2 dmdSize;
+      // For DMD & screen displays
+      ivec2 displaySize;
       // Live data (not serialized)
       VPXTexture glass;
       VPXTexture dmdTex;
