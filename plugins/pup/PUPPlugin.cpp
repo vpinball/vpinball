@@ -169,6 +169,8 @@ void UpdateAudioStream(AudioUpdateMsg* msg)
    if (msg->volume == 0.0f)
    {
       StopAudioStream(msg->streamId.resId);
+      if (LibAV::LibAV::GetInstance().isLoaded)
+         LibAV::LibAV::GetInstance()._av_free(msg->buffer);
    }
    else
    {
@@ -190,9 +192,6 @@ void UpdateAudioStream(AudioUpdateMsg* msg)
 
 void StopAudioStream(uint32_t streamId)
 {
-   if (streamId == 0)
-      return;
-
    AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
    pendingAudioUpdate->sourceId = { endpointId, 0 };
    pendingAudioUpdate->streamId = { endpointId, streamId };

@@ -842,6 +842,10 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
       audioUpdate->volume = m_volume / 100.0f;
       UpdateAudioStream(audioUpdate);
    }
+   else
+   {
+      m_libAv._av_free(pBuffer);
+   }
 }
 
 #if defined(__clang__)
