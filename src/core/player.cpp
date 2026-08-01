@@ -777,7 +777,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    m_getAudioSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
-
+   OnAudioSrcChanged(m_onAudioSrcChangedMsgId, this, nullptr);
    m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
    m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAuxRendererChgId, OnAuxRendererChanged, this);
