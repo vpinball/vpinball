@@ -370,12 +370,7 @@ void Controller::UpdateStateSrc() const
    m_lamps.clear();
    m_lampMap.clear();
 
-   GetStateSrcMsg getStateMsg = { 0, 0, nullptr };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getStateSrcMsgId, &getStateMsg);
-   vector<StateSrcId> stateSources(getStateMsg.count);
-   getStateMsg = { getStateMsg.count, 0, stateSources.data() };
-   m_msgApi->BroadcastMsg(m_endpointId, m_getStateSrcMsgId, &getStateMsg);
-   for (const StateSrcId& src : stateSources)
+   for (const StateSrcId& src : GetCtrlItems<StateSrcId>(m_msgApi, m_endpointId, m_getStateSrcMsgId))
    {
       if (src.id.endpointId == m_endpointId)
       {
@@ -444,6 +439,19 @@ void Controller::UpdateStateSrc() const
          break;
       }
    }
+
+   // Applied cached DIP switch states that may have been defined before starting the machine
+   for (int i = 0; i < m_dipSwitchStates.size(); i++)
+   {
+      if (i < m_dipSwitchMap.size())
+      {
+         if (const unsigned int index = m_dipSwitchMap[i]; index < m_states.nStates)
+         {
+            uint8_t bv = (m_dipSwitchStates[i] != 0) ? 0xFF : 0;
+            m_states.SetState(index, CTLPI_STATE_TYPE_UINT8, &bv);
+         }
+      }
+   }
 }
 
 bool Controller::GetSwitch(int switchNo) const
@@ -485,41 +493,59 @@ void Controller::SetSwitch(int switchNo, bool state)
       }
 }
 
-int Controller::GetDip(int dipSwitchNo) const
+int Controller::GetDip(int nDipBank) const
 {
-   if (dipSwitchNo < 0)
+   if (nDipBank < 0)
       return false;
 
    UpdateStateSrc();
 
-   if (dipSwitchNo < m_dipSwitchMap.size())
-      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
+   uint8_t state = 0;
+   uint8_t result = 0;
+   for (int i = 0; i < 8; i++)
+   {
+      if (const int dipSwitchNo = nDipBank * 8 + i; dipSwitchNo < m_dipSwitchMap.size())
       {
-         uint8_t state = 0;
-         m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state);
-         return state != 0;
+         if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
+         {
+            if (m_states.GetState(index, CTLPI_STATE_TYPE_UINT8, &state) == 0 && state != 0)
+               result |= 1 << i;
+         }
       }
-
-   return dipSwitchNo < m_dipSwitchStates.size() ? m_dipSwitchStates[dipSwitchNo] : false;
+      else if (dipSwitchNo < m_dipSwitchStates.size())
+      {
+         if (m_dipSwitchStates[dipSwitchNo])
+            result |= 1 << i;
+      }
+   }
+   return result;
 }
 
-void Controller::SetDip(int dipSwitchNo, int state)
+void Controller::SetDip(int nDipBank, int byteState)
 {
-   if (dipSwitchNo < 0)
+   if (nDipBank < 0)
       return;
 
    UpdateStateSrc();
 
-   if (m_dipSwitchStates.size() < dipSwitchNo + 1)
-      m_dipSwitchStates.resize(dipSwitchNo + 1, false);
-   m_dipSwitchStates[dipSwitchNo] = state;
+   for (int i = 0; i < 8; i++)
+   {
+      const int dipSwitchNo = nDipBank * 8 + i;
+      bool state = (byteState & (1 << i)) != 0;
 
-   if (dipSwitchNo < m_dipSwitchMap.size())
-      if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
+      if (m_dipSwitchStates.size() < dipSwitchNo + 1)
+         m_dipSwitchStates.resize(dipSwitchNo + 1, false);
+      m_dipSwitchStates[dipSwitchNo] = state;
+
+      if (dipSwitchNo < m_dipSwitchMap.size())
       {
-         uint8_t bv = (state != 0) ? 0xFF : 0;
-         m_states.SetState(index, CTLPI_STATE_TYPE_UINT8, &bv);
+         if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_states.nStates)
+         {
+            uint8_t bv = (state != 0) ? 0xFF : 0;
+            m_states.SetState(index, CTLPI_STATE_TYPE_UINT8, &bv);
+         }
       }
+   }
 }
 
 long Controller::GetSolMask(int nLow) const
