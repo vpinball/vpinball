@@ -62,8 +62,8 @@ public:
    // Inputs
    bool GetSwitch(int nSwitchNo) const;
    void SetSwitch(int nSwitchNo, bool state);
-   int GetDip(int nNo) const;
-   void SetDip(int nNo, int state);
+   int GetDip(int nDipBank) const;
+   void SetDip(int nDipBank, int byteState);
 
    // Devices
    long GetSolMask(int nLow) const;
