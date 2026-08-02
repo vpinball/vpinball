@@ -16,7 +16,6 @@
 #include <mutex>
 #include <thread>
 #include <random>
-#include <vector>
 
 namespace Vni {
 
@@ -31,10 +30,12 @@ static unsigned int getControllersId;
 static string currentGameId;
 static unsigned int onDmdSrcChangedId;
 static unsigned int getDmdSrcId;
+static unsigned int onConsoleDataId;
 
 static bool isRunning = false;
 static std::mutex sourceMutex;
 static std::mutex stateMutex;
+static std::mutex consoleDataMutex;
 static std::thread colorizeThread;
 static DisplaySrcId dmdId = {};
 
@@ -77,6 +78,53 @@ public:
 
 static ColorizationState* state = nullptr;
 
+static uint8_t consoleData[4] = {};
+static uint32_t consoleDataSize = 0;
+
+static int HexDigit(const uint8_t value)
+{
+   if (value >= '0' && value <= '9')
+      return value - '0';
+   if (value >= 'A' && value <= 'F')
+      return value - 'A' + 10;
+   if (value >= 'a' && value <= 'f')
+      return value - 'a' + 10;
+   return -1;
+}
+
+static void OnConsoleData(const unsigned int, void*, void* msgData)
+{
+   const auto* msg = static_cast<const PinMAMEConsoleDataMsg*>(msgData);
+   if (msg == nullptr || msg->data == nullptr || msg->size == 0)
+      return;
+
+   std::lock_guard sourceLock(sourceMutex);
+   std::lock_guard consoleLock(consoleDataMutex);
+   for (uint32_t i = 0; i < msg->size; i++)
+   {
+      if (consoleDataSize < 4)
+         consoleData[consoleDataSize++] = msg->data[i];
+      else
+      {
+         consoleData[0] = consoleData[1];
+         consoleData[1] = consoleData[2];
+         consoleData[2] = consoleData[3];
+         consoleData[3] = msg->data[i];
+      }
+
+      if (consoleDataSize == 4 && consoleData[0] == 'P')
+      {
+         const int hi = HexDigit(consoleData[1]);
+         const int lo = HexDigit(consoleData[2]);
+         if (hi >= 0 && lo >= 0)
+         {
+            if (pVni != nullptr)
+               Vni_SetPalette(pVni, static_cast<uint32_t>((hi << 4) | lo));
+         }
+      }
+   }
+}
+
 static void ColorizeThread()
 {
    SetThreadName("Vni.ColorizeThread"s);
@@ -89,6 +137,8 @@ static void ColorizeThread()
       if (dmdId.id.id == 0)
          continue;
 
+      if (dmdId.GetIdentifyFrame == nullptr)
+         continue;
       const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
       if (frame.frame == nullptr)
          break;
@@ -97,7 +147,8 @@ static void ColorizeThread()
       {
          lastFrameId = frame.frameId;
          const uint8_t bitlen = dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 ? 4 : 2;
-         const uint32_t result = Vni_Colorize(pVni, static_cast<const uint8_t*>(frame.frame), dmdId.width, dmdId.height, bitlen);          
+         const uint8_t* indexed = static_cast<const uint8_t*>(frame.frame);
+         const uint32_t result = Vni_Colorize(pVni, indexed, dmdId.width, dmdId.height, bitlen);
          if (result)
          {
             const Vni_Frame_Struc* vniFrame = Vni_GetFrame(pVni);
@@ -174,9 +225,10 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
    msgApi->BroadcastMsg(endpointId, getDmdSrcId, &getSrcMsg);
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
-      if (getSrcMsg.entries[i].GetIdentifyFrame != nullptr && getSrcMsg.entries[i].width >= 128)
+      const DisplaySrcId& candidate = getSrcMsg.entries[i];
+      if (candidate.id.endpointId != endpointId && candidate.GetIdentifyFrame != nullptr && candidate.width >= 128)
       {
-         dmdId = getSrcMsg.entries[i];
+         dmdId = candidate;
          break;
       }
    }
@@ -188,6 +240,10 @@ static void StopColorization()
    isRunning = false;
    if (colorizeThread.joinable())
       colorizeThread.join();
+   {
+      std::lock_guard lock(consoleDataMutex);
+      consoleDataSize = 0;
+   }
    if (pVni)
    {
       delete state;
@@ -282,6 +338,7 @@ static void OnControllersChanged(const unsigned int eventId, void* userData, voi
       }
    }
 
+
    if (palPath.empty())
    {
       LOGI("No PAL file found for " + currentGameId);
@@ -326,6 +383,9 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), OnDmdSrcChanged, nullptr);
    msgApi->SubscribeMsg(endpointId, getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), OnGetRenderDMDSrc, nullptr);
 
+   onConsoleDataId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA);
+   msgApi->SubscribeMsg(endpointId, onConsoleDataId, OnConsoleData, nullptr);
+
    onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG);
    getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
    msgApi->SubscribeMsg(endpointId, onControllersChangedId, OnControllersChanged, nullptr);
@@ -337,11 +397,13 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
    StopColorization();
    msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc, nullptr);
    msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged, nullptr);
+   msgApi->UnsubscribeMsg(onConsoleDataId, OnConsoleData, nullptr);
    msgApi->UnsubscribeMsg(onControllersChangedId, OnControllersChanged, nullptr);
    msgApi->ReleaseMsgID(onControllersChangedId);
    msgApi->ReleaseMsgID(getControllersId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
+   msgApi->ReleaseMsgID(onConsoleDataId);
    msgApi->FlushPendingCallbacks(endpointId);
    msgApi = nullptr;
 }
