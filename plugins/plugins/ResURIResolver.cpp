@@ -82,36 +82,21 @@ bool ResURIResolver::try_parse_int(const string &str, int &value)
 void ResURIResolver::OnStateSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetStateSrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getStateSrcMsgId, &getSrcMsg);
-   me->m_stateSources.clear();
-   me->m_stateSources.resize(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, me->m_stateSources.data() };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getStateSrcMsgId, &getSrcMsg);
+   GetCtrlItems<StateSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getStateSrcMsgId, me->m_stateSources);
    me->m_floatCache.clear();
 }
 
 void ResURIResolver::OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetSegSrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getSegSrcMsgId, &getSrcMsg);
-   me->m_segSources.clear();
-   me->m_segSources.resize(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, me->m_segSources.data() };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getSegSrcMsgId, &getSrcMsg);
+   GetCtrlItems<SegSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getSegSrcMsgId, me->m_segSources);
    me->m_segCache.clear();
 }
 
 void ResURIResolver::OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getDisplaySrcMsgId, &getSrcMsg);
-   me->m_displaySources.clear();
-   me->m_displaySources.resize(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, me->m_displaySources.data() };
-   me->m_msgAPI.BroadcastMsg(me->m_endpointId, me->m_getDisplaySrcMsgId, &getSrcMsg);
+   GetCtrlItems<DisplaySrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getDisplaySrcMsgId, me->m_displaySources);
    me->m_displayCache.clear();
 }
 
