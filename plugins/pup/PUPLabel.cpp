@@ -261,6 +261,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    switch (json["mt"s].as<int>(0))
    {
    case 1:
+   {
       /* Animate
             at = animate type
             len = length in ms of animation
@@ -276,118 +277,114 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                tt = tween index....yup supports 0-10 different tweens of movement between start and end.
                mColor = ?
          */
+      std::lock_guard lock(m_mutex);
+      switch (json["at"s].as<int>(0))
       {
-         std::lock_guard lock(m_mutex);
-         switch (json["at"s].as<int>(0))
+      case 1:
+         // See pDMDLabelFlash - fq is the toggle interval in milliseconds, fc is optional
+         if (json["len"s].exists() && json["fq"s].exists() && json["fq"s].as<int>() > 0)
+            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(), json["fc"s].as<int>(m_color), json["fq"s].as<int>());
+         else
          {
-         case 1:
-            // See pDMDLabelFlash - fq is the toggle interval in milliseconds, fc is optional
-            if (json["len"s].exists() && json["fq"s].exists() && json["fq"s].as<int>() > 0)
-               m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(), json["fc"s].as<int>(m_color), json["fq"s].as<int>());
-            else
-            {
-               LOGE("Invalid label animation specified: {" + szSpecial + '}');
-            }
-            break;
-            
-         case 2:
-            // See pDMDLabelMoveHorz / pDMDLabelMoveVert / pDMDLabelMoveTO
-            // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade - af = alpha fade start time (ms before end)
-            if (json["len"s].exists())
-            {
-               int len = json["len"s].as<int>();
-               int mlen = json["mlen"s].as<int>(0);
-               if (mlen == 0) mlen = len;
-               m_animation = std::make_unique<Animation>(this, len, json["fc"s].as<int>(m_color),
-                  static_cast<float>(json["xps"s].as<double>(0)), static_cast<float>(json["xpe"s].as<double>(0)),
-                  static_cast<float>(json["yps"s].as<double>(0)), static_cast<float>(json["ype"s].as<double>(0)),
-                  mlen, json["tt"s].as<int>(0), json["mColor"s].as<int>(m_color));
-               m_animation->m_alphaFade = json["af"s].as<int>(0);
-            }
-            else
-            {
-               LOGE("Invalid label animation specified: {" + szSpecial + '}');
-            }
-            break;
+            LOGE("Invalid label animation specified: {" + szSpecial + '}');
+         }
+         break;
 
-         case 3:
+      case 2:
+         // See pDMDLabelMoveHorz / pDMDLabelMoveVert / pDMDLabelMoveTO
+         // See pDMDLabelMoveHorzFade / pDMDLabelMoveVertFade - af = alpha fade start time (ms before end)
+         if (json["len"s].exists())
          {
-            // See pDMDZoomBig - zoom from hstart% to hend% over len ms
-            float hstart = static_cast<float>(json["hstart"s].as<double>(100));  // default 100% (normal size)
-            float hend = static_cast<float>(json["hend"s].as<double>(200));    // default 200% (double size)
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), hstart, hend, 0);  // 1000ms fallback
-            break;
+            int len = json["len"s].as<int>();
+            int mlen = json["mlen"s].as<int>(0);
+            if (mlen == 0)
+               mlen = len;
+            m_animation = std::make_unique<Animation>(this, len, json["fc"s].as<int>(m_color), static_cast<float>(json["xps"s].as<double>(0)), static_cast<float>(json["xpe"s].as<double>(0)),
+               static_cast<float>(json["yps"s].as<double>(0)), static_cast<float>(json["ype"s].as<double>(0)), mlen, json["tt"s].as<int>(0), json["mColor"s].as<int>(m_color));
+            m_animation->m_alphaFade = json["af"s].as<int>(0);
          }
-
-         case 4:
+         else
          {
-            // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart% and hend%
-            // See pDMDLabelPulseNumber - numstart/numend count up during animation.
-            // pspeed=0 means use a default bounce speed derived from the zoom range.
-            float hstart = static_cast<float>(json["hstart"s].as<double>(80)); // default 80% from pDMDLabelPulseText
-            float hend = static_cast<float>(json["hend"s].as<double>(120));    // default 120% from pDMDLabelPulseText
-            int pspeed = json["pspeed"s].as<int>(0);
-            if (pspeed == 0)
-               pspeed = std::max(1, static_cast<int>(hend - hstart));
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), hstart, hend, pspeed);  // 3000ms fallback if len missing
-            m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN); // INT_MIN = no number counting
-            m_animation->m_numEnd = json["numend"s].as<int>(INT_MIN);
-            m_animation->m_numFormat = json["numformat"s].as<int>(0);     // 0=plain, 1=thousands separators
-            break;
+            LOGE("Invalid label animation specified: {" + szSpecial + '}');
          }
+         break;
 
-         case 5:
-         {
-            // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over len ms
-            int astart = json["astart"s].as<int>(255); // default 255 (fully visible) from pDMDLabelFadeOut
-            int aend = json["aend"s].as<int>(0);       // default 0 (invisible) from pDMDLabelFadeOut
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, false);  // 1000ms fallback
-            break;
-         }
-
-         case 6:
-         {
-            // See pDMDLabelFadePulse - alpha oscillates between astart and aend
-            int astart = json["astart"s].as<int>(70); // default 70 (dim) from pDMDLabelFadePulse
-            int aend = json["aend"s].as<int>(255);    // default 255 (full) from pDMDLabelFadePulse
-            int pspeed = json["pspeed"s].as<int>(40); // default 40 (alpha units per tick) from pDMDLabelFadePulse
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), astart, aend, pspeed, false);  // 3000ms fallback
-            break;
-         }
-
-         case 7:
-         {
-            // See pDMDScreenFadeOut / pDMDScreenFadeIn - same as at=5 but for parent screen
-            int astart = json["astart"s].as<int>(255); // default 255 from pDMDScreenFadeOut
-            int aend = json["aend"s].as<int>(0);       // default 0 from pDMDScreenFadeOut
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, true);  // 1000ms fallback
-            break;
-         }
-
-         case 8:
-         {
-            // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend
-            float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f;  // default -4.5 deg from pDMDLabelWiggleText
-            float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f;       // default +4.5 deg from pDMDLabelWiggleText
-            int rspeed = json["rspeed"s].as<int>(5);   // default 5 from pDMDLabelWiggleText, 0 = use range as speed
-            if (rspeed == 0)
-               rspeed = std::max(1, static_cast<int>(fabsf(rend - rstart)));
-            m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), rstart, rend, rspeed, 0);  // 3000ms fallback
-            break;
-         }
-
-         case 10:
-            // See pDMDLabelClone / pDMDLabelCloneDelay - delayed show.
-            // True cloning (creating a duplicate label) is not yet implemented
-            NOT_IMPLEMENTED("at=10 clone not implemented"s);
-            break;
-
-         default:
-            LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(json["at"s].as<int>(0)));
-            break;
-         }
+      case 3:
+      {
+         // See pDMDZoomBig - zoom from hstart% to hend% over len ms
+         float hstart = static_cast<float>(json["hstart"s].as<double>(100)); // default 100% (normal size)
+         float hend = static_cast<float>(json["hend"s].as<double>(200)); // default 200% (double size)
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), hstart, hend, 0); // 1000ms fallback
+         break;
       }
-      break;
+
+      case 4:
+      {
+         // See pDMDLabelPulseText / pDMDLabelPulseImage - bounce zoom between hstart% and hend%
+         // See pDMDLabelPulseNumber - numstart/numend count up during animation.
+         // pspeed=0 means use a default bounce speed derived from the zoom range.
+         float hstart = static_cast<float>(json["hstart"s].as<double>(80)); // default 80% from pDMDLabelPulseText
+         float hend = static_cast<float>(json["hend"s].as<double>(120)); // default 120% from pDMDLabelPulseText
+         int pspeed = json["pspeed"s].as<int>(0);
+         if (pspeed == 0)
+            pspeed = std::max(1, static_cast<int>(hend - hstart));
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), hstart, hend, pspeed); // 3000ms fallback if len missing
+         m_animation->m_numStart = json["numstart"s].as<int>(INT_MIN); // INT_MIN = no number counting
+         m_animation->m_numEnd = json["numend"s].as<int>(INT_MIN);
+         m_animation->m_numFormat = json["numformat"s].as<int>(0); // 0=plain, 1=thousands separators
+         break;
+      }
+
+      case 5:
+      {
+         // See pDMDLabelFadeOut / pDMDLabelFadeIn - alpha ease from astart to aend over len ms
+         int astart = json["astart"s].as<int>(255); // default 255 (fully visible) from pDMDLabelFadeOut
+         int aend = json["aend"s].as<int>(0); // default 0 (invisible) from pDMDLabelFadeOut
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, false); // 1000ms fallback
+         break;
+      }
+
+      case 6:
+      {
+         // See pDMDLabelFadePulse - alpha oscillates between astart and aend
+         int astart = json["astart"s].as<int>(70); // default 70 (dim) from pDMDLabelFadePulse
+         int aend = json["aend"s].as<int>(255); // default 255 (full) from pDMDLabelFadePulse
+         int pspeed = json["pspeed"s].as<int>(40); // default 40 (alpha units per tick) from pDMDLabelFadePulse
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), astart, aend, pspeed, false); // 3000ms fallback
+         break;
+      }
+
+      case 7:
+      {
+         // See pDMDScreenFadeOut / pDMDScreenFadeIn - same as at=5 but for parent screen
+         int astart = json["astart"s].as<int>(255); // default 255 from pDMDScreenFadeOut
+         int aend = json["aend"s].as<int>(0); // default 0 from pDMDScreenFadeOut
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(1000), json["fc"s].as<int>(m_color), astart, aend, 0, true); // 1000ms fallback
+         break;
+      }
+
+      case 8:
+      {
+         // See pDMDLabelWiggleText / pDMDLabelWiggleImage - rotation bounces between rstart and rend
+         float rstart = static_cast<float>(json["rstart"s].as<double>(-45)) / 10.0f; // default -4.5 deg from pDMDLabelWiggleText
+         float rend = static_cast<float>(json["rend"s].as<double>(45)) / 10.0f; // default +4.5 deg from pDMDLabelWiggleText
+         int rspeed = json["rspeed"s].as<int>(5); // default 5 from pDMDLabelWiggleText, 0 = use range as speed
+         if (rspeed == 0)
+            rspeed = std::max(1, static_cast<int>(fabsf(rend - rstart)));
+         m_animation = std::make_unique<Animation>(this, json["len"s].as<int>(3000), json["fc"s].as<int>(m_color), rstart, rend, rspeed, 0); // 3000ms fallback
+         break;
+      }
+
+      case 10:
+         // See pDMDLabelClone / pDMDLabelCloneDelay - delayed show.
+         // True cloning (creating a duplicate label) is not yet implemented
+         NOT_IMPLEMENTED("at=10 clone not implemented"s);
+         break;
+
+      default: LOGE("Unsupported Label.SetSpecial animation type: " + std::to_string(json["at"s].as<int>(0))); break;
+      }
+   }
+   break;
 
    case 2:
    {
@@ -396,7 +393,6 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       {
          if (key == "mt")
          {
-
          }
          else if (key == "zback")
          {
@@ -749,7 +745,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
       }
    }
-      break;
+   break;
 
    case 0:
       // mt=0 or missing mt
