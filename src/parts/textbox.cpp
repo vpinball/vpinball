@@ -311,11 +311,15 @@ void Textbox::Render(const unsigned int renderMask)
       ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
       if (dmd.state.frame == nullptr)
          return;
-      BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height, 
-              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
-            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                      : BaseTexture::SRGB,
-         dmd.state.frame);
+      if (m_displayUploadGate.NeedsUpload(dmd, m_texture.get()))
+      {
+         BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height,
+                 dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
+               : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                         : BaseTexture::SRGB,
+            dmd.state.frame);
+         m_displayUploadGate.MarkUploaded(dmd, m_texture.get());
+      }
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
       const vec3 color = m_texture->m_format == BaseTexture::BW_FP32 ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
       m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,
@@ -332,6 +336,12 @@ void Textbox::Render(const unsigned int renderMask)
       if (m_textureDirty)
       {
          m_textureDirty = false;
+         // The rasterizer below writes text pixels straight into m_texture. A
+         // textbox can flip between text and DMD mode at runtime (is_dmd also
+         // matches on the text content), so drop the DMD gate's memory: its
+         // cached frameId now describes pixels that are no longer in the
+         // texture, and keeping it would skip the upload that restores them.
+         m_displayUploadGate = {};
          RECT rect;
          rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
          rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);

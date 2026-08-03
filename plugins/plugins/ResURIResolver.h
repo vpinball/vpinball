@@ -67,6 +67,62 @@ public:
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
+
+   // Skip-unchanged gate for consumers that pull a DisplayState once per
+   // rendered frame and copy it into a texture. Sources only advance
+   // DisplayFrame.frameId when the frame content actually changed, so a
+   // consumer that remembers the id it last uploaded can skip the copy (and
+   // the GPU upload behind it) instead of re-uploading a static image at
+   // render rate.
+   //
+   // One gate per consumer-owned target texture. Never share a gate between
+   // two consumers, even when they feed the same texture: the first puller's
+   // upload would suppress the second one's, and whichever window pulls later
+   // goes stale while everything else looks healthy.
+   //
+   // frameId is compared for INEQUALITY, not ordering: id sequences restart
+   // with their source (new table, ROM restart, source swap) and can wrap, so
+   // "different from the id THIS gate last uploaded" is the only safe trigger.
+   //
+   // The target texture pointer and the source identity/geometry are part of
+   // the key so a cached id can never suppress the first upload into a texture
+   // object this gate has not fed yet (still null, recreated, reallocated), an
+   // upload from a different source that happens to reuse an id, or an upload
+   // after the source changed shape under an unchanged id. Callers must call
+   // MarkUploaded AFTER the upload, with the texture pointer as it is AFTER
+   // the call — the upload itself may reallocate the texture.
+   //
+   // Skipping is safe against GPU-side texture lifetime: the last uploaded
+   // frame remains in the consumer's CPU-side texture, which is what the
+   // renderer's texture cache rebuilds from if its GPU copy is evicted or the
+   // device is reset — so a skipped upload can never leave the display blank
+   // or frozen, only identical to the frame already shown.
+   struct DisplayUploadGate
+   {
+      const void *texture = nullptr; // consumer's target texture as of the last upload
+      uint64_t srcId = 0;
+      unsigned int frameId = 0;
+      unsigned int width = 0;
+      unsigned int height = 0;
+      unsigned int frameFormat = 0;
+
+      bool NeedsUpload(const DisplayState &display, const void *targetTexture) const
+      {
+         return targetTexture == nullptr || targetTexture != texture
+            || display.source->id.id != srcId || display.state.frameId != frameId
+            || display.source->width != width || display.source->height != height
+            || display.source->frameFormat != frameFormat;
+      }
+      void MarkUploaded(const DisplayState &display, const void *targetTexture)
+      {
+         texture = targetTexture;
+         srcId = display.source->id.id;
+         frameId = display.state.frameId;
+         width = display.source->width;
+         height = display.source->height;
+         frameFormat = display.source->frameFormat;
+      }
+   };
    void SetDisplayFilter(const std::function<bool(const DisplaySrcId& src)>& filter);
    std::string DumpDisplaySources() const;
    

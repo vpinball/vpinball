@@ -24,6 +24,9 @@ private:
 
    ResURIResolver& m_resURIResolver;
    VPXTexture& m_dmdTex;
+   // Gates the per-frame display pull so unchanged frames are not re-uploaded
+   // into m_dmdTex at render rate. Per-overlay even though m_dmdTex is shared.
+   ResURIResolver::DisplayUploadGate m_displayUploadGate;
    VPXPluginAPI* m_vpxApi = nullptr;
 
    ivec4 m_frame;

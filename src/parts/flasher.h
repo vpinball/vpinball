@@ -5,6 +5,7 @@
 #include "parts/dragpoint.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
+#include "plugins/ResURIResolver.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
@@ -203,6 +204,9 @@ private:
    int2 m_dmdSize = int2(0,0);
 
    std::shared_ptr<BaseTexture> m_renderFrame = nullptr;
+   // Gates the per-frame display pull (DMD/DISPLAY render modes) so unchanged
+   // frames are not re-uploaded into m_renderFrame at render rate.
+   ResURIResolver::DisplayUploadGate m_displayUploadGate;
 
    Light *m_lightmap = nullptr;
 

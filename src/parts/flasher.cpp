@@ -1319,11 +1319,14 @@ void Flasher::Render(const unsigned int renderMask)
                dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
                dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
-            if (dmd.state.frame != nullptr)
+            if (dmd.state.frame != nullptr && m_displayUploadGate.NeedsUpload(dmd, m_renderFrame.get()))
+            {
                BaseTexture::Update(m_renderFrame, dmd.source->width, dmd.source->height,
                               dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
                             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                       : BaseTexture::SRGB, dmd.state.frame);
+               m_displayUploadGate.MarkUploaded(dmd, m_renderFrame.get());
+            }
          }
          if (m_renderFrame != nullptr)
          {
@@ -1347,11 +1350,18 @@ void Flasher::Render(const unsigned int renderMask)
       case FlasherData::DISPLAY:
          if (const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
          {
-            BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
-               display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
-                  : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                                : BaseTexture::SRGB,
-               display.state.frame);
+            // Shares m_displayUploadGate with the DMD case above: only one of
+            // the two runs per frame, and if the render mode is switched at
+            // runtime the gate re-arms through its source-id/texture key.
+            if (m_displayUploadGate.NeedsUpload(display, m_renderFrame.get()))
+            {
+               BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
+                  display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
+                     : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                                   : BaseTexture::SRGB,
+                  display.state.frame);
+               m_displayUploadGate.MarkUploaded(display, m_renderFrame.get());
+            }
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             if (m_d.m_modulate_vs_add < 1.f)
                m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);

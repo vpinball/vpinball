@@ -5,6 +5,7 @@
 #pragma once
 
 #include "parts/pintable.h"
+#include "plugins/ResURIResolver.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
@@ -93,6 +94,12 @@ private:
    Renderer *m_renderer = nullptr;
    bool m_textureDirty = true;
    std::shared_ptr<BaseTexture> m_texture = nullptr;
+   // Gates the per-frame DMD-mode display pull so unchanged frames are not
+   // re-uploaded into m_texture at render rate. Must be reset whenever the
+   // text path rasterizes into m_texture: the DMD gate would otherwise see an
+   // unchanged frameId over a texture whose pixels are now text, and skip the
+   // upload that repairs it.
+   ResURIResolver::DisplayUploadGate m_displayUploadGate;
    IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
 
 #ifdef __STANDALONE__

@@ -110,6 +110,9 @@ private:
       // Live data (not serialized)
       VPXTexture glass;
       VPXTexture dmdTex;
+      // Per-visual on purpose: each visual pulls its source independently, so
+      // each needs its own record of what it last uploaded into its dmdTex.
+      ResURIResolver::DisplayUploadGate displayUploadGate;
       int liveStyle;
    };
    struct Layout

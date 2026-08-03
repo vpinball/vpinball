@@ -130,12 +130,19 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
       }
    }
 
-   switch (dmd.source->frameFormat)
+   // m_dmdTex may be shared with another overlay, but the gate is per-overlay:
+   // each records what IT last uploaded, so neither can suppress the other's
+   // first upload after a change.
+   if (m_displayUploadGate.NeedsUpload(dmd, m_dmdTex))
    {
-   case CTLPI_DISPLAY_FORMAT_LUM32F: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
-   case CTLPI_DISPLAY_FORMAT_SRGB888: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
-   case CTLPI_DISPLAY_FORMAT_SRGB565: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
-   default: return;
+      switch (dmd.source->frameFormat)
+      {
+      case CTLPI_DISPLAY_FORMAT_LUM32F: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB888: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB565: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
+      default: return;
+      }
+      m_displayUploadGate.MarkUploaded(dmd, m_dmdTex);
    }
 
    vec4 glassArea(0.f, 0.f, 0.f, 0.f);
