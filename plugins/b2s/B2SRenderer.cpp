@@ -174,7 +174,10 @@ void B2SRenderer::RenderBulbs(VPXRenderContext2D* ctx, const B2SServer* server, 
    {
       if (bulb->m_b2sId >= 0 && server)
       {
-         bulb->m_brightness = server->GetLampState(bulb->m_b2sId);
+         const float state = server->GetLampState(bulb->m_b2sId);
+         bulb->m_brightness = (bulb->m_b2sValue > 0) ? 
+            ((static_cast<int>(state) == bulb->m_b2sValue) ? 1.f : 0.f) :
+            state;
       }
       else
       {
