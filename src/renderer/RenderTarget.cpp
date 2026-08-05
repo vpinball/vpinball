@@ -784,8 +784,10 @@ void RenderTarget::ResolveMSAADepth()
    bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
 
    auto quad = m_rd->GetQuadMeshBuffer();
-   vec4 layer(0.f, 0.f, 0.f, 0.f);
-   bgfx::setUniform(m_rd->m_FBShader->GetUniformHandle(SHADER_layer), &layer.x);
+   const vec4 layer(0.f, 0.f, 0.f, 0.f);
+   // Routed through the uniform value cache: this handle is also driven by
+   // Shader::ApplyUniform, and a direct setUniform would make the cache stale
+   Shader::SetUniformVec4Cached(m_rd->m_FBShader->GetUniformHandle(SHADER_layer), layer);
    bgfx::setTexture(0, m_rd->m_FBShader->GetUniformHandle(SHADER_tex_depth), m_msaaResolveDepthTex, BGFX_SAMPLER_NONE);
    quad->bind();
    if (quad->m_vb->m_isStatic)

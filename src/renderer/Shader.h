@@ -601,6 +601,11 @@ public:
    bgfx::ProgramHandle GetCore() const;
    bgfx::UniformHandle GetUniformHandle(ShaderUniforms uniformName) const { return m_uniformHandles[uniformName]; }
    bgfx::ProgramHandle GetProgramHandle(ShaderTechniques techniqueName) const { return m_techniques[techniqueName]; }
+   // bgfx::setUniform routed through the unchanged-value cache (see Shader.cpp).
+   // Any direct setUniform on a handle a Shader also drives MUST go through this,
+   // or the cache would hold stale bytes and skip a needed re-set.
+   static void SetUniformVec4Cached(bgfx::UniformHandle handle, const vec4& v);
+   static void ResetUniformValueCache();
 
 #elif defined(ENABLE_OPENGL)
    class ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
