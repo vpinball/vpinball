@@ -604,6 +604,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
             m_stateSize += ShaderUniform::coreUniforms[uniform].stateSize;
          }
    m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
+   m_activeState = m_state;
    m_state->Clear();
 
    #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
@@ -687,21 +688,22 @@ Shader::~Shader()
    #endif
 }
 
-void Shader::Begin()
+void Shader::Begin(ShaderState* commandState)
 {
    assert(current_shader == nullptr);
-   assert(m_state->m_technique != SHADER_TECHNIQUE_INVALID);
+   m_activeState = commandState ? commandState : m_state;
+   assert(m_activeState->m_technique != SHADER_TECHNIQUE_INVALID);
    current_shader = this;
 
    #if defined(ENABLE_BGFX)
    // MipMap generation will drop previously bound uniforms, so we need to ensure it is done before binding the uniforms
-   for (const auto& uniformName : m_uniforms[m_state->m_technique])
+   for (const auto& uniformName : m_uniforms[m_activeState->m_technique])
       if (ShaderUniform::coreUniforms[uniformName].type == ShaderUniformType::SUT_Sampler)
       {
-         const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[uniformName];
+         const uint8_t* const src = m_activeState->m_state.data() + m_stateOffsets[uniformName];
          const int v = *(int*)src;
          const int pos = v & 0x0FF;
-         std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
+         std::shared_ptr<const Sampler> texel = pos > 0 ? m_activeState->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
          assert(RenderTarget::GetCurrentRenderTarget()->IsBackBuffer()
             || (RenderTarget::GetCurrentRenderTarget()->GetColorSampler().get() != texel.get()
                && (!RenderTarget::GetCurrentRenderTarget()->HasDepth() || RenderTarget::GetCurrentRenderTarget()->GetDepthSampler().get() != texel.get())));
@@ -714,15 +716,15 @@ void Shader::Begin()
          break; // We sorted the samplers before other uniforms
 
    #else
-   if (m_boundTechnique != m_state->m_technique)
+   if (m_boundTechnique != m_activeState->m_technique)
    {
       m_renderDevice->m_curTechniqueChanges++;
-      m_boundTechnique = m_state->m_technique;
+      m_boundTechnique = m_activeState->m_technique;
       #if defined(ENABLE_OPENGL)
-      glUseProgram(m_techniques[m_state->m_technique]->program);
+      glUseProgram(m_techniques[m_activeState->m_technique]->program);
       #elif defined(ENABLE_DX9)
       //CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_state->m_technique].name.c_str()));
-      const char* const stn = shaderTechniqueNames[m_state->m_technique].name.c_str();
+      const char* const stn = shaderTechniqueNames[m_activeState->m_technique].name.c_str();
       const HRESULT hrTmp = m_shader->SetTechnique((D3DXHANDLE)stn);
       if (FAILED(hrTmp))
       {
@@ -733,7 +735,7 @@ void Shader::Begin()
    }
    #endif
 
-   for (const auto& uniformName : m_uniforms[m_state->m_technique])
+   for (const auto& uniformName : m_uniforms[m_activeState->m_technique])
       ApplyUniform(uniformName);
 
    #if defined(ENABLE_DX9)
@@ -747,6 +749,7 @@ void Shader::End()
 {
    assert(current_shader == this);
    current_shader = nullptr;
+   m_activeState = m_state;
    #if defined(ENABLE_BGFX)
    m_renderDevice->m_program = BGFX_INVALID_HANDLE;
    #elif defined(ENABLE_DX9)
@@ -1019,9 +1022,9 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    bgfx::UniformHandle desc = m_uniformHandles[uniformName];
 
    #elif defined(ENABLE_OPENGL)
-   uint8_t* const __restrict dst = m_boundState[m_state->m_technique]->m_state.data() + m_stateOffsets[uniformName];
+   uint8_t* const __restrict dst = m_boundState[m_activeState->m_technique]->m_state.data() + m_stateOffsets[uniformName];
    // For OpenGL uniform binding state is per technique (i.e. program)
-   const UniformDesc& desc = m_techniques[m_state->m_technique]->uniform_desc[uniformName];
+   const UniformDesc& desc = m_techniques[m_activeState->m_technique]->uniform_desc[uniformName];
    assert(desc.location >= 0); // Do not apply to an unused uniform
    if (desc.location < 0) // FIXME remove
       return;
@@ -1031,14 +1034,14 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    const UniformDesc& desc = m_uniform_desc[uniformName];
    #endif
 
-   const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[uniformName];
+   const uint8_t* const src = m_activeState->m_state.data() + m_stateOffsets[uniformName];
    #if !defined(ENABLE_BGFX)
    if ((ShaderUniform::coreUniforms[uniformName].type != SUT_Sampler) && memcmp(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize) == 0)
    {
       #if defined(ENABLE_OPENGL)
       if (ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock)
       {
-         glUniformBlockBinding(m_techniques[m_state->m_technique]->program, desc.location, 0);
+         glUniformBlockBinding(m_techniques[m_activeState->m_technique]->program, desc.location, 0);
          glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, ShaderUniform::coreUniforms[uniformName].stateSize);
          return;
       }
@@ -1057,7 +1060,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       #elif defined(ENABLE_OPENGL)
       glBindBuffer(GL_UNIFORM_BUFFER, desc.blockBuffer);
       glBufferData(GL_UNIFORM_BUFFER, ShaderUniform::coreUniforms[uniformName].stateSize, src, GL_STREAM_DRAW);
-      glUniformBlockBinding(m_techniques[m_state->m_technique]->program, desc.location, 0);
+      glUniformBlockBinding(m_techniques[m_activeState->m_technique]->program, desc.location, 0);
       glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, ShaderUniform::coreUniforms[uniformName].stateSize);
       #elif defined(ENABLE_DX9)
       assert(false); // Unsupported on DX9
@@ -1183,7 +1186,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          const int v = *(int*)src;
          const int pos = v & 0x0FF;
-         std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
+         std::shared_ptr<const Sampler> texel = pos > 0 ? m_activeState->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
          assert(texel != nullptr);
          const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
          const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
@@ -1324,10 +1327,13 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
 bgfx::ProgramHandle Shader::GetCore() const
 {
+   // Called between Begin/End while submitting: the technique must come from
+   // the state being executed, which is the command's snapshot (m_activeState),
+   // not m_state — command execution no longer copies the snapshot over m_state.
    assert(current_shader != nullptr);
-   return (m_renderDevice->GetActiveRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE) && bgfx::isValid(m_clipPlaneTechniques[m_state->m_technique])
-      ? m_clipPlaneTechniques[m_state->m_technique]
-      : m_techniques[m_state->m_technique];
+   return (m_renderDevice->GetActiveRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE) && bgfx::isValid(m_clipPlaneTechniques[m_activeState->m_technique])
+      ? m_clipPlaneTechniques[m_activeState->m_technique]
+      : m_techniques[m_activeState->m_technique];
 }
 
 void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques technique, const char* vsName, const char* fsName, const bool isClipVariant)

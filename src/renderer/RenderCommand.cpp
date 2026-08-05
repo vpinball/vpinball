@@ -117,8 +117,15 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    {
       m_renderState.Apply(m_rd);
       m_shaderState->SetInt(SHADER_layer, RenderTarget::GetCurrentRenderLayer() < 0 ? 0 : RenderTarget::GetCurrentRenderLayer());
+      #if defined(ENABLE_BGFX)
+      // Apply uniforms straight from this command's snapshot instead of first
+      // copying it over m_shader->m_state: that copy ran for every single draw
+      // call (full uniform block + a shared_ptr copy per bound sampler).
+      m_shader->Begin(m_shaderState);
+      #else
       m_shader->m_state->CopyTo(false, m_shaderState);
       m_shader->Begin();
+      #endif
       m_rd->m_curDrawCalls++;
       switch (m_command)
       {
