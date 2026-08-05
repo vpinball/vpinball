@@ -314,15 +314,16 @@ private:
    // Core Kalman operations
    // -------------------------------------------------------------------------
 
-   static bool IsFinite(const float v) { return std::isfinite(v); }
+   static constexpr bool IsFinite(const float v)
+   {
+      return !infNaN(v);
+   }
 
    static void SetZero(Matrix3& m)
    {
       for (int r = 0; r < 3; ++r)
-      {
          for (int c = 0; c < 3; ++c)
             m.m_d[r][c] = 0.0f;
-      }
    }
 
    static Vertex2D Mul2(const Matrix3& m, const Vertex2D& v) { return Vertex2D { m.m_d[0][0] * v.x + m.m_d[0][1] * v.y, m.m_d[1][0] * v.x + m.m_d[1][1] * v.y }; }
@@ -333,12 +334,8 @@ private:
       SetZero(result);
 
       for (int r = 0; r < 2; ++r)
-      {
          for (int c = 0; c < 2; ++c)
-         {
             result.m_d[r][c] = a.m_d[r][0] * b.m_d[0][c] + a.m_d[r][1] * b.m_d[1][c];
-         }
-      }
 
       return result;
    }
@@ -350,12 +347,8 @@ private:
       SetZero(result);
 
       for (int r = 0; r < 2; ++r)
-      {
          for (int c = 0; c < 2; ++c)
-         {
             result.m_d[r][c] = a.m_d[r][0] * b.m_d[c][0] + a.m_d[r][1] * b.m_d[c][1];
-         }
-      }
 
       return result;
    }
@@ -366,10 +359,8 @@ private:
       SetZero(result);
 
       for (int r = 0; r < 2; ++r)
-      {
          for (int c = 0; c < 2; ++c)
             result.m_d[r][c] = a.m_d[r][c] + b.m_d[r][c];
-      }
 
       return result;
    }

@@ -192,7 +192,7 @@ public:
       }
 
       // Recursive accumulation with forgetting factor
-      const double lambda = static_cast<double>(clamp(m_config.m_forgettingFactor, 0.0f, 1.0f));
+      const double lambda = static_cast<double>(saturate(m_config.m_forgettingFactor));
 
       m_accumulatedNumerator = lambda * m_accumulatedNumerator + static_cast<double>(m_lastResult.m_segmentNumerator);
 
@@ -226,7 +226,7 @@ private:
 
       const float denomFactor = 1.0f - std::exp(-static_cast<float>(m_accumulatedDenominator) * 0.25f);
 
-      return clamp(0.40f * segFactor + 0.35f * durationFactor + 0.25f * denomFactor, 0.0f, 1.0f);
+      return saturate(0.40f * segFactor + 0.35f * durationFactor + 0.25f * denomFactor);
    }
 
    SegmentResult EvaluateCurrentSegment() const
@@ -370,7 +370,7 @@ private:
       const double segmentGain = numerator / denominator;
       result.m_segmentGain = static_cast<float>(segmentGain);
 
-      if (!std::isfinite(result.m_segmentGain))
+      if (infNaN(result.m_segmentGain))
          return result;
 
       // Residual RMS to evaluate segment quality
@@ -400,10 +400,10 @@ private:
       const float signalScale = std::max(result.m_velocityPeakToPeak, m_config.m_epsilon);
       const float normalizedResidual = result.m_segmentResidualRms / signalScale;
 
-      result.m_segmentQuality = 1.0f - clamp(normalizedResidual * 2.0f, 0.0f, 1.0f);
+      result.m_segmentQuality = 1.0f - saturate(normalizedResidual * 2.0f);
 
       // Final acceptance
-      if (!std::isfinite(result.m_segmentQuality))
+      if (infNaN(result.m_segmentQuality))
          return result;
 
       // Reject obviously absurd segment gains
