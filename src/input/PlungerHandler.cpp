@@ -76,7 +76,7 @@ float PlungerHandler::GetPosition(float restPos) const
    //  0 maps to restPos
    //  1 maps to 1
    assert(restPos >= 0.f && restPos <= 1.f);
-   return clamp(lerp(restPos, 1.f, m_position), 0.f, 1.f);
+   return saturate(lerp(restPos, 1.f, m_position));
 }
 
 bool PlungerHandler::IsPullBackandRetract() const { return m_isPullBackAndRetract; }
@@ -290,7 +290,7 @@ void PlungerSensor::StepOneMillisecond()
    {
       const float restPos = 0.f;
       const float releaseApex = *std::max_element(m_prevPosition.begin(), m_prevPosition.end());
-      const float hitSpeed = (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f) ? 0.f : -max(0.f, releaseApex - restPos) * 100.f / 13.0f;
+      const float hitSpeed = (m_position >= (0.5f + 0.5f * restPos) || m_emaVelocity.Get() >= 0.f) ? 0.f : -max(0.f, releaseApex - restPos) * (100.f / 13.0f);
       PLOGD << std::format(";{:8.5f};{:8.5f};{:8.5f};{:8.5f};{:8.5f};{};{}", //
          m_positionSensor->GetValue(), m_velocitySensor->GetValue(), // Sensors
          m_position, // Estimated position

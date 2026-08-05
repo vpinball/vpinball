@@ -122,7 +122,7 @@ public:
    void PredictInternal(uint64_t timeNs)
    {
       const uint64_t deltaNs = timeNs - m_timeNs;
-      float remainingDt = static_cast<float>(deltaNs) * 1.0e-9f;
+      float remainingDt = static_cast<float>(static_cast<double>(deltaNs) * 1.0e-9);
 
       while (remainingDt > 0.0f)
       {

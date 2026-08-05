@@ -69,8 +69,8 @@ void UpdateTreeCache()
    displayGetters.clear();
 
    json root = json::object();
-   root["treeId"] = treeId;
-   root["tree"] = json::array();
+   root["treeId"s] = treeId;
+   root["tree"s] = json::array();
 
    if (!msgApi)
    {
@@ -244,7 +244,7 @@ void UpdateTreeCache()
    for (auto& pair : controllers)
       tree.push_back(pair.second);
 
-   root["tree"] = tree;
+   root["tree"s] = tree;
 
    webServer->UpdateTreeJson(root.dump());
 }
@@ -306,8 +306,8 @@ std::string GetStatesJson()
    }
 
    json root = json::object();
-   root["treeId"] = treeId;
-   root["states"] = states;
+   root["treeId"s] = treeId;
+   root["states"s] = states;
    return root.dump();
 }
 
@@ -331,7 +331,7 @@ namespace
       }
       else if (frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565)
       {
-         const uint16_t* src = static_cast<const uint16_t*>(frame);
+         const uint16_t* const __restrict src = static_cast<const uint16_t*>(frame);
          for (size_t i = 0; i < count; i++)
          {
             const uint16_t px = src[i];
@@ -345,7 +345,7 @@ namespace
       }
       else if (frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
       {
-         const float* src = static_cast<const float*>(frame);
+         const float* const __restrict src = static_cast<const float*>(frame);
          for (size_t i = 0; i < count; i++)
          {
             float v = src[i];
@@ -405,8 +405,8 @@ namespace
       // BMP pixel rows are stored bottom-up and in BGR order.
       for (unsigned int y = 0; y < height; y++)
       {
-         uint8_t* dst = out.data() + 54 + static_cast<size_t>(y) * rowSize;
-         const uint8_t* src = rgb + static_cast<size_t>(height - 1 - y) * width * 3;
+         uint8_t* const __restrict dst = out.data() + 54 + static_cast<size_t>(y) * rowSize;
+         const uint8_t* const __restrict src = rgb + static_cast<size_t>(height - 1 - y) * width * 3;
          for (unsigned int x = 0; x < width; x++)
          {
             dst[x * 3 + 0] = src[x * 3 + 2]; // B

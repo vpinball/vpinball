@@ -1700,11 +1700,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
                   {
                      bool hasBackglassFlasher = false;
-                     for (auto existing : parts)
+                     for (const auto existing : parts)
                      {
                         if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
                         {
-                           if (Flasher *const exBackglass = (Flasher *)existing;
+                           if (const Flasher *const exBackglass = (const Flasher *)existing;
                               exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
                            {
                               hasBackglassFlasher = true;
@@ -4005,7 +4005,7 @@ void PinTable::OnDelete()
       // Can't delete these items yet - ClearMultiSel() will try to mark them as unselected
       m_vseldelete.push_back(m_vmultisel.ElementAt(i));
       if (m_vmultisel.ElementAt(i)->GetItemType() == ItemTypeEnum::eItemPartGroup)
-         for (auto part : m_vedit)
+         for (const auto part : m_vedit)
             if (part->GetPartGroup() == m_vmultisel.ElementAt(i) && std::ranges::find(m_vseldelete, part->GetISelect()) == m_vseldelete.end())
                m_vseldelete.push_back(part->GetISelect());
    }

@@ -2317,7 +2317,7 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
       for (const auto& renderer : me->m_ancillaryWndRenderers[window])
       {
          Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), renderer.name,
-            "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the "s + section + " display. Higher values are priorized other lower ones."s,
+            "A value that will be used to select if the '"s + renderer.name + "' renderer should be used on the " + section + " display. Higher values are priorized other lower ones.",
             false, 0, 100, 0));
          // Seed the live priority from settings, keeping any live (unsaved) adjustment made through the in game UI
          priorities.try_emplace(renderer.id, me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)).value()));

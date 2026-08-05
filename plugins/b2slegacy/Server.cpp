@@ -411,9 +411,9 @@ void Server::SetB2SName(const string& b2sName)
 
    string id = trim_string(b2sName);
    if (id.empty())
-      m_controllerGameId = "b2s::"s + CreateGuidString();
+      m_controllerGameId = "b2s::" + CreateGuidString();
    else
-      m_controllerGameId = "b2s::"s + string_to_lower(id);
+      m_controllerGameId = "b2s::" + string_to_lower(id);
 
    if (m_gameRunning)
       m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);

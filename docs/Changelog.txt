@@ -70,9 +70,9 @@ FEATURES:
 - add support to visual screen nudge to sensor based nudge (strength/disabling is available in the 'Nudge/Tilt Settings' page).
 
 - plunger sensor support was refactored:
-  . the position is continuously evaluated at the physic engine pace from the position sensor
-  . the hit speed is either taken from a hit speed sensor (f.e. Pinscape) or derived with a logic matching the one of keyboard plunger
-  . the legacy asymetric sensor calibration was removed (this was removed from joystick calibration before Windows 10 and always gave worst results than the default symetric calibration)
+  . the position is continuously evaluated at the physics engine pace from the position sensor
+  . the hit speed is either taken from a hit speed sensor (e.g. Pinscape), or derived with a logic matching the one of the keyboard plunger
+  . the legacy asymetric sensor calibration was removed (this was removed from joystick calibration before Windows 10 and always gave worse results compared to the default symetric calibration)
   . the legacy (optional) position filter was removed
 
 - the BGFX library employs all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL, ...) with some unique benefits: (note that DX11 should be preferred on Windows) (DX12 currently disabled)

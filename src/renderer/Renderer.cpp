@@ -1709,7 +1709,7 @@ void Renderer::RenderStaticPrepass()
    // Defer deletion to the render thread end-of-frame: already submitted frames may still hold copy commands sourcing this RT
    if (m_staticPrepassRT)
       m_renderDevice->AddEndOfFrameCmd([rt = m_staticPrepassRT]() { delete rt; });
-   
+
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
    assert(!m_staticPrepassRT->IsMSAA());

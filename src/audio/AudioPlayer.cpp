@@ -10,8 +10,8 @@
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM
 #include "miniaudio/extras/stb_vorbis.c"
+#define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
-#include "miniaudio/miniaudio.c"
 
 // Simple SDL3 backend for miniaudio, derived from miniaudio's backend example
 
