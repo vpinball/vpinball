@@ -354,7 +354,7 @@ float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, 
       return defaultValue;
    }
 
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, FLT_MIN, FLT_MAX, 0.f, defaultValue));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, -FLT_MAX, FLT_MAX, 0.f, defaultValue));
    return g_app->m_settings.GetFloat(propId);
 }
 
@@ -363,7 +363,7 @@ void VPinballLib::SaveValueFloat(const string& sectionName, const string& key, f
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
       g_app->m_settings.Set(existingId.value(), value, false);
    else
-      g_app->m_settings.Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, FLT_MIN, FLT_MAX, 0.f, value)), value, false);
+      g_app->m_settings.Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, true, -FLT_MAX, FLT_MAX, 0.f, value)), value, false);
    g_app->m_settings.Save();
 }
 
