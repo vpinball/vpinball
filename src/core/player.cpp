@@ -778,6 +778,10 @@ Player::Player(PinTable *const table, const PlayMode playMode)
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAudioSrcChangedMsgId, OnAudioSrcChanged, this);
 
+   // Plugins may have announced their audio sources before Player subscribed.
+   // Perform an initial enumeration so audio lanes exist before samples arrive.
+   OnAudioSrcChanged(m_onAudioSrcChangedMsgId, this, nullptr);
+
    m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
    m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
    msgApi->SubscribeMsg(m_pluginAPI.GetVPXEndPointId(), m_onAuxRendererChgId, OnAuxRendererChanged, this);
