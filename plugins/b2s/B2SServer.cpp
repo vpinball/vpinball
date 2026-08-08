@@ -10,6 +10,8 @@
 namespace B2S
 {
 
+extern const char* B2SGetGlobalPath();
+
 B2SServer* B2SServer::m_singleton = nullptr;
 
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
@@ -42,6 +44,47 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
       std::filesystem::path folderName = tablePath.parent_path().filename();
       folderName += ".directb2s"sv;
       b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / folderName);
+   }
+
+   // Fallback: search in the global B2S path setting (for Android SAF workaround)
+   // Uses direct std::filesystem::exists() + directory_iterator instead of
+   // find_case_insensitive_file_path because the recursive parent traversal breaks on Android
+   if (b2sFilename.empty())
+   {
+      const std::string b2sBasePath = B2SGetGlobalPath();
+      if (!b2sBasePath.empty())
+      {
+         const std::filesystem::path b2sPath(b2sBasePath);
+         const std::filesystem::path b2sFile = tablePath.filename().replace_extension(".directb2s");
+
+         // Try exact path first
+         const std::filesystem::path searchPath = b2sPath / b2sFile;
+         std::error_code ec;
+         if (std::filesystem::exists(searchPath, ec))
+         {
+            b2sFilename = searchPath;
+         }
+         else
+         {
+            // Try case-insensitive directory scan (only the target directory, not recursive parent)
+            for (const auto& entry : std::filesystem::directory_iterator(b2sPath, ec))
+            {
+               if (!ec && entry.path().extension() == ".directb2s")
+               {
+                  const std::string entryStem = entry.path().stem().string();
+                  const std::string tableStem = b2sFile.stem().string();
+                  // Case-insensitive comparison
+                  if (entryStem.size() == tableStem.size() &&
+                      std::equal(entryStem.begin(), entryStem.end(), tableStem.begin(),
+                         [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
+                  {
+                     b2sFilename = entry.path();
+                     break;
+                  }
+               }
+            }
+         }
+      }
    }
 
    if (!b2sFilename.empty())

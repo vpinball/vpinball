@@ -13,6 +13,10 @@ namespace B2SLegacy {
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
+MSGPI_STRING_VAL_SETTING(b2sPathProp, "B2SPath", "B2S Path", "Folder that contains directb2s backglass files (fallback search path)", true, "", 1024);
+
+const char* B2SLegacyGetGlobalPath() { return b2sPathProp_Get(); }
+
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
@@ -215,6 +219,7 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
    DMDOverlay::RegisterSettings(msgApi, endpointId);
+   msgApi->RegisterSetting(endpointId, &b2sPathProp);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
