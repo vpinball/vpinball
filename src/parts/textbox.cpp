@@ -246,6 +246,7 @@ void Textbox::RenderRelease()
    if (m_pFont)
    {
       TTF_CloseFont(m_pFont);
+      TTF_Quit();
       m_pFont = nullptr;
    }
 #endif
@@ -682,6 +683,12 @@ TTF_Font* Textbox::LoadFont()
    if (m_pFont)
       return m_pFont;
 
+   if (!TTF_Init())
+   {
+      PLOGW << "Unable to initialize SDL_ttf: " << SDL_GetError();
+      return nullptr;
+   }
+
    TTF_Font* pFont = nullptr;
 
    string fontName = m_d.m_font.name;
@@ -721,6 +728,7 @@ TTF_Font* Textbox::LoadFont()
       }
       else {
          PLOGW << "Unable to load font: path=" << path.string();
+         TTF_Quit();
          return nullptr;
       }
    }

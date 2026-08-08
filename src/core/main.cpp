@@ -21,7 +21,6 @@
 #include <codecvt>
 
 #ifdef __STANDALONE__
-#include <SDL3_ttf/SDL_ttf.h>
 #include <filesystem>
 #endif
 
@@ -214,10 +213,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
-
-   #ifdef __STANDALONE__
-      TTF_Quit();
-   #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
    if (s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_NO_SUPPORT && s_OriginalNVidiaThreadOptimization != NV_THREAD_OPTIMIZATION_DISABLE)
