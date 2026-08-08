@@ -63,7 +63,7 @@ public:
    void InitPuPMenu(int Param1);
    const string& GetB2SDisplays() const;
    void setVolumeCurrent(int ScreenNum, int vol);
-   int GetGameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const;
+   int GameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const;
    // void GrabDC(int pWidth, int pHeight, const string& wintitle, VARIANT *pixels);
    string GetVersion() const;
    // void GrabDC2(int pWidth, int pHeight, const string& wintitle, SAFEARRAY **pixels);

@@ -113,7 +113,7 @@ PSC_CLASS_START(PUP_PinDisplay, PUPPinDisplay)
    PSC_FUNCTION1(void, InitPuPMenu, int)
    PSC_PROP_R(string, B2SDisplays)
    PSC_FUNCTION2(void, setVolumeCurrent, int, int)
-   //PSC_PROP_R_ARRAY4(int, GameUpdate, string, int, int, string)
+   PSC_FUNCTION4(int, GameUpdate, string, int, int, string)
    // STDMETHOD(GrabDC)(LONG pWidth, LONG pHeight, BSTR wintitle, VARIANT *pixels);
    PSC_FUNCTION0(string, GetVersion)
    // STDMETHOD(GrabDC2)(LONG pWidth, LONG pHeight, BSTR wintitle, SAFEARRAY **pixels);
