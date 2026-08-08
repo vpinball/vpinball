@@ -192,6 +192,8 @@ class StorageIO final
     uint64 filesize;   // size of the file
     bool writeable;           // true if the file can be modified
     
+    const unsigned char* fileData;  // pre-loaded file content (nullptr if file-backed)
+
     Header* header;           // storage header 
     DirTree* dirtree;         // directory tree
     AllocTable* bbat;         // allocation table for big blocks
@@ -205,6 +207,7 @@ class StorageIO final
     std::list<Stream*> streams;
 
     StorageIO( Storage* storage, const char* filename );
+    StorageIO( Storage* storage, const unsigned char* data, uint64 size );
     ~StorageIO();
     
     bool open(bool bWriteAccess = false, bool bCreate = false);
@@ -1242,9 +1245,33 @@ StorageIO::StorageIO( Storage* st, const char* fname )
   opened(false),        
   filesize(0),        
   writeable(false),        
+  fileData(nullptr),
   header(new Header()),        
   dirtree(new DirTree(1ull << header->b_shift)),        
   bbat(new AllocTable()),        
+  sbat(new AllocTable()),
+  sb_blocks(),
+  mbat_blocks(),
+  mbat_data(),
+  mbatDirty(),
+  streams()
+{
+  bbat->blockSize = (uint64) 1 << header->b_shift;
+  sbat->blockSize = (uint64) 1 << header->s_shift;
+}
+
+StorageIO::StorageIO( Storage* st, const unsigned char* data, uint64 size )
+: storage(st),
+  filename(),
+  file(),
+  result(Storage::Ok),
+  opened(false),
+  filesize(size),
+  writeable(false),
+  fileData(data),
+  header(new Header()),
+  dirtree(new DirTree(1ull << header->b_shift)),
+  bbat(new AllocTable()),
   sbat(new AllocTable()),
   sb_blocks(),
   mbat_blocks(),
@@ -1294,29 +1321,37 @@ void StorageIO::load(bool bWriteAccess)
   // open the file, check for error
   result = Storage::OpenFailed;
 
+  if( !fileData )
+  {
 #if defined(POLE_USE_UTF16_FILENAMES)
-  if (bWriteAccess)
-      file.open(UTF8toUTF16(filename).c_str(), std::ios::binary | std::ios::in | std::ios::out);
-  else
-      file.open(UTF8toUTF16(filename).c_str(), std::ios::binary | std::ios::in);
+    if (bWriteAccess)
+        file.open(UTF8toUTF16(filename).c_str(), std::ios::binary | std::ios::in | std::ios::out);
+    else
+        file.open(UTF8toUTF16(filename).c_str(), std::ios::binary | std::ios::in);
 #else
-  if (bWriteAccess)
-      file.open(filename.c_str(), std::ios::binary | std::ios::in | std::ios::out);
-  else
-      file.open(filename.c_str(), std::ios::binary | std::ios::in);
+    if (bWriteAccess)
+        file.open(filename.c_str(), std::ios::binary | std::ios::in | std::ios::out);
+    else
+        file.open(filename.c_str(), std::ios::binary | std::ios::in);
 #endif //defined(POLE_USE_UTF16_FILENAMES) && defined(POLE_WIN)
 
-  if( !file.good() ) return;
-  
-  // find size of input file
-  file.seekg(0, std::ios::end );
-  filesize = static_cast<uint64>(file.tellg());
+    if( !file.good() ) return;
+
+    // find size of input file
+    file.seekg(0, std::ios::end );
+    filesize = static_cast<uint64>(file.tellg());
+  }
 
   // load header
   buffer = new unsigned char[512];
-  file.seekg( 0 ); 
-  file.read( (char*)buffer, 512 );
-  fileCheck(file);
+  if( fileData )
+      memcpy( buffer, fileData, 512 );
+  else
+  {
+    file.seekg( 0 ); 
+    file.read( (char*)buffer, 512 );
+    fileCheck(file);
+  }
   header->load( buffer );
   delete[] buffer;
 
@@ -1593,10 +1628,26 @@ uint64 StorageIO::loadBigBlocks( const std::vector<uint64>& blocks,
 {
   // sentinel
   if( !data ) return 0;
+
+  if( fileData )
+  {
+    // Memory-backed mode: copy directly from the buffer
+    uint64 bytes = 0;
+    for( size_t i=0; (i < blocks.size() ) && ( bytes<maxlen ); i++ )
+    {
+      uint64 block = blocks[i];
+      uint64 pos = bbat->blockSize * ( block+1 );
+      uint64 p = (bbat->blockSize < maxlen-bytes) ? bbat->blockSize : maxlen-bytes;
+      if( pos + p > filesize )
+          p = filesize - pos;
+      memcpy( data + bytes, fileData + pos, (size_t)p );
+      bytes += p;
+    }
+    return bytes;
+  }
+
   fileCheck(file);
   if( !file.good() ) return 0;
-  if( blocks.size() < 1 ) return 0;
-  if( maxlen == 0 ) return 0;
 
   // read block one by one, seems fast enough
   uint64 bytes = 0;
@@ -1622,8 +1673,11 @@ uint64 StorageIO::loadBigBlock( uint64 block,
 {
   // sentinel
   if( !data ) return 0;
-  fileCheck(file);
-  if( !file.good() ) return 0;
+  if( !fileData )
+  {
+    fileCheck(file);
+    if( !file.good() ) return 0;
+  }
   
   // wraps call for loadBigBlocks
   std::vector<uint64> blocks;
@@ -2217,6 +2271,11 @@ void StreamIO::updateCache()
 Storage::Storage( const char* filename )
 {
   io = new StorageIO( this, filename );
+}
+
+Storage::Storage( const unsigned char* data, uint64 size )
+{
+  io = new StorageIO( this, data, size );
 }
 
 Storage::~Storage()
