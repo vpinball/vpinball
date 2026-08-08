@@ -258,8 +258,17 @@ void CaptureAttractCommand::Execute()
    player->m_frameCaptureFPS = m_framesPerSecond;
    player->m_cutCaptureToLoop = m_cutToLoop;
    player->GameLoop();
+   const bool succeeded = player->m_captureSucceeded;
    player = nullptr;
    table->Release();
+
+   // The capture is cancelled on a script error (and a few other failures), which would otherwise
+   // exit with a success code and an empty/missing Capture folder, indistinguishable from success.
+   if (!succeeded)
+   {
+      PLOGE << "Video capture cancelled for table '" << m_tableFilename << "', no frames were produced";
+      exit(1);
+   }
 }
 
 
