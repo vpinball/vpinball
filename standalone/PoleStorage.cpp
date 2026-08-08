@@ -2,13 +2,36 @@
 #include "PoleStorage.h"
 #include "PoleStream.h"
 
+#include <fstream>
+
 HRESULT PoleStorage::Create(const string& szFilename, const string& szName, IStorage** ppstg)
 {
-   POLE::Storage* pPOLEStorage = new POLE::Storage(szFilename.c_str());
+   // Slurp the entire file into memory for network-friendly access
+   std::ifstream ifs(szFilename, std::ios::binary | std::ios::ate);
+   if (!ifs.good())
+      return STG_E_FILENOTFOUND;
+
+   const auto size = ifs.tellg();
+   if (size <= 0)
+      return STG_E_FILENOTFOUND;
+
+   auto fileData = std::make_shared<std::vector<uint8_t>>(static_cast<size_t>(size));
+   ifs.seekg(0);
+   ifs.read(reinterpret_cast<char*>(fileData->data()), size);
+   if (!ifs.good())
+      return STG_E_FILENOTFOUND;
+   ifs.close();
+
+   return Create(fileData, szName, ppstg);
+}
+
+HRESULT PoleStorage::Create(std::shared_ptr<std::vector<uint8_t>> fileData, const string& szName, IStorage** ppstg)
+{
+   POLE::Storage* pPOLEStorage = new POLE::Storage(fileData->data(), static_cast<POLE::uint64>(fileData->size()));
 
    if (pPOLEStorage->open() && pPOLEStorage->result() == POLE::Storage::Ok) {
       PoleStorage* pStg = new PoleStorage();
-      pStg->m_szFilename = szFilename;
+      pStg->m_fileData = fileData;
       pStg->m_szPath = szName;
       pStg->m_pPOLEStorage = pPOLEStorage;
 
@@ -26,6 +49,8 @@ HRESULT PoleStorage::Create(const string& szFilename, const string& szName, ISto
 
 HRESULT PoleStorage::Clone(PoleStorage* pPoleStorage, IStorage** ppstg)
 {
+   if (pPoleStorage->m_fileData)
+      return PoleStorage::Create(pPoleStorage->m_fileData, pPoleStorage->m_szPath, ppstg);
    return PoleStorage::Create(pPoleStorage->m_szFilename, pPoleStorage->m_szPath, ppstg);
 }
 
@@ -94,6 +119,8 @@ STDMETHODIMP PoleStorage::OpenStorage(LPCOLESTR pwcsName, IStorage *pstgPriority
    char szName[1024];
    WideCharToMultiByte(CP_ACP, 0, pwcsName, -1, szName, sizeof(szName), NULL, NULL);
 
+   if (m_fileData)
+      return Create(m_fileData, szName, ppstg);
    return Create(m_szFilename, szName, ppstg);
 }
 
