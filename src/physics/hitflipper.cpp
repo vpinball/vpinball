@@ -884,7 +884,8 @@ void HitFlipper::Collide(const CollisionEvent& coll)
       else return;
 #endif
    }
-   g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with flipper
+   if (g_pplayer->m_liveUI)
+      g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(pball->m_pBall); // Ball control most recently collided with flipper
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
