@@ -463,7 +463,10 @@ void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int w
          assert(tex->pitch() * tex->height() == width * height * pixelSize);
          if (tex->data() != image && image)
             memcpy(tex->data(), image, width * height * pixelSize);
-         tex->m_aliases.clear();
+         {
+            std::lock_guard<std::mutex> lock(tex->m_aliasMutex);
+            tex->m_aliases.clear();
+         }
          if (g_pplayer)
             g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex.get());
          return;
@@ -491,7 +494,10 @@ void BaseTexture::FlipY()
       memcpy(m_data + i * pitch, m_data + (m_height - 1 - i) * pitch, pitch);
       memcpy(m_data + (m_height - 1 - i) * pitch, bits, pitch);
    }
-   m_aliases.clear();
+   {
+      std::lock_guard<std::mutex> lock(m_aliasMutex);
+      m_aliases.clear();
+   }
 }
 
 bool BaseTexture::Save(const std::filesystem::path& filepath) const
@@ -578,6 +584,7 @@ bool BaseTexture::Save(const std::filesystem::path& filepath) const
 
 std::shared_ptr<BaseTexture> BaseTexture::GetAlias(Format format) const
 {
+   std::lock_guard<std::mutex> lock(m_aliasMutex);
    auto it = m_aliases.find(format);
    if (it == m_aliases.end())
    {
