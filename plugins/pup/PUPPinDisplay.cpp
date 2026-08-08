@@ -661,7 +661,7 @@ const string& PUPPinDisplay::GetB2SDisplays() const
    return emptystring;
 }
 
-int PUPPinDisplay::GetGameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const
+int PUPPinDisplay::GameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const
 {
    // Used in PizzaTime to communicate with the mini game app:
    // - forward key up / key down
