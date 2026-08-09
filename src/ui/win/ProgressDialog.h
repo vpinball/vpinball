@@ -3,8 +3,9 @@
 #ifndef __STANDALONE__
 #include <wxx_controls.h>
 #include <wxx_dialog.h>
+#else
+#include <chrono>
 #endif
-
 
 class ProgressDialog final : public CDialog
 {
@@ -23,5 +24,8 @@ private:
 #ifndef __STANDALONE__
    CProgressBar m_progressBar;
    CStatic m_progressName;
+#else
+   std::chrono::steady_clock::time_point m_lastLogTick;
+   std::string m_lastLogText;
 #endif
 };
