@@ -83,9 +83,9 @@ Playing *Visual Pinball for iOS* requires touching specific areas of the screen 
 
 The touch areas are:
 
-- Coin 
-- Menu 
-- Left / Right Magna-Save 
+- Coin
+- Menu
+- Left / Right Magna-Save
 - Left / Center / Right Nudge
 - Left / Right Flipper
 - Start
@@ -179,7 +179,7 @@ Visual Pinball tables are stored in the `.vpx` file format. Many tables require 
 
 To simplify file transfers, *Visual Pinball for iOS* supports `.vpxz` files. A `.vpxz` file is simply a `.zip` file renamed, making it easier to bundle all necessary files together.
 
-For example, to package a ROM based table, simply make a folder structure like this: 
+For example, to package a ROM based table, simply make a folder structure like this:
 
 ```
 table/
@@ -251,7 +251,7 @@ Currently supported DMDs:
 - [ZeDMD-WiFi](https://github.com/PPUC/zedmd)
 - [Pixelcade](https://pixelcade.org/)
 
-The easiest way to run `DMDServer` is to use [ZeDMDOS](https://github.com/ppuc/zedmdos) on a Raspberry Pi. 
+The easiest way to run `DMDServer` is to use [ZeDMDOS](https://github.com/PPUC/zedmdos) on a Raspberry Pi.
 
 In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* and *Port* values.
 

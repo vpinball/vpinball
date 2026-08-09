@@ -41,14 +41,14 @@ generate_commit_report() {
     awk '{print $2}' tmp-counts-login.txt | tr '\n' ',' | sed 's/,/, /g; s/, $//'
 
     rm -f tmp-counts-login.txt
-    
+
     echo
 }
 
 generate_commit_report "vpinball/libaltsound" "master"
 generate_commit_report "vpinball/libdof" "master"
-generate_commit_report "ppuc/libserum_concentrate" "main"
-generate_commit_report "ppuc/libzedmd" "main"
+generate_commit_report "PPUC/libserum" "main"
+generate_commit_report "PPUC/libzedmd" "main"
 generate_commit_report "vpinball/libdmdutil" "master"
 generate_commit_report "vpinball/vpinball" "master"
 generate_commit_report "vpinball/pinmame" "master"
