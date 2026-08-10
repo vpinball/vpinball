@@ -549,6 +549,18 @@ void Server::B2SSetData(const string& name, int value)
    MyB2SSetData(name, value);
 }
 
+void Server::B2SSetData(int id, const string& value)
+{
+   if (is_string_numeric(value))
+      MyB2SSetData(id, string_to_int(value, 0));
+}
+
+void Server::B2SSetData(const string& name, const string& value)
+{
+   if (is_string_numeric(value))
+      MyB2SSetData(name, string_to_int(value, 0));
+}
+
 void Server::B2SPulseData(int id)
 {
    MyB2SSetData(id, 1);
@@ -566,9 +578,46 @@ void Server::B2SSetPos(int id, int xpos, int ypos)
    MyB2SSetPos(id, xpos, ypos);
 }
 
-void Server::B2SSetPos(const string& name, int xpos, int ypos)
+void Server::B2SSetPos(int id, int xpos, const string& ypos)
 {
-   MyB2SSetPos(string_to_int(name, 0), xpos, ypos);
+   if (is_string_numeric(ypos))
+      MyB2SSetPos(id, xpos, string_to_int(ypos, 0));
+}
+
+void Server::B2SSetPos(int id, const string& xpos, int ypos)
+{
+   if (is_string_numeric(xpos))
+      MyB2SSetPos(id, string_to_int(xpos, 0), ypos);
+}
+
+void Server::B2SSetPos(int id, const string& xpos, const string& ypos)
+{
+   if (is_string_numeric(xpos) && is_string_numeric(ypos))
+      MyB2SSetPos(id, string_to_int(xpos, 0), string_to_int(ypos, 0));
+}
+
+void Server::B2SSetPos(const string& id, int xpos, int ypos)
+{
+   if (is_string_numeric(id))
+      MyB2SSetPos(string_to_int(id, 0), xpos, ypos);
+}
+
+void Server::B2SSetPos(const string& id, int xpos, const string& ypos)
+{
+   if (is_string_numeric(id) && is_string_numeric(ypos))
+      MyB2SSetPos(string_to_int(id, 0), xpos, string_to_int(ypos, 0));
+}
+
+void Server::B2SSetPos(const string& id, const string& xpos, int ypos)
+{
+   if (is_string_numeric(id) && is_string_numeric(xpos))
+      MyB2SSetPos(string_to_int(id, 0), string_to_int(xpos, 0), ypos);
+}
+
+void Server::B2SSetPos(const string& id, const string& xpos, const string& ypos)
+{
+   if (is_string_numeric(id) && is_string_numeric(xpos) && is_string_numeric(ypos))
+      MyB2SSetPos(string_to_int(id, 0), string_to_int(xpos, 0), string_to_int(ypos, 0));
 }
 
 void Server::B2SSetIllumination(const string& name, int value)
