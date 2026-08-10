@@ -50,8 +50,15 @@ void ProgressDialog::SetProgress(const string &text, const float value)
 #else
    if (value >= 0.f && m_progress != value)
    {
-      PLOGI.printf("%s %d%%", text.c_str(), (int)value);
+      const auto now = std::chrono::steady_clock::now();
+      if (now - m_lastLogTick >= std::chrono::seconds(1) || text != m_lastLogText)
+      {
+         PLOGI.printf("%s %d%%", text.c_str(), (int)value);
+         m_lastLogTick = now;
+         m_lastLogText = text;
+      }
    }
 #endif
-   m_progress = value;
+   if (value >= 0.f)
+      m_progress = value;
 }
