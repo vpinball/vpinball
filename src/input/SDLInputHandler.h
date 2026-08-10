@@ -356,8 +356,9 @@ private:
                plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x0202, SensorMapping::Type::Position));
                map.MapPlunger(std::move(plunger));
                std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_pininput);
-               nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration));
-               nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));
+               // Accelerations are expected in m/s^2: without the unit scale, a full scale reading would be 1m/s^2 instead of 1g
+               nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration).WithScale(SensorUnitScale::gravity));
+               nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration).WithScale(SensorUnitScale::gravity));
                map.MapNudge(std::move(nudge));
             });
          break;

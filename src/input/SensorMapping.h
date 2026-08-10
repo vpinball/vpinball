@@ -7,6 +7,22 @@
 #include <complex>
 
 
+// Unit scales for the physics sensors.
+//
+// A sensor mapping's scale converts the acquired (normalized) axis value to the
+// unit the physics engine expects: m/s^2 for accelerations, m/s for velocities,
+// and per-unit/s for the plunger velocity (the 'unit' being the plunger travel
+// length). These are the scales used both by the default device mappings and by
+// the unit presets of the sensor setup page, so that a device set up
+// automatically behaves like one set up by hand.
+namespace SensorUnitScale
+{
+   constexpr float gravity = 9.80665f; // 1g accelerometer range, the usual default of Pinscape boards
+   constexpr float pinscapeNudgeVelocity = 4096.f / (20.f * 1000.f); // Pinscape measures in mm/s, multiplies by 20 and reports over a -4096/4096 range
+   constexpr float pinscapePlungerVelocity = 12.5f; // Per-unit velocity regarding the full plunger frame length (so no direct length unit)
+}
+
+
 class SensorMapping final
 {
 public:

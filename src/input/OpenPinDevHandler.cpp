@@ -391,11 +391,14 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                               map.MapAction(ButtonMapping::Create(deviceId, 26), m_inputManager.GetVolumeDownActionId()); // Audio volume down
                               std::unique_ptr<PlungerSensor> plunger = std::make_unique<PlungerSensor>(&m_inputManager);
                               plunger->GetPositionSensor()->SetMapping(SensorMapping::Create(deviceId, 0x200, SensorMapping::Type::Position));
-                              plunger->GetVelocitySensor()->SetMapping(SensorMapping::Create(deviceId, 0x201, SensorMapping::Type::Velocity));
+                              // Velocities are expected in m/s (per-unit/s for the plunger): without the unit scale, the reported
+                              // values are used as is and the plunger impulse ends up two orders of magnitude too low
+                              plunger->GetVelocitySensor()->SetMapping(
+                                 SensorMapping::Create(deviceId, 0x201, SensorMapping::Type::Velocity).WithScale(SensorUnitScale::pinscapePlungerVelocity));
                               map.MapPlunger(std::move(plunger));
                               std::unique_ptr<VPX::Physics::GamepadNudge> nudge = std::make_unique<VPX::Physics::GamepadNudge>(&m_inputManager);
-                              nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x204, SensorMapping::Type::Velocity));
-                              nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x205, SensorMapping::Type::Velocity));
+                              nudge->GetXSensor().SetMapping(SensorMapping::Create(deviceId, 0x204, SensorMapping::Type::Velocity).WithScale(SensorUnitScale::pinscapeNudgeVelocity));
+                              nudge->GetYSensor().SetMapping(SensorMapping::Create(deviceId, 0x205, SensorMapping::Type::Velocity).WithScale(SensorUnitScale::pinscapeNudgeVelocity));
                               map.MapNudge(std::move(nudge));
                            };
                            m_inputManager.SetDeviceDefaultMapping(deviceId, defaultMapping);

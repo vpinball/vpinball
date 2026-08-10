@@ -161,7 +161,7 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
    {
       // Accelerations must be provided to the engine in m/s^2 (acquired value x scale => m/s^2)
       // We propose some default scales, that is to say 1/2/4/8g (which is what Pinscape boards propose)
-      constexpr float g = 9.80665f;
+      constexpr float g = SensorUnitScale::gravity;
       int accUnit = abs(liveScale - g) < 0.01f ? 1 //
          : abs(liveScale - 2.f * g) < 0.01f    ? 2 //
          : abs(liveScale - 4.f * g) < 0.01f    ? 3 //
@@ -193,8 +193,8 @@ void SensorSetupPageSection::AppendSection(InGameUIPage* page, PhysicsSensor* se
    {
       // Velocities must be provided to the engine in m/s (acquired value x scale => m/s)
       // We propose some default scales (derived from Pinscape firmware)
-      constexpr float pinscapeDefaultNudge = 4096.f / (20.f * 1000.f); // Pinscape measure in mm/s then multiply by 20 and send a -4096/4096 range (this scale can be overriden)
-      constexpr float pinscapeDefaultPlunger = 12.5f;
+      constexpr float pinscapeDefaultNudge = SensorUnitScale::pinscapeNudgeVelocity; // Pinscape measure in mm/s then multiply by 20 and send a -4096/4096 range (this scale can be overriden)
+      constexpr float pinscapeDefaultPlunger = SensorUnitScale::pinscapePlungerVelocity;
       int velUnit = fabs(liveScale/pinscapeDefaultNudge - 1.f) < 0.005f   ? 1 //
                   : fabs(liveScale/pinscapeDefaultPlunger - 1.f) < 0.005f ? 2 //
                                                                           : 0;
