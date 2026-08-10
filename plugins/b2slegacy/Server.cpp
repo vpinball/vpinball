@@ -222,7 +222,9 @@ void Server::UpdateStateSrc()
 
    delete[] m_stateSrc.stateDefs;
    m_stateSrc.nStates = static_cast<unsigned int>(m_b2sStates.size());
-   m_stateSrc.stateDefs = new StateDef[m_stateSrc.nStates];
+   // Value-initialize: consumers read every field of a published StateDef, so
+   // desc/typeMask/writable must not be left indeterminate.
+   m_stateSrc.stateDefs = new StateDef[m_stateSrc.nStates]();
    m_stateSrcNames.resize(m_stateSrc.nStates);
    uint16_t index = 0;
    for (const auto& [id, v] : m_b2sStates)
@@ -231,6 +233,7 @@ void Server::UpdateStateSrc()
       m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
       m_stateSrc.stateDefs[index].id.groupId = 0x0001;
       m_stateSrc.stateDefs[index].id.stateId = id;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_UINT8 | CTLPI_STATE_TYPE_FLOAT; // see GetStateAPI
       index++;
    }
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangedMsgId, nullptr);
