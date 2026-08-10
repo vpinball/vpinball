@@ -86,6 +86,7 @@ FI_STRUCT (FIBITMAP) { void *data; };
 FI_STRUCT (FIMEMORY) { void *data; };
 
 #define EXR_ALLOW_FOR_FP16	0x80000
+#define PNG_IGNOREGAMMA		1		//! loading: avoid gamma correction
 #define PNG_Z_BEST_COMPRESSION		0x0009	//! save using ZLib level 9 compression flag (default value is 6)
 #define WEBP_LOSSLESS		0x100	//! save in lossless mode
 
