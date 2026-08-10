@@ -194,7 +194,7 @@ End Function
 
 'Function to create a window in HTML
 Function createInput(title,TableOptName)
-Dim sHTMLCode, status
+Dim sHTMLCode, status, optWindow
 	'Set the HTML code for the window
 	sHTMLCode = _
 	"<html>" &_
@@ -386,7 +386,10 @@ Dim sHTMLCode, status
 	"</html>"
 
 	'Create the window we need
-with HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
+	Set optWindow = HTABox("lightgrey", 500, 450, 700, 250,TableOptName)
+	'No host able to run the options window (standalone): skip the menu and keep the current options
+	If optWindow Is Nothing Then Exit Function
+with optWindow
 	'Set window title
 	.document.title = title
 	'Fill the objects we need
@@ -468,8 +471,16 @@ Dim IE, HTA, nRnd, sCmd, objShell,objExec
 	   & "window.resizeTo(" & w & "," & h & ");" _
 	   & "window.moveTo(" & x & "," & y & ")}"""
 
-Set objShell = CreateObject("WScript.Shell")
-Set objExec = objShell.Exec (sCmd)
+  On Error Resume Next
+  Set objShell = CreateObject("WScript.Shell")
+  Set objExec = objShell.Exec (sCmd)
+  If Err.Number <> 0 Then
+    Err.Clear
+    On Error Goto 0
+    Set HTABox = Nothing
+    Exit Function
+  End If
+  On Error Goto 0
 
   do until objShell.AppActivate("javascript:{new "): On Error Resume Next:loop
 
@@ -493,4 +504,5 @@ Set objExec = objShell.Exec (sCmd)
 objExec.Terminate
 SaveValue TableOptName, "DMD Options", 4
   MsgBox "There was an error with DMD Options window ! Options are set to defaults."
+Set HTABox = Nothing
 End Function
