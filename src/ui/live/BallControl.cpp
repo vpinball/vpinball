@@ -49,6 +49,8 @@ void BallControl::Update(const int width, const int height)
    using enum Mode;
    const Player *const player = g_pplayer;
    const bool leftFlipperPressed = player->m_pininput.IsPressed(player->m_pininput.GetLeftFlipperActionId());
+   const bool leftFlipperJustPressed = leftFlipperPressed && !m_prevLeftFlipperPressed;
+   m_prevLeftFlipperPressed = leftFlipperPressed;
 
    switch (m_mode)
    {
@@ -61,7 +63,7 @@ void BallControl::Update(const int width, const int height)
       break;
 
    case DragBall:
-      if (IsSelectedBallDraggable() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperPressed)
+      if (IsSelectedBallDraggable() && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !leftFlipperJustPressed)
          HandleDragBall(width, height);
       break;
       
@@ -69,8 +71,19 @@ void BallControl::Update(const int width, const int height)
       break;
    }
    
-   if (leftFlipperPressed)
-      EndBallDrag();
+   if (leftFlipperJustPressed)
+      ReleaseDragTarget();
+}
+
+static ImVec2 ToRenderPos(const ImVec2& pos, const int orientation, const int width, const int height)
+{
+   switch (orientation)
+   {
+   case 1: return ImVec2(static_cast<float>(width) - pos.y, pos.x);
+   case 2: return ImVec2(pos.x, static_cast<float>(height) - pos.y);
+   case 3: return ImVec2(pos.y, static_cast<float>(height) - pos.x);
+   default: return pos;
+   }
 }
 
 void BallControl::HandleDragBall(const int width, const int height)
@@ -81,7 +94,7 @@ void BallControl::HandleDragBall(const int width, const int height)
 
    // Note that ball control release is handled by pininput
    m_dragging = true;
-   const ImVec2 mousePos = ImGui::GetMousePos();
+   const ImVec2 mousePos = ToRenderPos(ImGui::GetMousePos(), m_liveUI.GetUIOrientation(), width, height);
    m_dragTarget = m_renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), m_draggedBall ? m_draggedBall->GetPosition().z : DEFAULT_BALL_SIZE);
    m_dragTarget.x = clamp(m_dragTarget.x, 0.f, live_table->m_right);
    m_dragTarget.y = clamp(m_dragTarget.y, 0.f, live_table->m_bottom);
@@ -100,7 +113,7 @@ void BallControl::HandleDestroyBall(const int width, const int height) const
    Player * const player = g_pplayer;
    const std::unique_ptr<Renderer> & renderer = player->m_renderer;
 
-   const ImVec2 mousePos = ImGui::GetMousePos();
+   const ImVec2 mousePos = ToRenderPos(ImGui::GetMousePos(), m_liveUI.GetUIOrientation(), width, height);
    const Vertex3Ds vertex = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), DEFAULT_BALL_SIZE);
    for (size_t i = 0; i < player->m_vball.size(); i++)
    {
@@ -143,26 +156,10 @@ void BallControl::HandleThrowBalls(const int width, const int height)
       return;
 
    // Adjust mouse position based on UI orientation
-   switch (m_liveUI.GetUIOrientation())
-   {
-   case 0:
-      break;
-   case 1:
-      mousePos = ImVec2(static_cast<float>(width) - mousePos.y, mousePos.x);
-      mouseInitalPos = ImVec2(static_cast<float>(width) - mouseInitalPos.y, mouseInitalPos.x);
-      break;
-   case 2:
-      mousePos = ImVec2(mousePos.x, static_cast<float>(height) - mousePos.y);
-      mouseInitalPos = ImVec2(mouseInitalPos.x, static_cast<float>(height) - mouseInitalPos.y);
-      break;
-   case 3:
-      mousePos = ImVec2(mousePos.y, static_cast<float>(height) - mousePos.x);
-      mouseInitalPos = ImVec2(mouseInitalPos.y, static_cast<float>(height) - mouseInitalPos.x);
-      break;
-   default:
-      assert(false);
-      return;
-   }
+   const int orientation = m_liveUI.GetUIOrientation();
+   mousePos = ToRenderPos(mousePos, orientation, width, height);
+   mouseInitalPos = ToRenderPos(mouseInitalPos, orientation, width, height);
+
    const Vertex3Ds throwCenter = renderer->Get3DPointFrom2D(width, height, Vertex2D(mouseInitalPos.x, mouseInitalPos.y), DEFAULT_BALL_SIZE);
    const Vertex3Ds throwTarget = renderer->Get3DPointFrom2D(width, height, Vertex2D(mousePos.x, mousePos.y), DEFAULT_BALL_SIZE);
 
