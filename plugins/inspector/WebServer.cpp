@@ -63,6 +63,7 @@ void WebServer::Start(int port, const std::string& assetPath)
    else
    {
       printf("[Inspector] Unable to start web server\n");
+      mg_mgr_free(&m_mgr);
    }
 }
 
@@ -156,12 +157,12 @@ void WebServer::ApiDisplay(struct mg_connection* c, struct mg_http_message* hm)
    mg_printf(c,
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: image/bmp\r\n"
-      "Content-Length: %zu\r\n"
+      "Content-Length: %lu\r\n"
       "Cache-Control: no-store\r\n"
       "\r\n",
-      image.size());
+      static_cast<unsigned long>(image.size()));
    mg_send(c, image.data(), image.size());
-   mg_mgr_poll(&m_mgr, 0);
+   c->is_resp = 0;
 }
 
 void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)

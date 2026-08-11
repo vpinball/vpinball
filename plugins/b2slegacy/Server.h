@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include <functional>
+#include <mutex>
 #include <unordered_dense.h>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
@@ -195,6 +196,7 @@ private:
    const unsigned int m_onGetStateSrcId;
    const unsigned int m_onStateChangeEventId;
    StateSrcId m_stateSrc { };
+   mutable std::mutex m_stateSrcMutex;
    vector<StateGroupDef> m_stateGroupDefs = { { "Illuminations", "", 0x0001 }, { "Scores (players)", "", 0x0002 }, { "Scores (digits)", "", 0x0003 } };
    vector<string> m_stateSrcNames;
    void UpdateStateSrc();

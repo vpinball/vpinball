@@ -45,8 +45,8 @@ namespace {
 }
 
 std::mutex WebServer::s_logMutex;
-vector<struct mg_connection*> WebServer::s_logConnections;
-vector<struct mg_connection*> WebServer::s_statusConnections;
+vector<unsigned long> WebServer::s_logConnections;
+vector<unsigned long> WebServer::s_statusConnections;
 std::deque<string> WebServer::s_recentLogs;
 WebServer* WebServer::s_instance = nullptr;
 int64_t WebServer::s_lastUpdateTimestamp = 0;
@@ -99,13 +99,20 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
             mg_http_serve_file(c, hm, (webBase / "vpx.html").string().c_str(), &opts);
       }
    }
+   else if (ev == MG_EV_WAKEUP) {
+      const struct mg_str* data = (struct mg_str*)ev_data;
+      if (c->is_websocket)
+         mg_ws_send(c, data->buf, data->len, WEBSOCKET_OP_TEXT);
+      else
+         mg_send(c, data->buf, data->len);
+   }
    else if (ev == MG_EV_CLOSE) {
       std::lock_guard<std::mutex> lock(s_logMutex);
-      auto logIt = std::find(s_logConnections.begin(), s_logConnections.end(), c);
+      auto logIt = std::find(s_logConnections.begin(), s_logConnections.end(), c->id);
       if (logIt != s_logConnections.end())
          s_logConnections.erase(logIt);
 
-      auto statusIt = std::find(s_statusConnections.begin(), s_statusConnections.end(), c);
+      auto statusIt = std::find(s_statusConnections.begin(), s_statusConnections.end(), c->id);
       if (statusIt != s_statusConnections.end())
          s_statusConnections.erase(statusIt);
    }
@@ -191,6 +198,8 @@ void WebServer::Start()
    PLOGI.printf("Starting web server at %s", bindUrl.c_str());
 
    mg_mgr_init(&m_mgr);
+   if (!mg_wakeup_init(&m_mgr))
+      PLOGE.printf("Unable to create the web server wakeup pipe, log and status streaming will not be delivered");
 
    SetLastUpdate();
 
@@ -273,7 +282,7 @@ void WebServer::Status(struct mg_connection *c, struct mg_http_message* hm)
 
    {
       std::lock_guard<std::mutex> lock(s_logMutex);
-      s_statusConnections.push_back(c);
+      s_statusConnections.push_back(c->id);
    }
 
    BroadcastStatus();
@@ -629,7 +638,7 @@ void WebServer::LogStream(struct mg_connection *c, struct mg_http_message* hm)
 
    {
       std::lock_guard<std::mutex> lock(s_logMutex);
-      s_logConnections.push_back(c);
+      s_logConnections.push_back(c->id);
 
       for (const auto& logLine : s_recentLogs) {
          string data = "data: " + logLine + "\n\n";
@@ -658,21 +667,15 @@ void WebServer::BroadcastLogEntry(const string& formattedLog)
    if (s_logConnections.empty())
       return;
 
-   string data = "data: " + formattedLog + "\n\n";
+   const string data = "data: " + formattedLog + "\n\n";
 
-   auto it = s_logConnections.begin();
-   while (it != s_logConnections.end()) {
-      struct mg_connection* conn = *it;
-      if (conn && mg_send(conn, data.c_str(), data.length()) == 0)
-         it = s_logConnections.erase(it);
-      else
-         ++it;
-   }
+   for (const unsigned long id : s_logConnections)
+      mg_wakeup(&m_mgr, id, data.c_str(), data.length());
 }
 
 void WebServer::BroadcastStatus()
 {
-   if (s_statusConnections.empty()) return;
+   if (s_instance == nullptr) return;
 
    bool running = g_pplayer != nullptr;
    string currentTable = running ? g_pplayer->m_ptable->m_filename.string() : ""s;
@@ -683,17 +686,12 @@ void WebServer::BroadcastStatus()
       {"lastUpdate", s_lastUpdateTimestamp}
    };
 
-   string response = j.dump();
+   const string response = j.dump();
 
    std::lock_guard<std::mutex> lock(s_logMutex);
-   auto it = s_statusConnections.begin();
-   while (it != s_statusConnections.end()) {
-      struct mg_connection* conn = *it;
-      if (conn && mg_ws_send(conn, response.c_str(), response.length(), WEBSOCKET_OP_TEXT) == 0)
-         it = s_statusConnections.erase(it);
-      else
-         ++it;
-   }
+   if (s_statusConnections.empty()) return;
+   for (const unsigned long id : s_statusConnections)
+      mg_wakeup(&s_instance->m_mgr, id, response.c_str(), response.length());
 }
 
 string WebServer::GetIPAddress()
