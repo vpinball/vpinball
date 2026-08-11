@@ -705,16 +705,17 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
-      Ball* const draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
-      if (draggedBall == nullptr)
+      BallControl& ballControl = g_pplayer->m_liveUI->m_ballControl;
+      Ball* const kickedBall = m_phitkickercircle->m_pHitBall->m_pBall;
+      if (ballControl.GetSelectedBall() == nullptr)
       {
          // Ball control most recently kicked if none currently.
-         g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(m_phitkickercircle->m_pHitBall->m_pBall);
+         ballControl.SetDraggedBall(kickedBall);
       }
-      else if (draggedBall == m_phitkickercircle->m_pHitBall->m_pBall)
+      if (ballControl.GetSelectedBall() == kickedBall)
       {
          // Clear any existing ball control target to allow kickout to work correctly.
-         g_pplayer->m_liveUI->m_ballControl.EndBallDrag();
+         ballControl.ReleaseDragTarget();
       }
       float anglerad = ANGTORAD(angle);					// yaw angle, zero is along -Y axis
 
@@ -1150,8 +1151,8 @@ void KickerHitCircle::DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal
                pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
                m_pHitBall = pball;
                m_lastCapturedBall = pball;
-               if (pball->m_pBall == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
-                  g_pplayer->m_liveUI->m_ballControl.SetDraggedBall(nullptr);
+               if (pball->m_pBall == g_pplayer->m_liveUI->m_ballControl.GetSelectedBall())
+                  g_pplayer->m_liveUI->m_ballControl.ReleaseDragTarget();
             }
 
             // Don't fire the hit event if the ball was just created
