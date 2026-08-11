@@ -112,6 +112,8 @@ public:
    uint32_t GetEndpointId() const { return m_endpointId; }
    void SetOnDestroyHandler(std::function<void(Server*)> handler) { m_onDestroyHandler = handler; }
    float GetState(int b2sId) const;
+   int GetPlayerScore(int playerno) const;
+   int GetScoreDigit(int digit) const;
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
    void GetChangedSolenoids();
@@ -184,6 +186,8 @@ private:
 
    static Server* m_singleton;
    ankerl::unordered_dense::map<int, float> m_b2sStates;
+   ankerl::unordered_dense::map<int, int> m_playerScores;
+   ankerl::unordered_dense::map<int, int> m_scoreDigits;
    string m_controllerGameId;
    bool m_gameRunning = false;
    const unsigned int m_onControllersChangedId;
@@ -191,6 +195,7 @@ private:
    const unsigned int m_onGetStateSrcId;
    const unsigned int m_onStateChangeEventId;
    StateSrcId m_stateSrc { };
+   vector<StateGroupDef> m_stateGroupDefs = { { "Illuminations", "", 0x0001 }, { "Scores (players)", "", 0x0002 }, { "Scores (digits)", "", 0x0003 } };
    vector<string> m_stateSrcNames;
    void UpdateStateSrc();
    static void OnGetStateSrc(const unsigned int, void*, void* msgData);

@@ -265,7 +265,7 @@ void B2SServer::UpdateStateSrc()
    m_stateSrc.id = { m_endpointId, 0 };
    m_stateSrc.nGroups = static_cast<unsigned int>(m_stateGroupDefs.size());
    m_stateSrc.groupDefs = m_stateGroupDefs.data();
-   m_stateSrc.stateDefs = new StateDef[m_stateSrc.nStates];
+   m_stateSrc.stateDefs = new StateDef[m_stateSrc.nStates]();
    m_stateSrc.GetState = &GetState;
    m_stateSrc.SetState = &SetState;
    m_stateSrcNames.resize(m_stateSrc.nStates);
@@ -290,11 +290,9 @@ void B2SServer::UpdateStateSrc()
          }
       }
       m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
-      m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0001;
-      m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
+      m_stateSrc.stateDefs[index].id.stateId = id;
       m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_UINT8;
-      m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
    for (const auto& [id, v] : m_playerScores)
@@ -303,22 +301,18 @@ void B2SServer::UpdateStateSrc()
       if (id == 29 && m_defaultStateNameMask & (1ull << id))
          m_stateSrcNames[index] = "Credits";
       m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
-      m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0002;
-      m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
+      m_stateSrc.stateDefs[index].id.stateId = id;
       m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
-      m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
    for (const auto& [id, v] : m_scoreDigits)
    {
       m_stateSrcNames[index] = std::format("Digit Score #{}", id);
       m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
-      m_stateSrc.stateDefs[index].desc = nullptr;
       m_stateSrc.stateDefs[index].id.groupId = 0x0003;
-      m_stateSrc.stateDefs[index].id.stateId = static_cast<uint16_t>(id);
+      m_stateSrc.stateDefs[index].id.stateId = id;
       m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
-      m_stateSrc.stateDefs[index].writable = 0;
       index++;
    }
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateSrcChgId, nullptr);
