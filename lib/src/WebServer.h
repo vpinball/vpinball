@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -50,12 +51,12 @@ private:
    bool Unzip(const char* pSource);
 
    struct mg_mgr m_mgr;
-   bool m_run;
+   std::atomic<bool> m_run;
    std::unique_ptr<std::thread> m_pThread;
    string m_url;
    static std::mutex s_logMutex;
-   static vector<struct mg_connection*> s_logConnections;
-   static vector<struct mg_connection*> s_statusConnections;
+   static vector<unsigned long> s_logConnections;
+   static vector<unsigned long> s_statusConnections;
    static std::deque<string> s_recentLogs;
    static const size_t MAX_RECENT_LOGS = 1000;
    static WebServer* s_instance;

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <string>
@@ -38,7 +39,7 @@ private:
    std::string m_assetPath;
 
    struct mg_mgr m_mgr;
-   bool m_run;
+   std::atomic<bool> m_run;
    std::unique_ptr<std::thread> m_pThread;
 };
 

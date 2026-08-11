@@ -227,6 +227,7 @@ void Server::UpdateStateSrc()
       m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
 
+   std::unique_lock<std::mutex> lock(m_stateSrcMutex);
    delete[] m_stateSrc.stateDefs;
    m_stateSrc.nStates = static_cast<unsigned int>(m_b2sStates.size() + m_playerScores.size() + m_scoreDigits.size());
    m_stateSrc.nGroups = static_cast<unsigned int>(m_stateGroupDefs.size());
@@ -261,15 +262,25 @@ void Server::UpdateStateSrc()
       m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
       index++;
    }
+   lock.unlock();
+
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangedMsgId, nullptr);
 }
 
 int MSGPIAPI Server::GetStateAPI(unsigned int inputIndex, int type, void* pResult)
 {
-   if (Server::m_singleton == nullptr || inputIndex >= Server::m_singleton->m_stateSrc.nStates)
+   if (Server::m_singleton == nullptr)
       return -1;
-   const int id = m_singleton->m_stateSrc.stateDefs[inputIndex].id.stateId;
-   switch (m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId)
+   int id;
+   uint32_t groupId;
+   {
+      const std::lock_guard<std::mutex> lock(m_singleton->m_stateSrcMutex);
+      if (inputIndex >= m_singleton->m_stateSrc.nStates)
+         return -1;
+      id = m_singleton->m_stateSrc.stateDefs[inputIndex].id.stateId;
+      groupId = m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId;
+   }
+   switch (groupId)
    {
    case 0x0001:
    {
@@ -286,7 +297,7 @@ int MSGPIAPI Server::GetStateAPI(unsigned int inputIndex, int type, void* pResul
    case 0x0003:
    {
       // Scores, credits and other generic states
-      const int val = m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId == 0x0002 ? m_singleton->GetPlayerScore(id) : m_singleton->GetScoreDigit(id);
+      const int val = groupId == 0x0002 ? m_singleton->GetPlayerScore(id) : m_singleton->GetScoreDigit(id);
       switch (type)
       {
       case CTLPI_STATE_TYPE_INT32: *static_cast<int32_t*>(pResult) = static_cast<int32_t>(val); return 0;
@@ -302,18 +313,21 @@ int MSGPIAPI Server::SetStateAPI(unsigned int inputIndex, int type, void* pResul
 
 float Server::GetState(int b2sId) const
 {
+   const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
    const auto it = m_b2sStates.find(b2sId);
    return it == m_b2sStates.end() ? 0.f : it->second;
 }
 
 int Server::GetPlayerScore(int playerno) const
 {
+   const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
    const auto it = m_playerScores.find(playerno);
    return it == m_playerScores.end() ? 0 : it->second;
 }
 
 int Server::GetScoreDigit(int digit) const
 {
+   const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
    const auto it = m_scoreDigits.find(digit);
    return it == m_scoreDigits.end() ? 0 : it->second;
 }
@@ -941,14 +955,18 @@ void Server::B2SMapSound(int digit, const string& soundname)
 
 void Server::MyB2SSetData(int id, int value)
 {
-   const auto it = m_b2sStates.find(id);
-   if (it == m_b2sStates.end())
+   bool isNewState;
    {
-      m_b2sStates[id] = static_cast<float>(value);
-      UpdateStateSrc();
+      const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
+      const auto it = m_b2sStates.find(id);
+      isNewState = it == m_b2sStates.end();
+      if (isNewState)
+         m_b2sStates[id] = static_cast<float>(value);
+      else
+         it->second = static_cast<float>(value);
    }
-   else
-      it->second = static_cast<float>(value);
+   if (isNewState)
+      UpdateStateSrc();
 
 
    B2SPluginEvent event { 'E', id, value };
@@ -1678,14 +1696,18 @@ int Server::GetFirstDigitOfDisplay(int display) const
 
 void Server::MyB2SSetScore(int digit, int value, bool animateReelChange)
 {
-   const auto it = m_scoreDigits.find(digit);
-   if (it == m_scoreDigits.end())
+   bool isNewState;
    {
-      m_scoreDigits[digit] = value;
-      UpdateStateSrc();
+      const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
+      const auto it = m_scoreDigits.find(digit);
+      isNewState = it == m_scoreDigits.end();
+      if (isNewState)
+         m_scoreDigits[digit] = value;
+      else
+         it->second = value;
    }
-   else
-      it->second = value;
+   if (isNewState)
+      UpdateStateSrc();
 
    B2SPluginEvent event { 'B', digit, value };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
@@ -1762,14 +1784,18 @@ void Server::MyB2SSetScore(int digit, int score)
 
 void Server::MyB2SSetScorePlayer(int playerno, int score)
 {
-   const auto it = m_playerScores.find(playerno);
-   if (it == m_playerScores.end())
+   bool isNewState;
    {
-      m_playerScores[playerno] = score;
-      UpdateStateSrc();
+      const std::lock_guard<std::mutex> lock(m_stateSrcMutex);
+      const auto it = m_playerScores.find(playerno);
+      isNewState = it == m_playerScores.end();
+      if (isNewState)
+         m_playerScores[playerno] = score;
+      else
+         it->second = score;
    }
-   else
-      it->second = score;
+   if (isNewState)
+      UpdateStateSrc();
 
    B2SPluginEvent event { 'C', playerno, score };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);

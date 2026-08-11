@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <climits>
 #include <future>
+#include <mutex>
 #include <cstdint>
 
 #include <unordered_dense.h>
@@ -145,6 +146,7 @@ private:
    const unsigned int m_getControllersId;
    static void OnGetControllers(const unsigned int, void*, void* msgData);
    uint64_t m_defaultStateNameMask = 0;
+   mutable std::mutex m_stateSrcMutex;
    ankerl::unordered_dense::map<int, float> m_lampStates;
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, int> m_scoreDigits;
