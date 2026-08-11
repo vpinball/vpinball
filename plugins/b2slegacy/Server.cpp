@@ -206,6 +206,13 @@ void Server::OnGetStateSrc(const unsigned int, void* userData, void* msgData)
    msg->count++;
 }
 
+struct B2SPluginEvent
+{
+   uint8_t type;
+   int32_t index;
+   int32_t value;
+};
+
 void Server::UpdateStateSrc()
 {
    // TODO this should be performed when controller start/stop, not when states are declared
@@ -221,9 +228,9 @@ void Server::UpdateStateSrc()
    }
 
    delete[] m_stateSrc.stateDefs;
-   m_stateSrc.nStates = static_cast<unsigned int>(m_b2sStates.size());
-   // Value-initialize: consumers read every field of a published StateDef, so
-   // desc/typeMask/writable must not be left indeterminate.
+   m_stateSrc.nStates = static_cast<unsigned int>(m_b2sStates.size() + m_playerScores.size() + m_scoreDigits.size());
+   m_stateSrc.nGroups = static_cast<unsigned int>(m_stateGroupDefs.size());
+   m_stateSrc.groupDefs = m_stateGroupDefs.data();
    m_stateSrc.stateDefs = new StateDef[m_stateSrc.nStates]();
    m_stateSrcNames.resize(m_stateSrc.nStates);
    uint16_t index = 0;
@@ -233,7 +240,25 @@ void Server::UpdateStateSrc()
       m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
       m_stateSrc.stateDefs[index].id.groupId = 0x0001;
       m_stateSrc.stateDefs[index].id.stateId = id;
-      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_UINT8 | CTLPI_STATE_TYPE_FLOAT; // see GetStateAPI
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_FLOAT | CTLPI_STATE_TYPE_UINT8;
+      index++;
+   }
+   for (const auto& [id, v] : m_playerScores)
+   {
+      m_stateSrcNames[index] = std::format("Player Score #{}", id);
+      m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
+      m_stateSrc.stateDefs[index].id.groupId = 0x0002;
+      m_stateSrc.stateDefs[index].id.stateId = id;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
+      index++;
+   }
+   for (const auto& [id, v] : m_scoreDigits)
+   {
+      m_stateSrcNames[index] = std::format("Digit Score #{}", id);
+      m_stateSrc.stateDefs[index].name = m_stateSrcNames[index].c_str();
+      m_stateSrc.stateDefs[index].id.groupId = 0x0003;
+      m_stateSrc.stateDefs[index].id.stateId = id;
+      m_stateSrc.stateDefs[index].typeMask = CTLPI_STATE_TYPE_INT32 | CTLPI_STATE_TYPE_INT64;
       index++;
    }
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangedMsgId, nullptr);
@@ -243,15 +268,34 @@ int MSGPIAPI Server::GetStateAPI(unsigned int inputIndex, int type, void* pResul
 {
    if (Server::m_singleton == nullptr || inputIndex >= Server::m_singleton->m_stateSrc.nStates)
       return -1;
-   int b2sId = m_singleton->m_stateSrc.stateDefs[inputIndex].id.stateId;
-   float val = m_singleton->GetState(b2sId);
-   if (type == CTLPI_STATE_TYPE_FLOAT)
-      *static_cast<float*>(pResult) = val;
-   else if (type == CTLPI_STATE_TYPE_UINT8)
-      *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(val * 255.f);
-   else
-      return -1;
-   return 0;
+   const int id = m_singleton->m_stateSrc.stateDefs[inputIndex].id.stateId;
+   switch (m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId)
+   {
+   case 0x0001:
+   {
+      // Normalized illuminations 0..1 or 0..255
+      const float val = m_singleton->GetState(id);
+      switch (type)
+      {
+      case CTLPI_STATE_TYPE_FLOAT: *static_cast<float*>(pResult) = val; return 0;
+      case CTLPI_STATE_TYPE_UINT8: *static_cast<uint8_t*>(pResult) = static_cast<uint8_t>(val * 255.f); return 0;
+      }
+      break;
+   }
+   case 0x0002:
+   case 0x0003:
+   {
+      // Scores, credits and other generic states
+      const int val = m_singleton->m_stateSrc.stateDefs[inputIndex].id.groupId == 0x0002 ? m_singleton->GetPlayerScore(id) : m_singleton->GetScoreDigit(id);
+      switch (type)
+      {
+      case CTLPI_STATE_TYPE_INT32: *static_cast<int32_t*>(pResult) = static_cast<int32_t>(val); return 0;
+      case CTLPI_STATE_TYPE_INT64: *static_cast<int64_t*>(pResult) = static_cast<int64_t>(val); return 0;
+      }
+      break;
+   }
+   }
+   return -1;
 }
 
 int MSGPIAPI Server::SetStateAPI(unsigned int inputIndex, int type, void* pResult) { return -1; }
@@ -260,6 +304,18 @@ float Server::GetState(int b2sId) const
 {
    const auto it = m_b2sStates.find(b2sId);
    return it == m_b2sStates.end() ? 0.f : it->second;
+}
+
+int Server::GetPlayerScore(int playerno) const
+{
+   const auto it = m_playerScores.find(playerno);
+   return it == m_playerScores.end() ? 0 : it->second;
+}
+
+int Server::GetScoreDigit(int digit) const
+{
+   const auto it = m_scoreDigits.find(digit);
+   return it == m_scoreDigits.end() ? 0 : it->second;
 }
 
 int Server::OnRenderStatic(VPXRenderContext2D* ctx, void* userData)
@@ -895,12 +951,6 @@ void Server::MyB2SSetData(int id, int value)
       it->second = static_cast<float>(value);
 
 
-   struct B2SPluginEvent
-   {
-      uint8_t type;
-      int32_t index;
-      int32_t value;
-   };
    B2SPluginEvent event { 'E', id, value };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
 
@@ -1628,6 +1678,18 @@ int Server::GetFirstDigitOfDisplay(int display) const
 
 void Server::MyB2SSetScore(int digit, int value, bool animateReelChange)
 {
+   const auto it = m_scoreDigits.find(digit);
+   if (it == m_scoreDigits.end())
+   {
+      m_scoreDigits[digit] = value;
+      UpdateStateSrc();
+   }
+   else
+      it->second = value;
+
+   B2SPluginEvent event { 'B', digit, value };
+   m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
+
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
          const bool useLEDs = (m_pB2SData->GetLEDs()->contains("LEDBox" + std::to_string(digit)) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
@@ -1700,6 +1762,18 @@ void Server::MyB2SSetScore(int digit, int score)
 
 void Server::MyB2SSetScorePlayer(int playerno, int score)
 {
+   const auto it = m_playerScores.find(playerno);
+   if (it == m_playerScores.end())
+   {
+      m_playerScores[playerno] = score;
+      UpdateStateSrc();
+   }
+   else
+      it->second = score;
+
+   B2SPluginEvent event { 'C', playerno, score };
+   m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
+
    if (m_pB2SData->IsBackglassRunning()) {
       if (playerno > 0) {
          // Set score to player class
