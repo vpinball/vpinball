@@ -90,6 +90,43 @@ Sensitivity is a separate field: `Mapping.NudgeN.Strength`, `0`–`2` around a
 neutral `1`. Driving sensitivity through `scale` lies to the engine about what
 the sensor is, and makes a 4 g or 8 g board impossible to describe.
 
+## Which of the four scales actually matter
+
+A cabinet can map four axes: plunger position and velocity, nudge acceleration
+and velocity. They are not equal — only two of them need a scale that means
+something physically.
+
+| Mapping | Needed? | Scale |
+|---|---|---|
+| `Plunger0.Position` | **required** for the plunger to do anything | leave at `1.0` — it is a normalised 0…1 travel, not a physical unit |
+| `Plunger0.Velocity` | optional | **must convert to m/s** (`12.5` on Pinscape) |
+| `Nudge0.AccX` / `AccY` | the physical reference | **must convert to m/s²** (`19.6133` for a ±2 g board) |
+| `Nudge0.VelX` / `VelY` | optional | calibrated automatically — see below |
+
+Without a position mapping, `PlungerSensor::StepOneMillisecond` returns
+immediately and the whole plunger sensor does nothing. Position is the one that
+cannot be skipped, and the one whose scale should be left alone; invert its sign
+only if the axis reads backwards.
+
+Plunger velocity is optional, but when it is mapped `GetHitVelocity` returns
+**its value directly** as the impact speed — hence a scale that has to be a
+real m/s conversion. Unmapped, VPX derives the speed from the position
+estimator instead, which is what a board without a velocity channel gets.
+
+Nudge velocity behaves differently again. When acceleration *and* velocity are
+mapped on the same axis, `CabinetNudgeSensor::UpdateAxis` pushes both into the
+same Kalman filter and lets `MotionGainCalibratorAxis` work out the gain
+between the two channels on its own, taking the acceleration as the reference —
+the velocity is fed as `1 / gain`. Until that calibration reaches a confidence
+of 0.5, the velocity channel is simply **ignored** and only the acceleration is
+used. Its scale therefore does not need to be accurate; the calibration absorbs
+it. The exception is mapping velocity *without* acceleration on that axis: it is
+then used with a gain of 1 and its scale does matter (m/s).
+
+Practical summary for an ini: fix the scale on `Plunger0.Velocity` and
+`Nudge0.AccX/AccY`, leave `Plunger0.Position` and `Nudge0.VelX/VelY` as they
+come.
+
 ## The three nudge modes
 
 `Mapping.NudgeN.Type` selects how a reading becomes cabinet motion:

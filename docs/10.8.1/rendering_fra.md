@@ -28,9 +28,39 @@ connues :
 | `0` | aucune limite |
 | toute autre | limiter à cette valeur — cadence plus stable, moins de chaleur |
 
-Notez l'inversion : `0` ne veut pas dire « pas de bridage raisonnable », il veut
-dire « aucune limite du tout », tandis que `-1` est le défaut sensé. Lire ces
-valeurs comme de simples nombres conduit à l'inverse de l'intention.
+Notez l'inversion : `-1` est le défaut sensé et `0` supprime toute limite —
+lire ces valeurs comme de simples nombres conduit à l'inverse de l'intention.
+
+Quoi qu'on demande, **dès que `SyncMode` n'est pas `0` la valeur est ramenée à
+l'écran**, dans `Player::Init` : au-dessus de la fréquence de rafraîchissement
+elle y est rabattue, en dessous elle est arrondie à une division entière de
+celle-ci (60 → 30 → 20, jamais sous 24 FPS). Ainsi `SyncMode = 3` avec
+`MaxFramerate = 240` sur un écran 144 Hz tourne à 144, pas à 240.
+
+### Fréquence de rafraîchissement variable (G-Sync, FreeSync)
+
+Ce rabattement est précisément ce dont un écran VRR ne veut pas, puisque tout
+l'intérêt du VRR est que l'écran suive le jeu et non l'inverse. Mais couper la
+synchronisation n'est pas pour autant la bonne réponse, car le frame pacing
+n'est pas de la synchronisation verticale : le mode `3` exécute une boucle de
+jeu différente (`FramePacingGameLoop`) qui vise à livrer l'image juste à temps
+pour le vblank, en continuant d'avancer la physique et les entrées entre-temps.
+Il coopère avec une fréquence variable au lieu de la contrarier.
+
+Deux configurations se tiennent :
+
+- `SyncMode = 3` avec `MaxFramerate` réglé sur la fréquence de l'écran. Le
+  rabattement devient alors sans effet, puisqu'on demande exactement ce que
+  l'écran fait, et on garde la cadence à faible latence. À essayer en premier.
+- `SyncMode = 0` avec `MaxFramerate` fixé à la main, ce qui libère VPX du
+  rabattement et laisse le moniteur cadencer le jeu. Plafonner deux ou trois Hz
+  sous le haut de la plage VRR pour ne jamais en sortir relève de la pratique
+  VRR générale, pas d'une particularité de VPX.
+
+Les modes `1` et `2` sont ceux à éviter sur un écran VRR : tous deux imposent
+une cadence fixe, avec la latence visuelle qui va avec. La VR est un cas à
+part — la synchronisation y est forcée à l'arrêt et la cadence laissée au
+runtime, voir [VR](vr_fra.md).
 
 ## Anticrénelage
 

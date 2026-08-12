@@ -93,6 +93,45 @@ La sensibilité est un champ distinct : `Mapping.NudgeN.Strength`, de `0` à `2`
 autour d'un `1` neutre. Piloter la sensibilité par `scale` revient à mentir au
 moteur sur la nature du capteur, et rend une carte 4 g ou 8 g indescriptible.
 
+## Laquelle des quatre échelles compte vraiment
+
+Un cabinet peut mapper quatre axes : position et vitesse du plongeur,
+accélération et vitesse du nudge. Ils ne se valent pas — deux seulement ont
+besoin d'une échelle qui veut dire quelque chose physiquement.
+
+| Mapping | Nécessaire ? | Échelle |
+|---|---|---|
+| `Plunger0.Position` | **obligatoire** pour que le plongeur fasse quoi que ce soit | à laisser à `1.0` — c'est une course normalisée 0…1, pas une unité physique |
+| `Plunger0.Velocity` | facultatif | **doit convertir en m/s** (`12.5` sur Pinscape) |
+| `Nudge0.AccX` / `AccY` | la référence physique | **doit convertir en m/s²** (`19.6133` pour une carte ±2 g) |
+| `Nudge0.VelX` / `VelY` | facultatif | calibrée automatiquement — voir plus bas |
+
+Sans mapping de position, `PlungerSensor::StepOneMillisecond` sort
+immédiatement et tout le capteur de plongeur reste inerte. La position est
+celle qu'on ne peut pas omettre, et celle dont l'échelle doit être laissée
+telle quelle ; on n'inverse son signe que si l'axe se lit à l'envers.
+
+La vitesse du plongeur est facultative, mais lorsqu'elle est mappée
+`GetHitVelocity` renvoie **sa valeur directement** comme vitesse d'impact —
+d'où une échelle qui doit être une vraie conversion en m/s. Non mappée, VPX
+déduit la vitesse de l'estimateur de position, ce qu'obtient toute carte sans
+canal de vitesse.
+
+La vitesse du nudge se comporte encore autrement. Quand l'accélération *et* la
+vitesse sont mappées sur le même axe, `CabinetNudgeSensor::UpdateAxis` pousse
+les deux dans le même filtre de Kalman et laisse `MotionGainCalibratorAxis`
+déterminer seul le gain entre les deux canaux, en prenant l'accélération pour
+référence — la vitesse est injectée à `1 / gain`. Tant que cette calibration
+n'atteint pas une confiance de 0,5, le canal de vitesse est purement
+**ignoré** et seule l'accélération est utilisée. Son échelle n'a donc pas
+besoin d'être exacte : la calibration l'absorbe. L'exception est de mapper la
+vitesse *sans* accélération sur cet axe : elle est alors utilisée avec un gain
+de 1 et son échelle compte pleinement (m/s).
+
+En résumé pour un ini : corriger l'échelle de `Plunger0.Velocity` et de
+`Nudge0.AccX/AccY`, laisser `Plunger0.Position` et `Nudge0.VelX/VelY` telles
+qu'elles viennent.
+
 ## Les trois modes de nudge
 
 `Mapping.NudgeN.Type` choisit comment une mesure devient un mouvement de cabinet :

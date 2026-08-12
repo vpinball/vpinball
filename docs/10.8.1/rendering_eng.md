@@ -26,9 +26,39 @@ changed: **frame pacing is now the default**, not vertical sync.
 | `0` | no limit at all |
 | any other | limit to that value — steadier framerate, less heat |
 
-Note the inversion: `0` does **not** mean "no cap", it means "no cap at all",
-while `-1` is the sensible default. Reading it as a plain number gets it
-backwards.
+Note the inversion: `-1` is the sensible default and `0` removes the cap
+entirely — reading these as plain numbers gets it backwards.
+
+Whatever you ask for, **as soon as `SyncMode` is not `0` the value is clamped to
+the display**, in `Player::Init`: above the refresh rate it is brought back down
+to it, below it it is rounded to an integer division of it (60 → 30 → 20, never
+under 24 FPS). So `SyncMode = 3` with `MaxFramerate = 240` on a 144 Hz screen
+runs at 144, not 240.
+
+### Variable refresh rate (G-Sync, FreeSync)
+
+That clamp is exactly what a VRR panel does not want, since the whole point of
+VRR is that the display follows the game rather than the reverse. But turning
+synchronisation off is not automatically the right answer either, because frame
+pacing is not vertical sync: mode `3` runs a different game loop
+(`FramePacingGameLoop`) that aims to have the frame ready just in time for the
+vblank, keeping physics and input stepping meanwhile. It cooperates with a
+variable refresh rate rather than fighting it.
+
+Two setups make sense:
+
+- `SyncMode = 3` with `MaxFramerate` set to the display's refresh rate. The
+  clamp then becomes a no-op, since you are asking for exactly what the screen
+  does, and you keep the low-latency pacing. Start here.
+- `SyncMode = 0` with `MaxFramerate` set by hand, which frees VPX from the
+  clamp and lets the monitor pace the game. Capping a couple of Hz below the top
+  of the VRR window so as never to leave it is general VRR practice rather than
+  anything specific to VPX.
+
+Modes `1` and `2` are the ones to avoid on a VRR screen: both impose a fixed
+cadence, along with the visual latency that comes with it. VR is a separate
+case — sync is forced off there and pacing is left to the runtime, see
+[VR](vr_eng.md).
 
 ## Anti-aliasing
 

@@ -17,6 +17,8 @@
 - **[Audio](audio_eng.md)** — devices, speaker modes, the per-source gain.
 - **[Plugins](plugins_eng.md)** — one section per plugin, and where their keys
   really come from.
+- **[Files and folders](files_eng.md)** — the layout deduced from the ini, the
+  user folder, the search order.
 - **[VR](vr_eng.md)** — OpenXR, cabinet placement, the preview window.
 - **[Removed settings](removed_eng.md)** — what 10.8 had, what replaced it.
 
@@ -36,6 +38,8 @@
   source.
 - **[Plugins](plugins_fra.md)** — une section par plugin, et d'où viennent
   vraiment leurs clés.
+- **[Fichiers et dossiers](files_fra.md)** — la disposition déduite de l'ini, le
+  dossier user, l'ordre de recherche.
 - **[VR](vr_fra.md)** — OpenXR, placement du cabinet, fenêtre d'aperçu.
 - **[Réglages supprimés](removed_fra.md)** — ce qu'avait la 10.8, ce qui l'a
   remplacé.
