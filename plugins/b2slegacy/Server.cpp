@@ -82,6 +82,8 @@ Server::~Server()
    m_msgApi->UnsubscribeMsg(m_onStateChangedMsgId, OnStateSrcChangedStatic, this);
    m_msgApi->UnsubscribeMsg(m_onGetStateSrcId, OnGetStateSrc, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
+   m_msgApi->ReleaseMsgID(m_onControllersChangedId);
+   m_msgApi->ReleaseMsgID(m_getControllersId);
    m_msgApi->ReleaseMsgID(m_onGetAuxRendererId);
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
    m_msgApi->ReleaseMsgID(m_onStateChangedMsgId);

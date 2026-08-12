@@ -94,9 +94,9 @@ B2SServer::~B2SServer()
       m_gameRunning = false;
       m_msgApi->BroadcastMsg(m_endpointId, m_onControllersChangedId, nullptr);
    }
+   m_msgApi->UnsubscribeMsg(m_getControllersId, OnGetControllers, this);
    m_msgApi->ReleaseMsgID(m_onControllersChangedId);
    m_msgApi->ReleaseMsgID(m_getControllersId);
-   m_msgApi->UnsubscribeMsg(m_getControllersId, OnGetControllers, this);
 
    if (m_lampStates.size() > 0)
    {
