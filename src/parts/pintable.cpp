@@ -132,7 +132,7 @@ PinTable::~PinTable()
 
       for (size_t i = 0; i < m_vimage.size(); i++)
          delete m_vimage[i];
-  
+
       for (size_t i = 0; i < m_vfont.size(); i++)
       {
          m_vfont[i]->UnRegister();
@@ -160,7 +160,7 @@ PinTable::~PinTable()
 }
 
 void PinTable::UpdatePropertyImageList()
-{ 
+{
 #ifndef __STANDALONE__
     // just update the combo boxes in the property dialog
     g_pvp->GetPropertiesDocker()->GetContainProperties()->GetPropertyDialog()->UpdateTabs(m_vmultisel);
@@ -554,7 +554,7 @@ PinTable* PinTable::CopyForPlay()
    AddRef(); // as the live table holds a reference on this
 
    CComObject<PinTable> *dst = live_table;
-   
+
    dst->m_original_table_script = src->m_original_table_script;
    dst->m_external_script_name = src->m_external_script_name;
    dst->m_script_text = src->m_script_text;
@@ -1217,7 +1217,7 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
    writer.WriteFloat(FID(BOTM), m_bottom);
 
    writer.WriteBool(FID(EFSS), m_isFSSViewModeEnabled);
-   static constexpr int vsFields[NUM_BG_SETS][19] = { 
+   static constexpr int vsFields[NUM_BG_SETS][19] = {
       { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ), FID(HOF0), FID(VOF0), FID(WTX0), FID(WTY0), FID(WTZ0), FID(WBX0), FID(WBY0), FID(WBZ0) },
       { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ), FID(HOF1), FID(VOF1), FID(WTX1), FID(WTY1), FID(WTZ1), FID(WBX1), FID(WBY1), FID(WBZ1) },
       { FID(VSM2), FID(ROFS), FID(INFS), FID(LAFS), FID(FOFS), FID(XLXS), FID(XLYS), FID(XLZS), FID(SCXS), FID(SCYS), FID(SCZS), FID(HOF2), FID(VOF2), FID(WTX2), FID(WTY2), FID(WTZ2), FID(WBX2), FID(WBY2), FID(WBZ2) },
@@ -1541,7 +1541,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             const int ctextures = m_loadTemp[2];
             const int cfonts = m_loadTemp[3];
             const int ccollection = m_loadTemp[4];
-            
+
             PLOGI << "PinTable Data loaded"; // For profiling
 
             feedback.AboutToProcessTable(csubobj + csounds + ctextures + cfonts);
@@ -1592,7 +1592,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
                      piedit->m_onLoadExpectedPartGroup.clear();
                      BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
-                     piedit->Load(reader); 
+                     piedit->Load(reader);
                      pstmItem->Release();
                      pstmItem = nullptr;
                      if (reader.HasError())
@@ -1683,7 +1683,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      {
                         const wstring oldName = part->GetIScriptable()->m_wzName;
                         part->GetIScriptable()->m_wzName = GetUniqueName(part->GetIScriptable()->m_wzName);
-                        PLOGE << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetIScriptable()->m_wzName);
+                        PLOGW << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetIScriptable()->m_wzName);
                      }
                      AddPart(part);
                      part->Release();
@@ -1817,7 +1817,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
                         if (sound->GetName() == m_vsound[i2]->GetName())
                         {
-                           PLOGE << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
+                           PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
                            m_vsound.erase(m_vsound.begin() + i2);
                            --i2;
                         }
@@ -1838,7 +1838,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
                         if (image->m_name == m_vimage[i2]->m_name)
                         {
-                           PLOGE << "Duplicate image name found: " << image->GetName() << ", dropping it!";
+                           PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
                            m_vimage.erase(m_vimage.begin() + i2);
                            --i2;
                         }
@@ -1892,7 +1892,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                      // Postpend "layer" to keep alphabetic order of layer
                      if (!layerPostpend && !layerName.ends_with(L"_Layer"))
                      {
-                        layerPostpend = true; 
+                        layerPostpend = true;
                         layerName += L"_Layer";
                      }
                      else
@@ -2095,7 +2095,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   RenamePart(editable, shortName);
                });
          }
-         
+
          // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
          /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
          for (size_t i = 0; i < m_vedit.size(); ++i)
@@ -2188,7 +2188,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
    std::filesystem::path tablePath = std::filesystem::path(filename).parent_path();
    std::filesystem::path tableFile = std::filesystem::path(filename).filename();
-   
+
    // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings
    // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
    if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".pov"); !FileExists(GetSettingsFileName()) && FileExists(filenameAuto))
@@ -2235,7 +2235,7 @@ void PinTable::LoadScriptOverride(const std::filesystem::path& scriptPath)
       return;
    }
    PLOGI << "Loading script: " << scriptPath.string();
-   
+
    std::streamsize size = file.tellg();
    file.seekg(0, std::ios::beg);
    std::vector<char> buffer((size_t)size);
@@ -2433,7 +2433,7 @@ void PinTable::Load(IObjectReader& reader)
             break;
          case FID(BTST):
             // FIXME Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
-            if (const int ballTrailStrength = reader.AsInt(); !hasIni) 
+            if (const int ballTrailStrength = reader.AsInt(); !hasIni)
                m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
             break;
          case FID(UAOC): m_enableAO = reader.AsInt() != 0; break; // Before 10.8, 1 would force AO
@@ -3343,7 +3343,7 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename)
 #ifndef __STANDALONE__
       const string& initialDir = m_settings.GetRecentDir_POVDir();
       vector<string> fileNames;
-      if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
+      if (!m_vpinball->OpenFileDialog(initialDir, fileNames,
          "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
          "ini", 0, toUserSettings ? "Import POV to user settings"s : "Import POV to table properties"s))
          return;
@@ -3844,7 +3844,7 @@ void PinTable::ClearMultiSel(ISelect* newSel)
       m_vmultisel[i].m_selectstate = SelectState::NotSelected;
 
    //remove the clone of the multi selection in the smart browser class
-   //to sync the clone and the actual multi-selection 
+   //to sync the clone and the actual multi-selection
    //it will be updated again on AddMultiSel() call
    m_vmultisel.clear();
 
