@@ -87,15 +87,15 @@ public:
    int GetRawDmdHeight();
    std::vector<uint8_t> GetRawDmdPixels();
    std::vector<uint32_t> GetRawDmdColoredPixels();
-   bool GetShowPinDMD() const { LOGE("ShowPinDMD is deprecated"s); return false; } // Deprecated as this must not be part of the table script but of the global setup
-   void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is deprecated"s); } // Deprecated as this must not be part of the table script but of the global setup
-   bool GetShowWinDMD() const { LOGE("ShowWinDMD is deprecated"s); return false; } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
-   void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is deprecated"s); } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+   bool GetShowPinDMD() const { LOGW("ShowPinDMD is deprecated"s); return false; } // Deprecated as this must not be part of the table script but of the global setup
+   void SetShowPinDMD(bool v) const { LOGW("ShowPinDMD is deprecated"s); } // Deprecated as this must not be part of the table script but of the global setup
+   bool GetShowWinDMD() const { LOGW("ShowWinDMD is deprecated"s); return false; } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
+   void SetShowWinDMD(bool v) const { LOGW("ShowWinDMD is deprecated"s); } // Deprecated (could be implemented as exposing or not the DMD, but there is no good use case for this)
 
    // Note: we force input handling to be always disabled as it would lead to setup problems and conflicts.
    // All interactions must be performed through the script or plugin API
-   bool GetHandleKeyboard() const { LOGE("GetHandleKeyboard is deprecated"s); return false; }
-   void SetHandleKeyboard(const bool handle) { LOGE("SetHandleKeyboard is deprecated"s); }
+   bool GetHandleKeyboard() const { LOGW("GetHandleKeyboard is deprecated"s); return false; }
+   void SetHandleKeyboard(const bool handle) { LOGW("SetHandleKeyboard is deprecated"s); }
 
    // All these properties/methods are part of the VPinMAME IDL but doesn't seem to be used anywhere (or are deprecated)
    //STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
@@ -131,25 +131,25 @@ public:
    //STDMETHOD(get_AudioDeviceModule)(/*[in]*/ int num, /*[out, retval]*/ BSTR *pVal);
    //STDMETHOD(get_CurrentAudioDevice)(/*[out, retval]*/ int *pVal);
    //STDMETHOD(put_CurrentAudioDevice)(/*[in]*/ int num);
-   bool GetLockDisplay() const { LOGE("LockDisplay is deprecated"s); return false; }
-   void SetLockDisplay(bool v) const { LOGE("LockDisplay is deprecated"s); }
-   bool GetDoubleSize() const { LOGE("DoubleSize is deprecated"s); return false; }
-   void SetDoubleSize(bool v) const { LOGE("DoubleSize is deprecated"s); }
-   bool GetShowFrame() const { LOGE("ShowFrame is deprecated"s); return false; }
-   void SetShowFrame(bool v) const { LOGE("ShowFrame is deprecated"s); }
-   bool GetShowDMDOnly() const { LOGE("ShowDMDOnly is deprecated"s); return false; }
-   void SetShowDMDOnly(bool v) const { LOGE("ShowDMDOnly is deprecated"s); }
-   bool GetShowTitle() const { LOGE("ShowTitle is deprecated"s); return false; }
-   void SetShowTitle(bool v) const { LOGE("ShowTitle is deprecated"s); }
-   int GetFastFrames() const { LOGE("FastFrames is deprecated"s); return 0; }
-   void SetFastFrames(int v) const { LOGE("FastFrames is deprecated"s); }
-   bool GetIgnoreRomCrc() const { LOGE("IgnoreRomCrc is deprecated"s); return false; }
-   void SetIgnoreRomCrc(bool v) const { LOGE("IgnoreRomCrc is deprecated"s); }
-   bool GetCabinetMode() const { LOGE("CabinetMode is deprecated"s); return false; }
-   void SetCabinetMode(bool v) const { LOGE("CabinetMode is deprecated"s); }
-   int GetSoundMode() const { LOGE("SoundMode is deprecated"s); return 0; }
-   void SetSoundMode(int v) const { LOGE("SoundMode is deprecated"s); }
-   void ShowOptsDialog(long hParentWnd = 0L) const { LOGE("ShowOptsDialog is deprecated"s); }
+   bool GetLockDisplay() const { LOGW("LockDisplay is deprecated"s); return false; }
+   void SetLockDisplay(bool v) const { LOGW("LockDisplay is deprecated"s); }
+   bool GetDoubleSize() const { LOGW("DoubleSize is deprecated"s); return false; }
+   void SetDoubleSize(bool v) const { LOGW("DoubleSize is deprecated"s); }
+   bool GetShowFrame() const { LOGW("ShowFrame is deprecated"s); return false; }
+   void SetShowFrame(bool v) const { LOGW("ShowFrame is deprecated"s); }
+   bool GetShowDMDOnly() const { LOGW("ShowDMDOnly is deprecated"s); return false; }
+   void SetShowDMDOnly(bool v) const { LOGW("ShowDMDOnly is deprecated"s); }
+   bool GetShowTitle() const { LOGW("ShowTitle is deprecated"s); return false; }
+   void SetShowTitle(bool v) const { LOGW("ShowTitle is deprecated"s); }
+   int GetFastFrames() const { LOGW("FastFrames is deprecated"s); return 0; }
+   void SetFastFrames(int v) const { LOGW("FastFrames is deprecated"s); }
+   bool GetIgnoreRomCrc() const { LOGW("IgnoreRomCrc is deprecated"s); return false; }
+   void SetIgnoreRomCrc(bool v) const { LOGW("IgnoreRomCrc is deprecated"s); }
+   bool GetCabinetMode() const { LOGW("CabinetMode is deprecated"s); return false; }
+   void SetCabinetMode(bool v) const { LOGW("CabinetMode is deprecated"s); }
+   int GetSoundMode() const { LOGW("SoundMode is deprecated"s); return 0; }
+   void SetSoundMode(int v) const { LOGW("SoundMode is deprecated"s); }
+   void ShowOptsDialog(long hParentWnd = 0L) const { LOGW("ShowOptsDialog is deprecated"s); }
    //STDMETHOD(ShowPathesDialog)(/*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd);
    //STDMETHOD(SetDisplayPosition)(/*[in]*/ int x, /*[in]*/ int y, /*[in]*/ LONG_PTR hParentWindow);
    //STDMETHOD(CheckROMS)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal);
