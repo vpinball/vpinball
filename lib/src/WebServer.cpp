@@ -198,8 +198,9 @@ void WebServer::Start()
    PLOGI.printf("Starting web server at %s", bindUrl.c_str());
 
    mg_mgr_init(&m_mgr);
-   if (!mg_wakeup_init(&m_mgr))
+   if (!mg_wakeup_init(&m_mgr)) {
       PLOGE.printf("Unable to create the web server wakeup pipe, log and status streaming will not be delivered");
+   }
 
    SetLastUpdate();
 
