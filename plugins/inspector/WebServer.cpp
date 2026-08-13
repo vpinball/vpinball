@@ -104,6 +104,8 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
          webServer->ApiStates(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/display"), NULL))
          webServer->ApiDisplay(c, hm);
+      else if (mg_match(hm->uri, mg_str("/displays"), NULL) || mg_match(hm->uri, mg_str("/displays.html"), NULL))
+         webServer->Displays(c, hm);
       else if (mg_match(hm->uri, mg_str("/"), NULL))
          webServer->Root(c, hm);
       else
@@ -169,5 +171,11 @@ void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)
 {
    struct mg_http_serve_opts opts = {};
    mg_http_serve_file(c, hm, (m_assetPath + "/index.html").c_str(), &opts);
+}
+
+void WebServer::Displays(struct mg_connection* c, struct mg_http_message* hm)
+{
+   struct mg_http_serve_opts opts = {};
+   mg_http_serve_file(c, hm, (m_assetPath + "/displays.html").c_str(), &opts);
 }
 } // namespace Inspector

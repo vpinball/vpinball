@@ -205,6 +205,8 @@ void UpdateTreeCache()
          item["name"s] = std::format("Display {} {}x{}", dispMsg.entries[i].id.resId, dispMsg.entries[i].width, dispMsg.entries[i].height);
          item["type"s] = "display";
          item["mapping"s] = std::to_string(dispMsg.entries[i].id.id);
+         item["format"s] = dispMsg.entries[i].frameFormat;
+         item["hardware"s] = dispMsg.entries[i].hardware;
          displayCats[epId]["children"s].push_back(item);
          displayGetters[dispMsg.entries[i].id.id]
             = { dispMsg.entries[i].id, dispMsg.entries[i].width, dispMsg.entries[i].height, dispMsg.entries[i].frameFormat, dispMsg.entries[i].GetRenderFrame };
