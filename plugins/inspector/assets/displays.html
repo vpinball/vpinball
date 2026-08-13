@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VPX Displays</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        background: #000;
+        color: #ddd;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        overflow: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    body.idle { cursor: none; }
+
+    #stage {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #panel {
+        position: relative;
+        background: #020202;
+        border-radius: 6px;
+        border: 1px solid #161616;
+        box-shadow: 0 0 0 1px #000, 0 24px 80px rgba(0,0,0,.9), inset 0 0 60px rgba(0,0,0,.55);
+    }
+    #panel canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+    }
+    #glow { will-change: filter; }
+    #status {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: #4a4a4a;
+    }
+    #status:empty { display: none; }
+
+    #caption {
+        position: fixed;
+        top: 14px;
+        right: 18px;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 10px;
+        letter-spacing: .14em;
+        color: #4d4d4d;
+        text-transform: uppercase;
+    }
+
+    .chrome {
+        transition: opacity .35s ease, transform .35s ease;
+    }
+    body.idle .chrome {
+        opacity: 0;
+        pointer-events: none;
+    }
+    body.idle #bar { transform: translateX(-50%) translateY(10px); }
+
+    #bar {
+        position: fixed;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 14px;
+        background: rgba(16,16,16,.82);
+        border: 1px solid #262626;
+        border-radius: 14px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 12px 40px rgba(0,0,0,.6);
+        white-space: nowrap;
+        max-width: calc(100vw - 24px);
+    }
+    .divider { width: 1px; height: 22px; background: #2a2a2a; flex: none; }
+
+    .iconbtn {
+        appearance: none;
+        background: none;
+        border: none;
+        color: #9a9a9a;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex: none;
+    }
+    .iconbtn:hover { background: #242424; color: #eee; }
+    .iconbtn.active { color: #fff; background: #2c2c2c; }
+    .iconbtn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+    #displayBtn {
+        appearance: none;
+        background: none;
+        border: none;
+        color: #e6e6e6;
+        font: 500 12.5px system-ui, sans-serif;
+        letter-spacing: .01em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        max-width: 44vw;
+    }
+    #displayBtn:hover { background: #242424; }
+    #displayBtn .name { overflow: hidden; text-overflow: ellipsis; }
+    #displayBtn .dim { color: #6f6f6f; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; }
+    #displayBtn svg { width: 10px; height: 10px; fill: none; stroke: #777; stroke-width: 2; flex: none; }
+
+    #menu {
+        position: fixed;
+        bottom: 74px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 260px;
+        max-width: min(420px, calc(100vw - 24px));
+        max-height: 46vh;
+        overflow-y: auto;
+        background: rgba(18,18,18,.94);
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 16px 50px rgba(0,0,0,.7);
+        padding: 6px;
+        display: none;
+    }
+    #menu.open { display: block; }
+    #menu .group {
+        padding: 8px 10px 4px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: #6b6b6b;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #menu .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #d6d6d6;
+    }
+    #menu .item::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        flex: none;
+        background: transparent;
+    }
+    #menu .item:hover { background: #242424; }
+    #menu .item.sel { color: #fff; font-weight: 600; }
+    #menu .item.sel::before { background: #f0f0f0; box-shadow: 0 0 6px rgba(255,255,255,.8); }
+    #menu .item.sel .res { color: #b0b0b0; }
+    #menu .item .res { margin-left: auto; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; color: #777; }
+    #menu .empty { padding: 14px 12px; font-size: 12.5px; color: #777; }
+
+    #tints { display: flex; align-items: center; gap: 7px; }
+    .chip {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+        flex: none;
+        background: var(--c);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--c) 55%, transparent);
+        opacity: .55;
+        transform: scale(.92);
+        transition: opacity .15s, transform .15s, box-shadow .15s;
+    }
+    .chip:hover { opacity: .85; }
+    .chip.sel {
+        opacity: 1;
+        transform: scale(1.12);
+        box-shadow: 0 0 10px color-mix(in srgb, var(--c) 90%, transparent), 0 0 0 1.5px #050505, 0 0 0 3px #d9d9d9;
+    }
+    .chip.native { background: conic-gradient(#ff5a4d, #ffc24d, #6dff7a, #55c8ff, #b06dff, #ff5a4d); }
+    .chip.custom {
+        position: relative;
+        background: var(--c);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .chip.custom input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    #tune {
+        position: fixed;
+        bottom: 74px;
+        right: max(18px, calc(50vw - 340px));
+        width: 232px;
+        background: rgba(18,18,18,.94);
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 16px 50px rgba(0,0,0,.7);
+        padding: 14px 16px 12px;
+        display: none;
+    }
+    #tune.open { display: block; }
+    #tune .row { margin-bottom: 12px; }
+    #tune label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: #8a8a8a;
+        margin-bottom: 5px;
+    }
+    #tune label span { color: #555; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+    #tune input[type=range] {
+        width: 100%;
+        accent-color: #cfcfcf;
+        height: 18px;
+    }
+    .toggle {
+        display: flex;
+        background: #101010;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+        padding: 2px;
+        gap: 2px;
+    }
+    .toggle button {
+        appearance: none;
+        flex: 1;
+        background: none;
+        border: none;
+        border-radius: 6px;
+        color: #8a8a8a;
+        font: 600 10.5px system-ui, sans-serif;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        padding: 5px 0;
+        cursor: pointer;
+    }
+    .toggle button.sel { background: #303030; color: #f0f0f0; }
+    #tune .hint {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #242424;
+        font-size: 10px;
+        color: #565656;
+        letter-spacing: .04em;
+        line-height: 1.7;
+    }
+    #tune .hint b { color: #808080; font-weight: 600; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .chrome, .chip { transition: none; }
+    }
+</style>
+</head>
+<body>
+    <div id="stage">
+        <div id="panel">
+            <canvas id="glow"></canvas>
+            <canvas id="screen"></canvas>
+            <div id="status"></div>
+        </div>
+    </div>
+    <div id="caption" class="chrome"></div>
+
+    <div id="menu" class="chrome"></div>
+
+    <div id="tune" class="chrome">
+        <div class="row">
+            <label>Dot shape</label>
+            <div class="toggle" id="shapeToggle">
+                <button data-v="round">Round</button>
+                <button data-v="square">Square</button>
+            </div>
+        </div>
+        <div class="row">
+            <label>Dot size <span id="fillVal"></span></label>
+            <input type="range" id="fill" min="50" max="100" step="1">
+        </div>
+        <div class="row">
+            <label>Glow <span id="glowVal"></span></label>
+            <input type="range" id="glowAmt" min="0" max="100" step="1">
+        </div>
+        <div class="row">
+            <label>Brightness <span id="brightVal"></span></label>
+            <input type="range" id="bright" min="40" max="200" step="1">
+        </div>
+        <div class="row">
+            <label>Unlit dots <span id="unlitVal"></span></label>
+            <input type="range" id="unlit" min="0" max="60" step="1">
+        </div>
+        <div class="hint"><b>&larr;&rarr;</b> display &nbsp; <b>T</b> tint &nbsp; <b>F</b> fullscreen</div>
+    </div>
+
+    <div id="bar" class="chrome">
+        <button id="displayBtn">
+            <span class="name">Searching&hellip;</span>
+            <span class="dim"></span>
+            <svg viewBox="0 0 10 10"><path d="M2 6.5 L5 3.5 L8 6.5"/></svg>
+        </button>
+        <div class="divider"></div>
+        <div id="tints"></div>
+        <div class="divider" id="tintDivider"></div>
+        <button class="iconbtn" id="tuneBtn" title="Tune">
+            <svg viewBox="0 0 16 16"><path d="M2 4.5h6.5M12 4.5h2M2 11.5h2M7.5 11.5H14"/><circle cx="10" cy="4.5" r="1.8"/><circle cx="5.5" cy="11.5" r="1.8"/></svg>
+        </button>
+        <button class="iconbtn" id="fsBtn" title="Fullscreen">
+            <svg viewBox="0 0 16 16"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
+        </button>
+    </div>
+
+<script>
+    const TINTS = [
+        { id: 'native', color: null,      label: 'Native colors' },
+        { id: 'plasma', color: '#ff522d', label: 'Neon plasma' },
+        { id: 'red',    color: '#ff2315', label: 'Red LED' },
+        { id: 'green',  color: '#15ff23', label: 'Green LED' },
+        { id: 'yellow', color: '#ffff23', label: 'Yellow LED' },
+        { id: 'white',  color: '#ffffff', label: 'Generic' },
+    ];
+
+    const settings = {
+        tint: 'plasma',
+        customColor: '#ff9a3a',
+        fill: 78,
+        glow: 45,
+        bright: 100,
+        unlit: 25,
+        shape: 'round',
+        mapping: null,
+    };
+
+    let lastHash = '';
+    let syncHash = false;
+    function save() {
+        if (!syncHash) return;
+        const c = caps();
+        const qs = new URLSearchParams();
+        if (settings.mapping) qs.set('display', settings.mapping);
+        if (c.tint) {
+            qs.set('tint', settings.tint);
+            if (settings.tint === 'custom') qs.set('custom', settings.customColor);
+        }
+        if (c.dots) {
+            qs.set('shape', settings.shape);
+            qs.set('fill', settings.fill);
+            qs.set('glow', settings.glow);
+            qs.set('unlit', settings.unlit);
+        }
+        qs.set('bright', settings.bright);
+        lastHash = '#' + qs.toString();
+        history.replaceState(null, '', lastHash);
+    }
+
+    function applyHash() {
+        const h = {};
+        for (const [k, v] of new URLSearchParams(location.hash.slice(1))) h[k] = v;
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, +v));
+        if ('tint' in h && (h.tint === 'custom' || TINTS.some(t => t.id === h.tint))) settings.tint = h.tint;
+        if ('custom' in h && /^#[0-9a-f]{6}$/i.test(h.custom)) settings.customColor = h.custom;
+        if ('fill' in h && !isNaN(+h.fill)) settings.fill = clamp(h.fill, 50, 100);
+        if ('glow' in h && !isNaN(+h.glow)) settings.glow = clamp(h.glow, 0, 100);
+        if ('bright' in h && !isNaN(+h.bright)) settings.bright = clamp(h.bright, 40, 200);
+        if ('unlit' in h && !isNaN(+h.unlit)) settings.unlit = clamp(h.unlit, 0, 60);
+        if (h.shape === 'round' || h.shape === 'square') settings.shape = h.shape;
+        if ('display' in h) settings.mapping = h.display;
+    }
+
+    function touch() {
+        syncHash = true;
+        save();
+    }
+
+    applyHash();
+    syncHash = location.hash.length > 1;
+
+    const stage = document.getElementById('stage');
+    const panel = document.getElementById('panel');
+    const screen = document.getElementById('screen');
+    const glow = document.getElementById('glow');
+    const statusEl = document.getElementById('status');
+    const captionEl = document.getElementById('caption');
+    const sctx = screen.getContext('2d');
+    const gctx = glow.getContext('2d');
+
+    const dotCanvas = document.createElement('canvas');
+    const dctx = dotCanvas.getContext('2d');
+
+    const FILTER_OK = (() => {
+        const c = document.createElement('canvas').getContext('2d');
+        c.filter = 'blur(1px)';
+        return c.filter === 'blur(1px)';
+    })();
+
+    let displays = [];
+    let source = null;
+    let sourceW = 128, sourceH = 32;
+    let devicePitch = 8;
+    let stale = true;
+    let messageText = 'Connecting';
+    let frameCount = 0;
+    let fps = 0;
+
+    function tintColor() {
+        if (settings.tint === 'native') return null;
+        if (settings.tint === 'custom') return settings.customColor;
+        const t = TINTS.find(t => t.id === settings.tint);
+        return t ? t.color : null;
+    }
+
+    const DISPLAY_FORMAT_LUM32F = 1;
+
+    const HARDWARE_FAMILY_NEON_PLASMA = 1;
+    const HARDWARE_FAMILY_RED_LED = 2;
+    const HARDWARE_FAMILY_RGB_LED = 3;
+    const HARDWARE_FAMILY_CRT = 4;
+    const HARDWARE_FAMILY_LCD = 5;
+
+    const DMD_MAX_HEIGHT = 64;
+
+    function capsFor(d) {
+        if (!d) return { dots: true, tint: true };
+        const family = (d.hardware || 0) >>> 16;
+        let dots;
+        if (family === HARDWARE_FAMILY_CRT || family === HARDWARE_FAMILY_LCD)
+            dots = false;
+        else if (family === HARDWARE_FAMILY_NEON_PLASMA || family === HARDWARE_FAMILY_RED_LED || family === HARDWARE_FAMILY_RGB_LED)
+            dots = true;
+        else
+            dots = d.h > 0 && d.h <= DMD_MAX_HEIGHT;
+        return { dots, tint: d.format === DISPLAY_FORMAT_LUM32F };
+    }
+
+    function caps() { return capsFor(currentDisplay()); }
+
+    let dotPattern = null;
+    let unlitPattern = null;
+
+    function makeCellPattern(ctx, color) {
+        const p = devicePitch;
+        const cell = document.createElement('canvas');
+        cell.width = cell.height = p;
+        const c = cell.getContext('2d');
+        c.fillStyle = color;
+        if (settings.shape === 'round') {
+            c.beginPath();
+            c.arc(p / 2, p / 2, Math.max(0.5, (p / 2) * (settings.fill / 100)), 0, Math.PI * 2);
+            c.fill();
+        } else {
+            const inset = (p - p * (settings.fill / 100)) / 2;
+            const size = p - inset * 2;
+            const r = Math.min(size / 4, p * 0.18);
+            c.beginPath();
+            c.roundRect(inset, inset, size, size, r);
+            c.fill();
+        }
+        return ctx.createPattern(cell, 'repeat');
+    }
+
+    function rebuildPatterns() {
+        dotPattern = makeCellPattern(dctx, '#fff');
+        const g = Math.round(255 * settings.unlit / 100);
+        unlitPattern = makeCellPattern(sctx, `rgb(${g},${g},${g})`);
+    }
+
+    function layout() {
+        const rect = stage.getBoundingClientRect();
+        const pad = Math.min(rect.width, rect.height) < 500 ? 8 : 28;
+        const availW = rect.width - pad * 2;
+        const availH = rect.height - pad * 2;
+        const dpr = window.devicePixelRatio || 1;
+        const cssPitch = Math.min(availW / sourceW, availH / sourceH);
+        devicePitch = Math.max(1, Math.floor(cssPitch * dpr));
+        const bw = sourceW * devicePitch;
+        const bh = sourceH * devicePitch;
+        for (const cv of [screen, glow, dotCanvas]) {
+            cv.width = bw;
+            cv.height = bh;
+        }
+        panel.style.width = (bw / dpr) + 'px';
+        panel.style.height = (bh / dpr) + 'px';
+        rebuildPatterns();
+        render();
+    }
+
+    function render() {
+        const bw = dotCanvas.width;
+        const bh = dotCanvas.height;
+        if (!bw || !bh) return;
+        if (stale || !source) {
+            sctx.clearRect(0, 0, bw, bh);
+            gctx.clearRect(0, 0, bw, bh);
+            glow.style.opacity = 0;
+            statusEl.textContent = messageText;
+            return;
+        }
+        statusEl.textContent = '';
+        const c = caps();
+        const style = c.dots ? 'dots' : 'smooth';
+
+        dctx.clearRect(0, 0, bw, bh);
+        dctx.globalCompositeOperation = 'source-over';
+        dctx.imageSmoothingEnabled = style === 'smooth';
+        dctx.imageSmoothingQuality = 'high';
+        if (FILTER_OK && settings.bright !== 100) dctx.filter = `brightness(${settings.bright / 100})`;
+        dctx.drawImage(source, 0, 0, bw, bh);
+        dctx.filter = 'none';
+
+        const tint = c.tint ? tintColor() : null;
+        if (tint) {
+            dctx.globalCompositeOperation = 'multiply';
+            dctx.fillStyle = tint;
+            dctx.fillRect(0, 0, bw, bh);
+        }
+        if (style === 'dots') {
+            dctx.globalCompositeOperation = 'destination-in';
+            dctx.fillStyle = dotPattern;
+            dctx.fillRect(0, 0, bw, bh);
+        }
+        dctx.globalCompositeOperation = 'source-over';
+
+        sctx.clearRect(0, 0, bw, bh);
+        if (style === 'dots' && settings.unlit > 0) {
+            sctx.fillStyle = unlitPattern;
+            sctx.fillRect(0, 0, bw, bh);
+            sctx.globalCompositeOperation = 'lighter';
+        }
+        sctx.drawImage(dotCanvas, 0, 0);
+        sctx.globalCompositeOperation = 'source-over';
+
+        gctx.clearRect(0, 0, bw, bh);
+        if (c.dots && settings.glow > 0) {
+            gctx.drawImage(dotCanvas, 0, 0);
+            const dpr = window.devicePixelRatio || 1;
+            const cssPitch = devicePitch / dpr;
+            glow.style.filter = `blur(${(cssPitch * (0.5 + settings.glow / 60)).toFixed(1)}px) saturate(1.5)`;
+            glow.style.opacity = (0.25 + settings.glow / 130).toFixed(2);
+        } else {
+            glow.style.opacity = 0;
+        }
+        frameCount++;
+    }
+
+    async function fetchWithTimeout(url, timeoutMs) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { signal: controller.signal });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    let frameDelay = 33;
+    let lastFrameAt = 0;
+
+    async function frameTick() {
+        const d = displays.find(d => d.mapping === settings.mapping);
+        if (!d) {
+            schedule(250);
+            return;
+        }
+        try {
+            const res = await fetchWithTimeout(`/api/display?id=${d.mapping}&t=${Date.now()}`, 1000);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const bitmap = await createImageBitmap(await res.blob());
+            if (bitmap.width !== sourceW || bitmap.height !== sourceH) {
+                sourceW = bitmap.width;
+                sourceH = bitmap.height;
+                source = bitmap;
+                stale = false;
+                layout();
+            } else {
+                source = bitmap;
+                stale = false;
+                render();
+            }
+            lastFrameAt = performance.now();
+            frameDelay = 33;
+            updateCaption();
+        } catch {
+            frameDelay = Math.min(frameDelay * 2, 1000);
+            if (performance.now() - lastFrameAt > 1500 && !stale) {
+                stale = true;
+                messageText = 'Disconnected';
+                render();
+            }
+        }
+        schedule(frameDelay);
+    }
+
+    let frameTimer = null;
+    function schedule(ms) {
+        clearTimeout(frameTimer);
+        frameTimer = setTimeout(frameTick, ms);
+    }
+
+    function collectDisplays(tree) {
+        const out = [];
+        for (const controller of tree || []) {
+            for (const cat of controller.children || []) {
+                if (cat.type !== 'category') continue;
+                for (const item of cat.children || []) {
+                    if (item.type !== 'display') continue;
+                    const m = item.name.match(/(\d+)x(\d+)/);
+                    out.push({
+                        mapping: item.mapping,
+                        name: item.name,
+                        w: m ? +m[1] : 0,
+                        h: m ? +m[2] : 0,
+                        format: item.format || 0,
+                        hardware: item.hardware || 0,
+                        controller: controller.name,
+                        game: controller.game || '',
+                    });
+                }
+            }
+        }
+        return out;
+    }
+
+    async function treeTick() {
+        try {
+            const res = await fetchWithTimeout('/api/tree', 1500);
+            const data = await res.json();
+            const found = collectDisplays(data.tree);
+            const changed = JSON.stringify(found) !== JSON.stringify(displays);
+            displays = found;
+            if (displays.length === 0) {
+                stale = true;
+                messageText = 'No displays';
+                if (changed) { buildMenu(); updateDisplayBtn(); render(); save(); }
+            } else {
+                if (!displays.some(d => d.mapping === settings.mapping)) {
+                    settings.mapping = displays[0].mapping;
+                    save();
+                    stale = true;
+                    messageText = 'Connecting';
+                }
+                if (changed) { buildMenu(); updateDisplayBtn(); save(); }
+            }
+        } catch {
+            if (displays.length === 0) {
+                messageText = 'Connecting';
+                render();
+            }
+        }
+        setTimeout(treeTick, 2000);
+    }
+
+    const displayBtn = document.getElementById('displayBtn');
+    const menu = document.getElementById('menu');
+
+    function currentDisplay() { return displays.find(d => d.mapping === settings.mapping); }
+
+    function applyCaps() {
+        const c = caps();
+        document.getElementById('tints').style.display = c.tint ? '' : 'none';
+        document.getElementById('tintDivider').style.display = c.tint ? '' : 'none';
+        for (const id of ['shapeToggle', 'fill', 'glowAmt', 'unlit'])
+            document.getElementById(id).closest('.row').style.display = c.dots ? '' : 'none';
+        rebuildPatterns();
+        render();
+    }
+
+    function updateDisplayBtn() {
+        const d = currentDisplay();
+        applyCaps();
+        const name = displayBtn.querySelector('.name');
+        const dim = displayBtn.querySelector('.dim');
+        if (!d) {
+            name.textContent = displays.length ? 'Select display' : 'Searching…';
+            dim.textContent = '';
+            return;
+        }
+        name.textContent = d.game ? `${d.controller} · ${d.game}` : d.controller;
+        dim.textContent = d.w ? `${d.w}×${d.h}` : '';
+        updateCaption();
+    }
+
+    function updateCaption() {
+        const d = currentDisplay();
+        captionEl.textContent = d && d.w ? `${d.w} × ${d.h} · ${fps} fps` : '';
+    }
+
+    function selectDisplay(mapping) {
+        if (settings.mapping !== mapping) {
+            settings.mapping = mapping;
+            touch();
+            stale = true;
+            messageText = 'Connecting';
+            source = null;
+            const d = currentDisplay();
+            if (d && d.w) { sourceW = d.w; sourceH = d.h; }
+            layout();
+            schedule(0);
+        }
+        menu.classList.remove('open');
+        buildMenu();
+        updateDisplayBtn();
+    }
+
+    function buildMenu() {
+        menu.innerHTML = '';
+        if (displays.length === 0) {
+            const div = document.createElement('div');
+            div.className = 'empty';
+            div.textContent = 'No display sources. Start a table with a DMD.';
+            menu.appendChild(div);
+            return;
+        }
+        let lastGroup = null;
+        for (const d of displays) {
+            const groupName = d.game ? `${d.controller} · ${d.game}` : d.controller;
+            if (groupName !== lastGroup) {
+                lastGroup = groupName;
+                const g = document.createElement('div');
+                g.className = 'group';
+                g.textContent = groupName;
+                menu.appendChild(g);
+            }
+            const item = document.createElement('div');
+            item.className = 'item' + (d.mapping === settings.mapping ? ' sel' : '');
+            const label = document.createElement('span');
+            label.textContent = d.name.replace(/\s*\d+x\d+\s*$/, '');
+            const res = document.createElement('span');
+            res.className = 'res';
+            res.textContent = d.w ? `${d.w}×${d.h}` : '';
+            item.appendChild(label);
+            item.appendChild(res);
+            item.addEventListener('click', () => selectDisplay(d.mapping));
+            menu.appendChild(item);
+        }
+    }
+
+    displayBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        tune.classList.remove('open');
+        buildMenu();
+        menu.classList.toggle('open');
+    });
+
+    const tintsEl = document.getElementById('tints');
+    function buildTints() {
+        tintsEl.innerHTML = '';
+        for (const t of TINTS) {
+            const b = document.createElement('button');
+            b.className = 'chip' + (t.id === 'native' ? ' native' : '') + (settings.tint === t.id ? ' sel' : '');
+            b.title = t.label;
+            if (t.color) b.style.setProperty('--c', t.color);
+            else b.style.setProperty('--c', '#8a8a8a');
+            b.addEventListener('click', () => { settings.tint = t.id; touch(); refreshTints(); });
+            b.dataset.tint = t.id;
+            tintsEl.appendChild(b);
+        }
+        const custom = document.createElement('button');
+        custom.className = 'chip custom' + (settings.tint === 'custom' ? ' sel' : '');
+        custom.style.setProperty('--c', settings.customColor);
+        custom.title = 'Custom tint';
+        custom.dataset.tint = 'custom';
+        const input = document.createElement('input');
+        input.type = 'color';
+        input.value = settings.customColor;
+        input.addEventListener('input', () => {
+            settings.customColor = input.value;
+            settings.tint = 'custom';
+            custom.style.setProperty('--c', input.value);
+            touch();
+            refreshTints();
+        });
+        custom.appendChild(input);
+        tintsEl.appendChild(custom);
+    }
+
+    function refreshTints() {
+        for (const chip of tintsEl.children) {
+            chip.classList.toggle('sel', chip.dataset.tint === settings.tint);
+            if (chip.dataset.tint === 'custom') {
+                chip.style.setProperty('--c', settings.customColor);
+                const input = chip.querySelector('input');
+                if (input) input.value = settings.customColor;
+            }
+        }
+        rebuildPatterns();
+        render();
+    }
+
+    const tune = document.getElementById('tune');
+    const tuneBtn = document.getElementById('tuneBtn');
+    tuneBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        menu.classList.remove('open');
+        tune.classList.toggle('open');
+        tuneBtn.classList.toggle('active', tune.classList.contains('open'));
+    });
+
+    const controlSyncs = [];
+
+    function bindSlider(id, valId, key, format, onChange) {
+        const el = document.getElementById(id);
+        const val = document.getElementById(valId);
+        const sync = () => {
+            el.value = settings[key];
+            val.textContent = format(settings[key]);
+        };
+        sync();
+        controlSyncs.push(sync);
+        el.addEventListener('input', () => {
+            settings[key] = +el.value;
+            val.textContent = format(settings[key]);
+            touch();
+            onChange();
+        });
+    }
+
+    bindSlider('fill', 'fillVal', 'fill', v => v + '%', () => { rebuildPatterns(); render(); });
+    bindSlider('glowAmt', 'glowVal', 'glow', v => v + '%', render);
+    bindSlider('bright', 'brightVal', 'bright', v => v + '%', render);
+    bindSlider('unlit', 'unlitVal', 'unlit', v => v + '%', () => { rebuildPatterns(); render(); });
+    if (!FILTER_OK) document.getElementById('bright').closest('.row').style.display = 'none';
+
+    function bindToggle(id, key, onChange) {
+        const toggle = document.getElementById(id);
+        const sync = () => {
+            for (const b of toggle.children)
+                b.classList.toggle('sel', b.dataset.v === settings[key]);
+        };
+        sync();
+        controlSyncs.push(sync);
+        for (const b of toggle.children) {
+            b.addEventListener('click', () => {
+                settings[key] = b.dataset.v;
+                touch();
+                sync();
+                onChange();
+            });
+        }
+    }
+
+    bindToggle('shapeToggle', 'shape', () => { rebuildPatterns(); render(); });
+
+    const fsBtn = document.getElementById('fsBtn');
+    function toggleFullscreen() {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+    }
+    fsBtn.addEventListener('click', toggleFullscreen);
+
+    document.addEventListener('click', e => {
+        if (!menu.contains(e.target)) menu.classList.remove('open');
+        if (!tune.contains(e.target) && !tuneBtn.contains(e.target)) {
+            tune.classList.remove('open');
+            tuneBtn.classList.remove('active');
+        }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            menu.classList.remove('open');
+            tune.classList.remove('open');
+            return;
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            if (displays.length < 2) return;
+            const i = displays.findIndex(d => d.mapping === settings.mapping);
+            const next = (i + (e.key === 'ArrowRight' ? 1 : -1) + displays.length) % displays.length;
+            selectDisplay(displays[next].mapping);
+        } else if (e.key === 'f' || e.key === 'F') {
+            toggleFullscreen();
+        } else if (e.key === 't' || e.key === 'T') {
+            if (!caps().tint) return;
+            const ids = TINTS.map(t => t.id).concat('custom');
+            settings.tint = ids[(ids.indexOf(settings.tint) + 1) % ids.length];
+            touch();
+            refreshTints();
+        }
+    });
+
+    let idleTimer = null;
+    function wake() {
+        document.body.classList.remove('idle');
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            if (!menu.classList.contains('open') && !tune.classList.contains('open'))
+                document.body.classList.add('idle');
+        }, 2800);
+    }
+    document.addEventListener('pointermove', wake);
+    document.addEventListener('pointerdown', wake);
+    document.addEventListener('keydown', wake);
+    wake();
+
+    setInterval(() => {
+        fps = frameCount;
+        frameCount = 0;
+        updateCaption();
+    }, 1000);
+
+    window.addEventListener('resize', layout);
+
+    window.addEventListener('hashchange', () => {
+        if (location.hash === lastHash) return;
+        const prevMapping = settings.mapping;
+        applyHash();
+        syncHash = location.hash.length > 1;
+        save();
+        for (const sync of controlSyncs) sync();
+        refreshTints();
+        if (settings.mapping !== prevMapping) {
+            stale = true;
+            messageText = 'Connecting';
+            source = null;
+            const d = currentDisplay();
+            if (d && d.w) { sourceW = d.w; sourceH = d.h; }
+            layout();
+            schedule(0);
+        }
+        buildMenu();
+        updateDisplayBtn();
+    });
+
+    buildTints();
+    buildMenu();
+    updateDisplayBtn();
+    layout();
+    save();
+    treeTick();
+    schedule(0);
+</script>
+</body>
+</html>

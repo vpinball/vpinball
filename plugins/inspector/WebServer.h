@@ -33,6 +33,7 @@ private:
    void ApiStates(struct mg_connection *c, struct mg_http_message *hm);
    void ApiDisplay(struct mg_connection *c, struct mg_http_message *hm);
    void Root(struct mg_connection *c, struct mg_http_message *hm);
+   void Displays(struct mg_connection *c, struct mg_http_message *hm);
 
    std::mutex m_treeMutex;
    std::string m_treeJson;
