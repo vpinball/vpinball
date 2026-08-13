@@ -61,6 +61,9 @@ tasks {
         from("${layout.buildDirectory}/../../../../plugins/flexdmd/assets") {
            into("plugins/flexdmd/assets")
         }
+        from("${layout.buildDirectory}/../../../../plugins/inspector/assets") {
+           into("plugins/inspector/assets")
+        }
         into(destinationDir)
     }
 
