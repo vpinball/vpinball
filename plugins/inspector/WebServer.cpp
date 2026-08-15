@@ -16,7 +16,8 @@ namespace Inspector
 {
 
 extern std::string GetStatesJson();
-extern std::vector<uint8_t> GetDisplayImage(uint64_t mapping);
+extern bool IsDisplayKnown(uint64_t mapping);
+extern std::vector<uint8_t> GetDisplayFrameRGB(uint64_t mapping, uint32_t& width, uint32_t& height, uint32_t& frameId);
 
 constexpr const char* HEADER_JSON = "Content-Type: application/json\r\n";
 constexpr int STATUS_OK = 200;
@@ -54,7 +55,10 @@ void WebServer::Start(int port, const std::string& assetPath)
          [this]()
          {
             while (m_run)
-               mg_mgr_poll(&m_mgr, 100);
+            {
+               mg_mgr_poll(&m_mgr, m_displayWsClients.empty() ? 100 : 10);
+               PushDisplayWsFrames();
+            }
 
             mg_mgr_free(&m_mgr);
             printf("[Inspector] Web server closed\n");
@@ -102,8 +106,10 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
          webServer->ApiTree(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/states"), NULL))
          webServer->ApiStates(c, hm);
-      else if (mg_match(hm->uri, mg_str("/api/display"), NULL))
-         webServer->ApiDisplay(c, hm);
+      else if (mg_match(hm->uri, mg_str("/ws/display"), NULL))
+         webServer->DisplayWsUpgrade(c, hm);
+      else if (mg_match(hm->uri, mg_str("/display-stream.js"), NULL))
+         webServer->Asset(c, hm, "/display-stream.js");
       else if (mg_match(hm->uri, mg_str("/displays"), NULL) || mg_match(hm->uri, mg_str("/displays.html"), NULL))
          webServer->Displays(c, hm);
       else if (mg_match(hm->uri, mg_str("/"), NULL))
@@ -112,6 +118,71 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
       {
          mg_http_reply(c, 404, "", "Not found\n");
       }
+   }
+   else if (ev == MG_EV_WS_OPEN)
+   {
+      if (auto it = webServer->m_displayWsClients.find(c); it != webServer->m_displayWsClients.end())
+         it->second.ready = true;
+   }
+   else if (ev == MG_EV_WS_CTL)
+   {
+      // Stop pushing as soon as the client starts the close handshake
+      if ((((struct mg_ws_message*)ev_data)->flags & 15) == WEBSOCKET_OP_CLOSE)
+         webServer->m_displayWsClients.erase(c);
+   }
+   else if (ev == MG_EV_CLOSE)
+   {
+      webServer->m_displayWsClients.erase(c);
+   }
+}
+
+void WebServer::DisplayWsUpgrade(struct mg_connection* c, struct mg_http_message* hm)
+{
+   char idBuf[32];
+   const int idLen = mg_http_get_var(&hm->query, "id", idBuf, sizeof(idBuf) - 1);
+   if (idLen <= 0)
+   {
+      mg_http_reply(c, 400, "", "Missing or invalid 'id' parameter\n");
+      return;
+   }
+   idBuf[idLen] = '\0';
+
+   DisplayWsClient client;
+   client.mapping = std::strtoull(idBuf, nullptr, 10);
+   m_displayWsClients[c] = client;
+   mg_ws_upgrade(c, hm, NULL);
+}
+
+// Pushes a binary message per new display frame to each streaming client:
+// 12 byte header (uint32 LE width, height, frameId) followed by top-down RGB24 data
+void WebServer::PushDisplayWsFrames()
+{
+   for (auto& [c, client] : m_displayWsClients)
+   {
+      if (!client.ready)
+         continue;
+      if (!IsDisplayKnown(client.mapping)) // Display is gone (e.g. table ended), close instead of going silent
+      {
+         client.ready = false;
+         mg_ws_send(c, "", 0, WEBSOCKET_OP_CLOSE);
+         continue;
+      }
+      if (c->send.len > 4 * 1024 * 1024) // Slow client, skip frames instead of growing the send buffer
+         continue;
+      uint32_t width, height, frameId;
+      const std::vector<uint8_t> rgb = GetDisplayFrameRGB(client.mapping, width, height, frameId);
+      if (rgb.empty())
+         continue;
+      if (client.hasFrame && frameId == client.lastFrameId)
+         continue;
+      client.hasFrame = true;
+      client.lastFrameId = frameId;
+      std::vector<uint8_t> msg(12 + rgb.size());
+      memcpy(msg.data() + 0, &width, 4);
+      memcpy(msg.data() + 4, &height, 4);
+      memcpy(msg.data() + 8, &frameId, 4);
+      memcpy(msg.data() + 12, rgb.data(), rgb.size());
+      mg_ws_send(c, msg.data(), msg.size(), WEBSOCKET_OP_BINARY);
    }
 }
 
@@ -137,34 +208,10 @@ void WebServer::ApiStates(struct mg_connection* c, struct mg_http_message* hm)
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
 }
 
-void WebServer::ApiDisplay(struct mg_connection* c, struct mg_http_message* hm)
+void WebServer::Asset(struct mg_connection* c, struct mg_http_message* hm, const char* name)
 {
-   char idBuf[32];
-   const int idLen = mg_http_get_var(&hm->query, "id", idBuf, sizeof(idBuf) - 1);
-   if (idLen <= 0)
-   {
-      mg_http_reply(c, 400, "", "Missing or invalid 'id' parameter\n");
-      return;
-   }
-   idBuf[idLen] = '\0';
-
-   const uint64_t mapping = std::strtoull(idBuf, nullptr, 10);
-   const std::vector<uint8_t> image = GetDisplayImage(mapping);
-   if (image.empty())
-   {
-      mg_http_reply(c, 404, "", "Display not found or not yet available\n");
-      return;
-   }
-
-   mg_printf(c,
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: image/bmp\r\n"
-      "Content-Length: %lu\r\n"
-      "Cache-Control: no-store\r\n"
-      "\r\n",
-      static_cast<unsigned long>(image.size()));
-   mg_send(c, image.data(), image.size());
-   c->is_resp = 0;
+   struct mg_http_serve_opts opts = {};
+   mg_http_serve_file(c, hm, (m_assetPath + name).c_str(), &opts);
 }
 
 void WebServer::Root(struct mg_connection* c, struct mg_http_message* hm)

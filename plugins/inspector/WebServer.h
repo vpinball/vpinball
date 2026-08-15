@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <map>
 
 namespace Inspector {
 
@@ -31,9 +32,21 @@ private:
    void Info(struct mg_connection *c, struct mg_http_message* hm);
    void ApiTree(struct mg_connection *c, struct mg_http_message* hm);
    void ApiStates(struct mg_connection *c, struct mg_http_message *hm);
-   void ApiDisplay(struct mg_connection *c, struct mg_http_message *hm);
+   void Asset(struct mg_connection *c, struct mg_http_message *hm, const char* name);
    void Root(struct mg_connection *c, struct mg_http_message *hm);
    void Displays(struct mg_connection *c, struct mg_http_message *hm);
+   void DisplayWsUpgrade(struct mg_connection *c, struct mg_http_message *hm);
+   void PushDisplayWsFrames();
+
+   // Display streaming clients, only accessed from the server thread
+   struct DisplayWsClient
+   {
+      uint64_t mapping = 0;
+      uint32_t lastFrameId = 0;
+      bool hasFrame = false;
+      bool ready = false;
+   };
+   std::map<struct mg_connection*, DisplayWsClient> m_displayWsClients;
 
    std::mutex m_treeMutex;
    std::string m_treeJson;

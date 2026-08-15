@@ -92,13 +92,15 @@ void UpdateTreeCache()
       }
    }
    msgApi->ReleaseMsgID(getControllersId);
+
+   json tree = json::array();
+
    if (controllerDefs.empty())
    {
+      root["tree"s] = tree;
       webServer->UpdateTreeJson(root.dump());
       return;
    }
-
-   json tree = json::array();
 
    std::map<uint32_t, json> controllers;
    auto getController = [&](uint32_t epId) -> json&
@@ -315,10 +317,6 @@ std::string GetStatesJson()
 
 namespace
 {
-   // Writes `value` (little-endian) into `out` at `offset`. Uses memcpy rather
-   // than a reinterpret_cast<T*> dereference to avoid unaligned-access UB.
-   template <typename T> void PutLE(std::vector<uint8_t>& out, size_t offset, T value) { std::memcpy(out.data() + offset, &value, sizeof(T)); }
-
    // Converts a raw DisplayFrame (as produced by DisplaySrcId::GetRenderFrame)
    // into a top-down 24bpp RGB buffer. Returns an empty vector for unsupported
    // frame formats.
@@ -367,65 +365,19 @@ namespace
       }
       return rgb;
    }
-
-   std::vector<uint8_t> EncodeBmp(unsigned int width, unsigned int height, const uint8_t* rgb)
-   {
-      if (width == 0 || height == 0 || rgb == nullptr)
-      {
-         return { };
-      }
-
-      const uint32_t rowSize = (width * 3u + 3u) & ~3u; // rows padded to a multiple of 4 bytes
-      const uint32_t dataSize = rowSize * height;
-      const uint32_t fileSize = 54u + dataSize;
-
-      std::vector<uint8_t> out(fileSize, 0);
-
-      // BITMAPFILEHEADER (14 bytes)
-      out[0] = 'B';
-      out[1] = 'M';
-      PutLE(out, 2, fileSize);
-      out[4] = 0;
-      out[5] = 0; // Reserved (unused)
-      out[6] = 0;
-      out[7] = 0; // Reserved (unused)
-      PutLE(out, 10, uint32_t { 54 }); // Pixel data offset
-
-      // BITMAPINFOHEADER (40 bytes)
-      PutLE(out, 14, uint32_t { 40 }); // Header size
-      PutLE(out, 18, static_cast<int32_t>(width));
-      PutLE(out, 22, static_cast<int32_t>(height)); // Positive = bottom-up
-      PutLE(out, 26, uint16_t { 1 }); // Color planes
-      PutLE(out, 28, uint16_t { 24 }); // Bits per pixel
-      PutLE(out, 30, uint32_t { 0 }); // Compression (BI_RGB = 0)
-      PutLE(out, 34, dataSize); // Image size (bytes)
-      PutLE(out, 38, uint32_t { 0 }); // X pixels per meter (optional)
-      PutLE(out, 42, uint32_t { 0 }); // Y pixels per meter (optional)
-      PutLE(out, 46, uint32_t { 0 }); // Colors used (0 = all)
-      PutLE(out, 50, uint32_t { 0 }); // Important colors (0 = all)
-
-      // BMP pixel rows are stored bottom-up and in BGR order.
-      for (unsigned int y = 0; y < height; y++)
-      {
-         uint8_t* const __restrict dst = out.data() + 54 + static_cast<size_t>(y) * rowSize;
-         const uint8_t* const __restrict src = rgb + static_cast<size_t>(height - 1 - y) * width * 3;
-         for (unsigned int x = 0; x < width; x++)
-         {
-            dst[x * 3 + 0] = src[x * 3 + 2]; // B
-            dst[x * 3 + 1] = src[x * 3 + 1]; // G
-            dst[x * 3 + 2] = src[x * 3 + 0]; // R
-         }
-      }
-      return out;
-   }
 }
 
-// Looks up the display registered under `mapping` (the same CtlResId.id sent
-// to the client as the display node's "mapping" field), pulls its current
-// frame via GetRenderFrame, and encodes it as a BMP image. Returns an empty
-// vector if the mapping is unknown, the source has no frame yet, or the
-// frame format isn't supported.
-std::vector<uint8_t> GetDisplayImage(uint64_t mapping)
+bool IsDisplayKnown(uint64_t mapping)
+{
+   std::lock_guard lock(deviceStatesMutex);
+   return displayGetters.find(mapping) != displayGetters.end();
+}
+
+// Looks up the display registered under `mapping` (the same CtlResId.id sent to the client as
+// the display node's "mapping" field) and returns its current frame as a top-down RGB24 buffer.
+// Returns an empty vector if the mapping is unknown, the source has no frame yet, or the frame
+// format isn't supported.
+std::vector<uint8_t> GetDisplayFrameRGB(uint64_t mapping, uint32_t& width, uint32_t& height, uint32_t& frameId)
 {
    DisplayProvider provider;
    {
@@ -443,11 +395,10 @@ std::vector<uint8_t> GetDisplayImage(uint64_t mapping)
    if (!frame.frame)
       return { };
 
-   const std::vector<uint8_t> rgb = ConvertFrameToRgb24(provider.width, provider.height, provider.frameFormat, frame.frame);
-   if (rgb.empty())
-      return { };
-
-   return EncodeBmp(provider.width, provider.height, rgb.data());
+   width = provider.width;
+   height = provider.height;
+   frameId = frame.frameId;
+   return ConvertFrameToRgb24(provider.width, provider.height, provider.frameFormat, frame.frame);
 }
 
 void OnSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateTreeCache(); }
