@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="icon" href="data:,">
     <title>Inspector TreeView</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #121212; color: #ffffff; padding: 20px; }
@@ -60,6 +61,7 @@
 <body>
     <h1>VPX Inspector</h1>
     <div id="tree">Loading...</div>
+    <script src="/display-stream.js"></script>
     <script>
         const MATRIX_COLUMNS = 8;
 
@@ -130,16 +132,25 @@
             document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.type, item.state));
         }
 
-		function refreshDisplayImages() {
-			document.querySelectorAll('.display-image').forEach(img => {
-				if (img.dataset.loading === '1') return; // previous request still in flight — skip this cycle
-				const mapping = img.dataset.mapping;
-				img.dataset.loading = '1';
-				img.onload = img.onerror = () => { img.dataset.loading = '0'; };
-				img.src = `/api/display?id=${mapping}&t=${Date.now()}`;
+		let displayStreams = [];
+		function attachDisplayStreams() {
+			for (const stream of displayStreams)
+				stream.close();
+			displayStreams = [];
+			document.querySelectorAll('.display-image').forEach(cv => {
+				// Rows only appear once their source delivers a first frame, so windows that
+				// nothing renders into (e.g. an enabled but unused scoreview) stay hidden
+				const row = cv.closest('.node-item');
+				row.style.display = 'none';
+				displayStreams.push(streamDisplay(cv.dataset.mapping, cv, {
+					onFrame() {
+						if (row.style.display)
+							row.style.display = '';
+					}
+				}));
 			});
 		}
-		
+
 		let currentTreeId = -1;
 		let currentDelay = 30;
         function fetchStates() {
@@ -153,7 +164,6 @@
 						currentTreeId = -1;
 					else {
 						data.states.forEach(updateState);
-						refreshDisplayImages();
 					}
 					currentDelay = 30;
 				})
@@ -219,7 +229,8 @@
 		function buildDisplayNode(node) {
 			return `<div class="node-item node-display">
 				<span class="node-mapping">${formatMapping(node.mapping, false)}</span>
-				<img class="display-image" data-mapping="${node.mapping}" alt="${escapeHtml(node.name)}" title="${escapeHtml(node.name)}" src="" />
+				<span class="node-name">${escapeHtml(node.name)}</span>
+				<canvas class="display-image" width="128" height="32" data-mapping="${node.mapping}" title="${escapeHtml(node.name)}"></canvas>
 			</div>`;
 		}
 
@@ -301,6 +312,7 @@
 					if (data.tree) {
 						document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data.tree)}</ul>`;
 						updateMatrixListHeights();
+						attachDisplayStreams();
 						fetchStates();
 					}
 				})
