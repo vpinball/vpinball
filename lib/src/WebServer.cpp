@@ -93,7 +93,8 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          std::filesystem::path webBase = std::filesystem::path(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets)) / "web";
          std::filesystem::path asset = uri.empty() ? webBase / "vpx.html" : webBase / uri;
 
-         if (!uri.empty() && std::filesystem::exists(asset))
+         std::error_code ec;
+         if (!uri.empty() && std::filesystem::exists(asset, ec))
             mg_http_serve_file(c, hm, asset.string().c_str(), &opts);
          else
             mg_http_serve_file(c, hm, (webBase / "vpx.html").string().c_str(), &opts);
@@ -303,7 +304,8 @@ void WebServer::Assets(struct mg_connection *c, struct mg_http_message* hm)
 
       std::filesystem::path fullPath = std::filesystem::path(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets)) / assetPath;
 
-      if (std::filesystem::exists(fullPath) && std::filesystem::is_regular_file(fullPath)) {
+      std::error_code ec;
+      if (std::filesystem::is_regular_file(fullPath, ec)) {
          struct mg_http_serve_opts opts = {};
          mg_http_serve_file(c, hm, fullPath.string().c_str(), &opts);
       }
@@ -431,21 +433,27 @@ void WebServer::Delete(struct mg_connection *c, struct mg_http_message* hm)
 
    string path = BuildTablePath(q.c_str());
 
-   if (std::filesystem::is_regular_file(path)) {
-      if (std::filesystem::remove(path.c_str())) {
+   std::error_code ec;
+   if (std::filesystem::is_regular_file(path, ec)) {
+      if (std::filesystem::remove(path, ec)) {
          SetLastUpdate();
          mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
       }
-      else
+      else {
+         PLOGE.printf("Failed to delete file: q=%s, error=%s", q.c_str(), ec.message().c_str());
          mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+      }
    }
-   else if (std::filesystem::is_directory(path)) {
-      if (std::filesystem::remove_all(path) != 0) {
+   else if (std::filesystem::is_directory(path, ec)) {
+      const std::uintmax_t removed = std::filesystem::remove_all(path, ec);
+      if (!ec && removed != 0) {
          SetLastUpdate();
          mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
       }
-      else
+      else {
+         PLOGE.printf("Failed to delete directory: q=%s, error=%s", q.c_str(), ec.message().c_str());
          mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+      }
    }
    else
       mg_http_reply(c, STATUS_BAD_REQUEST, "", "%s", RESPONSE_BAD_REQUEST);
@@ -464,21 +472,23 @@ void WebServer::Rename(struct mg_connection *c, struct mg_http_message* hm)
    string oldPath = BuildTablePath(q.c_str());
    std::filesystem::path oldFile(oldPath);
 
-   if (!std::filesystem::exists(oldFile)) {
+   std::error_code ec;
+   if (!std::filesystem::exists(oldFile, ec)) {
       mg_http_reply(c, STATUS_NOT_FOUND, "", RESPONSE_NOT_FOUND);
       return;
    }
 
    std::filesystem::path newFile = oldFile.parent_path() / newName;
-   if (std::filesystem::exists(newFile)) {
+   if (std::filesystem::exists(newFile, ec)) {
       mg_http_reply(c, STATUS_CONFLICT, "", RESPONSE_CONFLICT);
       return;
    }
 
-   std::error_code ec;
    std::filesystem::rename(oldFile, newFile, ec);
-   if (ec)
+   if (ec) {
+      PLOGE.printf("Failed to rename: q=%s, name=%s, error=%s", q.c_str(), newName.c_str(), ec.message().c_str());
       mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+   }
    else {
       SetLastUpdate();
       mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
@@ -501,28 +511,31 @@ void WebServer::Move(struct mg_connection *c, struct mg_http_message* hm)
    std::filesystem::path oldFile(oldPath);
    std::filesystem::path newFile(newPath);
 
-   if (!std::filesystem::exists(oldFile)) {
+   std::error_code ec;
+   if (!std::filesystem::exists(oldFile, ec)) {
       mg_http_reply(c, STATUS_NOT_FOUND, "", RESPONSE_NOT_FOUND);
       return;
    }
 
-   if (std::filesystem::exists(newFile)) {
+   if (std::filesystem::exists(newFile, ec)) {
       mg_http_reply(c, STATUS_CONFLICT, "", RESPONSE_CONFLICT);
       return;
    }
 
-   std::error_code ec;
-   if (!newFile.parent_path().empty() && !std::filesystem::exists(newFile.parent_path())) {
+   if (!newFile.parent_path().empty() && !std::filesystem::exists(newFile.parent_path(), ec)) {
       std::filesystem::create_directories(newFile.parent_path(), ec);
       if (ec) {
+         PLOGE.printf("Failed to create directory: dest=%s, error=%s", dest.c_str(), ec.message().c_str());
          mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
          return;
       }
    }
 
    std::filesystem::rename(oldFile, newFile, ec);
-   if (ec)
+   if (ec) {
+      PLOGE.printf("Failed to move: q=%s, dest=%s, error=%s", q.c_str(), dest.c_str(), ec.message().c_str());
       mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+   }
    else {
       SetLastUpdate();
       mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
@@ -546,8 +559,10 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
       SetLastUpdate();
       mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
    }
-   else
+   else {
+      PLOGE.printf("Failed to create folder: q=%s, error=%s", q, ec.message().c_str());
       mg_http_reply(c, STATUS_INTERNAL_SERVER_ERROR, "", RESPONSE_INTERNAL_SERVER_ERROR);
+   }
 }
 
 void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
@@ -563,7 +578,8 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
    string path = BuildTablePath(q);
 
    const std::filesystem::path filePath(path);
-   if (std::filesystem::is_regular_file(filePath)) {
+   std::error_code ec;
+   if (std::filesystem::is_regular_file(filePath, ec)) {
       const string ext = extension_from_path(path);
       if (ext == "zip" || ext == "vpxz") {
          if (ZipUtils::Unzip(filePath, filePath.parent_path(), nullptr)) {
@@ -600,9 +616,8 @@ void WebServer::Command(struct mg_connection *c, struct mg_http_message* hm)
          mg_http_reply(c, STATUS_BAD_REQUEST, "", "%s", RESPONSE_BAD_REQUEST);
    }
    else if (!strncmp(cmd, "shutdown", sizeof(cmd))) {
-      CComObject<PinTable>* pActiveTable = g_pvp->GetActiveTable();
-      if (pActiveTable) {
-         pActiveTable->QuitPlayer(Player::CS_CLOSE_CAPTURE_SCREENSHOT);
+      if (g_pplayer) {
+         g_pplayer->SetCloseState(Player::CS_CLOSE_CAPTURE_SCREENSHOT);
          mg_http_reply(c, STATUS_OK, "", RESPONSE_OK);
       }
       else

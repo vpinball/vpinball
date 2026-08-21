@@ -116,7 +116,8 @@ void VPinballLib::AppIterate()
          string imageFilename = tablePath.stem().string() + ".jpg";
          std::filesystem::path imagePath = tablePath.parent_path() / imageFilename;
 
-         if (std::filesystem::exists(imagePath)) {
+         std::error_code ec;
+         if (std::filesystem::exists(imagePath, ec)) {
             g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
             return;
          }
@@ -420,8 +421,11 @@ void VPinballLib::SaveValueBool(const string& sectionName, const string& key, bo
 VPINBALL_STATUS VPinballLib::ResetIni()
 {
    std::filesystem::path iniFilePath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences, "VPinballX.ini");
-   if (!std::filesystem::remove(iniFilePath))
-    return VPINBALL_STATUS_FAILURE;
+   std::error_code ec;
+   if (!std::filesystem::remove(iniFilePath, ec)) {
+      PLOGE.printf("Failed to reset ini: path=%s, error=%s", iniFilePath.string().c_str(), ec.message().c_str());
+      return VPINBALL_STATUS_FAILURE;
+   }
 
    g_app->m_settings.SetIniPath(iniFilePath.string());
    g_app->m_settings.Load(true);
