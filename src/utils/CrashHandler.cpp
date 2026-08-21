@@ -287,16 +287,16 @@ namespace
       #endif
    }
 
-   volatile unsigned long s_inFilter = 0;
+   volatile bool s_inFilter = 0;
 
    LONG __stdcall MyExceptionFilter(EXCEPTION_POINTERS* exceptionPtrs)
    {
       constexpr LONG returnCode = EXCEPTION_CONTINUE_SEARCH;
 
       // Ignore multiple calls.
-      if (s_inFilter != 0)
+      if (s_inFilter)
          return EXCEPTION_CONTINUE_EXECUTION;
-      s_inFilter = 1;
+      s_inFilter = true;
 
       // Cannot really do much in case of stack overflow, it'll probably bomb soon 
       // anyway.

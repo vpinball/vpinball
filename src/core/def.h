@@ -414,6 +414,7 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
 
 #ifndef __clang__
   #include <bit>
+  #define double_as_int64(x) std::bit_cast<int64_t>(x)
   #define float_as_int(x) std::bit_cast<int32_t>(x)
   #define float_as_uint(x) std::bit_cast<uint32_t>(x)
   #define half_as_short(x) std::bit_cast<int16_t>(x)
@@ -423,6 +424,7 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
   #define short_as_half(x) std::bit_cast<_Float16>(x)
   #define ushort_as_half(x) std::bit_cast<_Float16>(x)
 #else // for whatever reason apple/clang is special again
+  #define double_as_int64(x) __builtin_bit_cast(int64_t, x)
   #define float_as_int(x) __builtin_bit_cast(int32_t, x)
   #define float_as_uint(x) __builtin_bit_cast(uint32_t, x)
   #define half_as_short(x) __builtin_bit_cast(int16_t, x)
@@ -436,6 +438,10 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
 constexpr __forceinline bool infNaN(const float a)
 {
    return ((float_as_int(a) & 0x7F800000) == 0x7F800000);
+}
+constexpr __forceinline bool infNaN(const double a)
+{
+   return ((double_as_int64(a) & 0x7FF0000000000000ULL) == 0x7FF0000000000000ULL);
 }
 
 constexpr __forceinline bool inf(const float a)

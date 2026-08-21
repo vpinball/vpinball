@@ -22,6 +22,14 @@ typedef int ssize_t;
 namespace B2SLegacy
 {
 
+#ifndef __clang__
+  #include <bit>
+  #define double_as_int64(x) std::bit_cast<int64_t>(x)
+#else // for whatever reason apple/clang is special again
+  #define double_as_int64(x) __builtin_bit_cast(int64_t, x)
+#endif
+constexpr __forceinline bool infNaN(const double a) { return ((double_as_int64(a) & 0x7FF0000000000000ULL) == 0x7FF0000000000000ULL); }
+
 string trim_string(const string& str)
 {
    size_t start = 0;
@@ -108,18 +116,20 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 // trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
 int string_to_int(const string& str, int defaultValue)
 {
-   if (!is_string_numeric(str))
-      return defaultValue;
-   return static_cast<int>(std::nearbyint(std::strtod(trim_string(str).c_str(), nullptr)));
+   int result;
+   return is_string_numeric(str, &result) ? result : defaultValue;
 }
 
-bool is_string_numeric(const string& str)
+bool is_string_numeric(const string& str, int* const __restrict result)
 {
    const string tmp = trim_string(str);
    if (tmp.empty()) return false;
    char* end = nullptr;
-   const double value = std::strtod(tmp.c_str(), &end);
-   return (end == tmp.c_str() + tmp.length()) && std::isfinite(value) && (value >= INT_MIN) && (value <= INT_MAX);
+   const double valued = std::strtod(tmp.c_str(), &end);
+   const int valuei = static_cast<int>(std::nearbyint(valued));
+   if (result)
+      *result = valuei;
+   return (end == tmp.c_str() + tmp.length()) && !infNaN(valued) && (valuei >= INT_MIN) && (valuei <= INT_MAX);
 }
 
 }

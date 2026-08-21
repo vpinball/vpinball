@@ -240,7 +240,7 @@ std::filesystem::path find_case_insensitive_file_path(const std::filesystem::pat
 vector<uint8_t> base64_decode(const char * const __restrict value, const size_t size_bytes);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 int string_to_int(const string& str, int defaultValue);
-bool is_string_numeric(const string& str);
+bool is_string_numeric(const string& str, int* const __restrict result);
 
 }
 

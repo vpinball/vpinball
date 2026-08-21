@@ -623,14 +623,16 @@ void Server::B2SSetData(const string& name, int value)
 
 void Server::B2SSetData(int id, const string& value)
 {
-   if (is_string_numeric(value))
-      MyB2SSetData(id, string_to_int(value, 0));
+   int result;
+   if (is_string_numeric(value, &result))
+      MyB2SSetData(id, result);
 }
 
 void Server::B2SSetData(const string& name, const string& value)
 {
-   if (is_string_numeric(value))
-      MyB2SSetData(name, string_to_int(value, 0));
+   int result;
+   if (is_string_numeric(value, &result))
+      MyB2SSetData(name, result);
 }
 
 void Server::B2SPulseData(int id)
@@ -652,44 +654,51 @@ void Server::B2SSetPos(int id, int xpos, int ypos)
 
 void Server::B2SSetPos(int id, int xpos, const string& ypos)
 {
-   if (is_string_numeric(ypos))
-      MyB2SSetPos(id, xpos, string_to_int(ypos, 0));
+   int result;
+   if (is_string_numeric(ypos, &result))
+      MyB2SSetPos(id, xpos, result);
 }
 
 void Server::B2SSetPos(int id, const string& xpos, int ypos)
 {
-   if (is_string_numeric(xpos))
-      MyB2SSetPos(id, string_to_int(xpos, 0), ypos);
+   int result;
+   if (is_string_numeric(xpos, &result))
+      MyB2SSetPos(id, result, ypos);
 }
 
 void Server::B2SSetPos(int id, const string& xpos, const string& ypos)
 {
-   if (is_string_numeric(xpos) && is_string_numeric(ypos))
-      MyB2SSetPos(id, string_to_int(xpos, 0), string_to_int(ypos, 0));
+   int resultx, resulty;
+   if (is_string_numeric(xpos, &resultx) && is_string_numeric(ypos, &resulty))
+      MyB2SSetPos(id, resultx, resulty);
 }
 
 void Server::B2SSetPos(const string& id, int xpos, int ypos)
 {
-   if (is_string_numeric(id))
-      MyB2SSetPos(string_to_int(id, 0), xpos, ypos);
+   int result;
+   if (is_string_numeric(id, &result))
+      MyB2SSetPos(result, xpos, ypos);
 }
 
 void Server::B2SSetPos(const string& id, int xpos, const string& ypos)
 {
-   if (is_string_numeric(id) && is_string_numeric(ypos))
-      MyB2SSetPos(string_to_int(id, 0), xpos, string_to_int(ypos, 0));
+   int resultid, resulty;
+   if (is_string_numeric(id, & resultid) && is_string_numeric(ypos, &resulty))
+      MyB2SSetPos(resultid, xpos, resulty);
 }
 
 void Server::B2SSetPos(const string& id, const string& xpos, int ypos)
 {
-   if (is_string_numeric(id) && is_string_numeric(xpos))
-      MyB2SSetPos(string_to_int(id, 0), string_to_int(xpos, 0), ypos);
+   int resultid, resultx;
+   if (is_string_numeric(id, &resultid) && is_string_numeric(xpos, &resultx))
+      MyB2SSetPos(resultid, resultx, ypos);
 }
 
 void Server::B2SSetPos(const string& id, const string& xpos, const string& ypos)
 {
-   if (is_string_numeric(id) && is_string_numeric(xpos) && is_string_numeric(ypos))
-      MyB2SSetPos(string_to_int(id, 0), string_to_int(xpos, 0), string_to_int(ypos, 0));
+   int resultid, resultx, resulty;
+   if (is_string_numeric(id, &resultid) && is_string_numeric(xpos, &resultx) && is_string_numeric(ypos, &resulty))
+      MyB2SSetPos(resultid, resultx, resulty);
 }
 
 void Server::B2SSetIllumination(const string& name, int value)

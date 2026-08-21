@@ -1169,14 +1169,15 @@ void FormBackglass::LoadB2SData()
                      int id1 = 0;
                      int id2 = 0;
                      int id3 = 0;
-                     if (!idJoin.empty() && is_string_numeric(idJoin))
-                        id0 = std::stoi(idJoin);
-                     if (idJoin.length() >= 2 && is_string_numeric(idJoin.substr(1)))
-                        id1 = std::stoi(idJoin.substr(1));
-                     if (idJoin.length() >= 3 && is_string_numeric(idJoin.substr(2)))
-                        id2 = std::stoi(idJoin.substr(2));
-                     if (idJoin.length() >= 4 && is_string_numeric(idJoin.substr(3)))
-                        id3 = std::stoi(idJoin.substr(3));
+                     int result;
+                     if (is_string_numeric(idJoin,&result))
+                        id0 = result;
+                     if (idJoin.length() >= 2 && is_string_numeric(idJoin.substr(1),&result))
+                        id1 = result;
+                     if (idJoin.length() >= 3 && is_string_numeric(idJoin.substr(2),&result))
+                        id2 = result;
+                     if (idJoin.length() >= 4 && is_string_numeric(idJoin.substr(3),&result))
+                        id3 = result;
                      if (string_starts_with_case_insensitive(idJoin, "L"s)) {
                         AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationLampIDs() : m_pB2SData->GetUsedAnimationLampIDs();
                         if (id1 > 0)
