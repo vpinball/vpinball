@@ -546,6 +546,7 @@ void MsgPlugin::Unload()
       return;
    }
    m_unloadPlugin();
+   m_msgAPI->FlushPendingCallbacks(m_endpointId);
    if (m_loader)
    {
       m_loader->Unlink(m_module);

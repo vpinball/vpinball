@@ -155,7 +155,7 @@ static void OnControllersChanged(const unsigned int eventId, void* userData, voi
    uint32_t sourceEndpointId = 0;
    string selectedGameId;
    const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-   for (const auto& controller : GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
+   for (const auto& controller : PinballPlugin::Controller::GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
    {
       string gameId = controller.gameId;
       if (gameId.starts_with(pinmamePrefix))

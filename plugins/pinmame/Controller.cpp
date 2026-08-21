@@ -370,7 +370,7 @@ void Controller::UpdateStateSrc() const
    m_lamps.clear();
    m_lampMap.clear();
 
-   for (const StateSrcId& src : GetCtrlItems<StateSrcId>(m_msgApi, m_endpointId, m_getStateSrcMsgId))
+   for (const StateSrcId& src : PinballPlugin::Controller::GetCtrlItems<StateSrcId>(m_msgApi, m_endpointId, m_getStateSrcMsgId))
    {
       if (src.id.endpointId == m_endpointId)
       {
