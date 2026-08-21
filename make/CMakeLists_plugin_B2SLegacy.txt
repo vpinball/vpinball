@@ -125,7 +125,7 @@ if(BUILD_SHARED)
    )
 
    if(NOT (PLATFORM STREQUAL "windows" OR PLATFORM STREQUAL "windows-mingw"))
-      target_compile_definitions(FlexDMDPlugin PRIVATE
+      target_compile_definitions(B2SLegacyPlugin PRIVATE
          "__forceinline=__attribute__((always_inline)) inline"
       )
    endif()
