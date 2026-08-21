@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "unordered_dense.h"
 
 #include "parts/pinbinary.h"
@@ -137,6 +139,9 @@ private:
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
    mutable ankerl::unordered_dense::map<Format, std::shared_ptr<BaseTexture>> m_aliases;
+   // The alias cache is read on the DMD consumer thread (e.g. dmdutil worker via GetAlias) while the
+   // owning thread rewrites the texture and clears it, so all m_aliases access must be serialized.
+   mutable std::mutex m_aliasMutex;
 };
 
 

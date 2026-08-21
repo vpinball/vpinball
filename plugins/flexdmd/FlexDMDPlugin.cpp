@@ -518,23 +518,33 @@ static void onGetSegSrc(const unsigned int eventId, void* userData, void* msgDat
 // DMD & Displays
 
 static bool hasDMD = false;
-static unsigned int getDmdSrcId, onDmdSrcChangeId;
+static unsigned int getDmdSrcId, onDmdSrcChangeId, onPrepareFrameId;
 
+// Thread safe per the display source contract: only returns the snapshot published on the main
+// thread by onPrepareFrame, never renders or touches the scene/surface off the main thread.
 static DisplayFrame GetRenderFrame(const CtlResId id)
 {
    for (FlexDMD* pFlex : flexDmds)
    {
       if ((endpointId == id.endpointId) && (pFlex->GetId() == id.resId))
       {
-         pFlex->Render();
-         if (pFlex->GetRenderMode() == RenderMode_DMD_RGB)
-            return { pFlex->GetFrameId(), pFlex->UpdateRGBFrame() };
-         else if ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4))
-            return { pFlex->GetFrameId(), pFlex->UpdateLumFP32Frame() };
-         return { 0, nullptr };
+         const FlexDMD::RenderSnapshot snap = pFlex->GetRenderSnapshot();
+         return { snap.frameId, snap.frame };
       }
    }
    return { 0, nullptr };
+}
+
+// Render the shown DMDs once per frame on the main render thread and publish their snapshot, so that
+// GetRenderFrame consumers (scoreview on the main thread, dmdutil on its worker thread) never drive
+// rendering off the main thread.
+static void onPrepareFrame(const unsigned int eventId, void* userData, void* msgData)
+{
+   for (FlexDMD* pFlex : flexDmds)
+   {
+      if (pFlex->GetShow() && ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4) || (pFlex->GetRenderMode() == RenderMode_DMD_RGB)))
+         pFlex->RenderAndPublish();
+   }
 }
 
 static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
@@ -587,9 +597,15 @@ static void OnShowChanged(FlexDMD* pFlexI)
    if (hasDMD != hadDMD)
    {
       if (hasDMD)
+      {
          msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetRenderDMDSrc, nullptr);
+         msgApi->SubscribeMsg(endpointId, onPrepareFrameId, onPrepareFrame, nullptr);
+      }
       else
+      {
          msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc, nullptr);
+         msgApi->UnsubscribeMsg(onPrepareFrameId, onPrepareFrame, nullptr);
+      }
    }
    msgApi->BroadcastMsg(endpointId, onDmdSrcChangeId, nullptr);
    if (hasAlpha != hadAlpha)
@@ -627,6 +643,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
    getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
+   onPrepareFrameId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
 
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
@@ -755,6 +772,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
    msgApi->ReleaseMsgID(getSegSrcId);
    msgApi->ReleaseMsgID(onDmdSrcChangeId);
    msgApi->ReleaseMsgID(getDmdSrcId);
+   msgApi->ReleaseMsgID(onPrepareFrameId);
 
    scriptApi = nullptr;
    msgApi = nullptr;

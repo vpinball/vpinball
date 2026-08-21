@@ -110,42 +110,48 @@ static void UpdateThread()
       // Fixed update at 60 FPS
       std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
-      std::lock_guard<std::mutex> lock(sourceMutex);
+      // Copy the shared source/display state under the lock, then release it before rendering.
+      // The state can be reset (e.g. the source removed during teardown, clearing GetRenderFrame)
+      // concurrently with this thread, so skip until it is valid. The render itself can take a
+      // millisecond or more (FlexDMD renders its scene in GetRenderFrame); holding sourceMutex
+      // across it would stall the main thread, which takes the same lock in onDmdSrcChanged.
+      DisplaySrcId dmdId;
+      {
+         std::lock_guard<std::mutex> lock(sourceMutex);
+         if (pDmd == nullptr || selectedDmdId.id.id == 0 || selectedDmdId.GetRenderFrame == nullptr)
+            continue;
+         dmdId = selectedDmdId;
+      }
 
-      // Read the shared source/display state under the lock: it can be reset (e.g. the source removed
-      // during teardown, clearing GetRenderFrame) concurrently with this thread. Skip until it is valid.
-      if (pDmd == nullptr || selectedDmdId.id.id == 0 || selectedDmdId.GetRenderFrame == nullptr)
-         continue;
-
-      const DisplayFrame frame = selectedDmdId.GetRenderFrame(selectedDmdId.id);
+      const DisplayFrame frame = dmdId.GetRenderFrame(dmdId.id);
       if (lastFrameID == frame.frameId)
          continue;
       lastFrameID = frame.frameId;
 
-      switch(selectedDmdId.frameFormat) {
+      switch(dmdId.frameFormat) {
          case CTLPI_DISPLAY_FORMAT_LUM32F:
          {
             const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
-            uint8_t* const __restrict rgb24Data = new uint8_t[selectedDmdId.width * selectedDmdId.height * 3];
+            uint8_t* const __restrict rgb24Data = new uint8_t[dmdId.width * dmdId.height * 3];
 
-            for (unsigned int i = 0; i < selectedDmdId.width * selectedDmdId.height; ++i) {
+            for (unsigned int i = 0; i < dmdId.width * dmdId.height; ++i) {
                 const float lum = luminanceData[i];
                 rgb24Data[i * 3    ] = (uint8_t)(lum * (float)tintR);
                 rgb24Data[i * 3 + 1] = (uint8_t)(lum * (float)tintG);
                 rgb24Data[i * 3 + 2] = (uint8_t)(lum * (float)tintB);
             }
 
-            pDmd->UpdateRGB24Data(rgb24Data, selectedDmdId.width, selectedDmdId.height);
+            pDmd->UpdateRGB24Data(rgb24Data, dmdId.width, dmdId.height);
             delete [] rgb24Data;
          }
          break;
 
          case CTLPI_DISPLAY_FORMAT_SRGB888:
-            pDmd->UpdateRGB24Data(static_cast<const uint8_t*>(frame.frame), selectedDmdId.width, selectedDmdId.height);
+            pDmd->UpdateRGB24Data(static_cast<const uint8_t*>(frame.frame), dmdId.width, dmdId.height);
             break;
 
          case CTLPI_DISPLAY_FORMAT_SRGB565:
-            pDmd->UpdateRGB16Data((const uint16_t*)frame.frame, selectedDmdId.width, selectedDmdId.height);
+            pDmd->UpdateRGB16Data((const uint16_t*)frame.frame, dmdId.width, dmdId.height);
             break;
       }
    }
