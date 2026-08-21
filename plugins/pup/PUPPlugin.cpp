@@ -213,7 +213,7 @@ static void OnControllersChanged(const unsigned int eventId, void* userData, voi
    // Enumerate and select the first controller exposing a PinMAME compatible game
    string selectedGameId;
    const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-   for (const auto& controller : GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
+   for (const auto& controller : PinballPlugin::Controller::GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId))
    {
       string gameId = controller.gameId;
       if (gameId.starts_with(pinmamePrefix))

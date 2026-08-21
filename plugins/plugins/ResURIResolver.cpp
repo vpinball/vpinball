@@ -82,21 +82,21 @@ bool ResURIResolver::try_parse_int(const string &str, int &value)
 void ResURIResolver::OnStateSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetCtrlItems<StateSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getStateSrcMsgId, me->m_stateSources);
+   PinballPlugin::Controller::GetCtrlItems<StateSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getStateSrcMsgId, me->m_stateSources);
    me->m_floatCache.clear();
 }
 
 void ResURIResolver::OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetCtrlItems<SegSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getSegSrcMsgId, me->m_segSources);
+   PinballPlugin::Controller::GetCtrlItems<SegSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getSegSrcMsgId, me->m_segSources);
    me->m_segCache.clear();
 }
 
 void ResURIResolver::OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   GetCtrlItems<DisplaySrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getDisplaySrcMsgId, me->m_displaySources);
+   PinballPlugin::Controller::GetCtrlItems<DisplaySrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getDisplaySrcMsgId, me->m_displaySources);
    me->m_displayCache.clear();
 }
 
@@ -254,18 +254,38 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
    return lambda(link);
 }
 
-void ResURIResolver::SetDisplayFilter(const std::function<bool(const DisplaySrcId& src)>& filter)
-{
-   m_displayFilter = filter;
-   m_displayCache.clear();
-}
-
 std::string ResURIResolver::DumpDisplaySources() const
 {
    std::stringstream ss;
    for (const auto &source : m_displaySources)
       ss << std::format("Id:{}.{} Override:{}.{} {}x{} {}\n", source.id.endpointId, source.id.resId, source.overrideId.endpointId, source.overrideId.resId, source.width, source.height, source.frameFormat);
    return ss.str();
+}
+
+const DisplaySrcId *ResURIResolver::GetDefaultDisplaySource(const std::vector<DisplaySrcId> &sources)
+{
+   const DisplaySrcId *displaySource = nullptr;
+   unsigned int dsSize = 0;
+   for (const auto &source : sources)
+   {
+      const unsigned int sSize = source.width * source.height;
+      if (
+         // Priority 1: Find at least one display if any (size > 0)
+         displaySource == nullptr
+         // Priority 2: Favor the highest resolution display
+         || (dsSize < sSize)
+         // Priority 3: Favor color over monochrome
+         || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
+         // Priority 4: Favor RGB8 over other formats
+         || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
+         // Priority 5: Favor the first source provided by an endpoint
+         || (dsSize == sSize && displaySource->frameFormat == source.frameFormat && displaySource->id.resId > source.id.resId))
+      {
+         displaySource = &source;
+         dsSize = sSize;
+      }
+   }
+   return displaySource;
 }
 
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
@@ -284,51 +304,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       bool walkDownOverrides = true;
       if (uri.authority.host == "default")
       {
-         unsigned int dsSize = 0; 
-         for (const auto& source : m_displaySources)
-         {
-            if (m_displayFilter)
-            {
-               // If this source is filtered out or override a filtered out source, then do not select it
-               bool filteredOut = !m_displayFilter(source);
-               uint64_t parentId = source.overrideId.id;
-               while (!filteredOut && parentId != 0)
-               {
-                  auto parentSource = std::ranges::find_if(m_displaySources.begin(), m_displaySources.end(), 
-                     [parentId](const DisplaySrcId &src) { return src.id.id == parentId; });
-                  if (parentSource != m_displaySources.end())
-                  {
-                     if (!m_displayFilter(*parentSource))
-                        filteredOut = true;
-                     else
-                        parentId = parentSource->overrideId.id;
-                  }
-                  else
-                  {
-                     assert(false); // Override is pointing to a missing parent, there is something wrong if we end up here
-                     parentId = 0;
-                  }
-               }
-               if (filteredOut)
-                  continue;
-            }
-            const unsigned int sSize = source.width * source.height;
-            if (
-               // Priority 1: Find at least one display if any (size > 0)
-               displaySource == nullptr
-               // Priority 2: Favor the highest resolution display
-               || (dsSize < sSize)
-               // Priority 3: Favor color over monochrome
-               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
-               // Priority 4: Favor RGB8 over other formats
-               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
-               // Priority 5: Favor the first source provided by an endpoint
-               || (dsSize == sSize && displaySource->frameFormat == source.frameFormat && displaySource->id.resId > source.id.resId))
-            {
-               displaySource = &source;
-               dsSize = sSize;
-            }
-         }
+         displaySource = GetDefaultDisplaySource(m_displaySources);
       }
       else
       {
@@ -354,8 +330,6 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
          // TODO handle situations where a source has multiple overrides (add a selection heuristic)
          for (auto& source : m_displaySources)
          {
-            if (m_displayFilter && !m_displayFilter(source))
-               continue;
             if (source.overrideId.id == displaySource->id.id)
             {
                displaySource = &source;
