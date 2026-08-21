@@ -163,6 +163,11 @@ void CabinetNudgeSensor::UpdateAxisSensor(SyncedSensor& sensor, MotionKalmanAxis
       alignedTimestampNS = m_timeNs;
    }
 
+   // An event-driven sensor sends nothing while at rest, so its first sample is motion, not bias.
+   // Seed with zero bias in that case rather than let it be taken for the sensor's zero offset.
+   if (!axis.IsInitialized() && fabsf(sensor.m_sensor.GetValue()) >= restThresold)
+      axis.Reset(alignedTimestampNS);
+
    if (sensor.m_sensor.GetType() == SensorMapping::Type::Velocity)
    {
       axis.UpdateVelocity(alignedTimestampNS, axisGain * sensor.m_sensor.GetValue());
