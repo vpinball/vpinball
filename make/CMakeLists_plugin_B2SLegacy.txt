@@ -233,6 +233,10 @@ if(BUILD_STATIC)
       src
    )
 
+   target_compile_definitions(B2SLegacyPlugin PRIVATE
+      "__forceinline=__attribute__((always_inline)) inline"
+   )
+
    set_target_properties(B2SLegacyPlugin PROPERTIES
       PREFIX ""
       OUTPUT_NAME "plugin-b2slegacy"
