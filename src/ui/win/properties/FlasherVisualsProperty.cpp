@@ -188,7 +188,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          {
             m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0,
                flash->m_d.m_renderMode == FlasherData::DMD           ? (7 - 1)
-                  : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (2 - 1)
+                  : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (3 - 1)
                   : flash->m_d.m_renderMode == FlasherData::ALPHASEG ? (5 * 8 - 1)
                                                                      : 0));
          }
