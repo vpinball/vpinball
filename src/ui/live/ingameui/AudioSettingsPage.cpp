@@ -15,6 +15,7 @@ AudioSettingsPage::AudioSettingsPage()
 
 void AudioSettingsPage::BuildPage()
 {
+   m_devices.clear();
    for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
       m_devices.push_back(device.name);
 

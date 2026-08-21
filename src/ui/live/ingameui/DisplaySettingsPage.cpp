@@ -178,7 +178,10 @@ void DisplaySettingsPage::BuildPage()
    if (m_player->m_ancillaryWndRenderers[m_wndId].empty())
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "The played table does not have any renderer available for this view"s));
    const string section = m_wndId == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s : m_wndId == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s : "Topper"s;
-   for (const auto& renderer : m_player->m_ancillaryWndRenderers[m_wndId])
+   // Sort by name so sliders keep fixed positions while adjusting priorities
+   vector<AncillaryRendererDef> renderers = m_player->m_ancillaryWndRenderers[m_wndId];
+   std::ranges::sort(renderers, [](const AncillaryRendererDef& a, const AncillaryRendererDef& b) { return lowerCase(a.name) < lowerCase(b.name); });
+   for (const auto& renderer : renderers)
    {
       if (std::optional<VPX::Properties::PropertyRegistry::PropId> propId = Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)); propId)
       {
