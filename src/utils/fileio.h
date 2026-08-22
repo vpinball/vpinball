@@ -119,6 +119,19 @@ public:
 
 
 
+// Physical position of each named stream within its container, for callers that want to read
+// streams in layout order rather than declaration order.
+//
+// Returns false when the storage cannot report positions, which is the case for Windows OLE
+// structured storage: IStorage exposes nothing equivalent. Callers must therefore treat the
+// ordering as a hint and keep working without it. This is a capability query rather than a
+// platform check so that the code path stays single, and so that a future move to POLE on
+// Windows starts reporting positions with no caller changes.
+//
+// Offsets are absolute byte positions and are comparable across every stream in the
+// container, including those small enough to be packed inside the mini-stream container.
+bool GetStreamOffsets(IStorage *pstg, const vector<wstring> &names, vector<uint64_t> &offsets);
+
 class FastIStream : public IStream
 {
 public:

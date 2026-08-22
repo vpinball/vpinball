@@ -198,3 +198,33 @@ HRESULT __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const ULONG origin,
 
    return S_OK;
 }
+
+#ifdef __STANDALONE__
+#include "standalone/PoleStorage.h"
+#endif
+
+bool GetStreamOffsets(IStorage *const pstg, const vector<wstring> &names, vector<uint64_t> &offsets)
+{
+   offsets.clear();
+
+   #ifdef __STANDALONE__
+      // dynamic_cast rather than a static one: FastIStorage also implements IStorage and is
+      // used for undo and the editor clipboard, and it has no notion of a physical position.
+      PoleStorage *const pole = dynamic_cast<PoleStorage *>(pstg);
+      if (pole == nullptr)
+         return false;
+
+      POLE::Storage *const storage = pole->getPOLEStorage();
+      if (storage == nullptr)
+         return false;
+
+      const string prefix = pole->getPath() + '/';
+      offsets.reserve(names.size());
+      for (const wstring &name : names)
+         offsets.push_back(storage->streamOffset(prefix + MakeString(name)));
+      return true;
+   #else
+      // Real OLE structured storage does not report where it put a stream.
+      return false;
+   #endif
+}
