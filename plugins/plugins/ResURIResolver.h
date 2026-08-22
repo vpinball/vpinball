@@ -52,6 +52,8 @@
 //   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling)
 //
 
+namespace PinballPlugin
+{
 
 class ResURIResolver final
 {
@@ -107,4 +109,6 @@ private:
 
    static std::string trim_string(const std::string &str);
    static bool try_parse_int(const std::string &str, int &value);
+};
+
 };

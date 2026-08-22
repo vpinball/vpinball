@@ -1314,7 +1314,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderFrame = m_dmdFrame;
          else
          {
-            ResURIResolver::DisplayState dmd { nullptr };
+            PinballPlugin::ResURIResolver::DisplayState dmd { nullptr };
             if (!m_d.m_imageSrcLink.empty())
                dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
@@ -1345,7 +1345,7 @@ void Flasher::Render(const unsigned int renderMask)
          break;
 
       case FlasherData::DISPLAY:
-         if (const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
+         if (const PinballPlugin::ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
          {
             BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
                display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
@@ -1369,7 +1369,8 @@ void Flasher::Render(const unsigned int renderMask)
          break;
 
       case FlasherData::ALPHASEG:
-         if (const ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink); segs.state.frame != nullptr && segs.source->nElements != 0)
+         if (const PinballPlugin::ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
+            segs.state.frame != nullptr && segs.source->nElements != 0)
          {
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)

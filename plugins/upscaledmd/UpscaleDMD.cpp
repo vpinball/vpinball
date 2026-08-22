@@ -413,7 +413,7 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
          }
          // Select default DMD as defined by the ResURIResolver (excluding ourself if already running)
          std::erase_if(items, [](const DisplaySrcId& src) { return src.id.endpointId == endpointId; });
-         const DisplaySrcId* displaySource = ResURIResolver::GetDefaultDisplaySource(items);
+         const DisplaySrcId* displaySource = PinballPlugin::ResURIResolver::GetDefaultDisplaySource(items);
          items.clear();
          if (displaySource)
             items.push_back(*displaySource);
