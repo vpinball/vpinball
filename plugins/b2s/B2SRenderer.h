@@ -36,10 +36,9 @@ private:
 
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
-   unsigned int m_getStateSrcMsgId = 0;
-   unsigned int m_onStateChangedMsgId = 0;
-   static void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   StateSrcId m_deviceStateSrc {};
+   PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_pinmameControllers;
+   mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
+   void OnStateSrcChanged();
 
    unsigned int m_getSegSrcMsgId = 0;
    unsigned int m_onSegChangedMsgId = 0;

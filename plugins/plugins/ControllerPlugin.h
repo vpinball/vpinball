@@ -27,9 +27,10 @@
 //
 // The design is based around a simple service discovery:
 // - a GetSource message is defined for each feature CTLPI_xxx_GET_SRC_MSG),
-//   together with a SourceChangeEvent (CTLPI_xxx_ON_SRC_CHG_MSG).
+//   together with a SourceChangeEvent (CTLPI_xxx_ON_SRC_CHG_MSG), allowing
+//   to advertise a distributed list for each controller components.
 // - Data provided as an answer to a GetSource message **MUST** remain valid
-//   until the next SourceChangeEvent is broadcasted.
+//   until the next SourceChangeEvent is broadcasted **AND** processed.
 // - Sources are advertised with the function hooks that allow to request them.
 //   Unless explicitely specified, these hooks are not thread safe and must be
 //   called on the plugin API thread (the one calling plugin's Load/Unload).
@@ -38,6 +39,8 @@
 // - GetSource messages use the same design as Vulkan to evaluate the needed
 //   array size: the count field is increased to the number of items while
 //   only maxEntryCount are actually copied into the output array.
+// - C++ Helpers are provided to limit boiler plate code, and ease using these
+//   while enforcing threading safety.
 
 #define CTLPI_NAMESPACE               "Controller"
 
@@ -91,53 +94,40 @@ typedef struct GetControllersMsg
 // Request subscribers to fill up an array with the list of state blocks, message data is a pointer to a GetStateSrcMsg structure
 #define CTLPI_STATE_GET_SRC_MSG       "GetStateSrc"
 
-typedef struct StateGroupDef
-{
-   const char* name; // User friendly name, or null if not available, owned by the provider
-   const char* desc; // User friendly description, or null if not available, owned by the provider
-   uint16_t id;
-} StateGroupDef;
+#define CTLPI_STATE_FORMAT_UINT8              1
+#define CTLPI_STATE_FORMAT_UINT16             2
+#define CTLPI_STATE_FORMAT_UINT32             3
+#define CTLPI_STATE_FORMAT_UINT64             4
+#define CTLPI_STATE_FORMAT_INT8               5
+#define CTLPI_STATE_FORMAT_INT16              6
+#define CTLPI_STATE_FORMAT_INT32              7
+#define CTLPI_STATE_FORMAT_INT64              8
+#define CTLPI_STATE_FORMAT_FLOAT              9
+#define CTLPI_STATE_FORMAT_DOUBLE            10
+#define CTLPI_STATE_FORMAT_STRING            11 // 0 ended char string, UTF8 encoded, owned by the controller
 
-#define CTLPI_STATE_TYPE_UINT8            0x0001
-#define CTLPI_STATE_TYPE_UINT16           0x0002
-#define CTLPI_STATE_TYPE_UINT32           0x0004
-#define CTLPI_STATE_TYPE_UINT64           0x0008
-#define CTLPI_STATE_TYPE_INT8             0x0010
-#define CTLPI_STATE_TYPE_INT16            0x0020
-#define CTLPI_STATE_TYPE_INT32            0x0040
-#define CTLPI_STATE_TYPE_INT64            0x0080
-#define CTLPI_STATE_TYPE_FLOAT            0x0100
-#define CTLPI_STATE_TYPE_DOUBLE           0x0200
-#define CTLPI_STATE_TYPE_STRING           0x0400 // 0 ended char string, UTF8 encoded, owned by the controller
-
-typedef union CtlStateId
-{
-   struct
-   {
-      uint32_t groupId;
-      uint32_t stateId;
-   };
-   uint64_t mappingId;
-} CtlStateId;
+#define CTLPI_STATE_TYPE_CUSTOM               0 // Custom game state, precise definition must be provided by the controller
+#define CTLPI_STATE_TYPE_SWITCH               1 // Binary switch state: 0 for opened, non 0 for closed
+#define CTLPI_STATE_TYPE_RELATIVE_BRIGHTNESS  2 // Relative linear brightness: linear perceived luminance normalized to the positive data range of the data format (0..1, 0..255,...)
 
 typedef struct StateDef
 {
    const char* name; // User friendly name, or null if not available, owned by the provider
    const char* desc; // User friendly description, or null if not available, owned by the provider
-   CtlStateId id; // User friendly unique mapping id
-   int typeMask; // State's supported data type mask. This are the only data types that can be requested/writed, see CTLPI_STATE_TYPE_xxx defines
-   int writable; // Non 0 if the state is writable
+   uint32_t mappingId; // User friendly mapping id
+   int dataFormat; // Data format, see CTLPI_STATE_FORMAT_xxx defines
+   int semanticType; // Game state type, see CTLPI_STATE_TYPE_xxx defines
+   void(MSGPIAPI* GetState)(CtlResId blockId, unsigned int stateIndex, void* pResult); // Pointer to function to request a state, thread safe, may be null, pResult points to a memblock corresponding to format
+   void(MSGPIAPI* SetState)(CtlResId blockId, unsigned int stateIndex, const void* pValue); // Pointer to function to request a state change, thread safe, may be null, pResult points to a memblock corresponding to format (const char* for string)
 } StateDef;
 
 typedef struct StateSrcId
 {
-   CtlResId id; // Unique Id of the input block
-   unsigned int nGroups; // Number of groups
-   StateGroupDef* groupDefs; // Pointer to a block of nGroups StateGroupDef, owned by the provider, valid until a src changed event is broadcasted
+   CtlResId id; // Unique Id of the state block
+   const char* name; // User friendly name, or null if not available, owned by the provider
+   const char* desc; // User friendly description, or null if not available, owned by the provider
    unsigned int nStates; // Number of states
    StateDef* stateDefs; // Pointer to a block of nStates StateDef, owned by the provider, valid until a src changed event is broadcasted
-   int(MSGPIAPI* GetState)(unsigned int inputIndex, int type, void* pResult); // Pointer to function to request a state, thread safe, may be null, returns non 0 on error, pResult points to a memblock corresponding to type
-   int(MSGPIAPI* SetState)(unsigned int inputIndex, int type, void* pResult); // Pointer to function to request a state change, thread safe, may be null, returns non 0 on error, pResult points to a memblock corresponding to type
 } StateSrcId;
 
 typedef struct GetStateSrcMsg
@@ -400,6 +390,17 @@ inline bool operator==(const ControllerDef& a, const ControllerDef& b)
 
 inline bool operator!=(const ControllerDef& a, const ControllerDef& b) { return !(a == b); }
 
+inline bool operator==(const StateSrcId& a, const StateSrcId& b)
+{
+   return a.id == b.id //
+      && a.name == b.name // pointer identity, not string content
+      && a.desc == b.desc // pointer identity, not string content
+      && a.nStates == b.nStates //
+      && a.stateDefs == b.stateDefs; // pointer identity, not deep comparison
+}
+
+inline bool operator!=(const StateSrcId& a, const StateSrcId& b) { return !(a == b); }
+
 inline bool operator==(const DisplaySrcId& a, const DisplaySrcId& b)
 {
    return a.id == b.id //
@@ -511,23 +512,36 @@ public:
       m_msgApi->ReleaseMsgID(m_onChangeMsgId);
    }
 
+   void SetItem(const T& item)
+   {
+      // Note that we must do 2 change broadcast as the first (clear) broadcast ensures that there aren't any other thread using 
+      // the previous items before discarding them and advertising the new element. Doing it in a single pass would risk a threading
+      // crash if previous element were used while being discarded and replaced.
+      ClearItems();
+      AddItem(item);
+   }
+
    void AddItem(const T& item)
    {
       assert(std::this_thread::get_id() == m_threadLock);
-      std::lock_guard lock(m_listMutex);
-      m_items.push_back(item);
-      if (m_items.size() == 1)
-         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      {
+         std::lock_guard lock(m_listMutex);
+         m_items.push_back(item);
+         if (m_items.size() == 1)
+            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      }
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
    }
 
    void AddItems(const std::vector<T>& list)
    {
       assert(std::this_thread::get_id() == m_threadLock);
-      std::lock_guard lock(m_listMutex);
-      m_items.insert(m_items.end(), list.begin(), list.end());
-      if (m_items.size() == list.size())
-         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      {
+         std::lock_guard lock(m_listMutex);
+         m_items.insert(m_items.end(), list.begin(), list.end());
+         if (m_items.size() == list.size())
+            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
+      }
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
    }
 

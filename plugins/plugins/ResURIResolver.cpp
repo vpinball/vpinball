@@ -138,23 +138,17 @@ float ResURIResolver::GetFloatState(const string &link)
                   
                   int ioIndex = -1;
                   for (unsigned int i = 0; i < ioSource->nStates; i++)
-                     if (ioSource->stateDefs[i].id.mappingId == ioId)
+                     if (ioSource->stateDefs[i].mappingId == ioId)
                         ioIndex = i;
                      
                   if (ioIndex >= 0)
                      lambda = [ioSource, ioIndex](const string &)
                      {
-                        if (ioSource->stateDefs[ioIndex].typeMask & CTLPI_STATE_TYPE_FLOAT)
+                        if (const StateDef &def = ioSource->stateDefs[ioIndex]; def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr)
                         {
                            float value;
-                           ioSource->GetState(ioIndex, CTLPI_STATE_TYPE_FLOAT, & value);
+                           def.GetState(ioSource->id, ioIndex, &value);
                            return value;
-                        }
-                        else if (ioSource->stateDefs[ioIndex].typeMask & CTLPI_STATE_TYPE_UINT8)
-                        {
-                           uint8_t value;
-                           ioSource->GetState(ioIndex, CTLPI_STATE_TYPE_UINT8, &value);
-                           return static_cast<float>(value);
                         }
                         return 0.f;
                      };
