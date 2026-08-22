@@ -17,7 +17,7 @@
 
 namespace B2S {
 
-class B2SServer final : public ScriptablePlugin::IScriptProxy
+class B2SServer final : public PinballPlugin::Scriptable::IScriptProxy
 {
 public:
    B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef);
@@ -118,8 +118,8 @@ public:
    void ForwardCall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet) override;
 
 private:
-   ScriptablePlugin::ScriptClassProxy m_controllerClassProxy;
-   ScriptablePlugin::ScriptObjectProxy m_controllerProxy;
+   PinballPlugin::Scriptable::ScriptClassProxy m_controllerClassProxy;
+   PinballPlugin::Scriptable::ScriptObjectProxy m_controllerProxy;
 
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;

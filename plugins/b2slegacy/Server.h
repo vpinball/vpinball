@@ -15,7 +15,7 @@ namespace B2SLegacy {
 
 class PinMAMEAPI;
 
-class Server : public ScriptablePlugin::IScriptProxy
+class Server : public PinballPlugin::Scriptable::IScriptProxy
 {
 public:
    Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* pinmameClassDef);
