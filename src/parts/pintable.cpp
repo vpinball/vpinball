@@ -4,6 +4,7 @@
 #include "pintable.h"
 
 #include <algorithm>
+#include <atomic>
 #include <fstream>
 #include <sstream>
 
@@ -1569,7 +1570,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
             vector<IEditable *> parts;
             parts.resize(csubobj);
-            int nLoadedParts = 0;
+            std::atomic<int> nLoadedParts { 0 };
             for (int i = 0; i < csubobj; i++)
             {
                pool.enqueue(
@@ -1606,7 +1607,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
             assert(m_vsound.empty());
             m_vsound.resize(csounds);
-            int nLoadedSounds = 0;
+            std::atomic<int> nLoadedSounds { 0 };
             for (int i = 0; i < csounds; i++)
             {
                pool.enqueue(
@@ -1630,7 +1631,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
 
             assert(m_vimage.empty());
             m_vimage.resize(ctextures);
-            int nLoadedImages = 0;
+            std::atomic<int> nLoadedImages { 0 };
             for (int i = 0; i < ctextures; i++)
             {
                pool.enqueue(
