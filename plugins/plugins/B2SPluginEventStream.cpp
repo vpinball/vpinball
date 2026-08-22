@@ -21,23 +21,28 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
    , m_getControllersId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG))
    , m_getSegSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG))
    , m_onSegSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG))
-   , m_getStateSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG))
-   , m_onStateSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG))
    , m_getDmdSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
    , m_onDmdSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
    , m_onSerumTriggerId(m_msgApi->GetMsgID("Serum", "OnDmdTrigger"))
    , m_onB2SStateChangeId(m_msgApi->GetMsgID("B2S", "OnStateChange"))
-{
+   , m_stateSources(
+        msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
+        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); },
+        [this]()
+        {
+           for (auto& buffer : m_pmStates)
+              buffer.clear();
+        })
+   {
    m_msgApi->SubscribeMsg(m_endpointId, m_onControllersChangedId, OnControllersChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSegSrcChangedId, OnSegSrcChanged, this);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onStateSrcChangedId, OnStateSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSerumTriggerId, OnSerumTrigger, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onB2SStateChangeId, OnB2SStateChange, this);
    OnControllersChanged(m_onDmdSrcChangedId, this, nullptr);
    OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
-   OnStateSrcChanged(m_onStateSrcChangedId, this, nullptr);
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
+   m_stateSources.SelectItems(true);
 
    m_thread = std::thread(&B2SPluginEventStream::StatePollingThread, this);
 }
@@ -50,19 +55,13 @@ B2SPluginEventStream::~B2SPluginEventStream()
 
    m_msgApi->UnsubscribeMsg(m_onControllersChangedId, OnControllersChanged, this);
    m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged, this);
-   m_msgApi->UnsubscribeMsg(m_onStateSrcChangedId, OnStateSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger, this);
    m_msgApi->UnsubscribeMsg(m_onB2SStateChangeId, OnB2SStateChange, this);
-   delete[] m_b2sStateSrc.stateDefs;
-   delete[] m_pmStateSrc.stateDefs;
 
    m_msgApi->ReleaseMsgID(m_onB2SStateChangeId);
 
    m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
-
-   m_msgApi->ReleaseMsgID(m_getStateSrcId);
-   m_msgApi->ReleaseMsgID(m_onStateSrcChangedId);
 
    m_msgApi->ReleaseMsgID(m_getSegSrcId);
    m_msgApi->ReleaseMsgID(m_onSegSrcChangedId);
@@ -117,7 +116,7 @@ void B2SPluginEventStream::OnControllersChanged(const unsigned int eventId, void
    me->m_b2sEndPoint = b2sEndPoint;
    if (pmChanged)
       OnSegSrcChanged(me->m_onSegSrcChangedId, me, nullptr);
-   OnStateSrcChanged(me->m_onStateSrcChangedId, me, nullptr);
+   me->m_stateSources.SelectItems(true);
 }
 
 void B2SPluginEventStream::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -155,48 +154,6 @@ void B2SPluginEventStream::OnSegSrcChanged(const unsigned int eventId, void* use
          nElements += segSrc.nElements;
       me->m_pmLastSegFrame.resize(nElements);
    }
-}
-
-void B2SPluginEventStream::OnStateSrcChanged(const unsigned int eventId, void* userData, void* eventData)
-{
-   auto me = static_cast<B2SPluginEventStream*>(userData);
-   std::unique_lock lock(me->m_pollSrcMutex);
-
-   // PinMAME controller
-   delete[] me->m_pmStateSrc.stateDefs;
-   memset(&me->m_pmStateSrc, 0, sizeof(me->m_pmStateSrc));
-   me->m_pmStates.clear();
-   if (me->m_pinmameEndPoint)
-   {
-      GetStateSrcMsg getSrcMsg = { 1, 0, &me->m_pmStateSrc };
-      me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcId, me->m_pinmameEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_pmStateSrc.stateDefs)
-      {
-         // Copy device definitions
-         StateDef* devices = new StateDef[me->m_pmStateSrc.nStates];
-         memcpy(devices, me->m_pmStateSrc.stateDefs, me->m_pmStateSrc.nStates * sizeof(StateDef));
-         me->m_pmStateSrc.stateDefs = devices;
-         me->m_pmStates.resize(me->m_pmStateSrc.nStates, -1);
-      }
-   }
-
-   // B2S controller
-   delete[] me->m_b2sStateSrc.stateDefs;
-   memset(&me->m_b2sStateSrc, 0, sizeof(me->m_b2sStateSrc));
-   if (me->m_b2sEndPoint)
-   {
-      GetStateSrcMsg getSrcMsg = { 1, 0, &me->m_b2sStateSrc };
-      me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcId, me->m_b2sEndPoint, &getSrcMsg);
-      if (getSrcMsg.count && me->m_b2sStateSrc.stateDefs)
-      {
-         // Copy device definitions
-         StateDef* devices = new StateDef[me->m_b2sStateSrc.nStates];
-         memcpy(devices, me->m_b2sStateSrc.stateDefs, me->m_b2sStateSrc.nStates * sizeof(StateDef));
-         me->m_b2sStateSrc.stateDefs = devices;
-      }
-   }
-
-   lock.unlock();
 }
 
 // Broadcasted by B2S controllers when internal game states are changed (active player, scores, ...)
@@ -281,34 +238,64 @@ void B2SPluginEventStream::StatePollingThread()
 
       // We are recreating B2S COM behavior: rely on VPinMAME changed states and broadcast them as is to plugins
       // (B2S itself does further processing to handle modulated outputs but the byte/int32 state is broadcasted to plugin without this processing)
-      for (unsigned int i = 0; i < m_pmStateSrc.nStates; i++)
       {
-         int state = 0;
-         if (m_pmStateSrc.stateDefs[i].typeMask & CTLPI_STATE_TYPE_UINT8)
+         std::lock_guard lock(m_stateSources.GetListMutex());
+         for (const StateSrcId& src : m_stateSources.GetItems())
          {
-            uint8_t byteState = 0;
-            m_pmStateSrc.GetState(i, CTLPI_STATE_TYPE_UINT8, &byteState);
-            state = static_cast<int>(byteState);
-         }
-         else if (m_pmStateSrc.stateDefs[i].typeMask & CTLPI_STATE_TYPE_INT32) // For PinMAME Mechs
-         {
-            int32_t int32State = 0;
-            m_pmStateSrc.GetState(i, CTLPI_STATE_TYPE_INT32, &int32State);
-            state = static_cast<int>(int32State);
-         }
-         // B2S convert switch values to 0/1
-         if ((m_pmStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK) == PMPI_GROUP_SWITCH)
-            state = state != 0 ? 1 : 0;
-         if (m_pmStates[i] != state)
-         {
-            m_pmStates[i] = state;
-            switch (m_pmStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK)
+            int bufferIndex = 0;
+            char eventType = 0;
+            switch (src.id.resId)
             {
-            case PMPI_GROUP_SOLENOID: QueueEvent('S', m_pmStateSrc.stateDefs[i].id.stateId, state); break;
-            case PMPI_GROUP_GI: QueueEvent('G', m_pmStateSrc.stateDefs[i].id.stateId, state); break;
-            case PMPI_GROUP_LAMP: QueueEvent('L', m_pmStateSrc.stateDefs[i].id.stateId, state); break;
-            case PMPI_GROUP_MECH: QueueEvent('N', m_pmStateSrc.stateDefs[i].id.stateId, state); break;
-            case PMPI_GROUP_SWITCH: QueueEvent('W', m_pmStateSrc.stateDefs[i].id.stateId, state); break;
+            case PMPI_GROUP_VPM_SOLENOID:
+               eventType = 'S';
+               bufferIndex = 0;
+               break;
+            case PMPI_GROUP_VPM_GI:
+               eventType = 'G';
+               bufferIndex = 1;
+               break;
+            case PMPI_GROUP_VPM_LAMP:
+               eventType = 'L';
+               bufferIndex = 2;
+               break;
+            case PMPI_GROUP_VPM_MECH:
+               eventType = 'N';
+               bufferIndex = 3;
+               break;
+            case PMPI_GROUP_SWITCH:
+               eventType = 'W';
+               bufferIndex = 4;
+               break;
+            default: continue;
+            }
+            if (m_pmStates[bufferIndex].size() < src.nStates)
+               m_pmStates[bufferIndex].resize(src.nStates, -1);
+            for (unsigned int i = 0; i < src.nStates; i++)
+            {
+               int state = 0;
+               if (src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && src.stateDefs[i].GetState != nullptr)
+               {
+                  uint8_t byteState = 0;
+                  src.stateDefs[i].GetState(src.id, i, &byteState);
+                  state = static_cast<int>(byteState);
+               }
+               else if (src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_INT32 && src.stateDefs[i].GetState != nullptr) // For PinMAME Mechs
+               {
+                  int32_t int32State = 0;
+                  src.stateDefs[i].GetState(src.id, i, &int32State);
+                  state = static_cast<int>(int32State);
+               }
+               else
+               {
+                  continue;
+               }
+               if (src.id.resId == PMPI_GROUP_SWITCH) // B2S convert switch values to 0/1
+                  state = state != 0 ? 1 : 0;
+               if (m_pmStates[bufferIndex][i] != state)
+               {
+                  m_pmStates[bufferIndex][i] = state;
+                  QueueEvent(eventType, src.stateDefs[i].mappingId, state);
+               }
             }
          }
       }

@@ -24,6 +24,24 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
         m_b2s->m_backglassImage.m_image         ? m_b2s->m_backglassImage.m_image
            : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
                                                 : m_b2s->m_backglassOnImage.m_image)
+   , m_pinmameControllers(
+        msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
+        [](std::vector<ControllerDef>& items)
+        {
+           const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+           std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
+        },
+        [this]() { m_stateSources.SelectItems(true); })
+   , m_stateSources(
+        msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
+        [this](std::vector<StateSrcId>& items)
+        {
+           std::lock_guard lock(m_pinmameControllers.GetListMutex());
+           const std::vector<ControllerDef>& controllers = m_pinmameControllers.GetItems();
+           std::erase_if(items, [this, &controllers](const StateSrcId& source)
+              { return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; }) == controllers.end(); });
+        },
+        [this]() { OnStateSrcChanged(); })
 {
    m_backglassDmdOverlay.LoadSettings(false);
    m_scoreViewDmdOverlay.LoadSettings(true);
@@ -34,24 +52,17 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
    m_dmdHeight = dmdTexInfo ? static_cast<float>(dmdTexInfo->height) : 768.f;
 
-   m_getStateSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
-   m_onStateChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onStateChangedMsgId, OnStateSrcChanged, this);
-   OnStateSrcChanged(m_onStateChangedMsgId, this, nullptr);
-
    m_getSegSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
    m_onSegChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSegChangedMsgId, OnSegSrcChanged, this);
    OnSegSrcChanged(m_onSegChangedMsgId, this, nullptr);
+
+   m_pinmameControllers.SelectItems(true);
+   m_stateSources.SelectItems(true);
 }
 
 B2SRenderer::~B2SRenderer()
 {
-   m_msgApi->UnsubscribeMsg(m_onStateChangedMsgId, OnStateSrcChanged, this);
-   m_msgApi->ReleaseMsgID(m_onStateChangedMsgId);
-   m_msgApi->ReleaseMsgID(m_getStateSrcMsgId);
-   delete[] m_deviceStateSrc.stateDefs;
-
    m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);
@@ -86,50 +97,22 @@ void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
    }
 }
 
-void B2SRenderer::OnStateSrcChanged(const unsigned int, void* userData, void*)
+void B2SRenderer::OnStateSrcChanged()
 {
-   auto me = static_cast<B2SRenderer*>(userData);
-   delete[] me->m_deviceStateSrc.stateDefs;
-   memset(&me->m_deviceStateSrc, 0, sizeof(me->m_deviceStateSrc));
-   if (me->m_b2s->m_backglassOnImage.m_image)
-      me->m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
-   for (auto& bulb : me->m_b2s->m_backglassIlluminations)
+   if (m_b2s->m_backglassOnImage.m_image)
+      m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
+   for (auto& bulb : m_b2s->m_backglassIlluminations)
       bulb->m_romUpdater = []() { /* No ROM source */ };
 
-   unsigned int pinmameEndpoint = me->m_msgApi->GetPluginEndpoint("PinMAME");
-   if (pinmameEndpoint == 0)
-      return;
 
-   GetStateSrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcMsgId, pinmameEndpoint, &getSrcMsg);
-   vector<StateSrcId> entries(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, entries.data() };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getStateSrcMsgId, pinmameEndpoint, &getSrcMsg);
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
-   {
-      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint && getSrcMsg.entries[i].nStates > 0 && getSrcMsg.entries[i].stateDefs[0].writable == 0)
-      {
-         me->m_deviceStateSrc = getSrcMsg.entries[i];
-         if (getSrcMsg.entries[i].stateDefs)
-         {
-            me->m_deviceStateSrc.stateDefs = new StateDef[getSrcMsg.entries[i].nStates];
-            memcpy(me->m_deviceStateSrc.stateDefs, getSrcMsg.entries[i].stateDefs, getSrcMsg.entries[i].nStates * sizeof(StateDef));
-         }
-         break;
-      }
-   }
+   if (m_b2s->m_backglassOnImage.m_image)
+      m_b2s->m_backglassOnImage.m_romUpdater = ResolveRomPropUpdater(&m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId);
 
-   if (me->m_deviceStateSrc.stateDefs == nullptr)
-      return;
-
-   if (me->m_b2s->m_backglassOnImage.m_image)
-      me->m_b2s->m_backglassOnImage.m_romUpdater = me->ResolveRomPropUpdater(&me->m_b2s->m_backglassOnImage.m_brightness, me->m_b2s->m_backglassOnImage.m_romIdType, me->m_b2s->m_backglassOnImage.m_romId);
-
-   for (auto& bulb : me->m_b2s->m_backglassIlluminations)
+   for (auto& bulb : m_b2s->m_backglassIlluminations)
       switch (bulb->m_snippitType)
       {
-      case B2SSnippitType::StandardImage: bulb->m_romUpdater = me->ResolveRomPropUpdater(&bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = me->ResolveRomPropUpdater(&bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(&bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(&bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
       case B2SSnippitType::SelfRotatingImage: break;
       }
 }
@@ -145,14 +128,29 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
    case B2SRomIDType::Mech: groupId = PMPI_GROUP_MECH; break;
    default: return []() { /* No ROM source */ };
    }
-   for (unsigned int i = 0; i < m_deviceStateSrc.nStates; i++)
+   std::lock_guard lock(m_stateSources.GetListMutex());
+   for (const StateSrcId& src : m_stateSources.GetItems())
    {
-      if (romId == m_deviceStateSrc.stateDefs[i].id.stateId && groupId == (m_deviceStateSrc.stateDefs[i].id.groupId & PMPI_GROUP_MASK))
+      if (src.id.resId != groupId)
+         continue;
+      for (unsigned int i = 0; i < src.nStates; i++)
       {
-         if (romInverted)
-            return [this, value, i]() { m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, value); *value = 1.f - *value; };
-         else
-            return [this, value, i]() { m_deviceStateSrc.GetState(i, CTLPI_STATE_TYPE_FLOAT, value); };
+         if (src.stateDefs[i].mappingId == romId && src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_FLOAT && src.stateDefs[i].GetState)
+         {
+            if (romInverted)
+               return [this, value, i, src]()
+               {
+                  std::lock_guard lock(m_stateSources.GetListMutex());
+                  src.stateDefs[i].GetState(src.id, i, value);
+                  *value = 1.f - *value;
+               };
+            else
+               return [this, value, i, src]()
+               {
+                  std::lock_guard lock(m_stateSources.GetListMutex());
+                  src.stateDefs[i].GetState(src.id, i, value);
+               };
+         }
       }
    }
    return []() { /* No ROM source */ };

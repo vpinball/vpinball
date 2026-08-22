@@ -183,26 +183,33 @@ private:
    string m_szPath = "./";
    Timer* m_pTimer = nullptr;
 
-   StateSrcId m_pinmameStateSrc { };
-
    static Server* m_singleton;
+
+   PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_pinmameControllers;
+   mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
+
+   string m_controllerGameId;
+   bool m_gameRunning = false;
    ankerl::unordered_dense::map<int, float> m_b2sStates;
    ankerl::unordered_dense::map<int, int> m_playerScores;
    ankerl::unordered_dense::map<int, int> m_scoreDigits;
-   string m_controllerGameId;
-   bool m_gameRunning = false;
-   const unsigned int m_onControllersChangedId;
-   const unsigned int m_getControllersId;
-   const unsigned int m_onGetStateSrcId;
    const unsigned int m_onStateChangeEventId;
-   StateSrcId m_stateSrc { };
-   mutable std::mutex m_stateSrcMutex;
-   vector<StateGroupDef> m_stateGroupDefs = { { "Illuminations", "", 0x0001 }, { "Scores (players)", "", 0x0002 }, { "Scores (digits)", "", 0x0003 } };
-   vector<string> m_stateSrcNames;
+   PinballPlugin::Controller::CtrlItemProvider<ControllerDef> m_exposedControllers;
+   PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;
    void UpdateStateSrc();
-   static void OnGetStateSrc(const unsigned int, void*, void* msgData);
-   static int MSGPIAPI GetStateAPI(unsigned int inputIndex, int type, void* pResult);
-   static int MSGPIAPI SetStateAPI(unsigned int inputIndex, int type, void* pResult);
+   mutable std::mutex m_stateMutex;
+   vector<StateDef> m_lampStateDefs;
+   vector<string> m_lampStateNames;
+   vector<int> m_lampStateIds;
+   vector<StateDef> m_playerScoreStateDefs;
+   vector<string> m_playerScoreNames;
+   vector<int> m_playerScoreIds;
+   vector<StateDef> m_scoreDigitStateDefs;
+   vector<string> m_scoreDigitNames;
+   vector<int> m_scoreDigitIds;
+   static void MSGPIAPI GetLampState(CtlResId id, unsigned int inputIndex, void* pResult);
+   static void MSGPIAPI GetPlayerScore(CtlResId id, unsigned int inputIndex, void* pResult);
+   static void MSGPIAPI GetScoreDigit(CtlResId id, unsigned int inputIndex, void* pResult);
 
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;
@@ -218,9 +225,6 @@ private:
 
    static int OnRenderStatic(VPXRenderContext2D* ctx, void* userData);
    static void OnGetRendererStatic(const unsigned int msgId, void* userData, void* msgData);
-   static void OnGetControllers(const unsigned int msgId, void* userData, void* msgData);
-   void OnStateSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   static void OnStateSrcChangedStatic(const unsigned int msgId, void* userData, void* msgData);
 
    bool m_ready = false;
 };

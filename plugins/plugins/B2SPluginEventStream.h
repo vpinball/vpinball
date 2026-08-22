@@ -4,6 +4,7 @@
 
 #include "plugins/ControllerPlugin.h"
 
+#include <array>
 #include <vector>
 #include <mutex>
 #include <thread>
@@ -56,13 +57,8 @@ private:
    std::vector<unsigned int> m_pmLastSegFrameId;
    static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* eventData);
 
-   const unsigned int m_onStateSrcChangedId = 0;
-   const unsigned int m_getStateSrcId = 0;
-   StateSrcId m_pmStateSrc { };
-   std::vector<int> m_pmStates;
-   StateSrcId m_b2sStateSrc { };
-   std::vector<int> m_b2sStates;
-   static void OnStateSrcChanged(const unsigned int eventId, void* userData, void* eventData);
+   PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
+   std::array<std::vector<int>, 5> m_pmStates;
 
    const unsigned int m_onDmdSrcChangedId = 0;
    const unsigned int m_getDmdSrcId = 0;

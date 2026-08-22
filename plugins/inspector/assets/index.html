@@ -96,40 +96,43 @@
             return state > 0.5 ? '[X]' : '[ ]';
         }
 
-        function updateVisualState(el, type, state) {
+        function updateVisualState(el, format, type, state) {
             const cell = el.closest('.matrix-cell');
-			if (type == 'float')
-			{
-				el.textContent = formatFloatState(state);
-				if (cell) {
-					cell.classList.toggle('active', state > 0.5);
-					cell.classList.toggle('inactive', state <= 0.5);
+			if (type == 1) { // Switch
+				if (format == 'float') {
+					
+					el.textContent = formatBinaryState(state > 0.);
+					if (cell) {
+						cell.classList.toggle('active', state > 0.);
+						cell.classList.toggle('inactive', state == 0.);
+					}
+					return;
+				}
+				else if (format == 'uint8') {
+					el.textContent = formatBinaryState(state != 0);
+					if (cell) {
+						cell.classList.toggle('active', state != 0);
+						cell.classList.toggle('inactive', state == 0);
+					}
+					return;
 				}
 			}
-			else if (type == 'uint8')
-			{
-				el.textContent = formatFloatState(state / 255.0);
-				if (cell) {
-					cell.classList.toggle('active', state > 127);
-					cell.classList.toggle('inactive', state <= 127);
+			else if (type == 2) { // Relative brightness
+				if (format == 'float') {
+					
+					el.textContent = formatFloatState(state);
+					if (cell) {
+						cell.classList.toggle('active', state > 0.5);
+						cell.classList.toggle('inactive', state <= 0.5);
+					}
+					return;
 				}
 			}
-			else if (type == 'int32')
-			{
-				el.textContent = state;
-			}
-			else if (type == 'int64')
-			{
-				el.textContent = state;
-			}
-			else if (type == 'string')
-			{
-				el.textContent = state;
-			}
+			el.textContent = state;
         }
 
         function updateState(item) {
-            document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.type, item.state));
+            document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.format, item.type, item.state));
         }
 
 		let displayStreams = [];
@@ -181,15 +184,6 @@
 
 		// Generate main layout
 		
-		function formatMapping(mapping, stateOnly) {
-			const m = BigInt(mapping);
-			const groupId = Number(m & 0xFFFFFFFFn);
-			const stateId = Number((m >> 32n) & 0xFFFFFFFFn);
-			return stateOnly
-				? `${stateId.toString(16).padStart(2, '0')}`
-				: `${groupId.toString(16).padStart(4, '0')}.${stateId.toString(16).padStart(4, '0')}`;
-		}
-		
         function updateMatrixListHeights() {
             document.querySelectorAll('.matrix-content').forEach(content => {
                 const table = content.querySelector('.matrix-table');
@@ -202,7 +196,7 @@
         }
 
         function itemDataAttributes(node) {
-            return `data-state-id="${node.mapping}" data-state-name="${escapeHtml(node.name)}"`;
+            return `data-state-id="${node.id}" data-state-name="${escapeHtml(node.name)}"`;
         }
 
         function isMatrixGroup(children) {
@@ -220,7 +214,7 @@
 		function buildLeafNode(node) {
 			const titleAttr = node.desc ? ` title="${escapeHtml(node.desc)}"` : '';
 			return `<div class="node-item">
-				<span class="node-mapping">${formatMapping(node.mapping, false)}</span>
+				<span class="node-mapping">${node.mapping}</span>
 				<span class="node-state">${buildStateSpan(node)}</span>
 				<span class="node-name"${titleAttr}>${escapeHtml(node.name)}</span>
 				</div>`;
@@ -228,9 +222,9 @@
 		
 		function buildDisplayNode(node) {
 			return `<div class="node-item node-display">
-				<span class="node-mapping">${formatMapping(node.mapping, false)}</span>
+				<span class="node-mapping">${node.mapping}</span>
 				<span class="node-name">${escapeHtml(node.name)}</span>
-				<canvas class="display-image" width="128" height="32" data-mapping="${node.mapping}" title="${escapeHtml(node.name)}"></canvas>
+				<canvas class="display-image" width="128" height="32" data-mapping="${node.id}" title="${escapeHtml(node.name)}"></canvas>
 			</div>`;
 		}
 
@@ -243,11 +237,10 @@
                 table += '<tr>';
                 for (let col = 0; col < MATRIX_COLUMNS; ++col) {
                     const child = children[row * MATRIX_COLUMNS + col];
-                    const mapping = formatMapping(child.mapping, true);
                     const activeClass = 'inactive';
                     table += `<td class="matrix-cell ${activeClass}" title="${escapeHtml(child.name)}">
                         <span class="matrix-state">${buildStateSpan(child)}</span>
-                        <span class="matrix-mapping">${mapping}</span>
+                        <span class="matrix-mapping">${child.mapping}</span>
                     </td>`;
                 }
                 table += '</tr>';
@@ -256,52 +249,72 @@
 
             let list = '<div class="matrix-list">';
             for (const child of children) {
-				const mapping = formatMapping(child.mapping, true);
-                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${mapping}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
+                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${child.mapping}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
             }
             list += '</div>';
 
-            return `<details open>
+            return `<details ${node.type === "stategroup" ? "" : "open"}>
                 <summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${children.length} items, ${rows}x${MATRIX_COLUMNS})</summary>
                 <div class="matrix-content">${table}${list}</div>
             </details>`;
         }
 
+        function buildListGroup(node) {
+			let html = `<details ${node.type === "stategroup" ? "" : "open"}>`;
+			if (node.children) {
+				html += `<summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${node.children.length} items)</summary>`;
+			}
+			else {
+				html += `<summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (no items)</summary>`;
+			}
+			html += `<ul>`;
+			if (node.type === 'controller') {
+				html += `<li class="node-game">Game: '${escapeHtml(node.game)}'</li>`;
+			}			
+			if (node.children) {
+				for (let child of node.children) {
+					html += `<li>${buildNode(child)}</li>`;
+				}
+			}
+			html += `</ul>`;
+			html += `</details>`;
+            return html;
+		}
+
         function buildNode(node) {
-            if (!node || Object.keys(node).length === 0) return '<em>No active controllers</em>';
-            if (Array.isArray(node)) {
-                if (node.length === 0) return '<em>No active controllers</em>';
+            if (!node || Object.keys(node).length === 0) {
+				return '<em>No active controllers</em>';
+			} 
+			
+			if (Array.isArray(node) && node.length === 0) {
+				return '<em>No active controllers</em>';
+			}
+
+			if (Array.isArray(node)) {
                 let html = '';
                 for (let child of node) {
                     html += `<li>${buildNode(child)}</li>`;
                 }
                 return html;
-            }
-
-            if (node.type === 'state') {
+            } 
+			
+			if (node.type === 'state') {
                 return buildLeafNode(node);
-            } else if (node.type === 'display') {
+            }
+			
+			if (node.type === 'display') {
                 return buildDisplayNode(node);
-            } else if (node.type === 'seg_display') {
+            }
+			
+			if (node.type === 'seg_display') {
                 return `<div class="node-item">${escapeHtml(node.name)}</div>`;
             }
-
-            if (isMatrixGroup(node.children)) {
-                return buildMatrixGroup(node);
-            }
-
-            let html = `<details open><summary class="node-${escapeHtml(node.type)}">${escapeHtml(node.name)} (${node.children.length} items)</summary>`;
-            html += `<ul>`;
-            if (node.type === 'controller') {
-                html += `<li class="node-game">Game: '${escapeHtml(node.game)}'</li>`;
-			}			
-            if (node.children) {
-                for (let child of node.children) {
-                    html += `<li>${buildNode(child)}</li>`;
-                }
-            }
-            html += `</ul></details>`;
-            return html;
+			
+			if (node.children && isMatrixGroup(node.children)) {
+				return buildMatrixGroup(node);
+			}
+			
+			return buildListGroup(node);
         }
 
         function fetchTree() {
