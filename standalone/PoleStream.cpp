@@ -4,8 +4,10 @@
 HRESULT PoleStream::Create(PoleStorage* pStorage, const string& szName, IStream** ppstm)
 {
    PoleStream* pStm = new PoleStream();
-   pStm->m_pPOLEStream = new POLE::Stream(pStorage->getPOLEStorage(), pStorage->getPath() + '/' + szName);
-   pStm->m_pStorage = pStorage;
+   pStm->m_shared = pStorage->getShared();
+   // Constructing the stream only walks the directory tree and follows a block chain, both
+   // of which are read-only on an already parsed container, so it needs no lock.
+   pStm->m_pPOLEStream = new POLE::Stream(pStm->m_shared->storage, pStorage->getPath() + '/' + szName);
 
    pStm->AddRef();
 
@@ -30,8 +32,6 @@ STDMETHODIMP_(ULONG) PoleStream::Release()
    if (dwRef == 0) {
       delete m_pPOLEStream;
 
-      m_pStorage->Release();
-   
       delete this;
    }
 
@@ -70,7 +70,16 @@ STDMETHODIMP PoleStream::Clone(IStream **ppstm) { return E_NOTIMPL; }
 
 STDMETHODIMP PoleStream::Read(void *pv, ULONG cb, ULONG *pcbRead)
 {
-   ULONG bytesRead = m_pPOLEStream->read((unsigned char*)pv, cb);
+   // Every stream sharing this container reads through one std::fstream, so the seek and
+   // read pair inside POLE has to be serialised or concurrent readers get each other's
+   // bytes. Contention is not a cost worth avoiding here: reading the container from
+   // several threads at once measured 5.4x slower than from one, because it defeats
+   // sequential readahead in the filesystem.
+   ULONG bytesRead;
+   {
+      const std::lock_guard<std::mutex> lock(m_shared->readMutex);
+      bytesRead = m_pPOLEStream->read((unsigned char*)pv, cb);
+   }
    if (pcbRead)
       *pcbRead = bytesRead;
    return S_OK;

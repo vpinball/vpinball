@@ -26,8 +26,10 @@ public:
    STDMETHOD(Write)(const void *pv, ULONG cb, ULONG *pcbWritten);
 
 private:
-   PoleStorage* m_pStorage = nullptr;
+   // Holds the parsed container alive independently of the IStorage it came from, and
+   // carries the mutex that serialises reads through its single file handle.
+   std::shared_ptr<PoleSharedStorage> m_shared;
    POLE::Stream* m_pPOLEStream = nullptr;
 
-   ULONG m_dwRef = 0;
+   std::atomic<ULONG> m_dwRef { 0 };
 };

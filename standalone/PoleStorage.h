@@ -3,15 +3,43 @@
 #include "objidl.h"
 #include "pole/pole.h"
 
+#include <atomic>
+#include <memory>
+#include <mutex>
 #include <string>
 using std::string;
+
+// One parsed container, shared by every storage and stream opened from it.
+//
+// Opening a stream used to clone the storage, which re-parsed the whole container: header,
+// FAT, mini FAT and directory tree. A table with 1860 streams therefore parsed it 1860
+// times. The clone existed to give each thread its own file handle, since POLE reads
+// through a single std::fstream and interleaved seek and read pairs would return the wrong
+// bytes. Sharing the parse means sharing that handle, so reads are serialised here instead.
+//
+// The rest of the read path needs no lock. DirTree::entry with create false only mutates
+// under create && writeable, AllocTable::follow is const, and the readahead window lives on
+// StreamIO, one per open stream.
+struct PoleSharedStorage final
+{
+   explicit PoleSharedStorage(POLE::Storage* pStorage) : storage(pStorage) { }
+   ~PoleSharedStorage() { delete storage; }
+
+   PoleSharedStorage(const PoleSharedStorage&) = delete;
+   PoleSharedStorage& operator=(const PoleSharedStorage&) = delete;
+
+   POLE::Storage* const storage;
+   std::mutex readMutex;
+};
 
 class PoleStorage : public IStorage {
 public:
    static HRESULT Create(const string& szFilename, const string& szName, IStorage** ppstg);
-   static HRESULT Clone(PoleStorage* pPoleStorage, IStorage** ppstg);
+   // Another handle onto an already parsed container, rooted at szName.
+   static PoleStorage* Attach(const std::shared_ptr<PoleSharedStorage>& shared, const string& szName);
 
    HRESULT StreamExists(const string& szName);
+   const std::shared_ptr<PoleSharedStorage>& getShared() const { return m_shared; }
    POLE::Storage* getPOLEStorage();
    string getPath();
 
@@ -36,9 +64,10 @@ public:
    STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
 
 private:
-  POLE::Storage* m_pPOLEStorage = nullptr;
-  string m_szFilename;
+  std::shared_ptr<PoleSharedStorage> m_shared;
   string m_szPath;
 
-  ULONG m_dwRef = 0;
+  // Streams are opened and released from the table load thread pool, so a plain counter
+  // would race even though each stream itself is only touched by one thread.
+  std::atomic<ULONG> m_dwRef { 0 };
 };
