@@ -226,8 +226,7 @@ if(PLATFORM STREQUAL "windows")
       )
       target_compile_definitions(vpinball PRIVATE
          ENABLE_BGFX
-         $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
-         $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
       )
    elseif(RENDERER STREQUAL "GL")
       target_sources(vpinball PRIVATE
@@ -561,8 +560,7 @@ elseif(PLATFORM STREQUAL "macos")
       target_compile_definitions(vpinball PRIVATE
          ENABLE_BGFX
 
-         $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
-         $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
       )
    else()
       target_compile_definitions(vpinball PRIVATE
@@ -682,8 +680,7 @@ elseif(PLATFORM STREQUAL "linux")
       target_compile_definitions(vpinball PRIVATE
          ENABLE_BGFX
 
-         $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
-         $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
+         $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
       )
    else()
       target_compile_definitions(vpinball PRIVATE
@@ -829,8 +826,7 @@ elseif(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM 
 
       ENABLE_BGFX
       $<$<BOOL:${ENABLE_XR}>:ENABLE_XR>
-      $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
-      $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
+      $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
    )
 
    target_compile_options(vpinball PUBLIC
