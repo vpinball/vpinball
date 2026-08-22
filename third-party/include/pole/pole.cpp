@@ -2337,6 +2337,30 @@ bool Storage::exists( const std::string& name )
     return (e != 0);
 }
 
+uint64 Storage::streamOffset( const std::string& name )
+{
+  DirEntry* e = io->dirtree->entry( name, false );
+  if( !e || e->dir ) return 0;
+
+  if( e->size >= io->header->threshold )
+  {
+    const std::vector<uint64> chain = io->bbat->follow( e->start );
+    if( chain.empty() ) return 0;
+    return io->bbat->blockSize * ( chain[0] + 1 );
+  }
+
+  // Below the threshold the stream lives in the mini-stream container, so its chain is in
+  // mini-block units and has to be resolved through the container's own block chain before
+  // it can be compared with a big stream's offset.
+  const std::vector<uint64> chain = io->sbat->follow( e->start );
+  if( chain.empty() ) return 0;
+  const uint64 pos = chain[0] * io->sbat->blockSize;
+  const uint64 bbindex = pos / io->bbat->blockSize;
+  if( bbindex >= io->sb_blocks.size() ) return 0;
+  return io->bbat->blockSize * ( io->sb_blocks[(size_t)bbindex] + 1 )
+       + ( pos % io->bbat->blockSize );
+}
+
 bool Storage::isWriteable() const
 {
     return io->writeable;
