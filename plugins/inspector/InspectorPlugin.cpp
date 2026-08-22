@@ -21,6 +21,7 @@ using namespace std::string_literals;
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
+using namespace PinballPlugin::Controller;
 
 namespace Inspector
 {
@@ -78,19 +79,8 @@ void UpdateTreeCache()
       return;
    }
 
-   vector<ControllerDef> controllerDefs;
    const unsigned int getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
-   {
-      GetControllersMsg getControllersMsg = { 0, 0, nullptr };
-      msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
-      if (getControllersMsg.count > 0)
-      {
-         const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-         controllerDefs.resize(getControllersMsg.count);
-         getControllersMsg = { getControllersMsg.count, 0, controllerDefs.data() };
-         msgApi->BroadcastMsg(endpointId, getControllersId, &getControllersMsg);
-      }
-   }
+   vector<ControllerDef> controllerDefs = GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId);
    msgApi->ReleaseMsgID(getControllersId);
 
    json tree = json::array();
@@ -138,32 +128,27 @@ void UpdateTreeCache()
       };
 
       unsigned int getStateMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG);
-      GetStateSrcMsg devMsg = { 0, 0, nullptr };
-      msgApi->BroadcastMsg(endpointId, getStateMsgId, &devMsg);
-      std::vector<StateSrcId> stateDefs(devMsg.count);
-      devMsg = { static_cast<unsigned int>(stateDefs.size()), 0, stateDefs.data() };
-      msgApi->BroadcastMsg(endpointId, getStateMsgId, &devMsg);
-      for (unsigned int i = 0; i < devMsg.count; i++)
+      for (const StateSrcId& stateDef : GetCtrlItems<StateSrcId>(msgApi, endpointId, getStateMsgId))
       {
-         auto& cNode = getController(devMsg.entries[i].id.endpointId);
+         auto& cNode = getController(stateDef.id.endpointId);
          json catNode = json::object();
          catNode["name"s] = "Game States";
          catNode["type"s] = "category";
          catNode["children"s] = json::array();
          std::map<uint32_t, json> groups;
-         for (unsigned int j = 0; j < devMsg.entries[i].nStates; j++)
+         for (unsigned int j = 0; j < stateDef.nStates; j++)
          {
             json item = json::object();
             item["type"s] = "state";
-            item["name"s] = devMsg.entries[i].stateDefs[j].name ? devMsg.entries[i].stateDefs[j].name : ("Device " + std::to_string(j));
-            item["desc"s] = devMsg.entries[i].stateDefs[j].desc ? devMsg.entries[i].stateDefs[j].desc : "No description available";
-            item["mapping"s] = std::to_string(devMsg.entries[i].stateDefs[j].id.mappingId);
-            item["writable"s] = devMsg.entries[i].stateDefs[j].writable;
-            item["dataType"s] = devMsg.entries[i].stateDefs[j].typeMask;
+            item["name"s] = stateDef.stateDefs[j].name ? stateDef.stateDefs[j].name : ("Device " + std::to_string(j));
+            item["desc"s] = stateDef.stateDefs[j].desc ? stateDef.stateDefs[j].desc : "No description available";
+            item["mapping"s] = std::to_string(stateDef.stateDefs[j].id.mappingId);
+            item["writable"s] = stateDef.stateDefs[j].writable;
+            item["dataType"s] = stateDef.stateDefs[j].typeMask;
             int groupIndex = -1;
-            for (unsigned int k = 0; k < devMsg.entries[i].nGroups; k++)
+            for (unsigned int k = 0; k < stateDef.nGroups; k++)
             {
-               if (devMsg.entries[i].groupDefs[k].id == devMsg.entries[i].stateDefs[j].id.groupId)
+               if (stateDef.groupDefs[k].id == stateDef.stateDefs[j].id.groupId)
                {
                   groupIndex = k;
                   break;
@@ -171,9 +156,9 @@ void UpdateTreeCache()
             }
             if (groupIndex >= 0)
             {
-               auto& cGroup = getGroup(groups, devMsg.entries[i].stateDefs[j].id.groupId, devMsg.entries[i].groupDefs[groupIndex].name);
+               auto& cGroup = getGroup(groups, stateDef.stateDefs[j].id.groupId, stateDef.groupDefs[groupIndex].name);
                cGroup["children"s].push_back(item);
-               stateGetters[devMsg.entries[i].stateDefs[j].id.mappingId] = { j, devMsg.entries[i].stateDefs[j].typeMask, devMsg.entries[i].GetState };
+               stateGetters[stateDef.stateDefs[j].id.mappingId] = { j, stateDef.stateDefs[j].typeMask, stateDef.GetState };
             }
          }
          for (auto& pair : groups)
@@ -186,15 +171,10 @@ void UpdateTreeCache()
    // Displays
    {
       unsigned int getDisplaysMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-      GetDisplaySrcMsg dispMsg = { 0, 0, nullptr };
-      msgApi->BroadcastMsg(endpointId, getDisplaysMsgId, &dispMsg);
-      std::vector<DisplaySrcId> displayDefs(dispMsg.count);
-      dispMsg = { static_cast<unsigned int>(displayDefs.size()), 0, displayDefs.data() };
-      msgApi->BroadcastMsg(endpointId, getDisplaysMsgId, &dispMsg);
       std::map<uint32_t, json> displayCats;
-      for (unsigned int i = 0; i < dispMsg.count; i++)
+      for (const DisplaySrcId& displayDef : GetCtrlItems<DisplaySrcId>(msgApi, endpointId, getDisplaysMsgId))
       {
-         uint32_t epId = dispMsg.entries[i].id.endpointId;
+         uint32_t epId = displayDef.id.endpointId;
          if (displayCats.find(epId) == displayCats.end())
          {
             json catNode = json::object();
@@ -204,14 +184,14 @@ void UpdateTreeCache()
             displayCats[epId] = catNode;
          }
          json item = json::object();
-         item["name"s] = std::format("Display {} {}x{}", dispMsg.entries[i].id.resId, dispMsg.entries[i].width, dispMsg.entries[i].height);
+         item["name"s] = std::format("Display {} {}x{}", displayDef.id.resId, displayDef.width, displayDef.height);
          item["type"s] = "display";
-         item["mapping"s] = std::to_string(dispMsg.entries[i].id.id);
-         item["format"s] = dispMsg.entries[i].frameFormat;
-         item["hardware"s] = dispMsg.entries[i].hardware;
+         item["mapping"s] = std::to_string(displayDef.id.id);
+         item["format"s] = displayDef.frameFormat;
+         item["hardware"s] = displayDef.hardware;
          displayCats[epId]["children"s].push_back(item);
-         displayGetters[dispMsg.entries[i].id.id]
-            = { dispMsg.entries[i].id, dispMsg.entries[i].width, dispMsg.entries[i].height, dispMsg.entries[i].frameFormat, dispMsg.entries[i].GetRenderFrame };
+         displayGetters[displayDef.id.id]
+            = { displayDef.id, displayDef.width, displayDef.height, displayDef.frameFormat, displayDef.GetRenderFrame };
       }
       for (auto& pair : displayCats)
       {
@@ -224,20 +204,15 @@ void UpdateTreeCache()
    // Segment Displays
    {
       unsigned int getSegsMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
-      GetSegSrcMsg segMsg = { 0, 0, nullptr };
-      msgApi->BroadcastMsg(endpointId, getSegsMsgId, &segMsg);
-      std::vector<SegSrcId> displayDefs(segMsg.count);
-      segMsg = { static_cast<unsigned int>(displayDefs.size()), 0, displayDefs.data() };
-      msgApi->BroadcastMsg(endpointId, getSegsMsgId, &segMsg);
-      for (unsigned int i = 0; i < segMsg.count; i++)
+      for (const SegSrcId& segDef : GetCtrlItems<SegSrcId>(msgApi, endpointId, getSegsMsgId))
       {
-         auto& cNode = getController(segMsg.entries[i].id.endpointId);
+         auto& cNode = getController(segDef.id.endpointId);
          json catNode = json::object();
          catNode["name"s] = "Segment Displays";
          catNode["type"s] = "category";
          catNode["children"s] = json::array();
          json item = json::object();
-         item["name"s] = std::format("Seg Display {}", segMsg.entries[i].id.resId);
+         item["name"s] = std::format("Seg Display {}", segDef.id.resId);
          item["type"s] = "seg_display";
          catNode["children"s].push_back(item);
          cNode["children"s].push_back(catNode);
