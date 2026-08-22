@@ -29,3 +29,5 @@ VisualPinball.sln
 /*.vcxproj
 /*.vcxproj.filters
 /.build
+
+/.cache/
