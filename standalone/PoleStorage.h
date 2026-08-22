@@ -3,12 +3,15 @@
 #include "objidl.h"
 #include "pole/pole.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 using std::string;
 
 class PoleStorage : public IStorage {
 public:
    static HRESULT Create(const string& szFilename, const string& szName, IStorage** ppstg);
+   static HRESULT Create(std::shared_ptr<std::vector<uint8_t>> fileData, const string& szName, IStorage** ppstg);
    static HRESULT Clone(PoleStorage* pPoleStorage, IStorage** ppstg);
 
    HRESULT StreamExists(const string& szName);
@@ -37,6 +40,7 @@ public:
 
 private:
   POLE::Storage* m_pPOLEStorage = nullptr;
+  std::shared_ptr<std::vector<uint8_t>> m_fileData;
   string m_szFilename;
   string m_szPath;
 

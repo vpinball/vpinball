@@ -111,6 +111,12 @@ public:
   Storage( const char* filename );
 
   /**
+   * Constructs a storage backed by pre-loaded memory (read-only).
+   * The caller must keep the data alive for the lifetime of this Storage.
+   **/
+  Storage( const unsigned char* data, uint64 size );
+
+  /**
    * Destroys the storage.
    **/
   ~Storage();
