@@ -431,7 +431,7 @@ typedef struct ScriptablePluginAPI
                                                                           PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]), PSC_VAR_##arg12(pArgs[11]))); } } );
 
 
-namespace ScriptablePlugin
+namespace PinballPlugin::Scriptable
 {
 
 class IScriptProxy
@@ -612,25 +612,25 @@ private:
 };
 
 #define PSC_PROXY_PROP_R(proxy, type, name)                                                                                                                                                  \
-   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_R_ARRAY1(proxy, type, name, arg1)                                                                                                                                     \
-   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_R_ARRAY2(proxy, type, name, arg1, arg2)                                                                                                                                     \
-   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_R_ARRAY3(proxy, type, name, arg1, arg2, arg3)                                                                                                                                     \
-   members.push_back({ { #name }, { #type }, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_R_ARRAY4(proxy, type, name, arg1, arg2, arg3, arg4)                                                                                                                                     \
-   members.push_back({ { #name }, { #type }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_W(proxy, type, name)                                                                                                                                                  \
-   members.push_back({ { #name }, { "void" }, 1, { #type }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { "void" }, 1, { #type }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_W_ARRAY1(proxy, type, name, arg1)                                                                                                                                     \
-   members.push_back({ { #name }, { "void" }, 2, { { #arg1 }, { #type } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { "void" }, 2, { { #arg1 }, { #type } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_PROP_RW(proxy, type, name)                                                                                                                                                 \
    PSC_PROXY_PROP_R(proxy, type, name)                                                                                                                                                       \
@@ -641,13 +641,13 @@ private:
    PSC_PROXY_PROP_W_ARRAY1(proxy, type, name, arg1)
 
 #define PSC_PROXY_FUNCTION0(proxy, type, name)                                                                                                                                               \
-   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 0, {}, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_FUNCTION1(proxy, type, name, arg1)                                                                                                                                         \
-   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 1, { { #arg1 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 #define PSC_PROXY_FUNCTION2(proxy, type, name, arg1, arg2)                                                                                                                                   \
-   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<ScriptablePlugin::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
+   members.push_back({ { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, [](void* me, int id, ScriptVariant* pArgs, ScriptVariant* pRet) { static_cast<PinballPlugin::Scriptable::IScriptProxy*>(proxy)->ForwardCall(me, id, pArgs, pRet); } });
 
 };
 
