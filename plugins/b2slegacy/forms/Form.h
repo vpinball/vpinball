@@ -28,7 +28,7 @@ protected:
    uint32_t m_endpointId = 0;
 
 private:
-   ResURIResolver* m_pResURIResolver = nullptr;
+   PinballPlugin::ResURIResolver* m_pResURIResolver = nullptr;
    VPXTexture m_dmdTex = nullptr;
    DMDOverlay* m_pDmdOverlay = nullptr;
    bool m_topMost = false;

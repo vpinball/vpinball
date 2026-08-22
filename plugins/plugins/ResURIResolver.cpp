@@ -12,6 +12,9 @@ using std::string;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
+namespace PinballPlugin
+{
+
 ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackStates)
    : m_msgAPI(msgAPI)
    , m_endpointId(endpointId)
@@ -348,3 +351,5 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
    m_displayCache[link] = lambda;
    return lambda(link);
 }
+
+};

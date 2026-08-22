@@ -46,7 +46,7 @@ private:
    static void OnSegSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    vector<SegSrcId> m_segDisplays;
 
-   ResURIResolver m_resURIResolver;
+   PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
    B2SDMDOverlay m_scoreViewDmdOverlay;
    B2SDMDOverlay m_backglassDmdOverlay;

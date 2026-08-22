@@ -25,7 +25,7 @@ MSGPI_INT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y posit
 MSGPI_INT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
 MSGPI_INT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
 
-B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
+B2SDMDOverlay::B2SDMDOverlay(PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
    : m_resURIResolver(resURIResolver)
    , m_dmdTex(dmdTex)
    , m_backImage(backImage)
@@ -101,7 +101,7 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    if (!m_enable)
       return;
 
-   ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display"s);
+   PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display"s);
    if (dmd.state.frame == nullptr)
       return;
 

@@ -11,8 +11,6 @@
 
 #include "common.h"
 
-#include "plugins/ResURIResolver.h"
-
 #include "ScoreView.h"
 
 #ifdef __APPLE__

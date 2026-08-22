@@ -12,7 +12,7 @@ namespace B2S {
 class B2SDMDOverlay final
 {
 public:
-   B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage);
+   B2SDMDOverlay(PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage);
    ~B2SDMDOverlay();
    void Render(VPXRenderContext2D* context);
 
@@ -24,7 +24,7 @@ public:
 private:
    ivec4 SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) const;
 
-   ResURIResolver& m_resURIResolver;
+   PinballPlugin::ResURIResolver& m_resURIResolver;
    VPXTexture& m_dmdTex;
 
    ivec4 m_frame;

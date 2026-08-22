@@ -311,7 +311,7 @@ public:
    unsigned int m_nScriptErrorNotification = 0;
    void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
-   ResURIResolver m_resURIResolver;
+   PinballPlugin::ResURIResolver m_resURIResolver;
 
    unsigned int m_overall_frames = 0; // amount of rendered frames since start
 

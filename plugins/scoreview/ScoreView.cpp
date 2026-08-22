@@ -487,8 +487,8 @@ void ScoreView::Select(const float scoreW, const float scoreH)
    const float rtAR = scoreW / scoreH;
 
    // Evaluate layouts against current context
-   ResURIResolver::SegDisplayState segDisplay;
-   ResURIResolver::DisplayState display;
+   PinballPlugin::ResURIResolver::SegDisplayState segDisplay;
+   PinballPlugin::ResURIResolver::DisplayState display;
    for (auto& layout : m_layouts)
    {
       const float layoutAR = layout.width / layout.height;
@@ -592,7 +592,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
       case VisualType::DMD:
       case VisualType::Screen:
       {
-         ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(visual.srcUri);
+         PinballPlugin::ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(visual.srcUri);
          if (dmd.state.frame == nullptr)
             continue;
          LoadGlass(visual);
@@ -639,7 +639,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
 
       case VisualType::SegDisplay:
       {
-         ResURIResolver::SegDisplayState frame = m_resURIResolver.GetSegDisplayState(visual.srcUri);
+         PinballPlugin::ResURIResolver::SegDisplayState frame = m_resURIResolver.GetSegDisplayState(visual.srcUri);
          if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements))
             continue;
          LoadGlass(visual);

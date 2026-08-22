@@ -128,7 +128,7 @@ private:
    bool m_invalidBestLayout = true;
    Layout* m_bestLayout = nullptr;
 
-   ResURIResolver m_resURIResolver;
+   PinballPlugin::ResURIResolver m_resURIResolver;
 
    void LoadGlass(Visual& visual);
    ankerl::unordered_dense::map<string, VPXTexture> m_images;
