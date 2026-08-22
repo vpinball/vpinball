@@ -1718,8 +1718,10 @@ uint64 StorageIO::loadSmallBlocks( const std::vector<uint64>& blocks,
   assert(bbat->blockSize <= std::numeric_limits<size_t>::max());
   unsigned char* buf = new unsigned char[ (size_t)bbat->blockSize ];
 
-  // read small block one by one
+  // Sixty-four mini-blocks live inside one big block, so consecutive mini-blocks almost
+  // always resolve to the block already in hand. Remember it rather than re-reading it.
   uint64 bytes = 0;
+  uint64 loadedIndex = std::numeric_limits<uint64>::max();
   for( size_t i=0; ( i<blocks.size() ) && ( bytes<maxlen ); i++ )
   {
     uint64 block = blocks[i];
@@ -1729,7 +1731,11 @@ uint64 StorageIO::loadSmallBlocks( const std::vector<uint64>& blocks,
     uint64 bbindex = pos / bbat->blockSize;
     if( bbindex >= sb_blocks.size() ) break;
 
-    loadBigBlock( sb_blocks[ (size_t)bbindex ], buf, bbat->blockSize );
+    if( bbindex != loadedIndex )
+    {
+      loadBigBlock( sb_blocks[ (size_t)bbindex ], buf, bbat->blockSize );
+      loadedIndex = bbindex;
+    }
 
     // copy the data
     uint64 offset = pos % bbat->blockSize;
@@ -2080,28 +2086,44 @@ uint64 StreamIO::read( uint64 pos, unsigned char* data, uint64 maxlen )
       maxlen = entry->size - pos;
   if ( entry->size < io->header->threshold )
   {
-    // small file
-    uint64 index = pos / io->sbat->blockSize;
+    // Small file, served out of the same readahead window the big-file branch uses. The
+    // previous form fetched one mini-block per call, and each of those pulled a whole
+    // 4 KiB block, so a caller reading four bytes at a time paid a block read per call.
+    const uint64 miniSize = io->sbat->blockSize;
+    assert(miniSize <= std::numeric_limits<size_t>::max());
 
-    if( index >= blocks.size() ) return 0;
+    if( pos / miniSize >= blocks.size() ) return 0;
 
-    assert(io->sbat->blockSize <= std::numeric_limits<size_t>::max());
-    unsigned char* buf = new unsigned char[ (size_t)io->sbat->blockSize ];
-    uint64 offset = pos % io->sbat->blockSize;
     while( totalbytes < maxlen )
     {
-      if( index >= blocks.size() ) break;
-      io->loadSmallBlock( blocks[(size_t)index], buf, io->bbat->blockSize );
-      uint64 count = io->sbat->blockSize - offset;
-      if( count > maxlen-totalbytes ) count = maxlen-totalbytes;
-      assert(count <= std::numeric_limits<size_t>::max());
-      memcpy( data+totalbytes, buf + offset, (size_t)count );
-      totalbytes += count;
-      offset = 0;
-      index++;
-    }
-    delete[] buf;
+      const uint64 wanted = pos + totalbytes;
+      const bool inWindow = ( ra_len > 0 ) && ( wanted >= ra_pos ) && ( wanted < ra_pos + ra_len );
+      if( !inWindow )
+      {
+        const uint64 index = wanted / miniSize;
+        if( index >= blocks.size() ) break;
 
+        // A mini stream is under the threshold that decides this branch, so the rest of
+        // its chain always fits in one window and one fill covers every later read.
+        const uint64 span = ( static_cast<uint64>( blocks.size() ) - index ) * miniSize;
+        assert(span <= std::numeric_limits<size_t>::max());
+        if( ra_buf.size() < (size_t)span ) ra_buf.resize( (size_t)span );
+
+        const std::vector<uint64> chain( blocks.begin() + (size_t)index, blocks.end() );
+        const uint64 got = io->loadSmallBlocks( chain, ra_buf.data(), span );
+        if( got == 0 ) break;
+
+        ra_pos = index * miniSize;
+        ra_len = got;
+      }
+
+      const uint64 offset = wanted - ra_pos;
+      uint64 count = ra_len - offset;
+      if( count > maxlen - totalbytes ) count = maxlen - totalbytes;
+      assert(count <= std::numeric_limits<size_t>::max());
+      memcpy( data + totalbytes, ra_buf.data() + (size_t)offset, (size_t)count );
+      totalbytes += count;
+    }
   }
   else
   {
