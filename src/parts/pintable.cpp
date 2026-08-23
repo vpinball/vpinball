@@ -1567,94 +1567,141 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                }
             }
 
+            // Read the container on this thread only, visiting streams in the order they are
+            // physically laid out, and parse them on the pool. Reading from several threads at
+            // once measured 3.4x slower, and declaration order costs a further 4.9x because
+            // streams are stored close to the reverse of the order they are read in.
             ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
             vector<IEditable *> parts;
             parts.resize(csubobj);
             std::atomic<int> nLoadedParts { 0 };
-            for (int i = 0; i < csubobj; i++)
-            {
-               pool.enqueue(
-                  [i, &feedback, &parts, loadfileversion, pstgData, hch, hkey, this, &nLoadedParts, csubobj]
-                  {
-                     const wstring wStmName = L"GameItem" + std::to_wstring(i);
-
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
-
-                     ULONG read;
-                     ItemTypeEnum type;
-                     pstmItem->Read(&type, sizeof(int), &read);
-
-                     IEditable *const piedit = EditableRegistry::Create(type);
-                     if (piedit == nullptr)
-                        return E_FAIL;
-
-                     piedit->m_onLoadExpectedPartGroup.clear();
-                     BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
-                     piedit->Load(reader);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     if (reader.HasError())
-                        return E_FAIL;
-
-                     parts[i] = piedit;
-                     nLoadedParts++;
-                     return S_OK;
-                  });
-            }
-
             assert(m_vsound.empty());
             m_vsound.resize(csounds);
             std::atomic<int> nLoadedSounds { 0 };
-            for (int i = 0; i < csounds; i++)
-            {
-               pool.enqueue(
-                  [i, &feedback, loadfileversion, pstgData, this, &nLoadedSounds, csounds]
-                  {
-                     const wstring wStmName = L"Sound" + std::to_wstring(i);
-
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
-
-                     VPX::Sound *pps = VPX::Sound::CreateFromStream(pstmItem, loadfileversion);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     m_vsound[i] = pps;
-                     nLoadedSounds++;
-                     return hr;
-                  });
-            }
-
             assert(m_vimage.empty());
             m_vimage.resize(ctextures);
             std::atomic<int> nLoadedImages { 0 };
+
+            enum class LoadKind { GameItem, Sound, Image };
+            struct LoadItem { LoadKind kind; int index; wstring name; uint64_t offset; };
+
+            vector<LoadItem> loadItems;
+            loadItems.reserve((size_t)csubobj + csounds + ctextures);
+            for (int i = 0; i < csubobj; i++)
+               loadItems.push_back({ LoadKind::GameItem, i, L"GameItem" + std::to_wstring(i), 0 });
+            for (int i = 0; i < csounds; i++)
+               loadItems.push_back({ LoadKind::Sound, i, L"Sound" + std::to_wstring(i), 0 });
             for (int i = 0; i < ctextures; i++)
+               loadItems.push_back({ LoadKind::Image, i, L"Image" + std::to_wstring(i), 0 });
+
+            // Layout order is a hint. Windows OLE structured storage cannot report where it put
+            // a stream, in which case declaration order is kept.
             {
+               vector<wstring> names;
+               names.reserve(loadItems.size());
+               for (const LoadItem &item : loadItems)
+                  names.push_back(item.name);
+               vector<uint64_t> offsets;
+               if (GetStreamOffsets(pstgData, names, offsets) && offsets.size() == loadItems.size())
+               {
+                  for (size_t k = 0; k < loadItems.size(); k++)
+                     loadItems[k].offset = offsets[k];
+                  std::ranges::stable_sort(loadItems, [](const LoadItem &a, const LoadItem &b) { return a.offset < b.offset; });
+               }
+            }
+
+            // Cap the bytes handed to the pool but not yet parsed. ThreadPool's own queue limit
+            // is 100000 entries, far more than any table has streams, so without this the queue
+            // could hold the whole payload. Measured, this bounds throughput more than memory:
+            // dropping it to 1 MB cost 1.2s of startup and saved 10 MB, because what is resident
+            // is mostly the buffers being parsed right now, one per pool thread.
+            constexpr size_t maxBytesInFlight = 32 * 1024 * 1024;
+            std::atomic<size_t> bytesInFlight { 0 };
+            const int totalToLoad = csubobj + csounds + ctextures;
+
+            for (const LoadItem &item : loadItems)
+            {
+               IStream *pstmItem;
+               if (FAILED(pstgData->OpenStream(item.name.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                  continue;
+
+               STATSTG ss;
+               ss.cbSize.QuadPart = 0;
+               pstmItem->Stat(&ss, STATFLAG_NONAME);
+               const size_t streamSize = (size_t)ss.cbSize.QuadPart;
+
+               auto buffer = std::make_shared<vector<uint8_t>>(streamSize);
+               ULONG read = 0;
+               if (streamSize != 0)
+                  pstmItem->Read(buffer->data(), (ULONG)streamSize, &read);
+               pstmItem->Release();
+               pstmItem = nullptr;
+
+               // A short read leaves the entry null, which the duplicate and failure handling
+               // below already copes with, as it did when a stream failed to open.
+               if (read != streamSize)
+               {
+                  PLOGE << "Short read on " << MakeString(item.name);
+                  continue;
+               }
+
+               while (bytesInFlight.load(std::memory_order_relaxed) > maxBytesInFlight)
+               {
+                  SDL_Delay(1);
+                  feedback.LoadingProgressUpdated(nLoadedParts + nLoadedSounds + nLoadedImages, totalToLoad);
+               }
+               bytesInFlight.fetch_add(streamSize, std::memory_order_relaxed);
+
                pool.enqueue(
-                  [i, loadfileversion, pstgData, this, &nLoadedImages, ctextures]
+                  [item, buffer, streamSize, &bytesInFlight, &parts, &nLoadedParts, &nLoadedSounds, &nLoadedImages, loadfileversion, hch, hkey, this]
                   {
-                     const wstring wStmName = L"Image" + std::to_wstring(i);
+                     MemoryIStream stream(buffer->data(), buffer->size());
+                     HRESULT hr = S_OK;
 
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
+                     switch (item.kind)
+                     {
+                     case LoadKind::GameItem:
+                     {
+                        ULONG read;
+                        ItemTypeEnum type;
+                        stream.Read(&type, sizeof(int), &read);
+                        IEditable *const piedit = EditableRegistry::Create(type);
+                        if (piedit == nullptr)
+                           hr = E_FAIL;
+                        else
+                        {
+                           piedit->m_onLoadExpectedPartGroup.clear();
+                           BiffReader reader(&stream, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                           piedit->Load(reader);
+                           if (reader.HasError())
+                              hr = E_FAIL;
+                           else
+                           {
+                              parts[item.index] = piedit;
+                              nLoadedParts++;
+                           }
+                        }
+                        break;
+                     }
+                     case LoadKind::Sound:
+                        m_vsound[item.index] = VPX::Sound::CreateFromStream(&stream, loadfileversion);
+                        nLoadedSounds++;
+                        break;
+                     case LoadKind::Image:
+                     {
+                        BiffReader reader(&stream, loadfileversion, 0, 0);
+                        m_vimage[item.index] = Texture::CreateFromObjectReader(reader, this);
+                        nLoadedImages++;
+                        break;
+                     }
+                     }
 
-                     BiffReader reader(pstmItem, loadfileversion, 0, 0);
-                     m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     nLoadedImages++;
+                     bytesInFlight.fetch_sub(streamSize, std::memory_order_relaxed);
                      return hr;
                   });
             }
 
             // Wait for dispatched tasks, updating the progress bar on UI thread
-            const int totalToLoad = csubobj + csounds + ctextures;
             while (pool.has_work_in_flight())
             {
                SDL_Delay(10);

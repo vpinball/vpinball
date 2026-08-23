@@ -228,3 +228,44 @@ bool GetStreamOffsets(IStorage *const pstg, const vector<wstring> &names, vector
       return false;
    #endif
 }
+
+HRESULT MemoryIStream::Read(void *pv, ULONG count, ULONG *pcbRead)
+{
+   const size_t avail = m_size - m_pos;
+   const size_t n = count < avail ? (size_t)count : avail;
+   if (n != 0)
+      memcpy(pv, m_data + m_pos, n);
+   m_pos += n;
+   if (pcbRead)
+      *pcbRead = (ULONG)n;
+   // BiffReader treats a short read as an error via its own count check, so report success and
+   // let it decide, matching what the storage-backed streams do.
+   return S_OK;
+}
+
+HRESULT MemoryIStream::Seek(union _LARGE_INTEGER move, ULONG origin, union _ULARGE_INTEGER *pNewPos)
+{
+   int64_t target;
+   switch (origin)
+   {
+   case STREAM_SEEK_SET: target = move.QuadPart; break;
+   case STREAM_SEEK_CUR: target = (int64_t)m_pos + move.QuadPart; break;
+   case STREAM_SEEK_END: target = (int64_t)m_size + move.QuadPart; break;
+   default: return E_INVALIDARG;
+   }
+   if (target < 0)
+      return E_INVALIDARG;
+   // Seeking past the end is legal and leaves subsequent reads returning nothing.
+   m_pos = (size_t)target < m_size ? (size_t)target : m_size;
+   if (pNewPos)
+      pNewPos->QuadPart = m_pos;
+   return S_OK;
+}
+
+HRESULT MemoryIStream::Stat(struct tagSTATSTG *pstatstg, ULONG)
+{
+   if (pstatstg == nullptr)
+      return E_INVALIDARG;
+   pstatstg->cbSize.QuadPart = m_size;
+   return S_OK;
+}

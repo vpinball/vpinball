@@ -119,6 +119,49 @@ public:
 
 
 
+// Read-only IStream over a buffer owned by the caller.
+//
+// Table loading reads each stream on one thread, in the order the streams are physically laid
+// out, and hands the bytes to the worker pool to parse. The workers need an IStream to give
+// BiffReader, but they must not touch the container: reading it from several threads at once
+// measured 3.4x slower than from one, because concurrent readers at scattered offsets defeat
+// readahead in the filesystem.
+//
+// Intended to be stack allocated for the duration of a parse. AddRef and Release only count,
+// they never delete, so lifetime stays with whoever owns the buffer. Only Read, Seek and Stat
+// are implemented, which is all BiffReader and VPX::Sound::CreateFromStream use.
+class MemoryIStream final : public IStream
+{
+public:
+   MemoryIStream(const uint8_t *const data, const size_t size)
+      : m_data(data)
+      , m_size(size)
+   { }
+
+   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return E_NOTIMPL; }
+   ULONG __stdcall AddRef() override { return ++m_cref; }
+   ULONG __stdcall Release() override { return --m_cref; }
+
+   HRESULT __stdcall Read(void *pv, ULONG count, ULONG *pcbRead) override;
+   HRESULT __stdcall Seek(union _LARGE_INTEGER move, ULONG origin, union _ULARGE_INTEGER *pNewPos) override;
+   HRESULT __stdcall Stat(struct tagSTATSTG *pstatstg, ULONG) override;
+
+   HRESULT __stdcall Write(const void *, ULONG, ULONG *) override { return E_NOTIMPL; }
+   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override { return E_NOTIMPL; }
+   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override { return E_NOTIMPL; }
+   HRESULT __stdcall Commit(ULONG) override { return E_NOTIMPL; }
+   HRESULT __stdcall Revert() override { return E_NOTIMPL; }
+   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return E_NOTIMPL; }
+   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return E_NOTIMPL; }
+   HRESULT __stdcall Clone(struct IStream **) override { return E_NOTIMPL; }
+
+private:
+   const uint8_t *const m_data;
+   const size_t m_size;
+   size_t m_pos = 0;
+   ULONG m_cref = 0;
+};
+
 // Physical position of each named stream within its container, for callers that want to read
 // streams in layout order rather than declaration order.
 //
