@@ -266,8 +266,15 @@ void MsgPluginManager::RunOnMainThread(const uint32_t endpointId, const double d
 #endif
       // FIXME block cleanly until processed
       lock.unlock();
-      while (!pm.m_timers.empty())
+      for (;;)
+      {
+         {
+            const std::lock_guard waitLock(pm.m_timerListMutex);
+            if (pm.m_timers.empty())
+               break;
+         }
          std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+      }
    }
    else
    {
@@ -313,8 +320,6 @@ void MsgPluginManager::FlushPendingCallbacks(const uint32_t endpointId)
 void MsgPluginManager::ProcessAsyncCallbacks()
 {
    AssertAPIThread();
-   if (m_timers.empty())
-      return;
    std::list<TimerEntry> timers;
    const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
    {
