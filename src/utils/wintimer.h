@@ -5,6 +5,7 @@
 #ifdef __STANDALONE__
 #include <climits>
 #endif
+#include <atomic>
 #include <thread>
 #include <iomanip>
 
@@ -155,9 +156,12 @@ public:
       }
 
       // Processed asynchronously here since input events are from game logic thread while present events are from rendering thread
-      if ((m_processInputTimeStampOnPrepare != 0) && (m_lastPresentedTimeStamp > m_processInputTimeStampOnPrepare))
+      // Loaded once: OnPresented may store between the two uses, and a larger second read would
+      // make the subtraction below underflow.
+      const uint64_t lastPresented = m_lastPresentedTimeStamp.load(std::memory_order_relaxed);
+      if ((m_processInputTimeStampOnPrepare != 0) && (lastPresented > m_processInputTimeStampOnPrepare))
       {
-         unsigned int elapsed = static_cast<unsigned int>(m_lastPresentedTimeStamp - m_processInputTimeStampOnPrepare);
+         unsigned int elapsed = static_cast<unsigned int>(lastPresented - m_processInputTimeStampOnPrepare);
          m_profileData[m_presentedIndex][PROFILE_INPUT_TO_PRESENT] = elapsed;
          m_profileMinData[PROFILE_INPUT_TO_PRESENT] = min(m_profileMinData[PROFILE_INPUT_TO_PRESENT], elapsed);
          m_profileMaxData[PROFILE_INPUT_TO_PRESENT] = max(m_profileMaxData[PROFILE_INPUT_TO_PRESENT], elapsed);
@@ -465,7 +469,7 @@ public:
 
    void OnPresented(uint64_t when) // May be called from any thread
    {
-      m_lastPresentedTimeStamp = when;
+      m_lastPresentedTimeStamp.store(when, std::memory_order_relaxed);
    }
 
    void SetThreadLock()
@@ -510,7 +514,7 @@ private:
    unsigned int m_presentedIndex = 0;
    unsigned int m_presentedCount = 0;
    uint64_t m_processInputTimeStampOnPrepare = 0;
-   uint64_t m_lastPresentedTimeStamp = 0;
+   std::atomic<uint64_t> m_lastPresentedTimeStamp { 0 }; // Written by the presenting thread, read by the profiler's own thread
 
    // Raw data
    unsigned int m_profileData[N_SAMPLES][PROFILE_COUNT];
