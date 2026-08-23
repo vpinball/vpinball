@@ -96,7 +96,7 @@ void main()
 	//!! this is incredibly heavy for a supposedly simple DMD output shader, but then again this is pretty robust for all kinds of scales and input resolutions now, plus also for 'distorted' output (via the flashers)!
 	//!! gaussianPDF is even more heavy, introduces more noise and is only barely higher quality (=bit less moiree) 
 	#ifdef DMD
-	   const float blur = /*gaussian: 4.0; /*/ 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
+	   const float blur = /*gaussian: 4.0;*/ 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
 	   const vec2 ddxs = dFdx(v_texcoord0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
 	   const vec2 ddys = dFdy(v_texcoord0)*blur;
 
@@ -114,7 +114,7 @@ void main()
 		  const float i_float = float(i);
 		  const vec2 xi = vec2(fract(i_float * (1.0 / samples_float) + offs.x), fract(i_float * (8.0 / samples_float) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
 		  //const vec2 gxi = gaussianPDF(xi);
-		  const vec2 uv = v_texcoord0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
+		  const vec2 uv = v_texcoord0 + /*gxi.x*ddxs + gxi.y*ddys;*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
 		  const vec4 rgba = texNoLod(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 

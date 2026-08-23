@@ -53,8 +53,11 @@ jobs:
         id: shaderc-cache
         uses: actions/cache/restore@v5
         with:
-          path: src/shaders/bgfx/shaderc.exe
-          key: shaderc-windows-${{ env.SHADERC_HASH }}
+          path: |
+            src/shaders/bgfx/shaderc.exe
+            src/shaders/bgfx/dxcompiler.dll
+            src/shaders/bgfx/dxil.dll
+          key: shaderc-windows-v2-${{ env.SHADERC_HASH }}
       - if: steps.shaderc-cache.outputs.cache-hit != 'true'
         name: Build custom shaderc
         run: |
@@ -91,30 +94,21 @@ jobs:
           cd ..
 
           cp bgfx.cmake/build/cmake/bgfx/Release/shaderc.exe src/shaders/bgfx
+
+          # shaderc loads dxcompiler.dll/dxil.dll at runtime to compile s_6_0 (DXIL/D3D12).
+          # Without these the s_6_0 step fails with "Unable to load DXC compiler".
+          # Take the pair bgfx bundles at BGFX_PATCH_SHA so the DXIL output is reproducible.
+          cp bgfx.cmake/bgfx/tools/bin/windows/dxcompiler.dll src/shaders/bgfx
+          cp bgfx.cmake/bgfx/tools/bin/windows/dxil.dll       src/shaders/bgfx
       - if: steps.shaderc-cache.outputs.cache-hit != 'true'
         name: Save shaderc cache
         uses: actions/cache/save@v5
         with:
-          path: src/shaders/bgfx/shaderc.exe
-          key: shaderc-windows-${{ env.SHADERC_HASH }}
-
-      - name: Download DXC
-        # shaderc loads dxcompiler.dll/dxil.dll at runtime to compile s_6_0 (DXIL/D3D12).
-        # Without these the s_6_0 step fails with "Unable to load DXC compiler".
-        # The DXC release tag and the zip filename don't share a predictable pattern, so
-        # query the GitHub API for the latest release and pull whichever zip it ships.
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          DXC_URL=$(curl -sL -H "Authorization: Bearer $GH_TOKEN" \
-            https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/latest \
-            | grep -Eo 'https://github.com/microsoft/DirectXShaderCompiler/releases/download/[^"]+\.zip' \
-            | head -n 1)
-          echo "Downloading $DXC_URL"
-          curl -sL "$DXC_URL" -o dxc.zip
-          7z x dxc.zip -odxc -y
-          cp dxc/bin/x64/dxcompiler.dll src/shaders/bgfx/
-          cp dxc/bin/x64/dxil.dll       src/shaders/bgfx/
+          path: |
+            src/shaders/bgfx/shaderc.exe
+            src/shaders/bgfx/dxcompiler.dll
+            src/shaders/bgfx/dxil.dll
+          key: shaderc-windows-v2-${{ env.SHADERC_HASH }}
 
       - name: generate shaders
         run: |
@@ -124,6 +118,8 @@ jobs:
         run: |
           mkdir tmp
           cp src/shaders/bgfx/shaderc.exe tmp
+          cp src/shaders/bgfx/dxcompiler.dll tmp
+          cp src/shaders/bgfx/dxil.dll tmp
           cp src/shaders/bgfx*.h tmp
       - uses: actions/upload-artifact@v7
         with:
