@@ -2208,7 +2208,6 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       if (!folderVbs.empty())
          LoadScriptOverride(folderVbs);
    }
-   m_sdsDirtyScript = eSaveClean;
 
    // auto-import VPP settings, if it exists...
    if (const std::filesystem::path filenameAuto = tablePath / tableFile.replace_extension(".vpp"); FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
@@ -2223,6 +2222,9 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       m_tableEditor->m_pcv->AddItem(m_psgt, true);
       //m_tableEditor->m_pcv->AddItem(m_pcv->m_pdm, false);
    }
+
+   // Loading (including an overriding .vbs) is not a user edit, but filling the code viewer raised the script dirty flag
+   SetDirtyScript(eSaveClean);
 
    return hr;
 }

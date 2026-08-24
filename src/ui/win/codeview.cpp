@@ -404,7 +404,7 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 #ifndef __STANDALONE__
    if (sds == eSaveClean)
       ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
-   m_table->m_sdsDirtyScript = sds;
+   m_table->SetDirtyScript(sds);
 #endif
 }
 
@@ -919,6 +919,9 @@ void CodeViewer::SetScript(const string& script)
    {
       string copy(script); // As the provided string is modified by the call
       ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)copy.c_str());
+      // The initial fill is not a user edit, so make it the save point and drop the undo history that would allow undoing past it
+      ::SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
    }
    if (m_findReplace.IsWindow())
       m_findReplace.Destroy();
@@ -2405,8 +2408,8 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          //also see SCN_MODIFIED handling which does more finegrained updating calls
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
-         pcv->m_table->m_sdsDirtyScript = eSaveDirty;
-         
+         pcv->m_table->SetDirtyScript(eSaveDirty);
+
          const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
          if (cchar == 0)
          {
@@ -2450,9 +2453,15 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
    CodeViewer* const pcv = GetCodeViewerPtr();
    switch (code)
    {
+      // Scintilla tracks the save point itself, so undoing/redoing back across it also updates the table dirty state
       case SCN_SAVEPOINTREACHED:
       {
-         pcv->m_table->m_sdsDirtyScript = eSaveClean;
+         pcv->m_table->SetDirtyScript(eSaveClean);
+         break;
+      }
+      case SCN_SAVEPOINTLEFT:
+      {
+         pcv->m_table->SetDirtyScript(eSaveDirty);
          break;
       }
       case SCN_DWELLSTART:
