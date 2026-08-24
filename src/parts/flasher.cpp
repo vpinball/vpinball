@@ -1145,6 +1145,24 @@ void Flasher::UpdateAnimation(const float diff_time_msec)
 {
 }
 
+// Uploads a display frame into m_renderFrame, unless it already holds it (BaseTexture::Update copies the
+// whole frame and marks the texture dirty, which forces a GPU re-upload)
+void Flasher::UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display)
+{
+   if (m_hasUploadedFrame && (m_renderFrame != nullptr) && (display.state.frameId == m_uploadedFrameId) && (*display.source == m_uploadedSrc))
+      return;
+
+   BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
+        display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
+      : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                    : BaseTexture::SRGB,
+      display.state.frame);
+
+   m_uploadedSrc = *display.source;
+   m_uploadedFrameId = display.state.frameId;
+   m_hasUploadedFrame = true;
+}
+
 void Flasher::Render(const unsigned int renderMask)
 {
    assert(m_renderer != nullptr);
@@ -1311,7 +1329,10 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DMD:
          if (m_dmdFrame)
-            m_renderFrame = m_dmdFrame;
+         {
+            m_renderFrame = m_dmdFrame; // Script provided frame, so whatever was uploaded from a display source no longer applies
+            m_hasUploadedFrame = false;
+         }
          else
          {
             PinballPlugin::ResURIResolver::DisplayState dmd { nullptr };
@@ -1320,10 +1341,7 @@ void Flasher::Render(const unsigned int renderMask)
             if (dmd.state.frame == nullptr)
                dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
             if (dmd.state.frame != nullptr)
-               BaseTexture::Update(m_renderFrame, dmd.source->width, dmd.source->height,
-                              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
-                            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                                      : BaseTexture::SRGB, dmd.state.frame);
+               UploadRenderFrame(dmd);
          }
          if (m_renderFrame != nullptr)
          {
@@ -1347,11 +1365,7 @@ void Flasher::Render(const unsigned int renderMask)
       case FlasherData::DISPLAY:
          if (const PinballPlugin::ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
          {
-            BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
-               display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
-                  : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                                : BaseTexture::SRGB,
-               display.state.frame);
+            UploadRenderFrame(display);
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
             if (m_d.m_modulate_vs_add < 1.f)
                m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);

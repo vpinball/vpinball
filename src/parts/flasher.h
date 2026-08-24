@@ -5,6 +5,7 @@
 #include "parts/dragpoint.h"
 #include "parts/pintable.h"
 #include "physics/hitable.h"
+#include "plugins/ResURIResolver.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
@@ -177,6 +178,7 @@ public:
 private:
    void InitShape();
    void UpdateCenter();
+   void UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display);
 
    unsigned int m_numVertices = 0;
    int m_numPolys = 0;
@@ -203,6 +205,11 @@ private:
    int2 m_dmdSize = int2(0,0);
 
    std::shared_ptr<BaseTexture> m_renderFrame = nullptr;
+
+   // Identity of the frame last uploaded to m_renderFrame, avoid a full copy plus a GPU re-upload per flasher per frame
+   DisplaySrcId m_uploadedSrc {};
+   unsigned int m_uploadedFrameId = 0;
+   bool m_hasUploadedFrame = false;
 
    Light *m_lightmap = nullptr;
 

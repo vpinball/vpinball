@@ -312,11 +312,17 @@ void Textbox::Render(const unsigned int renderMask)
       PinballPlugin::ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
       if (dmd.state.frame == nullptr)
          return;
-      BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height, 
-              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
-            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                      : BaseTexture::SRGB,
-         dmd.state.frame);
+      if (!m_hasUploadedFrame || (m_texture == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
+      {
+         BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height,
+                 dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
+               : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                         : BaseTexture::SRGB,
+            dmd.state.frame);
+         m_uploadedSrc = *dmd.source;
+         m_uploadedFrameId = dmd.state.frameId;
+         m_hasUploadedFrame = true;
+      }
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
       const vec3 color = m_texture->m_format == BaseTexture::BW_FP32 ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
       m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,

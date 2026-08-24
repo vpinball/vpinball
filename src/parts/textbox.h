@@ -5,6 +5,7 @@
 #pragma once
 
 #include "parts/pintable.h"
+#include "plugins/ResURIResolver.h"
 #include "renderer/Renderable.h"
 #include "ui/win/resource.h"
 #include "utils/eventproxy.h"
@@ -93,6 +94,11 @@ private:
    Renderer *m_renderer = nullptr;
    bool m_textureDirty = true;
    std::shared_ptr<BaseTexture> m_texture = nullptr;
+
+   // Identity of the frame last uploaded to m_texture when the textbox is used as a DMD, to avoid a full copy plus a GPU re-upload every frame
+   DisplaySrcId m_uploadedSrc {};
+   unsigned int m_uploadedFrameId = 0;
+   bool m_hasUploadedFrame = false;
    IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
 
 #ifdef __STANDALONE__
