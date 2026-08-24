@@ -1630,6 +1630,18 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                pstmItem->Stat(&ss, STATFLAG_NONAME);
                const size_t streamSize = (size_t)ss.cbSize.QuadPart;
 
+               // Account for this buffer before allocating it. The cap check includes this
+               // stream's size so that bytesInFlight is a true bound on total live buffer memory,
+               // not just previously-enqueued buffers. Streams larger than the cap still proceed
+               // (they must, or we deadlock), but only after everything else has drained.
+               while (bytesInFlight.load(std::memory_order_relaxed) + streamSize > maxBytesInFlight
+                      && bytesInFlight.load(std::memory_order_relaxed) > 0)
+               {
+                  SDL_Delay(1);
+                  feedback.LoadingProgressUpdated(nLoadedParts + nLoadedSounds + nLoadedImages, totalToLoad);
+               }
+               bytesInFlight.fetch_add(streamSize, std::memory_order_relaxed);
+
                auto buffer = std::make_shared<vector<uint8_t>>(streamSize);
                ULONG read = 0;
                if (streamSize != 0)
@@ -1641,16 +1653,10 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                // below already copes with, as it did when a stream failed to open.
                if (read != streamSize)
                {
+                  bytesInFlight.fetch_sub(streamSize, std::memory_order_relaxed);
                   PLOGE << "Short read on " << MakeString(item.name);
                   continue;
                }
-
-               while (bytesInFlight.load(std::memory_order_relaxed) > maxBytesInFlight)
-               {
-                  SDL_Delay(1);
-                  feedback.LoadingProgressUpdated(nLoadedParts + nLoadedSounds + nLoadedImages, totalToLoad);
-               }
-               bytesInFlight.fetch_add(streamSize, std::memory_order_relaxed);
 
                pool.enqueue(
                   [item, buffer, streamSize, &bytesInFlight, &parts, &nLoadedParts, &nLoadedSounds, &nLoadedImages, loadfileversion, hch, hkey, this]
