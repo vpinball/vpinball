@@ -56,6 +56,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_exposure = m_table->m_settings.GetTableOverride_Exposure();
    m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
    m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
+   for (int wnd = VPXWindowId::VPXWINDOW_Backglass; wnd <= VPXWindowId::VPXWINDOW_Topper; wnd++)
+      m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->m_settings.GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
    m_vrPreview = (VRPreviewMode)m_table->m_settings.GetPlayer_VRPreview();
    m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
    m_FXAA = m_table->m_settings.GetPlayer_FXAA();
@@ -3201,6 +3203,18 @@ void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderSt
    rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, g_pplayer->m_renderer->m_ancillaryRenderSetup.depthbias);
 }
 
+int Renderer::GetAncillaryWindowRotation(VPXWindowId window) const
+{
+   assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
+   return m_ancillaryWndRotation[window];
+}
+
+void Renderer::SetAncillaryWindowRotation(VPXWindowId window, const int clockwiseDegrees)
+{
+   assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
+   m_ancillaryWndRotation[window] = 90 * clamp(clockwiseDegrees / 90, 0, 3);
+}
+
 RenderTarget* Renderer::SetupAncillaryRenderTarget(
    VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear)
 {
@@ -3256,12 +3270,19 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
 
    RenderDevice* const rd = m_renderDevice;
 
+   // Maps the [0..1] square the ancillary renderers draw in onto the output region
+   Matrix3D matOutput = Matrix3D::MatrixIdentity();
+   matOutput._11 = 2.f * static_cast<float>(outputW) / static_cast<float>(outputRT->GetWidth());
+   matOutput._41 = -1.f + 2.f * static_cast<float>(outputX) / static_cast<float>(outputRT->GetWidth());
+   matOutput._22 = -2.f * static_cast<float>(outputH) / static_cast<float>(outputRT->GetHeight());
+   matOutput._42 = 1.f - 2.f * static_cast<float>(outputY) / static_cast<float>(outputRT->GetHeight());
+
    Matrix3D matWorldViewProj[2];
-   matWorldViewProj[0] = Matrix3D::MatrixIdentity();
-   matWorldViewProj[0]._11 = 2.f * static_cast<float>(outputW) / static_cast<float>(outputRT->GetWidth());
-   matWorldViewProj[0]._41 = -1.f + 2.f * static_cast<float>(outputX) / static_cast<float>(outputRT->GetWidth());
-   matWorldViewProj[0]._22 = -2.f * static_cast<float>(outputH) / static_cast<float>(outputRT->GetHeight());
-   matWorldViewProj[0]._42 = 1.f - 2.f * static_cast<float>(outputY) / static_cast<float>(outputRT->GetHeight());
+   // Rotated around the center of that square, the same way DrawImage rotates around its pivot
+   if (const int rotation = GetAncillaryWindowRotation(window); rotation != 0)
+      matWorldViewProj[0] = Matrix3D::MatrixTranslate(-0.5f, -0.5f, 0.f) * Matrix3D::MatrixRotateZ(ANGTORAD(static_cast<float>(rotation))) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.f) * matOutput;
+   else
+      matWorldViewProj[0] = matOutput;
    const int eyes = m_stereo3D != StereoMode::STEREO_OFF ? 2 : 1;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -3406,7 +3427,10 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
    bool rendered = false;
-   VPXRenderContext2D& context = GetAncillaryRenderContext(window, static_cast<float>(m_outputW), static_cast<float>(m_outputH), true, isOutputLinear, 0.f);
+   // A quarter turn swaps what the renderers should lay out for, the projection then rotates it onto the output
+   const bool swapAxes = (GetAncillaryWindowRotation(window) % 180) != 0;
+   VPXRenderContext2D& context = GetAncillaryRenderContext(window, static_cast<float>(swapAxes ? m_outputH : m_outputW),
+      static_cast<float>(swapAxes ? m_outputW : m_outputH), true, isOutputLinear, 0.f);
    for (auto& renderer : ancillaryWndRenderers)
    {
       rendered = renderer.Render(&context, renderer.context);

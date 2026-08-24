@@ -241,6 +241,17 @@ void DisplaySettingsPage::BuildPage()
       default: break;
       }
    }
+
+   // Content rotation, for physically rotated screens. Applies to both output modes, and only to the ancillary windows: the playfield is rotated through its view setup instead
+   if ((VPXWindowId::VPXWINDOW_Backglass <= m_wndId) && (m_wndId <= VPXWindowId::VPXWINDOW_Topper) && (GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED))
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propWindow_Rotation[m_wndId], //
+         [this]() { return m_player->m_renderer->GetAncillaryWindowRotation(m_wndId) / 90; }, // Item value is an index in the 0 / 90 / 180 / 270 literals
+         [this](int, int v)
+         {
+            m_player->m_renderer->SetAncillaryWindowRotation(m_wndId, 90 * v);
+            OnStaticRenderDirty();
+         }));
 }
 
 void DisplaySettingsPage::BuildWindowPage()

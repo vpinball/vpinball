@@ -86,6 +86,10 @@ private:
    ShadeMode m_shadeMode = ShadeMode::Default;
 
 public:
+   // Rotation of an ancillary window content, in clockwise degrees (0, 90, 180 or 270). The playfield rotates through its view setup instead, so this is only defined for the backglass / scoreview / topper windows
+   int GetAncillaryWindowRotation(VPXWindowId window) const;
+   void SetAncillaryWindowRotation(VPXWindowId window, int clockwiseDegrees);
+
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
       const vec4& glassArea, const vec3& glassAmbient);
@@ -125,12 +129,12 @@ public:
       void SetLatitude(float latitude) { if (m_latitude == latitude) return; m_latitude = latitude; if (m_mode == Mode::DayNight) Update(); };
       float GetLongitude() const { return m_longitude; }
       void SetLongitude(float longitude) { if (m_longitude == longitude) return; m_longitude = longitude; if (m_mode == Mode::DayNight) Update(); };
-      
+
       float GetGlobalEmissionScale() const { return m_emissionScale; }
-      
+
    private:
       void Update();
-      
+
       float m_emissionScale = 0.f;
 
       PinTable* const m_table;
@@ -246,6 +250,7 @@ private:
    void RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers);
    std::unique_ptr<RenderTarget> m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1];
    bool m_ancillaryWndRendered[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether a renderer claimed the window on the last frame
+   int m_ancillaryWndRotation[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Live rotation of the window content, in clockwise degrees
    struct AncillaryRenderSetup
    {
       bool isOutputLinear;
