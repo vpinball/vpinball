@@ -111,6 +111,10 @@ private:
       VPXTexture glass;
       VPXTexture dmdTex;
       int liveStyle;
+      // Identity of the frame last uploaded to dmdTex, to avoid a full copy plus a GPU re-upload every frame
+      DisplaySrcId uploadedSrc;
+      unsigned int uploadedFrameId;
+      bool hasUploadedFrame;
    };
    struct Layout
    {

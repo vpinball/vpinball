@@ -120,12 +120,19 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_frame.z == 0 || m_frame.w == 0)
       return;
 
-   switch (dmd.source->frameFormat)
+   // The texture is shared with the other overlay, hence the null test: it may still have to be created here
+   if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
    {
-   case CTLPI_DISPLAY_FORMAT_LUM32F: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
-   case CTLPI_DISPLAY_FORMAT_SRGB888: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
-   case CTLPI_DISPLAY_FORMAT_SRGB565: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
-   default: return;
+      switch (dmd.source->frameFormat)
+      {
+      case CTLPI_DISPLAY_FORMAT_LUM32F:  UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB888: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB565: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
+      default: return;
+      }
+      m_uploadedSrc = *dmd.source;
+      m_uploadedFrameId = dmd.state.frameId;
+      m_hasUploadedFrame = true;
    }
 
    vec4 glassArea(0.f, 0.f, 0.f, 0.f);

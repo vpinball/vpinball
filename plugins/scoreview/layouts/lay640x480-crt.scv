@@ -1,0 +1,16 @@
+# Layout for Pinball 2000's 640x480 CRT (Revenge From Mars, Star Wars Episode I)
+
+Width: 640
+Height: 480
+Fit: Contain
+
+Visuals:
+	- Screen:
+		Rect: [0,0,640,480]
+		Style: CRT
+		Size: [640, 480]
+		Glass:
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [192,16,640,480]
+			Ambient:   [0.2,0.2,0.2]

@@ -1,0 +1,16 @@
+# Layout for Mr. Game's video games with a 256x248 CRT (Dakar, Motor Show, Mac Attack, World Cup 90)
+
+Width: 256
+Height: 248
+Fit: Contain
+
+Visuals:
+	- Screen:
+		Rect: [0,0,256,248]
+		Style: CRT
+		Size: [256, 248]
+		Glass:
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [384,132,256,248]
+			Ambient:   [0.2,0.2,0.2]

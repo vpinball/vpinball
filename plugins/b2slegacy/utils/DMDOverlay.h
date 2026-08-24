@@ -34,6 +34,11 @@ private:
    CtlResId m_detectSrcId {};
    bool m_stopSearching = false;
    std::future<ivec4> m_frameSearch;
+
+   // Identity of the frame last uploaded to the texture, to avoid a full copy plus a GPU re-upload every frame
+   DisplaySrcId m_uploadedSrc {};
+   unsigned int m_uploadedFrameId = 0;
+   bool m_hasUploadedFrame = false;
 };
 
 }
