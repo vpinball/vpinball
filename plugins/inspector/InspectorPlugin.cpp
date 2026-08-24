@@ -3,7 +3,6 @@
 #include "common.h"
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
-#include "pinmame/PinMAMEPlugin.h"
 #include "WebServer.h"
 
 #ifdef __APPLE__
@@ -292,17 +291,19 @@ std::string GetStatesJson()
 
 namespace
 {
-   // Converts a raw DisplayFrame (as produced by DisplaySrcId::GetRenderFrame)
-   // into a top-down 24bpp RGB buffer. Returns an empty vector for unsupported
-   // frame formats.
-   std::vector<uint8_t> ConvertFrameToRgb24(unsigned int width, unsigned int height, unsigned int frameFormat, const void* frame)
+   // Converts a raw DisplayFrame (as produced by DisplaySrcId::GetRenderFrame) into a top-down 24bpp RGB
+   // buffer, written into 'dst' after 'offset' bytes left free for the caller's own header, so that the
+   // frame does not have to be copied again to prepend it. 'dst' is resized accordingly and its capacity
+   // is reused from call to call. Returns false for unsupported frame formats
+   bool ConvertFrameToRgb24(unsigned int width, unsigned int height, unsigned int frameFormat, const void* frame, size_t offset, std::vector<uint8_t>& dst)
    {
       const size_t count = static_cast<size_t>(width) * static_cast<size_t>(height);
-      std::vector<uint8_t> rgb(count * 3);
+      dst.resize(offset + count * 3);
+      uint8_t* const __restrict rgb = dst.data() + offset;
 
       if (frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
       {
-         std::memcpy(rgb.data(), frame, count * 3);
+         std::memcpy(rgb, frame, count * 3);
       }
       else if (frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565)
       {
@@ -310,12 +311,13 @@ namespace
          for (size_t i = 0; i < count; i++)
          {
             const uint16_t px = src[i];
-            const uint8_t r5 = static_cast<uint8_t>((px >> 11) & 0x1F);
-            const uint8_t g6 = static_cast<uint8_t>((px >> 5) & 0x3F);
-            const uint8_t b5 = static_cast<uint8_t>(px & 0x1F);
-            rgb[i * 3 + 0] = static_cast<uint8_t>((r5 * 255 + 15) / 31);
-            rgb[i * 3 + 1] = static_cast<uint8_t>((g6 * 255 + 31) / 63);
-            rgb[i * 3 + 2] = static_cast<uint8_t>((b5 * 255 + 15) / 31);
+            const uint32_t r5 = (px >> 11) & 0x1F;
+            const uint32_t g6 = (px >> 5) & 0x3F;
+            const uint32_t b5 = px & 0x1F;
+            // Replicate the high bits into the low ones, so that a full channel maps to 255 instead of 248
+            rgb[i * 3 + 0] = static_cast<uint8_t>((r5 << 3) | (r5 >> 2));
+            rgb[i * 3 + 1] = static_cast<uint8_t>((g6 << 2) | (g6 >> 4));
+            rgb[i * 3 + 2] = static_cast<uint8_t>((b5 << 3) | (b5 >> 2));
          }
       }
       else if (frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
@@ -336,9 +338,9 @@ namespace
       }
       else
       {
-         return { }; // unsupported/unknown frame format
+         return false; // unsupported/unknown frame format
       }
-      return rgb;
+      return true;
    }
 }
 
@@ -348,32 +350,37 @@ bool IsDisplayKnown(uint64_t mapping)
    return displayGetters.find(mapping) != displayGetters.end();
 }
 
-// Looks up the display registered under `mapping` (the same CtlResId.id sent to the client as
-// the display node's "mapping" field) and returns its current frame as a top-down RGB24 buffer.
-// Returns an empty vector if the mapping is unknown, the source has no frame yet, or the frame
-// format isn't supported.
-std::vector<uint8_t> GetDisplayFrameRGB(uint64_t mapping, uint32_t& width, uint32_t& height, uint32_t& frameId)
+// Looks up the display registered under `mapping` (the same CtlResId.id sent to the client as the display
+// node's "mapping" field) and writes its current frame into `rgb`, as described by ConvertFrameToRgb24.
+// `lastFrameId` is the id of the frame the caller already has, or nullptr if it has none.
+// Returns false, leaving `rgb` untouched, if the mapping is unknown, the source has no frame yet, the frame
+// is the one the caller already has, or the frame format isn't supported
+bool GetDisplayFrameRGB(uint64_t mapping, const uint32_t* lastFrameId, size_t headerSize, std::vector<uint8_t>& rgb, uint32_t& width, uint32_t& height, uint32_t& frameId)
 {
    DisplayProvider provider;
    {
       std::lock_guard lock(deviceStatesMutex);
       auto it = displayGetters.find(mapping);
       if (it == displayGetters.end())
-         return { };
+         return false;
       provider = it->second;
    }
 
    if (!provider.GetRenderFrame || provider.width == 0 || provider.height == 0)
-      return { };
+      return false;
 
    const DisplayFrame frame = provider.GetRenderFrame(provider.id);
    if (!frame.frame)
-      return { };
+      return false;
+
+   // Displays stay unchanged for long stretches, so drop out before converting anything
+   if (lastFrameId && (frame.frameId == *lastFrameId))
+      return false;
 
    width = provider.width;
    height = provider.height;
    frameId = frame.frameId;
-   return ConvertFrameToRgb24(provider.width, provider.height, provider.frameFormat, frame.frame);
+   return ConvertFrameToRgb24(provider.width, provider.height, provider.frameFormat, frame.frame, headerSize, rgb);
 }
 
 void OnSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateTreeCache(); }

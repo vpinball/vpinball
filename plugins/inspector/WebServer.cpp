@@ -17,7 +17,7 @@ namespace Inspector
 
 extern std::string GetStatesJson();
 extern bool IsDisplayKnown(uint64_t mapping);
-extern std::vector<uint8_t> GetDisplayFrameRGB(uint64_t mapping, uint32_t& width, uint32_t& height, uint32_t& frameId);
+extern bool GetDisplayFrameRGB(uint64_t mapping, const uint32_t* lastFrameId, size_t headerSize, std::vector<uint8_t>& rgb, uint32_t& width, uint32_t& height, uint32_t& frameId);
 
 constexpr const char* HEADER_JSON = "Content-Type: application/json\r\n";
 constexpr int STATUS_OK = 200;
@@ -170,19 +170,15 @@ void WebServer::PushDisplayWsFrames()
       if (c->send.len > 4 * 1024 * 1024) // Slow client, skip frames instead of growing the send buffer
          continue;
       uint32_t width, height, frameId;
-      const std::vector<uint8_t> rgb = GetDisplayFrameRGB(client.mapping, width, height, frameId);
-      if (rgb.empty())
-         continue;
-      if (client.hasFrame && frameId == client.lastFrameId)
+      // Converted straight into m_displayWsFrame behind the header, and only when this client lacks the frame
+      if (!GetDisplayFrameRGB(client.mapping, client.hasFrame ? &client.lastFrameId : nullptr, 12, m_displayWsFrame, width, height, frameId))
          continue;
       client.hasFrame = true;
       client.lastFrameId = frameId;
-      std::vector<uint8_t> msg(12 + rgb.size());
-      memcpy(msg.data() + 0, &width, 4);
-      memcpy(msg.data() + 4, &height, 4);
-      memcpy(msg.data() + 8, &frameId, 4);
-      memcpy(msg.data() + 12, rgb.data(), rgb.size());
-      mg_ws_send(c, msg.data(), msg.size(), WEBSOCKET_OP_BINARY);
+      memcpy(m_displayWsFrame.data() + 0, &width, 4);
+      memcpy(m_displayWsFrame.data() + 4, &height, 4);
+      memcpy(m_displayWsFrame.data() + 8, &frameId, 4);
+      mg_ws_send(c, m_displayWsFrame.data(), m_displayWsFrame.size(), WEBSOCKET_OP_BINARY);
    }
 }
 

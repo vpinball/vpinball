@@ -47,6 +47,7 @@ private:
       bool ready = false;
    };
    std::map<struct mg_connection*, DisplayWsClient> m_displayWsClients;
+   std::vector<uint8_t> m_displayWsFrame; // Scratch buffer for the pushed message, its capacity is reused across frames
 
    std::mutex m_treeMutex;
    std::string m_treeJson;
