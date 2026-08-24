@@ -84,9 +84,9 @@ vec3 ReinhardToneMap(vec3 color)
 //
 
 #ifdef DMD
-	#define N_SAMPLES      2                     // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
+	#define N_SAMPLES      2                            // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
 	uniform vec4 vRes_Alpha_time;
-	#define dmdSize        (vRes_Alpha_time.xy)  // Display size in dots
+	#define dmdSize        (vRes_Alpha_time.xy)         // Display size in dots
 	#define coloredDMD     (displayProperties.x != 0.0) // Linear luminance or sRGB color
 	#define sdfOffset      (displayProperties.y)        // Offset needed for SDF=0.5 at border decreasing to 0.0: 0.5 * (1.0 + (1.0 / (float(N_SAMPLES) + 0.5)) * dotSize / 2.0)
 	#define dotThreshold   (displayProperties.z)        // Threshold inside SDF (so > 0.5): 0.5 + 0.5 * (0.025 /* Antialiasing */ + dotSize * (1.0 - dotSharpness) /* Darkening around border inside dot */);
@@ -100,8 +100,15 @@ vec3 ReinhardToneMap(vec3 color)
 #ifdef CRT
 	uniform vec4 vRes_Alpha_time;
 	#define crtSize        (vRes_Alpha_time.xy)   // input display size in pixels
-	#define crtMode        (displayProperties.x)  // main render mode (pixels, smoothed, vertical CRT, horizontal CRT)
-	#define outSize        (displayProperties.yz) // output display size in pixels
+	#define crtMode        (displayProperties.x)  // main render mode (pixelated, smoothed, CRT)
+	// Output size in pixels is evaluated per pixel in main(), see 'outSize' there
+
+	// Select the CRT emulation:
+	//   0: Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)
+	//   1: Nuance's CRT filter (convergence errors, ghosting, vignetting, scanlines, aperture grille)
+	#define CRT_FILTER 0
+
+#if CRT_FILTER == 0
 
 	// See definition in include header, and experiment here: https://www.shadertoy.com/view/MtSfRK
 	// #define CRTS_DEBUG 1
@@ -122,6 +129,17 @@ vec3 ReinhardToneMap(vec3 color)
 	}
 	
 	#include "fs_crt_lottes.fs"
+
+#else
+
+	// Setup the function which returns input image color (here its in non linear 'display gamma' space)
+	vec3 CrtsNuanceFetch(vec2 uv) {
+		return texture2D(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb;
+	}
+
+	#include "fs_crt_nuance.fs"
+
+#endif
 
 #endif
 
@@ -221,6 +239,13 @@ void main()
 	#elif defined(CRT)
 		float unlitLum = 0.0;
 		vec3 litLum;
+		// On-screen size of the display in pixels, which both CRT filters scale their scanlines and mask to.
+		// The uv gradient gives the exact rasterized pixel density for any projection: playfield or ancillary
+		// window, 2D backdrop or perspective 3D (where it rightfully varies over the surface), stereo, VR, and
+		// supersampling. Both derivatives are used per axis so that rotated displays stay correct
+		vec2 dUvDx = dFdx(displayUv);
+		vec2 dUvDy = dFdy(displayUv);
+		vec2 outSize = 1.0 / max(vec2(length(vec2(dUvDx.x, dUvDy.x)), length(vec2(dUvDx.y, dUvDy.y))), vec2_splat(1e-8)); // guard against a degenerate (edge on) display
 		if (crtMode == 0.0) // Pixelated
 		{
 			litLum = texFetch(displayTex, ivec2(displayUv * crtSize), crtSize).rgb;
@@ -231,6 +256,12 @@ void main()
 		}
 		else if (crtMode == 2.0) // CRT
 		{
+		#if CRT_FILTER == 1
+			litLum = CrtsNuanceFilter(
+			  displayUv, // Input position (normalized)
+			  crtSize,   // input size (in pixels)
+			  outSize);  // output size (in pixels)
+		#else
 			litLum = CrtsFilter(
 			  displayUv * outSize, // Input position
 			  crtSize / outSize, // inputSize / outputSize (in pixels)
@@ -244,6 +275,7 @@ void main()
 			  -2.5, // Horizonal scan blur
 			  0.5, // Shadow mask effect (same as last of CrtsTone below)
 			  CrtsTone(1.0,0.0,0.7,0.5));
+		#endif
 		}
 
 	#endif

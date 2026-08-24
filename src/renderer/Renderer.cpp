@@ -1477,8 +1477,7 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
       0.f, 0.f); // Unused
    m_renderDevice->m_DMDShader->SetVector(SHADER_displayProperties,
       static_cast<float>(profile), // Render mode
-      static_cast<float>(4 * crt->width()), static_cast<float>(4 * crt->height()), // Output size
-      0.f); // Unused
+      0.f, 0.f, 0.f); // Unused (CRT filters now evaluate on screen output size per pixel, from screen space derivatives)
    m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, crt.get(), profile != 1 ? SF_NONE : SF_ANISOTROPIC);
    m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_CRT_world);
 }
