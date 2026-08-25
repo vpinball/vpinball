@@ -44,11 +44,12 @@ private:
    std::mutex m_pollSrcMutex;
    void StatePollingThread();
 
-   const unsigned int m_onControllersChangedId;
-   const unsigned int m_getControllersId;
-   static void OnControllersChanged(const unsigned int eventId, void* userData, void* eventData);
+   PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_controllers;
    unsigned int m_pinmameEndPoint = 0;
    unsigned int m_b2sEndPoint = 0;
+
+   PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
+   std::array<std::vector<int>, 5> m_pmStates;
 
    const unsigned int m_onSegSrcChangedId = 0;
    const unsigned int m_getSegSrcId = 0;
@@ -56,9 +57,6 @@ private:
    std::vector<uint16_t> m_pmLastSegFrame;
    std::vector<unsigned int> m_pmLastSegFrameId;
    static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* eventData);
-
-   PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
-   std::array<std::vector<int>, 5> m_pmStates;
 
    const unsigned int m_onDmdSrcChangedId = 0;
    const unsigned int m_getDmdSrcId = 0;

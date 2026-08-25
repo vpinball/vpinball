@@ -118,9 +118,7 @@ public:
       : m_dmdLayout(dmdLayout)
       , m_dmdProvider(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
    {
-      m_isRunning = true;
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
-      m_renderRequested = true;
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
          .groupId = { { endpointId, 0 } },
@@ -137,7 +135,10 @@ public:
    ~AlphaDMDRenderer()
    {
       m_dmdProvider.ClearItems();
-      m_isRunning = false;
+      {
+         std::lock_guard lock(m_mutex);
+         m_isRunning = false;
+      }
       m_updateCondVar.notify_all();
       if (m_renderThread.joinable())
          m_renderThread.join();
@@ -147,193 +148,190 @@ private:
    void RenderThread()
    {
       SetThreadName("AlphaDMD.RenderThread"s);
-      uint16_t seg_data[128] = { };
-      uint16_t seg_data2[128] = { };
-      float groupLum[128 * 16] = { };
-      std::vector<unsigned int> lastFrameId;
-      while (m_isRunning)
+      for (;;)
       {
-         std::unique_lock sourceLock(segSource->GetListMutex());
-         m_updateCondVar.wait(sourceLock, [this] { return m_renderRequested || !m_isRunning; });
-         m_renderRequested = false;
-
-         if (!m_isRunning)
-            break;
-
-         if (segSource->GetItems().empty())
-            continue;
-
-         const std::vector<SegSrcId>& selectedSources = segSource->GetItems();
-
-         // Get segment display state and compute backward compatible binary version
-         float* lum = groupLum;
-         bool changed = false;
-         lastFrameId.resize(selectedSources.size());
-         for (size_t i = 0, pos = 0; i < selectedSources.size(); i++)
          {
-            if (const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id); seg.frameId != lastFrameId[i])
-            {
-               changed = true;
-               lastFrameId[i] = seg.frameId;
-               memcpy(lum, seg.frame, selectedSources[i].nElements * (16 * sizeof(float)));
-               for (unsigned int j = 0; j < selectedSources[i].nElements; j++)
-               {
-                  const int nSegs = nSegments[selectedSources[i].elementType[j]];
-                  seg_data[pos + j] = 0;
-                  for (int k = 0; k < nSegs; k++)
-                     if (seg.frame[j * 16 + k] > 0.5f)
-                        seg_data[pos + j] |= 1 << k;
-               }
-            }
-            lum += selectedSources[i].nElements * 16;
-            pos += selectedSources[i].nElements;
-         }
-         if (!changed)
-            continue;
-
-         // Render for DMD
-         lum = groupLum;
-         memset(m_renderFrame, 0, sizeof(m_renderFrame));
-         switch (m_dmdLayout)
-         {
-         case Layout_6x4_2x2: // S11 Bowl games
-            DrawDisplay(2, 2, lum, selectedSources[0], false);
-            DrawDisplay(92, 2, lum, selectedSources[1], false);
-            DrawDisplay(2, 12, lum, selectedSources[2], false);
-            DrawDisplay(92, 12, lum, selectedSources[3], false);
-            DrawDisplay(2, 22, lum, selectedSources[4], false);
-            DrawDisplay(92, 22, lum, selectedSources[5], false);
-            DrawDisplay(56, 7, lum, selectedSources[6], false);
-            DrawDisplay(56, 20, lum, selectedSources[7], false);
-            break;
-         case Layout_4x6_2x2: // Lots of games (4 players + credit/ball)
-            DrawDisplay(0, 0, lum, selectedSources[0], true);
-            DrawDisplay(80, 0, lum, selectedSources[1], true);
-            DrawDisplay(0, 12, lum, selectedSources[2], true);
-            DrawDisplay(80, 12, lum, selectedSources[3], true);
-            DrawDisplay(8, 24, lum, selectedSources[4], false);
-            DrawDisplay(32, 24, lum, selectedSources[5], false);
-            break;
-         case Layout_4x6_2x2_1x6: // Black Hole
-            DrawDisplay(0, 0, lum, selectedSources[0], false);
-            DrawDisplay(80, 0, lum, selectedSources[1], false);
-            DrawDisplay(0, 12, lum, selectedSources[2], false);
-            DrawDisplay(80, 12, lum, selectedSources[3], false);
-            DrawDisplay(56, 0, lum, selectedSources[4], false);
-            DrawDisplay(56, 12, lum, selectedSources[5], false);
-            DrawDisplay(40, 24, lum, selectedSources[6], false);
-            break;
-         case Layout_4x7:
-            DrawDisplay(0, 2, lum, selectedSources[0], true);
-            DrawDisplay(72, 2, lum, selectedSources[1], true);
-            DrawDisplay(0, 19, lum, selectedSources[2], true);
-            DrawDisplay(72, 19, lum, selectedSources[3], true);
-            break;
-         case Layout_4x7_2x2: // Lots of games (4 players + credit/ball)
-            DrawDisplay(0, 0, lum, selectedSources[0], true);
-            DrawDisplay(72, 0, lum, selectedSources[1], true);
-            DrawDisplay(0, 12, lum, selectedSources[2], true);
-            DrawDisplay(72, 12, lum, selectedSources[3], true);
-            DrawDisplay(8, 24, lum, selectedSources[4], false);
-            DrawDisplay(32, 24, lum, selectedSources[5], false);
-            break;
-         case Layout_4x7_5x2: // Medusa
-            DrawDisplay(0, 0, lum, selectedSources[0], true);
-            DrawDisplay(72, 0, lum, selectedSources[1], true);
-            DrawDisplay(0, 12, lum, selectedSources[2], true);
-            DrawDisplay(72, 12, lum, selectedSources[3], true);
-            DrawDisplay(16, 24, lum, selectedSources[4], false);
-            DrawDisplay(40, 24, lum, selectedSources[5], false);
-            DrawDisplay(64, 24, lum, selectedSources[6], false);
-            DrawDisplay(88, 24, lum, selectedSources[7], false);
-            DrawDisplay(112, 24, lum, selectedSources[8], false);
-            break;
-         case Layout_2x16: // Lots of later games
-            DrawDisplay(0, 2, lum, selectedSources[0], true);
-            DrawDisplay(0, 19, lum, selectedSources[1], true);
-            break;
-         case Layout_1x7_2x16: // Police Force
-            DrawDisplay(68, 1, lum, selectedSources[0], false);
-            DrawDisplay(0, 9, lum, selectedSources[1], true);
-            DrawDisplay(0, 21, lum, selectedSources[2], true);
-            break;
-         case Layout_2x16_1x7: // Taxi
-            DrawDisplay(0, 9, lum, selectedSources[0], true);
-            DrawDisplay(0, 21, lum, selectedSources[1], true);
-            DrawDisplay(68, 1, lum, selectedSources[2], false);
-            break;
-         case Layout_1x7_1x4_2x16: // Riverboat Gambler
-            DrawDisplay(0, 1, lum, selectedSources[0], false);
-            DrawDisplay(96, 1, lum, selectedSources[1], false);
-            DrawDisplay(0, 9, lum, selectedSources[2], true);
-            DrawDisplay(0, 21, lum, selectedSources[3], true);
-            break;
-         case Layout_2x7_2x2_1x16: // Hyperball
-            DrawDisplay(0, 0, lum, selectedSources[0], true);
-            DrawDisplay(72, 0, lum, selectedSources[1], true);
-            DrawDisplay(16, 12, lum, selectedSources[2], false);
-            DrawDisplay(40, 12, lum, selectedSources[3], false);
-            DrawDisplay(16, 21, lum, selectedSources[4], true);
-            break;
-         case Layout_2x20: // Lots of later games
-            DrawDisplay(4, 2, lum, selectedSources[0], false);
-            DrawDisplay(4, 19, lum, selectedSources[1], false);
-            break;
-         default: break;
-         }
-         if (memcmp(m_dmd128Frame, m_renderFrame, sizeof(m_dmd128Frame)) != 0)
-         {
-            //std::lock_guard<std::mutex> lock(renderMutex);
-            memcpy(m_dmd128Frame, m_renderFrame, sizeof(m_dmd128Frame));
-            m_renderFrameId++;
+            std::unique_lock lock(m_mutex);
+            m_updateCondVar.wait(lock, [this] { return m_renderRequested || !m_isRunning; });
+            m_renderRequested = false;
+            if (!m_isRunning)
+               break;
+            lock.unlock();
          }
 
-         // Render to bitplane surface for frame identification (backward compatible way of rendering to avoid breaking existing colorizations)
-         memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
-         const SegElementType firstType = selectedSources[0].elementType[0];
-         switch (m_dmdLayout)
-         {
-         case Layout_6x4_2x2: _6x4Num_4x1Num(seg_data); break;
-         case Layout_4x6_2x2:
-            if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
-               _2x6Num10_2x6Num10_4x1Num(seg_data);
-            else
-               _2x6Num_2x6Num_4x1Num(seg_data);
-            break;
-         case Layout_4x6_2x2_1x6: return; // Unsupported
-         case Layout_4x7:
-            if (firstType >= CTLPI_SEG_LAYOUT_14)
-               _2x7Alpha_2x7Num(seg_data);
-            else
-               _4x7Num10(seg_data);
-            break;
-         case Layout_4x7_2x2:
-            if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
-               _2x7Num10_2x7Num10_4x1Num(seg_data);
-            else if ((firstType == CTLPI_SEG_LAYOUT_14) || (firstType == CTLPI_SEG_LAYOUT_14D) || (firstType == CTLPI_SEG_LAYOUT_14DC))
-               _2x7Alpha_2x7Num_4x1Num(seg_data);
-            else if (selectedSources[0].elementType[2] == CTLPI_SEG_LAYOUT_7) // No thousands comma
-               _2x7Num_2x7Num_4x1Num(seg_data);
-            else // With thousands comma
-               _2x7Num_2x7Num_4x1Num_gen7(seg_data);
-            break;
-         case Layout_4x7_5x2: _2x7Num_2x7Num_10x1Num(seg_data, seg_data2); break; // FIXME Medusa: seg_data2 is not initialized. Is this really needed ?
-         case Layout_2x16: _2x16Alpha(seg_data); break;
-         case Layout_1x7_2x16: _1x7Num_1x16Alpha_1x16Num(seg_data); break;
-         case Layout_2x16_1x7: _1x16Alpha_1x16Num_1x7Num(seg_data); break;
-         case Layout_1x7_1x4_2x16: _1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data); break; // FIXME Riverboat Gambler: reverse order
-         case Layout_2x7_2x2_1x16: _2x7Num_4x1Num_1x16Alpha(seg_data); break;
-         case Layout_2x20: _2x20Alpha(seg_data); break;
-         default: break;
-         }
-         if (memcmp(m_identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer)) != 0)
-         {
-            //std::lock_guard<std::mutex> lock(renderMutex);
-            memcpy(m_identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer));
-            m_identifyFrameId++;
-         }
+         segSource->With([this](const std::vector<SegSrcId>& selectedSources){ ProcessFrame(selectedSources); });
       }
-      m_isRunning = false;
+   }
+   
+   void ProcessFrame(const std::vector<SegSrcId>& selectedSources)
+   {
+      // Get segment display state and compute backward compatible binary version
+      float* lum = m_groupLum;
+      bool changed = false;
+      m_lastFrameId.resize(selectedSources.size());
+      for (size_t i = 0, pos = 0; i < selectedSources.size(); i++)
+      {
+         if (const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id); seg.frameId != m_lastFrameId[i])
+         {
+            changed = true;
+            m_lastFrameId[i] = seg.frameId;
+            memcpy(lum, seg.frame, selectedSources[i].nElements * (16 * sizeof(float)));
+            for (unsigned int j = 0; j < selectedSources[i].nElements; j++)
+            {
+               const int nSegs = nSegments[selectedSources[i].elementType[j]];
+               m_seg_data[pos + j] = 0;
+               for (int k = 0; k < nSegs; k++)
+                  if (seg.frame[j * 16 + k] > 0.5f)
+                     m_seg_data[pos + j] |= 1 << k;
+            }
+         }
+         lum += selectedSources[i].nElements * 16;
+         pos += selectedSources[i].nElements;
+      }
+      if (!changed)
+         return;
+
+      // Render for DMD
+      lum = m_groupLum;
+      memset(m_renderFrame, 0, sizeof(m_renderFrame));
+      switch (m_dmdLayout)
+      {
+      case Layout_6x4_2x2: // S11 Bowl games
+         DrawDisplay(2, 2, lum, selectedSources[0], false);
+         DrawDisplay(92, 2, lum, selectedSources[1], false);
+         DrawDisplay(2, 12, lum, selectedSources[2], false);
+         DrawDisplay(92, 12, lum, selectedSources[3], false);
+         DrawDisplay(2, 22, lum, selectedSources[4], false);
+         DrawDisplay(92, 22, lum, selectedSources[5], false);
+         DrawDisplay(56, 7, lum, selectedSources[6], false);
+         DrawDisplay(56, 20, lum, selectedSources[7], false);
+         break;
+      case Layout_4x6_2x2: // Lots of games (4 players + credit/ball)
+         DrawDisplay(0, 0, lum, selectedSources[0], true);
+         DrawDisplay(80, 0, lum, selectedSources[1], true);
+         DrawDisplay(0, 12, lum, selectedSources[2], true);
+         DrawDisplay(80, 12, lum, selectedSources[3], true);
+         DrawDisplay(8, 24, lum, selectedSources[4], false);
+         DrawDisplay(32, 24, lum, selectedSources[5], false);
+         break;
+      case Layout_4x6_2x2_1x6: // Black Hole
+         DrawDisplay(0, 0, lum, selectedSources[0], false);
+         DrawDisplay(80, 0, lum, selectedSources[1], false);
+         DrawDisplay(0, 12, lum, selectedSources[2], false);
+         DrawDisplay(80, 12, lum, selectedSources[3], false);
+         DrawDisplay(56, 0, lum, selectedSources[4], false);
+         DrawDisplay(56, 12, lum, selectedSources[5], false);
+         DrawDisplay(40, 24, lum, selectedSources[6], false);
+         break;
+      case Layout_4x7:
+         DrawDisplay(0, 2, lum, selectedSources[0], true);
+         DrawDisplay(72, 2, lum, selectedSources[1], true);
+         DrawDisplay(0, 19, lum, selectedSources[2], true);
+         DrawDisplay(72, 19, lum, selectedSources[3], true);
+         break;
+      case Layout_4x7_2x2: // Lots of games (4 players + credit/ball)
+         DrawDisplay(0, 0, lum, selectedSources[0], true);
+         DrawDisplay(72, 0, lum, selectedSources[1], true);
+         DrawDisplay(0, 12, lum, selectedSources[2], true);
+         DrawDisplay(72, 12, lum, selectedSources[3], true);
+         DrawDisplay(8, 24, lum, selectedSources[4], false);
+         DrawDisplay(32, 24, lum, selectedSources[5], false);
+         break;
+      case Layout_4x7_5x2: // Medusa
+         DrawDisplay(0, 0, lum, selectedSources[0], true);
+         DrawDisplay(72, 0, lum, selectedSources[1], true);
+         DrawDisplay(0, 12, lum, selectedSources[2], true);
+         DrawDisplay(72, 12, lum, selectedSources[3], true);
+         DrawDisplay(16, 24, lum, selectedSources[4], false);
+         DrawDisplay(40, 24, lum, selectedSources[5], false);
+         DrawDisplay(64, 24, lum, selectedSources[6], false);
+         DrawDisplay(88, 24, lum, selectedSources[7], false);
+         DrawDisplay(112, 24, lum, selectedSources[8], false);
+         break;
+      case Layout_2x16: // Lots of later games
+         DrawDisplay(0, 2, lum, selectedSources[0], true);
+         DrawDisplay(0, 19, lum, selectedSources[1], true);
+         break;
+      case Layout_1x7_2x16: // Police Force
+         DrawDisplay(68, 1, lum, selectedSources[0], false);
+         DrawDisplay(0, 9, lum, selectedSources[1], true);
+         DrawDisplay(0, 21, lum, selectedSources[2], true);
+         break;
+      case Layout_2x16_1x7: // Taxi
+         DrawDisplay(0, 9, lum, selectedSources[0], true);
+         DrawDisplay(0, 21, lum, selectedSources[1], true);
+         DrawDisplay(68, 1, lum, selectedSources[2], false);
+         break;
+      case Layout_1x7_1x4_2x16: // Riverboat Gambler
+         DrawDisplay(0, 1, lum, selectedSources[0], false);
+         DrawDisplay(96, 1, lum, selectedSources[1], false);
+         DrawDisplay(0, 9, lum, selectedSources[2], true);
+         DrawDisplay(0, 21, lum, selectedSources[3], true);
+         break;
+      case Layout_2x7_2x2_1x16: // Hyperball
+         DrawDisplay(0, 0, lum, selectedSources[0], true);
+         DrawDisplay(72, 0, lum, selectedSources[1], true);
+         DrawDisplay(16, 12, lum, selectedSources[2], false);
+         DrawDisplay(40, 12, lum, selectedSources[3], false);
+         DrawDisplay(16, 21, lum, selectedSources[4], true);
+         break;
+      case Layout_2x20: // Lots of later games
+         DrawDisplay(4, 2, lum, selectedSources[0], false);
+         DrawDisplay(4, 19, lum, selectedSources[1], false);
+         break;
+      default: break;
+      }
+      if (memcmp(m_dmd128Frame, m_renderFrame, sizeof(m_dmd128Frame)) != 0)
+      {
+         //std::lock_guard<std::mutex> lock(renderMutex);
+         memcpy(m_dmd128Frame, m_renderFrame, sizeof(m_dmd128Frame));
+         m_renderFrameId++;
+      }
+
+      // Render to bitplane surface for frame identification (backward compatible way of rendering to avoid breaking existing colorizations)
+      memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
+      const SegElementType firstType = selectedSources[0].elementType[0];
+      switch (m_dmdLayout)
+      {
+      case Layout_6x4_2x2: _6x4Num_4x1Num(m_seg_data); break;
+      case Layout_4x6_2x2:
+         if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
+            _2x6Num10_2x6Num10_4x1Num(m_seg_data);
+         else
+            _2x6Num_2x6Num_4x1Num(m_seg_data);
+         break;
+      case Layout_4x6_2x2_1x6: return; // Unsupported
+      case Layout_4x7:
+         if (firstType >= CTLPI_SEG_LAYOUT_14)
+            _2x7Alpha_2x7Num(m_seg_data);
+         else
+            _4x7Num10(m_seg_data);
+         break;
+      case Layout_4x7_2x2:
+         if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
+            _2x7Num10_2x7Num10_4x1Num(m_seg_data);
+         else if ((firstType == CTLPI_SEG_LAYOUT_14) || (firstType == CTLPI_SEG_LAYOUT_14D) || (firstType == CTLPI_SEG_LAYOUT_14DC))
+            _2x7Alpha_2x7Num_4x1Num(m_seg_data);
+         else if (selectedSources[0].elementType[2] == CTLPI_SEG_LAYOUT_7) // No thousands comma
+            _2x7Num_2x7Num_4x1Num(m_seg_data);
+         else // With thousands comma
+            _2x7Num_2x7Num_4x1Num_gen7(m_seg_data);
+         break;
+      case Layout_4x7_5x2: _2x7Num_2x7Num_10x1Num(m_seg_data, m_seg_data2); break; // FIXME Medusa: m_seg_data2 is not initialized. Is this really needed ?
+      case Layout_2x16: _2x16Alpha(m_seg_data); break;
+      case Layout_1x7_2x16: _1x7Num_1x16Alpha_1x16Num(m_seg_data); break;
+      case Layout_2x16_1x7: _1x16Alpha_1x16Num_1x7Num(m_seg_data); break;
+      case Layout_1x7_1x4_2x16: _1x16Alpha_1x16Num_1x7Num_1x4Num(m_seg_data); break; // FIXME Riverboat Gambler: reverse order
+      case Layout_2x7_2x2_1x16: _2x7Num_4x1Num_1x16Alpha(m_seg_data); break;
+      case Layout_2x20: _2x20Alpha(m_seg_data); break;
+      default: break;
+      }
+      if (memcmp(m_identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer)) != 0)
+      {
+         //std::lock_guard<std::mutex> lock(renderMutex);
+         memcpy(m_identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer));
+         m_identifyFrameId++;
+      }
    }
 
    void DrawDisplay(int x, const int y, float*& lum, const SegSrcId& segSrc, const bool large)
@@ -513,7 +511,10 @@ private:
    {
       // For the time being, we have a single renderer with a single id, so no need to derive it from the id
       // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
-      renderer->m_renderRequested = true;
+      {
+         std::lock_guard lock(renderer->m_mutex);
+         renderer->m_renderRequested = true;
+      }
       renderer->m_updateCondVar.notify_one();
       return { renderer->m_renderFrameId, renderer->m_dmd128Frame };
    }
@@ -522,7 +523,10 @@ private:
    {
       // For the time being, we have a single renderer with a single id, so no need to derive it from the id
       // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
-      renderer->m_renderRequested = true;
+      {
+         std::lock_guard lock(renderer->m_mutex);
+         renderer->m_renderRequested = true;
+      }
       renderer->m_updateCondVar.notify_one();
       return { renderer->m_identifyFrameId, renderer->m_identifyFrame };
    }
@@ -532,8 +536,14 @@ private:
 
    std::thread m_renderThread;
    std::condition_variable m_updateCondVar;
-   bool m_isRunning = false;
-   bool m_renderRequested = false;
+   std::mutex m_mutex;
+   bool m_isRunning = true;
+   bool m_renderRequested = true;
+   
+   uint16_t m_seg_data[128] = { };
+   uint16_t m_seg_data2[128] = { };
+   float m_groupLum[128 * 16] = { };
+   std::vector<unsigned int> m_lastFrameId;
 
    float m_renderFrame[128 * 32] = { };
    float m_dmd128Frame[128 * 32] = { };
@@ -552,62 +562,65 @@ static void SelectSource(std::vector<SegSrcId>& items)
 
 static void OnSourceChanged()
 {
-   renderer = nullptr;
-
-   std::lock_guard lock(segSource->GetListMutex());
-   const std::vector<SegSrcId>& selectedSources = segSource->GetItems();
-
-   // Find a matching layout
+   unsigned int selectedEndpoint = 0;
    DmdLayouts selectedLayout = DmdLayouts::Undefined;
-   static constexpr int layouts[13][16] = {
-      { DmdLayouts::Undefined, 0 },
-      { DmdLayouts::Layout_4x6_2x2, 6, 6, 6, 6, 6, 2, 2 }, // Bally, GTS1, GTS80, S3, S4, S6, ...
-      { DmdLayouts::Layout_4x7, 4, 7, 7, 7, 7 }, // Bally, S11, ...
-      { DmdLayouts::Layout_4x7_2x2, 6, 7, 7, 7, 7, 2, 2 }, // Bally, GTS1, GTS80, Data East, ...
-      { DmdLayouts::Layout_6x4_2x2, 8, 4, 4, 4, 4, 4, 4, 2, 2 }, // S11 bowling games
-      { DmdLayouts::Layout_2x16_1x7, 3, 16, 16, 7 }, // S11
-      { DmdLayouts::Layout_2x16, 2, 16, 16 }, // WPC, Data East, S11, ...
-      { DmdLayouts::Layout_2x20, 2, 20, 20 }, // Hankin, GTS3, GTS80B, ...
-      { DmdLayouts::Layout_2x7_2x2_1x16, 6, 7, 7, 2, 2, 16 }, // Hyperball
-      { DmdLayouts::Layout_1x7_2x16, 3, 7, 16, 16 }, // Police Force
-      { DmdLayouts::Layout_1x7_1x4_2x16, 4, 7, 4, 16, 16 }, // River Boat Gambler
-      { DmdLayouts::Layout_4x7_5x2, 9, 7, 7, 7, 7, 2, 2, 2, 2, 2 }, // Medusa
-      { DmdLayouts::Layout_4x6_2x2_1x6, 7, 6, 6, 6, 6, 2, 2, 6 }, // Black Hole
-   };
-   for (int i = 0; (selectedLayout == DmdLayouts::Undefined) && (i < 12); i++)
-   {
-      if (layouts[i][1] == (int)selectedSources.size())
+   segSource->With(
+      [&selectedLayout, &selectedEndpoint](const std::vector<SegSrcId>& selectedSources)
       {
-         selectedLayout = static_cast<DmdLayouts>(layouts[i][0]);
-         for (size_t j = 0; j < selectedSources.size(); j++)
+         // Find a matching layout
+         static constexpr int layouts[13][16] = {
+            { DmdLayouts::Undefined, 0 },
+            { DmdLayouts::Layout_4x6_2x2, 6, 6, 6, 6, 6, 2, 2 }, // Bally, GTS1, GTS80, S3, S4, S6, ...
+            { DmdLayouts::Layout_4x7, 4, 7, 7, 7, 7 }, // Bally, S11, ...
+            { DmdLayouts::Layout_4x7_2x2, 6, 7, 7, 7, 7, 2, 2 }, // Bally, GTS1, GTS80, Data East, ...
+            { DmdLayouts::Layout_6x4_2x2, 8, 4, 4, 4, 4, 4, 4, 2, 2 }, // S11 bowling games
+            { DmdLayouts::Layout_2x16_1x7, 3, 16, 16, 7 }, // S11
+            { DmdLayouts::Layout_2x16, 2, 16, 16 }, // WPC, Data East, S11, ...
+            { DmdLayouts::Layout_2x20, 2, 20, 20 }, // Hankin, GTS3, GTS80B, ...
+            { DmdLayouts::Layout_2x7_2x2_1x16, 6, 7, 7, 2, 2, 16 }, // Hyperball
+            { DmdLayouts::Layout_1x7_2x16, 3, 7, 16, 16 }, // Police Force
+            { DmdLayouts::Layout_1x7_1x4_2x16, 4, 7, 4, 16, 16 }, // River Boat Gambler
+            { DmdLayouts::Layout_4x7_5x2, 9, 7, 7, 7, 7, 2, 2, 2, 2, 2 }, // Medusa
+            { DmdLayouts::Layout_4x6_2x2_1x6, 7, 6, 6, 6, 6, 2, 2, 6 }, // Black Hole
+         };
+         for (int i = 0; (selectedLayout == DmdLayouts::Undefined) && (i < 12); i++)
          {
-            if (layouts[i][j + 2] != selectedSources[j].nElements)
+            if (layouts[i][1] == (int)selectedSources.size())
             {
-               selectedLayout = DmdLayouts::Undefined;
-               break;
+               selectedLayout = static_cast<DmdLayouts>(layouts[i][0]);
+               for (size_t j = 0; j < selectedSources.size(); j++)
+               {
+                  if (layouts[i][j + 2] != selectedSources[j].nElements)
+                  {
+                     selectedLayout = DmdLayouts::Undefined;
+                     break;
+                  }
+               }
             }
          }
-      }
-   }
 
-   if (!selectedSources.empty())
-   {
-      std::string elements;
-      for (size_t i = 0; i < selectedSources.size(); i++)
-         elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
-      if (selectedLayout == DmdLayouts::Undefined)
-         LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
-      else
-      {
-         static const std::array<std::string, 13> dmdLayoutNames { "Undefined"s, "4x6+2x2"s, "4x7"s, "4x7+2x2"s, "6x4+2x2"s, "2x16+1x7"s, "2x16"s, "2x20"s, "2x7+2x2+1x16"s, "1x7+2x16"s,
-            "1x7+1x4+2x16"s, "4x7+5x2"s, "4x6+2x2+1x6"s };
-         const std::string name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"s;
-         LOGI(std::format("Matched layout {} ({} displays: {})", name, selectedSources.size(), elements));
-      }
-   }
+         if (!selectedSources.empty())
+         {
+            std::string elements;
+            for (size_t i = 0; i < selectedSources.size(); i++)
+               elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
+            if (selectedLayout == DmdLayouts::Undefined)
+               LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
+            else
+            {
+               static const std::array<std::string, 13> dmdLayoutNames { "Undefined"s, "4x6+2x2"s, "4x7"s, "4x7+2x2"s, "6x4+2x2"s, "2x16+1x7"s, "2x16"s, "2x20"s, "2x7+2x2+1x16"s,
+                  "1x7+2x16"s, "1x7+1x4+2x16"s, "4x7+5x2"s, "4x6+2x2+1x6"s };
+               const std::string name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"s;
+               LOGI(std::format("Matched layout {} ({} displays: {})", name, selectedSources.size(), elements));
+            }
+         }
+
+         if (selectedLayout != DmdLayouts::Undefined)
+            selectedEndpoint = selectedSources.front().id.endpointId;
+      });
 
    if (selectedLayout != DmdLayouts::Undefined)
-      renderer = std::make_unique<AlphaDMDRenderer>(selectedSources.front().id.endpointId, selectedLayout);
+      renderer = std::make_unique<AlphaDMDRenderer>(selectedEndpoint, selectedLayout);
 }
 
 }
@@ -620,13 +633,15 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
    endpointId = sessionId;
    LPISetup(endpointId, msgApi);
    segSource = std::make_unique<CtrlItemConsumer<SegSrcId>>(
-      msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG, [](std::vector<SegSrcId>& items) { SelectSource(items); }, []() { OnSourceChanged(); });
+      msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
+      [](std::vector<SegSrcId>& items) { SelectSource(items); },
+      []() { renderer = nullptr; },
+      []() { OnSourceChanged(); });
    segSource->SelectItems(true);
 }
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
-   renderer = nullptr;
    segSource = nullptr;
    msgApi = nullptr;
 }

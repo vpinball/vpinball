@@ -188,22 +188,22 @@ private:
    DeviceMode m_deviceMode = DM_BINARY;
 
    mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
-   void OnStateSrcChanged();
-   StateSrcId m_switches;
+   void OnStateSrcChanged(const std::vector<StateSrcId>& states);
+   StateSrcId m_switches { };
    vector<bool> m_switchStates;
    vector<unsigned int> m_switchMap;
-   StateSrcId m_dipSwitches;
+   StateSrcId m_dipSwitches { };
    vector<bool> m_dipSwitchStates;
    vector<unsigned int> m_dipSwitchMap;
-   StateSrcId m_solenoids;
+   StateSrcId m_solenoids { };
    vector<unsigned int> m_solenoidMap;
    mutable vector<uint8_t> m_prevSolenoidStates;
    mutable vector<PinmameSolenoidState> m_changedSolenoids;
-   StateSrcId m_gis;
+   StateSrcId m_gis { };
    vector<unsigned int> m_giMap;
    mutable vector<uint8_t> m_prevGIStates;
    mutable vector<PinmameGIState> m_changedGIs;
-   StateSrcId m_lamps;
+   StateSrcId m_lamps { };
    vector<unsigned int> m_lampMap;
    mutable vector<uint8_t> m_prevLampStates;
    mutable vector<PinmameLampState> m_changedLamps;

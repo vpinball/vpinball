@@ -29,8 +29,10 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
    , m_threadLock(std::this_thread::get_id())
    , m_pinmameConfig({ })
    , m_stateSources(
-        api, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG, [this](std::vector<StateSrcId>& stateSources)
-        { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_endpointId; }); }, [this]() { OnStateSrcChanged(); })
+        api, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
+        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_endpointId; }); },
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& stateSources) { OnStateSrcChanged({ }); }); },
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& stateSources) { OnStateSrcChanged(stateSources); }); })
    {
    memcpy(&m_pinmameConfig, &config, sizeof(m_pinmameConfig));
    memcpy(const_cast<char*>(m_pinmameConfig.vpmPath), config.vpmPath, sizeof(m_pinmameConfig.vpmPath));
@@ -339,9 +341,8 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 // Some PinMAME drivers defines a virtual matrix column for cabinet switches and use negative indices to access it (Whitestar for example)
 static constexpr int SWITCH_OFFSET = 16;
 
-void Controller::OnStateSrcChanged()
+void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
    m_switches = { };
    m_switchMap.clear();
    m_dipSwitches = { };
@@ -352,7 +353,7 @@ void Controller::OnStateSrcChanged()
    m_giMap.clear();
    m_lamps = { };
    m_lampMap.clear();
-   for (const StateSrcId& src : m_stateSources.GetItems())
+   for (const StateSrcId& src : stateSources)
    {
       switch (src.id.resId)
       {
@@ -438,52 +439,59 @@ void Controller::OnStateSrcChanged()
          break;
 
       // TODO Mech
-      case PMPI_GROUP_MECH:
-         break;
+      case PMPI_GROUP_MECH: break;
 
-      case PMPI_GROUP_VPM_MECH:
-         break;
+      case PMPI_GROUP_VPM_MECH: break;
       }
    }
 }
 
 bool Controller::GetSwitch(int switchNo) const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
    const int switchNoOfs = switchNo + SWITCH_OFFSET;
    if (switchNoOfs < 0)
       return false;
 
-   if (switchNoOfs < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_switches.nStates && m_switches.stateDefs[index].GetState != nullptr)
+   bool swState = false;
+   m_stateSources.With(
+      [this, &switchNoOfs, &swState](const std::vector<StateSrcId>& states)
       {
-         uint8_t state = 0;
-         m_switches.stateDefs[index].GetState(m_switches.id, index, &state);
-         return state != 0;
-      }
-
-   return switchNoOfs < m_switchStates.size() ? m_switchStates[switchNoOfs] : false;
+         if (switchNoOfs < m_switchMap.size())
+         {
+            if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_switches.nStates && m_switches.stateDefs[index].GetState != nullptr)
+            {
+               uint8_t state = 0;
+               m_switches.stateDefs[index].GetState(m_switches.id, index, &state);
+               swState = state != 0;
+               return;
+            }
+         }
+         if (switchNoOfs < m_switchStates.size())
+            swState = m_switchStates[switchNoOfs];
+      });
+   return swState;
 }
 
 void Controller::SetSwitch(int switchNo, bool state)
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
    const int switchNoOfs = switchNo + SWITCH_OFFSET;
    if (switchNoOfs < 0)
       return;
 
-   if (m_switchStates.size() < switchNoOfs + 1)
-      m_switchStates.resize(switchNoOfs + 1, false);
-   m_switchStates[switchNoOfs] = state;
-
-   if (switchNoOfs < m_switchMap.size())
-      if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_switches.nStates && m_switches.stateDefs[index].SetState != nullptr)
+   m_stateSources.With(
+      [this, &switchNoOfs, &state](const std::vector<StateSrcId>& states)
       {
-         uint8_t bv = state ? 0xFF : 0;
-         m_switches.stateDefs[index].SetState(m_switches.id, index, &bv);
-      }
+         if (m_switchStates.size() < switchNoOfs + 1)
+            m_switchStates.resize(switchNoOfs + 1, false);
+         m_switchStates[switchNoOfs] = state;
+
+         if (switchNoOfs < m_switchMap.size())
+            if (const unsigned int index = m_switchMap[switchNoOfs]; index < m_switches.nStates && m_switches.stateDefs[index].SetState != nullptr)
+            {
+               uint8_t bv = state ? 0xFF : 0;
+               m_switches.stateDefs[index].SetState(m_switches.id, index, &bv);
+            }
+      });
 }
 
 int Controller::GetDip(int nDipBank) const
@@ -491,27 +499,29 @@ int Controller::GetDip(int nDipBank) const
    if (nDipBank < 0)
       return false;
 
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
-   uint8_t state = 0;
    uint8_t result = 0;
-   for (int i = 0; i < 8; i++)
-   {
-      if (const int dipSwitchNo = nDipBank * 8 + i; dipSwitchNo < m_dipSwitchMap.size())
+   m_stateSources.With(
+      [this, &nDipBank, &result](const std::vector<StateSrcId>& states)
       {
-         if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_dipSwitches.nStates && m_dipSwitches.stateDefs[index].GetState != nullptr)
+         uint8_t state = 0;
+         for (int i = 0; i < 8; i++)
          {
-            m_dipSwitches.stateDefs[index].GetState(m_dipSwitches.id, index, &state);
-            if (state != 0)
-               result |= 1 << i;
+            if (const int dipSwitchNo = nDipBank * 8 + i; dipSwitchNo < m_dipSwitchMap.size())
+            {
+               if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_dipSwitches.nStates && m_dipSwitches.stateDefs[index].GetState != nullptr)
+               {
+                  m_dipSwitches.stateDefs[index].GetState(m_dipSwitches.id, index, &state);
+                  if (state != 0)
+                     result |= 1 << i;
+               }
+            }
+            else if (dipSwitchNo < m_dipSwitchStates.size())
+            {
+               if (m_dipSwitchStates[dipSwitchNo])
+                  result |= 1 << i;
+            }
          }
-      }
-      else if (dipSwitchNo < m_dipSwitchStates.size())
-      {
-         if (m_dipSwitchStates[dipSwitchNo])
-            result |= 1 << i;
-      }
-   }
+      });
    return result;
 }
 
@@ -520,26 +530,28 @@ void Controller::SetDip(int nDipBank, int byteState)
    if (nDipBank < 0)
       return;
 
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
-   for (int i = 0; i < 8; i++)
-   {
-      const int dipSwitchNo = nDipBank * 8 + i;
-      bool state = (byteState & (1 << i)) != 0;
-
-      if (m_dipSwitchStates.size() < dipSwitchNo + 1)
-         m_dipSwitchStates.resize(dipSwitchNo + 1, false);
-      m_dipSwitchStates[dipSwitchNo] = state;
-
-      if (dipSwitchNo < m_dipSwitchMap.size())
+   m_stateSources.With(
+      [this, &nDipBank, &byteState](const std::vector<StateSrcId>& states)
       {
-         if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_dipSwitches.nStates && m_dipSwitches.stateDefs[index].SetState != nullptr)
+         for (int i = 0; i < 8; i++)
          {
-            uint8_t bv = (state != 0) ? 0xFF : 0;
-            m_dipSwitches.stateDefs[index].SetState(m_dipSwitches.id, index, &bv);
+            const int dipSwitchNo = nDipBank * 8 + i;
+            bool state = (byteState & (1 << i)) != 0;
+
+            if (m_dipSwitchStates.size() < dipSwitchNo + 1)
+               m_dipSwitchStates.resize(dipSwitchNo + 1, false);
+            m_dipSwitchStates[dipSwitchNo] = state;
+
+            if (dipSwitchNo < m_dipSwitchMap.size())
+            {
+               if (const unsigned int index = m_dipSwitchMap[dipSwitchNo]; index < m_dipSwitches.nStates && m_dipSwitches.stateDefs[index].SetState != nullptr)
+               {
+                  uint8_t bv = (state != 0) ? 0xFF : 0;
+                  m_dipSwitches.stateDefs[index].SetState(m_dipSwitches.id, index, &bv);
+               }
+            }
          }
-      }
-   }
+      });
 }
 
 long Controller::GetSolMask(int nLow) const
@@ -582,107 +594,102 @@ void Controller::SetModOutputType(int output, int no, int newVal)
 
 int Controller::GetSolenoid(int solenoid) const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
-   if (solenoid < 0 || solenoid >= m_solenoidMap.size())
-      return 0;
-
-   if (const unsigned int index = m_solenoidMap[solenoid]; index < m_solenoids.nStates)
-   {
-      uint8_t state = 0;
-      m_solenoids.stateDefs[index].GetState(m_solenoids.id, index, &state);
-      return state;
-   }
-
-   return 0;
+   uint8_t solState = 0;
+   m_stateSources.With([this, &solenoid, &solState](const std::vector<StateSrcId>& states) {
+      if (solenoid >= 0 && solenoid < m_solenoidMap.size())
+         if (const unsigned int index = m_solenoidMap[solenoid]; index < m_solenoids.nStates)
+               m_solenoids.stateDefs[index].GetState(m_solenoids.id, index, &solState);
+      });
+   return solState;
 }
 
 int Controller::GetLamp(int lamp) const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
-   if (lamp < 0 || lamp >= m_lampMap.size())
-      return 0;
-
-   if (const unsigned int index = m_lampMap[lamp]; index < m_lamps.nStates)
-   {
-      uint8_t state = 0;
-      m_lamps.stateDefs[index].GetState(m_lamps.id, index, &state);
-      return state;
-   }
-
-   return 0;
+   uint8_t lampState = 0;
+   m_stateSources.With(
+      [this, &lamp, &lampState](const std::vector<StateSrcId>& states)
+      {
+         if (lamp >= 0 && lamp < m_lampMap.size())
+            if (const unsigned int index = m_lampMap[lamp]; index < m_lamps.nStates)
+               m_lamps.stateDefs[index].GetState(m_lamps.id, index, &lampState);
+      });
+   return lampState;
 }
 
 int Controller::GetGIString(int giString) const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-
-   if (giString < 0 || giString >= m_giMap.size())
-      return 0;
-
-   if (const unsigned int index = m_giMap[giString]; index < m_gis.nStates)
-   {
-      uint8_t state = 0;
-      m_gis.stateDefs[index].GetState(m_gis.id, index, &state);
-      return state;
-   }
-
-   return 0;
+   uint8_t giState = 0;
+   m_stateSources.With(
+      [this, &giString, &giState](const std::vector<StateSrcId>& states)
+      {
+         if (giString >= 0 && giString < m_giMap.size())
+            if (const unsigned int index = m_giMap[giString]; index < m_gis.nStates)
+               m_gis.stateDefs[index].GetState(m_gis.id, index, &giState);
+      });
+   return giState;
 }
 
 const vector<PinmameLampState>& Controller::GetChangedLamps() const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
    m_changedLamps.clear();
-   uint8_t state = 0;
-   for (unsigned int lampIndex = 0; lampIndex < m_lamps.nStates; lampIndex++)
-   {
-      const StateDef& def = m_lamps.stateDefs[lampIndex];
-      if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
-         continue;
-      if (def.GetState(m_lamps.id, lampIndex, &state); m_prevLampStates[lampIndex] == state)
-         continue;
-      m_prevLampStates[lampIndex] = state;
-      m_changedLamps.emplace_back(def.mappingId, state);
-   }
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& states)
+      {
+         uint8_t state = 0;
+         for (unsigned int lampIndex = 0; lampIndex < m_lamps.nStates; lampIndex++)
+         {
+            const StateDef& def = m_lamps.stateDefs[lampIndex];
+            if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
+               continue;
+            if (def.GetState(m_lamps.id, lampIndex, &state); m_prevLampStates[lampIndex] == state)
+               continue;
+            m_prevLampStates[lampIndex] = state;
+            m_changedLamps.emplace_back(def.mappingId, state);
+         }
+      });
    return m_changedLamps;
 }
 
 const vector<PinmameGIState>& Controller::GetChangedGIStrings() const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
    m_changedGIs.clear();
-   uint8_t state = 0;
-   for (unsigned int giIndex = 0; giIndex < m_gis.nStates; giIndex++)
-   {
-      const StateDef& def = m_gis.stateDefs[giIndex];
-      if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
-         continue;
-      if (def.GetState(m_gis.id, giIndex, &state); m_prevGIStates[giIndex] == state)
-         continue;
-      m_prevGIStates[giIndex] = state;
-      m_changedGIs.emplace_back(def.mappingId, state);
-   }
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& states)
+      {
+         uint8_t state = 0;
+         for (unsigned int giIndex = 0; giIndex < m_gis.nStates; giIndex++)
+         {
+            const StateDef& def = m_gis.stateDefs[giIndex];
+            if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
+               continue;
+            if (def.GetState(m_gis.id, giIndex, &state); m_prevGIStates[giIndex] == state)
+               continue;
+            m_prevGIStates[giIndex] = state;
+            m_changedGIs.emplace_back(def.mappingId, state);
+         }
+      });
    return m_changedGIs;
 }
 
 const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids() const
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
    m_changedSolenoids.clear();
-   uint8_t state = 0;
-   for (unsigned int solIndex = 0; solIndex < m_solenoids.nStates; solIndex++)
-   {
-      const StateDef& def = m_solenoids.stateDefs[solIndex];
-      if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
-         continue;
-      if (def.GetState(m_solenoids.id, solIndex, &state); m_prevSolenoidStates[solIndex] == state)
-         continue;
-      m_prevSolenoidStates[solIndex] = state;
-      if (def.mappingId == 0 || def.mappingId > 64 || (m_solMask & (1ULL << (def.mappingId - 1))) != 0)
-         m_changedSolenoids.emplace_back(def.mappingId, state);
-   }
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& states)
+      {
+         uint8_t state = 0;
+         for (unsigned int solIndex = 0; solIndex < m_solenoids.nStates; solIndex++)
+         {
+            const StateDef& def = m_solenoids.stateDefs[solIndex];
+            if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
+               continue;
+            if (def.GetState(m_solenoids.id, solIndex, &state); m_prevSolenoidStates[solIndex] == state)
+               continue;
+            m_prevSolenoidStates[solIndex] = state;
+            if (def.mappingId == 0 || def.mappingId > 64 || (m_solMask & (1ULL << (def.mappingId - 1))) != 0)
+               m_changedSolenoids.emplace_back(def.mappingId, state);
+         }
+      });
    return m_changedSolenoids;
 }
 

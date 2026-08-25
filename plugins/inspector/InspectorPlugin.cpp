@@ -106,33 +106,34 @@ void UpdateTreeCache()
       getController(controller.endpointId);
 
    // States
-   {
-      std::lock_guard lock(stateSources->GetListMutex());
-      for (const StateSrcId& stateDef : stateSources->GetItems())
+   stateSources->With(
+      [&getController](const std::vector<StateSrcId>& items)
       {
-         auto& cNode = getController(stateDef.id.endpointId);
-         json gNode = json::object();
-         gNode["id"s] = stateDef.id.resId;
-         gNode["name"s] = stateDef.name ? stateDef.name : "Unnamed state group";
-         gNode["desc"s] = stateDef.desc ? stateDef.desc : "";
-         gNode["type"s] = "stategroup";
-         gNode["children"s] = json::array();
-         for (unsigned int j = 0; j < stateDef.nStates; j++)
+         for (const StateSrcId& stateDef : items)
          {
-            json item = json::object();
-            item["type"s] = "state";
-            // FIXME What should we expose as an id ? the mapping (stable, human friendly) or the index (unique) ?
-            item["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, stateDef.stateDefs[j].mappingId);
-            item["mapping"s] = std::format("{:02d}", stateDef.stateDefs[j].mappingId);
-            item["name"s] = stateDef.stateDefs[j].name ? stateDef.stateDefs[j].name : ("Device " + std::to_string(j));
-            item["desc"s] = stateDef.stateDefs[j].desc ? stateDef.stateDefs[j].desc : "No description available";
-            item["format"s] = stateDef.stateDefs[j].dataFormat;
-            item["outputType"s] = stateDef.stateDefs[j].semanticType;
-            gNode["children"s].push_back(item);
+            auto& cNode = getController(stateDef.id.endpointId);
+            json gNode = json::object();
+            gNode["id"s] = stateDef.id.resId;
+            gNode["name"s] = stateDef.name ? stateDef.name : "Unnamed state group";
+            gNode["desc"s] = stateDef.desc ? stateDef.desc : "";
+            gNode["type"s] = "stategroup";
+            gNode["children"s] = json::array();
+            for (unsigned int j = 0; j < stateDef.nStates; j++)
+            {
+               json item = json::object();
+               item["type"s] = "state";
+               // FIXME What should we expose as an id ? the mapping (stable, human friendly) or the index (unique) ?
+               item["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, stateDef.stateDefs[j].mappingId);
+               item["mapping"s] = std::format("{:02d}", stateDef.stateDefs[j].mappingId);
+               item["name"s] = stateDef.stateDefs[j].name ? stateDef.stateDefs[j].name : ("Device " + std::to_string(j));
+               item["desc"s] = stateDef.stateDefs[j].desc ? stateDef.stateDefs[j].desc : "No description available";
+               item["format"s] = stateDef.stateDefs[j].dataFormat;
+               item["outputType"s] = stateDef.stateDefs[j].semanticType;
+               gNode["children"s].push_back(item);
+            }
+            cNode["children"s].push_back(gNode);
          }
-         cNode["children"s].push_back(gNode);
-      }
-   }
+      });
 
    // Displays
    {
@@ -198,73 +199,75 @@ void UpdateTreeCache()
 
 std::string GetStatesJson()
 {
-   std::lock_guard lock(stateSources->GetListMutex());
-
    json states = json::array();
-
-   for (const StateSrcId& stateDef : stateSources->GetItems())
-   {
-      json dItem = json::object();
-      for (unsigned int j = 0; j < stateDef.nStates; j++)
+   stateSources->With(
+      [&states](const std::vector<StateSrcId>& items)
       {
-         if (stateDef.stateDefs[j].GetState == nullptr)
-            continue;
-         dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, stateDef.stateDefs[j].mappingId);
-         dItem["type"s] = stateDef.stateDefs[j].semanticType;
-         switch (stateDef.stateDefs[j].dataFormat)
-         {
-         case CTLPI_STATE_FORMAT_FLOAT:
-         {
-            float state;
-            stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
-            dItem["format"s] = "float";
-            dItem["state"s] = state;
-            states.push_back(dItem);
-         }
-         break;
 
-         case CTLPI_STATE_FORMAT_UINT8:
+      for (const StateSrcId& stateDef : items)
+      {
+         json dItem = json::object();
+         for (unsigned int j = 0; j < stateDef.nStates; j++)
          {
-            uint8_t state;
-            stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
-            dItem["format"s] = "uint8";
-            dItem["state"s] = state;
-            states.push_back(dItem);
-         }
-         break;
+            if (stateDef.stateDefs[j].GetState == nullptr)
+               continue;
+            dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, stateDef.stateDefs[j].mappingId);
+            dItem["type"s] = stateDef.stateDefs[j].semanticType;
+            switch (stateDef.stateDefs[j].dataFormat)
+            {
+            case CTLPI_STATE_FORMAT_FLOAT:
+            {
+               float state;
+               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               dItem["format"s] = "float";
+               dItem["state"s] = state;
+               states.push_back(dItem);
+            }
+            break;
 
-         case CTLPI_STATE_FORMAT_INT32:
-         {
-            int32_t state;
-            stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
-            dItem["format"s] = "int32";
-            dItem["state"s] = state;
-            states.push_back(dItem);
-         }
-         break;
+            case CTLPI_STATE_FORMAT_UINT8:
+            {
+               uint8_t state;
+               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               dItem["format"s] = "uint8";
+               dItem["state"s] = state;
+               states.push_back(dItem);
+            }
+            break;
 
-         case CTLPI_STATE_FORMAT_INT64:
-         {
-            int64_t state;
-            stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
-            dItem["format"s] = "int64";
-            dItem["state"s] = std::to_string(state);
-            states.push_back(dItem);
-         }
-         break;
+            case CTLPI_STATE_FORMAT_INT32:
+            {
+               int32_t state;
+               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               dItem["format"s] = "int32";
+               dItem["state"s] = state;
+               states.push_back(dItem);
+            }
+            break;
 
-         case CTLPI_STATE_FORMAT_STRING:
-         {
-            char* state = nullptr;
-            stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
-            dItem["format"s] = "string";
-            dItem["state"s] = state != nullptr ? state : "";
-            states.push_back(dItem);
-         }
-         break;
+            case CTLPI_STATE_FORMAT_INT64:
+            {
+               int64_t state;
+               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               dItem["format"s] = "int64";
+               dItem["state"s] = std::to_string(state);
+               states.push_back(dItem);
+            }
+            break;
+
+            case CTLPI_STATE_FORMAT_STRING:
+            {
+               char* state = nullptr;
+               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               dItem["format"s] = "string";
+               dItem["state"s] = state != nullptr ? state : "";
+               states.push_back(dItem);
+            }
+            break;
+            }
          }
       }
-   }
+   });
 
    json root = json::object();
    root["treeId"s] = treeId;
@@ -384,7 +387,7 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
    msgApi->RegisterSetting(endpointId, &portSetting);
 
    stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>>(
-      msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG, [](std::vector<StateSrcId>&) { }, []() { UpdateTreeCache(); });
+      msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG, nullptr, nullptr, []() { UpdateTreeCache(); });
 
    std::filesystem::path path;
 #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)

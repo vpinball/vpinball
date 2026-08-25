@@ -114,52 +114,51 @@ public:
 private:
    void UpdateThread()
    {
-      int lastFrameID = 0;
+      m_lastFrameID = 0;
       while (m_isRunning)
       {
          // Fixed update at 60 FPS
          // TODO the dispatch should be done at the refesh rate of the target display
          std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
-         std::lock_guard lock(dmdSource->GetListMutex());
-         const std::vector<DisplaySrcId>& items = dmdSource->GetItems();
-         if (items.empty())
-            continue;
+         dmdSource->With([this](const std::vector<DisplaySrcId>& items) { ProcessFrame(items.front()); });
+      }
+   }
 
-         const DisplaySrcId& dmdSource = items.front();
-         const DisplayFrame frame = dmdSource.GetRenderFrame(dmdSource.id);
-         if (lastFrameID == frame.frameId)
-            continue;
-         lastFrameID = frame.frameId;
+   void ProcessFrame(const DisplaySrcId& dmdSource)
+   {
+      const DisplayFrame frame = dmdSource.GetRenderFrame(dmdSource.id);
+      if (m_lastFrameID == frame.frameId)
+         return;
+      m_lastFrameID = frame.frameId;
 
-         switch (dmdSource.frameFormat)
+      switch (dmdSource.frameFormat)
+      {
+      case CTLPI_DISPLAY_FORMAT_LUM32F:
+      {
+         const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
+         uint8_t* const __restrict rgb24Data = new uint8_t[dmdSource.width * dmdSource.height * 3];
+
+         const float tintR = static_cast<float>(lumTintRProp_Val);
+         const float tintG = static_cast<float>(lumTintGProp_Val);
+         const float tintB = static_cast<float>(lumTintBProp_Val);
+
+         for (unsigned int i = 0; i < dmdSource.width * dmdSource.height; ++i)
          {
-         case CTLPI_DISPLAY_FORMAT_LUM32F:
-         {
-            const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
-            uint8_t* const __restrict rgb24Data = new uint8_t[dmdSource.width * dmdSource.height * 3];
-
-            const float tintR = static_cast<float>(lumTintRProp_Val);
-            const float tintG = static_cast<float>(lumTintGProp_Val);
-            const float tintB = static_cast<float>(lumTintBProp_Val);
-
-            for (unsigned int i = 0; i < dmdSource.width * dmdSource.height; ++i)
-            {
-               const float lum = luminanceData[i];
-               rgb24Data[i * 3] = (uint8_t)(lum * tintR);
-               rgb24Data[i * 3 + 1] = (uint8_t)(lum * tintG);
-               rgb24Data[i * 3 + 2] = (uint8_t)(lum * tintB);
-            }
-
-            m_pDmd->UpdateRGB24Data(rgb24Data, dmdSource.width, dmdSource.height);
-            delete[] rgb24Data;
+            const float lum = luminanceData[i];
+            rgb24Data[i * 3] = (uint8_t)(lum * tintR);
+            rgb24Data[i * 3 + 1] = (uint8_t)(lum * tintG);
+            rgb24Data[i * 3 + 2] = (uint8_t)(lum * tintB);
          }
-         break;
 
-         case CTLPI_DISPLAY_FORMAT_SRGB888: m_pDmd->UpdateRGB24Data(static_cast<const uint8_t*>(frame.frame), dmdSource.width, dmdSource.height); break;
+         m_pDmd->UpdateRGB24Data(rgb24Data, dmdSource.width, dmdSource.height);
+         delete[] rgb24Data;
+      }
+      break;
 
-         case CTLPI_DISPLAY_FORMAT_SRGB565: m_pDmd->UpdateRGB16Data((const uint16_t*)frame.frame, dmdSource.width, dmdSource.height); break;
-         }
+      case CTLPI_DISPLAY_FORMAT_SRGB888: m_pDmd->UpdateRGB24Data(static_cast<const uint8_t*>(frame.frame), dmdSource.width, dmdSource.height); break;
+
+      case CTLPI_DISPLAY_FORMAT_SRGB565: m_pDmd->UpdateRGB16Data((const uint16_t*)frame.frame, dmdSource.width, dmdSource.height); break;
       }
    }
 
@@ -187,6 +186,7 @@ private:
    std::unique_ptr<DMDUtil::DMD> m_pDmd;
    std::thread m_updateThread;
    bool m_isRunning = true;
+   int m_lastFrameID = 0;
 };
 
 
@@ -249,12 +249,8 @@ static void SelectSource(std::vector<DisplaySrcId>& items)
       items.push_back(newDmdId);
 }
 
-static void OnSourceChanged()
+static void OnSourceChanged(const std::vector<DisplaySrcId>& items)
 {
-   dmdDispatcher = nullptr;
-
-   std::lock_guard lock(dmdSource->GetListMutex());
-   const std::vector<DisplaySrcId>& items = dmdSource->GetItems();
    if (items.empty())
    {
       LOGI("No DMD source selected");
@@ -304,7 +300,10 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
    msgApi->RegisterSetting(endpointId, &lumTintBProp);
 
    dmdSource = std::make_unique<CtrlItemConsumer<DisplaySrcId>>(
-      msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [](std::vector<DisplaySrcId>& items) { SelectSource(items); }, []() { OnSourceChanged(); });
+      msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
+      [](std::vector<DisplaySrcId>& items) { SelectSource(items); },
+      []() { dmdDispatcher = nullptr; },
+      []() { dmdSource->With([](const std::vector<DisplaySrcId>& items) { OnSourceChanged(items); }); });
    dmdSource->SelectItems(true);
 }
 
