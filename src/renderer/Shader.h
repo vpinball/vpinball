@@ -930,8 +930,13 @@ public:
             filter = SF_NONE;
       }
       // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
-      if (m_disableMipmaps && (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR))
-         filter = SamplerFilter::SF_BILINEAR;
+      if (m_disableMipmaps)
+      {
+         if (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR)
+            filter = SamplerFilter::SF_BILINEAR;
+         else if (filter == SamplerFilter::SF_PIXELATED)
+            filter = SamplerFilter::SF_NONE;
+      }
       if (clampU == SA_UNDEFINED)
       {
          clampU = ShaderUniform::coreUniforms[uniformName].default_clampu;

@@ -1212,6 +1212,11 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
             flags |= BGFX_SAMPLER_MIN_ANISOTROPIC;
             flags |= BGFX_SAMPLER_MAG_ANISOTROPIC;
             break;
+         case SF_PIXELATED:
+            flags |= BGFX_SAMPLER_MIN_ANISOTROPIC; // Filtered (and mipmapped, see below) minification to avoid aliasing
+            flags |= BGFX_SAMPLER_MAG_POINT; // Crisp texels when magnified
+            //flags |= BGFX_SAMPLER_MIP_LINEAR; // Default
+            break;
          default:
             break;
          }

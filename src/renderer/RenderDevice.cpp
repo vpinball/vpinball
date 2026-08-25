@@ -962,7 +962,7 @@ void RenderDevice::OnInputSampled()
 #endif
 
 #elif defined(ENABLE_OPENGL)
-GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
+GLuint RenderDevice::m_samplerStateCache[3 * 3 * 6];
 static const char* glErrorToString(const int error)
 {
    switch (error)
@@ -2380,10 +2380,10 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
 {
 #if defined(ENABLE_BGFX)
 #elif defined(ENABLE_OPENGL)
-   assert(std::size(m_samplerStateCache) == 3*3*5);
-   int samplerStateId = min((int)clamp_u, 2) * 5 * 3
-                      + min((int)clamp_v, 2) * 5
-                      + min((int)filter, 4);
+   assert(std::size(m_samplerStateCache) == 3*3*6);
+   int samplerStateId = min((int)clamp_u, 2) * 6 * 3
+                      + min((int)clamp_v, 2) * 6
+                      + min((int)filter, 5);
    GLuint sampler_state = m_samplerStateCache[samplerStateId];
    if (sampler_state == 0)
    {
@@ -2414,6 +2414,11 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
       case SF_ANISOTROPIC: // Anisotropic texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, m_maxaniso);
+         break;
+      case SF_PIXELATED: // Point magnification, filtered (anisotropic) minification.
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, m_maxaniso);
          break;
       }
@@ -2453,6 +2458,15 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
       case SF_ANISOTROPIC:
          // Full HQ anisotropic Filter. Should lead to driver doing whatever it thinks is best.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso, (DWORD)16)));
+         m_curStateChanges += 4;
+         break;
+
+      case SF_PIXELATED:
+         // Keep crisp texels when magnified, but filter (and mipmap) when minified to avoid aliasing.
+         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso, (DWORD)16)));

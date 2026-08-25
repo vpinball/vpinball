@@ -347,7 +347,7 @@ public:
 private:
    GLfloat m_maxaniso;
    int m_GLversion;
-   static GLuint m_samplerStateCache[3 * 3 * 5];
+   static GLuint m_samplerStateCache[3 * 3 * 6];
 
    void CaptureGLScreenshot();
 

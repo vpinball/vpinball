@@ -17,6 +17,7 @@ enum SamplerFilter : unsigned int
    SF_BILINEAR, // Bilinar texture filtering (linear min/mag, no mipmapping). DX: MIPFILTER = NONE; MAGFILTER = LINEAR; MINFILTER = LINEAR;
    SF_TRILINEAR, // Trilinar texture filtering (linear min/mag, with mipmapping). DX: MIPFILTER = LINEAR; MAGFILTER = LINEAR; MINFILTER = LINEAR;
    SF_ANISOTROPIC, // Anisotropic texture filtering.
+   SF_PIXELATED, // Point magnification (crisp texels), but filtered minification (avoids aliasing when downscaled). DX: MIPFILTER = LINEAR; MAGFILTER = POINT; MINFILTER = ANISOTROPIC;
    SF_UNDEFINED, // Used for undefined default values
 };
 
