@@ -2271,7 +2271,8 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          pcv->ShowFindDialog();
          return TRUE;
       }
-      case ID_SAVE:
+      case ID_SAVE: // accelerator, the frame only knows the menu's save command, fixes ctrl+s in script editor
+         pcv->m_table->DoCodeViewCommand(IDM_SAVE); return TRUE;
       case ID_TABLE_CAMERAMODE:
       case ID_TABLE_LIVEEDIT:
       case ID_TABLE_PLAY:
