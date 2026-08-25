@@ -236,7 +236,19 @@ FIXES:
 
 - remove some of the limits (like maximum line length) of the code view/script editor
 
+- fix script editor changes not leading to flagging the table as changed (visible via the added '*')
+- fix ctrl+s not working within the script editor 
+
+- WinUI: fix zooming on a wall with image
+-        fix zoom blocking at max or min
+-        redraw display when grid/playfield is toggled
+-        do not filter navigation inside property pane
+-        delete elements of deleted layer
+-        fix crash on second Select Dialog open
+
 - LiveUI: fix delayed mipmap generation (happens when starting with static rendering, then opening LiveUI) (used for trilinear and anisotropic texture filtering)
+
+- allow FreeImage to decode PNG with corrupted gamma chunks
 
 - BAM headtracking has been removed again. It could be re-added via the new plugin system though. Any volunteers?
 
