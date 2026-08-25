@@ -48,17 +48,23 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        [this]() { m_stateSources.SelectItems(true); })
+        nullptr, [this]() { m_stateSources.SelectItems(true); })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& items)
         {
-           std::lock_guard lock(m_pinmameControllers.GetListMutex());
-           const std::vector<ControllerDef>& controllers = m_pinmameControllers.GetItems();
-           std::erase_if(items, [this, &controllers](const StateSrcId& source)
-              { return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; }) == controllers.end(); });
+           m_pinmameControllers.With(
+              [&items](const std::vector<ControllerDef>& controllers)
+              {
+                 std::erase_if(items,
+                    [&controllers](const StateSrcId& source)
+                    {
+                       return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; })
+                          == controllers.end();
+                    });
+              });
         },
-        []() { })
+        nullptr, nullptr)
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
 {
@@ -1074,35 +1080,39 @@ void Server::CheckGetMech(int number, int mech)
 
 void Server::CheckLamps(ScriptArray* psa)
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-   const auto it = std::find_if(m_stateSources.GetItems().begin(), m_stateSources.GetItems().end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_LAMP; });
-   if (it == m_stateSources.GetItems().end())
-      return;
-   const StateSrcId& pinmameStateSrc = *it;
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& stateSources)
+      {
+      const auto it = std::find_if(stateSources.begin(), stateSources.end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_LAMP; });
+      if (it == stateSources.end())
+         return;
+      const StateSrcId& pinmameStateSrc = *it;
 
-   for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
-   {
-      if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
-         continue;
-      uint8_t state;
-      pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
-      const int lampState = static_cast<int>(state);
-      const int lampId = pinmameStateSrc.stateDefs[i].mappingId;
+      for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
+      {
+         if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+            continue;
+         uint8_t state;
+         pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+         const int lampState = static_cast<int>(state);
+         const int lampId = pinmameStateSrc.stateDefs[i].mappingId;
 
-      if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps()) {
-         // collect illumination data
-         if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == lampId)
-            m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_TopImage));
-         else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == lampId)
-            m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_SecondImage));
-         if (m_pB2SData->GetUsedRomLampIDs()->contains(lampId))
-            m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Standard));
+         if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps())
+         {
+            // collect illumination data
+            if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == lampId)
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_TopImage));
+            else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == lampId)
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_SecondImage));
+            if (m_pB2SData->GetUsedRomLampIDs()->contains(lampId))
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Standard));
 
-         // collect animation data
-         if (m_pB2SData->GetUsedAnimationLampIDs()->contains(lampId) || m_pB2SData->GetUsedRandomAnimationLampIDs()->contains(lampId))
-            m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Animation));
+            // collect animation data
+            if (m_pB2SData->GetUsedAnimationLampIDs()->contains(lampId) || m_pB2SData->GetUsedRandomAnimationLampIDs()->contains(lampId))
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Animation));
+         }
       }
-   }
+   });
 
    // one collection loop is done
    m_pCollectLampsData->DataAdded();
@@ -1220,36 +1230,39 @@ void Server::CheckLamps(ScriptArray* psa)
 
 void Server::CheckSolenoids(ScriptArray* psa)
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-   const auto it = std::find_if(m_stateSources.GetItems().begin(), m_stateSources.GetItems().end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_SOLENOID; });
-   if (it == m_stateSources.GetItems().end())
-      return;
-   const StateSrcId& pinmameStateSrc = *it;
-
-   for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
-   {
-      if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
-         continue;
-      uint8_t state;
-      pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
-      const int solenoidState = static_cast<int>(state);
-      const int solenoidId = pinmameStateSrc.stateDefs[i].mappingId;
-
-      if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids())
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& stateSources)
       {
-         // collect illumination data
-         if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetTopRomID() == solenoidId)
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_TopImage));
-         else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetSecondRomID() == solenoidId)
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_SecondImage));
-         if (m_pB2SData->GetUsedRomSolenoidIDs()->contains(solenoidId))
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Standard));
+         const auto it = std::find_if(stateSources.begin(), stateSources.end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_SOLENOID; });
+         if (it == stateSources.end())
+            return;
+         const StateSrcId& pinmameStateSrc = *it;
 
-         // collect animation data
-         if (m_pB2SData->GetUsedAnimationSolenoidIDs()->contains(solenoidId) || m_pB2SData->GetUsedRandomAnimationSolenoidIDs()->contains(solenoidId))
-            m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Animation));
-      }
-   }
+         for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
+         {
+            if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+               continue;
+            uint8_t state;
+            pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+            const int solenoidState = static_cast<int>(state);
+            const int solenoidId = pinmameStateSrc.stateDefs[i].mappingId;
+
+            if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids())
+            {
+               // collect illumination data
+               if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetTopRomID() == solenoidId)
+                  m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_TopImage));
+               else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Solenoid && m_pFormBackglass->GetSecondRomID() == solenoidId)
+                  m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_SecondImage));
+               if (m_pB2SData->GetUsedRomSolenoidIDs()->contains(solenoidId))
+                  m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Standard));
+
+               // collect animation data
+               if (m_pB2SData->GetUsedAnimationSolenoidIDs()->contains(solenoidId) || m_pB2SData->GetUsedRandomAnimationSolenoidIDs()->contains(solenoidId))
+                  m_pCollectSolenoidsData->Add(solenoidId, new CollectData(solenoidState, eCollectedDataType_Animation));
+            }
+         }
+      });
 
    // one collection loop is done
    m_pCollectSolenoidsData->DataAdded();
@@ -1367,35 +1380,39 @@ void Server::CheckSolenoids(ScriptArray* psa)
 
 void Server::CheckGIStrings(ScriptArray* psa)
 {
-   std::lock_guard lock(m_stateSources.GetListMutex());
-   const auto it = std::find_if(m_stateSources.GetItems().begin(), m_stateSources.GetItems().end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_GI; });
-   if (it == m_stateSources.GetItems().end())
-      return;
-   const StateSrcId& pinmameStateSrc = *it;
+   m_stateSources.With(
+      [this](const std::vector<StateSrcId>& stateSources)
+      {
+         const auto it = std::find_if(stateSources.begin(), stateSources.end(), [](const StateSrcId& src) { return src.id.resId == PMPI_GROUP_VPM_GI; });
+         if (it == stateSources.end())
+            return;
+         const StateSrcId& pinmameStateSrc = *it;
 
-   for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
-   {
-      if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
-         continue;
-      uint8_t state;
-      pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
-      const int giStringBool = state > m_giStringThreshold;
-      const int giStringId = pinmameStateSrc.stateDefs[i].mappingId;
+         for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
+         {
+            if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+               continue;
+            uint8_t state;
+            pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+            const int giStringBool = state > m_giStringThreshold;
+            const int giStringId = pinmameStateSrc.stateDefs[i].mappingId;
 
-      if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings()) {
-         // collect illumination data
-         if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetTopRomID() == giStringId)
-            m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_TopImage));
-         else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetSecondRomID() == giStringId)
-            m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_SecondImage));
-         if (m_pB2SData->GetUsedRomGIStringIDs()->contains(giStringId))
-            m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Standard));
+            if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings())
+            {
+               // collect illumination data
+               if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetTopRomID() == giStringId)
+                  m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_TopImage));
+               else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetSecondRomID() == giStringId)
+                  m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_SecondImage));
+               if (m_pB2SData->GetUsedRomGIStringIDs()->contains(giStringId))
+                  m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Standard));
 
-         // collect animation data
-         if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(giStringId) || m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(giStringId))
-            m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Animation));
-      }
-   }
+               // collect animation data
+               if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(giStringId) || m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(giStringId))
+                  m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Animation));
+            }
+         }
+      });
 
    // one collection loop is done
    m_pCollectGIStringsData->DataAdded();

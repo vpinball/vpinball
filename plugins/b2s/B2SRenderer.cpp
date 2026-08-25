@@ -31,17 +31,24 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        [this]() { m_stateSources.SelectItems(true); })
+        nullptr, [this]() { m_stateSources.SelectItems(true); })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& items)
         {
-           std::lock_guard lock(m_pinmameControllers.GetListMutex());
-           const std::vector<ControllerDef>& controllers = m_pinmameControllers.GetItems();
-           std::erase_if(items, [this, &controllers](const StateSrcId& source)
-              { return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; }) == controllers.end(); });
+           m_pinmameControllers.With(
+              [&items](const std::vector<ControllerDef>& controllers)
+              {
+                 std::erase_if(items,
+                    [&controllers](const StateSrcId& source)
+                    {
+                       return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; })
+                          == controllers.end();
+                    });
+              });
         },
-        [this]() { OnStateSrcChanged(); })
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& items) { OnStateSrcChanged({ }); }); },
+        [this]() { m_stateSources.With([this](const std::vector<StateSrcId>& items) { OnStateSrcChanged(items); }); })
 {
    m_backglassDmdOverlay.LoadSettings(false);
    m_scoreViewDmdOverlay.LoadSettings(true);
@@ -97,7 +104,7 @@ void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
    }
 }
 
-void B2SRenderer::OnStateSrcChanged()
+void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
 {
    if (m_b2s->m_backglassOnImage.m_image)
       m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
@@ -106,18 +113,19 @@ void B2SRenderer::OnStateSrcChanged()
 
 
    if (m_b2s->m_backglassOnImage.m_image)
-      m_b2s->m_backglassOnImage.m_romUpdater = ResolveRomPropUpdater(&m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId);
+      m_b2s->m_backglassOnImage.m_romUpdater
+         = ResolveRomPropUpdater(items, &m_b2s->m_backglassOnImage.m_brightness, m_b2s->m_backglassOnImage.m_romIdType, m_b2s->m_backglassOnImage.m_romId);
 
    for (auto& bulb : m_b2s->m_backglassIlluminations)
       switch (bulb->m_snippitType)
       {
-      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(&bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
-      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(&bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::StandardImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_brightness, bulb->m_romIdType, bulb->m_romId); break;
+      case B2SSnippitType::MechRotatingImage: bulb->m_romUpdater = ResolveRomPropUpdater(items, &bulb->m_mechRot, bulb->m_romIdType, bulb->m_romId); break;
       case B2SSnippitType::SelfRotatingImage: break;
       }
 }
 
-std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
+std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<StateSrcId> & items, float * value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
 {
    int groupId;
    switch (romIdType)
@@ -128,28 +136,23 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
    case B2SRomIDType::Mech: groupId = PMPI_GROUP_MECH; break;
    default: return []() { /* No ROM source */ };
    }
-   std::lock_guard lock(m_stateSources.GetListMutex());
-   for (const StateSrcId& src : m_stateSources.GetItems())
+   for (const StateSrcId& src : items)
    {
       if (src.id.resId != groupId)
          continue;
       for (unsigned int i = 0; i < src.nStates; i++)
       {
-         if (src.stateDefs[i].mappingId == romId && src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_FLOAT && src.stateDefs[i].GetState)
+         const auto& def = src.stateDefs[i];
+         if (def.mappingId == romId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
          {
             if (romInverted)
-               return [this, value, i, src]()
+               return [this, value, getter = def.GetState, id = src.id, i]()
                {
-                  std::lock_guard lock(m_stateSources.GetListMutex());
-                  src.stateDefs[i].GetState(src.id, i, value);
+                  m_stateSources.With([this, value, getter, id, i](const std::vector<StateSrcId>&) { getter(id, i, value); });
                   *value = 1.f - *value;
                };
             else
-               return [this, value, i, src]()
-               {
-                  std::lock_guard lock(m_stateSources.GetListMutex());
-                  src.stateDefs[i].GetState(src.id, i, value);
-               };
+               return [this, value, getter = def.GetState, id = src.id, i]() { m_stateSources.With([this, value, getter, id, i](const std::vector<StateSrcId>&) { getter(id, i, value); }); };
          }
       }
    }

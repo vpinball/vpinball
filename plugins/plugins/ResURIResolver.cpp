@@ -18,8 +18,6 @@ namespace PinballPlugin
 ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackStates)
    : m_msgAPI(msgAPI)
    , m_endpointId(endpointId)
-   , m_getStateSrcMsgId(trackStates ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_GET_SRC_MSG) : 0)
-   , m_onStateChangedMsgId(trackStates ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG) : 0)
    , m_getSegSrcMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG) : 0)
    , m_onSegChangedMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG) : 0)
    , m_getDisplaySrcMsgId(trackDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG) : 0)
@@ -37,19 +35,17 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
    }
    if (trackStates)
    {
-      m_msgAPI.SubscribeMsg(m_endpointId, m_onStateChangedMsgId, OnStateSrcChanged, this);
-      OnStateSrcChanged(m_onStateChangedMsgId, this, nullptr);
+      m_stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>>(
+         &m_msgAPI, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
+         nullptr, // No filtering
+         [this]() { m_floatCache.clear(); },
+         nullptr); // No setup
+      m_stateSources->SelectItems(true);
    }
 }
 
 ResURIResolver::~ResURIResolver()
 {
-   if (m_onStateChangedMsgId)
-   {
-      m_msgAPI.UnsubscribeMsg(m_onStateChangedMsgId, OnStateSrcChanged, this);
-      m_msgAPI.ReleaseMsgID(m_onStateChangedMsgId);
-      m_msgAPI.ReleaseMsgID(m_getStateSrcMsgId);
-   }
    if (m_onSegChangedMsgId)
    {
       m_msgAPI.UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
@@ -82,13 +78,6 @@ bool ResURIResolver::try_parse_int(const string &str, int &value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc {});
 }
 
-void ResURIResolver::OnStateSrcChanged(const unsigned int msgId, void *userData, void *msgData)
-{
-   ResURIResolver* me = static_cast<ResURIResolver *>(userData);
-   PinballPlugin::Controller::GetCtrlItems<StateSrcId>(&me->m_msgAPI, me->m_endpointId, me->m_getStateSrcMsgId, me->m_stateSources);
-   me->m_floatCache.clear();
-}
-
 void ResURIResolver::OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver* me = static_cast<ResURIResolver *>(userData);
@@ -108,58 +97,95 @@ float ResURIResolver::GetFloatState(const string &link)
    if (const auto &cache = m_floatCache.find(link); cache != m_floatCache.end())
       return cache->second(link);
 
-   floatCacheLambda lambda = nullptr;
-   if (const auto &uri = uri::parse_uri(link); uri.error != uri::Error::None)
+   const auto &uri = uri::parse_uri(link);
+
+   unsigned int endpoint = 0;
+   if (uri.error == uri::Error::None)
    {
-      // FIXME log PLOGE << "Invalid resource URI: " << link;
-   }
-   else if (uri.scheme == "ctrl")
-   {
-      if (uri.authority.host == "default")
+      if (uri.scheme == "ctrl")
       {
-         // Which definitions do we want to give for this (if any) ?
-      }
-      else
-      {
-         const unsigned int plugin = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
-         if (plugin)
+         if (uri.authority.host == "default")
          {
-            int resId = 0;
-            if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end())
-               try_parse_int(resIdPart->second, resId);
-            if (uri.path == "/state")
-            {
-               auto ioSource = std::ranges::find_if(m_stateSources.begin(), m_stateSources.end(), [plugin, resId](const StateSrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
-               if (ioSource != m_stateSources.end())
-               {
-                  int ioId = 0;
-                  if (auto ioIdPart = uri.query.find("io"s); ioIdPart != uri.query.end())
-                     try_parse_int(ioIdPart->second, ioId);
-                  
-                  int ioIndex = -1;
-                  for (unsigned int i = 0; i < ioSource->nStates; i++)
-                     if (ioSource->stateDefs[i].mappingId == ioId)
-                        ioIndex = i;
-                     
-                  if (ioIndex >= 0)
-                     lambda = [ioSource, ioIndex](const string &)
-                     {
-                        if (const StateDef &def = ioSource->stateDefs[ioIndex]; def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr)
-                        {
-                           float value;
-                           def.GetState(ioSource->id, ioIndex, &value);
-                           return value;
-                        }
-                        return 0.f;
-                     };
-               }
-            }
-            else if (uri.path == "/display")
-            {
-               // TODO implement (to access individual dots, useful for small LED matrices)
-            }
+            // Which definitions do we want to give for this (if any) ?
+         }
+         else
+         {
+            endpoint = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
          }
       }
+   }
+   if (endpoint == 0)
+   {
+      // PLOGE << "Invalid resource URI: " << link;
+      m_floatCache[link] = [](const string &) { return 0.f; };
+      return 0.f;
+   }
+
+   floatCacheLambda lambda = nullptr;
+   if (uri.path == "/state")
+   {
+      auto grpPart = uri.query.find("grp"s);
+      int group = 0;
+      if (grpPart != uri.query.end() && try_parse_int(grpPart->second, group))
+      {
+         int mapping = 0;
+         if (auto mappingPart = uri.query.find("mapping"s); mappingPart != uri.query.end() && try_parse_int(mappingPart->second, mapping))
+         {
+            // Select by group + mapping
+            m_stateSources->With(
+               [endpoint, group, mapping, &lambda](const std::vector<StateSrcId> &sources)
+               {
+                  auto stateBlock
+                     = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, group](const StateSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == group; });
+                  if (stateBlock == sources.end())
+                     return;
+                  for (unsigned int i = 0; i < stateBlock->nStates; i++)
+                  {
+                     if (const StateDef &def = stateBlock->stateDefs[i]; def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.mappingId == mapping)
+                     {
+                        lambda = [getter = def.GetState, id = stateBlock->id, i](const string &)
+                        {
+                           float value;
+                           getter(id, i, &value);
+                           return value;
+                        };
+                        break;
+                     }
+                  }
+               });
+         }
+         else if (auto namePart = uri.query.find("name"s); namePart != uri.query.end())
+         {
+            // Select by group + name
+            const string name = namePart->second;
+            m_stateSources->With(
+               [endpoint, group, name, &lambda](const std::vector<StateSrcId> &sources)
+               {
+                  auto stateBlock
+                     = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, group](const StateSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == group; });
+                  if (stateBlock == sources.end())
+                     return;
+                  for (unsigned int i = 0; i < stateBlock->nStates; i++)
+                  {
+                     if (const StateDef &def = stateBlock->stateDefs[i];
+                        def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.name != nullptr && string(def.name) == name)
+                     {
+                        lambda = [getter = def.GetState, id = stateBlock->id, i](const string &)
+                        {
+                           float value;
+                           getter(id, i, &value);
+                           return value;
+                        };
+                        break;
+                     }
+                  }
+               });
+         }
+      }
+   }
+   else if (uri.path == "/display")
+   {
+      // TODO implement (to access individual dots, useful for small LED matrices)
    }
 
    if (lambda == nullptr)

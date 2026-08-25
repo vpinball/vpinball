@@ -462,6 +462,7 @@ template <class T> struct GetCtrlSrcMsg
    T* entries; // Pointer to an array of maxEntryCount entries to be filled
 };
 
+// Gather a shared controller item list. May only be called on the MsgAPI thread
 template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId, std::vector<T>& list)
 {
    GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
@@ -478,6 +479,7 @@ template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t
    }
 }
 
+// Gather a shared controller item list. May only be called on the MsgAPI thread
 template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId)
 {
    std::vector<T> list;
@@ -565,6 +567,12 @@ public:
       assert(!m_listMutex.try_lock() && "GetItems() called without holding m_listMutex");
       return m_items;
    }
+   
+   template <typename Func> auto With(Func&& func) -> decltype(func(std::declval<const std::vector<T>&>()))
+   {
+      std::lock_guard lock(m_listMutex);
+      return std::forward<Func>(func)(m_items);
+   }
 
 private:
    static void OnGetItems(const unsigned int eventId, void* userData, void* msgData)
@@ -592,73 +600,155 @@ private:
    std::vector<T> m_items;
 };
 
+// Provide a consumer with a list of items gathered from distributed plugin, in a multithreaded context.
+// . The list only mutates in SelectItems, on the MsgApi thread
+// . The list remain empty until SelectItems is called to populate it directly or as a consequence of a change event
+// . Items are immutable and valid from a change event until the end of processing of the corresponding end-of-life change event
+//   (Note that C++ prevents vector<const T> so this is not enforced, but is strictly required)
+// . Items may only be accessed through the `With` method to guarantee proper synchronization against list change events.
+// . When list change, the onItemsAboutToChange is first called. Before returning, onItemsAboutToChange **MUST**:
+//   - prevent client threads from starting new list-dependent operations;
+//   - wait for all existing list-dependent operations to complete;
+//   - discard all copied or borrowed data referring to the current items.
+// . The onItemsChanged callback is then called, allowing to resume processing.
+// . Clients may cache copies of items or item-derived data between change events.
+//   If the cached data borrows from provider-owned storage:
+//   - it may only be accessed as part of a With() operation;
+//   - it must be discarded by onItemsAboutToChange before that callback returns.
 template <class T> class CtrlItemConsumer
 {
 public:
-   CtrlItemConsumer(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName, const std::function<void(std::vector<T>&)>& filterItems,
-      const std::function<void()> onItemsChanged)
-      : m_threadLock(std::this_thread::get_id())
+   CtrlItemConsumer(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName,
+      const std::function<void(std::vector<T>&)>& filterItems,
+      const std::function<void()>& onItemsAboutToChange,
+      const std::function<void()>& onItemsChanged)
+      : m_msgApiThreadId(std::this_thread::get_id())
       , m_msgApi(msgApi)
       , m_endpointId(endpointId)
       , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
       , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
       , m_filterItems(filterItems)
+      , m_onItemsAboutToChange(onItemsAboutToChange)
       , m_onItemsChanged(onItemsChanged)
    {
       m_msgApi->SubscribeMsg(m_endpointId, m_onChangeMsgId, OnItemsChanged, this);
    }
 
+   CtrlItemConsumer(const CtrlItemConsumer&) = delete;
+   CtrlItemConsumer& operator=(const CtrlItemConsumer&) = delete;
+   CtrlItemConsumer(CtrlItemConsumer&&) = delete;
+   CtrlItemConsumer& operator=(CtrlItemConsumer&&) = delete;
+
    ~CtrlItemConsumer()
    {
-      assert(std::this_thread::get_id() == m_threadLock);
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
       m_msgApi->UnsubscribeMsg(m_onChangeMsgId, OnItemsChanged, this);
+      if (m_onItemsAboutToChange)
+         m_onItemsAboutToChange();
       m_msgApi->ReleaseMsgID(m_getMsgId);
       m_msgApi->ReleaseMsgID(m_onChangeMsgId);
    }
 
-   void SelectItems(bool discardSameSelectionEvent)
+   void SelectItems(const bool discardSameSelectionEvent)
    {
-      assert(std::this_thread::get_id() == m_threadLock);
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
+
+      // Coalesce reentrant SelectItems() calls to avoid recursive updates.
+      if (m_isSelectingItems)
+      {
+         m_selectItemsPending = true;
+         // If at least one coalesced request requires a change event,
+         // preserve that requirement for the next iteration.
+         m_forceSelectionEvent |= !discardSameSelectionEvent;
+         return;
+      }
+
+      m_isSelectingItems = true;
+      m_selectItemsPending = true;
+      m_forceSelectionEvent = !discardSameSelectionEvent;
+
+      try
+      {
+         while (m_selectItemsPending)
+         {
+            m_selectItemsPending = false;
+            const bool forceSelectionEvent = std::exchange(m_forceSelectionEvent, false);
+            SelectItemsOnce(!forceSelectionEvent);
+         }
+      }
+      catch (...)
+      {
+         m_isSelectingItems = false;
+         m_selectItemsPending = false;
+         m_forceSelectionEvent = false;
+         throw;
+      }
+
+      m_isSelectingItems = false;
+   }
+
+   template <typename Func> auto With(Func&& func) const -> decltype(func(std::declval<const std::vector<T>&>()))
+   {
+      std::lock_guard lock(m_listMutex);
+      return std::forward<Func>(func)(m_items);
+   }
+
+private:
+   void SelectItemsOnce(bool discardSameSelectionEvent)
+   {
+      assert(std::this_thread::get_id() == m_msgApiThreadId);
       std::vector<T> items = GetCtrlItems<T>(m_msgApi, m_endpointId, m_getMsgId);
 
-      if (!items.empty())
+      if (!items.empty() && m_filterItems)
          m_filterItems(items);
 
-      if (discardSameSelectionEvent && m_items == items)
-         return;
+      if (discardSameSelectionEvent)
+      {
+         std::lock_guard lock(m_listMutex); // Not entirely needed as items are const and list is readonly but cleaner
+         if (m_items == items)
+            return;
+      }
 
+      if (m_onItemsAboutToChange)
+         m_onItemsAboutToChange();
       {
          std::lock_guard lock(m_listMutex);
          m_items = std::move(items);
       }
-      m_onItemsChanged();
+      if (m_onItemsChanged)
+         m_onItemsChanged();
    }
 
-   std::mutex& GetListMutex() { return m_listMutex; }
-
-   const std::vector<T>& GetItems()
+   static void OnItemsChanged(const unsigned int, void* userData, void*) noexcept
    {
-      assert(!m_listMutex.try_lock() && "GetItems() called without holding m_listMutex");
-      return m_items;
+      try
+      {
+         CtrlItemConsumer<T>* me = static_cast<CtrlItemConsumer<T>*>(userData);
+         me->SelectItems(true);
+      }
+      catch (...)
+      {
+         // All callbacks are required to be noexcept
+         assert(false && "CtrlItemConsumer callback unexpectedly threw");
+         std::terminate();
+      }
    }
 
-private:
-   static void OnItemsChanged(const unsigned int eventId, void* userData, void* msgData)
-   {
-      CtrlItemConsumer<T>* me = static_cast<CtrlItemConsumer<T>*>(userData);
-      me->SelectItems(true);
-   }
-
-   const std::thread::id m_threadLock;
-   const MsgPluginAPI* m_msgApi;
+   const std::thread::id m_msgApiThreadId;
+   const MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_getMsgId;
    const unsigned int m_onChangeMsgId;
    const std::function<void(std::vector<T>&)> m_filterItems;
+   const std::function<void()> m_onItemsAboutToChange;
    const std::function<void()> m_onItemsChanged;
 
-   std::mutex m_listMutex;
    std::vector<T> m_items;
+   mutable std::mutex m_listMutex;
+
+   bool m_isSelectingItems = false;
+   bool m_selectItemsPending = false;
+   bool m_forceSelectionEvent = false;
 };
 
 };

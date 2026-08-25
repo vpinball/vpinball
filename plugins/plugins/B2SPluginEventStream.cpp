@@ -14,34 +14,68 @@ using namespace std::string_view_literals;
 using std::vector;
 
 B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t endpointId, const std::function<void(char, int, int)>& eventHandler)
-   : m_endpointId(endpointId) 
+   : m_endpointId(endpointId)
    , m_msgApi(msgApi)
    , m_eventHandler(eventHandler)
-   , m_onControllersChangedId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG))
-   , m_getControllersId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG))
    , m_getSegSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG))
    , m_onSegSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG))
    , m_getDmdSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
    , m_onDmdSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
    , m_onSerumTriggerId(m_msgApi->GetMsgID("Serum", "OnDmdTrigger"))
    , m_onB2SStateChangeId(m_msgApi->GetMsgID("B2S", "OnStateChange"))
+   , m_controllers(
+        msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
+        [this](std::vector<ControllerDef>& controllers)
+        {
+           const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+           const string b2sPrefix("b2s::");
+           std::erase_if(controllers,
+              [this, &pinmamePrefix, &b2sPrefix](const ControllerDef& controller)
+              {
+                 const std::string_view gameId = controller.gameId;
+                 return !gameId.starts_with(pinmamePrefix) && !gameId.starts_with(b2sPrefix);
+              });
+        },
+        []() { },
+        [this]()
+        {
+           m_controllers.With(
+              [this](const std::vector<ControllerDef>& controllers)
+              {
+                 m_b2sEndPoint = 0;
+                 m_pinmameEndPoint = 0;
+                 const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+                 const string b2sPrefix("b2s::");
+                 for (const auto& controller : controllers)
+                 {
+                    string gameId = controller.gameId;
+                    if (m_pinmameEndPoint == 0 && gameId.starts_with(pinmamePrefix))
+                       m_pinmameEndPoint = controller.endpointId;
+                    else if (m_b2sEndPoint == 0 && gameId.starts_with(b2sPrefix))
+                       m_b2sEndPoint = controller.endpointId;
+                    if (m_pinmameEndPoint != 0 && m_b2sEndPoint != 0)
+                       break;
+                 }
+              });
+           OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
+           m_stateSources.SelectItems(true);
+        })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
-        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); },
+        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); }, nullptr,
         [this]()
         {
            for (auto& buffer : m_pmStates)
               buffer.clear();
         })
    {
-   m_msgApi->SubscribeMsg(m_endpointId, m_onControllersChangedId, OnControllersChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdSrcChangedId, OnDMDSrcChanged, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onSerumTriggerId, OnSerumTrigger, this);
    m_msgApi->SubscribeMsg(m_endpointId, m_onB2SStateChangeId, OnB2SStateChange, this);
-   OnControllersChanged(m_onDmdSrcChangedId, this, nullptr);
    OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
+   m_controllers.SelectItems(true);
    m_stateSources.SelectItems(true);
 
    m_thread = std::thread(&B2SPluginEventStream::StatePollingThread, this);
@@ -53,7 +87,6 @@ B2SPluginEventStream::~B2SPluginEventStream()
    if (m_thread.joinable())
       m_thread.join();
 
-   m_msgApi->UnsubscribeMsg(m_onControllersChangedId, OnControllersChanged, this);
    m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onSerumTriggerId, OnSerumTrigger, this);
@@ -68,9 +101,6 @@ B2SPluginEventStream::~B2SPluginEventStream()
 
    m_msgApi->ReleaseMsgID(m_getDmdSrcId);
    m_msgApi->ReleaseMsgID(m_onDmdSrcChangedId);
-
-   m_msgApi->ReleaseMsgID(m_getControllersId);
-   m_msgApi->ReleaseMsgID(m_onControllersChangedId);
 }
 
 void B2SPluginEventStream::SetDMDHandler(const std::function<DisplaySrcId(const GetDisplaySrcMsg&)>& select, const std::function<int(const DisplaySrcId&, const uint8_t*)>& process)
@@ -78,45 +108,6 @@ void B2SPluginEventStream::SetDMDHandler(const std::function<DisplaySrcId(const 
    m_selectDmd = select;
    m_processDmd = process;
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
-}
-
-void B2SPluginEventStream::OnControllersChanged(const unsigned int eventId, void* userData, void* eventData)
-{
-   auto me = static_cast<B2SPluginEventStream*>(userData);
-
-   // Search for PinMAME and B2S controllers
-   unsigned int pinmameEndPoint = 0;
-   unsigned int b2sEndPoint = 0;
-   GetControllersMsg getControllersMsg = { 0, 0, nullptr };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getControllersId, &getControllersMsg);
-   if (getControllersMsg.count > 0)
-   {
-      const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-      const string b2sPrefix("b2s::");
-      vector<ControllerDef> controllers(getControllersMsg.count);
-      getControllersMsg = { getControllersMsg.count, 0, controllers.data() };
-      me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getControllersId, &getControllersMsg);
-      for (const auto& controller : controllers)
-      {
-         string gameId = controller.gameId;
-         if (gameId.starts_with(pinmamePrefix))
-            pinmameEndPoint = controller.endpointId;
-         else if (gameId.starts_with(b2sPrefix))
-            b2sEndPoint = controller.endpointId;
-         if (pinmameEndPoint != 0 && b2sEndPoint != 0)
-            break;
-      }
-   }
-
-   if (me->m_pinmameEndPoint == pinmameEndPoint && me->m_b2sEndPoint == b2sEndPoint)
-      return;
-   
-   const bool pmChanged = me->m_pinmameEndPoint != pinmameEndPoint;
-   me->m_pinmameEndPoint = pinmameEndPoint;
-   me->m_b2sEndPoint = b2sEndPoint;
-   if (pmChanged)
-      OnSegSrcChanged(me->m_onSegSrcChangedId, me, nullptr);
-   me->m_stateSources.SelectItems(true);
 }
 
 void B2SPluginEventStream::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
@@ -238,9 +229,8 @@ void B2SPluginEventStream::StatePollingThread()
 
       // We are recreating B2S COM behavior: rely on VPinMAME changed states and broadcast them as is to plugins
       // (B2S itself does further processing to handle modulated outputs but the byte/int32 state is broadcasted to plugin without this processing)
-      {
-         std::lock_guard lock(m_stateSources.GetListMutex());
-         for (const StateSrcId& src : m_stateSources.GetItems())
+      m_stateSources.With([&](const std::vector<StateSrcId>& stateSources) {
+         for (const StateSrcId& src : stateSources)
          {
             int bufferIndex = 0;
             char eventType = 0;
@@ -298,6 +288,6 @@ void B2SPluginEventStream::StatePollingThread()
                }
             }
          }
-      }
+      });
    }
 }

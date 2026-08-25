@@ -37,19 +37,18 @@
 //     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
 //     - 'sub=xx' is used to select the xx-th element of the display (0-based)
 //   . '/state' path allows to access game states
-//     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
 //     - 'grp=xx' where xx is the device group defined by the plugin
 //     - 'io=xx' where xx is the device mapping id (user friendly number, defined by the plugin, unique inside the device group)
 //
 //   examples:
 //   - ctrl://default/display                  => Default DMD or display
-//   - ctrl://pinmame/seg?id=1                 => Alphanumeric segment display #1
-//   - ctrl://pinmame/seg?id=1&sub=0           => Alphanumeric first element (block of segments forming a number/character) of segment display #1
 //   - ctrl://flexdmd/display                  => FlexDMD first DMD
-//   - ctrl://pinmame/input?grp=1&io=11        => Input #11 of PinMAME input group #1 (switch matrix 1.1)
-//   - ctrl://pinmame/input?grp=2&io=1         => Input #1 of PinMAME input group #2 (first dip switch)
 //   - ctrl://pinmame/display?x=0&y=0          => Relative luminance of the top left dot of PinMAME's first display
 //   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling)
+//   - ctrl://pinmame/state?grp=1&io=11        => Element #11 of PinMAME state group #1 (solenoid #11)
+//   - ctrl://pinmame/state?grp=2&io=1         => Element #1 of PinMAME state group #2 (first GI string)
+//   - ctrl://pinmame/seg?id=1                 => Alphanumeric segment display #1
+//   - ctrl://pinmame/seg?id=1&sub=0           => Alphanumeric first element (block of segments forming a number/character) of segment display #1
 //
 
 namespace PinballPlugin
@@ -83,10 +82,7 @@ private:
    const MsgPluginAPI& m_msgAPI;
    const unsigned int m_endpointId;
 
-   const unsigned int m_getStateSrcMsgId;
-   const unsigned int m_onStateChangedMsgId;
-   static void OnStateSrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   std::vector<StateSrcId> m_stateSources;
+   mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>> m_stateSources;
 
    using floatCacheLambda = std::function<float(const std::string &)>;
    ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;
