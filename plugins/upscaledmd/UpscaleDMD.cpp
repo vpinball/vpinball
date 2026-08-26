@@ -408,7 +408,6 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
    msgApi = api;
    endpointId = sessionId;
    LPISetup(endpointId, api);
-   msgApi->RegisterSetting(endpointId, &upscaleModeProp);
    dmdSource = std::make_unique<CtrlItemConsumer<DisplaySrcId>>(
       msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
       [](std::vector<DisplaySrcId>& items)
@@ -436,6 +435,7 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
                   upscaler = std::make_unique<DMDUpscaler>(items.front());
             });
       });
+   msgApi->RegisterSetting(endpointId, &upscaleModeProp);
    dmdSource->SelectItems(true);
 }
 
