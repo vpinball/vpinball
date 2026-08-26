@@ -91,6 +91,8 @@ endif()
 if(PLATFORM STREQUAL "linux")
    option(BUILD_RPI "Build for Raspberry PI" OFF)
    option(BUILD_RK3588 "Build for RK3588" OFF)
+   option(ENABLE_XR "Enable OpenXR support (BGFX only)" ON)
+   message(STATUS "ENABLE_XR: ${ENABLE_XR}")
 endif()
 if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android")
    option(ENABLE_XR "Enable OpenXR support" OFF)
@@ -680,6 +682,7 @@ elseif(PLATFORM STREQUAL "linux")
    if(RENDERER STREQUAL "BGFX")
       target_compile_definitions(vpinball PRIVATE
          ENABLE_BGFX
+         $<$<BOOL:${ENABLE_XR}>:ENABLE_XR>
 
          $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
       )
@@ -734,6 +737,10 @@ elseif(PLATFORM STREQUAL "linux")
 
    target_link_libraries(vpinball PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
 
+   if(ENABLE_XR AND RENDERER STREQUAL "BGFX")
+      target_link_libraries(vpinball PUBLIC openxr_loader vulkan)
+   endif()
+
    set(RUNTIME_OUTPUT_NAME "$<IF:$<STREQUAL:${RENDERER},BGFX>,VPinballX_BGFX,VPinballX_GL>")
 
    set_target_properties(vpinball PROPERTIES
@@ -778,6 +785,12 @@ elseif(PLATFORM STREQUAL "linux")
       if(RENDERER STREQUAL "BGFX")
          add_custom_command(TARGET vpinball POST_BUILD
             COMMAND cp -a "${RUNTIME_LIBS_DIR}/libbgfx.so" "$<TARGET_FILE_DIR:vpinball>"
+         )
+      endif()
+      if(ENABLE_XR AND RENDERER STREQUAL "BGFX")
+         add_custom_command(TARGET vpinball POST_BUILD
+            COMMAND cp -a "${RUNTIME_LIBS_DIR}/libopenxr_loader.so" "$<TARGET_FILE_DIR:vpinball>"
+            COMMAND cp -a "${RUNTIME_LIBS_DIR}/libopenxr_loader.so.*" "$<TARGET_FILE_DIR:vpinball>"
          )
       endif()
    endif()
