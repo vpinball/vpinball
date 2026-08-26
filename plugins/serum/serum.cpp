@@ -51,8 +51,7 @@ public:
       : m_pSerum(Serum_Load(serumPath.string().c_str(), currentGameId.c_str(), FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES))
       , m_controllerEndpointId(controllerEndpointId)
       , m_dmdSource(
-           msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
-           [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
+           msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
            [this]() { StopColorizeThread(); }, [this]() { StartColorizeThread(); })
       , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
       , m_colorizedframeId(std_rand())
@@ -128,57 +127,58 @@ private:
       m_advertisedWidth64 = 0;
       m_colorFrameV1.clear();
    }
-   
+
    void ColorizeThread(DisplaySrcId dmdId)
    {
       SetThreadName("Serum.ColorizeThread"s);
       constexpr uint32_t SERUM_MAX_ROTATION_DELAY_MS = 2048;
       unsigned int lastFrameId = 0;
       bool hasAnimation = false;
-      std::chrono::high_resolution_clock::time_point animationTick;
-      std::chrono::high_resolution_clock::time_point animationNextTick;
+      std::chrono::steady_clock::time_point animationTick;
+      std::chrono::steady_clock::time_point animationNextTick;
       while (m_isRunning)
       {
          // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
          std::this_thread::sleep_for(std::chrono::microseconds(16666));
-         
+
          // Lock stateMutex as we directly returns internal Serum colorized frames (which may be modified by the calls here after)
          std::lock_guard targetLock(m_stateMutex);
 
          bool updated = false;
-         
+
          // Process incoming frames from DMD source
-         m_dmdSource.With([&](const std::vector<DisplaySrcId>& items)
-         {
-            const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
-            if (frame.frame == nullptr)
+         m_dmdSource.With(
+            [&](const std::vector<DisplaySrcId>& items)
             {
-               m_isRunning = false;
-               return;
-            }
+               const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+               if (frame.frame == nullptr)
+               {
+                  m_isRunning = false;
+                  return;
+               }
 
-            if (frame.frameId == lastFrameId)
-               return;
-            lastFrameId = frame.frameId;
+               if (frame.frameId == lastFrameId)
+                  return;
+               lastFrameId = frame.frameId;
 
-            const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(static_cast<const uint8_t*>(frame.frame)));
-            if (firstrot == IDENTIFY_NO_FRAME || firstrot == IDENTIFY_SAME_FRAME)
-               return;
-            
-            const uint32_t firstDelayMs = firstrot & 0x0000ffff;
-            hasAnimation = (firstDelayMs != 0) && (firstDelayMs < SERUM_MAX_ROTATION_DELAY_MS);
-            if (hasAnimation)
-            {
-               animationTick = std::chrono::high_resolution_clock::now();
-               animationNextTick = animationTick + std::chrono::milliseconds(firstDelayMs);
-            }
+               const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(static_cast<const uint8_t*>(frame.frame)));
+               if (firstrot == IDENTIFY_NO_FRAME || firstrot == IDENTIFY_SAME_FRAME)
+                  return;
 
-            if (m_pSerum->triggerID != 0xffffffff)
-               msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &colorizer->m_pSerum->triggerID); }, nullptr);
+               const uint32_t firstDelayMs = firstrot & 0x0000ffff;
+               hasAnimation = (firstDelayMs != 0) && (firstDelayMs < SERUM_MAX_ROTATION_DELAY_MS);
+               if (hasAnimation)
+               {
+                  animationTick = std::chrono::high_resolution_clock::now();
+                  animationNextTick = animationTick + std::chrono::milliseconds(firstDelayMs);
+               }
 
-            updated = true;
-         });
-         
+               if (m_pSerum->triggerID != 0xffffffff)
+                  msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &colorizer->m_pSerum->triggerID); }, nullptr);
+
+               updated = true;
+            });
+
          // Perform current animation (catching up to the current time point)
          if (hasAnimation)
          {
@@ -201,7 +201,7 @@ private:
 
          if (!updated)
             continue;
-         
+
          if (m_pSerum->SerumVersion == SERUM_V1)
          {
             const unsigned int size = dmdId.width * dmdId.height;
@@ -215,6 +215,7 @@ private:
                      DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
                      const unsigned int size = dmdId.width * dmdId.height;
                      colorizer->m_colorizedDmd.ClearItems();
+                     // FIXME if a concurrent GetRenderFrame has been done returning the previous backing buffer, this will discard it and lead to an invalid mem access
                      colorizer->m_colorFrameV1.resize(size * 3);
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
@@ -246,7 +247,6 @@ private:
                   if (colorizer->m_advertisedWidth32 > 0)
                   {
                      colorizer->m_colorizedDmd.AddItem({
-                        //
                         .id = { { endpointId, 1 } }, //
                         .groupId = { endpointId, 0 }, //
                         .overrideId = dmdId.id, //
@@ -277,7 +277,7 @@ private:
       }
       m_isRunning = false;
    }
-   
+
    // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
    static DisplayFrame GetRenderFrameSerumV1(const CtlResId id)
    {
@@ -341,6 +341,8 @@ static void OnControllerChanged()
          const ControllerDef& selectedController = items.front();
          constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX);
          const string currentGameId = string(selectedController.gameId).substr(pinmamePrefix.size());
+         if (currentGameId.empty())
+            return;
 
          std::filesystem::path serumPath = serumPathProp_Get();
          const std::filesystem::path cromc = currentGameId + ".cROMc"s;
