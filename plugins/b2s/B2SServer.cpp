@@ -311,7 +311,7 @@ void MSGPIAPI B2SServer::GetLampState(CtlResId id, unsigned int inputIndex, void
    assert(id.endpointId == m_singleton->m_endpointId && id.resId == 1);
    int srcId;
    {
-      std::lock_guard lock(m_singleton->m_exposedStates.GetListMutex());
+      const std::lock_guard lock(m_singleton->m_stateMutex);
       if (inputIndex >= m_singleton->m_lampStateIds.size())
          return;
       srcId = m_singleton->m_lampStateIds[inputIndex];
@@ -325,7 +325,7 @@ void MSGPIAPI B2SServer::GetPlayerScore(CtlResId id, unsigned int inputIndex, vo
    assert(id.endpointId == m_singleton->m_endpointId && id.resId == 2);
    int srcId;
    {
-      std::lock_guard lock(m_singleton->m_exposedStates.GetListMutex());
+      const std::lock_guard lock(m_singleton->m_stateMutex);
       srcId = m_singleton->m_playerScoreIds[inputIndex];
    }
    *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetPlayerScore(srcId));
@@ -337,7 +337,7 @@ void MSGPIAPI B2SServer::GetScoreDigit(CtlResId id, unsigned int inputIndex, voi
    assert(id.endpointId == m_singleton->m_endpointId && id.resId == 3);
    int srcId;
    {
-      std::lock_guard lock(m_singleton->m_exposedStates.GetListMutex());
+      const std::lock_guard lock(m_singleton->m_stateMutex);
       srcId = m_singleton->m_scoreDigitIds[inputIndex];
    }
    *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetScoreDigit(srcId));

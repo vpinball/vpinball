@@ -452,6 +452,7 @@ inline bool operator!=(const AudioSrcId& a, const AudioSrcId& b)
 {
     return !(a == b);
 }
+
 namespace PinballPlugin::Controller
 {
 
@@ -464,38 +465,7 @@ template <class T> struct GetCtrlSrcMsg
    T* entries; // Pointer to an array of maxEntryCount entries to be filled
 };
 
-// Gather a shared controller item list. May only be called on the MsgAPI thread
-template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId, std::vector<T>& list)
-{
-   GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
-   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
-   if (getMsg.count > 0)
-   {
-      list.resize(getMsg.count);
-      getMsg = { getMsg.count, 0, list.data() };
-      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
-   }
-   else
-   {
-      list.clear();
-   }
-}
-
-// Gather a shared controller item list. May only be called on the MsgAPI thread
-template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId)
-{
-   std::vector<T> list;
-   GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
-   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
-   if (getMsg.count > 0)
-   {
-      list.resize(getMsg.count);
-      getMsg = { getMsg.count, 0, list.data() };
-      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
-   }
-   return list;
-}
-
+// Simple item provider helper, single threaded, tied to the MsgAPI thread
 template <class T> class CtrlItemProvider
 {
 public:
@@ -528,52 +498,29 @@ public:
    void AddItem(const T& item)
    {
       assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         m_items.push_back(item);
-         if (m_items.size() == 1)
-            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
-      }
+      m_items.push_back(item);
+      if (m_items.size() == 1)
+         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
    }
 
    void AddItems(const std::vector<T>& list)
    {
       assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         m_items.insert(m_items.end(), list.begin(), list.end());
-         if (m_items.size() == list.size())
-            m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
-      }
+      m_items.insert(m_items.end(), list.begin(), list.end());
+      if (m_items.size() == list.size())
+         m_msgApi->SubscribeMsg(m_endpointId, m_getMsgId, OnGetItems, this);
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
    }
 
    void ClearItems()
    {
       assert(std::this_thread::get_id() == m_threadLock);
-      {
-         std::lock_guard lock(m_listMutex);
-         if (m_items.empty())
-            return;
-         m_items.clear();
-      }
+      if (m_items.empty())
+         return;
+      m_items.clear();
       m_msgApi->UnsubscribeMsg(m_getMsgId, OnGetItems, this);
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
-   }
-
-   std::mutex& GetListMutex() { return m_listMutex; }
-
-   const std::vector<T>& GetItems()
-   {
-      assert(!m_listMutex.try_lock() && "GetItems() called without holding m_listMutex");
-      return m_items;
-   }
-   
-   template <typename Func> auto With(Func&& func) -> decltype(func(std::declval<const std::vector<T>&>()))
-   {
-      std::lock_guard lock(m_listMutex);
-      return std::forward<Func>(func)(m_items);
    }
 
 private:
@@ -598,9 +545,42 @@ private:
    const unsigned int m_getMsgId;
    const unsigned int m_onChangeMsgId;
 
-   std::mutex m_listMutex;
    std::vector<T> m_items;
 };
+
+// Gather a shared controller item list. Single threaded, tied to MsgAPI thread.
+// May not be used for State and Display items which expose non thread safe getter/setter members
+template <class T> static void GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId, std::vector<T>& list)
+{
+   GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   if (getMsg.count > 0)
+   {
+      list.resize(getMsg.count);
+      getMsg = { getMsg.count, 0, list.data() };
+      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   }
+   else
+   {
+      list.clear();
+   }
+}
+
+// Gather a shared controller item list. Single threaded, tied to MsgAPI thread.
+// May not be used for State and Display items which expose non thread safe getter/setter members
+template <class T> static std::vector<T> GetCtrlItems(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int getMsgId)
+{
+   std::vector<T> list;
+   GetCtrlSrcMsg<T> getMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   if (getMsg.count > 0)
+   {
+      list.resize(getMsg.count);
+      getMsg = { getMsg.count, 0, list.data() };
+      msgApi->BroadcastMsg(endpointId, getMsgId, &getMsg);
+   }
+   return list;
+}
 
 // Provide a consumer with a list of items gathered from distributed plugin, in a multithreaded context.
 // . The list only mutates in SelectItems, on the MsgApi thread
