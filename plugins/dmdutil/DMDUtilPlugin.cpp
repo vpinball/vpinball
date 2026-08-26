@@ -121,7 +121,7 @@ private:
          // TODO the dispatch should be done at the refesh rate of the target display
          std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
-         dmdSource->With([this](const std::vector<DisplaySrcId>& items) { ProcessFrame(items.front()); });
+         dmdSource->With([this](const std::vector<DisplaySrcId>& items) { if (!items.empty()) ProcessFrame(items.front()); });
       }
    }
 
@@ -249,20 +249,6 @@ static void SelectSource(std::vector<DisplaySrcId>& items)
       items.push_back(newDmdId);
 }
 
-static void OnSourceChanged(const std::vector<DisplaySrcId>& items)
-{
-   if (items.empty())
-   {
-      LOGI("No DMD source selected");
-   }
-   else
-   {
-      const DisplaySrcId& dmdSrc = items.front();
-      LOGI(std::format("DMD source selected [endpointId={}.{}, {}x{} fmt={}]", dmdSrc.id.endpointId, dmdSrc.id.resId, dmdSrc.width, dmdSrc.height, dmdSrc.frameFormat));
-      dmdDispatcher = std::make_unique<DMDUtilDispatcher>();
-   }
-}
-
 }
 
 using namespace DMDUtilPlugin;
@@ -303,7 +289,16 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
       msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG,
       [](std::vector<DisplaySrcId>& items) { SelectSource(items); },
       []() { dmdDispatcher = nullptr; },
-      []() { dmdSource->With([](const std::vector<DisplaySrcId>& items) { OnSourceChanged(items); }); });
+      []() { dmdSource->With([](const std::vector<DisplaySrcId>& items) {
+            if (items.empty())
+            {
+               LOGI("No DMD source selected");
+               return;
+            }
+            const DisplaySrcId& dmdSrc = items.front();
+            LOGI(std::format("DMD source selected [endpointId={}.{}, {}x{} fmt={}]", dmdSrc.id.endpointId, dmdSrc.id.resId, dmdSrc.width, dmdSrc.height, dmdSrc.frameFormat));
+            dmdDispatcher = std::make_unique<DMDUtilDispatcher>();
+         }); });
    dmdSource->SelectItems(true);
 }
 

@@ -134,7 +134,13 @@ public:
 
    ~AlphaDMDRenderer()
    {
+      StopRenderThread();
       m_dmdProvider.ClearItems();
+   }
+
+private:
+   void StopRenderThread()
+   {
       {
          std::lock_guard lock(m_mutex);
          m_isRunning = false;
@@ -143,8 +149,7 @@ public:
       if (m_renderThread.joinable())
          m_renderThread.join();
    }
-
-private:
+   
    void RenderThread()
    {
       SetThreadName("AlphaDMD.RenderThread"s);
@@ -560,13 +565,18 @@ static void SelectSource(std::vector<SegSrcId>& items)
    std::erase_if(items, [firstGroupId](const SegSrcId& src) { return src.groupId.id != firstGroupId; });
 }
 
-static void OnSourceChanged()
+static void SetupRenderer()
 {
    unsigned int selectedEndpoint = 0;
    DmdLayouts selectedLayout = DmdLayouts::Undefined;
    segSource->With(
       [&selectedLayout, &selectedEndpoint](const std::vector<SegSrcId>& selectedSources)
       {
+         if (selectedSources.empty())
+            return;
+         
+         selectedEndpoint = selectedSources.front().id.endpointId;
+         
          // Find a matching layout
          static constexpr int layouts[13][16] = {
             { DmdLayouts::Undefined, 0 },
@@ -599,24 +609,18 @@ static void OnSourceChanged()
             }
          }
 
-         if (!selectedSources.empty())
+         std::string elements;
+         for (size_t i = 0; i < selectedSources.size(); i++)
+            elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
+         if (selectedLayout == DmdLayouts::Undefined)
+            LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
+         else
          {
-            std::string elements;
-            for (size_t i = 0; i < selectedSources.size(); i++)
-               elements += std::format("{}{}", i == 0 ? "" : ", ", selectedSources[i].nElements);
-            if (selectedLayout == DmdLayouts::Undefined)
-               LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
-            else
-            {
-               static const std::array<std::string, 13> dmdLayoutNames { "Undefined"s, "4x6+2x2"s, "4x7"s, "4x7+2x2"s, "6x4+2x2"s, "2x16+1x7"s, "2x16"s, "2x20"s, "2x7+2x2+1x16"s,
-                  "1x7+2x16"s, "1x7+1x4+2x16"s, "4x7+5x2"s, "4x6+2x2+1x6"s };
-               const std::string name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"s;
-               LOGI(std::format("Matched layout {} ({} displays: {})", name, selectedSources.size(), elements));
-            }
+            static const std::array<std::string, 13> dmdLayoutNames { "Undefined"s, "4x6+2x2"s, "4x7"s, "4x7+2x2"s, "6x4+2x2"s, "2x16+1x7"s, "2x16"s, "2x20"s, "2x7+2x2+1x16"s,
+               "1x7+2x16"s, "1x7+1x4+2x16"s, "4x7+5x2"s, "4x6+2x2+1x6"s };
+            const std::string name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"s;
+            LOGI(std::format("Matched layout {} ({} displays: {})", name, selectedSources.size(), elements));
          }
-
-         if (selectedLayout != DmdLayouts::Undefined)
-            selectedEndpoint = selectedSources.front().id.endpointId;
       });
 
    if (selectedLayout != DmdLayouts::Undefined)
@@ -636,7 +640,7 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
       [](std::vector<SegSrcId>& items) { SelectSource(items); },
       []() { renderer = nullptr; },
-      []() { OnSourceChanged(); });
+      []() { SetupRenderer(); });
    segSource->SelectItems(true);
 }
 
