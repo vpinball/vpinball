@@ -1,5 +1,6 @@
 New in 3.62 (Update by mfuegemann, JP, Mike Welsh)
 - Added wpc_ph.vbs (based on wpc.vbs)
+- Added p2k.vbs
 - Corrected 2 switches in nuova.vbs
 - Added playbar.vbs
 - Added coin door key to Sega/Stern WhiteStar (sega(2).vbs)

@@ -42,6 +42,12 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 #elif defined(ENABLE_OPENGL)
    m_rd->m_curTextureUpdates++;
    m_texTarget = GL_TEXTURE_2D;
+   // GL has no sRGB565 internal format: GL_RGB5 is decoded as linear, and OpenGL ES has no 5.6.5 internal format
+   // at all. So widen to 8 bits per channel here and let GL_SRGB8_ALPHA8 decode, which is matching the BGFX backend.
+   // Costs twice the texture memory, the same price BGFX pays, and it is the only way
+   // to get the gamma right. Doing it before the dispatch below leaves a single conversion for both upload paths
+   if (surf->m_format == BaseTexture::SRGB565)
+      surf = surf->Convert(BaseTexture::SRGBA);
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
       format = colorFormat::RGB;
@@ -51,8 +57,6 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
       format = force_linear_rgb ? colorFormat::RGB : colorFormat::SRGB;
    else if (surf->m_format == BaseTexture::SRGBA)
       format = force_linear_rgb ? colorFormat::RGBA : colorFormat::SRGBA;
-   else if (surf->m_format == BaseTexture::SRGB565)
-      format = colorFormat::RGB5; // FIXME this is incorrect sRGB wise
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
@@ -455,6 +459,9 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    m_textureUpdate = bgfx::makeRef(ref->surf->datac(), ref->surf->height() * ref->surf->pitch(), releaseFn, ref);
 
 #elif defined(ENABLE_OPENGL)
+   // Widened to 8 bits per channel for the reason given in the constructor (GL cannot decode a 5.6.5 texture as sRGB)
+   if (surf->m_format == BaseTexture::SRGB565)
+      surf = surf->Convert(BaseTexture::SRGBA);
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
       format = colorFormat::RGB;
@@ -464,8 +471,6 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
       format = colorFormat::SRGB;
    else if (surf->m_format == BaseTexture::SRGBA)
       format = colorFormat::SRGBA;
-   else if (surf->m_format == BaseTexture::SRGB565)
-      format = colorFormat::RGB5;
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
