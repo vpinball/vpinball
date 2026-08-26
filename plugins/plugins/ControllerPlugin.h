@@ -375,9 +375,11 @@ typedef struct AudioUpdateMsg
 //
 #ifdef __cplusplus
 #include <assert.h>
+#include <exception>
 #include <functional>
 #include <mutex>
 #include <thread>
+#include <utility>
 #include <vector>
 
 inline bool operator==(const CtlResId& a, const CtlResId& b) { return a.id == b.id; }
