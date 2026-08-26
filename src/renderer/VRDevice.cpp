@@ -211,7 +211,7 @@ VRDevice::VRDevice(const Settings& settings)
          #endif
          else
             m_rendererType = bgfx::RendererType::Enum::Direct3D11; // Default to Direct3D 11
-      #elif BX_PLATFORM_ANDROID
+      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
          m_rendererType = bgfx::RendererType::Enum::Vulkan;
       #else
          #error "Unsupported platform for OpenXR"
@@ -241,7 +241,7 @@ VRDevice::VRDevice(const Settings& settings)
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
       #if BX_PLATFORM_WINDOWS
          m_win32PerfCounterExtensionSupported = EnableExtensionIfSupported(XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME);
-      #elif BX_PLATFORM_ANDROID
+      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
          m_convertTimespecTimeExtensionSupported = EnableExtensionIfSupported(XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME);
       #endif
       m_passthroughExtensionSupported = EnableExtensionIfSupported(XR_FB_PASSTHROUGH_EXTENSION_NAME);
@@ -270,7 +270,7 @@ VRDevice::VRDevice(const Settings& settings)
          OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&m_xrConvertTimeToWin32PerformanceCounterKHR),
             "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
       }
-      #elif BX_PLATFORM_ANDROID
+      #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
       if (m_convertTimespecTimeExtensionSupported)
       {
          OPENXR_CHECK(
@@ -567,7 +567,7 @@ void VRDevice::SetupHMD()
    PLOGI << "Selected resolution: " << m_eyeWidth << 'x' << m_eyeHeight;
 
    // Create graphics backend early so GetGraphicContext() can provide Vulkan handles to BGFX
-   #if BX_PLATFORM_WINDOWS || BX_PLATFORM_ANDROID
+   #if BX_PLATFORM_WINDOWS || BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
    if (m_rendererType == bgfx::RendererType::Vulkan)
    {
       PLOGI << "Creating Vulkan backend for OpenXR (before BGFX initialization)";
@@ -991,7 +991,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
       QueryPerformanceFrequency(&TimerFreq);
       m_predictedDisplayTimestamp += static_cast<float>(displayTime.QuadPart - now.QuadPart) / static_cast<float>(TimerFreq.QuadPart);
    }
-   #elif BX_PLATFORM_ANDROID
+   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
    if (m_xrConvertTimeToTimespecTimeKHR)
    {
       timespec displayTime;

@@ -165,7 +165,7 @@ jobs:
       - if: (matrix.platform == 'linux')
         run: |
           sudo apt-get update
-          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev libvulkan-dev
       - uses: actions/checkout@v6
         with:
           ref: ${{ needs.context.outputs.checkout_ref }}
@@ -413,7 +413,7 @@ jobs:
     steps:
       - run: |
           sudo apt-get update
-          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libgpiod-dev
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libxrandr-dev libasound2-dev libgpiod-dev libvulkan-dev
       - uses: actions/checkout@v6
         with:
           ref: ${{ needs.context.outputs.checkout_ref }}
