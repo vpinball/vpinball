@@ -1478,7 +1478,9 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
    m_renderDevice->m_DMDShader->SetVector(SHADER_displayProperties,
       static_cast<float>(profile), // Render mode
       0.f, 0.f, 0.f); // Unused (CRT filters now evaluate on screen output size per pixel, from screen space derivatives)
-   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, crt.get(), profile != 1 ? SF_NONE : SF_ANISOTROPIC);
+   // Pixelated keeps crisp pixels when magnified, but is filtered (mipmapped) when downscaled to avoid moiree, smoothed is always filtered,
+   // while the CRT filters are point sampled since they perform their own reconstruction (and supersample themselves when downscaled)
+   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, crt.get(), profile == 0 ? SF_PIXELATED : (profile == 1 ? SF_ANISOTROPIC : SF_NONE));
    m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_CRT_world);
 }
 

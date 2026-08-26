@@ -452,6 +452,26 @@ vec4 OverlayHDR (const vec4 cBase, const vec4 cBlend)
 	return cNew;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// Sampling
+
+vec2 hash22(const vec2 uv)
+{
+	vec3 p3 = fract(uv.xyx * vec3(.1031, .1030, .0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.xx + p3.yz)*p3.zy);
+}
+
+float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
+{
+	float p = 2.*r;
+	const bool b = (p > 1.);
+	if (b)
+		p = 2.-p;
+	p = 1.-sqrt(p); //!! handle 0 explicitly due to compiler doing 1/inversesqrt(0)? but might be still 0 according to spec, as rsqrt(0) = inf and 1/inf = 0, but values close to 0 could be screwed up still
+	return b ? p : -p;
+}
+
 //vec3 sphere_sample(const vec2 t)
 //{
 //const float phi = t.y * (2.0*3.1415926535897932384626433832795);

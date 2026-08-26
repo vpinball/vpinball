@@ -62,7 +62,8 @@ vec3 ReinhardToneMap(vec3 color)
 }
 
 #if defined(TARGET_essl)
-	#define texFetch(tex, pos, size) texNoLod(tex, vec2(pos) / size)
+	// Offset to the texel center, as sampling on the texel border can be unstable
+	#define texFetch(tex, pos, size) texNoLod(tex, (vec2(pos) + vec2_splat(0.5)) / size)
 #else
 	#define texFetch(tex, pos, size) texelFetch(tex, pos, 0)
 #endif
@@ -103,9 +104,13 @@ vec3 ReinhardToneMap(vec3 color)
 	#define crtMode        (displayProperties.x)  // main render mode (pixelated, smoothed, CRT)
 	// Output size in pixels is evaluated per pixel in main(), see 'outSize' there
 
+	// Number of jittered samples per pixel when a CRT filter is downscaled, 1 disables oversampling path
+	#define CRT_OVERSAMPLE         9
+	#define CRT_OVERSAMPLE_KOROBOV 2 // Generator for Korobov (4 -> 1 or 3, 8 -> 5, 13 -> 8, 21 -> 13, etc)
+
 	// Select the CRT emulation:
-	//   0: Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)
-	//   1: Nuance's CRT filter (convergence errors, ghosting, vignetting, scanlines, aperture grille)
+	//   0: Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)                    // from testing: preferrable for low res  (Bally Vidpin & Mr Game)
+	//   1: Nuance's CRT filter (convergence errors, ghosting, vignetting, scanlines, aperture grille) // from testing: preferrable for high res (Pin2K)
 	#define CRT_FILTER 0
 
 #if CRT_FILTER == 0
@@ -133,13 +138,50 @@ vec3 ReinhardToneMap(vec3 color)
 #else
 
 	// Setup the function which returns input image color (here its in non linear 'display gamma' space)
+	// Explicit LOD as this is called from the oversampling loop, where implicit derivatives are meaningless (see CrtEmitter)
 	vec3 CrtsNuanceFetch(vec2 uv) {
-		return texture2D(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb;
+		return texNoLod(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb;
 	}
 
 	#include "fs_crt_nuance.fs"
 
 #endif
+
+// Evaluate the emitter at a single sample position (uv is normalized to the display, outSize is on-screen size in pixels).
+// dUvDx/dUvDy (screen space derivatives of uv) passed explicitly since this is also called from the oversampling
+// loop of main(), where the implicit ones would be those of the jittered positions, hence meaningless
+vec3 CrtEmitter(const vec2 uv, const vec2 outSize, const vec2 dUvDx, const vec2 dUvDy)
+{
+	// Pixelated and smoothed only differ by the sampler they are bound with (point magnification for the former,
+	// linear for the latter), both relying on implicit mipmapping/anisotropic filtering when the display is downscaled
+	if (crtMode != 2.0)
+	{
+		return texture2DGrad(displayTex, uv, dUvDx, dUvDy).rgb;
+	}
+	else // CRT
+	{
+	#if CRT_FILTER == 1
+		return CrtsNuanceFilter(
+		  uv,       // Input position (normalized)
+		  crtSize,  // input size (in pixels)
+		  outSize); // output size (in pixels)
+	#else
+		return CrtsFilter(
+		  uv * outSize, // Input position
+		  crtSize / outSize, // inputSize / outputSize (in pixels)
+		  crtSize * vec2(0.5,0.5), // half input size
+		  1.0 / crtSize, // 1.0 / input size
+		  1.0 / outSize, // 1.0 / output size
+		  2.0 / outSize, // 2.0 / output size
+		  crtSize.y, // input height
+		  vec2(1.0/48.0,1.0/24.0), // x and y warp
+		  0.7, // Scanline thinness (same as third of CrtsTone below)
+		  -2.5, // Horizonal scan blur
+		  0.5, // Shadow mask effect (same as last of CrtsTone below)
+		  CrtsTone(1.0,0.0,0.7,0.5));
+	#endif
+	}
+}
 
 #endif
 
@@ -190,7 +232,12 @@ void main()
 		{
 			// SDF for 16 segments (4 RGBA tiles, each RGBA channel being the SDF for a given segment)
 			vec4 sdf = texture2D(displayTex, vec2(0.25 * (displayUv.x + float(i)), displayUv.y));
-			vec4 sharp = smoothstep(vec4_splat(0.475), vec4_splat(0.525), sdf); // Resolve SDF after texture filtering
+			// Resolve SDF after texture filtering, widening the transition to the on-screen gradient of the SDF (fwidth) so
+			// that it always spans about one pixel: this antialiases the segment borders, which would otherwise alias more when
+			// the display is downscaled. The lower bound is the fixed width used before, reached as soon as it is magnified.
+			// Not perfect, but it helps
+			vec4 aa = max(0.5 * (abs(dFdx(sdf)) + abs(dFdy(sdf))), vec4_splat(0.025));
+			vec4 sharp = smoothstep(vec4_splat(0.5) - aa, vec4_splat(0.5) + aa, sdf);
 			vec4 diffuse = diffuseStrength * sdf * sdf; // Magic formula to simulate light dispersion at maximum glass roughness
 			vec4 light = mix(sharp, diffuse, roughness);
 			//unlitLum4 += light;
@@ -246,36 +293,27 @@ void main()
 		vec2 dUvDx = dFdx(displayUv);
 		vec2 dUvDy = dFdy(displayUv);
 		vec2 outSize = 1.0 / max(vec2(length(vec2(dUvDx.x, dUvDy.x)), length(vec2(dUvDx.y, dUvDy.y))), vec2_splat(1e-8)); // guard against a degenerate (edge on) display
-		if (crtMode == 0.0) // Pixelated
+	#if CRT_OVERSAMPLE > 1
+		// When downscaled: the input grid, the scanlines and the shadow mask are all undersampled, which shows up as moiree. Supersample the emitter over the pixel footprint
+		// in this situation. Only needed for CRT, which point samples and synthesizes patterns:
+		// the pixelated and smoothed modes are filtered by implicitly (mipmapping/anisotropy) when downscaled.
+		if ((crtMode == 2.0) && (max(crtSize.x / outSize.x, crtSize.y / outSize.y) > 0.25)) //!! 0.25 = magic, 'should' be 1.0, but not sufficient due to the approximate/whacky pattern generators
 		{
-			litLum = texFetch(displayTex, ivec2(displayUv * crtSize), crtSize).rgb;
+			// Korobov lattice, randomized per pixel (for now constant over time, otherwise temporal noise)
+			const vec2 offs = hash22(gl_FragCoord.xy);
+			litLum = vec3_splat(0.0);
+			UNROLL for (int i = 0; i < CRT_OVERSAMPLE; ++i)
+			{
+				const float i_float = float(i);
+				const vec2 xi = vec2(fract(i_float * (1.0 / float(CRT_OVERSAMPLE)) + offs.x), fract(i_float * (float(CRT_OVERSAMPLE_KOROBOV) / float(CRT_OVERSAMPLE)) + offs.y));
+				litLum += CrtEmitter(displayUv + triangularPDF(xi.x) * dUvDx + triangularPDF(xi.y) * dUvDy, outSize, dUvDx, dUvDy);
+			}
+			litLum *= 1.0 / float(CRT_OVERSAMPLE);
 		}
-		else if (crtMode == 1.0) // Smoothed
+		else
+	#endif
 		{
-			litLum = texture2D(displayTex, displayUv).rgb;
-		}
-		else if (crtMode == 2.0) // CRT
-		{
-		#if CRT_FILTER == 1
-			litLum = CrtsNuanceFilter(
-			  displayUv, // Input position (normalized)
-			  crtSize,   // input size (in pixels)
-			  outSize);  // output size (in pixels)
-		#else
-			litLum = CrtsFilter(
-			  displayUv * outSize, // Input position
-			  crtSize / outSize, // inputSize / outputSize (in pixels)
-			  crtSize * vec2(0.5,0.5), // half input size
-			  1.0 / crtSize, // 1.0 / input size
-			  1.0 / outSize, // 1.0 / output size
-			  2.0 / outSize, // 2.0 / output size
-			  crtSize.y, // input height
-			  vec2(1.0/48.0,1.0/24.0), // x and y warp
-			  0.7, // Scanline thinness (same as third of CrtsTone below)
-			  -2.5, // Horizonal scan blur
-			  0.5, // Shadow mask effect (same as last of CrtsTone below)
-			  CrtsTone(1.0,0.0,0.7,0.5));
-		#endif
+			litLum = CrtEmitter(displayUv, outSize, dUvDx, dUvDy);
 		}
 
 	#endif
