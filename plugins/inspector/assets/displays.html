@@ -637,7 +637,7 @@
                     if (item.type !== 'display') continue;
                     const m = item.name.match(/(\d+)x(\d+)/);
                     out.push({
-                        mapping: item.mapping,
+                        mapping: item.id,
                         name: item.name,
                         w: m ? +m[1] : 0,
                         h: m ? +m[2] : 0,
