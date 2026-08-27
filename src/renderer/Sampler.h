@@ -44,7 +44,7 @@ public:
 
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture);
-   bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
+   bgfx::TextureHandle GetCoreTexture(bool withMipmaps);
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
    class RenderTarget* m_msaaDepthResolve = nullptr;
@@ -79,6 +79,7 @@ private:
    bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;
    bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
+   bool m_useNoMip = false;
    bool m_pendingMipMapGen = false;
    std::mutex m_textureUpdateMutex;
    bool m_isTextureUpdateLinear;
