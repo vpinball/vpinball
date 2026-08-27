@@ -354,8 +354,8 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4x4, matProj, 2), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matProjInv, 2), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 2), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 6 * 16 * 4), // OpenGL only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 5 * 16 * 4), // OpenGL only, +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, (5 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
+   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, (4 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorld, 1), // DX9 & BGFX only
    SHADER_UNIFORM(SUT_Float4x3, matView, 2), // DX9 & BGFX only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
@@ -383,8 +383,8 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
    SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth, 1),
    SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange, 1),
-   SHADER_SAMPLER(tex_env, 1, SamplerAddressMode::SA_REPEAT, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // environment
-   SHADER_SAMPLER(tex_diffuse_env, 2, SamplerAddressMode::SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
+   SHADER_SAMPLER(tex_env, 1, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, 2, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // diffuse environment contribution/radiance
 
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
@@ -394,19 +394,19 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
-   SHADER_SAMPLER(tex_base_color, 0, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_base_transmission, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_base_color, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_transmission, 3, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // bulb light/transmission buffer texture
    SHADER_SAMPLER(tex_base_normalmap, 4, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // normal map texture
-   SHADER_SAMPLER(tex_reflection, 5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
-   SHADER_SAMPLER(tex_refraction, 6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
-   SHADER_SAMPLER(tex_probe_depth, 7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
+   SHADER_SAMPLER(tex_reflection, 5, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // plane reflection
+   SHADER_SAMPLER(tex_refraction, 6, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // screen space refraction
+   SHADER_SAMPLER(tex_probe_depth, 7, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // depth probe
 
    // Ball Shader
    SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
    SHADER_UNIFORM(SUT_Float4, invTableRes_reflection, 1),
    SHADER_UNIFORM(SUT_Float4, w_h_disableLighting, 1),
    SHADER_SAMPLER(tex_ball_color, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_ball_playfield, 4, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // playfield
+   SHADER_SAMPLER(tex_ball_playfield, 4, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // playfield
    SHADER_SAMPLER(tex_ball_decal, 3, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // ball decal
 
    // Light Shader
@@ -423,20 +423,21 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
-   SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_NONE), // DMD
+   SHADER_SAMPLER(tex_dmd, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SamplerAddressMode::SA_MIRROR, SamplerAddressMode::SA_MIRROR, SamplerFilter::SF_TRILINEAR), // Sprite
 
    // Display Shader
    SHADER_UNIFORM(SUT_Float4, glassTint_Roughness, 1),
    SHADER_UNIFORM(SUT_Float4, displayProperties, 1),
    SHADER_UNIFORM(SUT_Float4v, alphaSegState, 4),
-   SHADER_SAMPLER(displayTex, 0, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
-   SHADER_SAMPLER(displayGlass, 1, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR),
+   SHADER_SAMPLER(
+      displayTex, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
+   SHADER_SAMPLER(displayGlass, 1, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR),
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
    SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
-   SHADER_SAMPLER(tex_flasher_A, 0, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_flasher_A, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_flasher_B, 1, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // texB
 
    // Post Process Shader
@@ -446,18 +447,18 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float2, spline2, 1),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
-   SHADER_SAMPLER(tex_fb_unfiltered, 0, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_NONE), // Framebuffer (unfiltered)
-   SHADER_SAMPLER(tex_fb_filtered, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
-   SHADER_SAMPLER(tex_bloom, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
-   SHADER_SAMPLER(tex_color_lut, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
-   SHADER_SAMPLER(tex_ao, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
-   SHADER_SAMPLER(tex_depth, 4, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_NONE), // Depth
+   SHADER_SAMPLER(tex_fb_unfiltered, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_fb_filtered, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Framebuffer (filtered)
+   SHADER_SAMPLER(tex_bloom, 1, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Bloom
+   SHADER_SAMPLER(tex_color_lut, 2, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Color grade LUT
+   SHADER_SAMPLER(tex_ao, 3, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // AO Result
+   SHADER_SAMPLER(tex_depth, 4, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // Depth
    SHADER_SAMPLER(tex_ao_dither, 5, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_NONE), // AO dither
-   //SHADER_SAMPLER(tex_tonemap_lut, 6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Tonemap LUT
-   SHADER_SAMPLER(edgesTex, 7, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // SMAA
-   SHADER_SAMPLER(blendTex, 8, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_TRILINEAR), // SMAA
-   SHADER_SAMPLER(areaTex, 9, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // SMAA
-   SHADER_SAMPLER(searchTex, 10, SA_CLAMP, SA_CLAMP, SamplerFilter::SF_NONE), // SMAA
+   //SHADER_SAMPLER(tex_tonemap_lut, 6, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Tonemap LUT
+   SHADER_SAMPLER(edgesTex, 7, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(blendTex, 8, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(areaTex, 9, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // SMAA
+   SHADER_SAMPLER(searchTex, 10, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // SMAA
 
    // Stereo Shader
    SHADER_SAMPLER(tex_stereo_fb, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_NONE), // Framebuffer (unfiltered)
