@@ -155,7 +155,7 @@ static void SetupAltSound()
 
 static void StopAltSound()
 {
-   if (isRunning)
+   if (!isRunning)
       return;
 
    isRunning = false;

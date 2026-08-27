@@ -56,8 +56,7 @@ PSC_CLASS_START(WMP_Settings, WMPSettings)
    PSC_FUNCTION2(void, SetMode, string, bool)
 PSC_CLASS_END()
 
-static MsgPluginAPI* msgApi = nullptr;
-static VPXPluginAPI* vpxApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId = 0;
 static unsigned int onAudioUpdateId = 0;
@@ -73,13 +72,9 @@ using namespace WMP;
 MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    endpointId = sessionId;
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
 
    LPISetup(endpointId, msgApi);
-
-   const unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
-   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
-   msgApi->ReleaseMsgID(getVpxApiId);
 
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
 
@@ -87,7 +82,8 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
 
-   if (scriptApi == nullptr) {
+   if (scriptApi == nullptr)
+   {
       LOGE("Failed to get script API"s);
       return;
    }
@@ -109,6 +105,8 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPlug
 
 MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
 {
+   msgApi->FlushPendingCallbacks(endpointId);
+
    if (scriptApi != nullptr)
    {
       scriptApi->SetCOMObjectOverride("WMPlayer.OCX", nullptr);
@@ -119,11 +117,11 @@ MSGPI_EXPORT void MSGPIAPI WMPPluginUnload()
       scriptApi = nullptr;
    }
 
-   if (msgApi && onAudioUpdateId != 0) {
+   if (onAudioUpdateId != 0)
+   {
       msgApi->ReleaseMsgID(onAudioUpdateId);
       onAudioUpdateId = 0;
    }
 
-   vpxApi = nullptr;
    msgApi = nullptr;
 }

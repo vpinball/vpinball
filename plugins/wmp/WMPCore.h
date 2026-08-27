@@ -59,7 +59,7 @@ enum WMPOpenState
 class WMPCore
 {
 public:
-   WMPCore(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId);
+   WMPCore(const MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId);
    ~WMPCore();
 
    PSC_IMPLEMENT_REFCOUNT()
