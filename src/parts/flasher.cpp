@@ -833,6 +833,24 @@ STDMETHODIMP Flasher::put_DMDHeight(int pVal)
    return S_OK;
 }
 
+// The setters below take their element count from DMDWidth/DMDHeight, which a script can assign separately from the array, so the two can disagree.
+// Counted over every dimension: a script may pass a rectangular array, and the flat read below also accepts one
+static bool SafeArrayHasAtLeast(SAFEARRAY* const psa, const int count)
+{
+   const UINT dims = SafeArrayGetDim(psa);
+   if (dims == 0)
+      return false;
+   int64_t total = 1; // Widened: a bounds check must not be defeated by its own overflow
+   for (UINT dim = 1; dim <= dims; ++dim)
+   {
+      LONG lbound, ubound;
+      if (FAILED(SafeArrayGetLBound(psa, dim, &lbound)) || FAILED(SafeArrayGetUBound(psa, dim, &ubound)))
+         return false;
+      total *= static_cast<int64_t>(ubound) - lbound + 1;
+   }
+   return total >= count;
+}
+
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
 
@@ -840,8 +858,11 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
+   if (!SafeArrayHasAtLeast(psa, size))
+      return E_FAIL;
+
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
@@ -860,8 +881,11 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
+   if (!SafeArrayHasAtLeast(psa, size))
+      return E_FAIL;
+
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
    // gamma compressed [0..255] sRGB
    VARIANT *p;
@@ -1335,11 +1359,13 @@ void Flasher::Render(const unsigned int renderMask)
          }
          else
          {
+            // DMD rendering, so reject video screens even when the link names one explicitly -
+            // Display mode below is the intended way to show these
             PinballPlugin::ResURIResolver::DisplayState dmd { nullptr };
             if (!m_d.m_imageSrcLink.empty())
-               dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+               dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
-               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
+               dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState("ctrl://default/display"s);
             if (dmd.state.frame != nullptr)
                UploadRenderFrame(dmd);
          }

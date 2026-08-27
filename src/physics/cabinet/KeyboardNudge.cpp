@@ -164,7 +164,7 @@ void CabModelKeyboardNudge::Nudge(float angle, float force)
    constexpr float baseScale = 0.5f * g / coreScriptStrength; // Scale to match the base script force value to a 0.5g max peak acceleration on strong nudge
    const float actualStrength = force * m_strength * baseScale;
    const float a = ANGTORAD(angle);
-   const float xForce = sinf(a) * actualStrength;
+   const float xForce =  sinf(a) * actualStrength;
    const float yForce = -cosf(a) * actualStrength;
    m_impulses.emplace_back(25, Vertex2D { xForce, yForce });
    m_deactivationDelay = 10000;

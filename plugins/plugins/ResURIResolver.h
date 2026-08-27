@@ -68,6 +68,9 @@ public:
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
+   // Same, for elements that render dots (DMDs): resolves as above, then reports no frame for a CRT or LCD source.
+   // Anything that can legitimately show a video screen (a flasher in Display mode) keeps using GetDisplayState()
+   DisplayState GetDmdDisplayState(const std::string &link);
    std::string DumpDisplaySources() const;
    static const DisplaySrcId *GetDefaultDisplaySource(const std::vector<DisplaySrcId> &sources);
    

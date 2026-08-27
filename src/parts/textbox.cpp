@@ -309,7 +309,7 @@ void Textbox::Render(const unsigned int renderMask)
 
       m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, true);
 
-      PinballPlugin::ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
+      PinballPlugin::ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState("ctrl://default/display"s);
       if (dmd.state.frame == nullptr)
          return;
       if (!m_hasUploadedFrame || (m_texture == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))

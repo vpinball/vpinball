@@ -897,14 +897,35 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
    return S_OK;
 }
 
+// The setters below take their element count from DMDWidth/DMDHeight, which a script can assign separately from the array, so the two can disagree.
+// Counted over every dimension: a script may pass a rectangular array, and the flat read below also accepts one
+static bool SafeArrayHasAtLeast(SAFEARRAY* const psa, const int count)
+{
+   const UINT dims = SafeArrayGetDim(psa);
+   if (dims == 0)
+      return false;
+   int64_t total = 1; // Widened: a bounds check must not be defeated by its own overflow
+   for (UINT dim = 1; dim <= dims; ++dim)
+   {
+      LONG lbound, ubound;
+      if (FAILED(SafeArrayGetLBound(psa, dim, &lbound)) || FAILED(SafeArrayGetUBound(psa, dim, &ubound)))
+         return false;
+      total *= static_cast<int64_t>(ubound) - lbound + 1;
+   }
+   return total >= count;
+}
+
 STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
    SAFEARRAY *psa = V_ARRAY(&pVal);
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
+   if (!SafeArrayHasAtLeast(psa, size))
+      return E_FAIL;
+
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
@@ -923,8 +944,11 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
+   if (!SafeArrayHasAtLeast(psa, size))
+      return E_FAIL;
+
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    // gamma compressed [0..255] sRGB
    VARIANT *p;

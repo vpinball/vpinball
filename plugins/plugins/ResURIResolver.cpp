@@ -311,6 +311,21 @@ const DisplaySrcId *ResURIResolver::GetDefaultDisplaySource(const std::vector<Di
    return displaySource;
 }
 
+// 'ctrl://default/display' resolves to e.g. a Pinball 2000 set's CRT, that being the only display it has, so every
+// dot matrix element would otherwise draw a 640x480 picture through its DMD related shader(s). Filtered here rather than
+// in GetDefaultDisplaySource() so that URI keeps meaning what it documents, the default DMD *or* display
+ResURIResolver::DisplayState ResURIResolver::GetDmdDisplayState(const string &link)
+{
+   const DisplayState state = GetDisplayState(link);
+   if (state.source != nullptr)
+   {
+      const unsigned int family = state.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+      if ((family == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY) || (family == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY))
+         return {};
+   }
+   return state;
+}
+
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
 {
    if (const auto &cache = m_displayCache.find(link); cache != m_displayCache.end())

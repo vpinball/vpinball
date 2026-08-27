@@ -417,8 +417,14 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
             items.clear();
             return;
          }
-         // Select default DMD as defined by the ResURIResolver (excluding ourself if already running)
-         std::erase_if(items, [](const DisplaySrcId& src) { return src.id.endpointId == endpointId; });
+         // Select default DMD as defined by the ResURIResolver, excluding ourself if already running, and any
+         // video screen: The upscalers are for reconstructing dot matrix art only (for now)
+         std::erase_if(items,
+            [](const DisplaySrcId& src)
+            {
+               const unsigned int family = src.hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+               return src.id.endpointId == endpointId || family == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY || family == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY;
+            });
          const DisplaySrcId* displaySource = PinballPlugin::ResURIResolver::GetDefaultDisplaySource(items);
          items.clear();
          if (displaySource)

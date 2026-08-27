@@ -2388,6 +2388,19 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 End Sub
 
 Dim LastPinMameVisualSync : LastPinMameVisualSync = 0
+
+' True for controllers returning a frame that actually holds pixels. IsEmpty alone is not enough
+Private Function vpmHasDmdFrame(aPixels)
+	vpmHasDmdFrame = False
+	If IsEmpty(aPixels) Then Exit Function
+	If Not IsArray(aPixels) Then Exit Function
+	Dim ub : ub = -1
+	On Error Resume Next
+		ub = UBound(aPixels) ' Raises on arrays that never were dimensioned, hence guarded read
+	On Error Goto 0
+	vpmHasDmdFrame = (ub >= 0)
+End Function
+
 Sub PinMAMETimer_Timer
 	Dim ChgLamp,ChgSol,ChgGI,ChgLed, ii, tmp, idx
 	Dim DMDp
@@ -2417,14 +2430,14 @@ Sub PinMAMETimer_Timer
 			If Not IsPluginPinMAME Then
 				If UseDMD Then
 					DMDp = Controller.RawDmdPixels
-					If Not IsEmpty(DMDp) Then
+					If vpmHasDmdFrame(DMDp) Then
 						DMDWidth = Controller.RawDmdWidth
 						DMDHeight = Controller.RawDmdHeight
 						DMDPixels = DMDp
 					End If
 				ElseIf UseColoredDMD Then
 					DMDp = Controller.RawDmdColoredPixels
-					If Not IsEmpty(DMDp) Then
+					If vpmHasDmdFrame(DMDp) Then
 						DMDWidth = Controller.RawDmdWidth
 						DMDHeight = Controller.RawDmdHeight
 						DMDColoredPixels = DMDp

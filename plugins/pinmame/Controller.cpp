@@ -734,6 +734,12 @@ void Controller::UpdateDmdSrc()
    m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
    for (const DisplaySrcId& src : displaySources)
    {
+      // A video screen is not a DMD, and selection here is only by width, so e.g. Pinball 2000's 640x480 CRT would
+      // otherwise win outright and be handed to table scripts as the game's DMD. Those machines have none, so the
+      // accessors below report a size of 0 rather than a frame in whatever format that screen happens to use
+      const unsigned int family = src.hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+      if (family == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY || family == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY)
+         continue;
       if (src.id.endpointId == m_endpointId && src.width >= largest)
       {
          m_defaultDmd = src;
