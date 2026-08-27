@@ -24,7 +24,7 @@ public:
 
 
 // Nudge driven by analog sensors (gamepad, cabinet,...)
-class NudgeSensor final : public NudgeSource
+class NudgeSensor : public NudgeSource
 {
 public:
    virtual ~NudgeSensor() = default;
@@ -40,7 +40,7 @@ public:
 
 
 // Nudge driven by script commands, usually triggered by digital input (keyboard or joystick button)
-class KeyboardNudge final : public NudgeSource
+class KeyboardNudge : public NudgeSource
 {
 public:
    virtual ~KeyboardNudge() = default;
