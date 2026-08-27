@@ -608,7 +608,7 @@ void Decal::Render(const unsigned int renderMask)
          else
             m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
          // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SF_TRILINEAR, SA_MIRROR, SA_MIRROR);
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_MIRROR, SamplerAddressMode::SA_MIRROR);
          m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
       }
       else

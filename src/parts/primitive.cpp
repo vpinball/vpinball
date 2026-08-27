@@ -1044,14 +1044,14 @@ void Primitive::Render(const unsigned int renderMask)
    TRACE_FUNCTION();
 
    // Update playfield primitive settings from table settings
-   SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
+   SamplerFilter pinf = SamplerFilter::SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
    if (m_useAsPlayfield)
    {
       m_d.m_szMaterial = m_ptable->m_playfieldMaterial;
       m_d.m_szImage = m_ptable->m_image;
       m_d.m_szReflectionProbe = RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
       m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
-      pinf = SF_ANISOTROPIC;
+      pinf = SamplerFilter::SF_ANISOTROPIC;
    }
 
    // Do not render ourself inside our reflection probe (no self reflection)
@@ -1143,14 +1143,14 @@ void Primitive::Render(const unsigned int renderMask)
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
    if (img && nMap)
    {
-      m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SA_REPEAT, SA_REPEAT);
+      m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT);
       m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, true);
       m_renderer->m_renderDevice->m_basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
       m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
    }
    else if (img)
    {
-      m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SA_REPEAT, SA_REPEAT);
+      m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, img, false, pinf, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT);
       m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !img->IsOpaque() || alpha != 100.f);
    }
    else

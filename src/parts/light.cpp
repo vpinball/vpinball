@@ -808,7 +808,7 @@ void Light::Render(const unsigned int renderMask)
          if (offTexel != nullptr)
          {
             shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, *m_surfaceMaterial);
-            shader->SetTexture(SHADER_tex_light_color, offTexel, false, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+            shader->SetTexture(SHADER_tex_light_color, offTexel, false, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
             // TOTAN and Flintstones inserts break if alpha blending is disabled here.
             // Also see below if changing again
             if (!m_desktopBackdrop)
