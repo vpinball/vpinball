@@ -24,7 +24,9 @@ int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
 RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
    , m_type(type)
-   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
+   , m_nLayers(type == SurfaceType::RT_DEFAULT ? 1
+           : type == SurfaceType::RT_CUBEMAP   ? 6
+                                               : 2)
    , m_rd(rd)
    , m_is_back_buffer(true)
    , m_format(format)
@@ -34,7 +36,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    , m_has_depth(true)
    , m_shared_depth(false)
 {
-   assert((type == RT_DEFAULT) || (type == RT_STEREO));
+   assert((type == SurfaceType::RT_DEFAULT) || (type == SurfaceType::RT_STEREO));
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 
@@ -75,7 +77,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    const string& name, const int width, const int height, const colorFormat format)
    : m_name(name)
    , m_type(type)
-   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
+   , m_nLayers(type == SurfaceType::RT_DEFAULT ? 1
+           : type == SurfaceType::RT_CUBEMAP   ? 6
+                                               : 2)
    , m_rd(rd)
    , m_is_back_buffer(true)
    , m_format(format)
@@ -102,7 +106,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
 RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
    , m_type(type)
-   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
+   , m_nLayers(type == SurfaceType::RT_DEFAULT ? 1
+           : type == SurfaceType::RT_CUBEMAP   ? 6
+                                               : 2)
    , m_rd(rd)
    , m_is_back_buffer(false)
    , m_format(format)
@@ -113,7 +119,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    , m_shared_depth(with_depth && (sharedDepth != nullptr))
 {
    assert(nMSAASamples >= 1);
-   assert(type != RT_CUBEMAP || nMSAASamples == 1); // Cubemap render target do not support multisampling
+   assert(type != SurfaceType::RT_CUBEMAP || nMSAASamples == 1); // Cubemap render target do not support multisampling
 
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
@@ -285,10 +291,12 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
 
 #ifndef __OPENGLES__
-   m_texTarget = nMSAASamples > 1 ? ((type == RT_DEFAULT) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-                                  : ((type == RT_DEFAULT) ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+   m_texTarget = nMSAASamples > 1 ? ((type == SurfaceType::RT_DEFAULT) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+                                  : ((type == SurfaceType::RT_DEFAULT)     ? GL_TEXTURE_2D
+                                          : type == SurfaceType::RT_STEREO ? GL_TEXTURE_2D_ARRAY
+                                                                           : GL_TEXTURE_CUBE_MAP);
 #else
-   m_texTarget = (type == RT_DEFAULT ? GL_TEXTURE_2D : type == RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
+   m_texTarget = (type == SurfaceType::RT_DEFAULT ? GL_TEXTURE_2D : type == SurfaceType::RT_STEREO ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_CUBE_MAP);
 #endif
 
    if (nMSAASamples > 1)
@@ -300,9 +308,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
       switch (m_type)
       {
-      case RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, format, width, height, GL_FALSE); break;
-      case RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, format, width, height, 2, GL_FALSE); break;
-      case RT_CUBEMAP: assert(false); break;
+      case SurfaceType::RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, format, width, height, GL_FALSE); break;
+      case SurfaceType::RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, format, width, height, 2, GL_FALSE); break;
+      case SurfaceType::RT_CUBEMAP: assert(false); break;
       }
       glBindTexture(m_texTarget, 0);
 #ifndef __OPENGLES__
@@ -320,9 +328,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
             glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
             switch (m_type)
             {
-            case RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, GL_FALSE); break;
-            case RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, 2, GL_FALSE); break;
-            case RT_CUBEMAP: assert(false); break;
+            case SurfaceType::RT_DEFAULT: glTexImage2DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, GL_FALSE); break;
+            case SurfaceType::RT_STEREO: glTexImage3DMultisample(m_texTarget, nMSAASamples, GL_DEPTH_COMPONENT, width, height, 2, GL_FALSE); break;
+            case SurfaceType::RT_CUBEMAP: assert(false); break;
             }
             glBindTexture(m_texTarget, 0);
          }
@@ -338,9 +346,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       glTexParameteri(m_texTarget, GL_TEXTURE_MAX_LEVEL, 0);
       switch (m_type)
       {
-      case RT_DEFAULT: glTexImage2D(m_texTarget, 0, format, width, height, 0, col_format, col_type, nullptr); break;
-      case RT_STEREO: glTexImage3D(m_texTarget, 0, format, width, height, 2, 0, col_format, col_type, nullptr); break;
-      case RT_CUBEMAP:
+      case SurfaceType::RT_DEFAULT: glTexImage2D(m_texTarget, 0, format, width, height, 0, col_format, col_type, nullptr); break;
+      case SurfaceType::RT_STEREO: glTexImage3D(m_texTarget, 0, format, width, height, 2, 0, col_format, col_type, nullptr); break;
+      case SurfaceType::RT_CUBEMAP:
          for (int i = 0; i < 6; i++)
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, col_format, col_type, nullptr);
          break;
@@ -372,12 +380,12 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
             switch (m_type)
             {
 #ifndef __OPENGLES__
-            case RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
+            case SurfaceType::RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
 #else
-            case RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
+            case SurfaceType::RT_DEFAULT: glTexImage2D(m_texTarget, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
 #endif
-            case RT_STEREO: glTexImage3D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
-            case RT_CUBEMAP:
+            case SurfaceType::RT_STEREO: glTexImage3D(m_texTarget, 0, GL_DEPTH_COMPONENT, width, height, 2, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr); break;
+            case SurfaceType::RT_CUBEMAP:
                for (int i = 0; i < 6; i++)
                   glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, internalFormat, nullptr);
                break;
@@ -482,7 +490,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 #endif
 
 #elif defined(ENABLE_DX9)
-   assert(m_type == RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend
+   assert(m_type == SurfaceType::RT_DEFAULT); // Layered rendering is not yet supported by the DX9 backend
    m_color_tex = nullptr;
    m_color_surface = nullptr;
    m_depth_tex = nullptr;

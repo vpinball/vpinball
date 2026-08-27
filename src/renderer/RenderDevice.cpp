@@ -1492,9 +1492,9 @@ RenderDevice::RenderDevice(
       binding->unit = i;
       binding->use_rank = i;
       binding->sampler = nullptr;
-      binding->filter = SF_UNDEFINED;
-      binding->clamp_u = SA_UNDEFINED;
-      binding->clamp_v = SA_UNDEFINED;
+      binding->filter = SamplerFilter::SF_UNDEFINED;
+      binding->clamp_u = SamplerAddressMode::SA_UNDEFINED;
+      binding->clamp_v = SamplerAddressMode::SA_UNDEFINED;
       m_samplerBindings.push_back(binding);
    }
 
@@ -2391,32 +2391,32 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
       glGenSamplers(1, &sampler_state);
       m_samplerStateCache[samplerStateId] = sampler_state;
       static constexpr int glAddress[] = { GL_REPEAT, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_REPEAT };
-      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_S, glAddress[clamp_u]);
-      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_T, glAddress[clamp_v]);
+      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_S, glAddress[static_cast<unsigned int>(clamp_u)]);
+      glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_T, glAddress[static_cast<unsigned int>(clamp_v)]);
       switch (filter)
       {
       default: assert(!"unknown filter");
-      case SF_NONE: // No mipmapping
+      case SamplerFilter::SF_NONE: // No mipmapping
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_BILINEAR: // Bilinear texture filtering.
+      case SamplerFilter::SF_BILINEAR: // Bilinear texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_TRILINEAR: // Trilinear texture filtering.
+      case SamplerFilter::SF_TRILINEAR: // Trilinear texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_ANISOTROPIC: // Anisotropic texture filtering.
+      case SamplerFilter::SF_ANISOTROPIC: // Anisotropic texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, m_maxaniso);
          break;
-      case SF_PIXELATED: // Point magnification, filtered (anisotropic) minification.
+      case SamplerFilter::SF_PIXELATED: // Point magnification, filtered (anisotropic) minification.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, m_maxaniso);
@@ -2431,7 +2431,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
       switch (filter)
       {
       default:
-      case SF_NONE:
+      case SamplerFilter::SF_NONE:
          // Don't filter textures, no mipmapping.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
@@ -2439,7 +2439,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          m_curStateChanges+=3;
          break;
 
-      case SF_BILINEAR:
+      case SamplerFilter::SF_BILINEAR:
          // Interpolate in 2x2 texels, no mipmapping.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
@@ -2447,7 +2447,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          m_curStateChanges += 3;
          break;
 
-      case SF_TRILINEAR:
+      case SamplerFilter::SF_TRILINEAR:
          // Filter textures on 2 mip levels (interpolate in 2x2 texels). And filter between the 2 mip levels.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
@@ -2455,7 +2455,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          m_curStateChanges += 3;
          break;
 
-      case SF_ANISOTROPIC:
+      case SamplerFilter::SF_ANISOTROPIC:
          // Full HQ anisotropic Filter. Should lead to driver doing whatever it thinks is best.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
@@ -2464,7 +2464,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          m_curStateChanges += 4;
          break;
 
-      case SF_PIXELATED:
+      case SamplerFilter::SF_PIXELATED:
          // Keep crisp texels when magnified, but filter (and mipmap) when minified to avoid aliasing.
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
@@ -2479,9 +2479,9 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
    {
       switch (clamp_u)
       {
-         case SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
-         case SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
-         case SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
       }
       m_bound_clampu[unit] = clamp_u;
    }
@@ -2489,9 +2489,9 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
    {
       switch (clamp_v)
       {
-         case SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
-         case SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
-         case SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_REPEAT: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_CLAMP: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP)); m_curStateChanges++; break;
+         case SamplerAddressMode::SA_MIRROR: CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR)); m_curStateChanges++; break;
       }
       m_bound_clampv[unit] = clamp_v;
    }

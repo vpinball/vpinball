@@ -431,14 +431,14 @@ void Renderer::SceneLighting::Update()
    }
 }
 
-bool Renderer::UseAnisoFiltering() const { return Shader::GetDefaultSamplerFilter(SHADER_tex_base_color) == SF_ANISOTROPIC; }
+bool Renderer::UseAnisoFiltering() const { return Shader::GetDefaultSamplerFilter(SHADER_tex_base_color) == SamplerFilter::SF_ANISOTROPIC; }
 
 void Renderer::SetAnisoFiltering(bool enable) {
-   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, enable ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, enable ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, enable ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, enable ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, enable ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_TRILINEAR);
 }
 
 bool Renderer::IsBallLightingDisabled() const
@@ -1415,7 +1415,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
       m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit segment color (ambient)
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
    m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<const vec4*>(segs), 4);
-   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, true, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, true, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_Seg_world);
 }
 
@@ -1480,7 +1480,8 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
       0.f, 0.f, 0.f); // Unused (CRT filters now evaluate on screen output size per pixel, from screen space derivatives)
    // Pixelated keeps crisp pixels when magnified, but is filtered (mipmapped) when downscaled to avoid moiree, smoothed is always filtered,
    // while the CRT filters are point sampled since they perform their own reconstruction (and supersample themselves when downscaled)
-   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, crt.get(), false, profile == 0 ? SF_PIXELATED : (profile == 1 ? SF_ANISOTROPIC : SF_NONE));
+   m_renderDevice->m_DMDShader->SetTexture(
+      SHADER_displayTex, crt.get(), false, profile == 0 ? SamplerFilter::SF_PIXELATED : (profile == 1 ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_NONE));
    m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_display_CRT_world);
 }
 
@@ -1590,7 +1591,7 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
    m_renderDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
@@ -2354,7 +2355,7 @@ void Renderer::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapR
    Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
    if (pin)
       // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, true, SF_BILINEAR, SA_CLAMP, SA_CLAMP);
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, true, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
    m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
       IsBloomEnabled() ? 1.f : 0.f, // Bloom
       (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither

@@ -116,9 +116,9 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTextu
 {
    switch (m_type)
    {
-   case RT_DEFAULT: m_texTarget = GL_TEXTURE_2D; break;
-   case RT_STEREO: m_texTarget = GL_TEXTURE_2D_ARRAY; break;
-   case RT_CUBEMAP: m_texTarget = GL_TEXTURE_CUBE_MAP; break;
+   case SurfaceType::RT_DEFAULT: m_texTarget = GL_TEXTURE_2D; break;
+   case SurfaceType::RT_STEREO: m_texTarget = GL_TEXTURE_2D_ARRAY; break;
+   case SurfaceType::RT_CUBEMAP: m_texTarget = GL_TEXTURE_CUBE_MAP; break;
    default: assert(false);
    }
 #ifndef __OPENGLES__
