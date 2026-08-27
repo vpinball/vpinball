@@ -169,7 +169,7 @@ private:
                hasAnimation = (firstDelayMs != 0) && (firstDelayMs < SERUM_MAX_ROTATION_DELAY_MS);
                if (hasAnimation)
                {
-                  animationTick = std::chrono::high_resolution_clock::now();
+                  animationTick = std::chrono::steady_clock::now();
                   animationNextTick = animationTick + std::chrono::milliseconds(firstDelayMs);
                }
 
@@ -182,7 +182,7 @@ private:
          // Perform current animation (catching up to the current time point)
          if (hasAnimation)
          {
-            const auto now = std::chrono::high_resolution_clock::now();
+            const auto now = std::chrono::steady_clock::now();
             while (animationNextTick < now)
             {
                const uint32_t nextrot = Serum_Rotate();
