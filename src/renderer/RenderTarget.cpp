@@ -638,21 +638,35 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    if (w1 == w2 && h1 == h2)
    {
       // BGFX does not support blitting multiple layers at once on all target platform (supported on Vulkan, not supported on DX11, untested for the other backends)
+      bgfx::TextureRegion src;
+      bgfx::TextureRegion dst;
       for (int z = 0; z < nLayers; z++)
       {
          if (copyColor)
-            bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, 0, px2, py2, pz2 + z, m_color_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
+         {
+            src.init(m_color_tex, px1, py1, w1, h1);
+            src.mip = 0;
+            src.z = pz1 + z;
+            src.depth = 1;
+            dst.init(dest->m_color_tex, px2, py2, w2, h2);
+            dst.mip = 0;
+            dst.z = pz2 + z;
+            dst.depth = 1;
+            bgfx::blit(m_rd->m_activeViewId, dst, src);
+         }
          if (m_has_depth && dest->m_has_depth && copyDepth)
          {
             if (m_nMSAASamples > 1)
-            {
                ResolveMSAADepth();
-               bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz2 + z, m_depth_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
-            }
-            else
-            {
-               bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz2 + z, m_depth_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
-            }
+            src.init(m_depth_tex, px1, py1, w1, h1);
+            src.mip = 0;
+            src.z = pz1 + z;
+            src.depth = 1;
+            dst.init(dest->m_depth_tex, px2, py2, w2, h2);
+            dst.mip = 0;
+            dst.z = pz2 + z;
+            dst.depth = 1;
+            bgfx::blit(m_rd->m_activeViewId, dst, src);
          }
       }
    }

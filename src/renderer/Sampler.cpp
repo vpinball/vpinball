@@ -229,18 +229,24 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
          || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
          return m_nomipsTexture;
 
-      // Create a frame buffer and blit texture to it
+      // Create the mipmapped texture and blit first mip level
       if (!bgfx::isValid(m_mipsTexture))
       {
          m_mipsTexture
             = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
          bgfx::setName(m_mipsTexture, m_name.c_str());
       }
-      bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
-      bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
+      {
+         bgfx::TextureRegion src;
+         src.init(m_nomipsTexture);
+         bgfx::TextureRegion dst;
+         dst.init(m_mipsTexture);
+         bgfx::blit(m_rd->m_activeViewId, dst, src);
+      }
 
-      // Force frame buffer resolution, in turns causing mipmap generation
+      // Create a frame buffer with the mipmap texture and force its resolution, in turns causing mipmap generation
       m_rd->NextView();
+      bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
       bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
 
       // Get back to the rendering view
@@ -269,7 +275,13 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
    m_nomipsTexture
       = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
    bgfx::setName(m_nomipsTexture, (m_name + ".NoMipMap").c_str());
-   bgfx::blit(m_rd->m_activeViewId, m_nomipsTexture, 0, 0, m_mipsTexture);
+   {
+      bgfx::TextureRegion src;
+      src.init(m_mipsTexture);
+      bgfx::TextureRegion dst;
+      dst.init(m_nomipsTexture);
+      bgfx::blit(m_rd->m_activeViewId, dst, src);
+   }
    return m_nomipsTexture;
 }
 
