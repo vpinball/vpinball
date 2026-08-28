@@ -1854,6 +1854,10 @@ RenderDevice::~RenderDevice()
    m_SMAAareaTexture = nullptr;
    m_SMAAsearchTexture = nullptr;
    m_texMan.UnloadAll();
+   #if defined(ENABLE_BGFX)
+      // Samplers still queued here own BGFX textures: release them before BGFX is shut down
+      m_pendingTextureUploads.clear();
+   #endif
 
    m_renderFrame = nullptr;
 
@@ -2203,7 +2207,7 @@ void RenderDevice::SubmitAndFlipFrame(bool present)
    for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
    {
       (*it)->GetCoreTexture(true);
-      if ((*it)->IsMipMapGenerated())
+      if (!(*it)->IsUploadPending())
       {
          it = m_pendingTextureUploads.erase(it);
       }

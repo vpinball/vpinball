@@ -218,7 +218,10 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
    {
       // Hardware or BGFX internal implementation support ?
       if ((bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN) == 0)
+      {
+         m_pendingMipMapGen = false; // Mipmaps will never be generated for this format, so don't keep the request pending
          return m_nomipsTexture;
+      }
 
       // Defer mipmap generation if we are approaching BGFX limits or it is not supported
       if (m_rd->m_activeViewId < 2 // Check that we have enough views available to perform the resolution mipmapping
