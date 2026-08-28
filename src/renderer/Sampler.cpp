@@ -187,6 +187,8 @@ Sampler::~Sampler()
 
 #if defined(ENABLE_BGFX)
 
+#include "shaders/bgfx_mipmap.h"
+
 bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
 {
    // If this sampler is the resolved view of a MSAA render target, then resolve it before use
@@ -229,40 +231,103 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool withMipmaps)
          || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
          return m_nomipsTexture;
 
-      // Create the mipmapped texture and blit first mip level
-      if (!bgfx::isValid(m_mipsTexture))
+      if (bgfx::getRendererType() == bgfx::RendererType::Enum::Direct3D12 && !m_isTextureUpdateLinear)
       {
-         m_mipsTexture
-            = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
-         bgfx::setName(m_mipsTexture, m_name.c_str());
+         // BGFX does not implement mipmap generation for Dirext3D12 sRGB texture (only linear formats), so we have to use a custom implementation
+         assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
+         if (!bgfx::isValid(m_rd->m_srgbMipmapProgram))
+         {
+            bgfx::RendererType::Enum type = bgfx::getRendererType();
+            static const bgfx::EmbeddedShader shaders[] = { BGFX_EMBEDDED_SHADER(cs_mipmap_srgba8), BGFX_EMBEDDED_SHADER_END() };
+            m_rd->m_srgbMipmapProgram = bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_srgba8"), true);
+         }
+         const bgfx::ProgramHandle program = m_rd->m_srgbMipmapProgram;
+
+         if (!bgfx::isValid(m_mipsTexture))
+         {
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, BGFX_TEXTURE_SRGB | BGFX_TEXTURE_BLIT_DST);
+            bgfx::setName(m_mipsTexture, m_name.c_str());
+         }
+
+         // Generate mipmap
+         const int numMipLevels = static_cast<int>(floor(log2(max(m_width, m_height)))) + 1;
+         bgfx::TextureHandle csTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, BGFX_TEXTURE_COMPUTE_WRITE | BGFX_TEXTURE_BLIT_DST);
+         bgfx::setName(csTexture, (m_name + ".RGB").c_str());
+         {
+            bgfx::TextureRegion src;
+            src.init(m_nomipsTexture);
+            bgfx::TextureRegion dst;
+            dst.init(csTexture);
+            bgfx::blit(m_rd->m_activeViewId, dst, src);
+         }
+         for (uint8_t mip = 1; mip < numMipLevels; ++mip)
+         {
+            bgfx::setImage(0, csTexture, mip - 1, bgfx::Access::Read, m_bgfx_format);
+            bgfx::setImage(1, csTexture, mip, bgfx::Access::Write, m_bgfx_format);
+            bgfx::dispatch(m_rd->m_activeViewId, program, (std::max(1u, m_width >> mip) + 7) / 8, (std::max(1u, m_height >> mip) + 7) / 8);
+         }
+
+         // Blit to an sRGB texture (require a new view as BGFX order is blit -> compute -> draw)
+         m_rd->NextView();
+         for (uint8_t mip = 0; mip < numMipLevels; ++mip)
+         {
+            {
+               bgfx::TextureRegion src;
+               src.init(csTexture);
+               src.mip = mip;
+               bgfx::TextureRegion dst;
+               dst.init(m_mipsTexture);
+               dst.mip = mip;
+               bgfx::blit(m_rd->m_activeViewId, dst, src);
+            }
+         }
+
+         // Get back to the rendering view
+         RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+         RenderTarget::OnFrameFlushed();
+         if (activeRT)
+            activeRT->Activate();
+
+         bgfx::destroy(csTexture);
       }
+      else
       {
-         bgfx::TextureRegion src;
-         src.init(m_nomipsTexture);
-         bgfx::TextureRegion dst;
-         dst.init(m_mipsTexture);
-         bgfx::blit(m_rd->m_activeViewId, dst, src);
+         // Create the mipmapped texture and blit first mip level
+         if (!bgfx::isValid(m_mipsTexture))
+         {
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+            bgfx::setName(m_mipsTexture, m_name.c_str());
+         }
+         {
+            bgfx::TextureRegion src;
+            src.init(m_nomipsTexture);
+            bgfx::TextureRegion dst;
+            dst.init(m_mipsTexture);
+            bgfx::blit(m_rd->m_activeViewId, dst, src);
+         }
+
+         // Create a frame buffer with the mipmap texture and force its resolution, in turns causing mipmap generation
+         m_rd->NextView();
+         bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
+         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
+
+         // Get back to the rendering view
+         RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+         RenderTarget::OnFrameFlushed();
+         if (activeRT)
+            activeRT->Activate();
+
+         // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
+         bgfx::destroy(mipsFramebuffer);
       }
 
-      // Create a frame buffer with the mipmap texture and force its resolution, in turns causing mipmap generation
-      m_rd->NextView();
-      bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
-      bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
-
-      // Get back to the rendering view
-      RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-      RenderTarget::OnFrameFlushed();
-      if (activeRT)
-         activeRT->Activate();
-
-      // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
-      bgfx::destroy(mipsFramebuffer);
       m_pendingMipMapGen = false;
       if (!m_useNoMip)
       {
          bgfx::destroy(m_nomipsTexture);
          m_nomipsTexture = BGFX_INVALID_HANDLE;
       }
+      assert(m_rd->m_activeViewId >= 1);
    }
 
    if (withMipmaps && !m_pendingMipMapGen && bgfx::isValid(m_mipsTexture))
