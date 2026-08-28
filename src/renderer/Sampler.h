@@ -45,7 +45,7 @@ public:
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture);
    bgfx::TextureHandle GetCoreTexture(bool withMipmaps);
-   bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
+   bool IsUploadPending() const { return (m_textureUpdate != nullptr) || m_pendingMipMapGen; }
    uintptr_t GetNativeTexture();
    class RenderTarget* m_msaaDepthResolve = nullptr;
 
