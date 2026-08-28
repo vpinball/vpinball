@@ -32,25 +32,25 @@ void Anaglyph::LoadSetupFromRegistry(const Settings& settings, const int glasses
 void Anaglyph::SetupShader(Shader* shader) const
 {
    // Main matrices to project from linear rgb to anaglyph
-   shader->SetMatrix(SHADER_Stereo_LeftMat, &m_rgb2AnaglyphLeft);
-   shader->SetMatrix(SHADER_Stereo_RightMat, &m_rgb2AnaglyphRight);
+   shader->SetMatrix(ShaderUniform::Stereo_LeftMat, &m_rgb2AnaglyphLeft);
+   shader->SetMatrix(ShaderUniform::Stereo_RightMat, &m_rgb2AnaglyphRight);
    
    // Used by the dynamic desaturation filter to identify colors that would be seen by only one eye
    constexpr float scale = 0.25f * 0.5f; // 0.5 is because we sum the contribution of the 2 eyes, 0.25 is magic adjusted from real play
-   shader->SetVector(SHADER_Stereo_LeftLuminance_Gamma, scale * m_rgb2Yl.x, scale * m_rgb2Yl.y, scale * m_rgb2Yl.z, m_sRGBDisplay ? -1.f : m_displayGamma);
-   shader->SetVector(SHADER_Stereo_RightLuminance_DynDesat, scale * m_rgb2Yr.x, scale * m_rgb2Yr.y, scale * m_rgb2Yr.z, m_dynDesatLevel);
+   shader->SetVector(ShaderUniform::Stereo_LeftLuminance_Gamma, scale * m_rgb2Yl.x, scale * m_rgb2Yl.y, scale * m_rgb2Yl.z, m_sRGBDisplay ? -1.f : m_displayGamma);
+   shader->SetVector(ShaderUniform::Stereo_RightLuminance_DynDesat, scale * m_rgb2Yr.x, scale * m_rgb2Yr.y, scale * m_rgb2Yr.z, m_dynDesatLevel);
 
    // Used by Deghost filter
-   shader->SetVector(SHADER_Stereo_DeghostGamma, m_deghostGamma.x, m_deghostGamma.y, m_deghostGamma.z, 0.0f);
-   shader->SetMatrix(SHADER_Stereo_DeghostFilter, &m_deghostFilter);
+   shader->SetVector(ShaderUniform::Stereo_DeghostGamma, m_deghostGamma.x, m_deghostGamma.y, m_deghostGamma.z, 0.0f);
+   shader->SetMatrix(ShaderUniform::Stereo_DeghostFilter, &m_deghostFilter);
 
    // Select the shader based on the filter, dynamic desaturation and the gamma mode
    if (m_filter == DEGHOST)
-      shader->SetTechnique(SHADER_TECHNIQUE_Stereo_DeghostAnaglyph);
+      shader->SetTechnique(ShaderTechnique::Stereo_DeghostAnaglyph);
    else if (m_dynDesatLevel > 0.f)
-      shader->SetTechnique(m_sRGBDisplay ? SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph : SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph);
+      shader->SetTechnique(m_sRGBDisplay ? ShaderTechnique::Stereo_sRGBDynDesatAnaglyph : ShaderTechnique::Stereo_GammaDynDesatAnaglyph);
    else
-      shader->SetTechnique(m_sRGBDisplay ? SHADER_TECHNIQUE_Stereo_sRGBAnaglyph : SHADER_TECHNIQUE_Stereo_GammaAnaglyph);
+      shader->SetTechnique(m_sRGBDisplay ? ShaderTechnique::Stereo_sRGBAnaglyph : ShaderTechnique::Stereo_GammaAnaglyph);
 }
 
 vec3 Anaglyph::Gamma(const vec3& rgb) const

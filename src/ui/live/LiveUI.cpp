@@ -435,8 +435,8 @@ void LiveUI::RenderUI()
    matView[0] = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
    if (m_rd->m_nEyes == 2)
       matView[1] = matView[0];  
-   m_rd->m_uiShader->SetMatrix(SHADER_matWorldView, &matView[0], m_rd->m_nEyes);
-   m_rd->m_uiShader->SetVector(SHADER_staticColor_Alpha,
+   m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matView[0], m_rd->m_nEyes);
+   m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha,
       m_player->m_vrDevice ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f, // Stereo offset for VR (fake depth)
       0.f, // Unused
       0.f, // Unused
@@ -453,10 +453,10 @@ void LiveUI::RenderUI()
    m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    #ifdef ENABLE_BGFX
    if (m_rd->GetCurrentPass()->m_rt->m_nLayers == 1)
-      m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI_mono);
+      m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
    else
    #endif
-      m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
+      m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
    int depthSort = -10000;
@@ -501,8 +501,8 @@ void LiveUI::RenderUI()
       {
          if (cmd->ElemCount != 0)
          {
-            m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
-            m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
+            m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
+            m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID());
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(0.f, 0.f, 0.f), static_cast<float>(depthSort), m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
             depthSort--;
          }

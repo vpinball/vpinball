@@ -308,7 +308,7 @@ void Ball::Render(const unsigned int renderMask)
    // Set the render state to something that will always display for debug mode
    m_renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, g_pplayer->m_debugBalls ? RenderState::RS_FALSE : RenderState::RS_TRUE);
 
-   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_invTableRes_reflection, 
+   m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::invTableRes_reflection, 
       1.0f / (m_ptable->m_right - m_ptable->m_left),
       1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
       saturate(m_ptable->m_ballPlayfieldReflectionStrength * m_d.m_playfieldReflectionStrength), 0.f);
@@ -381,10 +381,10 @@ void Ball::Render(const unsigned int renderMask)
       }
    }
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
-   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(ShaderUniform::ballLightPos, (vec4 *)lightPos, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(ShaderUniform::ballLightEmission, (vec4 *)lightEmission, MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES);
    #elif defined(ENABLE_DX9)
-   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(SHADER_ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
+   m_renderer->m_renderDevice->m_ballShader->SetFloat4v(ShaderUniform::ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
    #endif
 
    // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
@@ -395,7 +395,7 @@ void Ball::Render(const unsigned int renderMask)
        Roughness = min(max(dist*0.006f, 0.4f), Roughness);
    }
    const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, &rwem);
+   m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::Roughness_WrapL_Edge_Thickness, &rwem);
 
    // ************************* draw the ball itself ****************************
    Vertex2D antiStretch(1.f, 1.f);
@@ -429,7 +429,7 @@ void Ball::Render(const unsigned int renderMask)
    }
 
    const vec4 diffuse = convertColor(m_d.m_color, 1.0f);
-   m_renderer->m_renderDevice->m_ballShader->SetVector(SHADER_cBase_Alpha, &diffuse);
+   m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::cBase_Alpha, &diffuse);
    if (diffuse.w < 1.0f)
    {
       m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
@@ -449,26 +449,26 @@ void Ball::Render(const unsigned int renderMask)
    const Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
    //const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
    //const Matrix3D m3D_full = rot * scale * trans;
-   //m_renderer->m_renderDevice->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
+   //m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::orientation, &m3D_full);
 
    m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
    if (!m_pinballEnv)
    {
       sphericalMapping = false; // Environment texture is an equirectangular map
-      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, m_renderer->GetBallEnvironment());
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_ball_color, m_renderer->GetBallEnvironment());
    }
    else
    {
       sphericalMapping = m_d.m_pinballEnvSphericalMapping;
-      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_color, m_pinballEnv);
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_ball_color, m_pinballEnv);
    }
    if (m_pinballDecal)
-      m_renderer->m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_decal, m_pinballDecal);
+      m_renderer->m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_ball_decal, m_pinballDecal);
    else
-      m_renderer->m_renderDevice->m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
-   m_renderer->m_renderDevice->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap
-                                                     : m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
+      m_renderer->m_renderDevice->m_ballShader->SetTextureNull(ShaderUniform::tex_ball_decal);
+   m_renderer->m_renderDevice->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? ShaderTechnique::RenderBall_SphericalMap_DecalMode : ShaderTechnique::RenderBall_SphericalMap
+                                                     : m_d.m_decalMode ? ShaderTechnique::RenderBall_DecalMode : ShaderTechnique::RenderBall);
    m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
 
    // Update render command with the ball position at the render frame submission time
@@ -496,7 +496,7 @@ void Ball::Render(const unsigned int renderMask)
          if (m_hitBall.m_d.m_lockedInKicker)
             posl.z -= m_hitBall.m_d.m_radius;
          const Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
-         ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
+         ss->SetMatrix(ShaderUniform::orientation, &m3D_fulll.m[0][0]);
          // Release on main thread as Ball methods are not multithreaded
          g_pplayer->m_pluginManager.GetMsgAPI().RunOnMainThread(g_pplayer->m_pluginAPI.GetVPXEndPointId(), 0.0, [](void *userData) { static_cast<Ball *>(userData)->Release(); }, this);
       });
@@ -518,7 +518,7 @@ void Ball::Render(const unsigned int renderMask)
       CHECKD3D(m_renderer->m_renderDevice->GetCoreDevice()->SetRenderState(D3DRS_POINTSIZE, float_as_uint(pointSize)));
       #endif
       m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBall_Debug);
+      m_renderer->m_renderDevice->m_ballShader->SetTechnique(ShaderTechnique::RenderBall_Debug);
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballDebugPoints, RenderDevice::POINTLIST, 0, m_renderer->m_ballDebugPoints->m_vb->m_count);
    }
    #endif
@@ -611,7 +611,7 @@ void Ball::Render(const unsigned int renderMask)
          m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
          m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
          m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         m_renderer->m_renderDevice->m_ballShader->SetTechnique(SHADER_TECHNIQUE_RenderBallTrail);
+         m_renderer->m_renderDevice->m_ballShader->SetTechnique(ShaderTechnique::RenderBallTrail);
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, true, pos, 0.f, m_renderer->m_ballTrailMeshBuffer, RenderDevice::TRIANGLESTRIP, m_renderer->m_ballTrailMeshBufferPos, nVertices);
          m_renderer->m_ballTrailMeshBufferPos += nVertices;
       }

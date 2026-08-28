@@ -101,8 +101,8 @@ void RenderPass::SortCommands()
          // Move kickers before other draw calls.
          // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
          // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
-         const bool isKicker1 = r1->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
-         const bool isKicker2 = r2->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
+         const bool isKicker1 = r1->GetShaderState()->GetTechnique() == ShaderTechnique::kickerBoolean || r1->GetShaderState()->GetTechnique() == ShaderTechnique::kickerBoolean_isMetal;
+         const bool isKicker2 = r2->GetShaderState()->GetTechnique() == ShaderTechnique::kickerBoolean || r2->GetShaderState()->GetTechnique() == ShaderTechnique::kickerBoolean_isMetal;
          if (isKicker1)
             return isKicker2 ? r1->GetDepth() > r2->GetDepth() : true;
          else if (isKicker2)

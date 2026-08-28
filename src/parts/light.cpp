@@ -673,7 +673,7 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0;
          m_renderer->m_renderDevice->ResetRenderState();
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, mat);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(&mat, false);
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
       }
@@ -692,7 +692,7 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0xFFFFFF;
          m_renderer->m_renderDevice->ResetRenderState();
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, mat);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(&mat, false);
          const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
@@ -766,7 +766,7 @@ void Light::Render(const unsigned int renderMask)
 
          m_renderer->m_renderDevice->m_lightShader->SetLightData(center_range);
          m_renderer->m_renderDevice->m_lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-         m_renderer->m_renderDevice->m_lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
+         m_renderer->m_renderDevice->m_lightShader->SetTechnique(ShaderTechnique::bulb_light);
 
          m_renderer->m_renderDevice->EnableAlphaBlend(false, false, false);
          //m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the light contribution
@@ -778,7 +778,7 @@ void Light::Render(const unsigned int renderMask)
          if (m_d.m_BulbLight && m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
             lightColor_intensity.w *= m_d.m_transmissionScale;
          m_renderer->m_renderDevice->m_lightShader->SetLightColorIntensity(lightColor_intensity);
-         m_renderer->m_renderDevice->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
+         m_renderer->m_renderDevice->m_lightShader->SetFloat(ShaderUniform::blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
 
          const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
@@ -807,8 +807,8 @@ void Light::Render(const unsigned int renderMask)
          shader->SetMaterial(m_surfaceMaterial);
          if (offTexel != nullptr)
          {
-            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_with_texture, *m_surfaceMaterial);
-            shader->SetTexture(SHADER_tex_light_color, offTexel, false, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
+            shader->SetTechniqueMaterial(ShaderTechnique::light_with_texture, *m_surfaceMaterial);
+            shader->SetTexture(ShaderUniform::tex_light_color, offTexel, false, SamplerFilter::SF_TRILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP);
             // TOTAN and Flintstones inserts break if alpha blending is disabled here.
             // Also see below if changing again
             if (!m_desktopBackdrop)
@@ -819,7 +819,7 @@ void Light::Render(const unsigned int renderMask)
             }
          }
          else
-            shader->SetTechniqueMaterial(SHADER_TECHNIQUE_light_without_texture, *m_surfaceMaterial);
+            shader->SetTechniqueMaterial(ShaderTechnique::light_without_texture, *m_surfaceMaterial);
       }
       else
       {
@@ -827,8 +827,8 @@ void Light::Render(const unsigned int renderMask)
          m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);  // add the lightcontribution
          m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-         shader->SetFloat(SHADER_blend_modulate_vs_add, isLightBuffer ? 0.0001f : clamp(m_d.m_modulate_vs_add, 0.0001f, 0.9999f)); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
-         shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
+         shader->SetFloat(ShaderUniform::blend_modulate_vs_add, isLightBuffer ? 0.0001f : clamp(m_d.m_modulate_vs_add, 0.0001f, 0.9999f)); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+         shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? ShaderTechnique::bulb_light_with_ball_shadows : ShaderTechnique::bulb_light);
       }
 
       Vertex3Ds pos0(0.f, 0.f, 0.f);

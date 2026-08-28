@@ -394,7 +394,7 @@ void Kicker::Render(const unsigned int renderMask)
 
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat);
-      m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
+      m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::kickerBoolean, *mat);
       m_renderer->m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
