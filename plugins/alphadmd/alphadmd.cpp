@@ -616,9 +616,9 @@ static void SetupRenderer()
             LOGI(std::format("Unsupported segment layout ({} displays: {})", selectedSources.size(), elements));
          else
          {
-            static const std::array<std::string, 13> dmdLayoutNames { "Undefined"s, "4x6+2x2"s, "4x7"s, "4x7+2x2"s, "6x4+2x2"s, "2x16+1x7"s, "2x16"s, "2x20"s, "2x7+2x2+1x16"s,
-               "1x7+2x16"s, "1x7+1x4+2x16"s, "4x7+5x2"s, "4x6+2x2+1x6"s };
-            const std::string name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"s;
+            static const std::array<std::string_view, 13> dmdLayoutNames { "Undefined"sv, "4x6+2x2"sv, "4x7"sv, "4x7+2x2"sv, "6x4+2x2"sv, "2x16+1x7"sv, "2x16"sv, "2x20"sv, "2x7+2x2+1x16"sv,
+               "1x7+2x16"sv, "1x7+1x4+2x16"sv, "4x7+5x2"sv, "4x6+2x2+1x6"sv };
+            const std::string_view name = selectedLayout < dmdLayoutNames.size() ? dmdLayoutNames[selectedLayout] : "Undefined"sv;
             LOGI(std::format("Matched layout {} ({} displays: {})", name, selectedSources.size(), elements));
          }
       });

@@ -306,8 +306,8 @@ static void OnControllersChanged()
          std::filesystem::path vniBasePath = vniPathProp_Get();
          const std::filesystem::path palFile = currentGameId + ".pal";
          const std::filesystem::path vniFile = currentGameId + ".vni";
-         const std::filesystem::path pin2dmdPal = "pin2dmd.pal"s;
-         const std::filesystem::path pin2dmdVni = "pin2dmd.vni"s;
+         const std::filesystem::path pin2dmdPal = "pin2dmd.pal"sv;
+         const std::filesystem::path pin2dmdVni = "pin2dmd.vni"sv;
 
          std::filesystem::path palPath, vniPath;
 

@@ -345,8 +345,8 @@ static void OnControllerChanged()
             return;
 
          std::filesystem::path serumPath = serumPathProp_Get();
-         const std::filesystem::path cromc = currentGameId + ".cROMc"s;
-         const std::filesystem::path crz = currentGameId + ".cRZ"s;
+         const std::filesystem::path cromc = currentGameId + ".cROMc";
+         const std::filesystem::path crz = currentGameId + ".cRZ";
 
          // Priority 1: serum/rom/rom.cromc or .crz
          if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / currentGameId / cromc); !path1.empty())

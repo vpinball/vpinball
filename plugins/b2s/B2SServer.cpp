@@ -67,7 +67,7 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    m_msgApi->SubscribeMsg(m_endpointId, m_onGetAuxRendererId, OnGetRenderer, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 
-   m_b2sName = "b2s::"s;
+   m_b2sName = "b2s::"sv;
    SetB2SName(""s);
 }
 
@@ -229,17 +229,17 @@ void B2SServer::UpdateStateSrc()
             {
                switch (id)
                {
-               case 25: m_lampStateNames[index] = "Player #1 Active"s; break;
-               case 26: m_lampStateNames[index] = "Player #2 Active"s; break;
-               case 27: m_lampStateNames[index] = "Player #3 Active"s; break;
-               case 28: m_lampStateNames[index] = "Player #4 Active"s; break;
-               case 30: m_lampStateNames[index] = "Player Up"s; break;
-               case 31: m_lampStateNames[index] = "Can Play"s; break;
-               case 32: m_lampStateNames[index] = "Ball In Play"s; break;
-               case 33: m_lampStateNames[index] = "Tilt"s; break;
-               case 34: m_lampStateNames[index] = "Match"s; break;
-               case 35: m_lampStateNames[index] = "Game Over"s; break;
-               case 36: m_lampStateNames[index] = "Shoot Again"s; break;
+               case 25: m_lampStateNames[index] = "Player #1 Active"sv; break;
+               case 26: m_lampStateNames[index] = "Player #2 Active"sv; break;
+               case 27: m_lampStateNames[index] = "Player #3 Active"sv; break;
+               case 28: m_lampStateNames[index] = "Player #4 Active"sv; break;
+               case 30: m_lampStateNames[index] = "Player Up"sv; break;
+               case 31: m_lampStateNames[index] = "Can Play"sv; break;
+               case 32: m_lampStateNames[index] = "Ball In Play"sv; break;
+               case 33: m_lampStateNames[index] = "Tilt"sv; break;
+               case 34: m_lampStateNames[index] = "Match"sv; break;
+               case 35: m_lampStateNames[index] = "Game Over"sv; break;
+               case 36: m_lampStateNames[index] = "Shoot Again"sv; break;
                }
             }
             m_lampStateDefs.emplace_back(
@@ -261,7 +261,7 @@ void B2SServer::UpdateStateSrc()
          {
             m_playerScoreNames[index] = std::format("Player Score #{}", id);
             if (id == 29 && m_defaultStateNameMask & (1ull << id))
-               m_playerScoreNames[index] = "Credits"s;
+               m_playerScoreNames[index] = "Credits"sv;
             m_playerScoreStateDefs.emplace_back(
                StateDef { m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, GetPlayerScore, nullptr });
             index++;

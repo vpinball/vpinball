@@ -35,8 +35,8 @@ void Label::SetText(const string& szText)
 {
    string szTmp = szText;
 
-   static const std::array<string,1> patterns{ "\r\n"s };
-   static const string replaceWith = "\n"s;
+   static const std::array<std::string_view,1> patterns{ "\r\n"sv };
+   static const std::string_view replaceWith = "\n"sv;
 
    for (const auto& pattern : patterns) {
       size_t pos = 0;

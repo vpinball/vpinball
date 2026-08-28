@@ -760,7 +760,7 @@ void FormBackglass::LoadB2SData()
                if (innerNode->FindAttribute(("Sound" + std::to_string(i)).c_str())) {
                   soundName = innerNode->Attribute(("Sound" + std::to_string(i)).c_str());
                   if (soundName.empty())
-                     soundName = "stille"s;
+                     soundName = "stille"sv;
                }
                // add reel or LED pictures
                B2SReelBox* pReel = new B2SReelBox(m_vpxApi, m_pB2SData);
