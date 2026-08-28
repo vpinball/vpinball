@@ -167,7 +167,7 @@ private:
          segSource->With([this](const std::vector<SegSrcId>& selectedSources){ ProcessFrame(selectedSources); });
       }
    }
-   
+
    void ProcessFrame(const std::vector<SegSrcId>& selectedSources)
    {
       // Get segment display state and compute backward compatible binary version
@@ -187,7 +187,7 @@ private:
                m_seg_data[pos + j] = 0;
                for (int k = 0; k < nSegs; k++)
                   if (seg.frame[j * 16 + k] > 0.5f)
-                     m_seg_data[pos + j] |= 1 << k;
+                     m_seg_data[pos + j] |= 1u << k;
             }
          }
          lum += selectedSources[i].nElements * 16;

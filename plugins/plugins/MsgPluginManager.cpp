@@ -326,7 +326,7 @@ void MsgPluginManager::ProcessAsyncCallbacks()
       return;
    std::list<TimerEntry> timers;
    const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-   for (auto it = m_timers.begin(); it != m_timers.end(); it++)
+   for (auto it = m_timers.begin(); it != m_timers.end(); ++it)
    {
       if (it->time > now)
          break;

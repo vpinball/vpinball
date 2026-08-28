@@ -204,7 +204,7 @@ static void SetupDOF()
    if (gameId.empty())
       return;
    
-   LOGI("New PinMAME game started: gameId="s + gameId);
+   LOGI("New PinMAME game started: gameId=" + gameId);
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
    string path = tableInfo.path;

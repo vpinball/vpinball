@@ -534,7 +534,7 @@ private:
       {
          getMsg->entries[getMsg->count] = *it;
          getMsg->count++;
-         it++;
+         ++it;
       }
       getMsg->count += static_cast<unsigned int>(std::distance(it, me->m_items.end()));
    }

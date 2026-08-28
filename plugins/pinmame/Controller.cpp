@@ -512,13 +512,13 @@ int Controller::GetDip(int nDipBank) const
                {
                   m_dipSwitches.stateDefs[index].GetState(m_dipSwitches.id, index, &state);
                   if (state != 0)
-                     result |= 1 << i;
+                     result |= 1u << i;
                }
             }
             else if (dipSwitchNo < m_dipSwitchStates.size())
             {
                if (m_dipSwitchStates[dipSwitchNo])
-                  result |= 1 << i;
+                  result |= 1u << i;
             }
          }
       });
@@ -536,7 +536,7 @@ void Controller::SetDip(int nDipBank, int byteState)
          for (int i = 0; i < 8; i++)
          {
             const int dipSwitchNo = nDipBank * 8 + i;
-            bool state = (byteState & (1 << i)) != 0;
+            bool state = (byteState & (1u << i)) != 0;
 
             if (m_dipSwitchStates.size() < dipSwitchNo + 1)
                m_dipSwitchStates.resize(dipSwitchNo + 1, false);
@@ -771,15 +771,16 @@ std::vector<uint8_t> Controller::GetRawDmdPixels()
    if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
    {
       pixels.resize(size);
+      const float* const __restrict framef = static_cast<const float*>(frame.frame);
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(static_cast<const float*>(frame.frame)[i] * 100.f);
+         pixels[i] = static_cast<uint8_t>(framef[i] * 100.f);
    }
    else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
+      const uint8_t* const __restrict framef = static_cast<const uint8_t*>(frame.frame);
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(21.26f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3] + 71.52f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1]
-            + 7.22f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3 + 2]);
+         pixels[i] = static_cast<uint8_t>(21.26f * (float)framef[i * 3] + 71.52f * (float)framef[i * 3 + 1] + 7.22f * (float)framef[i * 3 + 2]);
    }
    return pixels;
 }
@@ -795,19 +796,20 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
    if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
    {
       pixels.resize(size);
+      const float* const __restrict framef = static_cast<const float*>(frame.frame);
       for (int i = 0; i < size; i++)
       {
          // TODO implement original PinMAME / VPinMAME coloring
-         const uint32_t lum = static_cast<int32_t>(static_cast<const float*>(frame.frame)[i] * 255.f);
+         const uint32_t lum = static_cast<int32_t>(framef[i] * 255.f);
          pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
    }
    else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
+      const uint8_t* const __restrict framef = static_cast<const uint8_t*>(frame.frame);
       for (int i = 0; i < size; i++)
-         pixels[i] = ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3] << 16) | ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1] << 8)
-            | (static_cast<const uint8_t*>(frame.frame)[i * 3 + 2]);
+         pixels[i] = ((uint32_t)framef[i * 3] << 16) | ((uint32_t)framef[i * 3 + 1] << 8) | framef[i * 3 + 2];
    }
    return pixels;
 }

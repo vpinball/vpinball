@@ -257,6 +257,7 @@ private:
       const unsigned int dmdSrcSize = m_dmdSrc.width * m_dmdSrc.height;
       if (m_dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
       {
+         const float* const __restrict frame = static_cast<const float*>(srcFrame.frame);
          // Monochrome frames are provided as linear luminance while upscalers expect sRGB data.
          // Frames are converted from linear to sRGB for upscaling and back to linear luminance. This gives better
          // results at some performance cost. The difference is really visible when upscaling is null (ScaleFX AA)
@@ -264,25 +265,28 @@ private:
          if (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x)
          { // Lum32F in float -> sLum8 in uint32_t
             for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
-               m_rgbaSrcFrame[ofs] = linearToGammaU8(static_cast<const float*>(srcFrame.frame)[ofs]);
+               m_rgbaSrcFrame[ofs] = linearToGammaU8(frame[ofs]);
          }
          else
          {
             for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
             {
-               const uint32_t lum = linearToGammaU8(static_cast<const float*>(srcFrame.frame)[ofs]);
+               const uint32_t lum = linearToGammaU8(frame[ofs]);
                m_rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
             }
          }
       }
       else if (m_dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
+      {
+         const uint8_t* const __restrict frame = static_cast<const uint8_t*>(srcFrame.frame);
          for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
          {
-            const uint32_t r = static_cast<const uint8_t*>(srcFrame.frame)[ofs * 3 + 0];
-            const uint32_t g = static_cast<const uint8_t*>(srcFrame.frame)[ofs * 3 + 1];
-            const uint32_t b = static_cast<const uint8_t*>(srcFrame.frame)[ofs * 3 + 2];
+            const uint32_t r = frame[ofs * 3 + 0];
+            const uint32_t g = frame[ofs * 3 + 1];
+            const uint32_t b = frame[ofs * 3 + 2];
             m_rgbaSrcFrame[ofs] = r | (g << 8) | (b << 16) | 0xFF000000u;
          }
+      }
       else if (m_dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565)
       {
          static constexpr uint8_t lum32[]
