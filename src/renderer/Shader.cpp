@@ -1405,17 +1405,17 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       }
       RemoveFromVectorSingle(uniforms, SHADER_clip_plane);
       RemoveFromVectorSingle(uniforms, SHADER_layer);
-      if (!(bgfx::getRendererType() == bgfx::RendererType::Enum::Vulkan
-             && (technique == SHADER_TECHNIQUE_fb_wcgtonemap
-                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_no_filter 
-                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO
-                || technique == SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter))
-         && !(technique == SHADER_TECHNIQUE_display_DMD
-                || technique == SHADER_TECHNIQUE_display_DMD_world
-                || technique == SHADER_TECHNIQUE_SMAA_ColorEdgeDetection
-                || technique == SHADER_TECHNIQUE_SMAA_BlendWeightCalculation
-                || technique == SHADER_TECHNIQUE_SMAA_NeighborhoodBlending
-                || technique == SHADER_TECHNIQUE_fb_resolve_depth_msaa)
+      if (!((bgfx::getRendererType() == bgfx::RendererType::Enum::Vulkan || bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGL || bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGLES)
+             && (technique == ShaderTechniques::fb_wcgtonemap
+                || technique == ShaderTechniques::fb_wcgtonemap_no_filter 
+                || technique == ShaderTechniques::fb_wcgtonemap_AO
+                || technique == ShaderTechniques::fb_wcgtonemap_AO_no_filter))
+         && !(technique == ShaderTechniques::display_DMD
+                || technique == ShaderTechniques::display_DMD_world
+                || technique == ShaderTechniques::SMAA_ColorEdgeDetection
+                || technique == ShaderTechniques::SMAA_BlendWeightCalculation
+                || technique == ShaderTechniques::SMAA_NeighborhoodBlending
+                || technique == ShaderTechniques::fb_resolve_depth_msaa)
          )
       {
          for (const auto uniform : uniforms)
