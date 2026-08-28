@@ -1876,8 +1876,8 @@ RenderDevice::~RenderDevice()
    delete m_pVertexTexelDeclaration;
    delete m_pVertexNormalTexelDeclaration;
 
-   for (auto prog : m_mipmapPrograms)
-      bgfx::destroy(prog);
+   if (bgfx::isValid(m_srgbMipmapProgram))
+      bgfx::destroy(m_srgbMipmapProgram);
 
    // Shutdown BGFX once all native resources have been cleaned up
    m_rendererInitialized.release();

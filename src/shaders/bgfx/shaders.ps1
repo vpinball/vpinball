@@ -15,6 +15,7 @@ $gen_tonemap = $true
 $gen_antialiasing = $true
 
 $gen_imgui = $true
+$gen_mipmap = $true
 
 $debug = $false
 
@@ -337,4 +338,17 @@ if ($gen_imgui)
 		Process-Shader "vs_imgui.sc" "imgui.h" ("vs_imgui" + $stOutput[$k]) "vertex" @($stereo[$k])
 		Process-Shader "fs_imgui.sc" "imgui.h" ("fs_imgui" + $stOutput[$k]) "fragment" @($stereo[$k])
 	}
+}
+
+
+################################
+# MipMap compute shader
+if ($gen_mipmap)
+{
+	Write-Host "`n>>>>>>>>>>>>>>>> MipMap shaders"
+	New-Item -Path . -Name "../bgfx_mipmap.h" -ItemType "File" -Force -Value "// MipMap Shaders`n"
+	# Process-Shader "cs_mipmap.sc" "mipmap.h" ("cs_mipmap_rgba16f_") "compute" @("FMT_rgba16f")
+	# Process-Shader "cs_mipmap.sc" "mipmap.h" ("cs_mipmap_rgba32f_") "compute" @("FMT_rgba32f")
+	# Process-Shader "cs_mipmap.sc" "mipmap.h" ("cs_mipmap_rgba8_") "compute" @("FMT_rgba8")
+	Process-Shader "cs_mipmap.sc" "mipmap.h" ("cs_mipmap_srgba8_") "compute" @("FMT_srgba8")
 }

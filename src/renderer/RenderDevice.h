@@ -280,7 +280,7 @@ public:
    std::binary_semaphore m_frameReadySem { 0 }; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
-   std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
+   bgfx::ProgramHandle m_srgbMipmapProgram = BGFX_INVALID_HANDLE;
 
    uint64_t m_lastGPUFrameLength = 0;
 
