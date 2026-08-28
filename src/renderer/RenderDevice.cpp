@@ -1795,10 +1795,10 @@ RenderDevice::RenderDevice(
    #endif
 
    // Initialize uniform to default value
-   m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
+   m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    // FIXME XR
    #ifndef ENABLE_XR
-   m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
+   m_DMDShader->SetFloat(ShaderUniform::alphaTestValue, 1.0f); // No alpha clipping
    #endif
 
    #if !defined(__OPENGLES__)
@@ -2364,8 +2364,8 @@ void RenderDevice::UploadAndSetSMAATextures()
    }
 #endif
 
-   m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
-   m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+   m_FBShader->SetTexture(ShaderUniform::areaTex, m_SMAAareaTexture);
+   m_FBShader->SetTexture(ShaderUniform::searchTex, m_SMAAsearchTexture);
 }
 
 void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB)
@@ -2562,17 +2562,17 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    // FIXME GLES implement (or use BGFX OpenGL ES implementation)
    return;
 #elif defined(ENABLE_BGFX)
-   //m_DMDShader->SetVector(SHADER_clip_plane, &plane); // FIXME
-   m_basicShader->SetVector(SHADER_clip_plane, &plane);
-   m_lightShader->SetVector(SHADER_clip_plane, &plane);
-   m_flasherShader->SetVector(SHADER_clip_plane, &plane);
-   m_ballShader->SetVector(SHADER_clip_plane, &plane);
+   //m_DMDShader->SetVector(ShaderUniform::clip_plane, &plane); // FIXME
+   m_basicShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_lightShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_flasherShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_ballShader->SetVector(ShaderUniform::clip_plane, &plane);
 #elif defined(ENABLE_OPENGL)
-   m_DMDShader->SetVector(SHADER_clip_plane, &plane);
-   m_basicShader->SetVector(SHADER_clip_plane, &plane);
-   m_lightShader->SetVector(SHADER_clip_plane, &plane);
-   m_flasherShader->SetVector(SHADER_clip_plane, &plane);
-   m_ballShader->SetVector(SHADER_clip_plane, &plane);
+   m_DMDShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_basicShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_lightShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_flasherShader->SetVector(ShaderUniform::clip_plane, &plane);
+   m_ballShader->SetVector(ShaderUniform::clip_plane, &plane);
 #elif defined(ENABLE_DX9)
    // FIXME DX9 shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0); // = world * view * proj
@@ -2733,51 +2733,51 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const V
 
 void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer)
 {
-   ShaderTechniques tech_h, tech_v;
+   ShaderTechnique tech_h, tech_v;
    if (kernel_size < 8)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz7x7;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert7x7;
+      tech_h = ShaderTechnique::fb_blur_horiz7x7;
+      tech_v = ShaderTechnique::fb_blur_vert7x7;
    }
    else if (kernel_size < 10)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz9x9;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert9x9;
+      tech_h = ShaderTechnique::fb_blur_horiz9x9;
+      tech_v = ShaderTechnique::fb_blur_vert9x9;
    }
    else if (kernel_size < 12)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz11x11;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert11x11;
+      tech_h = ShaderTechnique::fb_blur_horiz11x11;
+      tech_v = ShaderTechnique::fb_blur_vert11x11;
    }
    else if (kernel_size < 14)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz13x13;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert13x13;
+      tech_h = ShaderTechnique::fb_blur_horiz13x13;
+      tech_v = ShaderTechnique::fb_blur_vert13x13;
    }
    else if (kernel_size < 17)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz15x15;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert15x15;
+      tech_h = ShaderTechnique::fb_blur_horiz15x15;
+      tech_v = ShaderTechnique::fb_blur_vert15x15;
    }
    else if (kernel_size < 21)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz19x19;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert19x19;
+      tech_h = ShaderTechnique::fb_blur_horiz19x19;
+      tech_v = ShaderTechnique::fb_blur_vert19x19;
    }
    else if (kernel_size < 25)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz23x23;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert23x23;
+      tech_h = ShaderTechnique::fb_blur_horiz23x23;
+      tech_v = ShaderTechnique::fb_blur_vert23x23;
    }
    else if (kernel_size < 31)
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz27x27;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert27x27;
+      tech_h = ShaderTechnique::fb_blur_horiz27x27;
+      tech_v = ShaderTechnique::fb_blur_vert27x27;
    }
    else
    {
-      tech_h = SHADER_TECHNIQUE_fb_blur_horiz39x39;
-      tech_v = SHADER_TECHNIQUE_fb_blur_vert39x39;
+      tech_h = ShaderTechnique::fb_blur_horiz39x39;
+      tech_v = ShaderTechnique::fb_blur_vert39x39;
    }
 
    RenderPass* const initial_rt = GetCurrentPass();
@@ -2789,22 +2789,22 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    {
-      m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      m_FBShader->SetTextureNull(ShaderUniform::tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " HBlur", tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
-      m_FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
-      m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
+      m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, source->GetColorSampler());
+      m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
       m_FBShader->SetTechnique(tech_h);
       DrawFullscreenTexturedQuad(m_FBShader);
    }
    {
-      m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
+      m_FBShader->SetTextureNull(ShaderUniform::tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " VBlur", dest, false); // switch to output buffer for vertical phase of gaussian blur
       m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
-      m_FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
-      m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
+      m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, tmp->GetColorSampler());
+      m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);
       m_FBShader->SetTechnique(tech_v);
       DrawFullscreenTexturedQuad(m_FBShader);
    }

@@ -1044,7 +1044,7 @@ Player::~Player()
       m_implicitVRBackglass = nullptr;
    }
 
-   m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+   m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(ShaderUniform::tex_dmd);
    if (m_dmdFrame)
    {
       m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_dmdFrame.get());

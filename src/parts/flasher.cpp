@@ -918,7 +918,7 @@ void Flasher::ResetVideoCap()
    m_isVideoCap = false;
    if (m_videoCapTex)
    {
-      //  m_renderer->m_renderDevice->m_flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
+      //  m_renderer->m_renderDevice->m_flasherShader->SetTextureNull(ShaderUniform::tex_flasher_A); //!! ??
       m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_videoCapTex.get());
       m_videoCapTex = nullptr;
    }
@@ -1289,19 +1289,19 @@ void Flasher::Render(const unsigned int renderMask)
          Texture *const pinA = m_ptable->GetImage(m_d.m_szImageA);
          Texture *const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::staticColor_Alpha, &color);
 
          vec4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_addBlend ? 1.f : 0.f);
-         m_renderer->m_renderDevice->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
+         m_renderer->m_renderDevice->m_flasherShader->SetTechnique(ShaderTechnique::basic_noLight);
 
          float flasherMode;
          if ((pinA || m_isVideoCap) && !pinB)
          {
             flasherMode = 0.f;
             if (m_isVideoCap)
-               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, m_videoCapTex.get());
             else
-               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinA);
 
             if (!m_d.m_addBlend)
                flasherData.x = !m_isVideoCap ? pinA->m_alphaTestValue : 0.f;
@@ -1309,7 +1309,7 @@ void Flasher::Render(const unsigned int renderMask)
          else if (!(pinA || m_isVideoCap) && pinB)
          {
             flasherMode = 0.f;
-            m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinB);
+            m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinB);
 
             if (!m_d.m_addBlend)
                flasherData.x = pinB->m_alphaTestValue;
@@ -1318,10 +1318,10 @@ void Flasher::Render(const unsigned int renderMask)
          {
             flasherMode = 1.f;
             if (m_isVideoCap)
-               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, m_videoCapTex.get());
             else
-               m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
-            m_renderer->m_renderDevice->m_flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
+               m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_A, pinA);
+            m_renderer->m_renderDevice->m_flasherShader->SetTexture(ShaderUniform::tex_flasher_B, pinB);
 
             if (!m_d.m_addBlend)
             {
@@ -1332,12 +1332,12 @@ void Flasher::Render(const unsigned int renderMask)
          else
             flasherMode = 2.f;
 
-         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
-         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::alphaTestValueAB_filterMode_addBlend, &flasherData);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
 
          // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
          if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
-            m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
+            m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::lightCenter_doShadow, m_lightmap->m_d.m_vCenter.x, m_lightmap->m_d.m_vCenter.y, m_lightmap->GetCurrentHeight(), 1.0f);
 
          m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
@@ -1347,7 +1347,7 @@ void Flasher::Render(const unsigned int renderMask)
 
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
-         m_renderer->m_renderDevice->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
+         m_renderer->m_renderDevice->m_flasherShader->SetVector(ShaderUniform::lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
          break;
       }
 
@@ -1439,11 +1439,11 @@ void Flasher::Render(const unsigned int renderMask)
             m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             // Draw a solid black background using the common flasher mesh and transform
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-            m_renderer->m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
-            m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
+            m_renderer->m_renderDevice->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
+            m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 1.f);
             m_renderer->m_renderDevice->DrawMesh(
                m_renderer->m_renderDevice->m_basicShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
-            m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+            m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
             // Vertices are emitted in (0,0) -> (1,1). We must scale & rotate around center then translate to fit flasher's position
             Matrix3D transform;
             VPXRenderContext2D *context;

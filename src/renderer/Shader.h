@@ -47,37 +47,37 @@ class ITexManCacheable;
 
 // Declaration of all available techniques (shader program)
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
-#define SHADER_TECHNIQUE(name, ...) SHADER_TECHNIQUE_##name
-enum ShaderTechniques
+#define SHADER_TECHNIQUE(name, ...) name
+enum class ShaderTechnique : unsigned int
 {
-   SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(LiveUI_mono, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
-      SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
-      SHADER_tex_ball_decal, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
-      SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
-      SHADER_tex_ball_decal, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_SphericalMap, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse,
-      SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield,
-      SHADER_tex_ball_decal, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_SphericalMap_DecalMode, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below,
-      SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env, SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting,
-      SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBall_Debug, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_orientation, SHADER_clip_plane),
-   SHADER_TECHNIQUE(RenderBallTrail, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_cBase_Alpha, SHADER_fenvEmissionScale_TexWidth, SHADER_w_h_disableLighting,
-      SHADER_tex_ball_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(LiveUI, ShaderUniform::matWorldView, ShaderUniform::tex_base_color, ShaderUniform::staticColor_Alpha, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(LiveUI_mono, ShaderUniform::matWorldView, ShaderUniform::tex_base_color, ShaderUniform::staticColor_Alpha, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBall, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matView, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverse,
+      ShaderUniform::ballLightEmission, ShaderUniform::ballLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth,
+      ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_diffuse_env, ShaderUniform::orientation, ShaderUniform::invTableRes_reflection, ShaderUniform::w_h_disableLighting, ShaderUniform::tex_ball_color, ShaderUniform::tex_ball_playfield,
+      ShaderUniform::tex_ball_decal, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBall_DecalMode, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matView, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverse,
+      ShaderUniform::ballLightEmission, ShaderUniform::ballLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth,
+      ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_diffuse_env, ShaderUniform::orientation, ShaderUniform::invTableRes_reflection, ShaderUniform::w_h_disableLighting, ShaderUniform::tex_ball_color, ShaderUniform::tex_ball_playfield,
+      ShaderUniform::tex_ball_decal, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matView, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverse,
+      ShaderUniform::ballLightEmission, ShaderUniform::ballLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth,
+      ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_diffuse_env, ShaderUniform::orientation, ShaderUniform::invTableRes_reflection, ShaderUniform::w_h_disableLighting, ShaderUniform::tex_ball_color, ShaderUniform::tex_ball_playfield,
+      ShaderUniform::tex_ball_decal, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBall_SphericalMap_DecalMode, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matView, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverse, ShaderUniform::ballLightEmission, ShaderUniform::ballLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below,
+      ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_diffuse_env, ShaderUniform::orientation, ShaderUniform::invTableRes_reflection, ShaderUniform::w_h_disableLighting,
+      ShaderUniform::tex_ball_color, ShaderUniform::tex_ball_playfield, ShaderUniform::tex_ball_decal, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBall_Debug, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverse, ShaderUniform::orientation, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(RenderBallTrail, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::cBase_Alpha, ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::w_h_disableLighting,
+      ShaderUniform::tex_ball_color, ShaderUniform::clip_plane),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_with_texture, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
-      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
-      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
-      SHADER_objectSpaceNormalMap, SHADER_tex_base_color, SHADER_tex_base_transmission, SHADER_tex_base_normalmap, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth,
-      SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_with_texture, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::basicLightEmission, ShaderUniform::basicLightPos,
+      ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_env,
+      ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode, ShaderUniform::refractionTint_thickness, ShaderUniform::mirrorNormal_factor,
+      ShaderUniform::objectSpaceNormalMap, ShaderUniform::tex_base_color, ShaderUniform::tex_base_transmission, ShaderUniform::tex_base_normalmap, ShaderUniform::tex_reflection, ShaderUniform::tex_refraction, ShaderUniform::tex_probe_depth,
+      ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(basic_with_texture_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_normal),
    SHADER_TECHNIQUE(basic_with_texture_normal_isMetal),
@@ -94,12 +94,12 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal),
    SHADER_TECHNIQUE(basic_with_texture_refr_refl_normal_isMetal),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_with_texture_at, SHADER_layer, SHADER_alphaTestValue, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView,
-      SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission,
-      SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange,
-      SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
-      SHADER_objectSpaceNormalMap, SHADER_tex_base_color, SHADER_tex_base_transmission, SHADER_tex_base_normalmap, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth,
-      SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_with_texture_at, ShaderUniform::layer, ShaderUniform::alphaTestValue, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView,
+      ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::basicLightEmission,
+      ShaderUniform::basicLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange,
+      ShaderUniform::tex_env, ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode, ShaderUniform::refractionTint_thickness, ShaderUniform::mirrorNormal_factor,
+      ShaderUniform::objectSpaceNormalMap, ShaderUniform::tex_base_color, ShaderUniform::tex_base_transmission, ShaderUniform::tex_base_normalmap, ShaderUniform::tex_reflection, ShaderUniform::tex_refraction, ShaderUniform::tex_probe_depth,
+      ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(basic_with_texture_at_isMetal),
    SHADER_TECHNIQUE(basic_with_texture_at_normal),
    SHADER_TECHNIQUE(basic_with_texture_at_normal_isMetal),
@@ -116,11 +116,11 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal),
    SHADER_TECHNIQUE(basic_with_texture_at_refr_refl_normal_isMetal),
    // OpenGL only has the first variant. DX9 needs all of them due to shader compiler limitation
-   SHADER_TECHNIQUE(basic_without_texture, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
-      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
-      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
-      SHADER_tex_base_transmission, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_without_texture, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::basicLightEmission, ShaderUniform::basicLightPos,
+      ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_env,
+      ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode, ShaderUniform::refractionTint_thickness, ShaderUniform::mirrorNormal_factor,
+      ShaderUniform::tex_base_transmission, ShaderUniform::tex_reflection, ShaderUniform::tex_refraction, ShaderUniform::tex_probe_depth, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(basic_without_texture_isMetal),
    SHADER_TECHNIQUE(basic_without_texture_refl),
    SHADER_TECHNIQUE(basic_without_texture_refl_isMetal),
@@ -130,213 +130,212 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_without_texture_refr_refl_isMetal),
 
    // Unshaded
-   SHADER_TECHNIQUE(unshaded_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_with_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_staticColor_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_without_texture_shadow, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(unshaded_with_texture_shadow, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(unshaded_without_texture, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::staticColor_Alpha, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(unshaded_with_texture, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::staticColor_Alpha, ShaderUniform::tex_base_color, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(unshaded_without_texture_shadow, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(unshaded_with_texture_shadow, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::tex_base_color, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(basic_reflection_only, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_reflection_only, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::mirrorNormal_factor, ShaderUniform::tex_reflection, ShaderUniform::clip_plane),
 
    // BGFX OpenXR shaders
-   SHADER_TECHNIQUE(vr_mask, SHADER_matWorldViewProj, SHADER_staticColor_Alpha),
-   SHADER_TECHNIQUE(vr_passthrough, SHADER_layer, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
+   SHADER_TECHNIQUE(vr_mask, ShaderUniform::matWorldViewProj, ShaderUniform::staticColor_Alpha),
+   SHADER_TECHNIQUE(vr_passthrough, ShaderUniform::layer, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_depth),
 
-   SHADER_TECHNIQUE(bg_decal_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_cBase_Alpha, SHADER_clip_plane),
-   SHADER_TECHNIQUE(bg_decal_with_texture, SHADER_layer, SHADER_alphaTestValue, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_cBase_Alpha, SHADER_tex_base_color, SHADER_clip_plane),
+   SHADER_TECHNIQUE(bg_decal_without_texture, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::cBase_Alpha, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(bg_decal_with_texture, ShaderUniform::layer, ShaderUniform::alphaTestValue, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::cBase_Alpha, ShaderUniform::tex_base_color, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(kickerBoolean, SHADER_layer, SHADER_matProj, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_basicLightEmission, SHADER_basicLightPos,
-      SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env,
-      SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_refractionTint_thickness, SHADER_mirrorNormal_factor,
-      SHADER_tex_base_transmission, SHADER_tex_reflection, SHADER_tex_refraction, SHADER_tex_probe_depth, SHADER_clip_plane),
+   SHADER_TECHNIQUE(kickerBoolean, ShaderUniform::layer, ShaderUniform::matProj, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::basicLightEmission, ShaderUniform::basicLightPos,
+      ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_env,
+      ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode, ShaderUniform::refractionTint_thickness, ShaderUniform::mirrorNormal_factor,
+      ShaderUniform::tex_base_transmission, ShaderUniform::tex_reflection, ShaderUniform::tex_refraction, ShaderUniform::tex_probe_depth, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(kickerBoolean_isMetal),
 
-   SHADER_TECHNIQUE(light_with_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose,
-      SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth,
-      SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
-      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_tex_light_color, SHADER_clip_plane),
-   SHADER_TECHNIQUE(light_without_texture, SHADER_layer, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_matWorld, SHADER_matView, SHADER_matWorldView,
-      SHADER_matWorldViewInverseTranspose, SHADER_basicLightEmission, SHADER_basicLightPos, SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below,
-      SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode,
-      SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_clip_plane),
+   SHADER_TECHNIQUE(light_with_texture, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView, ShaderUniform::matWorldView, ShaderUniform::matWorldViewInverseTranspose,
+      ShaderUniform::basicLightEmission, ShaderUniform::basicLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below, ShaderUniform::fenvEmissionScale_TexWidth,
+      ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_env, ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode, ShaderUniform::lightCenter_maxRange,
+      ShaderUniform::lightColor2_falloff_power, ShaderUniform::lightColor_intensity, ShaderUniform::lightingOff, ShaderUniform::tex_light_color, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(light_without_texture, ShaderUniform::layer, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::matWorld, ShaderUniform::matView, ShaderUniform::matWorldView,
+      ShaderUniform::matWorldViewInverseTranspose, ShaderUniform::basicLightEmission, ShaderUniform::basicLightPos, ShaderUniform::Roughness_WrapL_Edge_Thickness, ShaderUniform::cBase_Alpha, ShaderUniform::fDisableLighting_top_below,
+      ShaderUniform::fenvEmissionScale_TexWidth, ShaderUniform::cAmbient_LightRange, ShaderUniform::tex_env, ShaderUniform::tex_diffuse_env, ShaderUniform::cClearcoat_EdgeAlpha, ShaderUniform::cGlossy_ImageLerp, ShaderUniform::u_basic_shade_mode,
+      ShaderUniform::lightCenter_maxRange, ShaderUniform::lightColor2_falloff_power, ShaderUniform::lightColor_intensity, ShaderUniform::lightingOff, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(light_with_texture_isMetal),
    SHADER_TECHNIQUE(light_without_texture_isMetal),
 
-   SHADER_TECHNIQUE(basic_DMD, SHADER_glassPad, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_matWorld, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity,
-      SHADER_tex_dmd, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_DMD, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::vRes_Alpha_time, ShaderUniform::vColor_Intensity, ShaderUniform::tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_world, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::vColor_Intensity,
+      ShaderUniform::tex_dmd, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass,
-      SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorld, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad,
-      SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex, SHADER_clip_plane),
-   SHADER_TECHNIQUE(display_Seg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha,
-      SHADER_w_h_height, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_Seg_world, SHADER_matWorld, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness,
-      SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_clip_plane),
-   SHADER_TECHNIQUE(display_CRT, SHADER_vRes_Alpha_time, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity,
-      SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_displayProperties),
-   SHADER_TECHNIQUE(display_CRT_world, SHADER_matWorld, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vRes_Alpha_time, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness,
-      SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex, SHADER_displayProperties, SHADER_clip_plane),
+   SHADER_TECHNIQUE(display_DMD, ShaderUniform::vRes_Alpha_time, ShaderUniform::w_h_height, ShaderUniform::displayProperties, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass,
+      ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::displayTex),
+   SHADER_TECHNIQUE(display_DMD_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::w_h_height, ShaderUniform::displayProperties, ShaderUniform::glassPad,
+      ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::displayTex, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(display_Seg, ShaderUniform::alphaSegState, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha,
+      ShaderUniform::w_h_height, ShaderUniform::displayTex),
+   SHADER_TECHNIQUE(display_Seg_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::alphaSegState, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness,
+      ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(display_CRT, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity,
+      ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties),
+   SHADER_TECHNIQUE(display_CRT_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness,
+      ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(basic_noDMD, SHADER_glassPad, SHADER_glassArea, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_u_basic_shade_mode),
-   SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_glassPad, SHADER_glassArea, SHADER_vColor_Intensity),
-   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassPad, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matWorld, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_vColor_Intensity,
-      SHADER_tex_sprite, SHADER_u_basic_shade_mode, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_noDMD, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::alphaTestValue, ShaderUniform::vColor_Intensity, ShaderUniform::tex_sprite, ShaderUniform::u_basic_shade_mode),
+   SHADER_TECHNIQUE(basic_noDMD_notex, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::vColor_Intensity),
+   SHADER_TECHNIQUE(basic_noDMD_world, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::alphaTestValue, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vColor_Intensity,
+      ShaderUniform::tex_sprite, ShaderUniform::u_basic_shade_mode, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(basic_noLight, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha,
-      SHADER_alphaTestValueAB_filterMode_addBlend, SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_tex_flasher_A, SHADER_tex_flasher_B, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_noLight, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::lightCenter_doShadow, ShaderUniform::balls, ShaderUniform::staticColor_Alpha,
+      ShaderUniform::alphaTestValueAB_filterMode_addBlend, ShaderUniform::amount_blend_modulate_vs_add_flasherMode, ShaderUniform::tex_flasher_A, ShaderUniform::tex_flasher_B, ShaderUniform::clip_plane),
 
-   SHADER_TECHNIQUE(bulb_light, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power,
-      SHADER_lightColor_intensity, SHADER_clip_plane),
-   SHADER_TECHNIQUE(bulb_light_with_ball_shadows, SHADER_matRotViewProj, SHADER_cameraPosWorld, SHADER_balls, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange,
-      SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_clip_plane),
+   SHADER_TECHNIQUE(bulb_light, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::blend_modulate_vs_add, ShaderUniform::lightCenter_maxRange, ShaderUniform::lightColor2_falloff_power,
+      ShaderUniform::lightColor_intensity, ShaderUniform::clip_plane),
+   SHADER_TECHNIQUE(bulb_light_with_ball_shadows, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::balls, ShaderUniform::blend_modulate_vs_add, ShaderUniform::lightCenter_maxRange,
+      ShaderUniform::lightColor2_falloff_power, ShaderUniform::lightColor_intensity, ShaderUniform::clip_plane),
 
    SHADER_TECHNIQUE(
-      fb_rhtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_rhtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_rhtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_fmtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_fmtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_fmtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_fmtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_nttonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_nttonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_nttonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_nttonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_agxtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_agxtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_agxptonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxptonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_agxptonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
    SHADER_TECHNIQUE(
-      fb_agxgtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxgtonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_wcgtonemap, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_filtered,
-      SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_wcgtonemap_AO, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_filtered,
-      SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_wcgtonemap_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered,
-      SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_wcgtonemap_AO_no_filter, SHADER_layer, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2,
-      SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+      fb_agxgtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut,
+      ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom,
+      ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::spline1, ShaderUniform::spline2, ShaderUniform::tex_fb_filtered,
+      ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::spline1, ShaderUniform::spline2, ShaderUniform::tex_fb_filtered,
+      ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::spline1, ShaderUniform::spline2, ShaderUniform::tex_fb_unfiltered,
+      ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_AO_no_filter, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::bloom_dither_colorgrade, ShaderUniform::exposure_wcg, ShaderUniform::spline1, ShaderUniform::spline2,
+      ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_bloom, ShaderUniform::tex_color_lut, ShaderUniform::tex_ao, ShaderUniform::tex_depth),
 
-   SHADER_TECHNIQUE(fb_blur_horiz7x7, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert7x7, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz9x9, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert9x9, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz11x11, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert11x11, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz13x13, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert13x13, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz15x15, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert15x15, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz19x19, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert19x19, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz23x23, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert23x23, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz27x27, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert27x27, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_horiz39x39, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_blur_vert39x39, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz7x7, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert7x7, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz9x9, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert9x9, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz11x11, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert11x11, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz13x13, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert13x13, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz15x15, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert15x15, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz19x19, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert19x19, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz23x23, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert23x23, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz27x27, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert27x27, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_horiz39x39, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_blur_vert39x39, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
 
-   SHADER_TECHNIQUE(AO, SHADER_layer, SHADER_w_h_height, SHADER_AO_scale_timeblur, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_tex_ao_dither),
-   SHADER_TECHNIQUE(fb_AO, SHADER_layer, SHADER_w_h_height, SHADER_tex_ao), // Display debug AO
-   SHADER_TECHNIQUE(fb_AO_static, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_ao), // Apply AO during static prerender pass (no tonemapping)
-   SHADER_TECHNIQUE(fb_AO_no_filter_static, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered, SHADER_tex_ao), // Apply AO during static prerender pass (no tonemapping)
-   SHADER_TECHNIQUE(fb_motionblur, SHADER_layer, SHADER_w_h_height, SHADER_tex_bloom, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_matProj, SHADER_matProjInv, SHADER_balls),
-   SHADER_TECHNIQUE(fb_bloom, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(fb_mirror, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered),
-   SHADER_TECHNIQUE(fb_copy, SHADER_layer, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(SSReflection, SHADER_layer, SHADER_w_h_height, SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_tex_ao_dither),
+   SHADER_TECHNIQUE(AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::AO_scale_timeblur, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth, ShaderUniform::tex_ao_dither),
+   SHADER_TECHNIQUE(fb_AO, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_ao), // Display debug AO
+   SHADER_TECHNIQUE(fb_AO_static, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_ao), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_AO_no_filter_static, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_ao), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_motionblur, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_bloom, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth, ShaderUniform::matProj, ShaderUniform::matProjInv, ShaderUniform::balls),
+   SHADER_TECHNIQUE(fb_bloom, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(fb_mirror, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_unfiltered),
+   SHADER_TECHNIQUE(fb_copy, ShaderUniform::layer, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(SSReflection, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::SSR_bumpHeight_fresnelRefl_scale_FS, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth, ShaderUniform::tex_ao_dither),
 #ifdef ENABLE_BGFX
-   SHADER_TECHNIQUE(fb_resolve_depth_msaa, SHADER_layer, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_resolve_depth_msaa, ShaderUniform::layer, ShaderUniform::tex_depth),
 #endif
 
-   SHADER_TECHNIQUE(NFAA, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(DLAA_edge, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(DLAA, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(FXAA1, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(FXAA2, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(FXAA3, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(FAAA, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(CAS, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
-   SHADER_TECHNIQUE(BilateralSharp_CAS, SHADER_layer, SHADER_w_h_height, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
+   SHADER_TECHNIQUE(NFAA, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(DLAA_edge, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(DLAA, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(FXAA1, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(FXAA2, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(FXAA3, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(FAAA, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(CAS, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_depth),
+   SHADER_TECHNIQUE(BilateralSharp_CAS, ShaderUniform::layer, ShaderUniform::w_h_height, ShaderUniform::tex_fb_unfiltered, ShaderUniform::tex_depth),
 #ifndef __OPENGLES__
-   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection, SHADER_w_h_height, SHADER_tex_fb_filtered),
-   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation, SHADER_w_h_height, SHADER_edgesTex, SHADER_areaTex, SHADER_searchTex),
-   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_blendTex),
+   SHADER_TECHNIQUE(SMAA_ColorEdgeDetection, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered),
+   SHADER_TECHNIQUE(SMAA_BlendWeightCalculation, ShaderUniform::w_h_height, ShaderUniform::edgesTex, ShaderUniform::areaTex, ShaderUniform::searchTex),
+   SHADER_TECHNIQUE(SMAA_NeighborhoodBlending, ShaderUniform::w_h_height, ShaderUniform::tex_fb_filtered, ShaderUniform::blendTex),
 #endif
 
-   SHADER_TECHNIQUE(stereo_SBS, SHADER_tex_stereo_fb),
-   SHADER_TECHNIQUE(stereo_TB, SHADER_tex_stereo_fb),
-   SHADER_TECHNIQUE(stereo_Int, SHADER_tex_stereo_fb),
-   SHADER_TECHNIQUE(stereo_Flipped_Int, SHADER_tex_stereo_fb),
-   SHADER_TECHNIQUE(Stereo_sRGBAnaglyph, SHADER_tex_stereo_fb, SHADER_Stereo_LeftMat, SHADER_Stereo_RightMat),
-   SHADER_TECHNIQUE(Stereo_GammaAnaglyph, SHADER_tex_stereo_fb, SHADER_Stereo_LeftMat, SHADER_Stereo_RightMat, SHADER_Stereo_LeftLuminance_Gamma),
+   SHADER_TECHNIQUE(stereo_SBS, ShaderUniform::tex_stereo_fb),
+   SHADER_TECHNIQUE(stereo_TB, ShaderUniform::tex_stereo_fb),
+   SHADER_TECHNIQUE(stereo_Int, ShaderUniform::tex_stereo_fb),
+   SHADER_TECHNIQUE(stereo_Flipped_Int, ShaderUniform::tex_stereo_fb),
+   SHADER_TECHNIQUE(Stereo_sRGBAnaglyph, ShaderUniform::tex_stereo_fb, ShaderUniform::Stereo_LeftMat, ShaderUniform::Stereo_RightMat),
+   SHADER_TECHNIQUE(Stereo_GammaAnaglyph, ShaderUniform::tex_stereo_fb, ShaderUniform::Stereo_LeftMat, ShaderUniform::Stereo_RightMat, ShaderUniform::Stereo_LeftLuminance_Gamma),
    SHADER_TECHNIQUE(
-      Stereo_sRGBDynDesatAnaglyph, SHADER_tex_stereo_fb, SHADER_Stereo_LeftMat, SHADER_Stereo_RightMat, SHADER_Stereo_LeftLuminance_Gamma, SHADER_Stereo_RightLuminance_DynDesat),
+      Stereo_sRGBDynDesatAnaglyph, ShaderUniform::tex_stereo_fb, ShaderUniform::Stereo_LeftMat, ShaderUniform::Stereo_RightMat, ShaderUniform::Stereo_LeftLuminance_Gamma, ShaderUniform::Stereo_RightLuminance_DynDesat),
    SHADER_TECHNIQUE(
-      Stereo_GammaDynDesatAnaglyph, SHADER_tex_stereo_fb, SHADER_Stereo_LeftMat, SHADER_Stereo_RightMat, SHADER_Stereo_LeftLuminance_Gamma, SHADER_Stereo_RightLuminance_DynDesat),
-   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph, SHADER_tex_stereo_fb, SHADER_Stereo_LeftMat, SHADER_Stereo_RightMat, SHADER_Stereo_DeghostGamma, SHADER_Stereo_DeghostFilter),
+      Stereo_GammaDynDesatAnaglyph, ShaderUniform::tex_stereo_fb, ShaderUniform::Stereo_LeftMat, ShaderUniform::Stereo_RightMat, ShaderUniform::Stereo_LeftLuminance_Gamma, ShaderUniform::Stereo_RightLuminance_DynDesat),
+   SHADER_TECHNIQUE(Stereo_DeghostAnaglyph, ShaderUniform::tex_stereo_fb, ShaderUniform::Stereo_LeftMat, ShaderUniform::Stereo_RightMat, ShaderUniform::Stereo_DeghostGamma, ShaderUniform::Stereo_DeghostFilter),
 
-   SHADER_TECHNIQUE(irradiance, SHADER_layer, SHADER_tex_env),
+   SHADER_TECHNIQUE(irradiance, ShaderUniform::layer, ShaderUniform::tex_env),
 
-   SHADER_TECHNIQUE_COUNT,
-   SHADER_TECHNIQUE_INVALID
+   COUNT
 };
 #undef SHADER_TECHNIQUE
 
-enum ShaderUniformType
+enum class ShaderUniformType
 {
-   SUT_Bool,
-   SUT_Int,
-   SUT_Float,
-   SUT_Float2,
-   SUT_Float3,
-   SUT_Float4,
-   SUT_Float4v,
-   SUT_Float3x4,
-   SUT_Float4x3,
-   SUT_Float4x4,
-   SUT_DataBlock,
-   SUT_Sampler,
-   SUT_INVALID
+   Bool,
+   Int,
+   Float,
+   Float2,
+   Float3,
+   Float4,
+   Float4v,
+   Float3x4,
+   Float4x3,
+   Float4x4,
+   DataBlock,
+   Sampler,
+   COUNT
 };
 
 // Declaration of all uniforms and samplers used in the shaders
@@ -344,56 +343,56 @@ enum ShaderUniformType
 // Samplers defines how to sample a texture. For DX9, they are defined in the effect files, only the texture reference is set through the API.
 // Otherwise, the sampler states can be directly overriden through DX9Device->SetSamplerState (per tex unit), being carefull that the effect
 // framework will also apply the ones defined in the effect file during Technique->Begin call (so either don't define them, or reapply).
-#define SHADER_UNIFORM(type, name, count) SHADER_##name
-#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) SHADER_##name
-enum ShaderUniforms
+#define SHADER_UNIFORM(type, name, count) name
+#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) name
+enum class ShaderUniform : unsigned int
 {
    // Shared uniforms
-   SHADER_UNIFORM(SUT_Int, layer, 1),
-   SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
-   SHADER_UNIFORM(SUT_Float4x4, matProj, 2), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x4, matProjInv, 2), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 2), // +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, (5 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
-   SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, (4 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x4, matWorld, 1), // DX9 & BGFX only
-   SHADER_UNIFORM(SUT_Float4x3, matView, 2), // DX9 & BGFX only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x3, matWorldViewInverse, 2), // DX9 & BGFX only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float3x4, matWorldViewInverseTranspose, 2), // DX9 & BGFX only, +1 Matrix for stereo
-   SHADER_UNIFORM(SUT_Float4x4, matRotViewProj, 2), // BGFX only, view rotation x proj (camera-relative path), +1 for stereo
-   SHADER_UNIFORM(SUT_Float4v, cameraPosWorld, 2), // BGFX only, camera world position (camera-relative path), +1 for stereo
-   SHADER_UNIFORM(SUT_Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
-   SHADER_UNIFORM(SUT_Float4v, balls, 8), // Basic & Flasher (for ball shadows)
-   SHADER_UNIFORM(SUT_Float4, staticColor_Alpha, 1), // Basic & Flasher
-   SHADER_UNIFORM(SUT_Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
+   SHADER_UNIFORM(ShaderUniformType::Int, layer, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float, alphaTestValue, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matProj, 2), // +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matProjInv, 2), // +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matWorldViewProj, 2), // +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::DataBlock, basicMatrixBlock, (5 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::DataBlock, ballMatrixBlock, (4 + 4) * 16 * 4), // OpenGL only, +4 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matWorld, 1), // DX9 & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4x3, matView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matWorldView, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x3, matWorldViewInverse, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float3x4, matWorldViewInverseTranspose, 2), // DX9 & BGFX only, +1 Matrix for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matRotViewProj, 2), // BGFX only, view rotation x proj (camera-relative path), +1 for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4v, cameraPosWorld, 2), // BGFX only, camera world position (camera-relative path), +1 for stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4, lightCenter_doShadow, 1), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(ShaderUniformType::Float4v, balls, 8), // Basic & Flasher (for ball shadows)
+   SHADER_UNIFORM(ShaderUniformType::Float4, staticColor_Alpha, 1), // Basic & Flasher
+   SHADER_UNIFORM(ShaderUniformType::Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
    // Shared material for Ball, Basic and Classic light shaders
-   SHADER_UNIFORM(SUT_Float4, clip_plane, 1), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Float4v, basicLightEmission, 2), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Float4v, basicLightPos, 2), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Float4v, ballLightEmission, 10), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Float4v, ballLightPos, 10), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Bool, is_metal, 1), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Bool, doNormalMapping, 1), // OpenGL & BGFX only
-   SHADER_UNIFORM(SUT_Float4v, basicPackedLights, 3), // DX9 only
-   SHADER_UNIFORM(SUT_Float4v, ballPackedLights, 15), // DX9 only
-   SHADER_UNIFORM(SUT_Float4, Roughness_WrapL_Edge_Thickness, 1),
-   SHADER_UNIFORM(SUT_Float4, cBase_Alpha, 1),
-   SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
-   SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth, 1),
-   SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, clip_plane, 1), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, basicLightEmission, 2), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, basicLightPos, 2), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, ballLightEmission, 10), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, ballLightPos, 10), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Bool, is_metal, 1), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Bool, doNormalMapping, 1), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, basicPackedLights, 3), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, ballPackedLights, 15), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4, Roughness_WrapL_Edge_Thickness, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, cBase_Alpha, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float2, fDisableLighting_top_below, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float2, fenvEmissionScale_TexWidth, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, cAmbient_LightRange, 1),
    SHADER_SAMPLER(tex_env, 1, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // environment
    SHADER_SAMPLER(tex_diffuse_env, 2, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // diffuse environment contribution/radiance
 
    // Basic Shader
-   SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
-   SHADER_UNIFORM(SUT_Float4, cGlossy_ImageLerp, 1),
-   SHADER_UNIFORM(SUT_Bool, doRefractions, 1), // OpenGL only
-   SHADER_UNIFORM(SUT_Float4, u_basic_shade_mode, 1), // BGFX Only
-   SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
-   SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
-   SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, cClearcoat_EdgeAlpha, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, cGlossy_ImageLerp, 1),
+   SHADER_UNIFORM(ShaderUniformType::Bool, doRefractions, 1), // OpenGL only
+   SHADER_UNIFORM(ShaderUniformType::Float4, u_basic_shade_mode, 1), // BGFX Only
+   SHADER_UNIFORM(ShaderUniformType::Float4, refractionTint_thickness, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, mirrorNormal_factor, 1),
+   SHADER_UNIFORM(ShaderUniformType::Bool, objectSpaceNormalMap, 1),
    SHADER_SAMPLER(tex_base_color, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_base_transmission, 3, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // bulb light/transmission buffer texture
    SHADER_SAMPLER(tex_base_normalmap, 4, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // normal map texture
@@ -402,51 +401,51 @@ enum ShaderUniforms
    SHADER_SAMPLER(tex_probe_depth, 7, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // depth probe
 
    // Ball Shader
-   SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
-   SHADER_UNIFORM(SUT_Float4, invTableRes_reflection, 1),
-   SHADER_UNIFORM(SUT_Float4, w_h_disableLighting, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4x3, orientation, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, invTableRes_reflection, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, w_h_disableLighting, 1),
    SHADER_SAMPLER(tex_ball_color, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_ball_playfield, 4, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // playfield
    SHADER_SAMPLER(tex_ball_decal, 3, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // ball decal
 
    // Light Shader
-   SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add, 1),
-   SHADER_UNIFORM(SUT_Float4, lightCenter_maxRange, 1), // Classic and Halo
-   SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power, 1), // Classic and Halo
-   SHADER_UNIFORM(SUT_Float4, lightColor_intensity, 1), // Classic and Halo
-   SHADER_UNIFORM(SUT_Bool, lightingOff, 1), // Classic only
+   SHADER_UNIFORM(ShaderUniformType::Float, blend_modulate_vs_add, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, lightCenter_maxRange, 1), // Classic and Halo
+   SHADER_UNIFORM(ShaderUniformType::Float4, lightColor2_falloff_power, 1), // Classic and Halo
+   SHADER_UNIFORM(ShaderUniformType::Float4, lightColor_intensity, 1), // Classic and Halo
+   SHADER_UNIFORM(ShaderUniformType::Bool, lightingOff, 1), // Classic only
    SHADER_SAMPLER(tex_light_color, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // Classic only
 
    // DMD Shader
-   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
-   SHADER_UNIFORM(SUT_Float4, glassArea, 1),
-   SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
-   SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
-   SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, glassPad, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, glassArea, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, vRes_Alpha_time, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, backBoxSize, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, vColor_Intensity, 1),
    SHADER_SAMPLER(tex_dmd, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SamplerAddressMode::SA_MIRROR, SamplerAddressMode::SA_MIRROR, SamplerFilter::SF_TRILINEAR), // Sprite
 
    // Display Shader
-   SHADER_UNIFORM(SUT_Float4, glassTint_Roughness, 1),
-   SHADER_UNIFORM(SUT_Float4, displayProperties, 1),
-   SHADER_UNIFORM(SUT_Float4v, alphaSegState, 4),
+   SHADER_UNIFORM(ShaderUniformType::Float4, glassTint_Roughness, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, displayProperties, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4v, alphaSegState, 4),
    SHADER_SAMPLER(
       displayTex, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
    SHADER_SAMPLER(displayGlass, 1, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR),
 
    // Flasher Shader
-   SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
-   SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, alphaTestValueAB_filterMode_addBlend, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float3, amount_blend_modulate_vs_add_flasherMode, 1),
    SHADER_SAMPLER(tex_flasher_A, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_flasher_B, 1, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // texB
 
    // Post Process Shader
-   SHADER_UNIFORM(SUT_Float4, bloom_dither_colorgrade, 1),
-   SHADER_UNIFORM(SUT_Float4, exposure_wcg, 1),
-   SHADER_UNIFORM(SUT_Float4, spline1, 1),
-   SHADER_UNIFORM(SUT_Float2, spline2, 1),
-   SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
-   SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, bloom_dither_colorgrade, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, exposure_wcg, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, spline1, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float2, spline2, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float2, AO_scale_timeblur, 1),
    SHADER_SAMPLER(tex_fb_unfiltered, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_fb_filtered, 0, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, 1, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR), // Bloom
@@ -463,34 +462,32 @@ enum ShaderUniforms
    // Stereo Shader
    SHADER_SAMPLER(tex_stereo_fb, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_stereo_depth, 4, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_NONE), // Depth
-   SHADER_UNIFORM(SUT_Float4, Stereo_MS_ZPD_YAxis, 1), // Stereo (analgyph and 3DTV)
-   SHADER_UNIFORM(SUT_Float4x4, Stereo_LeftMat, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Stereo_LeftLuminance_Gamma, 1), // Anaglyph Stereo
-   SHADER_UNIFORM(SUT_Float4, Stereo_RightLuminance_DynDesat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4, Stereo_MS_ZPD_YAxis, 1), // Stereo (analgyph and 3DTV)
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, Stereo_LeftMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4, Stereo_DeghostGamma, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, Stereo_DeghostFilter, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4, Stereo_LeftLuminance_Gamma, 1), // Anaglyph Stereo
+   SHADER_UNIFORM(ShaderUniformType::Float4, Stereo_RightLuminance_DynDesat, 1), // Anaglyph Stereo
 
-   SHADER_UNIFORM_COUNT,
-   SHADER_UNIFORM_INVALID
+   COUNT
 };
 #undef SHADER_UNIFORM
 #undef SHADER_SAMPLER
 
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
-#define SHADER_ATTRIBUTE(name, shader_name) SHADER_ATTRIBUTE_##name
-enum ShaderAttributes
+#define SHADER_ATTRIBUTE(name, shader_name) name
+enum class ShaderAttribute
 {
    SHADER_ATTRIBUTE(POS, vPosition),
    SHADER_ATTRIBUTE(NORM, vNormal),
    SHADER_ATTRIBUTE(TC, tc),
    SHADER_ATTRIBUTE(TEX, tex0),
-   SHADER_ATTRIBUTE_COUNT,
-   SHADER_ATTRIBUTE_INVALID
+   COUNT
 };
 #undef SHADER_ATTRIBUTE
 
-struct ShaderUniform
+struct ShaderUniformDef
 {
 public:
    ShaderUniformType type;
@@ -502,7 +499,7 @@ public:
    SamplerAddressMode default_clampv;
    SamplerFilter default_filter;
 
-   static ShaderUniform coreUniforms[SHADER_UNIFORM_COUNT];
+   static ShaderUniformDef coreUniforms[static_cast<unsigned int>(ShaderUniform::COUNT)];
 };
 
 class Shader final
@@ -517,12 +514,12 @@ public:
 
    bool HasError() const { return m_hasError; }
    static Shader* GetCurrentShader();
-   static string GetTechniqueName(ShaderTechniques technique);
-   void SetTechnique(const ShaderTechniques technique);
-   void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
+   static string GetTechniqueName(ShaderTechnique technique);
+   void SetTechnique(const ShaderTechnique technique);
+   void SetTechniqueMaterial(ShaderTechnique technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    void SetBasic(const Material * const mat, Texture * const pin);
-   static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
-   static SamplerFilter GetDefaultSamplerFilter(const ShaderUniforms sampler);
+   static void SetDefaultSamplerFilter(const ShaderUniform sampler, const SamplerFilter sf);
+   static SamplerFilter GetDefaultSamplerFilter(const ShaderUniform sampler);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
    void SetAlphaTestValue(const float value);
@@ -534,26 +531,26 @@ public:
 
    //
 
-   bool HasUniform(const ShaderUniforms uniformName) const { return m_stateOffsets[uniformName] != -1; }
-   void SetFloat(const ShaderUniforms uniformName, const float f);
-   void SetMatrix(const ShaderUniforms uniformName, const float* const pMatrix, const unsigned int count = 1);
-   void SetInt(const ShaderUniforms uniformName, const int i);
-   void SetBool(const ShaderUniforms uniformName, const bool b);
-   void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix);
+   bool HasUniform(const ShaderUniform uniformName) const { return m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1; }
+   void SetFloat(const ShaderUniform uniformName, const float f);
+   void SetMatrix(const ShaderUniform uniformName, const float* const pMatrix, const unsigned int count = 1);
+   void SetInt(const ShaderUniform uniformName, const int i);
+   void SetBool(const ShaderUniform uniformName, const bool b);
+   void SetUniformBlock(const ShaderUniform uniformName, const float* const pMatrix);
    #if defined(ENABLE_DX9)
-   void SetMatrix(const ShaderUniforms uniformName, const D3DMATRIX* const pMatrix, const unsigned int count = 1);
+   void SetMatrix(const ShaderUniform uniformName, const D3DMATRIX* const pMatrix, const unsigned int count = 1);
    #endif
-   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1);
-   void SetVector(const ShaderUniforms uniformName, const vec4* const pVector);
-   void SetVector(const ShaderUniforms uniformName, const vec4* const pVector, const unsigned int count);
-   void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w);
-   vec4 GetVector(const ShaderUniforms uniformName) const;
-   void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count);
-   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
+   void SetMatrix(const ShaderUniform uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1);
+   void SetVector(const ShaderUniform uniformName, const vec4* const pVector);
+   void SetVector(const ShaderUniform uniformName, const vec4* const pVector, const unsigned int count);
+   void SetVector(const ShaderUniform uniformName, const float x, const float y, const float z, const float w);
+   vec4 GetVector(const ShaderUniform uniformName) const;
+   void SetFloat4v(const ShaderUniform uniformName, const vec4* const pData, const unsigned int count);
+   void SetTexture(const ShaderUniform uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
       const SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED, const SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED);
-   void SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const bool force_linear_rgb = false, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
+   void SetTexture(const ShaderUniform uniformName, ITexManCacheable* const texel, const bool force_linear_rgb = false, const SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
       const SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED, const SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED);
-   void SetTextureNull(const ShaderUniforms uniformName);
+   void SetTextureNull(const ShaderUniform uniformName);
 
    class ShaderState* m_state = nullptr; // State that will be applied for the next begin/end pair
 
@@ -567,77 +564,78 @@ private:
 
    bool m_hasError = false; // True if loading the shader failed
    unsigned int m_stateSize = 0; // Overall size of a shader state data block
-   int m_stateOffsets[SHADER_UNIFORM_COUNT]; // Position of each uniform inside the state data block
+   int m_stateOffsets[static_cast<unsigned int>(ShaderUniform::COUNT)]; // Position of each uniform inside the state data block
 
    void Load();
-   void ApplyUniform(const ShaderUniforms uniformName);
+   void ApplyUniform(const ShaderUniform uniformName);
 
    struct TechniqueDef
    {
       string name;
-      vector<ShaderUniforms> uniforms;
+      vector<ShaderUniform> uniforms;
    };
 
-   static TechniqueDef shaderTechniqueNames[SHADER_TECHNIQUE_COUNT];
-   static const string shaderAttributeNames[SHADER_ATTRIBUTE_COUNT];
-   ShaderUniforms getUniformByName(const string& name) const;
-   ShaderAttributes getAttributeByName(const string& name) const;
-   static ShaderTechniques getTechniqueByName(const string& name);
+   static TechniqueDef shaderTechniqueNames[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   static const string shaderAttributeNames[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   ShaderUniform getUniformByName(const string& name) const;
+   ShaderAttribute getAttributeByName(const string& name) const;
+   static ShaderTechnique getTechniqueByName(const string& name);
 
-   vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
+   vector<ShaderUniform> m_uniforms[static_cast<unsigned int>(ShaderTechnique::COUNT)]; // Uniforms used by each technique
 
    // caches
 #if defined(ENABLE_BGFX)
-   class ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per program, so per technique)
-   bgfx::ProgramHandle m_techniques[SHADER_TECHNIQUE_COUNT];
-   bgfx::ProgramHandle m_clipPlaneTechniques[SHADER_TECHNIQUE_COUNT];
-   bgfx::UniformHandle m_uniformHandles[SHADER_UNIFORM_COUNT];
+   class ShaderState* m_boundState[static_cast<unsigned int>(ShaderTechnique::COUNT)]; // The state currently applied to the backend (per program, so per technique)
+   bgfx::ProgramHandle m_techniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   bgfx::ProgramHandle m_clipPlaneTechniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   bgfx::UniformHandle m_uniformHandles[static_cast<unsigned int>(ShaderTechnique::COUNT)];
 
-   void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques tech, const char* vsName, const char* fsName, const bool isClipVariant = false);
+   void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechnique tech, const char* vsName, const char* fsName, const bool isClipVariant = false);
 
 public:
    bgfx::ProgramHandle GetCore() const;
-   bgfx::UniformHandle GetUniformHandle(ShaderUniforms uniformName) const { return m_uniformHandles[uniformName]; }
-   bgfx::ProgramHandle GetProgramHandle(ShaderTechniques techniqueName) const { return m_techniques[techniqueName]; }
+   bgfx::UniformHandle GetUniformHandle(ShaderUniform uniformName) const {return m_uniformHandles[static_cast<unsigned int>(uniformName)]; }
+   bgfx::ProgramHandle GetProgramHandle(ShaderTechnique techniqueName) const {return m_techniques[static_cast<unsigned int>(techniqueName)]; }
 
 #elif defined(ENABLE_OPENGL)
-   class ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
-   static ShaderTechniques m_boundTechnique; // TODO => move to render device ? This is global for OpenGL
+   class ShaderState* m_boundState[static_cast<unsigned int>(ShaderTechnique::COUNT)]; // The state currently applied to the backend (per technique for OpenGL)
+   static ShaderTechnique m_boundTechnique; // TODO => move to render device ? This is global for OpenGL
    struct UniformDesc
    {
-      ShaderUniform uniform;
+      ShaderUniformDef uniform;
       GLint location; // Location of the uniform
       GLuint blockBuffer;
    };
-   struct ShaderTechnique
+   struct ShaderTechniqueDef
    {
       int index;
       const string& name;
       GLuint program;
-      UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
+      UniformDesc uniform_desc[static_cast<unsigned int>(ShaderTechnique::COUNT)];
    };
-   ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
+   ShaderTechniqueDef* m_techniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
    std::filesystem::path m_shaderPath;
 
    bool UseGeometryShader() const;
    bool parseFile(const string& fileNameRoot, const string& filename, int level, ankerl::unordered_dense::map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const ankerl::unordered_dense::map<string, string>& values);
-   ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
+   ShaderTechniqueDef* compileGLShader(
+      const ShaderTechnique technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
    string PreprocessGLShader(const string& shaderCode);
    void Load(const std::string& file);
 
 #elif defined(ENABLE_DX9)
    struct UniformDesc
    {
-      ShaderUniform uniform;
-      ShaderUniforms tex_alias; // For samplers, reference to the uniform which is used to define the texture (multiple uniform can be linked to the same texture for DX9, for OpenGL alias to itself)
+      ShaderUniformDef uniform;
+      ShaderUniform tex_alias; // For samplers, reference to the uniform which is used to define the texture (multiple uniform can be linked to the same texture for DX9, for OpenGL alias to itself)
       D3DXHANDLE handle; // Handle of the constant
       D3DXHANDLE tex_handle; // For samplers, handle fo the associated texture constant
       int sampler; // For samplers texture unit defined in the effect file
    };
-   UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
+   UniformDesc m_uniform_desc[static_cast<unsigned int>(ShaderUniform::COUNT)];
    class ShaderState* m_boundState = nullptr; // The state currently applied to the backend (per shader for DirectX effect framework)
-   ShaderTechniques m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // The bound technique (per shader for DirectX)
+   ShaderTechnique m_boundTechnique = ShaderTechnique::COUNT; // The bound technique (per shader for DirectX)
    ID3DXEffect* m_shader = nullptr;
    static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
    std::shared_ptr<const Sampler> m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
@@ -671,11 +669,11 @@ public:
       , m_ownStateOffset(true)
       , m_useLowPrecision(isLowPrecision)
    {
-      m_stateOffsets = new int[SHADER_UNIFORM_COUNT];
+      m_stateOffsets = new int[static_cast<unsigned int>(ShaderUniform::COUNT)];
       m_stateOffsets[0] = 0;
-      for (int i = 0; i < SHADER_UNIFORM_COUNT - 1; ++i)
-         m_stateOffsets[i + 1] = m_stateOffsets[i] + ShaderUniform::coreUniforms[i].stateSize;
-      int size = m_stateOffsets[SHADER_UNIFORM_COUNT - 1] + ShaderUniform::coreUniforms[SHADER_UNIFORM_COUNT - 1].stateSize;
+      for (int i = 0; i < static_cast<unsigned int>(ShaderUniform::COUNT) - 1; ++i)
+         m_stateOffsets[i + 1] = m_stateOffsets[i] + ShaderUniformDef::coreUniforms[i].stateSize;
+      int size = m_stateOffsets[static_cast<unsigned int>(ShaderUniform::COUNT) - 1] + ShaderUniformDef::coreUniforms[static_cast<unsigned int>(ShaderUniform::COUNT) - 1].stateSize;
       m_state.resize(size);
    }
 
@@ -699,11 +697,10 @@ public:
       m_samplers.clear();
    }
 
-   uint8_t* GetUniformStatePtr(const ShaderUniforms uniformName)
+   uint8_t* GetUniformStatePtr(const ShaderUniform uniformName)
    {
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      return m_state.data() + m_stateOffsets[uniformName];
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      return m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)];
    }
 
    void CopyTo(const bool copyTo, ShaderState* const other)
@@ -723,66 +720,69 @@ public:
       }
    }
 
-   void SetBool(const ShaderUniforms uniformName, const bool b)
+   void SetBool(const ShaderUniform uniformName, const bool b)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Bool);
-      assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      *(bool*)(m_state.data() + m_stateOffsets[uniformName]) = b;
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Bool);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
+      *(bool*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = b;
    }
 
-   void SetInt(const ShaderUniforms uniformName, const int i)
+   void SetInt(const ShaderUniform uniformName, const int i)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      if (uniformName == SHADER_layer && m_stateOffsets[uniformName] == -1)
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      if (uniformName == ShaderUniform::layer && m_stateOffsets[static_cast<unsigned int>(uniformName)] == -1)
          return; // layer uniform may be stripped out since it is only used for stereo
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Int);
-      assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      *(int*)(m_state.data() + m_stateOffsets[uniformName]) = i;
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Int);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
+      *(int*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = i;
    }
 
-   void SetFloat(const ShaderUniforms uniformName, const float f)
+   void SetFloat(const ShaderUniform uniformName, const float f)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float);
-      assert(ShaderUniform::coreUniforms[uniformName].count == 1);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
       if (m_useLowPrecision)
-         *(float*)(m_state.data() + m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
+         *(float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
       else
-         *(float*)(m_state.data() + m_stateOffsets[uniformName]) = f;
+         *(float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = f;
    }
 
-   float GetFloat(const ShaderUniforms uniformName) const
+   float GetFloat(const ShaderUniform uniformName) const
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float);
-      assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      return *(float*)(m_state.data() + m_stateOffsets[uniformName]);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
+      return *(float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
    }
 
-   void SetVector(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count = 1)
+   void SetVector(const ShaderUniform uniformName, const vec4* const pData, const unsigned int count = 1)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float2 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float3
-         || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4v);
-      assert(ShaderUniform::coreUniforms[uniformName].count == count);
-      const int n = ShaderUniform::coreUniforms[uniformName].type == SUT_Float2 ? 2 : ShaderUniform::coreUniforms[uniformName].type == SUT_Float3 ? 3 : 4;
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float2 || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4v);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == count);
+      const int n = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float2 ? 2
+         : ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3          ? 3
+                                                                                                           : 4;
       if (m_useLowPrecision)
       {
          for (unsigned int i = 0; i < count; i++)
          {
             const vec4* const p = pData + i;
-            vec4* const s = (vec4*)(m_state.data() + m_stateOffsets[uniformName]) + i;
+            vec4* const s = (vec4*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
             if (p->x > 0 && p->x < FLT_MIN_VALUE)
                s->x = FLT_MIN_VALUE;
             else if (p->x < 0 && p->x > -FLT_MIN_VALUE)
@@ -817,39 +817,43 @@ public:
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[uniformName], pData, count * n * sizeof(float));
+         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pData, count * n * sizeof(float));
       }
    }
 
-   vec4 GetVector(const ShaderUniforms uniformName) const
+   vec4 GetVector(const ShaderUniform uniformName) const
    {
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float2 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float3
-         || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4v);
-      const int n = ShaderUniform::coreUniforms[uniformName].type == SUT_Float2 ? 2 : ShaderUniform::coreUniforms[uniformName].type == SUT_Float3 ? 3 : 4;
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float2 || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4v);
+      const int n = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float2 ? 2
+         : ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3          ? 3
+                                                                                                           : 4;
       const vec4 result { 
-         ((float*)(m_state.data() + m_stateOffsets[uniformName]))[0], 
-         ((float*)(m_state.data() + m_stateOffsets[uniformName]))[1],
-         n > 2 ? ((float*)(m_state.data() + m_stateOffsets[uniformName]))[2] : 0.f,
-         n > 3 ? ((float*)(m_state.data() + m_stateOffsets[uniformName]))[3] : 0.f };
+         ((float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]))[0], 
+         ((float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]))[1],
+         n > 2 ? ((float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]))[2] : 0.f,
+         n > 3 ? ((float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]))[3] : 0.f };
       return result;
    }
 
-   void SetMatrix(const ShaderUniforms uniformName, const float* const pMatrix, const unsigned int count = 1)
+   void SetMatrix(const ShaderUniform uniformName, const float* const pMatrix, const unsigned int count = 1)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float3x4 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x3
-         || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x4);
-      assert(count == ShaderUniform::coreUniforms[uniformName].count);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3x4
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x3
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x4);
+      assert(count == ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count);
       if (m_useLowPrecision)
       {
          for (unsigned int i = 0; i < count * 16; i++)
          {
             const float* const p = pMatrix + i;
-            float* const s = (float*)(m_state.data() + m_stateOffsets[uniformName]) + i;
+            float* const s = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
             if (*p > 0 && *p < FLT_MIN_VALUE)
                *s = FLT_MIN_VALUE;
             else if (*p < 0 && *p > -FLT_MIN_VALUE)
@@ -860,32 +864,33 @@ public:
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
+         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pMatrix, count * 16 * sizeof(float));
       }
    }
 
-   const Matrix3D& GetMatrix(const ShaderUniforms uniformName) const
+   const Matrix3D& GetMatrix(const ShaderUniform uniformName) const
    {
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float3x4 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x3
-         || ShaderUniform::coreUniforms[uniformName].type == SUT_Float4x4);
-      Matrix3D* m = (Matrix3D*)(m_state.data() + m_stateOffsets[uniformName]);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3x4
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x3
+         || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x4);
+      Matrix3D* m = (Matrix3D*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
       return *m;
    }
 
-   void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix)
+   void SetUniformBlock(const ShaderUniform uniformName, const float* const pMatrix)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::DataBlock);
       if (m_useLowPrecision)
       {
-         for (unsigned int i = 0; i < ShaderUniform::coreUniforms[uniformName].stateSize / sizeof(float); i++)
+         for (unsigned int i = 0; i < ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize / sizeof(float); i++)
          {
             const float* const p = pMatrix + i;
-            float* const s = (float*)(m_state.data() + m_stateOffsets[uniformName]) + i;
+            float* const s = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
             if (*p > 0 && *p < FLT_MIN_VALUE)
                *s = FLT_MIN_VALUE;
             else if (*p < 0 && *p > -FLT_MIN_VALUE)
@@ -896,24 +901,24 @@ public:
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[uniformName], pMatrix, ShaderUniform::coreUniforms[uniformName].stateSize);
+         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pMatrix, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize);
       }
    }
 
-   void SetTexture(const ShaderUniforms uniformName, std::shared_ptr<const Sampler> sampler, SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
+   void SetTexture(const ShaderUniform uniformName, std::shared_ptr<const Sampler> sampler, SamplerFilter filter = SamplerFilter::SF_UNDEFINED,
       SamplerAddressMode clampU = SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode clampV = SamplerAddressMode::SA_UNDEFINED)
    {
       assert(Shader::GetCurrentShader() == nullptr);
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Sampler);
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Sampler);
       assert(sampler != nullptr);
       #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-         const ShaderUniforms alias = uniformName;
+         const ShaderUniform alias = uniformName;
       #elif defined(ENABLE_DX9)
-         ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
+      ShaderUniform alias = m_shader->m_uniform_desc[static_cast<unsigned int>(uniformName)].tex_alias;
       #endif
-      assert(m_stateOffsets[alias] != -1);
-      int* dst = reinterpret_cast<int*>(m_state.data() + m_stateOffsets[alias]);
+      assert(m_stateOffsets[static_cast<unsigned int>(alias)] != -1);
+      int* dst = reinterpret_cast<int*>(m_state.data() + m_stateOffsets[static_cast<unsigned int>(alias)]);
 
       int pos = (*dst) & 0xFF;
       if (pos == 0)
@@ -929,7 +934,7 @@ public:
 
       if (filter == SamplerFilter::SF_UNDEFINED)
       {
-         filter = ShaderUniform::coreUniforms[uniformName].default_filter;
+         filter = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].default_filter;
          if (filter == SamplerFilter::SF_UNDEFINED)
             filter = SamplerFilter::SF_NONE;
       }
@@ -943,13 +948,13 @@ public:
       }
       if (clampU == SamplerAddressMode::SA_UNDEFINED)
       {
-         clampU = ShaderUniform::coreUniforms[uniformName].default_clampu;
+         clampU = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].default_clampu;
          if (clampU == SamplerAddressMode::SA_UNDEFINED)
             clampU = SamplerAddressMode::SA_CLAMP;
       }
       if (clampV == SamplerAddressMode::SA_UNDEFINED)
       {
-         clampV = ShaderUniform::coreUniforms[uniformName].default_clampv;
+         clampV = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].default_clampv;
          if (clampV == SamplerAddressMode::SA_UNDEFINED)
             clampV = SamplerAddressMode::SA_CLAMP;
       }
@@ -960,43 +965,43 @@ public:
       *dst = (*dst & 0x0000FF) | (static_cast<unsigned int>(clampU) << 8) | (static_cast<unsigned int>(clampV) << 12) | (static_cast<unsigned int>(filter) << 20);
    }
 
-   const std::shared_ptr<const Sampler> GetTexture(const ShaderUniforms uniformName) const
+   const std::shared_ptr<const Sampler> GetTexture(const ShaderUniform uniformName) const
    {
-      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-      assert(m_stateOffsets[uniformName] != -1);
-      assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Sampler);
-      assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      const int pos = (*(int*)(m_state.data() + m_stateOffsets[uniformName])) & 0xFF;
+      assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
+      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Sampler);
+      assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
+      const int pos = (*(int*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)])) & 0xFF;
       return pos > 0 ? m_samplers[pos - 1] : nullptr;
    }
 
-   void SetTechnique(ShaderTechniques technique)
+   void SetTechnique(ShaderTechnique technique)
    {
       assert(Shader::GetCurrentShader() == nullptr);
       m_technique = technique;
    }
 
-   ShaderTechniques GetTechnique() const
+   ShaderTechnique GetTechnique() const
    {
       return m_technique;
    }
 
    string ToString()
    {
-      if (m_technique == ShaderTechniques::SHADER_TECHNIQUE_INVALID)
+      if (m_technique == ShaderTechnique::COUNT)
       {
          return "Shader State: no technique defined"s;
       }
       std::stringstream ss;
       ss << "Shader State using technique " << m_shader->GetTechniqueName(m_technique) << '\n';
-      for (ShaderUniforms uniform : m_shader->m_uniforms[m_technique])
+      for (ShaderUniform uniform : m_shader->m_uniforms[static_cast<unsigned int>(m_technique)])
       {
-         if (m_stateOffsets[uniform] != -1)
+         if (m_stateOffsets[static_cast<unsigned int>(uniform)] != -1)
          {
-            ss << ShaderUniform::coreUniforms[uniform].name;
-            switch (ShaderUniform::coreUniforms[uniform].type)
+            ss << ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].name;
+            switch (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].type)
             {
-            case SUT_Float4:
+            case ShaderUniformType::Float4:
             {
                const auto pt = GetVector(uniform); 
                ss << " (" << pt.x << ", " << pt.y << ", " << pt.z << ", " << pt.w << ')' << '\n';
@@ -1010,7 +1015,7 @@ public:
    }
 
    vector<uint8_t> m_state;
-   ShaderTechniques m_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
+   ShaderTechnique m_technique = ShaderTechnique::COUNT;
    vector<std::shared_ptr<const Sampler>> m_samplers;
    static bool m_disableMipmaps;
 

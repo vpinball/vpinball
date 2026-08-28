@@ -228,7 +228,7 @@ void RenderProbe::RenderScreenSpaceTransparency()
       m_dynamicRT = new RenderTarget(
          m_renderer->m_renderDevice, renderedPass->m_rt->m_type, m_name, w, h, renderedPass->m_rt->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
-   m_renderer->m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_refraction);
+   m_renderer->m_renderDevice->m_basicShader->SetTextureNull(ShaderUniform::tex_refraction);
    m_renderer->m_renderDevice->SetRenderTarget(m_name, m_dynamicRT, false);
    m_renderer->m_renderDevice->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness);
@@ -335,13 +335,13 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       if (iter == STATIC_PRERENDER_ITERATIONS - 1)
          m_renderer->m_renderDevice->Clear(clearType::TARGET, 0x00000000);
-      m_renderer->m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      m_renderer->m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::fb_mirror);
       m_renderer->m_renderDevice->m_FBShader->SetVector(
-         SHADER_w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()),
+         ShaderUniform::w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()),
          (float)STATIC_PRERENDER_ITERATIONS, 0.0f);
-      m_renderer->m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
+      m_renderer->m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_fb_unfiltered, m_prerenderRT->GetColorSampler());
       m_renderer->m_renderDevice->DrawFullscreenTexturedQuad(m_renderer->m_renderDevice->m_FBShader);
-      m_renderer->m_renderDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
+      m_renderer->m_renderDevice->m_FBShader->SetTextureNull(ShaderUniform::tex_fb_unfiltered);
 
       m_renderer->m_renderDevice->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
    }
@@ -420,7 +420,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
    m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, g_pplayer->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
    m_renderer->m_renderDevice->SetDefaultRenderState();
-   m_renderer->m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_reflection);
+   m_renderer->m_renderDevice->m_basicShader->SetTextureNull(ShaderUniform::tex_reflection);
 
    // Flip camera
    m_renderer->SetReflection(Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w));

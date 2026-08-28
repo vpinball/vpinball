@@ -686,11 +686,11 @@ void HitTarget::Render(const unsigned int renderMask)
    else
    {
       m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
+      m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, m_d.m_disableLightingTop, m_d.m_disableLightingBelow, 0.f, 0.f);
       const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       m_renderer->m_renderDevice->m_basicShader->SetBasic(mat, m_ptable->GetImage(m_d.m_szImage));
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
-      m_renderer->m_renderDevice->m_basicShader->SetVector(SHADER_fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
+      m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
    }
 }
 

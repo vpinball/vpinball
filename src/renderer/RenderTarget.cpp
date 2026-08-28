@@ -689,10 +689,10 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
          { px2, py2, 0.0f, qx2, qy2 }
       };
       Shader* shader = m_rd->m_FBShader;
-      shader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
-      shader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 0.f);
-      shader->SetInt(SHADER_layer, srcLayer);
-      shader->SetTexture(SHADER_tex_fb_unfiltered, GetColorSampler());
+      shader->SetTechnique(ShaderTechnique::fb_mirror);
+      shader->SetVector(ShaderUniform::w_h_height, 1.f, 1.f, 1.f, 0.f);
+      shader->SetInt(ShaderUniform::layer, srcLayer);
+      shader->SetTexture(ShaderUniform::tex_fb_unfiltered, GetColorSampler());
       shader->Begin();
       bgfx::TransientVertexBuffer tvb; // TODO only allocate one per frame instead of one per CopyTo
       bgfx::allocTransientVertexBuffer(&tvb, 4, *m_rd->m_pVertexTexelDeclaration);
@@ -807,8 +807,8 @@ void RenderTarget::ResolveMSAADepth()
 
    auto quad = m_rd->GetQuadMeshBuffer();
    vec4 layer(0.f, 0.f, 0.f, 0.f);
-   bgfx::setUniform(m_rd->m_FBShader->GetUniformHandle(SHADER_layer), &layer.x);
-   bgfx::setTexture(0, m_rd->m_FBShader->GetUniformHandle(SHADER_tex_depth), m_msaaResolveDepthTex, BGFX_SAMPLER_NONE);
+   bgfx::setUniform(m_rd->m_FBShader->GetUniformHandle(ShaderUniform::layer), &layer.x);
+   bgfx::setTexture(0, m_rd->m_FBShader->GetUniformHandle(ShaderUniform::tex_depth), m_msaaResolveDepthTex, BGFX_SAMPLER_NONE);
    quad->bind();
    if (quad->m_vb->m_isStatic)
       bgfx::setVertexBuffer(0, quad->m_vb->GetStaticBuffer(), quad->m_vb->GetVertexOffset(), 4);
@@ -816,7 +816,7 @@ void RenderTarget::ResolveMSAADepth()
       bgfx::setVertexBuffer(0, quad->m_vb->GetDynamicBuffer(), quad->m_vb->GetVertexOffset(), 4);
    bgfx::setInstanceCount(m_nLayers);
    bgfx::setState(BGFX_STATE_PT_TRISTRIP | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_ALWAYS);
-   bgfx::submit(m_rd->m_activeViewId, m_rd->m_FBShader->GetProgramHandle(SHADER_TECHNIQUE_fb_resolve_depth_msaa));
+   bgfx::submit(m_rd->m_activeViewId, m_rd->m_FBShader->GetProgramHandle(ShaderTechnique::fb_resolve_depth_msaa));
 
    previousRenderTarget->Activate(previousRenderLayer);
    m_needResolve = false;

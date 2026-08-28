@@ -478,9 +478,9 @@ void Textbox::Render(const unsigned int renderMask)
       }
 
       m_renderer->m_renderDevice->ResetRenderState();
-      m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
+      m_renderer->m_renderDevice->m_DMDShader->SetFloat(ShaderUniform::alphaTestValue, (float)(128.0 / 255.0));
       m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_renderer->m_renderDevice->m_texMan.LoadTexture(m_texture.get(), false), m_d.m_intensity_scale);
-      m_renderer->m_renderDevice->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
+      m_renderer->m_renderDevice->m_DMDShader->SetFloat(ShaderUniform::alphaTestValue, 1.0f);
    }
 }
 

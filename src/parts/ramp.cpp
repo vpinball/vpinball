@@ -898,13 +898,13 @@ void Ramp::Render(const unsigned int renderMask)
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (!pin)
       {
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
       }
       else
       {
-         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
          m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
       }
@@ -950,14 +950,14 @@ void Ramp::Render(const unsigned int renderMask)
           * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
           * since the texture coordinates always stay within [0,1] anyway. */
          const SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SamplerAddressMode::SA_CLAMP : SamplerAddressMode::SA_REPEAT;
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
-         m_renderer->m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
+         m_renderer->m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_base_color, pin, false, SamplerFilter::SF_TRILINEAR, sam, sam);
          m_renderer->m_renderDevice->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, !pin->IsOpaque());
       }
       else
       {
-         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+         m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
          m_renderer->m_renderDevice->m_basicShader->SetMaterial(mat, false);
       }
 
@@ -974,7 +974,7 @@ void Ramp::Render(const unsigned int renderMask)
          if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
          {
             if (pin && !m_d.m_imageWalls)
-               m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, *mat);
+               m_renderer->m_renderDevice->m_basicShader->SetTechniqueMaterial(ShaderTechnique::basic_without_texture, *mat);
             if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
                m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, (m_rampVertex - 1) * 6,
                   (m_rampVertex - 1) * 6 * 2);
