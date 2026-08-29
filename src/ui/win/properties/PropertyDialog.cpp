@@ -586,7 +586,12 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
    // Invalid selection: discard update
    ISelect *const psel = pvsel.ElementAt(0);
    if (psel == nullptr)
+   {
+      m_nameEdit.EnableWindow(FALSE);
       return;
+   }
+
+   m_nameEdit.EnableWindow(TRUE);
 
    // Table is locked: just disable property pane
    if (psel->GetPTable()->IsLocked())
@@ -706,6 +711,8 @@ BOOL PropertyDialog::OnInitDialog()
     m_resizer.AddChild(m_nameEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_multipleElementsStatic, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tab, CResizer::topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+
+   m_nameEdit.EnableWindow(FALSE);
 
     return TRUE;
 }
