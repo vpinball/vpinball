@@ -986,6 +986,11 @@ InputAction* InputManager::AddAction(std::unique_ptr<InputAction>&& action)
    return m_inputActions.back().get();
 }
 
+bool InputManager::IsUINavigationActionId(unsigned int id) const
+{
+   return id == m_openInGameUIActionId || id == m_uiUpActionId || id == m_uiDownActionId || id == m_uiLeftActionId || id == m_uiRightActionId;
+}
+
 bool InputManager::IsPressed(int actionId) const
 {
    assert(0 <= actionId && actionId < static_cast<int>(m_inputActions.size()));
