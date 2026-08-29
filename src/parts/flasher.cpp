@@ -1389,6 +1389,7 @@ void Flasher::Render(const unsigned int renderMask)
          break;
 
       case FlasherData::DISPLAY:
+#if defined(ENABLE_BGFX) // just to avoid a crash
          if (const PinballPlugin::ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink); display.state.frame != nullptr)
          {
             UploadRenderFrame(display);
@@ -1406,6 +1407,7 @@ void Flasher::Render(const unsigned int renderMask)
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
             m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
+#endif
          break;
 
       case FlasherData::ALPHASEG:

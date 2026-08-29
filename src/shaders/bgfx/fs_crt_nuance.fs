@@ -17,7 +17,7 @@
 // converted back to linear space before being returned.
 //
 // The caller must define CrtsNuanceFetch(uv) which returns the (non linear, i.e. as stored in
-// the texture) color of the source image at the given normalized [0..1] texture coordinates.
+// the texture) color of the source image at the given normalized [0..1] texture coordinates
 //
 
 #ifndef CRTS_NUANCE_FS
@@ -39,7 +39,7 @@ vec3 CrtsNuanceFilter(vec2 uv, vec2 srcSize, vec2 dstSize)
 	// Limit mask size: the grille has a period of 2 output pixels, so it gets ever finer relative to the source
 	// pixels it is tied to as the display is magnified. Halve its frequency (the original loops, one step at a
 	// time) until a period spans at least 2/3 of a source pixel, which also keeps it an integer number of output
-	// pixels, hence aligned to the pixel grid. Closed form of that loop, for an arbitrary magnification.
+	// pixels, hence aligned to the pixel grid. Closed form of that loop, for an arbitrary magnification
 	uvw.x *= exp2(-max(0.0, ceil(log2(dstSize.x / (3.0 * srcSize.x)))));
 
 	// Limit scanline size
