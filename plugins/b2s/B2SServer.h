@@ -31,11 +31,11 @@ public:
    string GetB2SServerDirectory() const { return ""s; }
    string GetVPMBuildVersion() const { return ""s; }
    string GetB2SName() const;
-   void SetB2SName(const std::string& b2sName);
+   void SetB2SName(const string& b2sName);
    string GetTableName() const { return ""s; }
-   void SetTableName(const std::string& tableName) { }
-   void SetWorkingDir(const std::string& workingDir) { }
-   void SetPath(const std::string& path) { }
+   void SetTableName(const string& tableName) { }
+   void SetWorkingDir(const string& workingDir) { }
+   void SetPath(const string& path) { }
    bool GetLaunchBackglass() const { return false; }
    void SetLaunchBackglass(bool launchBackglass) { }
    bool GetLockDisplay() const { return false; }
@@ -44,11 +44,17 @@ public:
    void SetPuPHide(bool puPHide) { }
 
    void B2SSetPos(int id, int x, int y) { } // FIXME
-   void B2SSetPos(string name, int x, int y) { } // FIXME
+   void B2SSetPos(int id, const string& x, int y) { } // FIXME
+   void B2SSetPos(int id, int x, const string& y) { } // FIXME
+   void B2SSetPos(int id, const string& x, const string& y) { } // FIXME
+   void B2SSetPos(const string& name, int x, int y) { } // FIXME
+   void B2SSetPos(const string& name, const string& x, int y) { } // FIXME
+   void B2SSetPos(const string& name, int x, const string& y) { } // FIXME
+   void B2SSetPos(const string& name, const string& x, const string& y) { } // FIXME
    
    void B2SSetLED(int, int) { } // FIXME
-   void B2SSetLED(int, string) { } // FIXME
-   void B2SSetLEDDisplay(int, string) { } // FIXME
+   void B2SSetLED(int, const string&) { } // FIXME
+   void B2SSetLEDDisplay(int, const string&) { } // FIXME
 
    // Scores identified by player, multiple digits (generate 'C' plugin events)
    void B2SSetScorePlayer(int playerno, int score);
@@ -70,9 +76,11 @@ public:
    // Used to be binary on/off as 1/0 but not validated so script could use any integer value
    // Upgraded to be a float as this can also be driven by emulators with faded lamps & flashers
    void B2SSetData(int id, int value, bool sendPluginEvent = true);
-   void B2SSetData(const std::string& group, int value);
+   void B2SSetData(int id, const string& value, bool sendPluginEvent = true);
+   void B2SSetData(const string& group, int value);
+   void B2SSetData(const string& group, const string& value);
    void B2SPulseData(int id)                                 { B2SSetData(id, 1); B2SSetData(id, 0); }
-   void B2SPulseData(const std::string& group)               { B2SSetData(group, 1); B2SSetData(group, 0); }
+   void B2SPulseData(const string& group)               { B2SSetData(group, 1); B2SSetData(group, 0); }
    void B2SSetScoreRollover(int id, int value)               { B2SSetData(id, value); }
    void B2SSetScoreRolloverPlayer1(int value)                { m_defaultStateNameMask |= 1ull << 25; B2SSetData(25, value); }
    void B2SSetScoreRolloverPlayer2(int value)                { m_defaultStateNameMask |= 1ull << 26; B2SSetData(26, value); }
