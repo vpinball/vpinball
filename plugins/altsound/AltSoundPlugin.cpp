@@ -38,7 +38,7 @@ static unsigned int onAudioUpdateId = 0;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>> altsoundAudioSrc;
 
-static bool isRunning = false;
+static std::atomic<bool> isRunning = false;
 
 struct AudioCallbackData
 {
@@ -50,7 +50,7 @@ struct AudioCallbackData
 
 static void AudioCallback(const float* samples, size_t frameCount, uint32_t sampleRate, uint32_t channels, void* userData)
 {
-   if (!isRunning || !msgApi || onAudioUpdateId == 0 || !samples || frameCount == 0)
+   if (!isRunning.load(std::memory_order_relaxed) || !msgApi || onAudioUpdateId == 0 || !samples || frameCount == 0)
       return;
 
    const size_t bufferSizeBytes = frameCount * channels * sizeof(float);
@@ -84,7 +84,7 @@ static void AudioCallback(const float* samples, size_t frameCount, uint32_t samp
 
 static void OnGameEvent(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (isRunning)
+   if (isRunning.load(std::memory_order_relaxed))
       AltSoundProcessCommand(static_cast<const PinMAMEChildBoardEventMsg*>(msgData)->cmd, 0);
 }
 
@@ -146,7 +146,7 @@ static void SetupAltSound()
    AltSoundSetAudioCallback(AudioCallback, nullptr);
    AltSoundSetHardwareGen(static_cast<ALTSOUND_HARDWARE_GEN>(state.hardwareGen));
 
-   isRunning = true;
+   isRunning.store(true, std::memory_order_relaxed);
    altsoundAudioSrc->SetItem(
       { .id = { endpointId, 0 }, .overrideId = { controller.endpointId, 0 }, .name = "AltSound", .desc = "AltSound audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS });
 
@@ -155,10 +155,10 @@ static void SetupAltSound()
 
 static void StopAltSound()
 {
-   if (!isRunning)
+   if (!isRunning.load(std::memory_order_relaxed))
       return;
 
-   isRunning = false;
+   isRunning.store(false, std::memory_order_relaxed);
    AltSoundShutdown();
 
    AudioUpdateMsg stopStreamMsg;
@@ -209,7 +209,7 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
 
 MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
 {
-   if (isRunning)
+   if (isRunning.load(std::memory_order_relaxed))
       StopAltSound();
 
    msgApi->FlushPendingCallbacks(endpointId);
