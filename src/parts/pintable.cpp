@@ -1869,7 +1869,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
             vector<string> functions;
             vector<string> identifiers;
             ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
-            const wstring lowerCaseScript = lowerCase(MakeWString(m_script_text));
+            const wstring lowerCaseScript = MakeWString(lowerCase(m_script_text));
             for (auto part : parts)
             {
                if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
@@ -1882,10 +1882,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                   bool layerPostpend = false;
                   while (partGroupF == m_vedit.end())
                   {
-                     bool nameIsUnique = true
-                        && IsNameUnique(layerName)
-                        && std::ranges::find(functions, MakeString(lowerCase(layerName))) == functions.end()
-                        && std::ranges::find(identifiers, MakeString(lowerCase(layerName))) == identifiers.end();
+                     const string tmp = lowerCase(MakeString(layerName));
+                     const bool nameIsUnique =
+                           IsNameUnique(layerName)
+                        && std::ranges::find(functions, tmp) == functions.end()
+                        && std::ranges::find(identifiers, tmp) == identifiers.end();
                      if (nameIsUnique)
                         break;
 
@@ -1911,7 +1912,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                         else
                         {
                            // If not, add it
-                           layerName += L"_";
+                           layerName += L'_';
                         }
                         layerName += std::format(L"{:3d}", renameIndex);
                         renameIndex += 1;

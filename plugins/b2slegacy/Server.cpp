@@ -1162,7 +1162,7 @@ void Server::CheckLamps(ScriptArray* psa)
          }
          if (datatypes & eCollectedDataType_Standard) {
             for (const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[lampId]) {
-               B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
+               B2SPictureBox* const pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
                if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
                   bool visible = lampState;
                   if (pPicbox->IsRomInverted())
@@ -1312,7 +1312,7 @@ void Server::CheckSolenoids(ScriptArray* psa)
          }
          if (datatypes & eCollectedDataType_Standard) {
             for (const auto& pBase : (*m_pB2SData->GetUsedRomSolenoidIDs())[solenoidId]) {
-               B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
+               B2SPictureBox* const pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
                if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
                   bool visible = (solenoidState != 0);
                   if (pPicbox->IsRomInverted())
@@ -1462,7 +1462,7 @@ void Server::CheckGIStrings(ScriptArray* psa)
          }
          if (datatypes & eCollectedDataType_Standard) {
             for (const auto& pBase : (*m_pB2SData->GetUsedRomGIStringIDs())[giStringId]) {
-               B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
+               B2SPictureBox* const pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
                if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
                   bool visible = giStringBool;
                   if (pPicbox->IsRomInverted())
@@ -1533,14 +1533,11 @@ void Server::CheckLEDs(ScriptArray* psa)
    if (psa == nullptr || psa->lengths[0] == 0)
       return;
 
-   int digit;
-   int value;
-
    int uCount = psa->lengths[0];
-   int32_t* data = reinterpret_cast<int32_t*>(&psa->lengths[2]);
+   const int32_t* const data = reinterpret_cast<int32_t*>(&psa->lengths[2]);
    for (int i = 0; i < uCount; i++) {
-      digit = data[i * 3 + 0];
-      value = data[i * 3 + 2];
+      int digit = data[i * 3 + 0];
+      int value = data[i * 3 + 2];
       if (m_pB2SData->IsUseLEDs() || m_pB2SData->IsUseLEDDisplays() || m_pB2SData->IsUseReels())
          m_pCollectLEDsData->Add(digit, new CollectData(value, 0));
    }
@@ -1560,8 +1557,8 @@ void Server::CheckLEDs(ScriptArray* psa)
       m_pCollectLEDsData->Lock();
 
       for (const auto& [key, pCollectData] : *m_pCollectLEDsData) {
-         digit = key;
-         value = pCollectData->GetState();
+         int digit = key;
+         int value = pCollectData->GetState();
 
          if (useLEDs) {
             // rendered LEDs are used
@@ -1634,7 +1631,7 @@ void Server::MyB2SSetLEDDisplay(int display, const string& szText)
    if (!m_pB2SData->IsBackglassRunning())
       return;
 
-   int digit = GetFirstDigitOfDisplay(display);
+   const int digit = GetFirstDigitOfDisplay(display);
 
    const bool useLEDs = m_pB2SData->GetLEDs()->contains("LEDBox" + std::to_string(digit)) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
    //const bool useLEDDisplays = m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;

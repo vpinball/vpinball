@@ -63,13 +63,17 @@ static SDL_Surface* RotateSurface(SDL_Surface* const src, float angleDeg)
    const float dstCx = dstW * 0.5f;
    const float dstCy = dstH * 0.5f;
 
+   const float rxoo = srcCx - dstCx * c - dstCy * s;
+   const float ryoo = srcCy + dstCx * s - dstCy * c;
    for (int dy = 0; dy < dstH; dy++)
    {
       int ofs = dy * dstPitch;
+      const float rxo = rxoo + (float)dy * s;
+      const float ryo = ryoo + (float)dy * c;
       for (int dx = 0; dx < dstW; dx++,ofs++)
       {
-         const float rx =  (dx - dstCx) * c + (dy - dstCy) * s + srcCx;
-         const float ry = -(dx - dstCx) * s + (dy - dstCy) * c + srcCy;
+         const float rx = rxo + (float)dx * c;
+         const float ry = ryo - (float)dx * s;
          const int sx = (int)rx;
          const int sy = (int)ry;
          if (/*sx >= 0 &&*/ (unsigned int)sx < srcW && /*sy >= 0 &&*/ (unsigned int)sy < srcH)
@@ -92,16 +96,22 @@ static void ApplyFilter(SDL_Surface* surf, int filterMode)
       return;
 
    SDL_LockSurface(surf);
-   uint32_t* const pixels = (uint32_t*)surf->pixels;
+   uint32_t* const __restrict pixels = (uint32_t*)surf->pixels;
    const int pitch = surf->pitch / 4;
    const int w = surf->w;
    const int h = surf->h;
 
    for (int y = 0; y < h; y++)
    {
-      for (int x = 0; x < w; x++)
+      int ofs = y * pitch;
+      if (filterMode == 5) // clear
       {
-         uint32_t& px = pixels[y * pitch + x];
+         memset(pixels + ofs, 0, w*sizeof(uint32_t));
+         continue;
+      }
+      for (int x = 0; x < w; x++,ofs++)
+      {
+         uint32_t& px = pixels[ofs];
          const uint8_t r = px & 0xFF;
          const uint8_t g = (px >> 8) & 0xFF;
          const uint8_t b = (px >> 16) & 0xFF;
@@ -124,9 +134,9 @@ static void ApplyFilter(SDL_Surface* surf, int filterMode)
          case 4: // invertalpha
             px = ((255 - a) << 24) | (b << 16) | (g << 8) | r;
             break;
-         case 5: // clear
-            px = 0;
-            break;
+         //case 5: // clear
+         //   px = 0;
+         //   break;
          }
       }
    }

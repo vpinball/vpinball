@@ -132,4 +132,3 @@ if(BUILD_STATIC)
       OUTPUT_NAME "plugin-altsound"
    )
 endif()
-
