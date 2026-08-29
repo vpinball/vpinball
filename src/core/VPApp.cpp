@@ -361,16 +361,24 @@ BOOL VPApp::WinApp::OnIdle(LONG)
 }
 BOOL VPApp::WinApp::PreTranslateMessage(MSG &msg)
 {
-   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) /* && (msg.wParam == VK_DELETE) */)
+   if (g_pvp && g_pvp->IsWindow() && msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
    {
-      // Skip accelerators for Edit control of the main editor (property pane edits)
-      if (g_pvp // Main editor exists
-         && g_pvp->IsWindow()  // Main edutor is created
-         && g_pvp->GetFocus() != NULL // Main editor is focused
-         && (g_pvp->GetFocus() == g_pvp->GetHwnd() || g_pvp->IsChild(g_pvp->GetFocus())) // Is a child of main editor
-         && (msg.wParam == VK_DELETE || msg.wParam == VK_BACK || msg.wParam == VK_ESCAPE || msg.wParam == VK_RETURN) // Only discard keys that would interfere
-         && g_pvp->GetFocus().GetClassName().GetString() == "Edit")
-         return FALSE;
+      // Always formward F1-F12 to the main VPinball class to open subdialogs from everywhere
+      if (const int keyPressed = LOWORD(msg.wParam); (keyPressed >= VK_F1 && keyPressed <= VK_F12))
+         return __super::PreTranslateMessage(msg);
+
+      // Skip accelerators for Edit control of the main editor (property pane edits, to avoid Delete, Copy/Paste, Undo,... conflicts)
+      if (CWnd focus = g_pvp->GetFocus(); focus != nullptr && g_pvp->IsChild(focus) && focus.GetClassName() == WC_EDIT)
+      {
+         while (focus != nullptr)
+         {
+            if (focus.GetClassName() == WC_TABCONTROL)
+            {
+               return focus.IsDialogMessage(msg);
+            }
+            focus = focus.GetParent();
+         }
+      }
    }
    return __super::PreTranslateMessage(msg);
 }
