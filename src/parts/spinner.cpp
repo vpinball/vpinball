@@ -143,38 +143,6 @@ void Spinner::SetDefaultPhysics(const bool fromMouseClick)
 }
 #undef LinkProp
 
-void Spinner::UIRenderPass1(Sur * const psur)
-{
-}
-
-void Spinner::UIRenderPass2(Sur * const psur)
-{
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 3);
-   psur->SetObject(this);
-
-   const float halflength = m_d.m_length * 0.5f;
-
-   const float radangle = ANGTORAD(m_d.m_rotation);
-   float sn = sinf(radangle);
-   float cs = cosf(radangle);
-
-   psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
-      m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
-
-   psur->SetLineColor(RGB(0, 0, 0), false, 1);
-   psur->SetObject(this);
-
-   psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
-      m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
-
-   if (sn == 0.0f) sn = 1.0f;
-   if (cs == 0.0f) cs = 1.0f;
-   psur->Rectangle(m_d.m_vCenter.x - cs * halflength * 0.65f, m_d.m_vCenter.y - sn * halflength * 0.65f,
-                   m_d.m_vCenter.x + cs * halflength * 0.65f, m_d.m_vCenter.y + sn * halflength * 0.65f);
-}
-
-
 #pragma region Physics
 
 // Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs

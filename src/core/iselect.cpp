@@ -27,8 +27,6 @@ void ISelect::SetObjectPos()
    m_vpinball->ClearObjectPosCur();
 }
 
-void ISelect::RenderBlueprint(Sur *psur, const bool solid) { UIRenderPass2(psur); }
-
 void ISelect::OnLButtonDown(int x, int y)
 {
    m_dragging = true;

@@ -85,6 +85,7 @@ class Light :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   friend class LightWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -116,8 +117,6 @@ public:
    DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-   void RenderBlueprint(Sur *psur, const bool solid) final;
 
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
@@ -155,8 +154,6 @@ public:
    void InitShape();
    void setInPlayState(const float newVal);
 
-   void RenderOutline(Sur *const psur);
-
    // Light definition
    LightData m_d;
 
@@ -172,10 +169,6 @@ private:
    {
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
-
-      void UIRenderPass1(Sur *const psur) override { /* Processed by light */ }
-      void UIRenderPass2(Sur *const psur) override { /* Processed by light */ }
-      void RenderBlueprint(Sur *psur, const bool solid) override { /* Processed by light */ }
 
       bool IsUILocked() const override { return m_uiLocked; }
       void SetUILock(bool lock) override { m_uiLocked = lock; }

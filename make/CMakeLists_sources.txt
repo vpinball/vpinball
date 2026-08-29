@@ -395,8 +395,53 @@ set(VPX_SOURCES
    src/ui/win/PinTableWnd.h
    src/ui/win/ProgressDialog.cpp
    src/ui/win/ProgressDialog.h
+   src/ui/win/IWinUIPart.h
    src/ui/win/WinEditor.cpp
    src/ui/win/WinEditor.h
+   src/ui/win/WinUIPartRegistry.cpp
+   src/ui/win/WinUIPartRegistry.h
+   src/ui/win/parts/BallWinUIPart.cpp
+   src/ui/win/parts/BallWinUIPart.h
+   src/ui/win/parts/BumperWinUIPart.cpp
+   src/ui/win/parts/BumperWinUIPart.h
+   src/ui/win/parts/DecalWinUIPart.cpp
+   src/ui/win/parts/DecalWinUIPart.h
+   src/ui/win/parts/DispReelWinUIPart.cpp
+   src/ui/win/parts/DispReelWinUIPart.h
+   src/ui/win/parts/FlasherWinUIPart.cpp
+   src/ui/win/parts/FlasherWinUIPart.h
+   src/ui/win/parts/FlipperWinUIPart.cpp
+   src/ui/win/parts/FlipperWinUIPart.h
+   src/ui/win/parts/GateWinUIPart.cpp
+   src/ui/win/parts/GateWinUIPart.h
+   src/ui/win/parts/HitTargetWinUIPart.cpp
+   src/ui/win/parts/HitTargetWinUIPart.h
+   src/ui/win/parts/KickerWinUIPart.cpp
+   src/ui/win/parts/KickerWinUIPart.h
+   src/ui/win/parts/LightSeqWinUIPart.cpp
+   src/ui/win/parts/LightSeqWinUIPart.h
+   src/ui/win/parts/LightWinUIPart.cpp
+   src/ui/win/parts/LightWinUIPart.h
+   src/ui/win/parts/PartGroupWinUIPart.cpp
+   src/ui/win/parts/PartGroupWinUIPart.h
+   src/ui/win/parts/PlungerWinUIPart.cpp
+   src/ui/win/parts/PlungerWinUIPart.h
+   src/ui/win/parts/PrimitiveWinUIPart.cpp
+   src/ui/win/parts/PrimitiveWinUIPart.h
+   src/ui/win/parts/RampWinUIPart.cpp
+   src/ui/win/parts/RampWinUIPart.h
+   src/ui/win/parts/RubberWinUIPart.cpp
+   src/ui/win/parts/RubberWinUIPart.h
+   src/ui/win/parts/SpinnerWinUIPart.cpp
+   src/ui/win/parts/SpinnerWinUIPart.h
+   src/ui/win/parts/SurfaceWinUIPart.cpp
+   src/ui/win/parts/SurfaceWinUIPart.h
+   src/ui/win/parts/TextboxWinUIPart.cpp
+   src/ui/win/parts/TextboxWinUIPart.h
+   src/ui/win/parts/TimerWinUIPart.cpp
+   src/ui/win/parts/TimerWinUIPart.h
+   src/ui/win/parts/TriggerWinUIPart.cpp
+   src/ui/win/parts/TriggerWinUIPart.h
 
    src/utils/BiffReader.cpp
    src/utils/BiffReader.h

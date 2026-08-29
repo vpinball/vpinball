@@ -76,18 +76,6 @@ void PartGroup::PutCenter(const Vertex2D& pv)
    m_d.m_v = pv;
 }
 
-void PartGroup::UIRenderPass1(Sur * const psur)
-{
-}
-
-void PartGroup::UIRenderPass2(Sur * const psur)
-{
-}
-
-void PartGroup::RenderBlueprint(Sur *psur, const bool solid)
-{
-}
-
 #pragma endregion
 
 

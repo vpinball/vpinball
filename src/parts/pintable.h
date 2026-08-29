@@ -317,9 +317,6 @@ public:
 
    void SetMouseCapture();
 
-   // IEditable
-   void UIRenderPass2(Sur *const psur) final { }
-
    // ISelect
    bool IsUILocked() const final { return false; }
    void SetUILock(bool lock) final { }
@@ -407,7 +404,6 @@ public:
 
    // IEditable (mostly bogus for now)
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
-   void UIRenderPass1(Sur *const psur) final { }
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;

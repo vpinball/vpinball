@@ -15,6 +15,7 @@
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
+#include "ui/win/WinUIPartRegistry.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/SearchSelectDialog.h"
@@ -260,7 +261,10 @@ void PinTableWnd::ExportBlueprint()
       for (const auto &ptr : m_table->GetParts())
       {
          if (ptr->m_uiVisible && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
-            ptr->GetISelect()->RenderBlueprint(&psur, solid);
+         {
+            auto winPart = WinUIPartRegistry::Create(this, ptr);
+            winPart->RenderBlueprint(&psur, solid);
+         }
       }
    }
 
@@ -328,7 +332,10 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-         ptr->GetISelect()->UIRenderPass1(psur);
+      {
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass1(psur);
+      }
    }
 
    if (GetDisplayGrid() && m_vpxEditor->m_gridSize > 0)
@@ -366,7 +373,10 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-         ptr->GetISelect()->UIRenderPass2(psur);
+      {
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass2(psur);
+      }
    }
 
    if (m_vpxEditor->m_desktopBackdropView) // Outline of the view, for when the grid is off
@@ -719,7 +729,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->GetISelect())
       {
-         ptr->GetISelect()->UIRenderPass1(&phs2);
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass1(&phs2);
          ISelect *const tmp = phs2.m_pselected;
          if (FindIndexOf(m_table->m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != m_table)
          {

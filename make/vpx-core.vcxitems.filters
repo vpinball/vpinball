@@ -61,6 +61,9 @@
     <Filter Include="ui\win">
       <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui\win\parts">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ui\win\dialogs">
       <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
     </Filter>
@@ -632,6 +635,72 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp">
       <Filter>ui\win</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp">
+      <Filter>ui\win</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PlungerWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PrimitiveWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/RampWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/RubberWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/SpinnerWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TimerWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TriggerWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitrectsur.cpp">
       <Filter>ui\win</Filter>
@@ -1574,8 +1643,77 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/ProgressDialog.h">
       <Filter>ui\win</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h">
       <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.h">
+      <Filter>ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PlungerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PrimitiveWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/RampWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/RubberWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/SpinnerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TimerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TriggerWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/resource.h">
       <Filter>ui\win</Filter>

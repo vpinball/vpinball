@@ -74,6 +74,8 @@ class Flipper :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+   friend class FlipperWinUIPart;
+
 public:
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);

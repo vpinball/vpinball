@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -943,6 +943,28 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinEditor.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PlungerWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/PrimitiveWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/RampWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/RubberWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/SpinnerWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TimerWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/TriggerWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/codeviewedit.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/Debugger.cpp" />
@@ -1768,7 +1790,30 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableWnd.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/DragPointDialogs.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/IWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinEditor.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/WinUIPartRegistry.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BallWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/HitTargetWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/KickerWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightSeqWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/LightWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PartGroupWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PlungerWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/PrimitiveWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/RampWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/RubberWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/SpinnerWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/SurfaceWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TextboxWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TimerWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/TriggerWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/resource.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/worker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/codeview.h" />

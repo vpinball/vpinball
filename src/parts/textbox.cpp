@@ -167,25 +167,6 @@ STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-void Textbox::UIRenderPass1(Sur * const psur)
-{
-   psur->SetBorderColor(-1, false, 0);
-   psur->SetFillColor(m_d.m_backcolor);
-   psur->SetObject(this);
-
-   psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
-}
-
-void Textbox::UIRenderPass2(Sur * const psur)
-{
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetFillColor(-1);
-   psur->SetObject(this);
-   psur->SetObject(nullptr);
-
-   psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
-}
-
 void Textbox::SetObjectPos()
 {
     m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);

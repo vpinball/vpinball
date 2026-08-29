@@ -113,8 +113,6 @@ public:
 
    void ClearForOverwrite() final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
@@ -175,8 +173,10 @@ public:
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr; // DMD defined through script API
    std::atomic_uint m_dmdFrameId = 0;
 
-private:
+public:
    void InitShape();
+
+private:
    void UpdateCenter();
    void UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display);
 

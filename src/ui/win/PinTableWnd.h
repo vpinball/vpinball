@@ -56,6 +56,8 @@ public:
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)
 
+   WinEditor *const m_vpxEditor;
+
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd
@@ -83,7 +85,6 @@ private:
    void UIRenderPass2(Sur *const psur);
 #endif
 
-   WinEditor *const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
 
    std::unique_ptr<class SearchSelectDialog> m_searchSelectDlg;

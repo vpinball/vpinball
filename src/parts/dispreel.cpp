@@ -96,62 +96,6 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-// draw the shape of the object with a solid fill, only used in the editor/UI and not in-game
-void DispReel::UIRenderPass1(Sur * const psur)
-{
-   psur->SetBorderColor(-1, false, 0);
-   psur->SetFillColor(m_d.m_backcolor);
-   psur->SetObject(this);
-
-   // draw background box
-   psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
-
-   // draw n reels in the box (in blue)
-   psur->SetFillColor(RGB(0, 0, 255));
-   for (int i = 0; i < m_d.m_reelcount; ++i)
-   {
-      // set up top corner point
-      const float fi = (float)i;
-      const float x = m_d.m_v1.x + fi*(m_d.m_width + m_d.m_reelspacing) + m_d.m_reelspacing;
-      const float y = m_d.m_v1.y + m_d.m_reelspacing;
-      const float x2 = x + m_d.m_width;
-      const float y2 = y + m_d.m_height;
-
-      // set up points (clockwise)
-      const Vertex2D rgv[4] = { Vertex2D(x, y), Vertex2D(x2, y), Vertex2D(x2, y2), Vertex2D(x, y2) };
-      psur->Polygon(rgv, 4);
-   }
-}
-
-// draw the shape of the object with a black outline (no solid fill), only used in the editor/UI and not in-game
-void DispReel::UIRenderPass2(Sur * const psur)
-{
-   if (!GetPTable()->GetEMReelsEnabled()) return;
-
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetFillColor(-1);
-   psur->SetObject(this);
-   psur->SetObject(nullptr);
-
-   // draw background box
-   psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
-
-   // draw n reels in the box
-   for (int i = 0; i < m_d.m_reelcount; ++i)
-   {
-      // set up top corner point
-      const float fi = (float)i;
-      const float x = m_d.m_v1.x + fi*(m_d.m_width + m_d.m_reelspacing) + m_d.m_reelspacing;
-      const float y = m_d.m_v1.y + m_d.m_reelspacing;
-      const float x2 = x + m_d.m_width;
-      const float y2 = y + m_d.m_height;
-
-      // set up points (clockwise)
-      const Vertex2D rgv[4] = { Vertex2D(x, y), Vertex2D(x2, y), Vertex2D(x2, y2), Vertex2D(x, y2) };
-      psur->Polygon(rgv, 4);
-   }
-}
-
 
 #pragma region Rendering
 

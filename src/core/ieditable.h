@@ -119,8 +119,6 @@ public:
     } \
 	T *CopyForPlay() const final; \
 	HRESULT Init(const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
-	void UIRenderPass1(Sur * const psur) final; \
-	void UIRenderPass2(Sur * const psur) final; \
 	bool IsUILocked() const final { return m_uiLocked; } \
 	void SetUILock(bool lock) final { m_uiLocked = lock; } \
 	bool IsUIVisible() const final { return m_uiVisible; } \
@@ -161,11 +159,11 @@ public:
    void RenderRelease() final;
 
 #define _STANDARD_EDITABLE_CONSTANTS(ItTy, ResName, AllwdViews) \
-   static const ItemTypeEnum ItemType = ItTy; \
-   static const int TypeNameID = IDS_TB_##ResName; \
-   static const int ToolID = ID_INSERT_##ResName; \
-   static const int CursorID = IDC_##ResName; \
-   static const unsigned AllowedViews = AllwdViews;
+   static inline constexpr ItemTypeEnum ItemType = ItTy; \
+   static inline constexpr int TypeNameID = IDS_TB_##ResName; \
+   static inline constexpr int ToolID = ID_INSERT_##ResName; \
+   static inline constexpr int CursorID = IDC_##ResName; \
+   static inline constexpr unsigned AllowedViews = AllwdViews;
 
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type) \
    type *dst = type::COMCreate(); \

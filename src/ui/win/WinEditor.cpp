@@ -34,6 +34,7 @@
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/resource.h"
+#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
@@ -113,6 +114,7 @@ WinEditor::WinEditor(HINSTANCE appInstance)
    m_closing = false;
    m_unloadingTable = false;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
+   WinUIPartRegistry::InitRegistry(); 
    //implement this and StdMethods QueryInterface, AddRef and Release
 
    m_mouseCursorPosition.x = 0.0f;
