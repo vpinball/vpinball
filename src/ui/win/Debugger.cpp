@@ -17,11 +17,6 @@ DebuggerDialog::DebuggerDialog() : CDialog(IDD_DEBUGGER)
 {
 }
 
-BOOL DebuggerDialog::IsSubDialogMessage(MSG& msg) const
-{
-    return IsDialogMessage(msg);
-}
-
 BOOL DebuggerDialog::OnInitDialog()
 {
     AttachItem(IDC_PLAY, m_playButton);
