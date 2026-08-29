@@ -249,6 +249,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(FALSE);
         m_playButton.EnableWindow(FALSE);
         m_playCameraButton.EnableWindow(FALSE);
+        m_vrCombo.EnableWindow(FALSE);
 
         m_textboxButton.EnableWindow(FALSE);
         m_reelButton.EnableWindow(FALSE);
@@ -282,6 +283,7 @@ void ToolbarDialog::EnableButtons()
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
+        m_vrCombo.EnableWindow(TRUE);
 
         m_decalButton.EnableWindow(lockable);
         m_lightButton.EnableWindow(lockable);
