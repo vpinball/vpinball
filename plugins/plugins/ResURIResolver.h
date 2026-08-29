@@ -20,33 +20,38 @@
 // - unordered_dense.h from https://github.com/martinus/unordered_dense
 // - simple-uri-parser.f from https://github.com/jholloc/simple-uri-parser
 // 
+// This class handles multithreading:
+// - the class instance must be created on the MsgAPI thread
+// - getters may be called from any thread, they are synchronized against changes (happening on the MsgAPI thread)
+// 
 // The syntax is: scheme://authority/path?query
 // 
 // - 'ctrl' scheme allows to access states exposed through the generic controller API (see ControllerPlugin.h)
 //   Authority must be either the id of a given plugin or 'default' in which case a default source is selected
 //   . '/display' path allows to access rectangular displays (DMD and video displays)
 //     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
-//     - 'override=xx' specify how variants are selected ('all' is the default):
+//     - 'override=xx' specify how variants are selected ('all' is the default): [Unimplemented]
 //       . 'override=no' disable variants
 //       . 'override=color' only select variants with improved coloring
 //       . 'override=scale' only select variants with improved resolution
 //       . 'override=all' select highest quality variant (color, resolution, ...)
-//     - 'x=xx', 'y=yy' and 'channel=zz' specify the coordinates of the pixel to gather a channel between 'r',
+//     - 'x=xx', 'y=yy' and 'channel=zz' specify the coordinates of the pixel to gather a channel between 'r', [Unimplemented]
 //       'g', 'b' or 'lum' (relative luminance which is the default)
 //   . '/seg' path allows to access alphanumeric segment displays
 //     - 'id=xx' specify id of the resource (defaults to 0), unsupported when using 'default' instead of a plugin
 //     - 'sub=xx' is used to select the xx-th element of the display (0-based)
 //   . '/state' path allows to access game states
-//     - 'grp=xx' where xx is the device group defined by the plugin
+//     - 'group=xx' where xx is the device group defined by the plugin
 //     - 'io=xx' where xx is the device mapping id (user friendly number, defined by the plugin, unique inside the device group)
+//     - 'name=xx' where xx is the user friendly name of the state
 //
 //   examples:
 //   - ctrl://default/display                  => Default DMD or display
 //   - ctrl://flexdmd/display                  => FlexDMD first DMD
-//   - ctrl://pinmame/display?x=0&y=0          => Relative luminance of the top left dot of PinMAME's first display
-//   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling)
-//   - ctrl://pinmame/state?grp=1&io=11        => Element #11 of PinMAME state group #1 (solenoid #11)
-//   - ctrl://pinmame/state?grp=2&io=1         => Element #1 of PinMAME state group #2 (first GI string)
+//   - ctrl://pinmame/display?x=0&y=0          => Relative luminance of the top left dot of PinMAME's first display [Unimplemented]
+//   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling) [Unimplemented]
+//   - ctrl://pinmame/state?group=1&io=11      => Element #11 of PinMAME state group #1 (solenoid #11)
+//   - ctrl://pinmame/state?group=2&io=1       => Element #1 of PinMAME state group #2 (first GI string)
 //   - ctrl://pinmame/seg?id=1                 => Alphanumeric segment display #1
 //   - ctrl://pinmame/seg?id=1&sub=0           => Alphanumeric first element (block of segments forming a number/character) of segment display #1
 //
@@ -86,23 +91,14 @@ private:
    const unsigned int m_endpointId;
 
    mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>> m_stateSources;
-
    using floatCacheLambda = std::function<float(const std::string &)>;
    ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;
 
-   const unsigned int m_getSegSrcMsgId;
-   const unsigned int m_onSegChangedMsgId;
-   static void OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   std::vector<SegSrcId> m_segSources;
-
+   mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>> m_segSources;
    using segCacheLambda = std::function<SegDisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, segCacheLambda> m_segCache;
 
-   const unsigned int m_getDisplaySrcMsgId;
-   const unsigned int m_onDisplayChangedMsgId;
-   static void OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   std::vector<DisplaySrcId> m_displaySources;
-
+   mutable std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>> m_displaySources;
    using displayCacheLambda = std::function<DisplayState(const std::string &)>;
    ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;
 
