@@ -54,6 +54,7 @@ class Ramp :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   friend class RampWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -96,8 +97,6 @@ public:
 
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-   void RenderBlueprint(Sur *psur, const bool solid) final;
 
    void ClearForOverwrite() final;
 

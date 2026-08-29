@@ -87,6 +87,7 @@ class Primitive :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   friend class PrimitiveWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -284,7 +285,6 @@ public:
 
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
-   void RenderBlueprint(Sur *psur, const bool solid) final;
    void UpdateStatusBarInfo() final;
 
    const Matrix3D &RecalculateMatrices();

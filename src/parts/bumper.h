@@ -93,7 +93,6 @@ public:
    void ExportMesh(ObjLoader &loader) final;
 
    // IEditable implementation
-   void RenderBlueprint(Sur *psur, const bool solid) final;
    void WriteRegDefaults() final;
 
    // IHitable implementation

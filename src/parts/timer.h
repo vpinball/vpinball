@@ -65,8 +65,6 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void WriteRegDefaults() final;
 
    STANDARD_EDITABLE_DECLARES_NO_RENDERABLE_NO_HITABLE(Timer, eItemTimer, TIMER, VIEW_PLAYFIELD | VIEW_BACKGLASS)

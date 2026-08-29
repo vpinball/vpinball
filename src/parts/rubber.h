@@ -47,6 +47,7 @@ class Rubber :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   friend class RubberWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -86,8 +87,6 @@ public:
       DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
-
-   void RenderBlueprint(Sur *psur, const bool solid) final;
 
    void ClearForOverwrite() final;
 

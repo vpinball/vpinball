@@ -79,8 +79,6 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void WriteRegDefaults() final;
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PARTGROUP)

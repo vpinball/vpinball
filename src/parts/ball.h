@@ -156,7 +156,6 @@ public:
    void PutCenter(const Vertex2D &pv) final;
 
    // IEditable implementation
-   void RenderBlueprint(Sur *psur, const bool solid) final;
    void WriteRegDefaults() final;
 
    // IHitable implementation

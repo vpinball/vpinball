@@ -89,7 +89,6 @@ public:
    void PutCenter(const Vertex2D &pv) final;
    void SetDefaultPhysics(const bool fromMouseClick) final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
    void ExportMesh(ObjLoader &loader) final;
 
    ItemTypeEnum HitableGetItemType() const final { return eItemGate; }

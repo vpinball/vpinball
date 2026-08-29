@@ -95,7 +95,6 @@ public:
 
    // IEditable
    void WriteRegDefaults() final;
-   void RenderBlueprint(Sur *psur, const bool solid) final;
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
    void ClearForOverwrite() final;
