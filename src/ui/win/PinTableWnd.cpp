@@ -1108,7 +1108,7 @@ void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISe
 #ifndef __STANDALONE__
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), LocalString(IDS_ASSIGN_TO_LAYER2).m_szbuffer);
    int i = 0;
-   for (IEditable *edit : m_table->GetParts())
+   for (const IEditable * const edit : m_table->GetParts())
    {
       if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
       {
