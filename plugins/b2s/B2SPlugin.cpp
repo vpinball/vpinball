@@ -10,6 +10,10 @@ namespace B2S {
    
 LPI_IMPLEMENT_CPP // Implement shared log support
 
+MSGPI_STRING_VAL_SETTING(b2sPathProp, "B2SPath", "B2S Path", "Folder that contains directb2s backglass files (fallback search path)", true, "", 1024);
+
+const char* B2SGetGlobalPath() { return b2sPathProp_Get(); }
+
 ///////////////////////////////////////////////////////////////////////////////
 // B2S plugin
 // - implement rendering of directb2s backglass and score view
@@ -260,6 +264,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
 
    B2SRenderer::RegisterSettings(msgApi, endpointId);
    B2SDMDOverlay::RegisterSettings(msgApi, endpointId);
+   msgApi->RegisterSetting(endpointId, &b2sPathProp);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
