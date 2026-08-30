@@ -312,41 +312,48 @@ static void OnControllersChanged()
          std::filesystem::path palPath, vniPath;
 
          // Priority 1: vni/<rom>/<rom>.pal and vni/<rom>/<rom>.vni
-         if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / palFile); !path1.empty())
+         if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / palFile); !palTestPath.empty())
          {
-            palPath = path1;
-            if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / vniFile); !path2.empty())
-               vniPath = path2;
+            palPath = palTestPath;
+            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / vniFile); !vniTestPath.empty())
+               vniPath = vniTestPath;
          }
          // Priority 2: vni/<rom>/pin2dmd.pal and vni/<rom>/pin2dmd.vni
-         else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdPal); !path3.empty())
+         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdPal); !palTestPath.empty())
          {
-            palPath = path3;
-            if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdVni); !path4.empty())
-               vniPath = path4;
+            palPath = palTestPath;
+            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "vni"sv / currentGameId / pin2dmdVni); !vniTestPath.empty())
+               vniPath = vniTestPath;
          }
          // Priority 3: pinmame/altcolor/<rom>/<rom>.pal and pinmame/altcolor/<rom>/<rom>.vni
-         else if (auto path5 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / palFile); !path5.empty())
+         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / palFile); !palTestPath.empty())
          {
-            palPath = path5;
-            if (auto path6 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / vniFile); !path6.empty())
-               vniPath = path6;
+            palPath = palTestPath;
+            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / vniFile); !vniTestPath.empty())
+               vniPath = vniTestPath;
          }
          // Priority 4: pinmame/altcolor/<rom>/pin2dmd.pal and pinmame/altcolor/<rom>/pin2dmd.vni
-         else if (auto path7 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdPal); !path7.empty())
+         else if (auto palTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdPal); !palTestPath.empty())
          {
-            palPath = path7;
-            if (auto path8 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdVni); !path8.empty())
-               vniPath = path8;
+            palPath = palTestPath;
+            if (auto vniTestPath = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / pin2dmdVni); !vniTestPath.empty())
+               vniPath = vniTestPath;
          }
-         // Priority 5: global setting path
          else if (!vniBasePath.empty())
          {
-            if (auto path9 = find_case_insensitive_file_path(vniBasePath / currentGameId / palFile); !path9.empty())
+            // Priority 5: global setting: path/<rom>/<rom>.vni
+            if (auto palTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / palFile); !palTestPath.empty())
             {
-               palPath = path9;
-               if (auto path10 = find_case_insensitive_file_path(vniBasePath / currentGameId / vniFile); !path10.empty())
-                  vniPath = path10;
+               palPath = palTestPath;
+               if (auto vniTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / vniFile); !vniTestPath.empty())
+                  vniPath = vniTestPath;
+            }
+            // Priority 6: global setting: path/<rom>/pin2dmd.vni
+            else if (auto palTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / pin2dmdPal); !palTestPath.empty())
+            {
+               palPath = palTestPath;
+               if (auto vniTestPath = find_case_insensitive_file_path(vniBasePath / currentGameId / pin2dmdVni); !vniTestPath.empty())
+                  vniPath = vniTestPath;
             }
          }
 
