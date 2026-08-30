@@ -70,8 +70,8 @@ public:
    void SetSolMask(int nLow, long newVal); // Define device emulation mode, or mask applied to GetChangedSolenoids
    int GetModOutputType(int output, int no) const; // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
    void SetModOutputType(int output, int no, int newVal); // FIXME deprecate in PinMAME/VPinMAME/LibPinMAME, this is wrong (it was added to wait while defining them inside PinMAME)
-   int GetSolenoid(int nSolenoid) const;
-   int GetLamp(int nLamp) const;
+   bool GetSolenoid(int nSolenoid) const;
+   bool GetLamp(int nLamp) const;
    int GetGIString(int nString) const;
    int GetGetMech(int mechNo) const { return PinmameGetMech(mechNo); }
    void SetMech(int mechNo, int newVal);

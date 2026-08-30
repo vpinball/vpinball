@@ -592,7 +592,7 @@ void Controller::SetModOutputType(int output, int no, int newVal)
       PinmameSetModOutputType(output, no, static_cast<PINMAME_MOD_OUTPUT_TYPE>(newVal));
 }
 
-int Controller::GetSolenoid(int solenoid) const
+bool Controller::GetSolenoid(int solenoid) const
 {
    uint8_t solState = 0;
    m_stateSources.With([this, &solenoid, &solState](const std::vector<StateSrcId>& states) {
@@ -600,10 +600,11 @@ int Controller::GetSolenoid(int solenoid) const
          if (const unsigned int index = m_solenoidMap[solenoid]; index < m_solenoids.nStates)
                m_solenoids.stateDefs[index].GetState(m_solenoids.id, index, &solState);
       });
-   return solState;
+   // state is either 0/1 or 0..255
+   return solState > (m_deviceMode == DM_BINARY ? 0 : 127);
 }
 
-int Controller::GetLamp(int lamp) const
+bool Controller::GetLamp(int lamp) const
 {
    uint8_t lampState = 0;
    m_stateSources.With(
@@ -613,7 +614,8 @@ int Controller::GetLamp(int lamp) const
             if (const unsigned int index = m_lampMap[lamp]; index < m_lamps.nStates)
                m_lamps.stateDefs[index].GetState(m_lamps.id, index, &lampState);
       });
-   return lampState;
+   // state is either 0/1 or 0..255
+   return lampState > (m_deviceMode != DM_PHYSOUT ? 0 : 127);
 }
 
 int Controller::GetGIString(int giString) const
