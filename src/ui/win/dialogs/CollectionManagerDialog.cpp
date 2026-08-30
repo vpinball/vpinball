@@ -495,11 +495,12 @@ void CollectionDialog::OnOK()
     const size_t groupElements = GetDlgItem(IDC_GROUP_CHECK).SendMessage(BM_GETCHECK, 0, 0);
     pcol->m_groupElements = !!groupElements;
 
-    wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString());
-    if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
-       newName = pCurCollection.ppt->m_table->GetUniqueName(newName);
-
-    pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
+    if (wstring newName = MakeWString(GetDlgItem(IDC_NAME).GetWindowText().GetString()); newName != pcol->get_Name())
+    {
+       if (!pCurCollection.ppt->m_table->IsNameUnique(newName))
+          newName = pCurCollection.ppt->m_table->GetUniqueName(newName);
+       pCurCollection.ppt->m_table->RenameCollection(pcol, newName);
+    }
 
     CDialog::OnOK();
 }
