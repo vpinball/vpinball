@@ -295,4 +295,7 @@ typedef struct VPXPluginAPI
    // Thread safe
    void(MSGPIAPI* DeleteTexture)(VPXTexture texture);
 
+   // Scripting
+   void(MSGPIAPI* RunScript)(const char* script);
+
 } VPXPluginAPI;

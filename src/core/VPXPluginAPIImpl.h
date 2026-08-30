@@ -88,6 +88,8 @@ private:
    static VPXTextureInfo* MSGPIAPI GetTextureInfo(VPXTexture texture);
    static void MSGPIAPI DeleteTexture(VPXTexture texture);
 
+   static void MSGPIAPI RunScript(const char* script);
+
    // Plugin settings
    void UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef);
    vector<PluginSetting> m_pluginSettings;
