@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <filesystem>
 #include <charconv>
+#include <cmath>
+#include <climits>
+#include <bit>
 
 #include <cstddef> // for size_t, ptrdiff_t
 // Define ssize_t for Windows
@@ -21,6 +24,13 @@ typedef int ssize_t;
 
 namespace B2S
 {
+
+#ifndef __clang__
+#define double_as_int64(x) std::bit_cast<int64_t>(x)
+#else // for whatever reason apple/clang is special again
+#define double_as_int64(x) __builtin_bit_cast(int64_t, x)
+#endif
+static constexpr bool infNaN(const double a) { return ((double_as_int64(a) & 0x7FF0000000000000ULL) == 0x7FF0000000000000ULL); }
 
 string trim_string(const string& str)
 {
@@ -95,6 +105,26 @@ vector<uint8_t> base64_decode(const char * const __restrict value, const size_t 
    const size_t newLen = from_base64_inplace(ret.data(), dst - ret.data());
    ret.resize(newLen);
    return ret; // will be moved
+}
+
+// trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
+int string_to_int(const string& str, int defaultValue)
+{
+   int result;
+   return is_string_numeric(str, &result) ? result : defaultValue;
+}
+
+bool is_string_numeric(const string& str, int* const __restrict result)
+{
+   const string tmp = trim_string(str);
+   if (tmp.empty())
+      return false;
+   char* end = nullptr;
+   const double valued = std::strtod(tmp.c_str(), &end);
+   const int valuei = static_cast<int>(std::nearbyint(valued));
+   if (result)
+      *result = valuei;
+   return (end == tmp.c_str() + tmp.length()) && !infNaN(valued) && (valuei >= INT_MIN) && (valuei <= INT_MAX);
 }
 
 }

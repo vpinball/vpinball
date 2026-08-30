@@ -283,7 +283,7 @@ void DisplaySettingsPage::BuildWindowPage()
       [this](const Settings& settings)
       {
          const string name = settings.GetWindow_Display(m_wndId);
-         auto it = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
+         auto it = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayId == name; });
          const int storedDisplay = it == m_displays.end() ? 0 : (int)std::distance(m_displays.begin(), it);
          return storedDisplay;
       }, // Stored
@@ -312,7 +312,7 @@ void DisplaySettingsPage::BuildWindowPage()
          RequestRebuild();
       }, //
       [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
-      [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayName, asTableOverride); }));
+      [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayId, asTableOverride); }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(

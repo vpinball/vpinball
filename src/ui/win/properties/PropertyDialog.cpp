@@ -586,7 +586,12 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
    // Invalid selection: discard update
    ISelect *const psel = pvsel.ElementAt(0);
    if (psel == nullptr)
+   {
+      m_nameEdit.EnableWindow(FALSE);
       return;
+   }
+
+   m_nameEdit.EnableWindow(TRUE);
 
    // Table is locked: just disable property pane
    if (psel->GetPTable()->IsLocked())
@@ -692,24 +697,6 @@ void PropertyDialog::EndUndo(ISelect *const psel)
    psel->GetPTable()->SetDirtyDraw();
 }
 
-BOOL PropertyDialog::PreTranslateMessage(MSG& msg)
-{
-   if (!IsWindow())
-      return FALSE;
-
-   // only pre-translate mouse and keyboard input events
-   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
-   {
-      const int keyPressed = LOWORD(msg.wParam);
-      // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      //!! also grab VK_ESCAPE here to avoid weird results when pressing ESC in textboxes (property gets stuck then)
-      if ((keyPressed >= VK_F1 && keyPressed <= VK_F12) && TranslateAccelerator(g_pvp->GetHwnd(), g_pvp->GetFrameAccel(), &msg))
-         return TRUE;
-   }
-
-   return IsSubDialogMessage(msg);
-}
-
 BOOL PropertyDialog::OnInitDialog()
 {
     AttachItem(IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC, m_multipleElementsStatic);
@@ -724,6 +711,8 @@ BOOL PropertyDialog::OnInitDialog()
     m_resizer.AddChild(m_nameEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_multipleElementsStatic, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tab, CResizer::topcenter, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+
+   m_nameEdit.EnableWindow(FALSE);
 
     return TRUE;
 }
@@ -740,43 +729,6 @@ INT_PTR PropertyDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 void PropertyDialog::OnClose()
 {
     CDialog::OnCancel();
-}
-
-
-BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
-{
-    for (int i = 0; i < PROPERTY_TABS; i++)
-    {
-       if (m_tabs[i] != nullptr && m_tabs[i]->IsWindow())
-        {
-            if (msg.message == WM_KEYDOWN && msg.wParam == VK_RETURN)
-                return TRUE;                    //disable enter key for any input otherwise the app would crash!?
-            if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
-            {
-                const string& className = GetFocus().GetClassName().GetString();
-                if (className != "Edit")
-                {
-                    g_pvp->ParseCommand(ID_DELETE, false);
-                    return TRUE;
-                }
-            }
-            if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
-            {
-               const string& className = GetFocus().GetClassName().GetString();
-               // filter ESC-key otherwise VPX will enter an endless event loop!?
-               if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
-                  return TRUE;
-            }
-            else
-            {
-                const BOOL ret = m_tabs[i]->IsDialogMessage(msg);
-
-                if (ret==TRUE)
-                    return TRUE;
-            }
-        }
-    }
-    return IsDialogMessage(msg);
 }
 
 LRESULT PropertyDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)

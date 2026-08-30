@@ -63,12 +63,14 @@ void MSGPIAPI VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, co
 void MSGPIAPI VPXPluginAPIImpl::DisableStaticPrerendering(const BOOL disable)
 {
    assert(g_pplayer); // Only allowed in game
+   g_pplayer->m_pluginManager.AssertAPIThread();
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
 }
 
 void MSGPIAPI VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
+   g_pplayer->m_pluginManager.AssertAPIThread();
    const ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
    view->viewMode = viewSetup.mMode;
    view->sceneScaleX = viewSetup.mSceneScaleX;
@@ -94,6 +96,7 @@ void MSGPIAPI VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 void MSGPIAPI VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
+   g_pplayer->m_pluginManager.AssertAPIThread();
    ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
    viewSetup.mViewX = view->viewX;
    viewSetup.mViewY = view->viewY;
@@ -113,6 +116,7 @@ void MSGPIAPI VPXPluginAPIImpl::GetInputState(VPXInputState* state)
       state->stateMask = 0;
       return;
    }
+   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
 
    state->actionState = 0;
@@ -140,6 +144,7 @@ void MSGPIAPI VPXPluginAPIImpl::SetInputState(VPXInputState* state)
       state->stateMask = 0;
       return;
    }
+   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
 
    for (int i = 0; i < 64; i++)
@@ -172,6 +177,7 @@ void MSGPIAPI VPXPluginAPIImpl::SetInputState(VPXInputState* state)
 
 double MSGPIAPI VPXPluginAPIImpl::GetGameTime()
 {
+   g_pplayer->m_pluginManager.AssertAPIThread();
    return g_pplayer ? g_pplayer->m_time_sec : 0.0;
 }
 
@@ -227,7 +233,7 @@ void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, in
 VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread and other rendering backends are single threaded
-   // assert(std::this_thread::get_id() == g_pplayer->m_pluginAPI.m_apiThread);
+   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXTextureBlock* tex = new VPXTextureBlock();
    tex->tex = BaseTexture::CreateFromData(rawData, size);
    if (tex->tex == nullptr)
@@ -238,7 +244,7 @@ VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 
 VPXTextureInfo* MSGPIAPI VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 {
-   //assert(std::this_thread::get_id() == g_pplayer->m_pluginAPI.m_apiThread);
+   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(texture);
    return tex ? &tex->info : nullptr;
 }
@@ -257,6 +263,21 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
          delete tex;
       }
    }, texture);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Scripting
+
+void MSGPIAPI VPXPluginAPIImpl::RunScript(const char* script)
+{
+   g_pplayer->m_pluginManager.AssertAPIThread();
+   if (script == nullptr)
+   {
+      PLOGE << "Invalid VPX API call 'RunScript(null)'";
+      return;
+   }
+   g_pplayer->m_scriptInterpreter->Evaluate(script, false);
 }
 
 
@@ -731,6 +752,8 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
    m_api.UpdateTexture = UpdateTexture;
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
+
+   m_api.RunScript = RunScript;
 
    m_vpxPlugin = pluginManager.RegisterPlugin(
       "vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, //

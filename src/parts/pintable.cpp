@@ -2848,14 +2848,21 @@ void PinTable::FireOptionEvent(OptionEventType eventType)
 void PinTable::AssignSelectionToPartGroup(PartGroup* group)
 {
    STARTUNDO
+   bool show = false, hide = false;
+   for (const IEditable* const e : GetParts())
+      if (e->GetPartGroup() == group && e->GetISelect())
+      {
+         show |= e->m_uiVisible;
+         hide |= !e->m_uiVisible;
+      }
    for (int t = 0; t < m_vmultisel.size(); t++)
    {
       ISelect *const psel = m_vmultisel.ElementAt(t);
       IEditable *const pedit = psel->GetIEditable();
       pedit->SetPartGroup(group);
-      if (psel->IsUIVisible() && !group->m_uiVisible)
+      if (psel->IsUIVisible() && hide && !show)
          psel->SetUIVisible(false);
-      else if (!psel->IsUIVisible() && group->m_uiVisible)
+      else if (!psel->IsUIVisible() && show && !hide)
          psel->SetUIVisible(true);
    }
    STOPUNDO
@@ -2898,20 +2905,24 @@ void PinTable::DoCommand(int icmd, int x, int y)
       return;
    }
 
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1))
+   constexpr unsigned int ID_ASSIGN_TO_LAYER_MAX = ID_ASSIGN_TO_LAYER1 + NUM_ASSIGN_LAYERS - 1;
+   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER_MAX))
    {
-      int i = 0;
+      PartGroup *group = nullptr;
+      int layerIndex = icmd - ID_ASSIGN_TO_LAYER1;
       for (IEditable *edit : m_vedit)
       {
          if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
          {
-            i++;
-            if (icmd == (ID_ASSIGN_TO_LAYER1 + i))
-               AssignSelectionToPartGroup(static_cast<PartGroup *>(edit));
-            if (i == NUM_ASSIGN_LAYERS)
+            if (layerIndex == 0)
+               group = static_cast<PartGroup *>(edit);
+            layerIndex--;
+            if (layerIndex < 0)
                break;
          }
       }
+      if (group)
+         AssignSelectionToPartGroup(group);
       return;
    }
 

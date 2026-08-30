@@ -11,7 +11,6 @@ class DebuggerDialog final : public CDialog
 {
 public:
     DebuggerDialog();
-    BOOL IsSubDialogMessage(MSG& msg) const;
 
 protected:
     BOOL OnInitDialog() override;

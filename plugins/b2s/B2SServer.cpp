@@ -403,6 +403,12 @@ int B2SServer::GetPlayerScore(int player) const
 // - change reel illumination
 // - start/stop animations
 
+void B2SServer::B2SSetData(int b2sId, const string& value, bool sendPluginEvent)
+{
+   if (is_string_numeric(value, 0))
+      B2SSetData(b2sId, string_to_int(value, 0), sendPluginEvent);
+}
+
 void B2SServer::B2SSetData(int b2sId, int value, bool sendPluginEvent)
 {
    LOGD(std::format("B2SSetData {}={}", b2sId, value));
@@ -424,6 +430,12 @@ void B2SServer::B2SSetData(int b2sId, int value, bool sendPluginEvent)
       B2SPluginEvent event { 'E', b2sId, value };
       m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
    }
+}
+
+void B2SServer::B2SSetData(const std::string& group, const std::string& value)
+{
+   if (is_string_numeric(value, 0))
+      B2SSetData(group, string_to_int(value, 0));
 }
 
 void B2SServer::B2SSetData(const std::string& group, int value)
