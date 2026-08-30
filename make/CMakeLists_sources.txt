@@ -457,6 +457,8 @@ set(VPX_SOURCES
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h
    third-party/include/unordered_dense.h
+   third-party/include/pole/pole.h
+   third-party/include/pole/pole.cpp
 )
 
 set(VPX_WINDOWS_SOURCES
@@ -521,10 +523,8 @@ set(VPX_WINDOWS_SOURCES
    src/ui/win/dialogs/TableInfoDialog.h
    src/ui/win/dialogs/ToolbarDialog.cpp
    src/ui/win/dialogs/ToolbarDialog.h
-   src/ui/win/dialogs/VPXLoadFileProgressBar.cpp
-   src/ui/win/dialogs/VPXLoadFileProgressBar.h
-   src/ui/win/dialogs/VPXSaveFileProgressBar.cpp
-   src/ui/win/dialogs/VPXSaveFileProgressBar.h
+   src/ui/win/dialogs/Win32ProgressBar.cpp
+   src/ui/win/dialogs/Win32ProgressBar.h
 
    src/ui/win/properties/BackglassCameraProperty.cpp
    src/ui/win/properties/BackglassCameraProperty.h
@@ -641,6 +641,9 @@ set(VPX_WINDOWS_SOURCES
    third-party/include/freeimage.h
    third-party/include/serial.cpp
    third-party/include/serial.h
+   third-party/include/scilexer.h
+   third-party/include/scintilla.h
+   third-party/include/Sci_Position.h
    third-party/include/hidapi/windows/hid.cpp
    third-party/include/nvapi/nvapi.h
    third-party/include/nvapi/nvapi_lite_common.h
@@ -650,9 +653,6 @@ set(VPX_WINDOWS_SOURCES
    third-party/include/nvapi/nvapi_lite_sli.h
    third-party/include/nvapi/nvapi_lite_stereo.h
    third-party/include/nvapi/nvapi_lite_surround.h
-   third-party/include/scilexer.h
-   third-party/include/scintilla.h
-   third-party/include/Sci_Position.h
    third-party/include/win32xx/include/wxx_appcore.h
    third-party/include/win32xx/include/wxx_appcore0.h
    third-party/include/win32xx/include/wxx_archive.h
@@ -717,8 +717,6 @@ set(VPX_STANDALONE_SOURCES
    standalone/vpinball_standalone_i_proxy.cpp
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
-
-   third-party/include/pole/pole.cpp
 )
 
 set(VPX_LIB_SOURCES

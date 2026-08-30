@@ -3,10 +3,6 @@
 #include "core/stdafx.h"
 #include "pintable.h"
 
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-
 #include "core/editablereg.h"
 #include "core/ScriptGlobalTable.h"
 #include "core/VPApp.h"
@@ -51,9 +47,13 @@
 #include "utils/ushock_output.h"
 
 #ifndef __STANDALONE__
-#include "ui/win/dialogs/VPXLoadFileProgressBar.h"
-#include "ui/win/dialogs/VPXSaveFileProgressBar.h"
+#include "ui/win/dialogs/Win32ProgressBar.h"
 #endif
+
+#include <algorithm>
+#include <fstream>
+#include <sstream>
+
 
 #define HASHLENGTH 16
 
@@ -803,7 +803,7 @@ HRESULT PinTable::Save()
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 {
 #ifndef __STANDALONE__
-   VPXSaveFileProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar, m_tableEditor);
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
 #else
    VPXFileFeedback feedback;
 #endif
@@ -815,7 +815,6 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 {
 #ifndef __STANDALONE__
    m_savingActive = true;
-   feedback.OperationStarted();
 
    // Hashing (to ensure file integrity)
    HCRYPTPROV hcp = NULL; // context
@@ -833,7 +832,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
 
-   feedback.AboutToProcessTable(ctotalitems);
+   feedback.SetLength(ctotalitems);
 
    //first save our own data
    IStorage* pstgData;
@@ -893,7 +892,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ItemHasBeenProcessed((int)i + 1, (int)m_vedit.size());
+               feedback.SetProgress(csaveditems);
             }
 
             for (size_t i = 0; i < m_vsound.size(); i++)
@@ -908,7 +907,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.SoundHasBeenProcessed((int)i + 1, (int)m_vsound.size());
+               feedback.SetProgress(csaveditems);
             }
 
             for (size_t i = 0; i < m_vimage.size(); i++)
@@ -924,7 +923,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ImageHasBeenProcessed((int)i + 1, (int)m_vimage.size());
+               feedback.SetProgress(csaveditems);
             }
 
             for (size_t i = 0; i < m_vfont.size(); i++)
@@ -940,7 +939,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.FontHasBeenProcessed((int)i + 1, (int)m_vfont.size());
+               feedback.SetProgress(csaveditems);
             }
 
             for (int i = 0; i < m_vcollection.size(); i++)
@@ -956,14 +955,12 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ItemHasBeenProcessed(i + 1, (int)m_vfont.size());
+               feedback.SetProgress(csaveditems);
             }
 
          }
          pstmGame->Release();
       }
-
-      feedback.Finalizing();
 
       // Authentication block
       BYTE hashval[256];
@@ -992,12 +989,11 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
       {
          pstgData->Revert();
          pstgRoot->Revert();
-         feedback.ErrorOccured(LocalString(IDS_SAVEERROR).m_szbuffer);
+         ShowError(LocalString(IDS_SAVEERROR).m_szbuffer);
       }
       pstgData->Release();
    }
 
-   feedback.Done();
    m_savingActive = false;
 
    return hr;
@@ -1099,60 +1095,50 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 }
 
 
-HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash)
+void PinTable::ReadInfoValue(POLE::Storage &storage, const std::string &name, string &output, HCRYPTHASH hcrypthash)
 {
-   HRESULT hr;
-   IStream *pstm;
+   if (!storage.exists(name))
+      return;
 
-   if (SUCCEEDED(hr = pstg->OpenStream(wzName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstm)))
-   {
-      STATSTG ss;
-      pstm->Stat(&ss, STATFLAG_NONAME);
+   POLE::Stream versionStream(&storage, name);
+   const unsigned int size = static_cast<unsigned int>(versionStream.size());
+   BiffReader br(&versionStream, 0, hcrypthash, NULL);
 
 #if (WCHAR_T_SIZE == 4)
-      const int len = ss.cbSize.LowPart / 2;
+   const int len = size / 2;
+   char16_t *const wzT_u16 = new char16_t[len + 1];
+   memset(wzT_u16, 0, sizeof(char16_t) * (len + 1));
+   br.ReadBytes(wzT_u16, size);
+   wzT_u16[len] = u'\0';
+   output = MakeString(utf16_to_utf32(wzT_u16));
+   delete[] wzT_u16;
 #else
-      const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
+   const int len = size / (DWORD)sizeof(WCHAR);
+   WCHAR *const wzT = new WCHAR[len + 1];
+   memset(wzT, 0, sizeof(WCHAR) * (len + 1));
+   br.ReadBytes(wzT, size);
+   wzT[len] = L'\0';
+   output = MakeString(wzT);
+   delete[] wzT;
 #endif
-      BiffReader br(pstm, 0, hcrypthash, NULL);
-#if (WCHAR_T_SIZE == 4)
-      char16_t *const wzT_u16 = new char16_t[len + 1];
-      memset(wzT_u16, 0, sizeof(char16_t) * (len + 1));
-      br.ReadBytes(wzT_u16, ss.cbSize.LowPart);
-      wzT_u16[len] = u'\0';
-      output = MakeString(utf16_to_utf32(wzT_u16));
-      delete[] wzT_u16;
-#else
-      WCHAR *const wzT = new WCHAR[len + 1];
-      memset(wzT, 0, sizeof(WCHAR) * (len + 1));
-      br.ReadBytes(wzT, ss.cbSize.LowPart);
-      wzT[len] = L'\0';
-      output = MakeString(wzT);
-      delete[] wzT;
-#endif
-
-      pstm->Release();
-   }
-
-   return hr;
 }
 
 
-HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
+void PinTable::LoadInfo(POLE::Storage& storage, HCRYPTHASH hcrypthash, int version)
 {
-   ReadInfoValue(pstg, L"TableName"s, m_tableName, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorName"s, m_author, hcrypthash);
-   ReadInfoValue(pstg, L"TableVersion"s, m_version, hcrypthash);
-   ReadInfoValue(pstg, L"ReleaseDate"s, m_releaseDate, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorEmail"s, m_authorEMail, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorWebSite"s, m_webSite, hcrypthash);
-   ReadInfoValue(pstg, L"TableBlurb"s, m_blurb, hcrypthash);
-   ReadInfoValue(pstg, L"TableDescription"s, m_description, hcrypthash);
-   ReadInfoValue(pstg, L"TableRules"s, m_rules, hcrypthash);
-   ReadInfoValue(pstg, L"TableSaveDate"s, m_dateSaved, NULL);
+   ReadInfoValue(storage, "TableInfo/TableName"s, m_tableName, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/AuthorName"s, m_author, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableVersion"s, m_version, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/ReleaseDate"s, m_releaseDate, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/AuthorEmail"s, m_authorEMail, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/AuthorWebSite"s, m_webSite, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableBlurb"s, m_blurb, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableDescription"s, m_description, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableRules"s, m_rules, hcrypthash);
+   ReadInfoValue(storage, "TableInfo/TableSaveDate"s, m_dateSaved, NULL);
 
    string numTimesSaved;
-   ReadInfoValue(pstg, L"TableSaveRev"s, numTimesSaved, NULL);
+   ReadInfoValue(storage, "TableInfo/TableSaveRev"s, numTimesSaved, NULL);
    m_numTimesSaved = 0;
    if (!numTimesSaved.empty())
       std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);
@@ -1167,28 +1153,25 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       g_app->m_settings.Set(propId, m_version, false);
    }
 
-   HRESULT hr;
-   IStream *pstm;
-
-   if (SUCCEEDED(hr = pstg->OpenStream(L"Screenshot", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstm)))
+   if (storage.exists("TableInfo/Screenshot"))
    {
-      STATSTG ss;
-      pstm->Stat(&ss, STATFLAG_NONAME);
+      POLE::Stream screenshotStream(&storage, "TableInfo/Screenshot");
       m_pbTempScreenshot = new PinBinary();
-      m_pbTempScreenshot->m_buffer.resize(ss.cbSize.LowPart);
-      BiffReader br(pstm, 0, hcrypthash, 0);
+      m_pbTempScreenshot->m_buffer.resize(screenshotStream.size());
+      BiffReader br(&screenshotStream, 0, hcrypthash, 0);
       br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
-      pstm->Release();
    }
-
-   return hr;
 }
 
-HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version)
+void PinTable::LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version)
 {
+   if (!storage.exists("GameStg/CustomInfoTags"))
+      return;
+
    m_vCustomInfoTag.clear();
    m_vCustomInfoContent.clear();
-   BiffReader reader(pstmTags, version, hcrypthash, 0);
+   POLE::Stream customTagsStream(&storage, "GameStg/CustomInfoTags");
+   BiffReader reader(&customTagsStream, version, hcrypthash, 0);
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
       {
@@ -1202,10 +1185,9 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
    for (const string& tag : m_vCustomInfoTag)
    {
       string customInfo;
-      ReadInfoValue(pstg, MakeWString(tag), customInfo, hcrypthash);
+      ReadInfoValue(storage, "TableInfo/" + tag, customInfo, hcrypthash);
       m_vCustomInfoContent.push_back(std::move(customInfo));
    }
-   return S_OK;
 }
 
 void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
@@ -1399,7 +1381,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename)
 #ifndef __STANDALONE__
    if (m_vpinball)
    {
-      VPXLoadFileProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
+      Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpinball->m_hwndStatusBar);
       return LoadGameFromFilename(filename, feedback);
    }
 #endif
@@ -1428,18 +1410,19 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          m_settings.Load(false);
    }
 
-   HRESULT hr;
-   IStorage* pstgRoot;
-   if (FAILED(hr = StgOpenStorage(m_filename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
+   const string loadedFile = m_filename.string();
+   POLE::Storage rootStorage(loadedFile.c_str());
+   rootStorage.open();
+   if (rootStorage.result() != POLE::Storage::Ok)
    {
-      const string msg = std::format("Error {:#010X} loading \"{}\"", static_cast<unsigned int>(hr), m_filename.string());
+      const string msg = std::format("Error #{} loading \"{}\"", rootStorage.result(), m_filename.string());
       ShowError(msg);
-      return hr;
+      return STG_E_FILENOTFOUND;
    }
 
-   feedback.OperationStarted();
-
    //
+
+   HRESULT hr = S_OK;
 
    HCRYPTPROV hcp = NULL; // crypt context
    HCRYPTHASH hch = NULL; // hash for file integrity check
@@ -1469,679 +1452,651 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
    // We need to figure out the file version before we can create the key
    #endif
 
-   int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
-
    //load our stuff first
-   IStorage* pstgData;
-   if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgData)))
+
+   int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
+   if (rootStorage.exists("GameStg/GameData"))
    {
-      IStream *pstmGame;
-      if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
+      HCRYPTKEY hkey = NULL;
+      if (rootStorage.exists("GameStg/Version"))
       {
-         HCRYPTKEY hkey = NULL;
-         IStream *pstmVersion;
-         if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
+         POLE::Stream versionStream(&rootStorage, "GameStg/Version");
+         versionStream.read(reinterpret_cast<unsigned char *>(&loadfileversion), sizeof(int));
+         #ifndef __STANDALONE__
+            if (hch)
+               CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
+         #endif
+         if (loadfileversion < 100) // Tech Beta 3 and below
          {
-            ULONG read;
-            hr = pstmVersion->Read(&loadfileversion, sizeof(int), &read);
-            #ifndef __STANDALONE__
-               if (hch)
-                  CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
-            #endif
-            pstmVersion->Release();
-            if (loadfileversion < 100) // Tech Beta 3 and below
-            {
-               pstmGame->Release();
-               pstgData->Release();
-               ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
-               feedback.Done();
-               return E_FAIL;
-            }
-            if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
-            {
-               const string errorMsg = std::format("This table was saved with file version {}.{:02d} and is newer than the supported file version {}.{:02d}!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
-               ShowError(errorMsg);
-               /*
-                              pstgRoot->Release();
-                              pstmGame->Release();
-                              pstgData->Release();
-                              DestroyWindow(hwndProgressBar);
-                              m_vpinball->SetCursorCur(nullptr, IDC_ARROW);
-                              return -1;
-               */
-            }
-
-            #ifndef __STANDALONE__
-               // Create a block cipher session key based on the hash of the password.
-               if (hchkey)
-                  CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
-            #endif
+            rootStorage.close();
+            ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
+            return E_FAIL;
+         }
+         if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
+         {
+            const string errorMsg = std::format("This table was saved with file version {}.{:02d} and is newer than the supported file version {}.{:02d}!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
+            ShowError(errorMsg);
          }
 
-         IStorage* pstgInfo;
-         if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"TableInfo", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgInfo)))
+         #ifndef __STANDALONE__
+            // Create a block cipher session key based on the hash of the password.
+            if (hchkey)
+               CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
+         #endif
+      }
+
+      LoadInfo(rootStorage, hch, loadfileversion);
+      LoadCustomInfo(rootStorage, hch, loadfileversion);
+
+      POLE::Stream gameStream(&rootStorage, "GameStg/GameData");
+      BiffReader tableReader(&gameStream, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
+      Load(tableReader);
+      if (!tableReader.HasError())
+      {
+         const int csubobj = m_loadTemp[0];
+         const int csounds = m_loadTemp[1];
+         const int ctextures = m_loadTemp[2];
+         const int cfonts = m_loadTemp[3];
+         const int ccollection = m_loadTemp[4];
+
+         PLOGI << "PinTable Data loaded"; // For profiling
+
+         std::atomic_int nLoadedItems = 0;
+
+         // Load collection before resolving part names to handle name conflicts
+         for (int i = 0; i < ccollection; i++)
          {
-            LoadInfo(pstgInfo, hch, loadfileversion);
-            IStream* pstmItem;
-            if (SUCCEEDED(hr = pstgData->OpenStream(L"CustomInfoTags", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-            {
-               hr = LoadCustomInfo(pstgInfo, pstmItem, hch, loadfileversion);
-               pstmItem->Release();
-               pstmItem = nullptr;
-            }
-            pstgInfo->Release();
+            const string streamName = std::format("GameStg/Collection{}", i);
+            if (!rootStorage.exists(streamName))
+               continue;
+            CComObject<Collection> *pcol;
+            CComObject<Collection>::CreateInstance(&pcol);
+            pcol->AddRef();
+            POLE::Stream gameStream(&rootStorage, streamName);
+            BiffReader reader(&gameStream, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
+            pcol->Load(reader);
+            AddCollection(pcol);
+            pcol->Release();
          }
 
-         BiffReader tableReader(pstmGame, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : NULL);
-         Load(tableReader);
-         if (!tableReader.HasError())
+         // Load all parts concurrently, ordered by container stream position to optimize load time
+         struct LoadTask
          {
-            const int csubobj = m_loadTemp[0];
-            const int csounds = m_loadTemp[1];
-            const int ctextures = m_loadTemp[2];
-            const int cfonts = m_loadTemp[3];
-            const int ccollection = m_loadTemp[4];
+            string name;
+            std::function<void()> task;
+         };
+         vector<LoadTask> loadQueue;
 
-            PLOGI << "PinTable Data loaded"; // For profiling
-
-            feedback.AboutToProcessTable(csubobj + csounds + ctextures + cfonts);
-
-            // Load collection before resolving part names to handle name conflicts
-            for (int i = 0; i < ccollection; i++)
-            {
-               const wstring wStmName = L"Collection" + std::to_wstring(i);
-
-               IStream *pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  CComObject<Collection> *pcol;
-                  CComObject<Collection>::CreateInstance(&pcol);
-                  pcol->AddRef();
-                  BiffReader reader(pstmItem, loadfileversion, hch, (loadfileversion < NO_ENCRYPTION_FORMAT_VERSION) ? hkey : 0);
-                  pcol->Load(reader);
-                  AddCollection(pcol);
-                  pcol->Release();
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-            }
-
-            ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
-            vector<IEditable *> parts;
-            parts.resize(csubobj);
-            int nLoadedParts = 0;
-            for (int i = 0; i < csubobj; i++)
-            {
-               pool.enqueue(
-                  [i, &feedback, &parts, loadfileversion, pstgData, hch, hkey, this, &nLoadedParts, csubobj]
-                  {
-                     const wstring wStmName = L"GameItem" + std::to_wstring(i);
-
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
-
-                     ULONG read;
-                     ItemTypeEnum type;
-                     pstmItem->Read(&type, sizeof(int), &read);
-
-                     IEditable *const piedit = EditableRegistry::Create(type);
-                     if (piedit == nullptr)
-                        return E_FAIL;
-
-                     piedit->m_onLoadExpectedPartGroup.clear();
-                     BiffReader reader(pstmItem, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
-                     piedit->Load(reader);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     if (reader.HasError())
-                        return E_FAIL;
-
-                     parts[i] = piedit;
-                     nLoadedParts++;
-                     return S_OK;
-                  });
-            }
-
-            assert(m_vsound.empty());
-            m_vsound.resize(csounds);
-            int nLoadedSounds = 0;
-            for (int i = 0; i < csounds; i++)
-            {
-               pool.enqueue(
-                  [i, &feedback, loadfileversion, pstgData, this, &nLoadedSounds, csounds]
-                  {
-                     const wstring wStmName = L"Sound" + std::to_wstring(i);
-
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
-
-                     VPX::Sound *pps = VPX::Sound::CreateFromStream(pstmItem, loadfileversion);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     m_vsound[i] = pps;
-                     nLoadedSounds++;
-                     return hr;
-                  });
-            }
-
-            assert(m_vimage.empty());
-            m_vimage.resize(ctextures);
-            int nLoadedImages = 0;
-            for (int i = 0; i < ctextures; i++)
-            {
-               pool.enqueue(
-                  [i, loadfileversion, pstgData, this, &nLoadedImages, ctextures]
-                  {
-                     const wstring wStmName = L"Image" + std::to_wstring(i);
-
-                     IStream *pstmItem;
-                     HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                        return hr;
-
-                     BiffReader reader(pstmItem, loadfileversion, 0, 0);
-                     m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
-                     pstmItem->Release();
-                     pstmItem = nullptr;
-                     nLoadedImages++;
-                     return hr;
-                  });
-            }
-
-            // Wait for dispatched tasks, updating the progress bar on UI thread
-            const int totalToLoad = csubobj + csounds + ctextures;
-            while (pool.has_work_in_flight())
-            {
-               SDL_Delay(10);
-               feedback.LoadingProgressUpdated(nLoadedParts + nLoadedSounds + nLoadedImages, totalToLoad);
-            };
-
-            // Handle failed loading & duplicates
-            if (!parts.empty())
-            {
-               // Process unnamed parts after named parts
-               std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_wzName.empty(); });
-               for (size_t i = 0; i < parts.size(); ++i)
-               {
-                  IEditable * const part = parts[i];
-                  if (part == nullptr)
-                  {
-                     PLOGE << "Failed to load one of the table parts";
-                     parts.erase(parts.begin() + i);
-                     --i;
-                  }
-                  else
-                  {
-                     // Decals used to not have a name, so we may have to provide an autogenerated one (still, some old files do have a name for decals somehow)
-                     if (part->GetIScriptable()->m_wzName.empty() && part->GetItemType() == eItemDecal)
-                        part->GetIScriptable()->m_wzName = GetUniqueName(L"Decal"s);
-                     if (!IsNameUnique(part->GetIScriptable()->m_wzName))
-                     {
-                        const wstring oldName = part->GetIScriptable()->m_wzName;
-                        part->GetIScriptable()->m_wzName = GetUniqueName(part->GetIScriptable()->m_wzName);
-                        PLOGW << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetIScriptable()->m_wzName);
-                     }
-                     AddPart(part);
-                     part->Release();
-                  }
-               }
-
-               // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an
-               // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
-               // As this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object,
-               // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
-               parts = GetParts();
-               for (IEditable* part : parts)
-               {
-                  if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
-                  {
-                     bool hasBackglassFlasher = false;
-                     for (const auto existing : parts)
-                     {
-                        if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
-                        {
-                           if (const Flasher *const exBackglass = (const Flasher *)existing;
-                              exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
-                           {
-                              hasBackglassFlasher = true;
-                              break;
-                           }
-                        }
-                     }
-                     if (hasBackglassFlasher)
-                        continue;
-                     Primitive *const primitive = (Primitive *)part;
-                     if (primitive->m_d.m_use3DMesh)
-                        continue;
-
-                     // We need to reduce the primitive to a flasher rectangle. The algorithm is:
-                     // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
-                     // - to find the plane position by considering the vertices nearest to the player (to discard back of the primitive if using a box instead of a rect)
-                     // - to evaluate an axis align square in this plane and define a flasher accordingly (a rotated backglass is unlikely)
-                     const Matrix3D &transform = primitive->RecalculateMatrices();
-                     vector<vec3> vertices(primitive->m_mesh.m_vertices.size());
-                     for (size_t i2 = 0; i2 < primitive->m_mesh.m_vertices.size(); i2++)
-                        vertices[i2] = transform * primitive->m_mesh.m_vertices[i2];
-                     vec3 planeNormal(0.f, 0.f, 0.f);
-                     float planeNormalWeight = 0.f;
-                     for (size_t i2 = 0; i2 < primitive->m_mesh.m_indices.size(); i2 += 3)
-                     {
-                        vec3 &a = vertices[primitive->m_mesh.m_indices[i2]];
-                        vec3 &b = vertices[primitive->m_mesh.m_indices[i2 + 1]];
-                        vec3 &c = vertices[primitive->m_mesh.m_indices[i2 + 2]];
-                        vec3 ab(b.x - a.x, b.y - a.y, b.z - a.z);
-                        vec3 ac(c.x - a.x, c.y - a.y, c.z - a.z);
-                        vec3 n = CrossProduct(ac, ab);
-                        n.Normalize();
-                        const float weight = -n.z; //= n.Dot(vec3(0.f, 0.f, -1.f));
-                        if (weight > 0.f)
-                        {
-                           planeNormal += weight * n;
-                           planeNormalWeight += weight;
-                        }
-                     }
-
-                     planeNormal.x = 0.f; // to simplify, we align the backglass X axis with the table (after all, backglasses should be facing the player)
-                     if (const float normalLength = planeNormal.Length(); normalLength > 1e-5f)
-                     {
-                        planeNormal /= normalLength;
-
-                        float planeDist = FLT_MAX;
-                        for (const unsigned int idx : primitive->m_mesh.m_indices)
-                           planeDist = min(planeDist, planeNormal.Dot(vertices[idx]));
-
-                        float minx = FLT_MAX; // min/max along the x axis
-                        float miny = FLT_MAX; // min/max along planeYAxis
-                        float maxx = -FLT_MAX;
-                        float maxy = -FLT_MAX;
-                        const vec3 planeYAxis(0.f, planeNormal.z, -planeNormal.y); //= CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
-                        for (const unsigned int idx : primitive->m_mesh.m_indices)
-                           if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
-                           {
-                              const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
-                              const float py = vertices[idx].Dot(planeYAxis);
-                              minx = min(minx, px);
-                              maxx = max(maxx, px);
-                              miny = min(miny, py);
-                              maxy = max(maxy, py);
-                           }
-                        const float backglassWidth = maxx - minx;
-                        const float backglassHeight = maxy - miny;
-                        if (backglassWidth > 0.f && backglassHeight > 0.f)
-                        {
-                           Flasher *const backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
-                           if (backglass)
-                           {
-                              backglass->m_wzName = GetUniqueName(primitive->GetWName());
-                              backglass->m_onLoadExpectedPartGroup = primitive->m_onLoadExpectedPartGroup;
-                              backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D { },
-                                 true); // We should gather the base flasher size from the object instead of guessing its default value
-                              vec3 center = planeDist * planeNormal;
-                              center += (miny + 0.5f * backglassHeight) * planeYAxis;
-                              center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
-                              backglass->Translate(Vertex2D(center.x, center.y));
-                              backglass->m_d.m_vCenter = Vertex2D(center.x, center.y);
-                              backglass->m_d.m_height = center.z;
-                              backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
-                              backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
-                              backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
-                              backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
-                              backglass->m_d.m_isVisible = primitive->m_d.m_visible;
-                              primitive->m_d.m_visible = false;
-                              PLOGW << "Primitive '" << primitive->GetName() << "' used as a deprecated VR backglass was hidden and an external renderer flasher named '"
-                                    << backglass->GetName() << "' was added. This may cause script issues.";
-                              AddPart(backglass);
-                              backglass->Release();
-                           }
-                        }
-                     }
-                  }
-               }
-            }
-            if (!m_vsound.empty())
-               for (size_t i = 0; i < m_vsound.size(); ++i)
-               {
-                  const VPX::Sound *sound = m_vsound[i];
-                  if (sound == nullptr)
-                  {
-                     PLOGE << "Failed to load one of the table sounds";
-                     m_vsound.erase(m_vsound.begin() + i);
-                     --i;
-                  }
-                  else if (i < m_vsound.size() - 1)
-                  {
-                     for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
-                        if (sound->GetName() == m_vsound[i2]->GetName())
-                        {
-                           PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
-                           m_vsound.erase(m_vsound.begin() + i2);
-                           --i2;
-                        }
-                  }
-               }
-            if (!m_vimage.empty())
-               for (size_t i = 0; i < m_vimage.size(); ++i)
-               {
-                  const Texture * image = m_vimage[i];
-                  if (image == nullptr)
-                  {
-                     PLOGE << "Failed to load one of the table images";
-                     m_vimage.erase(m_vimage.begin() + i);
-                     --i;
-                  }
-                  else if (i < m_vimage.size() - 1)
-                  {
-                     for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
-                        if (image->m_name == m_vimage[i2]->m_name)
-                        {
-                           PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
-                           m_vimage.erase(m_vimage.begin() + i2);
-                           --i2;
-                        }
-                  }
-               }
-
-            PLOGI << "Images, Sounds and Items loaded"; // For profiling
-
-            for (int i = 0; i < cfonts; i++)
-            {
-               const wstring wStmName = L"Font" + std::to_wstring(i);
-
-               IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  PinFont * const ppf = new PinFont();
-                  BiffReader reader(pstmItem, loadfileversion, 0, 0);
-                  ppf->Load(reader);
-                  m_vfont.push_back(ppf);
-                  ppf->Register();
-                  pstmItem->Release();
-                  pstmItem = nullptr;
-               }
-            }
-
-            // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
-            parts = GetParts();
-            vector<string> functions;
-            vector<string> identifiers;
-            ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
-            const wstring lowerCaseScript = MakeWString(lowerCase(m_script_text));
-            for (auto part : parts)
-            {
-               if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
-               {
-                  wstring layerName = requestedLayerName;
-                  auto partGroupF = std::ranges::find_if(m_vedit,
-                     [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
-                  // If part group was not already added, we need to check if the name is conflicting with other editables, collections or script declarations
-                  int renameIndex = 1;
-                  bool layerPostpend = false;
-                  while (partGroupF == m_vedit.end())
-                  {
-                     const string tmp = lowerCase(MakeString(layerName));
-                     const bool nameIsUnique =
-                           IsNameUnique(layerName)
-                        && std::ranges::find(functions, tmp) == functions.end()
-                        && std::ranges::find(identifiers, tmp) == identifiers.end();
-                     if (nameIsUnique)
-                        break;
-
-                     // Postpend "layer" to keep alphabetic order of layer
-                     if (!layerPostpend && !layerName.ends_with(L"_Layer"))
-                     {
-                        layerPostpend = true;
-                        layerName += L"_Layer";
-                     }
-                     else
-                     {
-                        size_t lastNonDigit = layerName.length();
-                        while (lastNonDigit > 0 && iswdigit(layerName[lastNonDigit - 1]))
-                           lastNonDigit--;
-                        if (lastNonDigit < layerName.length())
-                        {
-                           // If it ends by a number, then inc the number
-                           std::wstring numberStr = layerName.substr(lastNonDigit);
-                           const int number = std::stoi(numberStr);
-                           layerName.resize(lastNonDigit); // base
-                           renameIndex = max(renameIndex, number + 1);
-                        }
-                        else
-                        {
-                           // If not, add it
-                           layerName += L'_';
-                        }
-                        layerName += std::format(L"{:3d}", renameIndex);
-                        renameIndex += 1;
-                     }
-
-                     partGroupF = std::ranges::find_if(m_vedit,
-                        [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
-                  }
-                  // Set or create implicit PartGroups (that is to say, PartGroups corresponding to legacy layers)
-                  if (partGroupF != m_vedit.end())
-                  {
-                     part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
-                  }
-                  else if (PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0)); newGroup)
-                  {
-                     if (requestedLayerName != layerName)
-                     {
-                        PLOGI << "Layer name '" << MakeString(requestedLayerName) << "' was replaced by '" << MakeString(layerName)
-                              << "' as this name is already used by another table element";
-                     }
-                     newGroup->m_wzName = layerName;
-                     AddPart(newGroup);
-                     part->SetPartGroup(newGroup);
-                  }
-               }
-            }
-
-            // Since 10.8.1, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
-            std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
-
-            // Resolve collection parts
-            for (int i = 0; i < m_vcollection.size(); i++)
-               m_vcollection[i].InitPostLoad(this);
-         }
-         pstmGame->Release();
-         feedback.Finalizing();
-
-         // Authentication block
-         if (hch && loadfileversion > 40)
+         vector<IEditable *> parts;
+         parts.resize(csubobj);
+         for (int i = 0; i < csubobj; i++)
          {
-            if (SUCCEEDED(hr = pstgData->OpenStream(L"MAC", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
-            {
-               BYTE hashvalOld[256];
-               ULONG read;
-               hr = pstmVersion->Read(&hashvalOld, HASHLENGTH, &read);
+            const string streamName = std::format("GameStg/GameItem{}", i);
+            if (!rootStorage.exists(streamName))
+               continue;
 
-               BYTE hashval[256];
-               DWORD hashlen = 256;
-               #ifndef __STANDALONE__
-                  int foo2 = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-                  hashlen = 256;
-                  foo2 = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-                  foo2 = CryptDestroyHash(hch);
-                  foo2 = CryptDestroyHash(hchkey);
-                  foo2 = CryptDestroyKey(hkey);
-                  foo2 = CryptReleaseContext(hcp, 0);
-               #endif
-               pstmVersion->Release();
-
-               #ifndef __STANDALONE__
-                  for (int i = 0; i < HASHLENGTH; i++)
-                     if (hashval[i] != hashvalOld[i])
-                     {
-                        hr = APPX_E_BLOCK_HASH_INVALID;
-                        break;
-                     }
-               #endif
-            }
-            else
-               hr = APPX_E_CORRUPT_CONTENT; // Error
-         }
-         // End Authentication block
-
-         if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
-            for (size_t i = 0; i < m_materials.size(); ++i)
-               m_materials[i]->m_fGlossyImageLerp = 1.f;
-
-         if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
-            for (size_t i = 0; i < m_materials.size(); ++i)
-               m_materials[i]->m_fThickness = 0.05f;
-
-         if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
-            for (auto pEdit : m_vedit)
-               if (pEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)pEdit)->IsPlayfield()))
+            loadQueue.emplace_back(streamName,
+               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems, &hch, &hkey, &parts]
                {
-                  Primitive* const prim = (Primitive *)pEdit;
-                  prim->put_IsToy(FTOVB(false));
-                  prim->put_Collidable(FTOVB(true));
-               }
+                  POLE::Stream stream(&rootStorage, streamName);
 
-         // reflections were hardcoded without render probe before 10.8.0
-         RenderProbe *pf_reflection_probe = GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
-         if (pf_reflection_probe == nullptr)
-         {
-            pf_reflection_probe = new RenderProbe();
-            pf_reflection_probe->SetName(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
-            pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
-            m_vrenderprobe.push_back(pf_reflection_probe);
-         }
-         constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
-         pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
-         pf_reflection_probe->SetReflectionPlane(plane);
-         pf_reflection_probe->SetReflectionNoLightmaps(true);
+                  ItemTypeEnum type = ItemTypeEnum::eItemTypeCount;
+                  stream.read(reinterpret_cast<unsigned char *>(&type), sizeof(int));
 
-         if (loadfileversion < 1080)
-         {
-            // Glass was horizontal before 10.8
-            m_glassBottomHeight = m_glassTopHeight;
-
-            for (size_t i = 0; i < m_vedit.size(); ++i)
-            {
-               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
-               {
-                  Primitive *const prim = (Primitive *)m_vedit[i];
-                  // Before 10.8 alpha channel of texture was discarded if material transparency was 1, in turn leading to disabling lighting from below.
-                  Material* mat = GetMaterial(prim->m_d.m_szMaterial);
-                  if (mat && (!mat->m_bOpacityActive || mat->m_fOpacity == 1.0f))
-                     prim->m_d.m_disableLightingBelow = 1.0f;
-               }
-               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
-               {
-                  Primitive* const prim = (Primitive *)m_vedit[i];
-                  // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
-                  prim->m_d.m_staticRendering = true;
-                  // since playfield were always rendered before bulb light buffer until 10.8, they would never have transmitted light
-                  prim->m_d.m_disableLightingBelow = 1.0f;
-                  // playfield meshes were always forced as visible until 10.8.0
-                  prim->put_Visible(FTOVB(true));
-                  // playfield meshes were always drawn before other transparent parts until 10.8.0
-                  prim->m_d.m_depthBias = 100000.0f;
-                  // playfield meshes did not handle backfaces until 10.8.0
-                  prim->m_d.m_backfacesEnabled = false;
-               }
-               if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
-               {
-                  Light* const light = (Light *)m_vedit[i];
-                  // Before 10.8, lights would never be reflected
-                  light->m_d.m_reflectionEnabled = false;
-                  // Before 10.8, lights did not have a z coordinate for the light emission point: classic lights where renderer at surface+0.1, bulb light at surface+halo height+0.1
-                  // This needs to be preserved to avoid changing the light falloff curve, so we set up with the same definition (the 0.1 offset on z axis being applied when rendering to avoid z fighting)
-                  light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
-                  if (!light->m_d.m_BulbLight)
-                  {
-                     // Before 10.8, classic light could not have a bulb mesh so force it off
-                     light->m_d.m_showBulbMesh = false;
-                     // Before 10.8, classic light could not have ball reflection so force it off
-                     light->m_d.m_showReflectionOnBall = false;
-                  }
-                  // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
-                  if (!light->m_d.m_visible)
-                     light->m_d.m_showBulbMesh = false;
-               }
-            }
-         }
-
-         if (loadfileversion < 1081)
-         {
-            // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
-            const string script = lowerCase(m_script_text);
-            std::ranges::for_each(m_vedit,
-               [&](IEditable *editable)
-               {
-                  if (editable->GetItemType() != eItemPartGroup)
+                  IEditable *const piedit = EditableRegistry::Create(type);
+                  if (piedit == nullptr)
                      return;
-                  const wstring& name = editable->GetWName();
-                  if (!name.starts_with(L"Layer_"))
+
+                  piedit->m_onLoadExpectedPartGroup.clear();
+                  BiffReader reader(&stream, loadfileversion, (loadfileversion < 1000) ? hch : NULL, (loadfileversion < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption //!! NO_ENCRYPTION_FORMAT_VERSION?
+                  piedit->Load(reader);
+                  if (reader.HasError())
                      return;
-                  const wstring shortName = name.substr(6);
-                  const wstring shortNameLCase = lowerCase(shortName);
-                  const string shortNameLCaseS = MakeString(shortNameLCase);
-                  auto v = std::ranges::find_if(m_vedit, [&shortNameLCase](const IEditable *const e) { return lowerCase(e->GetWName()) == shortNameLCase; });
-                  if (v != m_vedit.end())
-                     return; // Conflict with another part name
-                  if ((shortName.find_first_not_of(L"0123456789") != std::string::npos) && script.find(shortNameLCaseS) != std::string::npos) //!!
-                     return; // (Potential) conflict with a script variable
-                  for (int i = 0; i < m_vcollection.size(); i++)
-                  {
-                     if (lowerCase(m_vcollection.ElementAt(i)->m_wzName) == shortNameLCase)
-                        return; // Conflict with a collection name
-                  }
-                  RenamePart(editable, shortName);
+
+                  parts[i] = piedit;
+                  nLoadedItems++;
                });
          }
 
-         // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
-         /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
-         for (size_t i = 0; i < m_vedit.size(); ++i)
+         assert(m_vsound.empty());
+         m_vsound.resize(csounds);
+         for (int i = 0; i < csounds; i++)
          {
-            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
-            {
-               Textbox *const textbox = (Textbox *)m_vedit[i];
-               if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
+            const string streamName = std::format("GameStg/Sound{}", i);
+            if (!rootStorage.exists(streamName))
+               continue;
+
+            loadQueue.emplace_back(streamName,
+               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems]
                {
-                  RemovePart(textbox);
-                  Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
-                  RemovePart(dmd);
-                  dmd->m_wzName = textbox->m_wzName;
-                  dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
-                  dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
-                  dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
-                  dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
-                  dmd->m_desktopBackdrop = true;
-                  dmd->m_d.m_isVisible = textbox->m_d.m_visible;
-                  dmd->m_d.m_renderMode = FlasherData::DMD;
-                  dmd->m_d.m_renderStyle = 0; // Legacy rendering style
-                  dmd->m_d.m_imagealignment = ImageModeWrap;
-                  dmd->m_d.m_color = textbox->m_d.m_fontcolor;
-                  dmd->m_d.m_addBlend = false;
-                  dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
-                  dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
-                  dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale
-                  dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
-                  for (Collection *const pcollection : textbox->m_vCollection)
+                  POLE::Stream stream(&rootStorage, streamName);
+                  VPX::Sound *pps = VPX::Sound::CreateFromStream(stream, loadfileversion);
+                  m_vsound[i] = pps;
+                  nLoadedItems++;
+               });
+         }
+
+         assert(m_vimage.empty());
+         m_vimage.resize(ctextures);
+         for (int i = 0; i < ctextures; i++)
+         {
+            const string streamName = std::format("GameStg/Image{}", i);
+            if (!rootStorage.exists(streamName))
+               continue;
+
+            loadQueue.emplace_back(streamName,
+               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems]
+               {
+                  POLE::Stream stream(&rootStorage, streamName);
+                  BiffReader reader(&stream, loadfileversion, 0, 0);
+                  m_vimage[i] = Texture::CreateFromObjectReader(reader, this);
+                  nLoadedItems++;
+               });
+         }
+
+         assert(m_vfont.empty());
+         m_vfont.resize(cfonts);
+         for (int i = 0; i < cfonts; i++)
+         {
+            const string streamName = std::format("GameStg/Font{}", i);
+            if (!rootStorage.exists(streamName))
+               continue;
+
+            loadQueue.emplace_back(streamName,
+               [this, i, loadfileversion, &rootStorage, streamName, &nLoadedItems]
+               {
+                  POLE::Stream stream(&rootStorage, streamName);
+                  BiffReader reader(&stream, loadfileversion, 0, 0);
+                  m_vfont[i] = new PinFont();
+                  m_vfont[i]->Load(reader);
+                  nLoadedItems++;
+               });
+         }
+
+         // Dispatch all load tasks & wait, updating the progress bar on UI thread
+         // Tasks are sorted by storage offset to limit read back and get better reading performance
+         ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+         std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
+         feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
+         for (const LoadTask &task : loadQueue)
+            pool.enqueue(task.task);
+         while (pool.has_work_in_flight())
+         {
+            SDL_Delay(10);
+            feedback.SetProgress(nLoadedItems);
+         };
+
+         // Handle failed loading & duplicates
+         if (!parts.empty())
+         {
+            // Process unnamed parts after named parts
+            std::ranges::stable_partition(parts.begin(), parts.end(), [](IEditable *p) { return p && !p->GetIScriptable()->m_wzName.empty(); });
+            for (size_t i = 0; i < parts.size(); ++i)
+            {
+               IEditable * const part = parts[i];
+               if (part == nullptr)
+               {
+                  PLOGE << "Failed to load one of the table parts";
+                  parts.erase(parts.begin() + i);
+                  --i;
+               }
+               else
+               {
+                  // Decals used to not have a name, so we may have to provide an autogenerated one (still, some old files do have a name for decals somehow)
+                  if (part->GetIScriptable()->m_wzName.empty() && part->GetItemType() == eItemDecal)
+                     part->GetIScriptable()->m_wzName = GetUniqueName(L"Decal"s);
+                  if (!IsNameUnique(part->GetIScriptable()->m_wzName))
                   {
-                     pcollection->m_visel.find_erase(textbox->GetISelect());
-                     pcollection->m_visel.push_back(dmd);
+                     const wstring oldName = part->GetIScriptable()->m_wzName;
+                     part->GetIScriptable()->m_wzName = GetUniqueName(part->GetIScriptable()->m_wzName);
+                     PLOGW << "Duplicate part name found: " << MakeString(oldName) << " renamed it to " << MakeString(part->GetIScriptable()->m_wzName);
                   }
-                  m_vedit[i] = dmd;
-                  AddPart(dmd);
-                  PLOGI << "Textbox used as DMD replaced by a flasher (name=" << dmd->m_wzName << ')';
-                  break;
+                  AddPart(part);
+                  part->Release();
                }
             }
-         }*/
 
-         // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
-         m_settings.SetModified(false);
+            // We used to have a hack taken from VPVR to display backglass in VR: an external window would be captured, then rendered on a primitive with an
+            // image named backglassimage. We now have support for external renderer on flasher, so we replace these primitives by flashers.
+            // As this may cause script error if the original table would expect a primitive object and tweak properties not supported by flasher object,
+            // we keep the original object. This is not perfect as the table script will not tweak this one, but at least, it makes updating table easy.
+            parts = GetParts();
+            for (IEditable* part : parts)
+            {
+               if (part->GetItemType() == eItemPrimitive && StrCompareNoCase(((Primitive *)part)->m_d.m_szImage, "backglassimage"s))
+               {
+                  bool hasBackglassFlasher = false;
+                  for (const auto existing : parts)
+                  {
+                     if (existing->GetItemType() == ItemTypeEnum::eItemFlasher)
+                     {
+                        if (const Flasher *const exBackglass = (const Flasher *)existing;
+                           exBackglass->m_d.m_renderMode == FlasherData::EXT_RENDER && exBackglass->m_d.m_renderStyle == VPXWindowId::VPXWINDOW_Backglass)
+                        {
+                           hasBackglassFlasher = true;
+                           break;
+                        }
+                     }
+                  }
+                  if (hasBackglassFlasher)
+                     continue;
+                  Primitive *const primitive = (Primitive *)part;
+                  if (primitive->m_d.m_use3DMesh)
+                     continue;
+
+                  // We need to reduce the primitive to a flasher rectangle. The algorithm is:
+                  // - to find the flasher plane using mesh's faces normals, favoring faces looking toward the player (a backfacing backglass is unlikely)
+                  // - to find the plane position by considering the vertices nearest to the player (to discard back of the primitive if using a box instead of a rect)
+                  // - to evaluate an axis align square in this plane and define a flasher accordingly (a rotated backglass is unlikely)
+                  const Matrix3D &transform = primitive->RecalculateMatrices();
+                  vector<vec3> vertices(primitive->m_mesh.m_vertices.size());
+                  for (size_t i2 = 0; i2 < primitive->m_mesh.m_vertices.size(); i2++)
+                     vertices[i2] = transform * primitive->m_mesh.m_vertices[i2];
+                  vec3 planeNormal(0.f, 0.f, 0.f);
+                  float planeNormalWeight = 0.f;
+                  for (size_t i2 = 0; i2 < primitive->m_mesh.m_indices.size(); i2 += 3)
+                  {
+                     vec3 &a = vertices[primitive->m_mesh.m_indices[i2]];
+                     vec3 &b = vertices[primitive->m_mesh.m_indices[i2 + 1]];
+                     vec3 &c = vertices[primitive->m_mesh.m_indices[i2 + 2]];
+                     vec3 ab(b.x - a.x, b.y - a.y, b.z - a.z);
+                     vec3 ac(c.x - a.x, c.y - a.y, c.z - a.z);
+                     vec3 n = CrossProduct(ac, ab);
+                     n.Normalize();
+                     const float weight = -n.z; //= n.Dot(vec3(0.f, 0.f, -1.f));
+                     if (weight > 0.f)
+                     {
+                        planeNormal += weight * n;
+                        planeNormalWeight += weight;
+                     }
+                  }
+
+                  planeNormal.x = 0.f; // to simplify, we align the backglass X axis with the table (after all, backglasses should be facing the player)
+                  if (const float normalLength = planeNormal.Length(); normalLength > 1e-5f)
+                  {
+                     planeNormal /= normalLength;
+
+                     float planeDist = FLT_MAX;
+                     for (const unsigned int idx : primitive->m_mesh.m_indices)
+                        planeDist = min(planeDist, planeNormal.Dot(vertices[idx]));
+
+                     float minx = FLT_MAX; // min/max along the x axis
+                     float miny = FLT_MAX; // min/max along planeYAxis
+                     float maxx = -FLT_MAX;
+                     float maxy = -FLT_MAX;
+                     const vec3 planeYAxis(0.f, planeNormal.z, -planeNormal.y); //= CrossProduct(planeNormal, vec3(1.f, 0.f, 0.f));
+                     for (const unsigned int idx : primitive->m_mesh.m_indices)
+                        if (const float proj = planeNormal.Dot(vertices[idx]); proj < planeDist + 1.f)
+                        {
+                           const float px = vertices[idx].x; // since we aligned the x axis, planeXAxis is (1, 0, 0)
+                           const float py = vertices[idx].Dot(planeYAxis);
+                           minx = min(minx, px);
+                           maxx = max(maxx, px);
+                           miny = min(miny, py);
+                           maxy = max(maxy, py);
+                        }
+                     const float backglassWidth = maxx - minx;
+                     const float backglassHeight = maxy - miny;
+                     if (backglassWidth > 0.f && backglassHeight > 0.f)
+                     {
+                        Flasher *const backglass = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0.f, 0.f);
+                        if (backglass)
+                        {
+                           backglass->m_wzName = GetUniqueName(primitive->GetWName());
+                           backglass->m_onLoadExpectedPartGroup = primitive->m_onLoadExpectedPartGroup;
+                           backglass->Scale(backglassWidth / 100.f, backglassHeight / 100.f, Vertex2D { },
+                              true); // We should gather the base flasher size from the object instead of guessing its default value
+                           vec3 center = planeDist * planeNormal;
+                           center += (miny + 0.5f * backglassHeight) * planeYAxis;
+                           center.x += (minx + 0.5f * backglassWidth); // since planeXAxis is (1, 0, 0)
+                           backglass->Translate(Vertex2D(center.x, center.y));
+                           backglass->m_d.m_vCenter = Vertex2D(center.x, center.y);
+                           backglass->m_d.m_height = center.z;
+                           backglass->m_d.m_rotX = -180.f - RADTOANG(atan2(planeNormal.y, planeNormal.z)); // since planeXAxis is (1, 0, 0)
+                           backglass->m_d.m_renderMode = FlasherData::EXT_RENDER;
+                           backglass->m_d.m_renderStyle = VPXWindowId::VPXWINDOW_Backglass;
+                           backglass->m_d.m_depthBias = primitive->m_d.m_depthBias;
+                           backglass->m_d.m_isVisible = primitive->m_d.m_visible;
+                           primitive->m_d.m_visible = false;
+                           PLOGW << "Primitive '" << primitive->GetName() << "' used as a deprecated VR backglass was hidden and an external renderer flasher named '"
+                                 << backglass->GetName() << "' was added. This may cause script issues.";
+                           AddPart(backglass);
+                           backglass->Release();
+                        }
+                     }
+                  }
+               }
+            }
+         }
+         if (!m_vsound.empty())
+            for (size_t i = 0; i < m_vsound.size(); ++i)
+            {
+               if (const VPX::Sound *sound = m_vsound[i]; sound == nullptr)
+               {
+                  PLOGE << "Failed to load one of the table sounds";
+                  m_vsound.erase(m_vsound.begin() + i);
+                  --i;
+               }
+               else if (i < m_vsound.size() - 1)
+               {
+                  for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
+                     if (sound->GetName() == m_vsound[i2]->GetName())
+                     {
+                        PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
+                        m_vsound.erase(m_vsound.begin() + i2);
+                        --i2;
+                     }
+               }
+            }
+         if (!m_vimage.empty())
+            for (size_t i = 0; i < m_vimage.size(); ++i)
+            {
+               if (const Texture *image = m_vimage[i]; image == nullptr)
+               {
+                  PLOGE << "Failed to load one of the table images";
+                  m_vimage.erase(m_vimage.begin() + i);
+                  --i;
+               }
+               else if (i < m_vimage.size() - 1)
+               {
+                  for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
+                     if (image->m_name == m_vimage[i2]->m_name)
+                     {
+                        PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
+                        m_vimage.erase(m_vimage.begin() + i2);
+                        --i2;
+                     }
+               }
+            }
+         if (!m_vfont.empty())
+            for (size_t i = 0; i < m_vfont.size(); ++i)
+            {
+               if (PinFont *font = m_vfont[i]; font == nullptr)
+               {
+                  PLOGE << "Failed to load one of the table fonts";
+                  m_vfont.erase(m_vfont.begin() + i);
+                  --i;
+               }
+               else
+               {
+                  font->Register();
+               }
+            }
+
+         PLOGI << "Images, Sounds, Fonts and Parts loaded"; // For profiling
+
+         // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
+         parts = GetParts();
+         vector<string> functions;
+         vector<string> identifiers;
+         ParseScript(m_script_text, functions, identifiers, [](const string&, int) {});
+         const wstring lowerCaseScript = MakeWString(lowerCase(m_script_text));
+         for (auto part : parts)
+         {
+            if (const wstring& requestedLayerName = part->m_onLoadExpectedPartGroup; !requestedLayerName.empty())
+            {
+               wstring layerName = requestedLayerName;
+               auto partGroupF = std::ranges::find_if(m_vedit,
+                  [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
+               // If part group was not already added, we need to check if the name is conflicting with other editables, collections or script declarations
+               int renameIndex = 1;
+               bool layerPostpend = false;
+               while (partGroupF == m_vedit.end())
+               {
+                  const string tmp = lowerCase(MakeString(layerName));
+                  const bool nameIsUnique =
+                        IsNameUnique(layerName)
+                     && std::ranges::find(functions, tmp) == functions.end()
+                     && std::ranges::find(identifiers, tmp) == identifiers.end();
+                  if (nameIsUnique)
+                     break;
+
+                  // Postpend "layer" to keep alphabetic order of layer
+                  if (!layerPostpend && !layerName.ends_with(L"_Layer"))
+                  {
+                     layerPostpend = true;
+                     layerName += L"_Layer";
+                  }
+                  else
+                  {
+                     size_t lastNonDigit = layerName.length();
+                     while (lastNonDigit > 0 && iswdigit(layerName[lastNonDigit - 1]))
+                        lastNonDigit--;
+                     if (lastNonDigit < layerName.length())
+                     {
+                        // If it ends by a number, then inc the number
+                        std::wstring numberStr = layerName.substr(lastNonDigit);
+                        const int number = std::stoi(numberStr);
+                        layerName.resize(lastNonDigit); // base
+                        renameIndex = max(renameIndex, number + 1);
+                     }
+                     else
+                     {
+                        // If not, add it
+                        layerName += L'_';
+                     }
+                     layerName += std::format(L"{:3d}", renameIndex);
+                     renameIndex += 1;
+                  }
+
+                  partGroupF = std::ranges::find_if(m_vedit,
+                     [&layerName](const IEditable *editable) { return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetIScriptable()->m_wzName == layerName); });
+               }
+               // Set or create implicit PartGroups (that is to say, PartGroups corresponding to legacy layers)
+               if (partGroupF != m_vedit.end())
+               {
+                  part->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
+               }
+               else if (PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, this, 0, 0)); newGroup)
+               {
+                  if (requestedLayerName != layerName)
+                  {
+                     PLOGI << "Layer name '" << MakeString(requestedLayerName) << "' was replaced by '" << MakeString(layerName)
+                           << "' as this name is already used by another table element";
+                  }
+                  newGroup->m_wzName = layerName;
+                  AddPart(newGroup);
+                  part->SetPartGroup(newGroup);
+               }
+            }
+         }
+
+         // Since 10.8.1, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
+         std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
+
+         // Resolve collection parts
+         for (int i = 0; i < m_vcollection.size(); i++)
+            m_vcollection[i].InitPostLoad(this);
       }
-      pstgData->Release();
+
+      // Authentication block
+      if (hch && loadfileversion > 40)
+      {
+         if (rootStorage.exists("GameStg/MAC"))
+         {
+            BYTE hashvalOld[256];
+            POLE::Stream stream(&rootStorage, "GameStg/MAC");
+            stream.read(hashvalOld, HASHLENGTH);
+
+            BYTE hashval[256];
+            DWORD hashlen = 256;
+            #ifndef __STANDALONE__
+               int foo2 = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
+               hashlen = 256;
+               foo2 = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+               foo2 = CryptDestroyHash(hch);
+               foo2 = CryptDestroyHash(hchkey);
+               foo2 = CryptDestroyKey(hkey);
+               foo2 = CryptReleaseContext(hcp, 0);
+            #endif
+
+            #ifndef __STANDALONE__
+               for (int i = 0; i < HASHLENGTH; i++)
+                  if (hashval[i] != hashvalOld[i])
+                  {
+                     hr = APPX_E_BLOCK_HASH_INVALID;
+                     break;
+                  }
+            #endif
+         }
+         else
+            hr = APPX_E_CORRUPT_CONTENT; // Error
+      }
+
+      if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
+         for (size_t i = 0; i < m_materials.size(); ++i)
+            m_materials[i]->m_fGlossyImageLerp = 1.f;
+
+      if (loadfileversion < 1040) // the m_fThickness part was included first with 10.4, so set all previously saved materials to the old default
+         for (size_t i = 0; i < m_materials.size(); ++i)
+            m_materials[i]->m_fThickness = 0.05f;
+
+      if (loadfileversion < 1072) // playfield meshes were always forced as collidable until 10.7.1
+         for (auto pEdit : m_vedit)
+            if (pEdit->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)pEdit)->IsPlayfield()))
+            {
+               Primitive* const prim = (Primitive *)pEdit;
+               prim->put_IsToy(FTOVB(false));
+               prim->put_Collidable(FTOVB(true));
+            }
+
+      // reflections were hardcoded without render probe before 10.8.0
+      RenderProbe *pf_reflection_probe = GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+      if (pf_reflection_probe == nullptr)
+      {
+         pf_reflection_probe = new RenderProbe();
+         pf_reflection_probe->SetName(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+         pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
+         m_vrenderprobe.push_back(pf_reflection_probe);
+      }
+      constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
+      pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
+      pf_reflection_probe->SetReflectionPlane(plane);
+      pf_reflection_probe->SetReflectionNoLightmaps(true);
+
+      if (loadfileversion < 1080)
+      {
+         // Glass was horizontal before 10.8
+         m_glassBottomHeight = m_glassTopHeight;
+
+         for (size_t i = 0; i < m_vedit.size(); ++i)
+         {
+            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
+            {
+               Primitive *const prim = (Primitive *)m_vedit[i];
+               // Before 10.8 alpha channel of texture was discarded if material transparency was 1, in turn leading to disabling lighting from below.
+               Material* mat = GetMaterial(prim->m_d.m_szMaterial);
+               if (mat && (!mat->m_bOpacityActive || mat->m_fOpacity == 1.0f))
+                  prim->m_d.m_disableLightingBelow = 1.0f;
+            }
+            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->IsPlayfield()))
+            {
+               Primitive* const prim = (Primitive *)m_vedit[i];
+               // playfield meshes were always processed as static until 10.8.0 (more precisely, directly rendered before everything else even in camera mode, then skipped when rendering all parts)
+               prim->m_d.m_staticRendering = true;
+               // since playfield were always rendered before bulb light buffer until 10.8, they would never have transmitted light
+               prim->m_d.m_disableLightingBelow = 1.0f;
+               // playfield meshes were always forced as visible until 10.8.0
+               prim->put_Visible(FTOVB(true));
+               // playfield meshes were always drawn before other transparent parts until 10.8.0
+               prim->m_d.m_depthBias = 100000.0f;
+               // playfield meshes did not handle backfaces until 10.8.0
+               prim->m_d.m_backfacesEnabled = false;
+            }
+            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemLight)
+            {
+               Light* const light = (Light *)m_vedit[i];
+               // Before 10.8, lights would never be reflected
+               light->m_d.m_reflectionEnabled = false;
+               // Before 10.8, lights did not have a z coordinate for the light emission point: classic lights where renderer at surface+0.1, bulb light at surface+halo height+0.1
+               // This needs to be preserved to avoid changing the light falloff curve, so we set up with the same definition (the 0.1 offset on z axis being applied when rendering to avoid z fighting)
+               light->m_d.m_height = light->m_d.m_BulbLight ? light->m_d.m_bulbHaloHeight : 0.0f;
+               if (!light->m_d.m_BulbLight)
+               {
+                  // Before 10.8, classic light could not have a bulb mesh so force it off
+                  light->m_d.m_showBulbMesh = false;
+                  // Before 10.8, classic light could not have ball reflection so force it off
+                  light->m_d.m_showReflectionOnBall = false;
+               }
+               // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
+               if (!light->m_d.m_visible)
+                  light->m_d.m_showBulbMesh = false;
+            }
+         }
+      }
+
+      if (loadfileversion < 1081)
+      {
+         // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
+         const string script = lowerCase(m_script_text);
+         std::ranges::for_each(m_vedit,
+            [&](IEditable *editable)
+            {
+               if (editable->GetItemType() != eItemPartGroup)
+                  return;
+               const wstring& name = editable->GetWName();
+               if (!name.starts_with(L"Layer_"))
+                  return;
+               const wstring shortName = name.substr(6);
+               const wstring shortNameLCase = lowerCase(shortName);
+               const string shortNameLCaseS = MakeString(shortNameLCase);
+               auto v = std::ranges::find_if(m_vedit, [&shortNameLCase](const IEditable *const e) { return lowerCase(e->GetWName()) == shortNameLCase; });
+               if (v != m_vedit.end())
+                  return; // Conflict with another part name
+               if ((shortName.find_first_not_of(L"0123456789") != std::string::npos) && script.find(shortNameLCaseS) != std::string::npos) //!!
+                  return; // (Potential) conflict with a script variable
+               for (int i = 0; i < m_vcollection.size(); i++)
+               {
+                  if (lowerCase(m_vcollection.ElementAt(i)->m_wzName) == shortNameLCase)
+                     return; // Conflict with a collection name
+               }
+               RenamePart(editable, shortName);
+            });
+      }
+
+      // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
+      /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
+      for (size_t i = 0; i < m_vedit.size(); ++i)
+      {
+         if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
+         {
+            Textbox *const textbox = (Textbox *)m_vedit[i];
+            if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
+            {
+               RemovePart(textbox);
+               Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
+               RemovePart(dmd);
+               dmd->m_wzName = textbox->m_wzName;
+               dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
+               dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
+               dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
+               dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
+               dmd->m_desktopBackdrop = true;
+               dmd->m_d.m_isVisible = textbox->m_d.m_visible;
+               dmd->m_d.m_renderMode = FlasherData::DMD;
+               dmd->m_d.m_renderStyle = 0; // Legacy rendering style
+               dmd->m_d.m_imagealignment = ImageModeWrap;
+               dmd->m_d.m_color = textbox->m_d.m_fontcolor;
+               dmd->m_d.m_addBlend = false;
+               dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
+               dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
+               dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale
+               dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
+               for (Collection *const pcollection : textbox->m_vCollection)
+               {
+                  pcollection->m_visel.find_erase(textbox->GetISelect());
+                  pcollection->m_visel.push_back(dmd);
+               }
+               m_vedit[i] = dmd;
+               AddPart(dmd);
+               PLOGI << "Textbox used as DMD replaced by a flasher (name=" << dmd->m_wzName << ')';
+               break;
+            }
+         }
+      }*/
+
+      // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
+      m_settings.SetModified(false);
    }
 
    if (m_pbTempScreenshot) // For some reason, no image picked up the screenshot.  Not good; but we'll dump it to make sure it gets cleaned up
@@ -2150,9 +2105,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
       m_pbTempScreenshot = nullptr;
    }
 
-   feedback.Done();
-
-   pstgRoot->Release();
+   rootStorage.close();
 
    SetDirty(eSaveClean);
 

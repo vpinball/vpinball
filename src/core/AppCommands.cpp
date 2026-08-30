@@ -3,9 +3,6 @@
 #include "core/stdafx.h"
 #include "AppCommands.h"
 
-#include <iostream>
-#include <fstream>
-
 #include "extern.h"
 #include "core/TournamentFile.h"
 #include "core/VPApp.h"
@@ -13,6 +10,11 @@
 #include "parts/pintable.h"
 #include "ui/win/WinEditor.h"
 #include "utils/BiffReader.h"
+
+#include "pole/pole.h"
+
+#include <iostream>
+#include <fstream>
 
 
 ShowInfoAndExitCommand::ShowInfoAndExitCommand(const string& title, const string& message, int exitCode)
@@ -60,56 +62,41 @@ ExportVBSCommand::ExportVBSCommand(const std::filesystem::path& tableFilename)
 void ExportVBSCommand::Execute()
 {
    string script;
-   HRESULT hr;
-   IStorage* pstgRoot;
-   if (SUCCEEDED(hr = StgOpenStorage(m_tableFilename.wstring().c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
+   POLE::Storage rootStorage(m_tableFilename.string().c_str());
+   rootStorage.open();
+   if (rootStorage.result() == POLE::Storage::Ok && rootStorage.exists("GameStg/Version") && rootStorage.exists("GameStg/GameData"))
    {
-      IStorage* pstgData;
-      if (SUCCEEDED(hr = pstgRoot->OpenStorage(L"GameStg", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgData)))
-      {
-         int loadfileversion = 0;
-         IStream* pstmVersion;
-         if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
+      int loadfileversion = 0;
+      POLE::Stream versionStream(&rootStorage, "GameStg/Version");
+      versionStream.read(reinterpret_cast<unsigned char*>(&loadfileversion), sizeof(int));
+      bool isProtected = false;
+      POLE::Stream gameStream(&rootStorage, "GameStg/GameData");
+      BiffReader reader(&gameStream, loadfileversion, 0, 0);
+      reader.AsObject(
+         [&script, &isProtected](int tag, IObjectReader& reader)
          {
-            ULONG read;
-            hr = pstmVersion->Read(&loadfileversion, sizeof(int), &read);
-            pstmVersion->Release();
-            IStream* pstmGame;
-            if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
+            switch (tag)
             {
-               bool isProtected = false;
-               BiffReader reader(pstmGame, loadfileversion, 0, 0);
-               reader.AsObject(
-                  [&script, &isProtected](int tag, IObjectReader& reader)
-                  {
-                     switch (tag)
-                     {
-                     case FID(SECB): // old protection/encryption data
-                     {
-                        struct ProtectionData
-                        {
-                           int32_t fileversion;
-                           int32_t size;
-                           uint8_t paraphrase[16 + 8];
-                           uint32_t flags;
-                           int32_t keyversion;
-                           int32_t spare1;
-                           int32_t spare2;
-                        } protectionData;
-                        reader.AsRaw(&protectionData, sizeof(ProtectionData));
-                        isProtected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
-                        break;
-                     }
-                     case FID(CODE): script = reader.AsScript(isProtected); break;
-                     }
-                     return true;
-                  });
-               pstmGame->Release();
+            case FID(SECB): // old protection/encryption data
+            {
+               struct ProtectionData
+               {
+                  int32_t fileversion;
+                  int32_t size;
+                  uint8_t paraphrase[16 + 8];
+                  uint32_t flags;
+                  int32_t keyversion;
+                  int32_t spare1;
+                  int32_t spare2;
+               } protectionData;
+               reader.AsRaw(&protectionData, sizeof(ProtectionData));
+               isProtected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
+               break;
             }
-         }
-         pstgData->Release();
-      }
-      pstgRoot->Release();
+            case FID(CODE): script = reader.AsScript(isProtected); break;
+            }
+            return true;
+         });
    }
 
    //CComObject<PinTable>* table = LoadTable();

@@ -477,7 +477,7 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
 
 VPINBALL_STATUS VPinballLib::ExtractTableScript(const string& tablePath)
 {
-   ProgressData progressData = { 50 };
+   ProgressData progressData = { 50u };
    SendEvent(VPINBALL_EVENT_EXTRACT_SCRIPT, &progressData);
 
    ExportVBSCommand cmd(tablePath);
@@ -488,7 +488,7 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript(const string& tablePath)
    if (!FileExists(scriptFilename))
       return VPINBALL_STATUS_FAILURE;
 
-   progressData.progress = 100;
+   progressData.progress = 100u;
    SendEvent(VPINBALL_EVENT_EXTRACT_SCRIPT, &progressData);
 
    return VPINBALL_STATUS_SUCCESS;

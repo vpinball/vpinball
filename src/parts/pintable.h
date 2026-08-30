@@ -5,8 +5,6 @@
 #pragma once
 
 
-#include <atomic>
-
 #include "core/pinundo.h"
 #include "parts/Collection.h"
 #include "parts/pinbinary.h"
@@ -17,6 +15,10 @@
 #include "utils/fileio.h"
 #include "utils/hash.h"
 #include "utils/vector.h"
+
+#include "pole/pole.h"
+
+#include <atomic>
 
 #ifdef __STANDALONE__
 #include <iostream>
@@ -464,9 +466,9 @@ private:
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    static HRESULT WriteInfoValue(IStorage *pstg, const wstring &wzName, const string &szValue, HCRYPTHASH hcrypthash);
-   static HRESULT ReadInfoValue(IStorage *pstg, const wstring &wzName, string &output, HCRYPTHASH hcrypthash);
-   HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
-   HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
+   static void ReadInfoValue(POLE::Storage &storage, const string &wzName, string &output, HCRYPTHASH hcrypthash);
+   void LoadInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
+   void LoadCustomInfo(POLE::Storage &storage, HCRYPTHASH hcrypthash, int version);
 
 public:
    void Uncreate(IEditable *pie);

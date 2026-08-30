@@ -17,8 +17,6 @@
 #include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
-#include "ui/win/dialogs/VPXLoadFileProgressBar.h"
-#include "ui/win/dialogs/VPXSaveFileProgressBar.h"
 #include "ui/win/dialogs/SearchSelectDialog.h"
 #include "FreeImage.h"
 #else

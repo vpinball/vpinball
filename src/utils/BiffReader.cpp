@@ -19,14 +19,32 @@ BiffReader::BiffReader(IStream *pistream, const int version, const HCRYPTHASH hc
 {
 }
 
+BiffReader::BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+   : m_stream(stream)
+   , m_hcrypthash(hcrypthash)
+   , m_hcryptkey(hcryptkey)
+   , m_version(version)
+{
+}
+
 void BiffReader::ReadBytes(void * const pv, const uint32_t count)
 {
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
-   ULONG read = 0;
-   m_hasError |= FAILED(m_pistream->Read(pv, count, &read));
-   m_hasError |= read != count;
+
+   if (m_stream)
+   {
+      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(pv), count);
+      m_hasError |= read != count;
+   }
+   else
+   {
+      ULONG read = 0;
+      m_hasError |= FAILED(m_pistream->Read(pv, count, &read));
+      m_hasError |= read != count;
+   }
+
    if (iow)
       mtx.unlock();
 
@@ -45,8 +63,16 @@ int BiffReader::GetIntNoHash()
    if (iow)
       mtx.lock();
    int32_t value;
-   m_hasError |= FAILED(m_pistream->Read(&value, sizeof(int32_t), &read));
-   m_hasError |= read != sizeof(int32_t);
+   if (m_stream)
+   {
+      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(&value), sizeof(value));
+      m_hasError |= read != sizeof(value);
+   }
+   else
+   {
+      m_hasError |= FAILED(m_pistream->Read(&value, sizeof(value), &read));
+      m_hasError |= read != sizeof(value);
+   }
    if (iow)
       mtx.unlock();
    return value;
@@ -148,11 +174,28 @@ string BiffReader::AsScript(bool isScriptProtected)
    string script;
    ULONG read = 0;
    int32_t cchar;
-   m_hasError |= FAILED(m_pistream->Read(&cchar, sizeof(int32_t), &read));
+   if (m_stream)
+   {
+      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(&cchar), sizeof(cchar));
+      m_hasError |= read != sizeof(cchar);
+   }
+   else
+   {
+      m_hasError |= FAILED(m_pistream->Read(&cchar, sizeof(cchar), &read));
+      m_hasError |= read != sizeof(cchar);
+   }
 
    char *szText = new char[cchar + 1];
-   m_hasError |= FAILED(m_pistream->Read(szText, cchar, &read));
-   m_hasError |= read != cchar;
+   if (m_stream)
+   {
+      const auto read = m_stream->read(reinterpret_cast<unsigned char *>(szText), cchar);
+      m_hasError |= read != cchar;
+   }
+   else
+   {
+      m_hasError |= FAILED(m_pistream->Read(szText, cchar, &read));
+      m_hasError |= read != cchar;
+   }
 
 #ifndef __STANDALONE__
    if (m_hcrypthash)
@@ -212,12 +255,23 @@ void BiffReader::AsRaw(void *pvalue, const int size)
 void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> &processField, bool isSkippable)
 {
    const int recordSize = m_bytesinrecordremaining;
-   ULARGE_INTEGER pos;
-   if (isSkippable && m_version > 30)
+   const bool skip = isSkippable && m_version > 30;
+   const auto getStreamPos = [this]()
    {
-      LARGE_INTEGER seek {};
-      m_pistream->Seek(seek, STREAM_SEEK_CUR, &pos);
-   }
+      if (m_stream)
+      {
+         return static_cast<uint64_t>(m_stream->tell());
+      }
+      else
+      {
+         ULARGE_INTEGER uiPos;
+         LARGE_INTEGER seek { };
+         m_pistream->Seek(seek, STREAM_SEEK_CUR, &uiPos);
+         return static_cast<uint64_t>(uiPos.QuadPart);
+      }
+   };
+
+   uint64_t pos = skip ? getStreamPos() : 0;
    while (true)
    {
       if (m_version > 30)
@@ -253,16 +307,21 @@ void BiffReader::AsObject(const std::function<bool(const int, IObjectReader &)> 
       }
    }
 
-   if (isSkippable && m_version > 30)
+   if (skip)
    {
-      LARGE_INTEGER seek {};
-      ULARGE_INTEGER newpos;
-      m_pistream->Seek(seek, STREAM_SEEK_CUR, &newpos);
-      const int sizeRead = static_cast<int>(newpos.QuadPart - pos.QuadPart);
+      uint64_t newpos = getStreamPos();
+      const int sizeRead = static_cast<int>(newpos - pos);
       if (const int toSkip = recordSize - sizeRead; toSkip > 0)
       {
-         vector<uint8_t> tmp(toSkip);
-         ReadBytes(tmp.data(), toSkip);
+         if (m_stream)
+         {
+            m_stream->seek(newpos + toSkip);
+         }
+         else
+         {
+            vector<uint8_t> tmp(toSkip);
+            ReadBytes(tmp.data(), toSkip);
+         }
       }
    }
 }

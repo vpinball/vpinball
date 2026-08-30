@@ -4,11 +4,15 @@
 
 #include "fileio.h"
 
+#include "pole/pole.h"
+
+
 class BiffReader final :
    public IObjectReader
 {
 public:
    BiffReader(IStream *pistream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
+   BiffReader(POLE::Stream *stream, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
    int GetVersion() const override { return m_version; }
    bool HasError() const override { return m_hasError; }
 
@@ -28,7 +32,8 @@ public:
 
    void ReadBytes(void *const pv, const uint32_t count);
 
-   IStream *m_pistream;
+   POLE::Stream *m_stream = nullptr;
+   IStream *m_pistream = nullptr;
    HCRYPTHASH m_hcrypthash;
    HCRYPTKEY m_hcryptkey;
 

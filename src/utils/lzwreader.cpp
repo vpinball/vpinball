@@ -65,13 +65,8 @@ unsigned int LZWReader::get_next_code()
  * separating them into the proper size codes.  Finally, get_byte() is
  * the global routine to read the next byte from the file.
  */
-LZWReader::LZWReader(IStream *const pstm, uint8_t *output, const unsigned int width)
-   : m_pstm(pstm)
-#ifdef _DEBUG
-   , bad_code_count(0)
-#endif
-   , m_cfilebuffer(FILE_BUF_SIZE - 1)
-   , m_readahead(FILE_BUF_SIZE)
+LZWReader::LZWReader(POLE::Stream * stream, uint8_t *output, const unsigned int width)
+   : m_stream(stream)
 {
    // Initialize for decoding a new image...
    constexpr unsigned int size = 8;
@@ -226,11 +221,8 @@ LZWReader::LZWReader(IStream *const pstm, uint8_t *output, const unsigned int wi
       }
    }
 
-   LONGLONG toofar = (LONGLONG)m_readahead - m_cfilebuffer; // bytes we already read from the stream, BUT that we shouldn't have read
-   toofar--;  // m_readahead == the byte we just read, so we actually used up one more than the math shows
-   LARGE_INTEGER li;
-   li.QuadPart = -toofar;
-   m_pstm->Seek(li, STREAM_SEEK_CUR, nullptr); // move back in the stream so next VPT data chunk reads will be correct again
+   // Our position is just after last m_readahead bytes, out of which we have used (m_cfilebuffer + 1)
+   m_stream->seek(m_stream->tell() + m_cfilebuffer + 1 - m_readahead);
 }
 
 // This returns the next byte from the file
@@ -239,10 +231,8 @@ uint8_t LZWReader::get_byte()
    ++m_cfilebuffer;
    if (m_cfilebuffer == FILE_BUF_SIZE)
    {
+      m_readahead = m_stream->read(m_pfilebufferbytes, FILE_BUF_SIZE);
       m_cfilebuffer = 0;
-      m_readahead = 0;
-      m_pstm->Read(m_pfilebufferbytes, FILE_BUF_SIZE, &m_readahead);
    }
-
    return m_pfilebufferbytes[m_cfilebuffer];
 }

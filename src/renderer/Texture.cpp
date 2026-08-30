@@ -948,13 +948,17 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             // The 'BITS' field is deprecated and only used in pre 10.8.1 files which were all BIFF streams so we can safely cast here
             BiffReader& br = (BiffReader&)reader;
 
+            // FIXME Assert until the old path based on IStorage is removed (still pending removal in undo & copy/paste), but this is already 
+            // legacy deprecated and largely unused feature, moreover bmp are not supposed to enter this codeblock (no undo or copy/paste)
+            assert(br.m_stream != nullptr);
+
             // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format. Convert here to simplify the code
             const size_t size = (size_t)height * width;
             assert(ppb == nullptr && size != 0);
 
             // Uncompress to RGBA image
             uint8_t* const __restrict tmp = new uint8_t[size * 4];
-            const LZWReader lzwreader(br.m_pistream, tmp, width * 4);
+            const LZWReader lzwreader(br.m_stream, tmp, width * 4);
 
             // Find out if all alpha values are 0x00 or 0xFF
             bool has_alpha = false;
