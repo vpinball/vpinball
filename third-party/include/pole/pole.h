@@ -18,6 +18,7 @@
 
    Corrected some of the artificial (=failing on 32bit systems) handling of 64bit sizes/indices, leading to a lot of warnings
    Note that things can still fail on 32bit systems for large files, but it should at least assert now
+   Allow multithreaded reading of multiple streams from a single storage (synchronized read access)
    Also some minor optimizations
    2026 VPX team
 

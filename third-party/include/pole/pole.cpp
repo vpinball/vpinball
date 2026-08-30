@@ -57,6 +57,7 @@
 #include <vector>
 #include <queue>
 #include <limits>
+#include <mutex>
 
 #include <cstring>
 
@@ -192,6 +193,8 @@ class StorageIO final
     uint64 filesize;   // size of the file
     bool writeable;           // true if the file can be modified
     
+    std::mutex readMutex;
+
     Header* header;           // storage header 
     DirTree* dirtree;         // directory tree
     AllocTable* bbat;         // allocation table for big blocks
@@ -1291,6 +1294,8 @@ void StorageIO::load(bool bWriteAccess)
   uint64 buflen = 0;
   std::vector<uint64> blocks;
   
+  std::unique_lock lock(readMutex);
+
   // open the file, check for error
   result = Storage::OpenFailed;
 
@@ -1319,6 +1324,8 @@ void StorageIO::load(bool bWriteAccess)
   fileCheck(file);
   header->load( buffer );
   delete[] buffer;
+
+  lock.unlock();
 
   // check OLE magic id
   result = Storage::NotOLE;
@@ -1496,6 +1503,8 @@ void StorageIO::close()
 {
   if( !opened ) return;
   
+  std::lock_guard lock(readMutex);
+
   file.close(); 
   opened = false;
   
@@ -1593,6 +1602,7 @@ uint64 StorageIO::loadBigBlocks( const std::vector<uint64>& blocks,
 {
   // sentinel
   if( !data ) return 0;
+  std::lock_guard fileLock(readMutex);
   fileCheck(file);
   if( !file.good() ) return 0;
   if( blocks.size() < 1 ) return 0;
@@ -1621,9 +1631,12 @@ uint64 StorageIO::loadBigBlock( uint64 block,
   unsigned char* data, uint64 maxlen )
 {
   // sentinel
-  if( !data ) return 0;
-  fileCheck(file);
-  if( !file.good() ) return 0;
+  {
+     if( !data ) return 0;
+     std::lock_guard fileLock(readMutex);
+     fileCheck(file);
+     if( !file.good() ) return 0;
+  }
   
   // wraps call for loadBigBlocks
   std::vector<uint64> blocks;
@@ -1683,11 +1696,14 @@ uint64 StorageIO::loadSmallBlocks( const std::vector<uint64>& blocks,
   unsigned char* data, uint64 maxlen )
 {
   // sentinel
-  if( !data ) return 0;
-  fileCheck(file);
-  if( !file.good() ) return 0;
-  if( blocks.size() < 1 ) return 0;
-  if( maxlen == 0 ) return 0;
+  {
+     if( !data ) return 0;
+     std::lock_guard fileLock(readMutex);
+     fileCheck(file);
+     if( !file.good() ) return 0;
+     if( blocks.size() < 1 ) return 0;
+     if( maxlen == 0 ) return 0;
+  }
 
   // our own local buffer
   assert(bbat->blockSize <= std::numeric_limits<size_t>::max());
@@ -1724,9 +1740,12 @@ uint64 StorageIO::loadSmallBlock( uint64 block,
   unsigned char* data, uint64 maxlen )
 {
   // sentinel
-  if( !data ) return 0;
-  fileCheck(file);
-  if( !file.good() ) return 0;
+  {
+     if( !data ) return 0;
+     std::lock_guard fileLock(readMutex);
+     fileCheck(file);
+     if( !file.good() ) return 0;
+  }
 
   // wraps call for loadSmallBlocks
   std::vector<uint64> blocks;
