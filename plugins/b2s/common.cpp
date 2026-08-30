@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <filesystem>
 #include <charconv>
+#include <cmath>
+#include <climits>
+#include <bit>
 
 #include <cstddef> // for size_t, ptrdiff_t
 // Define ssize_t for Windows
@@ -23,12 +26,11 @@ namespace B2S
 {
 
 #ifndef __clang__
-#include <bit>
 #define double_as_int64(x) std::bit_cast<int64_t>(x)
 #else // for whatever reason apple/clang is special again
 #define double_as_int64(x) __builtin_bit_cast(int64_t, x)
 #endif
-constexpr __forceinline bool infNaN(const double a) { return ((double_as_int64(a) & 0x7FF0000000000000ULL) == 0x7FF0000000000000ULL); }
+static constexpr bool infNaN(const double a) { return ((double_as_int64(a) & 0x7FF0000000000000ULL) == 0x7FF0000000000000ULL); }
 
 string trim_string(const string& str)
 {
