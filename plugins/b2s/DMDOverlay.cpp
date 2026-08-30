@@ -1,15 +1,25 @@
 // license:GPLv3+
 
-#include "common.h"
-
-#include "B2SDMDOverlay.h"
+#include "DMDOverlay.h"
+#include "common.h" // Needed for logging
 
 #include <cmath>
 #include <vector>
 #include <stack>
 #include <algorithm>
+#include <string>
+#include <format>
+#include <vector>
 
-namespace B2S {
+using std::string;
+using namespace std::string_literals;
+using namespace std::string_view_literals;
+
+using std::vector;
+
+
+namespace DMDOverlay
+{
 
 MSGPI_BOOL_VAL_SETTING(scoreViewDMDOverlayProp, "ScoreViewDMDOverlay", "ScoreView DMD Overlay", "Enable a DMD overlay on the Score View", true, false);
 MSGPI_BOOL_VAL_SETTING(scoreViewDMDAutoPosProp, "ScoreViewDMDAutoPos", "ScoreView DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
@@ -25,21 +35,22 @@ MSGPI_INT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y posit
 MSGPI_INT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
 MSGPI_INT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
 
-B2SDMDOverlay::B2SDMDOverlay(PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
+DMDOverlay::DMDOverlay(const VPXPluginAPI* const vpxApi, PinballPlugin::ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
    : m_resURIResolver(resURIResolver)
    , m_dmdTex(dmdTex)
    , m_backImage(backImage)
+   , m_vpxApi(vpxApi)
 {
 }
 
-B2SDMDOverlay::~B2SDMDOverlay()
+DMDOverlay::~DMDOverlay()
 {
    m_stopSearching = true;
    if (m_frameSearch.valid())
       m_frameSearch.get();
 }
 
-void B2SDMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
+void DMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
    msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
    msgApi->RegisterSetting(endpointId, &backglassDMDAutoPosProp);
@@ -55,7 +66,7 @@ void B2SDMDOverlay::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned 
    msgApi->RegisterSetting(endpointId, &scoreViewDMDHProp);
 }
 
-void B2SDMDOverlay::LoadSettings(bool isScoreView)
+void DMDOverlay::LoadSettings(bool isScoreView)
 {
    if (isScoreView)
    {
@@ -83,20 +94,20 @@ void B2SDMDOverlay::LoadSettings(bool isScoreView)
    }
 }
 
-void B2SDMDOverlay::UpdateBackgroundImage(VPXTexture backImage)
+void DMDOverlay::UpdateBackgroundImage(VPXTexture backImage)
 {
    if (m_backImage != backImage)
    {
       m_backImage = backImage;
       if (m_detectDmdFrame)
       {
-         m_frame = ivec4();
+         m_frame = vec4<int>();
          m_detectSrcId.id = 0;
       }
    }
 }
 
-void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
+void DMDOverlay::Render(VPXRenderContext2D* ctx)
 {
    if (!m_enable)
       return;
@@ -108,10 +119,23 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    // When DMD source change, search for the DMD sub frame as it depends on the DMD source aspect ratio
    if (m_detectDmdFrame && m_backImage && m_detectSrcId.id != dmd.source->id.id)
    {
-      m_frame = ivec4();
-      m_detectSrcId.id = dmd.source->id.id;
-      const float ar = static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
-      m_frameSearch = std::async(std::launch::async, [this, ar]() { return SearchDmdSubFrame(m_backImage, ar); });
+      if (m_frameSearch.valid())
+      {
+         m_stopSearching = true;
+         if (m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+            m_frameSearch.get();
+         return;
+      }
+      else
+      {
+         m_frame = vec4<int>();
+         m_stopSearching = false;
+         m_detectSrcId.id = dmd.source->id.id;
+         const float ar = static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
+         const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
+         if (texInfo != nullptr)
+            m_frameSearch = std::async(std::launch::async, [this, texInfo, ar]() { return SearchDmdSubFrame(m_backImage, texInfo, ar); });
+      }
    }
 
    if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -120,14 +144,25 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_frame.z == 0 || m_frame.w == 0)
       return;
 
-   // The texture is shared with the other overlay, hence the null test: it may still have to be created here
+   // Our position is defined against the back image, so set its size as coordinate references for draw calls
+   if (m_detectDmdFrame && m_backImage)
+   {
+      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
+      if (texInfo)
+      {
+         ctx->srcWidth = static_cast<float>(texInfo->width);
+         ctx->srcHeight = static_cast<float>(texInfo->height);
+      }
+   }
+
+   // The texture is owned by the form, hence the null test: it may still have to be created here
    if (!m_hasUploadedFrame || (m_dmdTex == nullptr) || (dmd.state.frameId != m_uploadedFrameId) || (*dmd.source != m_uploadedSrc))
    {
       switch (dmd.source->frameFormat)
       {
-      case CTLPI_DISPLAY_FORMAT_LUM32F:  UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
-      case CTLPI_DISPLAY_FORMAT_SRGB888: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
-      case CTLPI_DISPLAY_FORMAT_SRGB565: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_LUM32F: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB888: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
+      case CTLPI_DISPLAY_FORMAT_SRGB565: m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
       default: return;
       }
       m_uploadedSrc = *dmd.source;
@@ -135,11 +170,11 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
       m_hasUploadedFrame = true;
    }
 
-   vec4 glassArea(0.f, 0.f, 0.f, 0.f);
-   vec4 glassAmbient(1.f, 1.f, 1.f, 1.f);
-   vec4 glassTint(1.f, 1.f, 1.f, 1.f);
-   vec4 glassPad(0.f, 0.f, 0.f, 0.f);
-   vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
+   vec4<float> glassArea(0.f, 0.f, 0.f, 0.f);
+   vec4<float> glassAmbient(1.f, 1.f, 1.f, 1.f);
+   vec4<float> glassTint(1.f, 1.f, 1.f, 1.f);
+   vec4<float> glassPad(0.f, 0.f, 0.f, 0.f);
+   vec4<float> dmdTint(1.f, 1.f, 1.f, 1.f);
    VPXDisplayRenderStyle style = VPXDisplayRenderStyle::VPXDMDStyle_Plasma;
    switch (dmd.source->hardware & 0xFFFF0000)
    {
@@ -160,12 +195,8 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
       static_cast<float>(m_frame.x), static_cast<float>(m_frame.y), static_cast<float>(m_frame.z), static_cast<float>(m_frame.w));
 }
 
-ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) const
+DMDOverlay::vec4<int> DMDOverlay::SearchDmdSubFrame(VPXTexture image, const VPXTextureInfo* const texInfo, float dmdAspectRatio) const
 {
-   const VPXTextureInfo* const texInfo = GetTextureInfo(image);
-   if (texInfo == nullptr)
-      return ivec4();
-
    unsigned int pos_step;
    switch (texInfo->format)
    {
@@ -176,14 +207,14 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
    }
 
    // Heuristic to select large rectangles, favoring screen centered ones
-   auto heuristic = [texW = static_cast<float>(texInfo->width)](const ivec4& frame)
+   auto heuristic = [texW = static_cast<float>(texInfo->width)](const vec4<int>& frame)
    { return static_cast<float>(frame.z) / texW - 1.f * fabs(0.5f - static_cast<float>(frame.x + frame.z / 2) / texW); };
 
    const int padding = (2 * texInfo->width) / 1920;
    float lumMin = 0.f;
    float lumMax = 256.f;
-   ivec4 searchFrame(0, 0, texInfo->width, texInfo->height);
-   ivec4 bestFrame;
+   vec4<int> searchFrame(0, 0, texInfo->width, texInfo->height);
+   vec4<int> bestFrame;
    for (int search = 0; search < 7; search++)
    {
       const float lumLimit = (lumMin + lumMax) * 0.5f;
@@ -191,31 +222,30 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
       LOGD(std::format("DMD area search thr: {} area is {},{} {}x{}", lumLimit, searchFrame.x, searchFrame.y, searchFrame.z, searchFrame.w));
 
       // Find the largest dark rectangle in the background image
-      ivec4 subFrame;
-      ivec4 searchSubFrame;
+      vec4<int> subFrame;
+      vec4<int> searchSubFrame;
       std::stack<int> st;
       vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
       for (int y = searchFrame.y; y < (searchFrame.y + searchFrame.w); ++y)
       {
          // If disabled while searching, just abort
          if (m_stopSearching)
-            return ivec4();
+            return vec4<int>();
          unsigned int pos = (y * texInfo->width + searchFrame.x) * pos_step;
          for (int x = searchFrame.x; x < (searchFrame.x + searchFrame.z); ++x, pos += pos_step)
          {
             float lum = 0;
             switch (texInfo->format)
             {
-            case VPXTEXFMT_BW32F:
-               lum = 255.f * static_cast<float*>(texInfo->data)[pos];
-               break;
+            case VPXTEXFMT_BW32F: lum = 255.f * static_cast<float*>(texInfo->data)[pos]; break;
 
             case VPXTEXFMT_sRGB8:
             case VPXTEXFMT_sRGBA8:
-               lum = 0.299f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos]) + 0.587f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 1]) + 0.114f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 2]);
+               lum = 0.299f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos]) + 0.587f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 1])
+                  + 0.114f * static_cast<float>(static_cast<uint8_t*>(texInfo->data)[pos + 2]);
                break;
 
-            default: return ivec4();
+            default: return vec4<int>();
             }
             if (lum < lumLimit)
                heights[x] += 1;
@@ -233,7 +263,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
                const int width = st.empty() ? (x - searchFrame.x) : (x - st.top() - 1);
                if (width > 6 * padding && height > 3 * padding)
                {
-                  ivec4 unpaddedFrame;
+                  vec4<int> unpaddedFrame;
                   unpaddedFrame.x = st.empty() ? searchFrame.x : st.top() + 1;
                   unpaddedFrame.y = y - height + 1;
                   unpaddedFrame.z = width;
@@ -243,7 +273,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
                      searchSubFrame = unpaddedFrame;
                   else
                   {
-                     ivec4 newSearchFrame;
+                     vec4<int> newSearchFrame;
                      newSearchFrame.x = std::min(searchSubFrame.x, unpaddedFrame.x);
                      newSearchFrame.y = std::min(searchSubFrame.y, unpaddedFrame.y);
                      newSearchFrame.z = std::max(searchSubFrame.x + searchSubFrame.z, unpaddedFrame.x + unpaddedFrame.z) - newSearchFrame.x;
@@ -251,7 +281,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
                      searchSubFrame = newSearchFrame;
                   }
                   // Add some padding and fit to searched aspect ratio
-                  ivec4 frame;
+                  vec4<int> frame;
                   frame.x = unpaddedFrame.x + padding;
                   frame.y = unpaddedFrame.y + padding;
                   frame.z = unpaddedFrame.z - 2 * padding;
@@ -281,7 +311,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
       LOGD(std::format("DMD area search {} -> {}, thr: {} lead to {},{} {}x{} Heur:{}, PrevHeur: {}", lumMin, lumMax, lumLimit, subFrame.x, subFrame.y, subFrame.z, subFrame.w,
          heuristic(subFrame), heuristic(bestFrame)));
 
-      // There are no heuristic between luminance levels, this can lead to unwanted behavior (for example drifting insde a box)
+      // There are no heuristics between luminance levels, this can lead to unwanted behavior (for example drifting inside a box)
       if (subFrame.w > 0) // && (bestFrame.w == 0 || (heuristic(subFrame) > 0.6f * heuristic(bestFrame))))
       {
          lumMax = lumLimit;

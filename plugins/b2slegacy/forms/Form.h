@@ -1,13 +1,13 @@
 #pragma once
 
 #include "../controls/Control.h"
+#include "../utils/DMDOverlay.h"
 #include "plugins/ResURIResolver.h"
 
 namespace B2SLegacy {
 
 class B2SData;
 class Server;
-class DMDOverlay;
 
 class Form : public Control
 {
@@ -30,7 +30,7 @@ protected:
 private:
    PinballPlugin::ResURIResolver* m_pResURIResolver = nullptr;
    VPXTexture m_dmdTex = nullptr;
-   DMDOverlay* m_pDmdOverlay = nullptr;
+   DMDOverlay::DMDOverlay* m_pDmdOverlay = nullptr;
    bool m_topMost = false;
 };
 

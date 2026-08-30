@@ -259,7 +259,7 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
 
    B2SRenderer::RegisterSettings(msgApi, endpointId);
-   B2SDMDOverlay::RegisterSettings(msgApi, endpointId);
+   DMDOverlay::DMDOverlay::RegisterSettings(msgApi, endpointId);
 
    nServer = 0;
    auto classLambda = [](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };

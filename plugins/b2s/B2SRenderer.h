@@ -4,10 +4,11 @@
 
 #include "common.h"
 #include "B2SDataModel.h"
-#include "B2SDMDOverlay.h"
+#include "DMDOverlay.h"
 
 #include "plugins/ControllerPlugin.h"
 #include "plugins/ResURIResolver.h"
+#include "plugins/VPXPlugin.h"
 
 #include <future>
 #include <chrono>
@@ -18,7 +19,7 @@ namespace B2S
 class B2SRenderer final
 {
 public:
-   B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
+   B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* const vpxApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
    ~B2SRenderer();
 
    static void RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId);
@@ -47,8 +48,8 @@ private:
 
    PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
-   B2SDMDOverlay m_scoreViewDmdOverlay;
-   B2SDMDOverlay m_backglassDmdOverlay;
+   DMDOverlay::DMDOverlay m_scoreViewDmdOverlay;
+   DMDOverlay::DMDOverlay m_backglassDmdOverlay;
 
    std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;
