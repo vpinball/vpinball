@@ -185,7 +185,9 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
             {
                if (uri.authority.host == "default")
                {
-                  // Which definitions do we want to give for this (if any) ?
+                  // TODO We just get the first display in the list which highly depends on the setup. Implement something more stable based on the available displays.
+                  if (!sources.empty())
+                     endpoint = sources.back().groupId.endpointId;
                }
                else
                {
@@ -203,22 +205,15 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
          segCacheLambda lambda = nullptr;
          if (uri.path == "/seg")
          {
-            auto resIdPart = uri.query.find("id"s);
             int resId = 0;
-            if (resIdPart != uri.query.end() && try_parse_int(resIdPart->second, resId))
+            if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end() && try_parse_int(resIdPart->second, resId))
             {
-               const SegSrcId *segSource = m_segSources->With(
-                  [endpoint, resId, &lambda](const std::vector<SegSrcId> &sources)
-                  {
-                     auto segSrc
-                        = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, resId](const SegSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == resId; });
-                     return segSrc == sources.end() ? nullptr : std::to_address(segSrc);
-                  });
+               auto segSrc = std::ranges::find_if(sources.begin(), sources.end(), [endpoint, resId](const SegSrcId &src) { return src.id.endpointId == endpoint && src.id.resId == resId; });
+               const SegSrcId *segSource = segSrc == sources.end() ? nullptr : std::to_address(segSrc);
                if (segSource)
                {
-                  auto subIdPart = uri.query.find("id"s);
                   int subId = 0;
-                  if (subIdPart != uri.query.end())
+                  if (auto subIdPart = uri.query.find("sub"s); subIdPart != uri.query.end())
                   {
                      if (try_parse_int(subIdPart->second, subId) && subId < static_cast<int>(segSource->nElements))
                      {
