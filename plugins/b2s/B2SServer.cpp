@@ -150,7 +150,7 @@ int B2SServer::OnRender(VPXRenderContext2D* ctx, void* userData)
    {
       if (me->m_loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       {
-         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_endpointId, me->m_loadedB2S.get());
+         me->m_renderer = std::make_unique<B2SRenderer>(me->m_msgApi, me->m_vpxApi, me->m_endpointId, me->m_loadedB2S.get());
          me->m_renderer->Render(ctx, me);
       }
       return true; // Until loaded, we assume that the file will succeed loading with the expected backglass/score view

@@ -16,13 +16,13 @@
     <ClCompile Include="../../plugins/b2s/B2SDataModel.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/b2s/B2SDMDOverlay.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/b2s/DMDOverlay.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
@@ -39,13 +39,13 @@
     <ClInclude Include="../../plugins/b2s/B2SDataModel.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../plugins/b2s/B2SDMDOverlay.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/b2s/B2SServer.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/DMDOverlay.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
