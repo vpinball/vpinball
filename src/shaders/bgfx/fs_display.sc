@@ -105,8 +105,10 @@ vec3 ReinhardToneMap(vec3 color)
 	// Output size in pixels is evaluated per pixel in main(), see 'outSize' there
 
 	// Number of jittered samples per pixel when a CRT filter is downscaled, 1 disables oversampling path
-	#define CRT_OVERSAMPLE         9
-	#define CRT_OVERSAMPLE_KOROBOV 2 // Generator for Korobov (4 -> 1 or 3, 8 -> 5, 13 -> 8, 21 -> 13, etc)
+	#define CRT_OVERSAMPLE          9
+	#define CRT_OVERSAMPLE_KOROBOV  2 // Generator for Korobov (4 -> 1 or 3, 8 -> 5, 13 -> 8, 21 -> 13, etc)
+	#define CRT_OVERSAMPLE2         4
+	#define CRT_OVERSAMPLE_KOROBOV2 1 // Generator for Korobov (4 -> 1 or 3, 8 -> 5, 13 -> 8, 21 -> 13, etc)
 
 	// Select the CRT emulation:
 	//   0: Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)                    // from testing: preferrable for low res  (Bally Vidpin & Mr Game)
@@ -154,7 +156,7 @@ vec3 CrtEmitter(const vec2 uv, const vec2 outSize, const vec2 dUvDx, const vec2 
 {
 	// Pixelated and smoothed only differ by the sampler they are bound with (point magnification for the former,
 	// linear for the latter), both relying on implicit mipmapping/anisotropic filtering when the display is downscaled
-	if (crtMode != 2.0)
+	BRANCH if (crtMode != 2.0)
 	{
 		return texture2DGrad(displayTex, uv, dUvDx, dUvDy).rgb;
 	}
@@ -212,7 +214,7 @@ void main()
 
 	vec4 glass;
 	float roughness;
-	if (hasGlass)
+	BRANCH if (hasGlass)
 	{
 		glass = texture2D(displayGlass, glassUv);
 		glass.rgb *= glassTint;
@@ -292,12 +294,14 @@ void main()
 		// supersampling. Both derivatives are used per axis so that rotated displays stay correct
 		vec2 dUvDx = dFdx(displayUv);
 		vec2 dUvDy = dFdy(displayUv);
-		vec2 outSize = 1.0 / max(vec2(length(vec2(dUvDx.x, dUvDy.x)), length(vec2(dUvDx.y, dUvDy.y))), vec2_splat(1e-8)); // guard against a degenerate (edge on) display
+		vec2 inv_outSize = max(vec2(length(vec2(dUvDx.x, dUvDy.x)), length(vec2(dUvDx.y, dUvDy.y))), vec2_splat(1e-8)); // guard against a degenerate (edge on) display
+		vec2 outSize = 1.0 / inv_outSize;
 	#if CRT_OVERSAMPLE > 1
 		// When downscaled: the input grid, the scanlines and the shadow mask are all undersampled, which shows up as moiree. Supersample the emitter over the pixel footprint
 		// in this situation. Only needed for CRT, which point samples and synthesizes patterns:
 		// the pixelated and smoothed modes are filtered by implicitly (mipmapping/anisotropy) when downscaled.
-		if ((crtMode == 2.0) && (max(crtSize.x / outSize.x, crtSize.y / outSize.y) > 0.25)) //!! 0.25 = magic, 'should' be 1.0, but not sufficient due to the approximate/whacky pattern generators
+		float ratio = max(crtSize.x * inv_outSize.x, crtSize.y * inv_outSize.y);
+		BRANCH if ((crtMode == 2.0) && (ratio > 1.0)) //!! magic, 'should' be 1.0, but not sufficient due to the approximate/whacky pattern generators
 		{
 			// Korobov lattice, randomized per pixel (for now constant over time, otherwise temporal noise)
 			const vec2 offs = hash22(gl_FragCoord.xy);
@@ -309,6 +313,19 @@ void main()
 				litLum += CrtEmitter(displayUv + triangularPDF(xi.x) * dUvDx + triangularPDF(xi.y) * dUvDy, outSize, dUvDx, dUvDy);
 			}
 			litLum *= 1.0 / float(CRT_OVERSAMPLE);
+		}
+		else BRANCH if ((crtMode == 2.0) && (ratio > 0.31)) //!! 0.31 = magic, 'should' be 1.0, but not sufficient due to the approximate/whacky pattern generators
+		{
+			// Korobov lattice, randomized per pixel (for now constant over time, otherwise temporal noise)
+			const vec2 offs = hash22(gl_FragCoord.xy);
+			litLum = vec3_splat(0.0);
+			UNROLL for (int i = 0; i < CRT_OVERSAMPLE2; ++i)
+			{
+				const float i_float = float(i);
+				const vec2 xi = vec2(fract(i_float * (1.0 / float(CRT_OVERSAMPLE2)) + offs.x), fract(i_float * (float(CRT_OVERSAMPLE_KOROBOV2) / float(CRT_OVERSAMPLE2)) + offs.y));
+				litLum += CrtEmitter(displayUv + triangularPDF(xi.x) * dUvDx + triangularPDF(xi.y) * dUvDy, outSize, dUvDx, dUvDy);
+			}
+			litLum *= 1.0 / float(CRT_OVERSAMPLE2);
 		}
 		else
 	#endif
@@ -325,10 +342,10 @@ void main()
 	lum *= glass.rgb;
 
 	// Convert to output color space
-	if (displayOutputMode == 0.0) // No tonemap, linear Color space
+	BRANCH if (displayOutputMode == 0.0) // No tonemap, linear Color space
 		gl_FragColor = vec4(lum, 1.0);
-	else if (displayOutputMode == 1.0) // Reinhard tonemapping, linear colorspace
+	else BRANCH if (displayOutputMode == 1.0) // Reinhard tonemapping, linear colorspace
 		gl_FragColor = vec4(ReinhardToneMap(lum), 1.0);
-	else if (displayOutputMode == 2.0) // Reinhard tonemapping, sRGB colorspace
+	else BRANCH if (displayOutputMode == 2.0) // Reinhard tonemapping, sRGB colorspace
 		gl_FragColor = vec4(FBGamma(ReinhardToneMap(lum)), 1.0);
 }
