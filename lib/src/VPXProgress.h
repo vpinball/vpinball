@@ -9,5 +9,10 @@
 class VPXProgress: public VPXFileFeedback
 {
 public:
-   void LoadingProgressUpdated(int loaded, int total) override;
+   void SetProgress(unsigned int progress) override;
+   void SetLength(unsigned int length) override;
+   
+private:
+   unsigned int m_progress = 0;
+   unsigned int m_total = 1;
 };

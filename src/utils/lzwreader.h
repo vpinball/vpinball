@@ -1,9 +1,12 @@
 #pragma once
 
+#include "pole/pole.h"
+
+
 class LZWReader final
 {
 public:
-   LZWReader(IStream * const pstm, uint8_t *output, const unsigned int width); // immediately decodes pstm content into output
+   LZWReader(POLE::Stream *stream, uint8_t *output, const unsigned int width); // immediately decodes content into output
    ~LZWReader() { }
 
 private:
@@ -14,11 +17,11 @@ private:
    unsigned int get_next_code();
    uint8_t get_byte();
 
-   IStream * const m_pstm;
+   POLE::Stream *const m_stream;
 
 #ifdef _DEBUG
    // This value is incremented each time an out of range code is read by the decoder. When this value is non - zero after a decode, your file is probably corrupt in some way
-   int bad_code_count;
+   int bad_code_count = 0;
 #endif
 
    unsigned int curr_size;        // The current code size
@@ -35,8 +38,7 @@ private:
    uint16_t prefix[MAX_CODES + 1];// Prefix linked list
 
    // read file in chunks of FILE_BUF_SIZE
-   int m_cfilebuffer;
+   int m_cfilebuffer = FILE_BUF_SIZE - 1;
    uint8_t m_pfilebufferbytes[FILE_BUF_SIZE];
-
-   ULONG m_readahead;             // How many bytes we read into our buffer
+   uint64_t m_readahead = FILE_BUF_SIZE; // How many bytes we read into our buffer
 };

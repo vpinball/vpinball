@@ -696,10 +696,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/ToolbarDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.cpp">
-      <Filter>ui\win\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXSaveFileProgressBar.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/Win32ProgressBar.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/properties/PropertyDialog.cpp">
@@ -888,9 +885,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/miniz/miniz.c">
-      <Filter>third-party</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
@@ -911,6 +905,12 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.cpp">
       <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/miniz/miniz.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/pole/pole.cpp">
+      <Filter>third-party</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>third-party\tinyxml2</Filter>
@@ -1655,10 +1655,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/ScriptErrorDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.h">
-      <Filter>ui\win\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXSaveFileProgressBar.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/Win32ProgressBar.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/properties/PropertyDialog.h">
@@ -1894,6 +1891,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_surround.h">
       <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/pole/pole.h">
+      <Filter>third-party</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.h">
       <Filter>third-party\tinyxml2</Filter>

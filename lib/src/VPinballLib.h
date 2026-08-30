@@ -17,7 +17,7 @@ using std::string;
 using std::vector;
 
 struct ProgressData {
-   int progress;
+   unsigned int progress;
 };
 
 struct RumbleData {

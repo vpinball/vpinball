@@ -951,8 +951,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/hitsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/paintsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/ProgressDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXSaveFileProgressBar.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/Win32ProgressBar.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/AboutDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/CollectionManagerDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/dialogs/DimensionDialog.cpp" />
@@ -1029,6 +1028,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/pole/pole.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1778,8 +1780,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/ProgressDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/sur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXLoadFileProgressBar.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/VPXSaveFileProgressBar.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/Win32ProgressBar.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/AboutDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/CollectionManagerDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/dialogs/DimensionDialog.h" />
@@ -1937,8 +1938,9 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/serial.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/stb_image.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/ThreadPool.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/pole/pole.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/simple-uri-parser/uri_parser.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/default_resource.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore0.h" />

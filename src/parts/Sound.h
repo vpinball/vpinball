@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "pole/pole.h"
+
+
 namespace VPX
 {
 
@@ -18,7 +21,7 @@ class Sound final
 {
 public:
    static Sound* CreateFromFile(const std::filesystem::path& filename);
-   static Sound* CreateFromStream(IStream* pstm, const int LoadFileVersion);
+   static Sound* CreateFromStream(POLE::Stream& stream, const int LoadFileVersion);
 
    Sound(string name, std::filesystem::path path, vector<uint8_t> data)
       : m_name(std::move(name))

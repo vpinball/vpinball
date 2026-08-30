@@ -1743,7 +1743,7 @@ void Renderer::RenderStaticPrepass()
       #endif
 
 #ifdef __LIBVPINBALL__
-      VPinballLib::ProgressData progressData = { (n_iter - iter) * 100 / n_iter };
+      VPinballLib::ProgressData progressData = { static_cast<unsigned int>((n_iter - iter) * 100 / n_iter) };
       VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PRERENDERING, &progressData);
 #endif
       m_renderDevice->m_curDrawnTriangles = 0;
