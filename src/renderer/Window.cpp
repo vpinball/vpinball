@@ -74,20 +74,18 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
-   m_windowMode = (WindowMode) settings.GetWindow_FullScreen(m_windowId);
-   if (g_isMobile)
-      m_windowMode = WindowMode::BorderlessFullscreen;
+   m_windowMode = g_isMobile ? WindowMode::BorderlessFullscreen : static_cast<WindowMode>(settings.GetWindow_FullScreen(m_windowId));
    
    // Both fullscreen and windowed modes are anchored to a user selected display
    const string configuredDisplay = settings.GetWindow_Display((int)m_windowId);
    const DisplayConfig selectedDisplay = GetDisplayConfig(configuredDisplay);
    if (configuredDisplay.empty())
    {
-      PLOGI << "No display configured. Using display \"" << selectedDisplay.displayName << "\".";
+      PLOGI << "No display configured. Using display \"" << selectedDisplay.displayId << "\".";
    }
-   else if (selectedDisplay.displayName != configuredDisplay)
+   else if (selectedDisplay.displayId != configuredDisplay)
    {
-      PLOGW << "The selected display \"" << configuredDisplay << "\" is not available. Using display \"" << selectedDisplay.displayName << "\" instead.";
+      PLOGW << "The selected display \"" << configuredDisplay << "\" is not available. Using display \"" << selectedDisplay.displayId << "\" instead.";
    }
    int wnd_x = selectedDisplay.left;
    int wnd_y = selectedDisplay.top;
@@ -287,7 +285,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    if (const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display); displayMode)
    {
-      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_pixelWidth, m_pixelHeight, selectedDisplay.displayName.c_str(),
+      PLOGI << std::format("Window #{} ({}x{}) was created on display {} [{}x{} {}Hz {}]", (int)m_windowId, m_pixelWidth, m_pixelHeight, selectedDisplay.displayId.c_str(),
          selectedDisplay.videomode.GetPixelWidth(), selectedDisplay.videomode.GetPixelHeight(), selectedDisplay.videomode.refreshrate, SDL_GetPixelFormatName(displayMode->format));
    }
 }
@@ -409,6 +407,7 @@ vector<Window::DisplayConfig> Window::GetDisplays()
          DisplayConfig displayConf {};
          displayConf.display = displayIDs[i];
          displayConf.displayName = SDL_GetDisplayName(displayIDs[i]);
+         displayConf.displayId = std::format("{} [{}, {}]", displayConf.displayName, displayBounds.x, displayBounds.y);
          displayConf.left = displayBounds.x; // Logical position
          displayConf.top = displayBounds.y;
          displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
@@ -438,7 +437,7 @@ Window::DisplayConfig Window::GetDisplayConfig(const string& display)
    vector<DisplayConfig> displays = GetDisplays();
    for (const DisplayConfig& dispConf : displays)
    {
-      if (dispConf.displayName == display) // Defaults to the display selected in the settings
+      if (dispConf.displayId == display) // Defaults to the display selected in the settings
       {
          selectedDisplay = dispConf;
          break;
