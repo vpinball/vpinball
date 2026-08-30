@@ -216,6 +216,8 @@ std::shared_ptr<BaseTexture> VPXPluginAPIImpl::GetTexture(VPXTexture texture) co
 
 void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image)
 {
+   assert(g_pplayer);
+   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXTextureBlock** tex = reinterpret_cast<VPXTextureBlock**>(texture);
    if (*tex == nullptr)
       *tex = new VPXTextureBlock();
@@ -233,7 +235,6 @@ void MSGPIAPI VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, in
 VPXTexture MSGPIAPI VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread and other rendering backends are single threaded
-   g_pplayer->m_pluginManager.AssertAPIThread();
    VPXTextureBlock* tex = new VPXTextureBlock();
    tex->tex = BaseTexture::CreateFromData(rawData, size);
    if (tex->tex == nullptr)
