@@ -39,8 +39,9 @@ class VNIColorizer
 {
 public:
    VNIColorizer(const std::filesystem::path& palPath, const std::filesystem::path& vniPath, uint32_t controllerEndpointId)
-      : m_pVNI(Vni_LoadFromPaths(palPath.string().c_str(), vniPath.empty() ? nullptr : vniPath.string().c_str(), nullptr, nullptr))
-      , m_controllerEndpointId(controllerEndpointId)
+      : m_controllerEndpointId(controllerEndpointId)
+      , m_palPath(palPath)
+      , m_vniPath(vniPath)
       , m_dmdSource(
            msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
            [this]() { StopColorizeThread(); }, [this]() { StartColorizeThread(); })
@@ -48,25 +49,14 @@ public:
       , m_colorizedframeId(std_rand())
       , m_onConsoleDataId(msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA))
    {
-      if (m_pVNI)
-      {
          msgApi->SubscribeMsg(endpointId, m_onConsoleDataId, OnConsoleDataStatic, this);
          m_dmdSource.SelectItems(true);
-      }
-      else
-      {
-         LOGE("Failed to load colorization data");
-      }
    }
 
    ~VNIColorizer()
    {
       StopColorizeThread();
-      if (m_pVNI)
-      {
-         msgApi->UnsubscribeMsg(m_onConsoleDataId, OnConsoleDataStatic, this);
-         Vni_Dispose(m_pVNI);
-      }
+      msgApi->UnsubscribeMsg(m_onConsoleDataId, OnConsoleDataStatic, this);
       msgApi->ReleaseMsgID(m_onConsoleDataId);
    }
 
@@ -130,6 +120,14 @@ private:
 
    void ColorizeThread(DisplaySrcId dmdId)
    {
+      m_pVNI = Vni_LoadFromPaths(m_palPath.string().c_str(), m_vniPath.empty() ? nullptr : m_vniPath.string().c_str(), nullptr, nullptr);
+      if (m_pVNI == nullptr)
+      {
+         LOGE("Failed to load colorization data");
+         m_isRunning = false;
+         return;
+      }
+
       SetThreadName("VNI.ColorizeThread"s);
       unsigned int lastFrameId = 0;
       while (m_isRunning)
@@ -137,70 +135,76 @@ private:
          // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
          std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
-         std::lock_guard stateLock(m_stateMutex);
-
-         // Process incoming frames from DMD source
-         const Vni_Frame_Struc* vniFrame = nullptr;
-         m_dmdSource.With(
-            [&](const std::vector<DisplaySrcId>& items)
-            {
-               const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
-               if (frame.frame == nullptr)
-               {
-                  m_isRunning = false;
-                  return;
-               }
-
-               if (frame.frameId == lastFrameId)
-                  return;
-               lastFrameId = frame.frameId;
-
-               const uint8_t bitlen = dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 ? 4 : 2;
-               const uint8_t* indexed = static_cast<const uint8_t*>(frame.frame);
-               const uint32_t result = Vni_Colorize(m_pVNI, indexed, dmdId.width, dmdId.height, bitlen);
-               if (!result)
-                  return;
-
-               vniFrame = Vni_GetFrame(m_pVNI);
-            });
-
-         if (!vniFrame || !vniFrame->has_frame)
-            continue;
-
-         unsigned int outWidth = vniFrame->width;
-         unsigned int outHeight = vniFrame->height;
-         if (outWidth != m_advertisedWidth || outHeight != m_advertisedHeight)
          {
-            msgApi->RunOnMainThread(
-               endpointId, -1,
-               [](void* userData)
-               {
-                  const Vni_Frame_Struc* vniFrame = static_cast<const Vni_Frame_Struc*>(userData);
-                  DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
-                  const unsigned int size = vniFrame->width * vniFrame->height;
-                  colorizer->m_colorizedDmd.ClearItems();
-                  // FIXME if a concurrent GetRenderFrame has been done returning the previous backing buffer, this will discard it and lead to an invalid mem access
-                  colorizer->m_colorFrame.resize(size * 3);
-                  colorizer->m_colorizedDmd.AddItem({
-                     .id = { { endpointId, 0 } }, //
-                     .groupId = { endpointId, 0 }, //
-                     .overrideId = dmdId.id, //
-                     .width = vniFrame->width, //
-                     .height = vniFrame->height, //
-                     .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
-                     .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
-                     .GetRenderFrame = &GetRenderFrame //
-                  });
-               },
-               const_cast<Vni_Frame_Struc*>(vniFrame));
-            m_advertisedWidth = outWidth;
-            m_advertisedHeight = outHeight;
-         }
+            std::lock_guard stateLock(m_stateMutex);
 
-         for (unsigned int i = 0; i < outWidth * outHeight; i++)
-            memcpy(&(m_colorFrame[i * 3]), &vniFrame->palette[vniFrame->frame[i] * 3], 3);
-         m_colorizedframeId++;
+            if (m_pendingAdvertisement)
+               continue;
+
+            // Process incoming frames from DMD source
+            const Vni_Frame_Struc* vniFrame = nullptr;
+            m_dmdSource.With(
+               [&](const std::vector<DisplaySrcId>& items)
+               {
+                  const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+                  if (frame.frame == nullptr)
+                  {
+                     m_isRunning = false;
+                     return;
+                  }
+
+                  if (frame.frameId == lastFrameId)
+                     return;
+                  lastFrameId = frame.frameId;
+
+                  const uint8_t bitlen = dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4 ? 4 : 2;
+                  const uint8_t* indexed = static_cast<const uint8_t*>(frame.frame);
+                  const uint32_t result = Vni_Colorize(m_pVNI, indexed, dmdId.width, dmdId.height, bitlen);
+                  if (!result)
+                     return;
+
+                  vniFrame = Vni_GetFrame(m_pVNI);
+               });
+
+            if (!vniFrame || !vniFrame->has_frame)
+               continue;
+
+            if (vniFrame->width != m_advertisedWidth || vniFrame->height != m_advertisedHeight)
+            {
+               m_pendingAdvertisement = true;
+               msgApi->RunOnMainThread(
+                  endpointId, 0,
+                  [](void* userData)
+                  {
+                     std::lock_guard stateLock(colorizer->m_stateMutex);
+                     const Vni_Frame_Struc* vniFrame = static_cast<const Vni_Frame_Struc*>(userData);
+                     DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
+                     colorizer->m_advertisedWidth = vniFrame->width;
+                     colorizer->m_advertisedHeight = vniFrame->height;
+                     colorizer->m_pendingAdvertisement = false;
+                     colorizer->m_colorFrame.resize(vniFrame->width * vniFrame->height * 3);
+                     colorizer->m_colorizedDmd.SetItem({
+                        .id = { { endpointId, 0 } }, //
+                        .groupId = { endpointId, 0 }, //
+                        .overrideId = dmdId.id, //
+                        .width = vniFrame->width, //
+                        .height = vniFrame->height, //
+                        .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                        .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
+                        .GetRenderFrame = &GetRenderFrame //
+                     });
+                  },
+                  const_cast<Vni_Frame_Struc*>(vniFrame));
+               continue;
+            }
+
+            for (unsigned int i = 0; i < vniFrame->width * vniFrame->height; i++)
+               memcpy(&(m_colorFrame[i * 3]), &vniFrame->palette[vniFrame->frame[i] * 3], 3);
+            m_colorizedframeId++;
+         }
       }
+      Vni_Dispose(m_pVNI);
+      m_pVNI = nullptr;
       m_isRunning = false;
    }
 
@@ -259,14 +263,16 @@ private:
       }
    }
 
-   Vni_Context* const m_pVNI;
    const uint32_t m_controllerEndpointId;
+   const std::filesystem::path m_palPath;
+   const std::filesystem::path m_vniPath;
 
    CtrlItemConsumer<DisplaySrcId> m_dmdSource;
    CtrlItemProvider<DisplaySrcId> m_colorizedDmd;
 
    std::atomic_bool m_isRunning { false };
    std::thread m_colorizeThread;
+   Vni_Context* m_pVNI = nullptr;
 
    const unsigned int m_onConsoleDataId;
    std::mutex m_consoleDataMutex;
@@ -275,6 +281,7 @@ private:
 
    std::mutex m_stateMutex;
    std::vector<uint8_t> m_colorFrame;
+   bool m_pendingAdvertisement = false;
    unsigned int m_advertisedWidth = 0;
    unsigned int m_advertisedHeight = 0;
    unsigned int m_colorizedframeId = 0;
