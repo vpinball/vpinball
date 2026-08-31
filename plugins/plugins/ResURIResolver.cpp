@@ -50,10 +50,6 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
 
 ResURIResolver::~ResURIResolver()
 {
-   // The consumers invoke their on-change callbacks from their destructor, and
-   // those callbacks clear the caches below. Members are destroyed in reverse
-   // declaration order, which would destroy each cache before its consumer,
-   // so release the consumers explicitly while the caches are still alive.
    m_displaySources.reset();
    m_segSources.reset();
    m_stateSources.reset();
