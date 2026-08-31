@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <mutex>
 #include <random>
+#include <algorithm>
 #include <thread>
 #include <vector>
 
@@ -43,6 +44,9 @@ static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<class SerumColorizer> colorizer;
 
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
+
+// A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
+static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
 
 class SerumColorizer
 {
@@ -93,7 +97,7 @@ private:
 
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (isFromController(item) && item.GetIdentifyFrame != nullptr && item.width >= 128)
+         if (isFromController(item) && IsColorizableDmd(item))
             selected = item;
 
       items.clear();
@@ -145,7 +149,7 @@ private:
          std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
          // Lock stateMutex as we directly returns internal Serum colorized frames (which may be modified by the calls here after)
-         std::lock_guard targetLock(m_stateMutex);
+         std::unique_lock targetLock(m_stateMutex);
 
          bool updated = false;
 
@@ -189,8 +193,7 @@ private:
             while (animationNextTick < now)
             {
                const uint32_t nextrot = Serum_Rotate();
-               updated |= (m_pSerum->SerumVersion == SERUM_V1) && ((m_pSerum->flags & FLAG_RETURNED_V1_ROTATED) != 0);
-               updated |= (m_pSerum->SerumVersion == SERUM_V2) && ((m_pSerum->flags & (FLAG_RETURNED_V2_ROTATED32 | FLAG_RETURNED_V2_ROTATED64)) != 0);
+               updated |= (nextrot & (FLAG_RETURNED_V1_ROTATED | FLAG_RETURNED_V2_ROTATED32 | FLAG_RETURNED_V2_ROTATED64 | FLAG_RETURNED_V2_SCENE)) != 0;
                const uint32_t delayMs = nextrot & 0x0000ffff;
                if (delayMs == 0 || delayMs >= SERUM_MAX_ROTATION_DELAY_MS)
                {
@@ -210,6 +213,8 @@ private:
             const unsigned int size = dmdId.width * dmdId.height;
             if (m_colorFrameV1.size() != size * 3)
             {
+               // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
+               targetLock.unlock();
                msgApi->RunOnMainThread(
                   endpointId, -1,
                   [](void* userData)
@@ -232,12 +237,16 @@ private:
                      });
                   },
                   this);
+               targetLock.lock();
             }
             for (unsigned int i = 0; i < size; i++)
                memcpy(&(m_colorFrameV1[i * 3]), &m_pSerum->palette[m_pSerum->frame[i] * 3], 3);
          }
-         else if (m_advertisedWidth32 != m_pSerum->width32 || m_advertisedWidth64 != m_pSerum->width64)
+         // Widths are per frame (0 when a size is missing), so advertise each size once and keep it
+         else if ((m_pSerum->width32 != 0 && m_advertisedWidth32 != m_pSerum->width32) || (m_pSerum->width64 != 0 && m_advertisedWidth64 != m_pSerum->width64))
          {
+            // Blocks on the main thread, which may be waiting for m_stateMutex in GetRenderFrame
+            targetLock.unlock();
             msgApi->RunOnMainThread(
                endpointId, -1,
                [](void* userData)
@@ -245,8 +254,10 @@ private:
                   SerumColorizer* colorizer = static_cast<SerumColorizer*>(userData);
                   DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
                   colorizer->m_colorizedDmd.ClearItems();
-                  colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
-                  colorizer->m_advertisedWidth64 = colorizer->m_pSerum->width64;
+                  if (colorizer->m_pSerum->width32 != 0)
+                     colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
+                  if (colorizer->m_pSerum->width64 != 0)
+                     colorizer->m_advertisedWidth64 = colorizer->m_pSerum->width64;
                   if (colorizer->m_advertisedWidth32 > 0)
                   {
                      colorizer->m_colorizedDmd.AddItem({
@@ -275,6 +286,7 @@ private:
                   }
                },
                this);
+            targetLock.lock();
          }
          m_colorizedframeId++;
       }
@@ -350,13 +362,18 @@ static std::filesystem::path GetColorization(const std::string_view& gameId)
    return std::filesystem::path();
 }
 
-// Select the first controller exposing a game for which we have the corresponding assets
+// Select the first controller exposing an identifiable DMD and a game for which we have the corresponding assets
 static void SelectController(std::vector<ControllerDef>& items)
 {
+   const unsigned int getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   const std::vector<DisplaySrcId> displays = PinballPlugin::Controller::GetCtrlItems<DisplaySrcId>(msgApi, endpointId, getDisplaySrcId);
+   msgApi->ReleaseMsgID(getDisplaySrcId);
    for (const ControllerDef& controller : items)
    {
+      const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
+         [&controller](const DisplaySrcId& display) { return display.id.endpointId == controller.endpointId && IsColorizableDmd(display); });
       const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
-      if (!gameId.empty() && !GetColorization(gameId).empty())
+      if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
       {
          items.clear();
          items.push_back(controller);
