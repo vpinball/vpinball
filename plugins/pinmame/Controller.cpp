@@ -44,6 +44,8 @@ Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, const P
    m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnDmdSrcChanged, this);
+
+   m_stateSources.Subscribe();
 }
 
 Controller::~Controller()
@@ -51,6 +53,8 @@ Controller::~Controller()
    assert(m_threadLock == std::this_thread::get_id());
 
    Stop();
+
+   m_stateSources.Unsubscribe();
 
    m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
