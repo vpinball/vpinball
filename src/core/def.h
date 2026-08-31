@@ -911,6 +911,11 @@ vector<uint8_t> read_file(const std::filesystem::path& filename, const bool bina
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
 inline bool DirExists(const std::filesystem::path& dirPath) { return std::filesystem::exists(dirPath) && std::filesystem::is_directory(dirPath); }
 inline bool FileExists(const std::filesystem::path& filePath) { return std::filesystem::exists(filePath) && !std::filesystem::is_directory(filePath); }
+// True if the path lives on a network/remote filesystem (SMB, NFS, ...). Best-effort: on any
+// query failure or unknown filesystem it returns false (treated as local). Used to pick a
+// sequential single-threaded read strategy for network shares, where interleaved concurrent
+// reads defeat the client's read-ahead.
+bool IsNetworkPath(const std::filesystem::path& path);
 inline string TitleFromFilename(const std::filesystem::path& filename) { return filename.stem().string(); }
 inline std::filesystem::path PathFromFilename(const std::filesystem::path& filename) { return filename.parent_path(); }
 string normalize_path_separators(const string& szPath);

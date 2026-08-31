@@ -1614,8 +1614,23 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
          }
 
          // Dispatch all load tasks & wait, updating the progress bar on UI thread
-         // Tasks are sorted by storage offset to limit read back and get better reading performance
-         ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+         // Tasks are sorted by storage offset to limit read back and get better reading performance.
+         // Concurrent workers read their own streams, which interleaves requests on the underlying
+         // file. On local storage that is a win (parsing parallelises). Over a network share it is a
+         // loss: interleaved reads defeat the SMB/NFS client read-ahead, and a single reader visiting
+         // streams in offset order is several times faster. So size the pool by where the table lives,
+         // overridable via the Editor/LoadThreadPoolMode setting.
+         const int logicalCores = g_app->GetLogicalNumberOfProcessors();
+         int loadPoolSize;
+         switch (m_settings.GetEditor_LoadThreadPoolMode())
+         {
+         case 1: loadPoolSize = 1; break; // Single Threaded
+         case 2: loadPoolSize = logicalCores; break; // Multi Threaded
+         default: loadPoolSize = IsNetworkPath(m_filename) ? 1 : logicalCores; break; // Auto
+         }
+         PLOGI << "Loading " << loadQueue.size() << " table streams on " << loadPoolSize
+               << (loadPoolSize == 1 ? " thread" : " threads");
+         ThreadPool pool(loadPoolSize);
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
          for (const LoadTask &task : loadQueue)

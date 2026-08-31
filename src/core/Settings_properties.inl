@@ -4,6 +4,9 @@ PropString(Version, VPinball, "VPX Version"s, "VPX version that saved this file"
 // General Application settings
 PropBool(Editor, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
 PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrity validation (risky; but slightly faster loading)"s, false);
+PropEnum(Editor, LoadThreadPoolMode, "Table Load Concurrency"s,
+   "Thread pool size used to read and parse table data during load.\nAuto reads with a single thread for network/SMB paths (keeps reads sequential, far faster over the network) and uses multi threaded for local storage.\nSingle Threaded forces one thread; Multi Threaded forces all cores."s,
+   int, 0, "Auto"s, "Single Threaded"s, "Multi Threaded"s);
 
 // Audio settings
 PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played from the backglass speakers"s, 0, 100, 100);
