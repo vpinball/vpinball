@@ -42,12 +42,12 @@ public:
       : m_controllerEndpointId(controllerEndpointId)
       , m_palPath(palPath)
       , m_vniPath(vniPath)
+      , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
+      , m_onConsoleDataId(msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA))
+      , m_colorizedframeId(std_rand())
       , m_dmdSource(
            msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
            [this]() { StopColorizeThread(); }, [this]() { StartColorizeThread(); })
-      , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
-      , m_colorizedframeId(std_rand())
-      , m_onConsoleDataId(msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_CONSOLE_DATA))
    {
          msgApi->SubscribeMsg(endpointId, m_onConsoleDataId, OnConsoleDataStatic, this);
          m_dmdSource.SelectItems(true);
@@ -267,7 +267,6 @@ private:
    const std::filesystem::path m_palPath;
    const std::filesystem::path m_vniPath;
 
-   CtrlItemConsumer<DisplaySrcId> m_dmdSource;
    CtrlItemProvider<DisplaySrcId> m_colorizedDmd;
 
    std::atomic_bool m_isRunning { false };
@@ -285,6 +284,8 @@ private:
    unsigned int m_advertisedWidth = 0;
    unsigned int m_advertisedHeight = 0;
    unsigned int m_colorizedframeId = 0;
+
+   CtrlItemConsumer<DisplaySrcId> m_dmdSource;
 };
 
 static void OnControllersChanged()
@@ -410,6 +411,7 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
 
 MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
 {
+   colorizer = nullptr;
    controllers = nullptr;
    msgApi = nullptr;
 }
