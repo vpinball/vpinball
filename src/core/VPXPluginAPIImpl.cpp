@@ -338,7 +338,10 @@ bool VPXPluginAPIImpl::IsScriptContributor(const unsigned int endpointId) const 
 void MSGPIAPI VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
 {
    VPXPluginAPIImpl& pi = g_pplayer->m_pluginAPI;
-   // FIXME implement in DynamicDispatch
+   static const char* typeNames[] = { "Failure", "Invalid argument", "Null pointer", "Not implemented" };
+   const char* typeName = type < std::size(typeNames) ? typeNames[type] : "Unknown error";
+   PLOGE << "Script error reported by plugin (" << typeName << "): " << (message ? message : "");
+   // FIXME implement in DynamicDispatch (raise an actual script error instead of just logging)
 }
 
 ScriptClassDef* MSGPIAPI VPXPluginAPIImpl::GetClassDef(const char* typeName)
