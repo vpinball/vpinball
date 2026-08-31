@@ -102,8 +102,14 @@ static UpscalerMode nextUpscalerMode = UM_Disabled;
 static int GetUpscalerMode() { return (int)upscalerMode; }
 static void SetUpscalerMode(int v)
 {
-   nextUpscalerMode = (UpscalerMode) v;
-   dmdSource->SelectItems(false);
+   const UpscalerMode mode = static_cast<UpscalerMode>(v);
+   if (nextUpscalerMode != mode)
+   {
+      // Force a DMD source update (refresh would discard selecting the same source but with a different upscaler)
+      dmdSource->Unsubscribe();
+      nextUpscalerMode = mode;
+      dmdSource->Subscribe();
+   }
 }
 MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
 
@@ -446,12 +452,12 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
             });
       });
    msgApi->RegisterSetting(endpointId, &upscaleModeProp);
-   dmdSource->SelectItems(true);
+   dmdSource->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
 {
-   upscaler = nullptr;
+   dmdSource->Unsubscribe();
    dmdSource = nullptr;
    msgApi = nullptr;
 }

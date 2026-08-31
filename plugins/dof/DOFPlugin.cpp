@@ -244,13 +244,13 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPlug
       },
       []() { dofThread = nullptr; },
       []() { SetupDOF(); });
-   controllers->SelectItems(true);
+   controllers->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
 {
+   controllers->Unsubscribe();
    controllers = nullptr;
-   dofThread = nullptr;
    pDOF = nullptr;
 
    msgApi = nullptr;

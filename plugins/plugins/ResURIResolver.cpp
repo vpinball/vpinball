@@ -26,7 +26,7 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
          nullptr, // No filtering
          [this]() { m_displayCache.clear(); },
          nullptr); // No setup
-      m_displaySources->SelectItems(true);
+      m_displaySources->Subscribe();
    }
    if (trackSegDisplays)
    {
@@ -35,7 +35,7 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
          nullptr, // No filtering
          [this]() { m_segCache.clear(); },
          nullptr); // No setup
-      m_segSources->SelectItems(true);
+      m_segSources->Subscribe();
    }
    if (trackStates)
    {
@@ -44,15 +44,18 @@ ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpoint
          nullptr, // No filtering
          [this]() { m_floatCache.clear(); },
          nullptr); // No setup
-      m_stateSources->SelectItems(true);
+      m_stateSources->Subscribe();
    }
 }
 
 ResURIResolver::~ResURIResolver()
 {
-   m_displaySources.reset();
-   m_segSources.reset();
-   m_stateSources.reset();
+   if (m_displaySources)
+      m_displaySources->Unsubscribe();
+   if (m_segSources)
+      m_segSources->Unsubscribe();
+   if (m_stateSources)
+      m_stateSources->Unsubscribe();
 }
 
 string ResURIResolver::trim_string(const string &str)

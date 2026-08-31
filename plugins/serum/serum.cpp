@@ -58,7 +58,7 @@ public:
    {
       if (m_pSerum)
       {
-         m_dmdSource.SelectItems(true);
+         m_dmdSource.Subscribe();
       }
       else
       {
@@ -70,7 +70,10 @@ public:
    {
       StopColorizeThread();
       if (m_pSerum)
+      {
+         m_dmdSource.Unsubscribe();
          Serum_Dispose();
+      }
    }
 
 private:
@@ -396,12 +399,12 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
          std::erase_if(items, [pinmamePrefix](const ControllerDef& controller) { return !string(controller.gameId).starts_with(pinmamePrefix); });
       },
       []() { colorizer = nullptr; }, []() { OnControllerChanged(); });
-   controllers->SelectItems(true);
+   controllers->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
-   colorizer = nullptr;
+   controllers->Unsubscribe();
    controllers = nullptr;
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi = nullptr;

@@ -641,11 +641,12 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       [](std::vector<SegSrcId>& items) { SelectSource(items); },
       []() { renderer = nullptr; },
       []() { SetupRenderer(); });
-   segSource->SelectItems(true);
+   segSource->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
+   segSource->Unsubscribe();
    segSource = nullptr;
    msgApi = nullptr;
 }
