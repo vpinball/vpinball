@@ -128,7 +128,9 @@ private:
    void ProcessFrame(const DisplaySrcId& dmdSource)
    {
       const DisplayFrame frame = dmdSource.GetRenderFrame(dmdSource.id);
-      if (m_lastFrameID == frame.frameId)
+      // A source may answer with no frame (for example PinMAME once its emulation
+      // is stopped but before it has retracted its display sources)
+      if (frame.frame == nullptr || m_lastFrameID == frame.frameId)
          return;
       m_lastFrameID = frame.frameId;
 
@@ -185,7 +187,7 @@ private:
 
    std::unique_ptr<DMDUtil::DMD> m_pDmd;
    std::thread m_updateThread;
-   bool m_isRunning = true;
+   std::atomic<bool> m_isRunning { true };
    int m_lastFrameID = 0;
 };
 
