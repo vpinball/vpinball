@@ -324,12 +324,28 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                if (plugin)
                {
                   int resId = 0;
-                  if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end())
-                     try_parse_int(resIdPart->second, resId);
-
-                  auto source = std::ranges::find_if(sources.begin(), sources.end(), [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
-                  if (source != sources.end())
-                     displaySource = std::to_address(source);
+                  if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end() && try_parse_int(resIdPart->second, resId))
+                  {
+                     auto source = std::ranges::find_if(sources, [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
+                     if (source != sources.end())
+                        displaySource = std::to_address(source);
+                  }
+                  else
+                  {
+                     // No id: select first source from selected endpoint
+                     auto source = sources.end();
+                     uint32_t bestResId = UINT32_MAX;
+                     for (auto it = sources.begin(); it != sources.end(); ++it)
+                     {
+                        if (it->id.endpointId == plugin && (source == sources.end() || it->id.resId < bestResId))
+                        {
+                           source = it;
+                           bestResId = it->id.resId;
+                        }
+                     }
+                     if (source != sources.end())
+                        displaySource = std::to_address(source);
+                  }
                }
             }
 
