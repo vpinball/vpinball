@@ -201,7 +201,7 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
          std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
       },
       []() { StopAltSound(); }, []() { SetupAltSound(); });
-   controllers->SelectItems(true);
+   controllers->Subscribe();
 
    msgApi->SubscribeMsg(endpointId, onAudioCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD), OnGameEvent, nullptr);
    getMachineStateId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
@@ -214,6 +214,7 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
 
    msgApi->FlushPendingCallbacks(endpointId);
 
+   controllers->Unsubscribe();
    controllers = nullptr;
 
    altsoundAudioSrc = nullptr;

@@ -36,7 +36,10 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
                  return !gameId.starts_with(pinmamePrefix) && !gameId.starts_with(b2sPrefix);
               });
         },
-        []() { },
+        [this]() {
+           if (m_stateSources.IsSubscribed())
+              m_stateSources.Unsubscribe();
+        },
         [this]()
         {
            m_controllers.With(
@@ -58,11 +61,13 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
                  }
               });
            OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
-           m_stateSources.SelectItems(true);
+           if (m_pinmameEndPoint != 0)
+              m_stateSources.Subscribe();
         })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
-        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); }, nullptr,
+        [this](std::vector<StateSrcId>& stateSources) { std::erase_if(stateSources, [this](const StateSrcId& src) { return src.id.endpointId != m_pinmameEndPoint; }); }, //
+        nullptr, // onItemsAboutToChange
         [this]()
         {
            for (auto& buffer : m_pmStates)
@@ -75,8 +80,7 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
    m_msgApi->SubscribeMsg(m_endpointId, m_onB2SStateChangeId, OnB2SStateChange, this);
    OnSegSrcChanged(m_onSegSrcChangedId, this, nullptr);
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
-   m_controllers.SelectItems(true);
-   m_stateSources.SelectItems(true);
+   m_controllers.Subscribe();
 
    m_thread = std::thread(&B2SPluginEventStream::StatePollingThread, this);
 }
@@ -86,6 +90,9 @@ B2SPluginEventStream::~B2SPluginEventStream()
    m_isRunning = false;
    if (m_thread.joinable())
       m_thread.join();
+
+   m_controllers.Unsubscribe();
+   assert(!m_stateSources.IsSubscribed());
 
    m_msgApi->UnsubscribeMsg(m_onSegSrcChangedId, OnSegSrcChanged, this);
    m_msgApi->UnsubscribeMsg(m_onDmdSrcChangedId, OnDMDSrcChanged, this);

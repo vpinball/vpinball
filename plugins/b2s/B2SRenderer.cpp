@@ -31,7 +31,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        nullptr, [this]() { m_stateSources.SelectItems(true); })
+        nullptr, [this]() { m_stateSources.Refresh(); })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& items)
@@ -64,12 +64,14 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
    m_msgApi->SubscribeMsg(m_endpointId, m_onSegChangedMsgId, OnSegSrcChanged, this);
    OnSegSrcChanged(m_onSegChangedMsgId, this, nullptr);
 
-   m_pinmameControllers.SelectItems(true);
-   m_stateSources.SelectItems(true);
+   m_stateSources.Subscribe();
+   m_pinmameControllers.Subscribe();
 }
 
 B2SRenderer::~B2SRenderer()
 {
+   m_stateSources.Unsubscribe();
+   m_pinmameControllers.Unsubscribe();
    m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
    m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);

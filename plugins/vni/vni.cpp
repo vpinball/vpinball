@@ -50,12 +50,13 @@ public:
            [this]() { StopColorizeThread(); }, [this]() { StartColorizeThread(); })
    {
          msgApi->SubscribeMsg(endpointId, m_onConsoleDataId, OnConsoleDataStatic, this);
-         m_dmdSource.SelectItems(true);
+         m_dmdSource.Subscribe();
    }
 
    ~VNIColorizer()
    {
       StopColorizeThread();
+      m_dmdSource.Unsubscribe();
       msgApi->UnsubscribeMsg(m_onConsoleDataId, OnConsoleDataStatic, this);
       msgApi->ReleaseMsgID(m_onConsoleDataId);
    }
@@ -406,12 +407,12 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
          std::erase_if(items, [pinmamePrefix](const ControllerDef& controller) { return !string(controller.gameId).starts_with(pinmamePrefix); });
       },
       []() { colorizer = nullptr; }, []() { OnControllersChanged(); });
-   controllers->SelectItems(true);
+   controllers->Subscribe();
 }
 
 MSGPI_EXPORT void MSGPIAPI VNIPluginUnload()
 {
-   colorizer = nullptr;
+   controllers->Unsubscribe();
    controllers = nullptr;
    msgApi = nullptr;
 }

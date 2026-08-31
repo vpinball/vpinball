@@ -48,7 +48,7 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        nullptr, [this]() { m_stateSources.SelectItems(true); })
+        nullptr, [this]() { m_stateSources.Refresh(); })
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& items)
@@ -82,8 +82,8 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    m_msgApi->SubscribeMsg(m_endpointId, m_onGetAuxRendererId, OnGetRendererStatic, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
 
-   m_pinmameControllers.SelectItems(true);
-   m_stateSources.SelectItems(true);
+   m_stateSources.Subscribe();
+   m_pinmameControllers.Subscribe();
 }
 
 Server::~Server()
@@ -91,6 +91,9 @@ Server::~Server()
    m_gameRunning = false;
    m_exposedControllers.ClearItems();
    m_exposedStates.ClearItems();
+
+   m_stateSources.Unsubscribe();
+   m_pinmameControllers.Unsubscribe();
 
    m_msgApi->UnsubscribeMsg(m_onGetAuxRendererId, OnGetRendererStatic, this);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
