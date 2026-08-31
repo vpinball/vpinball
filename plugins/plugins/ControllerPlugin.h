@@ -456,6 +456,14 @@ inline bool operator!=(const AudioSrcId& a, const AudioSrcId& b)
 namespace PinballPlugin::Controller
 {
 
+// Extract get game from controller gameId (format is layout :: gameid)
+inline std::string_view CtrlGetGameKey(const char* gameId)
+{
+   const std::string_view id(gameId);
+   const size_t sep = id.find("::");
+   return sep == std::string_view::npos ? id : id.substr(sep + 2);
+}
+
 template <class T> struct GetCtrlSrcMsg
 {
    // Request

@@ -47,8 +47,8 @@ MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that 
 class SerumColorizer
 {
 public:
-   SerumColorizer(const std::filesystem::path& serumPath, const string& currentGameId, uint32_t controllerEndpointId)
-      : m_pSerum(Serum_Load(serumPath.string().c_str(), currentGameId.c_str(), FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES))
+   SerumColorizer(const std::filesystem::path& serumPath, const std::string_view& currentGameId, uint32_t controllerEndpointId)
+      : m_pSerum(Serum_Load(serumPath.string().c_str(), string(currentGameId).c_str(), FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES))
       , m_controllerEndpointId(controllerEndpointId)
       , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
       , m_colorizedframeId(std_rand())
@@ -316,6 +316,56 @@ private:
    CtrlItemConsumer<DisplaySrcId> m_dmdSource;
 };
 
+static std::filesystem::path GetColorization(const std::string_view& gameId)
+{
+   VPXTableInfo tableInfo;
+   VPXPluginAPI* vpxApi = nullptr;
+   unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
+   msgApi->ReleaseMsgID(getVpxApiId);
+   if (vpxApi == nullptr)
+      return std::filesystem::path();
+   vpxApi->GetTableInfo(&tableInfo);
+
+   std::filesystem::path tablePath = tableInfo.path;
+
+   const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
+   const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
+
+   // Priority 1: serum/rom/rom.cromc or .crz
+   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
+      return path1.parent_path().parent_path();
+   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
+      return path2.parent_path().parent_path();
+   // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
+   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
+      return path3.parent_path().parent_path();
+   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
+      return path4.parent_path().parent_path();
+   // Priority 3: global setting path
+   else if (std::filesystem::path serumPath = serumPathProp_Get();
+      !serumPath.empty() && (!find_case_insensitive_file_path(serumPath / gameId / cromc).empty() || !find_case_insensitive_file_path(serumPath / gameId / crz).empty()))
+      return serumPath;
+
+   return std::filesystem::path();
+}
+
+// Select the first controller exposing a game for which we have the corresponding assets
+static void SelectController(std::vector<ControllerDef>& items)
+{
+   for (const ControllerDef& controller : items)
+   {
+      const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
+      if (!gameId.empty() && !GetColorization(gameId).empty())
+      {
+         items.clear();
+         items.push_back(controller);
+         return;
+      }
+   }
+   items.clear();
+}
+
 static void OnControllerChanged()
 {
    controllers->With(
@@ -326,56 +376,10 @@ static void OnControllerChanged()
             LOGI("Serum colorizer stopped");
             return;
          }
-
-         VPXTableInfo tableInfo;
-         VPXPluginAPI* vpxApi = nullptr;
-         unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
-         msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
-         msgApi->ReleaseMsgID(getVpxApiId);
-         if (vpxApi == nullptr)
-         {
-            LOGE("Failed to get VPX API (needed to locate Serum files)");
-            return;
-         }
-         vpxApi->GetTableInfo(&tableInfo);
-
-         std::filesystem::path tablePath = tableInfo.path;
-
-         // Simply select first controller exposing a PinMAME compatible game (should be only one anyway)
          const ControllerDef& selectedController = items.front();
-         constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX);
-         const string currentGameId = string(selectedController.gameId).substr(pinmamePrefix.size());
-         if (currentGameId.empty())
-            return;
-
-         std::filesystem::path serumPath = serumPathProp_Get();
-         const std::filesystem::path cromc = currentGameId + ".cROMc";
-         const std::filesystem::path crz = currentGameId + ".cRZ";
-
-         // Priority 1: serum/rom/rom.cromc or .crz
-         if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / currentGameId / cromc); !path1.empty())
-            serumPath = path1.parent_path().parent_path();
-         else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / currentGameId / crz); !path2.empty())
-            serumPath = path2.parent_path().parent_path();
-         // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
-         else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / cromc); !path3.empty())
-            serumPath = path3.parent_path().parent_path();
-         else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / currentGameId / crz); !path4.empty())
-            serumPath = path4.parent_path().parent_path();
-         // Priority 3: global setting path
-         else if (!serumPath.empty())
-         {
-            if (find_case_insensitive_file_path(serumPath / currentGameId / cromc).empty() && find_case_insensitive_file_path(serumPath / currentGameId / crz).empty())
-               serumPath.clear();
-         }
-
-         if (serumPath.empty())
-         {
-            LOGI("No colorization file found for "s + currentGameId);
-            return;
-         }
-
-         LOGI("Loading from " + serumPath.string() + " for " + currentGameId);
+         const std::string_view currentGameId = PinballPlugin::Controller::CtrlGetGameKey(selectedController.gameId);
+         const std::filesystem::path serumPath = GetColorization(currentGameId);
+         LOGI(std::format("Loading from '{}' for '{}'", serumPath.string(), currentGameId));
          colorizer = std::make_unique<SerumColorizer>(serumPath, currentGameId, selectedController.endpointId);
       });
 }
@@ -392,13 +396,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger");
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
-      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
-      [](std::vector<ControllerDef>& items)
-      {
-         constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX); // Keep only controllers exposing a PinMAME compatible game
-         std::erase_if(items, [pinmamePrefix](const ControllerDef& controller) { return !string(controller.gameId).starts_with(pinmamePrefix); });
-      },
-      []() { colorizer = nullptr; }, []() { OnControllerChanged(); });
+      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
+      []() { OnControllerChanged(); });
    controllers->Subscribe();
 }
 
