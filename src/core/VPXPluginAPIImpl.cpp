@@ -278,7 +278,7 @@ void MSGPIAPI VPXPluginAPIImpl::RunScript(const char* script)
       PLOGE << "Invalid VPX API call 'RunScript(null)'";
       return;
    }
-   g_pplayer->m_scriptInterpreter->Evaluate(script, false);
+   g_pplayer->m_scriptInterpreter->Evaluate(g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(script), false);
 }
 
 
