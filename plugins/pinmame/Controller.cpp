@@ -137,7 +137,7 @@ void Controller::SetGameName(const string& name)
    }
    else if (status == PINMAME_STATUS_GAME_NOT_FOUND)
    {
-      PSC_FAIL("Game name not found.");
+      PSC_FAIL("Game name not found: '%s'.", name.c_str());
    }
    else if (status == PINMAME_STATUS_CONFIG_NOT_SET)
    {
