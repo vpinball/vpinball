@@ -50,11 +50,11 @@ public:
    SerumColorizer(const std::filesystem::path& serumPath, const string& currentGameId, uint32_t controllerEndpointId)
       : m_pSerum(Serum_Load(serumPath.string().c_str(), currentGameId.c_str(), FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES))
       , m_controllerEndpointId(controllerEndpointId)
+      , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
+      , m_colorizedframeId(std_rand())
       , m_dmdSource(
            msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
            [this]() { StopColorizeThread(); }, [this]() { StartColorizeThread(); })
-      , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
-      , m_colorizedframeId(std_rand())
    {
       if (m_pSerum)
       {
@@ -298,7 +298,6 @@ private:
    Serum_Frame_Struc* const m_pSerum;
    const uint32_t m_controllerEndpointId;
 
-   CtrlItemConsumer<DisplaySrcId> m_dmdSource;
    CtrlItemProvider<DisplaySrcId> m_colorizedDmd;
 
    bool m_isRunning = false;
@@ -310,6 +309,8 @@ private:
    unsigned int m_advertisedWidth64 = 0;
 
    unsigned int m_colorizedframeId = 0;
+
+   CtrlItemConsumer<DisplaySrcId> m_dmdSource;
 };
 
 static void OnControllerChanged()
