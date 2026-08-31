@@ -8,6 +8,12 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "standalone/PoleStorage.h"
+#if defined(__APPLE__)
+#include <sys/param.h>
+#include <sys/mount.h>
+#elif defined(__linux__) || defined(__ANDROID__)
+#include <sys/vfs.h>
+#endif
 #endif
 
 #include "core/VPApp.h"
@@ -587,6 +593,47 @@ void write_file(const string& filename, const vector<uint8_t>& data, const bool 
    }
    file.write(reinterpret_cast<const char*>(data.data()), data.size());
    file.close();
+}
+
+bool IsNetworkPath(const std::filesystem::path& path)
+{
+#ifndef __STANDALONE__
+   // Windows: a UNC path (\\server\share or //server/share) is always remote. Otherwise ask the
+   // drive type of the path's root.
+   const std::wstring wpath = path.native();
+   if (wpath.size() >= 2 && (wpath[0] == L'\\' || wpath[0] == L'/') && (wpath[1] == L'\\' || wpath[1] == L'/'))
+      return true;
+   const std::filesystem::path root = path.root_path();
+   if (root.empty())
+      return false;
+   return GetDriveTypeW(root.wstring().c_str()) == DRIVE_REMOTE;
+#elif defined(__APPLE__)
+   // macOS/BSD: MNT_LOCAL is set for local filesystems and clear for network mounts.
+   struct statfs buf;
+   if (statfs(path.c_str(), &buf) != 0)
+      return false;
+   return (buf.f_flags & MNT_LOCAL) == 0;
+#elif defined(__linux__) || defined(__ANDROID__)
+   // Linux has no MNT_LOCAL, so match the filesystem magic of known network filesystems.
+   struct statfs buf;
+   if (statfs(path.c_str(), &buf) != 0)
+      return false;
+   switch (static_cast<unsigned long>(buf.f_type))
+   {
+   case 0x6969:     // NFS_SUPER_MAGIC
+   case 0x517B:     // SMB_SUPER_MAGIC (legacy smbfs)
+   case 0xFF534D42: // CIFS_MAGIC_NUMBER
+   case 0xFE534D42: // SMB2_MAGIC_NUMBER
+   case 0x7461636C: // OCFS2
+   case 0x01021997: // V9FS (Plan 9, used by some VM shares)
+      return true;
+   default:
+      return false;
+   }
+#else
+   (void)path;
+   return false;
+#endif
 }
 
 string normalize_path_separators(const string& szPath)

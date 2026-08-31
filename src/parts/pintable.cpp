@@ -1613,10 +1613,11 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                });
          }
 
-         // Dispatch all load tasks & wait, updating the progress bar on UI thread
-         // Tasks are sorted by storage offset to limit read back and get better reading performance
-         ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+         // Sort tasks by storage offset to limit read back and get better reading performance
          std::ranges::sort(loadQueue, [&rootStorage](const LoadTask &a, const LoadTask &b) { return rootStorage.streamOffset(a.name) < rootStorage.streamOffset(b.name); });
+ 
+         // Dispatch all load tasks & wait, updating the progress bar on UI thread
+         ThreadPool pool(IsNetworkPath(m_filename) ? 1 : g_app->GetLogicalNumberOfProcessors());
          feedback.SetLength(static_cast<unsigned int>(loadQueue.size()));
          for (const LoadTask &task : loadQueue)
             pool.enqueue(task.task);
