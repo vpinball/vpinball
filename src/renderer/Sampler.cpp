@@ -17,9 +17,16 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    , m_name(std::move(name))
    , m_ownTexture(true)
    , m_rd(rd)
-   , m_width(surf->width())
-   , m_height(surf->height())
+   , m_width(surf ? surf->width() : 0)
+   , m_height(surf ? surf->height() : 0)
 {
+   assert(surf != nullptr);
+   if (surf == nullptr)
+   {
+      PLOGE << "Texture '" << m_name << "' has no data and can not be uploaded";
+      return;
+   }
+
 #if defined(ENABLE_BGFX)
    switch (surf->m_format)
    {
@@ -36,8 +43,7 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    case BaseTexture::RGBA_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
    default: assert(false); // Unsupported texture format
    }
-   if (surf)
-      UpdateTexture(surf, force_linear_rgb);
+   UpdateTexture(surf, force_linear_rgb);
 
 #elif defined(ENABLE_OPENGL)
    m_rd->m_curTextureUpdates++;
@@ -378,6 +384,12 @@ void Sampler::Unbind()
 void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
 {
    assert(m_ownTexture);
+   assert(surf != nullptr);
+   if (surf == nullptr) // then keep whatever was uploaded before
+   {
+      PLOGE << "Texture '" << m_name << "' has no data, previous content is kept";
+      return;
+   }
    m_rd->m_curTextureUpdates++;
 
 #if defined(ENABLE_BGFX)

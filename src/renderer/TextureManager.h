@@ -32,13 +32,17 @@ public:
    bool IsLinearRGB(ITexManCacheable* memtex) const;
 
 private:
+   // A texture may be uploaded twice, once decoded as sRGB and once kept linear (see LoadTexture's force_linear_rgb).
+   // Per variant state is indexed rather than paired up, so that state added later cannot silently apply to one variant only
+   enum SamplerVariant : unsigned int { VARIANT_SRGB = 0, VARIANT_LINEAR = 1, VARIANT_COUNT = 2 };
+   static constexpr SamplerVariant SamplerVariantOf(const bool force_linear_rgb) { return force_linear_rgb ? VARIANT_LINEAR : VARIANT_SRGB; }
+
    struct MapEntry
    {
-      std::shared_ptr<Sampler> sampler = nullptr;
-      std::shared_ptr<Sampler> linearSampler = nullptr;
+      std::shared_ptr<Sampler> samplers[VARIANT_COUNT];
+      bool dirty[VARIANT_COUNT] = { false, false };
       ITexManCacheable* tex = nullptr;
       bool isPlaceHolder = false;
-      bool dirty = false;
       std::shared_ptr<const class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
