@@ -17,15 +17,11 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    , m_name(std::move(name))
    , m_ownTexture(true)
    , m_rd(rd)
-   , m_width(surf ? surf->width() : 0)
-   , m_height(surf ? surf->height() : 0)
+   , m_width(surf->width())
+   , m_height(surf->height())
 {
+   // Callers can substitute RenderDevice::m_fallbackTexture, so there is (mostly) something to upload
    assert(surf != nullptr);
-   if (surf == nullptr)
-   {
-      PLOGE << "Texture '" << m_name << "' has no data and can not be uploaded";
-      return;
-   }
 
 #if defined(ENABLE_BGFX)
    switch (surf->m_format)
@@ -384,12 +380,7 @@ void Sampler::Unbind()
 void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
 {
    assert(m_ownTexture);
-   assert(surf != nullptr);
-   if (surf == nullptr) // then keep whatever was uploaded before
-   {
-      PLOGE << "Texture '" << m_name << "' has no data, previous content is kept";
-      return;
-   }
+   assert(surf != nullptr); // Same invariant as the constructor: callers can substitute the fallback texture
    m_rd->m_curTextureUpdates++;
 
 #if defined(ENABLE_BGFX)

@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-// 
+//
 // Shader for DMD, CRT and segment displays
 //
 // They all follow the same model: an emitting surface with a glass above it.
@@ -11,14 +11,20 @@
 // for simplicity and performance). When roughness is 0, the glass transmit what 
 // is behind it, resulting in a tinted view of the emitter. When roughness is 1,
 // the glass transmit a diffuse accumulation of light incoming from surroundings.
-// 
+//
 // The glass is defined by a uniform color/roughness pair which can be modulated
-// by a texture.
+// by a texture
 //
 
 $input v_texcoord0, v_texcoord1
 #ifdef CLIP
 	$input v_clipDistance
+#endif
+
+// CRTNUANCE is a CRT shader build with the other filter, so every CRT path below applies to it as well and only the
+// filter selection differs. Aliasing it here keeps that single difference in one place
+#if defined(CRTNUANCE) && !defined(CRT)
+	#define CRT
 #endif
 
 #include "common.sh"
@@ -110,12 +116,11 @@ vec3 ReinhardToneMap(vec3 color)
 	#define CRT_OVERSAMPLE2         4
 	#define CRT_OVERSAMPLE_KOROBOV2 1 // Generator for Korobov (4 -> 1 or 3, 8 -> 5, 13 -> 8, 21 -> 13, etc)
 
-	// Select the CRT emulation:
-	//   0: Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)                    // from testing: preferrable for low res  (Bally Vidpin & Mr Game)
-	//   1: Nuance's CRT filter (convergence errors, ghosting, vignetting, scanlines, aperture grille) // from testing: preferrable for high res (Pin2K)
-	#define CRT_FILTER 0
-
-#if CRT_FILTER == 0
+	// CRT emulation, one permutation each:
+	//   CRT        Timothy Lottes' CRTS filter (scanlines, warp, shadow mask, tonemapping)                    // from testing: preferrable for low res  (Bally Vidpins, Mr. Games, Gottlieb Caveman)
+	//   CRTNUANCE  Nuance's CRT filter (convergence errors, ghosting, vignetting, scanlines, aperture grille) // from testing: preferrable for high res (Pin2K)
+	// The renderer picks between them per display, see Renderer::SetupCRTRender
+#ifndef CRTNUANCE
 
 	// See definition in include header, and experiment here: https://www.shadertoy.com/view/MtSfRK
 	// #define CRTS_DEBUG 1
@@ -130,19 +135,21 @@ vec3 ReinhardToneMap(vec3 color)
 	//#define CRTS_MASK_GRILLE_LITE 1
 	//#define CRTS_MASK_NONE 1
 	#define CRTS_MASK_SHADOW 1
-	// Setup the function which returns input image color
+	// Setup the function which returns input image color, which CRTS wants linear. displayTex is bound as sRGB so the
+	// sampler has already decoded it, and an InvGamma here would decode twice and render the display far too dark
 	vec3 CrtsFetch(vec2 uv) {
-		return InvGamma(texFetch(displayTex, ivec2(uv * crtSize), crtSize).rgb);
+		return texFetch(displayTex, ivec2(uv * crtSize), crtSize).rgb;
 	}
 	
 	#include "fs_crt_lottes.fs"
 
 #else
 
-	// Setup the function which returns input image color (here its in non linear 'display gamma' space)
+	// Setup the function which returns input image color (here its in non linear 'display gamma' space), so the linear
+	// that the sRGB-bound sampler hands back has to be re-encoded. Without it the display comes out far too dark
 	// Explicit LOD as this is called from the oversampling loop, where implicit derivatives are meaningless (see CrtEmitter)
 	vec3 CrtsNuanceFetch(vec2 uv) {
-		return texNoLod(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb;
+		return FBGamma(texNoLod(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb);
 	}
 
 	#include "fs_crt_nuance.fs"
@@ -162,7 +169,7 @@ vec3 CrtEmitter(const vec2 uv, const vec2 outSize, const vec2 dUvDx, const vec2 
 	}
 	else // CRT
 	{
-	#if CRT_FILTER == 1
+	#ifdef CRTNUANCE
 		return CrtsNuanceFilter(
 		  uv,       // Input position (normalized)
 		  crtSize,  // input size (in pixels)

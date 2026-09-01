@@ -1681,11 +1681,24 @@ RenderDevice::RenderDevice(
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
 
+   // Substitute for anything that has no valid texture to upload (e.g. out of mem):
+   // An 8x8 magenta checker tex to be recognizable however far it gets stretched. Should even this fail, the machine is completely out of memory
+   m_fallbackTexture = BaseTexture::Create(8, 8, BaseTexture::Format::SRGBA);
+   if (m_fallbackTexture == nullptr)
+      ReportError("Fatal Error: unable to create the fallback texture!"s, -1, __FILE__, __LINE__);
+   else
+   {
+      uint32_t* const __restrict texels = static_cast<uint32_t*>(m_fallbackTexture->data());
+      for (unsigned int i = 0; i < 8u * 8u; ++i)
+         texels[i] = ((i ^ (i >> 3u)) & 1u) ? 0xFFFF00FFu : 0xFF400040u;
+   }
+
    // Create default texture
    {
-      std::shared_ptr<BaseTexture> surf = std::shared_ptr<BaseTexture>(BaseTexture::Create(1, 1, BaseTexture::Format::RGBA));
-      memset(surf->data(), 0, 4);
-      m_nullTexture = std::make_shared<Sampler>(this, "Null"s, surf, false);
+      std::shared_ptr<BaseTexture> surf = BaseTexture::Create(1, 1, BaseTexture::Format::RGBA);
+      if (surf)
+         memset(surf->data(), 0, 4);
+      m_nullTexture = std::make_shared<Sampler>(this, "Null"s, OrFallback(surf), false);
    }
 
    // create default vertex declarations for shaders

@@ -16,7 +16,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
       MapEntry entry;
       entry.tex = memtex;
       std::shared_ptr<Sampler>& sampler = entry.samplers[variant];
-      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
+      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(memtex->GetRawBitmap(false, 0)), force_linear_rgb);
       m_map[hash] = entry;
       return sampler;
    }
@@ -35,12 +35,12 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
       }
       else if (sampler == nullptr)
       {
-         sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
+         sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(memtex->GetRawBitmap(false, 0)), force_linear_rgb);
       }
       else if (entry.dirty[variant])
       {
          entry.dirty[variant] = false; // Only the variant actually refreshed below, the other keeps waiting its turn
-         sampler->UpdateTexture(memtex->GetRawBitmap(false, 0), force_linear_rgb);
+         sampler->UpdateTexture(m_rd.OrFallback(memtex->GetRawBitmap(false, 0)), force_linear_rgb);
       }
       return sampler;
    }
@@ -63,11 +63,10 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it == m_map.end())
    {
-      std::shared_ptr<BaseTexture> placeHolder = std::shared_ptr<BaseTexture> (BaseTexture::Create(1, 1, BaseTexture::SRGBA));
-      *reinterpret_cast<uint32_t*>(placeHolder->data()) = 0xFFFF00FFu;
       MapEntry entry;
-      // Both variants share the one sampler: a 1x1 magenta marker looks the same either way, and it is replaced as soon as the real texture loads
-      entry.samplers[VARIANT_SRGB]   = std::make_shared<Sampler>(&m_rd, memtex->GetName(), placeHolder, false);
+      // Uses the shared fallback tex, so a failed load and an uncreatable texture look alike.
+      // Both variants share the one sampler, and it is replaced as soon as the real texture loads
+      entry.samplers[VARIANT_SRGB]   = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.m_fallbackTexture, false);
       entry.samplers[VARIANT_LINEAR] = entry.samplers[VARIANT_SRGB];
       entry.isPlaceHolder = true;
       entry.tex = memtex;

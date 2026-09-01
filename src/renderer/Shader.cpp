@@ -177,7 +177,11 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[static_cast<unsigned int>(Shad
       ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::clip_plane),
    SHADER_TECHNIQUE(display_CRT, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness, ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity,
       ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties),
+   // Lottes-CRT
    SHADER_TECHNIQUE(display_CRT_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness,
+      ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties, ShaderUniform::clip_plane),
+   // Same as above but built with the Nuance-CRT filter, the renderer picking between them per display (see Renderer::SetupCRTRender)
+   SHADER_TECHNIQUE(display_CRTnuance_world, ShaderUniform::matWorld, ShaderUniform::matRotViewProj, ShaderUniform::cameraPosWorld, ShaderUniform::vRes_Alpha_time, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::glassTint_Roughness,
       ShaderUniform::displayGlass, ShaderUniform::vColor_Intensity, ShaderUniform::staticColor_Alpha, ShaderUniform::w_h_height, ShaderUniform::displayTex, ShaderUniform::displayProperties, ShaderUniform::clip_plane),
 
    SHADER_TECHNIQUE(basic_noDMD, ShaderUniform::glassPad, ShaderUniform::glassArea, ShaderUniform::alphaTestValue, ShaderUniform::vColor_Intensity, ShaderUniform::tex_sprite, ShaderUniform::u_basic_shade_mode),
@@ -1502,6 +1506,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_CLIP(fs_display_dmd),
       BGFX_EMBEDDED_SHADER_CLIP(fs_display_seg),
       BGFX_EMBEDDED_SHADER_CLIP(fs_display_crt),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_display_crtnuance),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       // Bulb light shaders
@@ -1671,9 +1676,11 @@ void Shader::Load()
       loadProgram(embeddedShaders, ShaderTechnique::display_DMD_world,       STEREO(vs_dmd_world_noclip), "fs_display_dmd_noclip");
       loadProgram(embeddedShaders, ShaderTechnique::display_Seg_world,       STEREO(vs_dmd_world_noclip), "fs_display_seg_noclip");
       loadProgram(embeddedShaders, ShaderTechnique::display_CRT_world,       STEREO(vs_dmd_world_noclip), "fs_display_crt_noclip");
+      loadProgram(embeddedShaders, ShaderTechnique::display_CRTnuance_world, STEREO(vs_dmd_world_noclip), "fs_display_crtnuance_noclip");
       loadProgram(embeddedShaders, ShaderTechnique::display_DMD_world,       STEREO(vs_dmd_world_clip), "fs_display_dmd_clip", true);
       loadProgram(embeddedShaders, ShaderTechnique::display_Seg_world,       STEREO(vs_dmd_world_clip), "fs_display_seg_clip", true);
       loadProgram(embeddedShaders, ShaderTechnique::display_CRT_world,       STEREO(vs_dmd_world_clip), "fs_display_crt_clip", true);
+      loadProgram(embeddedShaders, ShaderTechnique::display_CRTnuance_world, STEREO(vs_dmd_world_clip), "fs_display_crtnuance_clip", true);
       break;
    case FLASHER_SHADER:
       loadProgram(embeddedShaders, ShaderTechnique::basic_noLight, STEREO(vs_flasher_noclip), "fs_flasher_noclip");

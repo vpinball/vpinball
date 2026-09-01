@@ -140,7 +140,8 @@ if [ "$gen_dmd" = true ]; then
         process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_" "vertex" "WORLD" "$variant3"
         process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_st_" "vertex" "WORLD" "STEREO" "$variant3"
         process_shader "fs_dmd.sc" "dmd.h" "fs_dmd_${variant3_lower}_" "fragment" "DMD" "$variant3"
-        for variant2 in "DMD" "SEG" "CRT"; do
+        # CRTNUANCE is a second CRT permutation using the other filter, see fs_display.sc
+        for variant2 in "DMD" "SEG" "CRT" "CRTNUANCE"; do
             variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
             process_shader "fs_display.sc" "dmd.h" "fs_display_${variant2_lower}_${variant3_lower}_" "fragment" "$variant2" "$variant3"
         done

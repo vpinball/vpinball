@@ -179,7 +179,14 @@ public:
 
    void UploadTexture(ITexManCacheable* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
+
+   // Default texture (1x1 Black)
    std::shared_ptr<Sampler> m_nullTexture = nullptr;
+
+   // Stand-in for a texture that could not be created (failed decode, unsupported file, out of memory), so that callers never need to pass a null on (8x8 magenta checker)
+   std::shared_ptr<BaseTexture> m_fallbackTexture = nullptr;
+   std::shared_ptr<const BaseTexture> OrFallback(std::shared_ptr<const BaseTexture> tex) const { return tex ? std::move(tex) : m_fallbackTexture; }
+
    TextureManager m_texMan;
    const bool m_compressTextures;
 

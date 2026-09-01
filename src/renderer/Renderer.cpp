@@ -199,17 +199,19 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
+   // These three assets are shipped with the application, so failing to load one means a broken install rather than
+   // a table problem. So no fall back, rather fail/crash on startup
    std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "BallEnv.exr")));
-   m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false);
+   m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, /*m_renderDevice->OrFallback(*/ballTex/*)*/, false);
    ballTex = nullptr;
 
    std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "AODither.webp")));
-   m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true);
+   m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, /*m_renderDevice->OrFallback(*/aoTex/*)*/, true);
    aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
-   std::shared_ptr<const BaseTexture> envTex
-      = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp")));
+   std::shared_ptr<const BaseTexture> envTex = /*m_renderDevice->OrFallback(*/
+      tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "EnvMap.webp")))/*)*/;
    m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling
@@ -1475,14 +1477,21 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, static_cast<float>(crt->width()), static_cast<float>(crt->height()), // CRT size in pixels
       0.f, 0.f); // Unused
+   // Which CRT emulation is picked, depends on the source resolution: Nuance-CRT for a 'modern' high res CRT (only Pinball 2000 for now, at 640px wide),
+   // Lottes-CRT for the more ancient low resolution ones (Bally Vidpins, Mr. Games and Gottlieb Caveman are all 256px or less)
+   constexpr unsigned int nuanceMinWidth = 384;
+   const bool useNuanceCrt = (profile == 2) && (crt->width() >= nuanceMinWidth);
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::displayProperties,
       static_cast<float>(profile), // Render mode
       0.f, 0.f, 0.f); // Unused (CRT filters now evaluate on screen output size per pixel, from screen space derivatives)
-   // Pixelated keeps crisp pixels when magnified, but is filtered (mipmapped) when downscaled to avoid moiree, smoothed is always filtered,
-   // while the CRT filters are point sampled since they perform their own reconstruction (and supersample themselves when downscaled)
-   m_renderDevice->m_DMDShader->SetTexture(
-      ShaderUniform::displayTex, crt.get(), false, profile == 0 ? SamplerFilter::SF_PIXELATED : (profile == 1 ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_NONE));
-   m_renderDevice->m_DMDShader->SetTechnique(ShaderTechnique::display_CRT_world);
+   // Pixelated keeps crisp pixels when magnified, but is filtered (mipmapped) when downscaled to avoid moiree, smoothed is always filtered.
+   // Lottes reads exact texels and reconstructs from them so it wants none, Nuance samples continuously so it wants bilinear
+   const SamplerFilter displayFilter = profile == 0 ? SamplerFilter::SF_PIXELATED
+                                     : profile == 1 ? SamplerFilter::SF_ANISOTROPIC
+                                     : useNuanceCrt ? SamplerFilter::SF_BILINEAR
+                                                    : SamplerFilter::SF_NONE;
+   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, crt.get(), false, displayFilter);
+   m_renderDevice->m_DMDShader->SetTechnique(useNuanceCrt ? ShaderTechnique::display_CRTnuance_world : ShaderTechnique::display_CRT_world);
 }
 
 void Renderer::DrawBulbLightBuffer()
