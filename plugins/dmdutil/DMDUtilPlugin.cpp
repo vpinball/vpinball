@@ -127,7 +127,7 @@ private:
 
    void ProcessFrame(const DisplaySrcId& dmdSource)
    {
-      const DisplayFrame frame = dmdSource.GetRenderFrame(dmdSource.id);
+      const DisplayFrame frame = dmdSource.GetRenderFrame(dmdSource.callContext);
       if (m_lastFrameID == frame.frameId)
          return;
       m_lastFrameID = frame.frameId;

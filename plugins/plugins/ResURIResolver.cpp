@@ -127,10 +127,10 @@ float ResURIResolver::GetFloatState(const string &link)
                      {
                         if (const StateDef &def = stateBlock->stateDefs[i]; def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.mappingId == mapping)
                         {
-                           lambda = [getter = def.GetState, id = stateBlock->id, i](const string &)
+                           lambda = [def](const string &)
                            {
                               float value;
-                              getter(id, i, &value);
+                              def.GetState(def.callContext, &value);
                               return value;
                            };
                            break;
@@ -151,10 +151,10 @@ float ResURIResolver::GetFloatState(const string &link)
                         if (const StateDef &def = stateBlock->stateDefs[i];
                            def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState != nullptr && def.name != nullptr && string(def.name) == name)
                         {
-                           lambda = [getter = def.GetState, id = stateBlock->id, i](const string &)
+                           lambda = [def](const string &)
                            {
                               float value;
-                              getter(id, i, &value);
+                              def.GetState(def.callContext, &value);
                               return value;
                            };
                            break;
@@ -231,14 +231,14 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
                         subSegSrc.elementType[0] = segSource->elementType[subId];
                         lambda = [segSource, subSegSrc, subId](const string &)
                         {
-                           SegDisplayFrame state = segSource->GetState(segSource->id);
+                           SegDisplayFrame state = segSource->GetState(segSource->callContext);
                            return SegDisplayState { &subSegSrc, { state.frameId, state.frame + subId * 16 } };
                         };
                      }
                   }
                   else
                   {
-                     lambda = [segSource](const string &) { return SegDisplayState { segSource, segSource->GetState(segSource->id) }; };
+                     lambda = [segSource](const string &) { return SegDisplayState { segSource, segSource->GetState(segSource->callContext) }; };
                   }
                }
             }
@@ -374,7 +374,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
             }
 
             if (displaySource != nullptr)
-               lambda = [displaySource](const string &) { return DisplayState { displaySource, displaySource->GetRenderFrame(displaySource->id) }; };
+               lambda = [displaySource](const string &) { return DisplayState { displaySource, displaySource->GetRenderFrame(displaySource->callContext) }; };
          }
 
          if (lambda == nullptr)

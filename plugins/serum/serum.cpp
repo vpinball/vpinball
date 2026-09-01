@@ -157,7 +157,7 @@ private:
          m_dmdSource.With(
             [&](const std::vector<DisplaySrcId>& items)
             {
-               const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+               const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.callContext);
                if (frame.frame == nullptr)
                {
                   m_isRunning = false;
@@ -227,13 +227,13 @@ private:
                      colorizer->m_colorFrameV1.resize(size * 3);
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
-                        .groupId = { endpointId, 0 }, //
                         .overrideId = dmdId.id, //
                         .width = dmdId.width, //
                         .height = dmdId.height, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                        .callContext = colorizer, //
                         .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
-                        .GetRenderFrame = &GetRenderFrameSerumV1 //
+                        .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV1>::Call //
                      });
                   },
                   this);
@@ -262,26 +262,26 @@ private:
                   {
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 1 } }, //
-                        .groupId = { endpointId, 0 }, //
                         .overrideId = dmdId.id, //
                         .width = colorizer->m_advertisedWidth32, //
                         .height = 32, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                        .callContext = colorizer, //
                         .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
-                        .GetRenderFrame = &GetRenderFrameSerumV2_32 //
+                        .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_32>::Call //
                      });
                   }
                   if (colorizer->m_advertisedWidth64 > 0)
                   {
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 2 } }, //
-                        .groupId = { endpointId, 0 }, //
                         .overrideId = dmdId.id, //
                         .width = colorizer->m_advertisedWidth64, //
                         .height = 64, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                        .callContext = colorizer, //
                         .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565, //
-                        .GetRenderFrame = &GetRenderFrameSerumV2_64 //
+                        .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_64>::Call //
                      });
                   }
                },
@@ -294,20 +294,20 @@ private:
    }
 
    // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
-   static DisplayFrame GetRenderFrameSerumV1(const CtlResId id)
+   DisplayFrame GetRenderFrameSerumV1()
    {
-      std::lock_guard targetLock(colorizer->m_stateMutex);
-      return { colorizer->m_colorizedframeId, colorizer->m_colorFrameV1.data() };
+      std::lock_guard targetLock(m_stateMutex);
+      return { m_colorizedframeId, m_colorFrameV1.data() };
    }
-   static DisplayFrame GetRenderFrameSerumV2_32(const CtlResId id)
+   DisplayFrame GetRenderFrameSerumV2_32()
    {
-      std::lock_guard targetLock(colorizer->m_stateMutex);
-      return { colorizer->m_colorizedframeId, reinterpret_cast<uint8_t*>(colorizer->m_pSerum->frame32) };
+      std::lock_guard targetLock(m_stateMutex);
+      return { m_colorizedframeId, reinterpret_cast<uint8_t*>(m_pSerum->frame32) };
    }
-   static DisplayFrame GetRenderFrameSerumV2_64(const CtlResId id)
+   DisplayFrame GetRenderFrameSerumV2_64()
    {
-      std::lock_guard targetLock(colorizer->m_stateMutex);
-      return { colorizer->m_colorizedframeId, reinterpret_cast<uint8_t*>(colorizer->m_pSerum->frame64) };
+      std::lock_guard targetLock(m_stateMutex);
+      return { m_colorizedframeId, reinterpret_cast<uint8_t*>(m_pSerum->frame64) };
    }
 
    Serum_Frame_Struc* const m_pSerum;

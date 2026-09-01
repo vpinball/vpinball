@@ -148,13 +148,13 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
          if (def.mappingId == romId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
          {
             if (romInverted)
-               return [this, value, getter = def.GetState, id = src.id, i]()
+               return [this, value, def]()
                {
-                  m_stateSources.With([this, value, getter, id, i](const std::vector<StateSrcId>&) { getter(id, i, value); });
+                  m_stateSources.With([this, value, &def](const std::vector<StateSrcId>&) { def.GetState(def.callContext, value); });
                   *value = 1.f - *value;
                };
             else
-               return [this, value, getter = def.GetState, id = src.id, i]() { m_stateSources.With([this, value, getter, id, i](const std::vector<StateSrcId>&) { getter(id, i, value); }); };
+               return [this, value, def]() { m_stateSources.With([this, value, &def](const std::vector<StateSrcId>&) { def.GetState(def.callContext, value); }); };
          }
       }
    }
@@ -220,7 +220,7 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
    int digitIndex = 1;
    for (const auto& display : m_segDisplays)
    {
-      SegDisplayFrame state = display.GetState(display.id);
+      SegDisplayFrame state = display.GetState(display.callContext);
       for (unsigned int i = 0; i < display.nElements; i++)
       {
          VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;

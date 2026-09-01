@@ -5,10 +5,10 @@
 #include "plugins/VPXPlugin.h"
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/LoggingPlugin.h"
-
 #include "plugins/MsgPluginManager.h"
 
 #include "core/DynamicScript.h"
+#include "renderer/Texture.h"
 
 #include "unordered_dense.h"
 
@@ -52,7 +52,7 @@ public:
    const vector<PluginSetting>& GetPluginSettings() const { return m_pluginSettings; }
 
    void OnGameStart();
-   void UpdateDMDSource(Flasher* flasher, bool isAdd);
+   void OnDMDUpdated(Flasher* flasher, std::shared_ptr<BaseTexture> frame);
    void OnGameEnd();
 
 private:
@@ -121,9 +121,14 @@ private:
    const unsigned int m_getScriptingAPIMsgId;
 
    // Contribute VPX script controlled DMD through controller plugin API
-   vector<Flasher*> m_dmdSources;
-   static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
-   static DisplayFrame ControllerOnGetRenderDMD(const CtlResId id);
-   const unsigned int m_onDisplaySrcChgMsgId;
-   const unsigned int m_onDisplayGetSrcMsgId;
+   struct DmdSource
+   {
+      Flasher* flasher;
+      unsigned int width;
+      unsigned int height;
+      BaseTexture::Format format;
+   };
+   vector<DmdSource> m_dmdSources;
+   std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>> m_displaySources;
+   static DisplayFrame ControllerOnGetRenderDMD(void* callContext);
 };

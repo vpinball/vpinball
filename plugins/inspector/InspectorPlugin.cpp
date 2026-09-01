@@ -47,7 +47,8 @@ typedef struct
    unsigned int width;
    unsigned int height;
    unsigned int frameFormat;
-   DisplayFrame(MSGPIAPI* GetRenderFrame)(const CtlResId id);
+   void* callContext;
+   DisplayFrame(MSGPIAPI* GetRenderFrame)(void*);
 } DisplayProvider;
 static std::map<uint64_t, DisplayProvider> displayGetters;
 static unsigned int treeId = 0;
@@ -158,8 +159,7 @@ void UpdateTreeCache()
          item["format"s] = displayDef.frameFormat;
          item["hardware"s] = displayDef.hardware;
          displayCats[epId]["children"s].push_back(item);
-         displayGetters[displayDef.id.id]
-            = { displayDef.id, displayDef.width, displayDef.height, displayDef.frameFormat, displayDef.GetRenderFrame };
+         displayGetters[displayDef.id.id] = { displayDef.id, displayDef.width, displayDef.height, displayDef.frameFormat, displayDef.callContext, displayDef.GetRenderFrame };
       }
       for (auto& pair : displayCats)
       {
@@ -203,22 +203,22 @@ std::string GetStatesJson()
    stateSources->With(
       [&states](const std::vector<StateSrcId>& items)
       {
-
       for (const StateSrcId& stateDef : items)
       {
          json dItem = json::object();
          for (unsigned int j = 0; j < stateDef.nStates; j++)
          {
-            if (stateDef.stateDefs[j].GetState == nullptr)
+            const StateDef& def = stateDef.stateDefs[j];
+            if (def.GetState == nullptr)
                continue;
-            dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, stateDef.stateDefs[j].mappingId);
-            dItem["type"s] = stateDef.stateDefs[j].semanticType;
-            switch (stateDef.stateDefs[j].dataFormat)
+            dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, def.mappingId);
+            dItem["type"s] = def.semanticType;
+            switch (def.dataFormat)
             {
             case CTLPI_STATE_FORMAT_FLOAT:
             {
                float state;
-               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               def.GetState(def.callContext, &state);
                dItem["format"s] = "float";
                dItem["state"s] = state;
                states.push_back(dItem);
@@ -228,7 +228,7 @@ std::string GetStatesJson()
             case CTLPI_STATE_FORMAT_UINT8:
             {
                uint8_t state;
-               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               def.GetState(def.callContext, &state);
                dItem["format"s] = "uint8";
                dItem["state"s] = state;
                states.push_back(dItem);
@@ -238,7 +238,7 @@ std::string GetStatesJson()
             case CTLPI_STATE_FORMAT_INT32:
             {
                int32_t state;
-               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               def.GetState(def.callContext, &state);
                dItem["format"s] = "int32";
                dItem["state"s] = state;
                states.push_back(dItem);
@@ -248,7 +248,7 @@ std::string GetStatesJson()
             case CTLPI_STATE_FORMAT_INT64:
             {
                int64_t state;
-               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               def.GetState(def.callContext, &state);
                dItem["format"s] = "int64";
                dItem["state"s] = std::to_string(state);
                states.push_back(dItem);
@@ -258,7 +258,7 @@ std::string GetStatesJson()
             case CTLPI_STATE_FORMAT_STRING:
             {
                char* state = nullptr;
-               stateDef.stateDefs[j].GetState(stateDef.id, j, &state);
+               def.GetState(def.callContext, &state);
                dItem["format"s] = "string";
                dItem["state"s] = state != nullptr ? state : "";
                states.push_back(dItem);
@@ -355,7 +355,7 @@ bool GetDisplayFrameRGB(uint64_t mapping, const uint32_t* lastFrameId, size_t he
    if (!provider.GetRenderFrame || provider.width == 0 || provider.height == 0)
       return false;
 
-   const DisplayFrame frame = provider.GetRenderFrame(provider.id);
+   const DisplayFrame frame = provider.GetRenderFrame(provider.callContext);
    if (!frame.frame)
       return false;
 
