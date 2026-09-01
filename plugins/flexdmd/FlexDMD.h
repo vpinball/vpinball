@@ -38,7 +38,7 @@ typedef enum
 class FlexDMD final
 {
 public:
-   FlexDMD(VPXPluginAPI* vpxApi);
+   FlexDMD(const MsgPluginAPI* msgApi, unsigned int endpointId, VPXPluginAPI* vpxApi);
    ~FlexDMD();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -51,7 +51,7 @@ public:
    void SetRun(bool run);
 
    bool GetShow() const { return m_show; }
-   void SetShow(bool v) { if (m_show != v) { m_show = v; if (m_run) OnDMDChanged(); } }
+   void SetShow(bool v);
 
    const string& GetGameName() const { return m_szGameName; }
    void SetGameName(const string& name) { m_szGameName = name; }
@@ -61,11 +61,11 @@ public:
 
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   void SetWidth(int w) { if (m_width == w) return; m_width = w; m_pStage->SetSize(m_width, m_height); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
-   void SetHeight(int h) { if (m_height == h) return; m_height = h; m_pStage->SetSize(m_width, m_height); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
+   void SetWidth(int w);
+   void SetHeight(int h);
 
    RenderMode GetRenderMode() const { return m_renderMode; }
-   void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
+   void SetRenderMode(RenderMode renderMode);
 
    const string& GetProjectFolder() const { return m_pAssetManager->GetBasePath(); }
    void SetProjectFolder(const string& folder) { m_pAssetManager->SetBasePath(folder); }
@@ -100,28 +100,31 @@ public:
    void SetId(uint32_t id) { m_id = id; }
    uint32_t GetId() const { return m_id; }
 
-   void SetOnDMDChangedHandler(void (*handler)(FlexDMD*)) { m_onDMDChangedHandler = handler; }
-   void SetOnDestroyHandler(void (*handler)(FlexDMD*)) { m_onDestroyHandler = handler; }
+   void SetOnDestroyHandler(const std::function<void(FlexDMD*)>& handler) { m_onDestroyHandler = handler; }
 
    SurfaceGraphics* GetGraphics() const { return m_pSurface; }
 
+private:
+   std::function<void(FlexDMD*)> m_onDestroyHandler;
+   PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId> m_dmdProvider;
+   PinballPlugin::Controller::CtrlItemProvider<SegSrcId> m_segProvider;
+
+   void AdvertiseDisplay();
+   struct CallContext
+   {
+      FlexDMD* me;
+      unsigned int index;
+   };
+   std::vector<CallContext> m_callContexts;
+   static SegDisplayFrame GetSegState(void* callContext);
+   static DisplayFrame GetRenderFrame(void* callContext);
    uint8_t* UpdateRGBFrame();
    uint8_t* UpdateLum8Frame();
    float* UpdateLumFP32Frame();
-   const uint16_t* GetSegFrame() const { return m_segData; }
-   unsigned int GetFrameId() const { return m_frameId; }
-
-private:
-   void (*m_onDMDChangedHandler)(FlexDMD*) = nullptr;
-   void (*m_onDestroyHandler)(FlexDMD*) = nullptr;
-   void OnDMDChanged()
-   {
-      if (m_onDMDChangedHandler != nullptr)
-         m_onDMDChangedHandler(this);
-   }
 
    void DiscardFrames()
    {
+      assert(m_dmdProvider.GetItems().empty());
       delete m_pSurface; m_pSurface = nullptr;
       delete[] m_rgbFrame; m_rgbFrame = nullptr;
       delete[] m_lum8Frame; m_lum8Frame = nullptr;
@@ -131,6 +134,7 @@ private:
    }
 
    VPXPluginAPI* m_vpxApi = nullptr;
+   const unsigned int m_endpointId;
 
    uint8_t* m_rgbFrame = nullptr;
    bool m_rgbFrameDirty = true;

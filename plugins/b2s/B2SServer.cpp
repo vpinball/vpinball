@@ -4,13 +4,11 @@
 
 #include "B2SServer.h"
 
+#include <algorithm>
 #include <random>
-
 
 namespace B2S
 {
-
-B2SServer* B2SServer::m_singleton = nullptr;
 
 B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, const VPXPluginAPI* const vpxApi, ScriptClassDef* serverClassDef)
    : m_controllerClassProxy(msgApi, endpointId, "PinMAME_"s, "PinMAME_Controller"s, "B2S_"s, serverClassDef)
@@ -25,8 +23,6 @@ B2SServer::B2SServer(const MsgPluginAPI* const msgApi, unsigned int endpointId, 
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
 {
-   m_singleton = this;
-
    VPXTableInfo tableInfo;
    m_vpxApi->GetTableInfo(&tableInfo);
 
@@ -89,8 +85,6 @@ B2SServer::~B2SServer()
 
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
-
-   m_singleton = nullptr;
 }
 
 static std::string CreateGuidString()
@@ -218,12 +212,12 @@ void B2SServer::UpdateStateSrc()
          m_lampStateIds.clear();
          m_lampStateIds.reserve(m_lampStates.size());
          for (const auto& [id, _] : m_lampStates)
-            m_lampStateIds.push_back(id);
-         std::sort(m_lampStateIds.begin(), m_lampStateIds.end());
+            m_lampStateIds.push_back({ this, id });
+         std::ranges::sort(m_lampStateIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_lampStateNames.resize(m_lampStates.size());
-         int index = 0;
-         for (const auto id : m_lampStateIds)
+         for (size_t index = 0; index < m_lampStateIds.size(); ++index)
          {
+            const auto id = m_lampStateIds[index].id;
             m_lampStateNames[index] = std::format("Illumination #{}", id);
             if (m_defaultStateNameMask & (1ull << id))
             {
@@ -242,9 +236,8 @@ void B2SServer::UpdateStateSrc()
                case 36: m_lampStateNames[index] = "Shoot Again"sv; break;
                }
             }
-            m_lampStateDefs.emplace_back(
-               StateDef { m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetLampState, nullptr });
-            index++;
+            m_lampStateDefs.emplace_back(StateDef {
+               m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &m_lampStateIds[index], GetLampState, nullptr });
          }
       }
 
@@ -253,18 +246,17 @@ void B2SServer::UpdateStateSrc()
          m_playerScoreIds.clear();
          m_playerScoreIds.reserve(m_playerScores.size());
          for (const auto& [id, _] : m_playerScores)
-            m_playerScoreIds.push_back(id);
-         std::sort(m_playerScoreIds.begin(), m_playerScoreIds.end());
+            m_playerScoreIds.push_back({ this, id });
+         std::ranges::sort(m_playerScoreIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_playerScoreNames.resize(m_playerScores.size());
-         int index = 0;
-         for (const auto id : m_playerScoreIds)
+         for (size_t index = 0; index < m_playerScoreIds.size(); ++index)
          {
+            const auto id = m_playerScoreIds[index].id;
             m_playerScoreNames[index] = std::format("Player Score #{}", id);
             if (id == 29 && m_defaultStateNameMask & (1ull << id))
                m_playerScoreNames[index] = "Credits"sv;
-            m_playerScoreStateDefs.emplace_back(
-               StateDef { m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, GetPlayerScore, nullptr });
-            index++;
+            m_playerScoreStateDefs.emplace_back(StateDef {
+               m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_playerScoreIds[index], GetPlayerScore, nullptr });
          }
       }
 
@@ -273,16 +265,15 @@ void B2SServer::UpdateStateSrc()
          m_scoreDigitIds.clear();
          m_scoreDigitIds.reserve(m_scoreDigits.size());
          for (const auto& [id, _] : m_scoreDigits)
-            m_scoreDigitIds.push_back(id);
-         std::sort(m_scoreDigitIds.begin(), m_scoreDigitIds.end());
+            m_scoreDigitIds.push_back({ this, id });
+         std::ranges::sort(m_scoreDigitIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_scoreDigitNames.resize(m_scoreDigits.size());
-         int index = 0;
-         for (const auto id : m_scoreDigitIds)
+         for (size_t index = 0; index < m_scoreDigitIds.size(); ++index)
          {
+            const auto id = m_scoreDigitIds[index].id;
             m_scoreDigitNames[index] = std::format("Digit Score #{}", id);
-            m_scoreDigitStateDefs.emplace_back(
-               StateDef { m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, GetScoreDigit, nullptr });
-            index++;
+            m_scoreDigitStateDefs.emplace_back(StateDef {
+               m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_scoreDigitIds[index], GetScoreDigit, nullptr });
          }
       }
    }
@@ -305,42 +296,22 @@ void B2SServer::UpdateStateSrc()
          .stateDefs = m_scoreDigitStateDefs.data() } });
 }
 
-void MSGPIAPI B2SServer::GetLampState(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI B2SServer::GetLampState(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 1);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      if (inputIndex >= m_singleton->m_lampStateIds.size())
-         return;
-      srcId = m_singleton->m_lampStateIds[inputIndex];
-   }
-   *static_cast<float*>(pResult) = m_singleton->GetLampState(srcId);
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetLampState(ctx->id));
 }
 
-void MSGPIAPI B2SServer::GetPlayerScore(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI B2SServer::GetPlayerScore(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 2);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      srcId = m_singleton->m_playerScoreIds[inputIndex];
-   }
-   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetPlayerScore(srcId));
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetPlayerScore(ctx->id));
 }
 
-void MSGPIAPI B2SServer::GetScoreDigit(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 3);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      srcId = m_singleton->m_scoreDigitIds[inputIndex];
-   }
-   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetScoreDigit(srcId));
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetScoreDigit(ctx->id));
 }
 
 

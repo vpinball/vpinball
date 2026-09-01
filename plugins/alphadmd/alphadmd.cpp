@@ -121,15 +121,15 @@ public:
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
-         .groupId = { { endpointId, 0 } },
          .overrideId = { { sourceEndpointId, 0xFFFF } }, // We do not override a DMD but we want to be able to identify the source endpointId for colorization purposes
          .width = 128,
          .height = 32,
          .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
+         .callContext = this,
          .frameFormat = CTLPI_DISPLAY_FORMAT_LUM32F,
-         .GetRenderFrame = &GetRenderFrame,
+         .GetRenderFrame = &Trampoline<&AlphaDMDRenderer::GetRenderFrame>::Call,
          .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
-         .GetIdentifyFrame = &GetIdentifyFrame });
+         .GetIdentifyFrame = &Trampoline<&AlphaDMDRenderer::GetIdentifyFrame>::Call });
    }
 
    ~AlphaDMDRenderer()
@@ -176,7 +176,7 @@ private:
       m_lastFrameId.resize(selectedSources.size());
       for (size_t i = 0, pos = 0; i < selectedSources.size(); i++)
       {
-         if (const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id); seg.frameId != m_lastFrameId[i])
+         if (const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].callContext); seg.frameId != m_lastFrameId[i])
          {
             changed = true;
             m_lastFrameId[i] = seg.frameId;
@@ -512,28 +512,24 @@ private:
          } },
    };
 
-   static DisplayFrame GetRenderFrame(const CtlResId id)
+   DisplayFrame GetRenderFrame()
    {
-      // For the time being, we have a single renderer with a single id, so no need to derive it from the id
-      // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
       {
-         std::lock_guard lock(renderer->m_mutex);
-         renderer->m_renderRequested = true;
+         std::lock_guard lock(m_mutex);
+         m_renderRequested = true;
       }
-      renderer->m_updateCondVar.notify_one();
-      return { renderer->m_renderFrameId, renderer->m_dmd128Frame };
+      m_updateCondVar.notify_one();
+      return { m_renderFrameId, m_dmd128Frame };
    }
 
-   static DisplayFrame GetIdentifyFrame(const CtlResId id)
+   DisplayFrame GetIdentifyFrame()
    {
-      // For the time being, we have a single renderer with a single id, so no need to derive it from the id
-      // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
       {
-         std::lock_guard lock(renderer->m_mutex);
-         renderer->m_renderRequested = true;
+         std::lock_guard lock(m_mutex);
+         m_renderRequested = true;
       }
-      renderer->m_updateCondVar.notify_one();
-      return { renderer->m_identifyFrameId, renderer->m_identifyFrame };
+      m_updateCondVar.notify_one();
+      return { m_identifyFrameId, m_identifyFrame };
    }
 
    const DmdLayouts m_dmdLayout;

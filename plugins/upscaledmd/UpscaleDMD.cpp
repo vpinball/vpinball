@@ -176,15 +176,14 @@ public:
 
       const DisplaySrcId displayId = { //
          .id = { { endpointId, 0 } },
-         .groupId = { { endpointId, 0 } },
          .overrideId = m_dmdSrc.id,
          .width = m_dmdSrc.width * scaleFactors[upscalerMode],
          .height = m_dmdSrc.height * scaleFactors[upscalerMode],
          .hardware = m_dmdSrc.hardware,
+         .callContext = this,
          .frameFormat = m_frameFormat,
-         .GetRenderFrame = &GetRenderFrame,
-         .identifyFormat = m_dmdSrc.identifyFormat,
-         .GetIdentifyFrame = scaleFactors[upscalerMode] == 1 ? m_dmdSrc.GetIdentifyFrame : nullptr };
+         .GetRenderFrame = &Trampoline<&DMDUpscaler::GetRenderFrame>::Call
+      };
 
       m_rgbaSrcFrame.resize(m_dmdSrc.width * m_dmdSrc.height);
       m_rgbaDstFrame.resize(displayId.width * displayId.height);
@@ -217,6 +216,7 @@ public:
       m_updateCondVar.notify_all();
       if (m_renderThread.joinable())
          m_renderThread.join();
+      m_upscaledDmd.ClearItems();
    }
 
 private:
@@ -255,7 +255,7 @@ private:
 #endif
 
       // Request last frame and process it
-      const DisplayFrame srcFrame = m_dmdSrc.GetRenderFrame(m_dmdSrc.id);
+      const DisplayFrame srcFrame = m_dmdSrc.GetRenderFrame(m_dmdSrc.callContext);
       if (srcFrame.frame == nullptr || srcFrame.frameId == m_renderFrameId)
          return;
       m_renderFrameId = srcFrame.frameId;
@@ -380,19 +380,19 @@ private:
       m_targetBuffer = 1 - m_targetBuffer;
    }
 
-   static DisplayFrame GetRenderFrame(const CtlResId id)
+   DisplayFrame GetRenderFrame()
    {
       {
-         std::lock_guard lock(upscaler->m_mutex);
-         upscaler->m_upscaleRequested = true;
+         std::lock_guard lock(m_mutex);
+         m_upscaleRequested = true;
       }
-      upscaler->m_updateCondVar.notify_all();
-      return { upscaler->m_renderFrameId, upscaler->m_renderedFrame.load() };
+      m_updateCondVar.notify_all();
+      return { m_renderFrameId, m_renderedFrame.load() };
    }
-
+   
    const DisplaySrcId m_dmdSrc;
    CtrlItemProvider<DisplaySrcId> m_upscaledDmd;
-
+   
    std::thread m_renderThread;
    std::condition_variable m_updateCondVar;
    std::mutex m_mutex;

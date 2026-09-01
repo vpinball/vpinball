@@ -117,8 +117,9 @@ typedef struct StateDef
    uint32_t mappingId; // User friendly mapping id
    int dataFormat; // Data format, see CTLPI_STATE_FORMAT_xxx defines
    int semanticType; // Game state type, see CTLPI_STATE_TYPE_xxx defines
-   void(MSGPIAPI* GetState)(CtlResId blockId, unsigned int stateIndex, void* pResult); // Pointer to function to request a state, thread safe, may be null, pResult points to a memblock corresponding to format
-   void(MSGPIAPI* SetState)(CtlResId blockId, unsigned int stateIndex, const void* pValue); // Pointer to function to request a state change, thread safe, may be null, pResult points to a memblock corresponding to format (const char* for string)
+   void* callContext; // Opaque pointer that must be passed to GetState/SetState calls
+   void(MSGPIAPI* GetState)(void* callContext, void* pResult); // Pointer to function to request a state, thread safe, may be null, pResult points to a memblock corresponding to format
+   void(MSGPIAPI* SetState)(void* callContext, const void* pValue); // Pointer to function to request a state change, thread safe, may be null, pResult points to a memblock corresponding to format (const char* for string)
 } StateDef;
 
 typedef struct StateSrcId
@@ -191,7 +192,6 @@ typedef struct DisplayFrame
 typedef struct DisplaySrcId
 {
    CtlResId id;                                                             // Unique Id of the display
-   CtlResId groupId;                                                        // Unique Id of the display group
    CtlResId overrideId;                                                     // If this source overrides another source, id of the overriden source, 0 otherwise
    unsigned int width;                                                      // 
    unsigned int height;                                                     // 
@@ -202,15 +202,16 @@ typedef struct DisplaySrcId
       };
       uint32_t hardware;                                                    // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
    };
+   void* callContext;                                                       // Opaque pointer that must be passed to GetRenderFrame/GetIdentifyFrame calls
 
    // Render frames, suitable for presenting to the user, but not meant to be backward compatible
    unsigned int frameFormat;                                                // See CTLPI_DISPLAY_FORMAT_xxx
-   DisplayFrame(MSGPIAPI* GetRenderFrame)(const CtlResId id);              // Get the display frame. Thread safe. Returned value is not null, owned by the source, in the format defined by frameFormat
+   DisplayFrame(MSGPIAPI* GetRenderFrame)(void* callContext);               // Get the display frame. Thread safe. Returned value is not null, owned by the source, in the format defined by frameFormat
 
    // Identify frames, do not implement the full display emulation but suitable for stable and backward compatible frame identification
    // They are optional and all sources do not implement this feature. If implemented, all fields must be defined, otherwise they must all be 0/null
    unsigned int identifyFormat;                                             // See CTLPI_DISPLAY_ID_FORMAT_xxx 
-   DisplayFrame(MSGPIAPI* GetIdentifyFrame)(const CtlResId id);            // Get the last identify frame. Thread safe. Returned value is not null, owned by the source, in the format defined by identifyFormat
+   DisplayFrame(MSGPIAPI* GetIdentifyFrame)(void* callContext);             // Get the last identify frame. Thread safe. Returned value is not null, owned by the source, in the format defined by identifyFormat
 } DisplaySrcId;
 
 typedef struct GetDisplaySrcMsg
@@ -282,7 +283,8 @@ typedef struct SegSrcId
    };
    unsigned int nElements;                                  // Number of individual elements forming this display
    SegElementType elementType[CTLPI_SEG_MAX_DISP_ELEMENTS]; // Type of each individual element forming this display (0..nElements-1)
-   SegDisplayFrame(MSGPIAPI* GetState)(const CtlResId id); // Get the display state (one relative luminance value per segment, 16 segments per element, owned by provider), thread safe
+   void* callContext;                                       // Opaque pointer that must be passed to GetState calls
+   SegDisplayFrame(MSGPIAPI* GetState)(void* callContext);  // Get the display state (one relative luminance value per segment, 16 segments per element, owned by provider), thread safe
 } SegSrcId;
 
 typedef struct GetSegSrcMsg
@@ -346,7 +348,7 @@ typedef struct GetAudioSrcMsg
 // - New audio stream: all fields must be defined/not null
 // - Enqueueing in an existing stream: bufferSize & buffer and volume must be defined (other fields are ignored)
 // - Destroying an existing stream: buffer must be null (other fields are ignored)
-// For all these use cases, streamId and streamId must always be defined and valid.
+// For all these use cases, sourceId and streamId must always be defined and valid.
 typedef struct AudioUpdateMsg
 {
    CtlResId sourceId;            // Unique Id of the audio source
@@ -406,11 +408,11 @@ inline bool operator!=(const StateSrcId& a, const StateSrcId& b) { return !(a ==
 inline bool operator==(const DisplaySrcId& a, const DisplaySrcId& b)
 {
    return a.id == b.id //
-      && a.groupId == b.groupId //
       && a.overrideId == b.overrideId //
       && a.width == b.width //
       && a.height == b.height //
       && a.hardware == b.hardware //
+      && a.callContext == b.callContext //
       && a.frameFormat == b.frameFormat //
       && a.GetRenderFrame == b.GetRenderFrame //
       && a.identifyFormat == b.identifyFormat //
@@ -425,6 +427,7 @@ inline bool operator==(const SegSrcId& a, const SegSrcId& b)
       || a.groupId != b.groupId //
       || a.hardware != b.hardware //
       || a.nElements != b.nElements //
+      || a.callContext != b.callContext //
       || a.GetState != b.GetState)
    {
       return false;
@@ -455,6 +458,20 @@ inline bool operator!=(const AudioSrcId& a, const AudioSrcId& b)
 
 namespace PinballPlugin::Controller
 {
+
+// Trampoline implements the function hook pattern where callContext is the object hosting the callback method
+// In this situation, the function hook can be simply declared as &Trampoline<&method>::Call with a non static method
+template <auto MemFn>
+struct Trampoline;
+
+template <typename C, typename R, typename... Args, R (C::*MemFn)(Args...)>
+struct Trampoline<MemFn>
+{
+   static R Call(void* ctx, Args... args)
+   {
+      return (static_cast<C*>(ctx)->*MemFn)(args...);
+   }
+};
 
 // Extract get game from controller gameId (format is layout :: gameid)
 inline std::string_view CtrlGetGameKey(const char* gameId)

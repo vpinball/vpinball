@@ -25,12 +25,11 @@ using namespace std::string_view_literals;
 #include "classes/B2SScreen.h"
 #include "utils/PinMAMEAPI.h"
 
+#include <algorithm>
 #include <random>
 
 
 namespace B2SLegacy {
-
-Server* Server::m_singleton = nullptr;
 
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, ScriptClassDef* serverClassDef)
    : m_msgApi(msgApi)
@@ -68,7 +67,6 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    , m_exposedControllers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
    , m_exposedStates(msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG)
 {
-   m_singleton = this;
    m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
    m_pCollectLampsData = new B2SCollectData(m_pB2SSettings->GetLampsSkipFrames());
@@ -104,8 +102,6 @@ Server::~Server()
 
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
-
-   m_singleton = nullptr;
 
    delete m_pTimer;
    delete m_pFormBackglass;
@@ -170,15 +166,15 @@ void Server::UpdateStateSrc()
          m_lampStateIds.clear();
          m_lampStateIds.reserve(m_b2sStates.size());
          for (const auto& [id, _] : m_b2sStates)
-            m_lampStateIds.push_back(id);
-         std::sort(m_lampStateIds.begin(), m_lampStateIds.end());
+            m_lampStateIds.push_back({ this, id });
+         std::sort(m_lampStateIds.begin(), m_lampStateIds.end(), [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_lampStateNames.resize(m_b2sStates.size());
-         int index = 0;
-         for (const auto id : m_lampStateIds)
+         for (size_t index = 0; index < m_lampStateIds.size(); ++index)
          {
+            const auto id = m_lampStateIds[index].id;
             m_lampStateNames[index] = std::format("Illumination #{}", id);
-            m_lampStateDefs.emplace_back(
-               StateDef { m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, GetLampState, nullptr });
+            m_lampStateDefs.emplace_back(StateDef {
+               m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &m_lampStateIds[index], GetLampState, nullptr });
             index++;
          }
       }
@@ -188,16 +184,15 @@ void Server::UpdateStateSrc()
          m_playerScoreIds.clear();
          m_playerScoreIds.reserve(m_playerScores.size());
          for (const auto& [id, _] : m_playerScores)
-            m_playerScoreIds.push_back(id);
-         std::sort(m_playerScoreIds.begin(), m_playerScoreIds.end());
+            m_playerScoreIds.push_back({ this, id });
+         std::sort(m_playerScoreIds.begin(), m_playerScoreIds.end(), [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_playerScoreNames.resize(m_playerScores.size());
-         int index = 0;
-         for (const auto id : m_playerScoreIds)
+         for (size_t index = 0; index < m_playerScoreIds.size(); ++index)
          {
+            const auto id = m_playerScoreIds[index].id;
             m_playerScoreNames[index] = std::format("Player Score #{}", id);
-            m_playerScoreStateDefs.emplace_back(
-               StateDef { m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, GetPlayerScore, nullptr });
-            index++;
+            m_playerScoreStateDefs.emplace_back(StateDef {
+               m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_playerScoreIds[index], GetPlayerScore, nullptr });
          }
       }
 
@@ -206,16 +201,15 @@ void Server::UpdateStateSrc()
          m_scoreDigitIds.clear();
          m_scoreDigitIds.reserve(m_scoreDigits.size());
          for (const auto& [id, _] : m_scoreDigits)
-            m_scoreDigitIds.push_back(id);
-         std::sort(m_scoreDigitIds.begin(), m_scoreDigitIds.end());
+            m_scoreDigitIds.push_back({ this, id });
+         std::sort(m_scoreDigitIds.begin(), m_scoreDigitIds.end(), [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
          m_scoreDigitNames.resize(m_scoreDigits.size());
-         int index = 0;
-         for (const auto id : m_scoreDigitIds)
+         for (size_t index = 0; index < m_scoreDigitIds.size(); ++index)
          {
+            const auto id = m_scoreDigitIds[index].id;
             m_scoreDigitNames[index] = std::format("Digit Score #{}", id);
-            m_scoreDigitStateDefs.emplace_back(
-               StateDef { m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, GetScoreDigit, nullptr });
-            index++;
+            m_scoreDigitStateDefs.emplace_back(StateDef {
+               m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_scoreDigitIds[index], GetScoreDigit, nullptr });
          }
       }
    }
@@ -238,42 +232,22 @@ void Server::UpdateStateSrc()
          .stateDefs = m_scoreDigitStateDefs.data() } });
 }
 
-void MSGPIAPI Server::GetLampState(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI Server::GetLampState(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 1);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      if (inputIndex >= m_singleton->m_lampStateIds.size())
-         return;
-      srcId = m_singleton->m_lampStateIds[inputIndex];
-   }
-   *static_cast<float*>(pResult) = m_singleton->GetState(srcId);
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<float*>(pResult) = ctx->me->GetState(ctx->id);
 }
 
-void MSGPIAPI Server::GetPlayerScore(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI Server::GetPlayerScore(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 2);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      srcId = m_singleton->m_playerScoreIds[inputIndex];
-   }
-   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetPlayerScore(srcId));
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetPlayerScore(ctx->id));
 }
 
-void MSGPIAPI Server::GetScoreDigit(CtlResId id, unsigned int inputIndex, void* pResult)
+void MSGPIAPI Server::GetScoreDigit(void* callContext, void* pResult)
 {
-   assert(m_singleton);
-   assert(id.endpointId == m_singleton->m_endpointId && id.resId == 3);
-   int srcId;
-   {
-      const std::lock_guard lock(m_singleton->m_stateMutex);
-      srcId = m_singleton->m_scoreDigitIds[inputIndex];
-   }
-   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(m_singleton->GetScoreDigit(srcId));
+   auto ctx = static_cast<CallContext*>(callContext);
+   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetScoreDigit(ctx->id));
 }
 
 float Server::GetState(int b2sId) const
@@ -1093,12 +1067,13 @@ void Server::CheckLamps(ScriptArray* psa)
 
       for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
       {
-         if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+         const StateDef& def = pinmameStateSrc.stateDefs[i];
+         if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
             continue;
          uint8_t state;
-         pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+         def.GetState(def.callContext, &state);
          const int lampState = static_cast<int>(state);
-         const int lampId = pinmameStateSrc.stateDefs[i].mappingId;
+         const int lampId = def.mappingId;
 
          if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps())
          {
@@ -1243,12 +1218,13 @@ void Server::CheckSolenoids(ScriptArray* psa)
 
          for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
          {
-            if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+            const StateDef& def = pinmameStateSrc.stateDefs[i];
+            if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
                continue;
             uint8_t state;
-            pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+            def.GetState(def.callContext, &state);
             const int solenoidState = static_cast<int>(state);
-            const int solenoidId = pinmameStateSrc.stateDefs[i].mappingId;
+            const int solenoidId = def.mappingId;
 
             if (m_pB2SData->IsUseRomSolenoids() || m_pB2SData->IsUseAnimationSolenoids())
             {
@@ -1393,12 +1369,13 @@ void Server::CheckGIStrings(ScriptArray* psa)
 
          for (unsigned int i = 0; i < pinmameStateSrc.nStates; i++)
          {
-            if (pinmameStateSrc.stateDefs[i].dataFormat != CTLPI_STATE_FORMAT_UINT8 || pinmameStateSrc.stateDefs[i].GetState == nullptr)
+            const StateDef& def = pinmameStateSrc.stateDefs[i];
+            if (def.dataFormat != CTLPI_STATE_FORMAT_UINT8 || def.GetState == nullptr)
                continue;
             uint8_t state;
-            pinmameStateSrc.stateDefs[i].GetState(pinmameStateSrc.id, i, &state);
+            def.GetState(def.callContext, &state);
             const int giStringBool = state > m_giStringThreshold;
-            const int giStringId = pinmameStateSrc.stateDefs[i].mappingId;
+            const int giStringId = def.mappingId;
 
             if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings())
             {

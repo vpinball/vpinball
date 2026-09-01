@@ -147,7 +147,7 @@ private:
             m_dmdSource.With(
                [&](const std::vector<DisplaySrcId>& items)
                {
-                  const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+                  const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.callContext);
                   if (frame.frame == nullptr)
                   {
                      m_isRunning = false;
@@ -173,29 +173,32 @@ private:
             if (vniFrame->width != m_advertisedWidth || vniFrame->height != m_advertisedHeight)
             {
                m_pendingAdvertisement = true;
+               DisplaySrcId* coloredDmd = new DisplaySrcId();
+               *coloredDmd = {
+                  .id = { { endpointId, 0 } }, //
+                  .overrideId = dmdId.id, //
+                  .width = vniFrame->width, //
+                  .height = vniFrame->height, //
+                  .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
+                  .callContext = this, //
+                  .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
+                  .GetRenderFrame = &Trampoline<&VNIColorizer::GetRenderFrame>::Call //
+               };
                msgApi->RunOnMainThread(
                   endpointId, 0,
                   [](void* userData)
                   {
                      std::lock_guard stateLock(colorizer->m_stateMutex);
-                     const Vni_Frame_Struc* vniFrame = static_cast<const Vni_Frame_Struc*>(userData);
+                     auto coloredDmd = static_cast<const DisplaySrcId*>(userData);
                      DisplaySrcId dmdId = colorizer->m_dmdSource.With([&](const std::vector<DisplaySrcId>& items) { return items.front(); });
-                     colorizer->m_advertisedWidth = vniFrame->width;
-                     colorizer->m_advertisedHeight = vniFrame->height;
+                     colorizer->m_advertisedWidth = coloredDmd->width;
+                     colorizer->m_advertisedHeight = coloredDmd->height;
                      colorizer->m_pendingAdvertisement = false;
-                     colorizer->m_colorFrame.resize(vniFrame->width * vniFrame->height * 3);
-                     colorizer->m_colorizedDmd.SetItem({
-                        .id = { { endpointId, 0 } }, //
-                        .groupId = { endpointId, 0 }, //
-                        .overrideId = dmdId.id, //
-                        .width = vniFrame->width, //
-                        .height = vniFrame->height, //
-                        .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
-                        .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888, //
-                        .GetRenderFrame = &GetRenderFrame //
-                     });
+                     colorizer->m_colorFrame.resize(coloredDmd->width * coloredDmd->height * 3);
+                     colorizer->m_colorizedDmd.SetItem(*coloredDmd);
+                     delete coloredDmd;
                   },
-                  const_cast<Vni_Frame_Struc*>(vniFrame));
+                  coloredDmd);
                continue;
             }
 
@@ -210,10 +213,10 @@ private:
    }
 
    // Note that to be fully clean we should do a copy of the render (since the direct data is updated asynchronously, so eventually while it is read by consumer)
-   static DisplayFrame GetRenderFrame(const CtlResId id)
+   DisplayFrame GetRenderFrame()
    {
-      std::lock_guard targetLock(colorizer->m_stateMutex);
-      return { colorizer->m_colorizedframeId, colorizer->m_colorFrame.data() };
+      std::lock_guard targetLock(m_stateMutex);
+      return { m_colorizedframeId, m_colorFrame.data() };
    }
 
    static int HexDigit(const uint8_t value)

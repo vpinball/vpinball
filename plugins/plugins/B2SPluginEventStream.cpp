@@ -192,7 +192,7 @@ void B2SPluginEventStream::StatePollingThread()
       // D: DMD frame identification
       if (m_dmdId.id.id != 0)
       {
-         DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.id);
+         DisplayFrame dmdFrame = m_dmdId.GetIdentifyFrame(m_dmdId.callContext);
          if (dmdFrame.frame && dmdFrame.frameId != m_lastDmdFrameId)
          {
             m_lastDmdFrameId = dmdFrame.frameId;
@@ -210,7 +210,7 @@ void B2SPluginEventStream::StatePollingThread()
       int segDisplayIndex = 0;
       for (const auto& segSrc : m_pmSegSrc)
       {
-         if (const SegDisplayFrame segFrame = segSrc.GetState(segSrc.id); segFrame.frameId != m_pmLastSegFrameId[segIndex])
+         if (const SegDisplayFrame segFrame = segSrc.GetState(segSrc.callContext); segFrame.frameId != m_pmLastSegFrameId[segIndex])
          {
             m_pmLastSegFrameId[segIndex] = segFrame.frameId;
             for (unsigned int i = 0; i < segSrc.nElements; i++)
@@ -270,16 +270,17 @@ void B2SPluginEventStream::StatePollingThread()
             for (unsigned int i = 0; i < src.nStates; i++)
             {
                int state = 0;
+               auto& def = src.stateDefs[i];
                if (src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_UINT8 && src.stateDefs[i].GetState != nullptr)
                {
                   uint8_t byteState = 0;
-                  src.stateDefs[i].GetState(src.id, i, &byteState);
+                  def.GetState(def.callContext, &byteState);
                   state = static_cast<int>(byteState);
                }
                else if (src.stateDefs[i].dataFormat == CTLPI_STATE_FORMAT_INT32 && src.stateDefs[i].GetState != nullptr) // For PinMAME Mechs
                {
                   int32_t int32State = 0;
-                  src.stateDefs[i].GetState(src.id, i, &int32State);
+                  def.GetState(def.callContext, &int32State);
                   state = static_cast<int>(int32State);
                }
                else

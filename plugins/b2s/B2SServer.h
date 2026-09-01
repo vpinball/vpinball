@@ -136,8 +136,6 @@ private:
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
    std::function<void(B2SServer*)> m_onDestroyHandler;
 
-   static B2SServer* m_singleton;
-
    // Renderer
    std::unique_ptr<B2SRenderer> m_renderer = nullptr;
    const unsigned int m_onGetAuxRendererId;
@@ -159,18 +157,23 @@ private:
    PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;
    void UpdateStateSrc();
    mutable std::mutex m_stateMutex;
+   struct CallContext
+   {
+      B2SServer* me;
+      int id;
+   };
    vector<StateDef> m_lampStateDefs;
    vector<string> m_lampStateNames;
-   vector<int> m_lampStateIds;
+   vector<CallContext> m_lampStateIds;
    vector<StateDef> m_playerScoreStateDefs;
    vector<string> m_playerScoreNames;
-   vector<int> m_playerScoreIds;
+   vector<CallContext> m_playerScoreIds;
    vector<StateDef> m_scoreDigitStateDefs;
    vector<string> m_scoreDigitNames;
-   vector<int> m_scoreDigitIds;
-   static void MSGPIAPI GetLampState(CtlResId id, unsigned int inputIndex, void* pResult);
-   static void MSGPIAPI GetPlayerScore(CtlResId id, unsigned int inputIndex, void* pResult);
-   static void MSGPIAPI GetScoreDigit(CtlResId id, unsigned int inputIndex, void* pResult);
+   vector<CallContext> m_scoreDigitIds;
+   static void MSGPIAPI GetLampState(void* callContext, void* pResult);
+   static void MSGPIAPI GetPlayerScore(void* callContext, void* pResult);
+   static void MSGPIAPI GetScoreDigit(void* callContext, void* pResult);
 };
 
 }

@@ -317,298 +317,12 @@ PSC_CLASS_END()
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
-
 static uint32_t endpointId, nextDmdId;
-
 static std::vector<FlexDMD*> flexDmds;
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Alphanumeric segment displays
-
-static bool hasAlpha = false;
-static unsigned int onSegSrcChangedId, getSegSrcId;
-static float segLuminances[16 * 128] = {};
-
-static SegDisplayFrame GetState(const CtlResId id)
-{
-   // FIXME implement new output ids
-   if (id.endpointId != endpointId)
-      return { 0, nullptr };
-   uint32_t flexId = id.resId >> 8;
-   uint32_t subId = id.resId & 0x0FF;
-   static int sizes[17][14] = {
-      {}, // RenderMode_DMD_GRAY_2
-      {}, // RenderMode_DMD_GRAY_4
-      {}, // RenderMode_DMD_RGB
-      { 16, 16 }, // RenderMode_SEG_2x16Alpha
-      { 20, 20 }, // RenderMode_SEG_2x20Alpha
-      { 7, 7, 7, 7 }, // RenderMode_SEG_2x7Alpha_2x7Num
-      { 7, 7, 7, 7, 1, 1, 1, 1 }, // RenderMode_SEG_2x7Alpha_2x7Num_4x1Num
-      { 7, 7, 7, 7, 1, 1, 1, 1 }, // RenderMode_SEG_2x7Num_2x7Num_4x1Num
-      { 7, 7, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, // RenderMode_SEG_2x7Num_2x7Num_10x1Num
-      { 7, 7, 7, 7, 1, 1, 1, 1 }, // RenderMode_SEG_2x7Num_2x7Num_4x1Num_gen7
-      { 7, 7, 7, 7, 1, 1, 1, 1 }, // RenderMode_SEG_2x7Num10_2x7Num10_4x1Num
-      { 6, 6, 6, 6, 1, 1, 1, 1 }, // RenderMode_SEG_2x6Num_2x6Num_4x1Num
-      { 6, 6, 6, 6, 1, 1, 1, 1 }, // RenderMode_SEG_2x6Num10_2x6Num10_4x1Num
-      { 7, 7, 7, 7 }, // RenderMode_SEG_4x7Num10
-      { 6, 6, 6, 6, 1, 1, 1, 1 }, // RenderMode_SEG_6x4Num_4x1Num
-      { 7, 7, 1, 1, 1, 1, 16 }, // RenderMode_SEG_2x7Num_4x1Num_1x16Alpha,
-      { 16, 16, 7 }, // RenderMode_SEG_1x16Alpha_1x16Num_1x7Num
-   };
-   for (FlexDMD* pFlex : flexDmds)
-   {
-      if ((pFlex->GetShow()) && (pFlex->GetId() == flexId))
-      {
-         int pos = 0;
-         float* lum = segLuminances;
-         for (uint32_t i = 0; i < subId; i++)
-         {
-            pos += sizes[pFlex->GetRenderMode()][i];
-            lum += sizes[pFlex->GetRenderMode()][i] * 16;
-         }
-         for (int i = 0; i < sizes[pFlex->GetRenderMode()][subId]; i++)
-         {
-            uint16_t v = pFlex->GetSegFrame()[pos + i];
-            for (int j = 0; j < 16; j++, v >>= 1)
-               lum[i * 16 + j] = (v & 1) ? 1.f : 0.f;
-         }
-         return { pFlex->GetFrameId(), lum };
-      }
-   }
-   return { 0, nullptr };
-}
-
-
-static void AddSegSrc(GetSegSrcMsg& msg, uint32_t flexId, int displayIndex, int nDisplays, unsigned int nElements, SegElementType type)
-{
-   if (msg.count < msg.maxEntryCount)
-   {
-      msg.entries[msg.count] = {};
-      msg.entries[msg.count].id = { endpointId, flexId << 8 | displayIndex };
-      msg.entries[msg.count].groupId = { endpointId, flexId };
-      msg.entries[msg.count].hardware = CTLPI_SEG_HARDWARE_UNKNOWN;
-      msg.entries[msg.count].nElements = nElements;
-      for (unsigned int j = 0; j < nElements; j++)
-         msg.entries[msg.count].elementType[j] = type;
-      msg.entries[msg.count].GetState = GetState;
-   }
-   msg.count++;
-}
-
-static void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
-{
-   GetSegSrcMsg& msg = *static_cast<GetSegSrcMsg*>(msgData);
-   for (const FlexDMD* pFlex : flexDmds)
-   {
-      if (pFlex->GetShow())
-      {
-         switch (pFlex->GetRenderMode())
-         {
-            case RenderMode_SEG_2x16Alpha:
-               AddSegSrc(msg, pFlex->GetId(), 0, 2, 16, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 1, 2, 16, CTLPI_SEG_LAYOUT_14D);
-               break;
-            case RenderMode_SEG_2x20Alpha:
-               AddSegSrc(msg, pFlex->GetId(), 0, 2, 20, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 1, 2, 20, CTLPI_SEG_LAYOUT_14D);
-               break;
-            case RenderMode_SEG_2x7Alpha_2x7Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 4, 7, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 1, 4, 7, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 2, 4, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 4, 7, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Alpha_2x7Num_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 7, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 7, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Num_2x7Num_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Num_2x7Num_10x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 9, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 9, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 9, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 9, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 9, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 9, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 6, 9, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 7, 9, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 8, 9, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Num_2x7Num_4x1Num_gen7:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Num10_2x7Num10_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x6Num_2x6Num_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 6, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 6, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 6, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 6, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x6Num10_2x6Num10_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 6, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 6, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 6, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 6, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_4x7Num10:
-               AddSegSrc(msg, pFlex->GetId(), 0, 4, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 4, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 4, 7, CTLPI_SEG_LAYOUT_9C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 4, 7, CTLPI_SEG_LAYOUT_9C);
-               break;
-            case RenderMode_SEG_6x4Num_4x1Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 4, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 5, 6, 2, CTLPI_SEG_LAYOUT_7C);
-               break;
-            case RenderMode_SEG_2x7Num_4x1Num_1x16Alpha:
-               AddSegSrc(msg, pFlex->GetId(), 0, 5, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 1, 5, 7, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 5, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 3, 5, 2, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 4, 5, 16, CTLPI_SEG_LAYOUT_14D);
-               break;
-            case RenderMode_SEG_1x16Alpha_1x16Num_1x7Num:
-               AddSegSrc(msg, pFlex->GetId(), 0, 3, 16, CTLPI_SEG_LAYOUT_14D);
-               AddSegSrc(msg, pFlex->GetId(), 1, 3, 16, CTLPI_SEG_LAYOUT_7C);
-               AddSegSrc(msg, pFlex->GetId(), 2, 3, 7, CTLPI_SEG_LAYOUT_7C);
-               break;
-            default:
-               break;
-         }
-      }
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// DMD & Displays
-
-static bool hasDMD = false;
-static unsigned int getDmdSrcId, onDmdSrcChangeId;
-
-static DisplayFrame GetRenderFrame(const CtlResId id)
-{
-   for (FlexDMD* pFlex : flexDmds)
-   {
-      if ((endpointId == id.endpointId) && (pFlex->GetId() == id.resId))
-      {
-         pFlex->Render();
-         if (pFlex->GetRenderMode() == RenderMode_DMD_RGB)
-            return { pFlex->GetFrameId(), pFlex->UpdateRGBFrame() };
-         else if ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4))
-            return { pFlex->GetFrameId(), pFlex->UpdateLumFP32Frame() };
-         return { 0, nullptr };
-      }
-   }
-   return { 0, nullptr };
-}
-
-static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
-{
-   GetDisplaySrcMsg& msg = *static_cast<GetDisplaySrcMsg*>(msgData);
-   for (const FlexDMD* pFlex : flexDmds)
-   {
-      if (pFlex->GetShow() && ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4) || (pFlex->GetRenderMode() == RenderMode_DMD_RGB)))
-      {
-         if (msg.count < msg.maxEntryCount)
-         {
-            msg.entries[msg.count] = {};
-            msg.entries[msg.count].id = { endpointId, pFlex->GetId() };
-            msg.entries[msg.count].groupId = { endpointId, pFlex->GetId() };
-            msg.entries[msg.count].width = pFlex->GetWidth();
-            msg.entries[msg.count].height = pFlex->GetHeight();
-            msg.entries[msg.count].frameFormat = (pFlex->GetRenderMode() == RenderMode_DMD_RGB) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F;
-            msg.entries[msg.count].GetRenderFrame = &GetRenderFrame;
-            // TODO we should also provide identify frame to allow colorization/upscaling/pup events/...
-         }
-         msg.count++;
-      }
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Main plugin
 
 PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
 LPI_IMPLEMENT_CPP // Implement shared log support
-
-static void OnShowChanged(FlexDMD* pFlexI)
-{
-   bool hadDMD = hasDMD;
-   bool hadAlpha = hasAlpha;
-   hasDMD = false;
-   hasAlpha = false;
-   for (const FlexDMD* pFlex : flexDmds)
-   {
-      if (pFlex->GetShow())
-      {
-         if ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4) || (pFlex->GetRenderMode() == RenderMode_DMD_RGB))
-            hasDMD = true;
-         else
-            hasAlpha = true;
-      }
-   }
-   if (hasDMD != hadDMD)
-   {
-      if (hasDMD)
-         msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetRenderDMDSrc, nullptr);
-      else
-         msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc, nullptr);
-   }
-   msgApi->BroadcastMsg(endpointId, onDmdSrcChangeId, nullptr);
-   if (hasAlpha != hadAlpha)
-   {
-      if (hasAlpha)
-         msgApi->SubscribeMsg(endpointId, getSegSrcId, onGetSegSrc, nullptr);
-      else
-         msgApi->UnsubscribeMsg(getSegSrcId, onGetSegSrc, nullptr);
-   }
-   msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
-}
-
-static void OnFlexDestroyed(FlexDMD* pFlex)
-{
-   bool showChanged = pFlex->GetShow();
-   std::erase(flexDmds, pFlex);
-   if (showChanged)
-      OnShowChanged(pFlex);
-}
 
 }
 
@@ -621,12 +335,6 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
 
    // Setup login
    LPISetup(endpointId, msgApi);
-
-   // Contribute DMDs and segment displays when show is true
-   onDmdSrcChangeId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
-   getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
 
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
@@ -682,10 +390,9 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
    nextDmdId = 0;
    FlexDMD_FlexDMD_SCD->CreateObject = []()
    {
-      FlexDMD* pFlex = new FlexDMD(vpxApi);
+      FlexDMD* pFlex = new FlexDMD(msgApi, endpointId, vpxApi);
       pFlex->SetId(nextDmdId);
-      pFlex->SetOnDMDChangedHandler(OnShowChanged);
-      pFlex->SetOnDestroyHandler(OnFlexDestroyed);
+      pFlex->SetOnDestroyHandler([](FlexDMD* pFlex) { std::erase(flexDmds, pFlex); });
       nextDmdId++;
       flexDmds.push_back(pFlex);
       return static_cast<void*>(pFlex);
@@ -704,10 +411,6 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
 
 MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
 {
-   // All FlexDMD must be destroyed before unloading the plugin
-   assert(!hasDMD);
-   assert(!hasAlpha);
-
    auto regLambda = [&](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
    auto aliasLambda = [&](const char* name) { scriptApi->UnregisterScriptTypeAlias(name); };
    auto arrayLambda = [&](ScriptArrayDef* sad) { scriptApi->UnregisterScriptArrayType(sad); };
@@ -750,11 +453,6 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
    UnregisterFlexDMD_IntArray(arrayLambda);
    UnregisterFlexDMD_UltraDMD(regLambda);
    UnregisterFlexDMD_FlexDMD(regLambda);
-
-   msgApi->ReleaseMsgID(onSegSrcChangedId);
-   msgApi->ReleaseMsgID(getSegSrcId);
-   msgApi->ReleaseMsgID(onDmdSrcChangeId);
-   msgApi->ReleaseMsgID(getDmdSrcId);
 
    scriptApi = nullptr;
    msgApi = nullptr;

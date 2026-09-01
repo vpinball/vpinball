@@ -878,6 +878,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
+   if (g_pplayer->m_dmdFrame != nullptr
+      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW_FP32))
+      g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, nullptr);
    BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    // Convert from linear [0..100] luminance
    VARIANT *p;
@@ -887,7 +890,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_pluginAPI.UpdateDMDSource(nullptr, true);
+   g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, g_pplayer->m_dmdFrame);
    return S_OK;
 }
 
@@ -901,6 +904,9 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
+   if (g_pplayer->m_dmdFrame != nullptr
+      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::SRGBA))
+      g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, nullptr);
    BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    // gamma compressed [0..255] sRGB
@@ -910,7 +916,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_pluginAPI.UpdateDMDSource(nullptr, true);
+   g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, g_pplayer->m_dmdFrame);
    return S_OK;
 }
 

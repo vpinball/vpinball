@@ -183,8 +183,6 @@ private:
    string m_szPath = "./";
    Timer* m_pTimer = nullptr;
 
-   static Server* m_singleton;
-
    PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_pinmameControllers;
    mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
 
@@ -198,18 +196,23 @@ private:
    PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;
    void UpdateStateSrc();
    mutable std::mutex m_stateMutex;
+   struct CallContext
+   {
+      Server* me;
+      int id;
+   };
    vector<StateDef> m_lampStateDefs;
    vector<string> m_lampStateNames;
-   vector<int> m_lampStateIds;
+   vector<CallContext> m_lampStateIds;
    vector<StateDef> m_playerScoreStateDefs;
    vector<string> m_playerScoreNames;
-   vector<int> m_playerScoreIds;
+   vector<CallContext> m_playerScoreIds;
    vector<StateDef> m_scoreDigitStateDefs;
    vector<string> m_scoreDigitNames;
-   vector<int> m_scoreDigitIds;
-   static void MSGPIAPI GetLampState(CtlResId id, unsigned int inputIndex, void* pResult);
-   static void MSGPIAPI GetPlayerScore(CtlResId id, unsigned int inputIndex, void* pResult);
-   static void MSGPIAPI GetScoreDigit(CtlResId id, unsigned int inputIndex, void* pResult);
+   vector<CallContext> m_scoreDigitIds;
+   static void MSGPIAPI GetLampState(void* callContext, void* pResult);
+   static void MSGPIAPI GetPlayerScore(void* callContext, void* pResult);
+   static void MSGPIAPI GetScoreDigit(void* callContext, void* pResult);
 
    MsgPluginAPI* const m_msgApi;
    VPXPluginAPI* const m_vpxApi;

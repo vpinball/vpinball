@@ -862,6 +862,8 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
+   if (m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::BW_FP32))
+      g_pplayer->m_pluginAPI.OnDMDUpdated(this, nullptr);
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    // Convert from linear [0..100] luminance
    VARIANT *p;
@@ -871,7 +873,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
-   g_pplayer->m_pluginAPI.UpdateDMDSource(this, true);
+   g_pplayer->m_pluginAPI.OnDMDUpdated(this, m_dmdFrame);
    return S_OK;
 }
 

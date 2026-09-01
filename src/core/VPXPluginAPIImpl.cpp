@@ -570,11 +570,7 @@ void VPXPluginAPIImpl::OnGameStart()
    assert(m_dmdSources.empty());
    const auto& msgApi = m_msgApi;
 
-   msgApi.SubscribeMsg(GetVPXEndPointId(), m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
-
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onGameStartMsgId, nullptr);
-
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 
    const InputManager& inputManager = g_pplayer->m_pininput;
    m_actionMap[VPXACTION_LeftFlipper] = { inputManager.GetLeftFlipperActionId(), -1 };
@@ -608,62 +604,65 @@ void VPXPluginAPIImpl::OnGameEnd()
 {
    const auto& msgApi = m_msgApi;
 
-   msgApi.UnsubscribeMsg(m_onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
-
    m_dmdSources.clear();
-
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
+   m_displaySources->ClearItems();
 
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onGameEndMsgId, nullptr);
 
    m_actionMap.clear();
 }
 
-void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
+void VPXPluginAPIImpl::OnDMDUpdated(Flasher* flasher, std::shared_ptr<BaseTexture> frame)
 {
-   if (flasher)
+   assert(g_pplayer);
+   g_pplayer->m_pluginManager.AssertAPIThread();
+
+   const auto it = std::ranges::find_if(m_dmdSources, [flasher](const DmdSource& src) { return src.flasher == flasher; });
+   const bool added = (frame != nullptr) && (it == m_dmdSources.end());
+   const bool modified = (frame != nullptr) && (it != m_dmdSources.end()) && (it->format != frame->m_format || it->width != frame->width() || it->height != frame->height());
+   const bool removed = (frame == nullptr) && (it != m_dmdSources.end());
+
+   if (added || modified || removed)
    {
-      if (isAdd)
+      m_displaySources->ClearItems();
+      if (modified || removed)
+         m_dmdSources.erase(it);
+      if (added || modified)
       {
-         if (std::ranges::find(m_dmdSources, flasher) != m_dmdSources.end())
-            return;
-         m_dmdSources.push_back(flasher);
-      }
-      else
-      {
-         if (std::ranges::find(m_dmdSources, flasher) == m_dmdSources.end())
-            return;
-         RemoveFromVectorSingle(m_dmdSources, flasher);
+         m_dmdSources.emplace_back(flasher, frame->width(), frame->height(), frame->m_format);
+         vector<DisplaySrcId> entries;
+         for (size_t i = 0; i < m_dmdSources.size(); i++)
+         {
+            const auto& dmdSrc = m_dmdSources[i];
+            entries.push_back({ //
+               .id = { { m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) } },
+               .width = dmdSrc.width,
+               .height = dmdSrc.height,
+               .callContext = &m_dmdSources[i],
+               .frameFormat = dmdSrc.format == BaseTexture::BW_FP32 ? CTLPI_DISPLAY_FORMAT_LUM32F : CTLPI_DISPLAY_FORMAT_SRGB888,
+               .GetRenderFrame = &VPXPluginAPIImpl::ControllerOnGetRenderDMD });
+         }
+         m_displaySources->AddItems(entries);
       }
    }
-
-   const auto& msgApi = m_msgApi;
-   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChgMsgId, nullptr);
 }
 
-DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
+DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(void* callContext)
 {
-   VPXPluginAPIImpl& me = g_pplayer->m_pluginAPI;
-
-   if ((g_pplayer == nullptr) || (id.endpointId != me.m_vpxPlugin->m_endpointId))
-      return { 0, nullptr };
-
+   auto ctx = static_cast<DmdSource*>(callContext);
    DisplayFrame result = { 0, nullptr };
    std::shared_ptr<BaseTexture> dmdFrame;
-   if (id.resId == 0)
+   if (ctx->flasher == nullptr)
    {
       result.frameId = g_pplayer->m_dmdFrameId;
       dmdFrame = g_pplayer->m_dmdFrame;
    }
-   else if (id.resId <= me.m_dmdSources.size())
+   else
    {
-      const auto& dmdSrc = me.m_dmdSources[id.resId - 1];
-      result.frameId = dmdSrc->m_dmdFrameId;
-      dmdFrame = dmdSrc->m_dmdFrame;
+      result.frameId = ctx->flasher->m_dmdFrameId;
+      dmdFrame = ctx->flasher->m_dmdFrame;
    }
-   if (dmdFrame == nullptr)
-      return { 0, nullptr };
-
+   assert(dmdFrame != nullptr);
    switch (dmdFrame->m_format)
    {
    case BaseTexture::BW_FP32: result.frame = dmdFrame->data(); break;
@@ -673,45 +672,6 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
    }
 
    return result;
-}
-
-void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
-{
-   GetDisplaySrcMsg& msg = *static_cast<GetDisplaySrcMsg*>(msgData);
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-
-   // Main DMD defined from script
-   if (g_pplayer && g_pplayer->m_dmdFrame)
-   {
-      if (msg.count < msg.maxEntryCount)
-      {
-         msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, 0 } };
-         msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
-         msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
-         msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW_FP32 ? CTLPI_DISPLAY_FORMAT_LUM32F : CTLPI_DISPLAY_FORMAT_SRGB888;
-         msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
-      }
-      msg.count++;
-   }
-
-   // Ancillary DMDs defined on flasher objects from script
-   for (size_t i = 0; i < me.m_dmdSources.size(); i++)
-   {
-      const auto& dmdSrc = me.m_dmdSources[i];
-      assert(dmdSrc->m_dmdFrame);
-      assert(dmdSrc->m_dmdFrame->m_format == BaseTexture::BW_FP32 || dmdSrc->m_dmdFrame->m_format == BaseTexture::SRGB);
-      if (msg.count < msg.maxEntryCount)
-      {
-         msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) } };
-         msg.entries[msg.count].width = dmdSrc->m_dmdFrame->width();
-         msg.entries[msg.count].height = dmdSrc->m_dmdFrame->height();
-         msg.entries[msg.count].frameFormat = dmdSrc->m_dmdFrame->m_format == BaseTexture::BW_FP32 ? CTLPI_DISPLAY_FORMAT_LUM32F : CTLPI_DISPLAY_FORMAT_SRGB888;
-         msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
-      }
-      msg.count++;
-   }
 }
 
 
@@ -726,8 +686,6 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
    , m_onGameEndMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END))
    , m_getLoggingAPIMsgId(m_msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API))
    , m_getScriptingAPIMsgId(m_msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
-   , m_onDisplaySrcChgMsgId(m_msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
-   , m_onDisplayGetSrcMsgId(m_msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
 {
    // Message host
    pluginManager.SetSettingsHandler(
@@ -779,6 +737,10 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
    m_scriptableApi.UnregisterScriptTypeAlias = UnregisterScriptTypeAlias;
    m_scriptableApi.UnregisterScriptArrayType = UnregisterScriptArray;
    m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, nullptr);
+
+   // Contributed Displays
+   m_displaySources
+      = std::make_unique<PinballPlugin::Controller::CtrlItemProvider<DisplaySrcId>>(&m_msgApi, m_vpxPlugin->m_endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
 }
 
 VPXPluginAPIImpl::~VPXPluginAPIImpl()
@@ -789,7 +751,9 @@ VPXPluginAPIImpl::~VPXPluginAPIImpl()
       PLOGE << "An invalid plugin did not unregister COM Object override: " << a;
    }
    m_scriptCOMObjectOverrides.clear();
+
    m_dmdSources.clear();
+   m_displaySources = nullptr;
 
    m_msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
    m_msgApi.ReleaseMsgID(m_getVPXAPIMsgId);
@@ -799,8 +763,6 @@ VPXPluginAPIImpl::~VPXPluginAPIImpl()
    m_msgApi.ReleaseMsgID(m_getScriptingAPIMsgId);
    m_msgApi.ReleaseMsgID(m_onGameStartMsgId);
    m_msgApi.ReleaseMsgID(m_onGameEndMsgId);
-   m_msgApi.ReleaseMsgID(m_onDisplayGetSrcMsgId);
-   m_msgApi.ReleaseMsgID(m_onDisplaySrcChgMsgId);
 
    // FIXME unregister from MsgAPI plugins (not yet implemented in MsgAPI)
 }
