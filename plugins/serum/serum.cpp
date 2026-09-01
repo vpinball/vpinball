@@ -80,6 +80,8 @@ public:
       }
    }
 
+   void Stop() { StopColorizeThread(); }
+
 private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
@@ -383,6 +385,15 @@ static void SelectController(std::vector<ControllerDef>& items)
    items.clear();
 }
 
+static void ReleaseColorizer()
+{
+   if (colorizer)
+   {
+      colorizer->Stop();
+      colorizer = nullptr;
+   }
+}
+
 static void OnControllerChanged()
 {
    controllers->With(
@@ -413,7 +424,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger");
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
-      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
+      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { ReleaseColorizer(); },
       []() { OnControllerChanged(); });
    controllers->Subscribe();
 }

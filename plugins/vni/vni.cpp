@@ -61,6 +61,8 @@ public:
       msgApi->ReleaseMsgID(m_onConsoleDataId);
    }
 
+   void Stop() { StopColorizeThread(); }
+
 private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
@@ -386,6 +388,15 @@ static void OnControllersChanged()
 
 using namespace Vni;
 
+static void ReleaseColorizer()
+{
+   if (colorizer)
+   {
+      colorizer->Stop();
+      colorizer = nullptr;
+   }
+}
+
 MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    msgApi = api;
@@ -406,7 +417,7 @@ MSGPI_EXPORT void MSGPIAPI VNIPluginLoad(const uint32_t sessionId, const MsgPlug
          constexpr std::string_view pinmamePrefix(PMPI_GAMEID_PREFIX); // Keep only controllers exposing a PinMAME compatible game
          std::erase_if(items, [pinmamePrefix](const ControllerDef& controller) { return !string(controller.gameId).starts_with(pinmamePrefix); });
       },
-      []() { colorizer = nullptr; }, []() { OnControllersChanged(); });
+      []() { ReleaseColorizer(); }, []() { OnControllersChanged(); });
    controllers->Subscribe();
 }
 

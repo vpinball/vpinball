@@ -208,7 +208,9 @@ public:
       m_renderThread = std::thread(&DMDUpscaler::RenderThread, this);
    }
 
-   ~DMDUpscaler()
+   ~DMDUpscaler() { Stop(); }
+
+   void Stop()
    {
       {
          std::lock_guard lock(m_mutex);
@@ -217,6 +219,7 @@ public:
       m_updateCondVar.notify_all();
       if (m_renderThread.joinable())
          m_renderThread.join();
+      m_upscaledDmd.ClearItems();
    }
 
 private:
@@ -413,6 +416,15 @@ private:
 
 using namespace UpscaleDMD;
 
+static void ReleaseUpscaler()
+{
+   if (upscaler)
+   {
+      upscaler->Stop();
+      upscaler = nullptr;
+   }
+}
+
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    msgApi = api;
@@ -440,7 +452,7 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
          if (displaySource)
             items.push_back(*displaySource);
       },
-      []() { upscaler = nullptr; },
+      []() { ReleaseUpscaler(); },
       []()
       {
          upscalerMode = nextUpscalerMode;

@@ -132,7 +132,9 @@ public:
          .GetIdentifyFrame = &GetIdentifyFrame });
    }
 
-   ~AlphaDMDRenderer()
+   ~AlphaDMDRenderer() { Stop(); }
+
+   void Stop()
    {
       StopRenderThread();
       m_dmdProvider.ClearItems();
@@ -631,6 +633,15 @@ static void SetupRenderer()
 
 using namespace AlphaDMD;
 
+static void ReleaseRenderer()
+{
+   if (renderer)
+   {
+      renderer->Stop();
+      renderer = nullptr;
+   }
+}
+
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    msgApi = api;
@@ -639,7 +650,7 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
    segSource = std::make_unique<CtrlItemConsumer<SegSrcId>>(
       msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
       [](std::vector<SegSrcId>& items) { SelectSource(items); },
-      []() { renderer = nullptr; },
+      []() { ReleaseRenderer(); },
       []() { SetupRenderer(); });
    segSource->Subscribe();
 }
