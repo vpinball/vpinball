@@ -346,7 +346,7 @@ typedef struct GetAudioSrcMsg
 // - New audio stream: all fields must be defined/not null
 // - Enqueueing in an existing stream: bufferSize & buffer and volume must be defined (other fields are ignored)
 // - Destroying an existing stream: buffer must be null (other fields are ignored)
-// For all these use cases, source and stream must always be defined and valid.
+// For all these use cases, streamId and streamId must always be defined and valid.
 typedef struct AudioUpdateMsg
 {
    CtlResId sourceId;            // Unique Id of the audio source
