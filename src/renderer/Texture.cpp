@@ -9,6 +9,14 @@
 #include "utils/BiffReader.h"
 #include "utils/lzwreader.h"
 
+#include <atomic>
+
+static uint64_t NextLiveHash()
+{
+   static std::atomic<uint64_t> s_counter { 1 };
+   return s_counter.fetch_add(1, std::memory_order_relaxed);
+}
+
 #ifndef __STANDALONE__
 #include "FreeImage.h"
 #else
@@ -57,7 +65,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_format(format)
    , m_width(w)
    , m_height(h)
-   , m_liveHash(((size_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
+   , m_liveHash(NextLiveHash())
    , m_data(reinterpret_cast<uint8_t*>(SDL_aligned_alloc(16, w * h * GetPixelSize(format))))
 {
 }
@@ -105,7 +113,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const
 
    if (data == nullptr || size == 0)
       return nullptr;
-   
+
    // Try to load using fast JPG path via stbi if no texture resize must be triggered
    if (maxTexDimension == 0 && !resizeOnLowMem)
    {
@@ -158,12 +166,12 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const
       FreeImage_CloseMemory(dataHandle);
       tex = dib ? BaseTexture::CreateFromFreeImage(dib, isImageData, maxTexDimension, resizeOnLowMem) : nullptr;
    }
-   
+
    #ifdef __OPENGLES__
    if (tex && (tex->m_format == SRGB || tex->m_format == RGB_FP16 || tex->m_format == RGB_FP32))
       tex = tex->NewWithAlpha();
    #endif
-   
+
    return tex;
 }
 
@@ -674,7 +682,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
          default: break;
       }
       break;
-   
+
    case RGB_FP32:
       switch (format)
       {
@@ -906,7 +914,7 @@ Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int h
    , m_width(width)
    , m_height(height)
    , m_ppb(ppb)
-   , m_liveHash(((size_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
+   , m_liveHash(NextLiveHash())
 {
    assert(m_ppb != nullptr);
    assert(m_width > 0);
@@ -948,7 +956,7 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             // The 'BITS' field is deprecated and only used in pre 10.8.1 files which were all BIFF streams so we can safely cast here
             BiffReader& br = (BiffReader&)reader;
 
-            // FIXME Assert until the old path based on IStorage is removed (still pending removal in undo & copy/paste), but this is already 
+            // FIXME Assert until the old path based on IStorage is removed (still pending removal in undo & copy/paste), but this is already
             // legacy deprecated and largely unused feature, moreover bmp are not supposed to enter this codeblock (no undo or copy/paste)
             assert(br.m_stream != nullptr);
 
