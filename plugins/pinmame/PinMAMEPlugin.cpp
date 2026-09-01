@@ -209,7 +209,6 @@ PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
 LPI_IMPLEMENT_CPP // Implement shared log support
 
-MSGPI_BOOL_VAL_SETTING(enableSoundProp, "Sound", "Enable Sound", "Enable sound emulation", true, true);
 MSGPI_STRING_VAL_SETTING(pinMAMEPathProp, "PinMAMEPath", "PinMAME Path", "Folder that contains PinMAME subfolders (roms, nvram, ...)", true, "", 1024);
 MSGPI_BOOL_VAL_SETTING(cheatProp, "Cheat", "Cheat Mode", "", true, false);
 
@@ -238,110 +237,6 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Audio
-
-static unsigned int onAudioUpdateId;
-static unsigned int onAudioSrcChangedId;
-static unsigned int getAudioSrcId;
-static std::unique_ptr<AudioUpdateMsg> audioUpdate;
-static std::mutex audioMutex;
-static AudioSrcId audioSrcDef = { .id = { 0, 0 }, .overrideId = { 0, 0 }, .name = "PinMAME", .desc = "PinMAME audio stream", .target = CTLPI_AUDIO_TARGET_BACKGLASS };
-
-static void OnGetAudioSrc(const unsigned int msgId, void* userData, void* msgData)
-{
-   // MsgAPI thread
-   std::lock_guard lock(audioMutex);
-   if (audioUpdate == nullptr)
-      return;
-
-   GetAudioSrcMsg* msg = static_cast<GetAudioSrcMsg*>(msgData);
-   if (msg->count < msg->maxEntryCount)
-      memcpy(&msg->entries[msg->count], &audioSrcDef, sizeof(AudioSrcId));
-   msg->count++;
-}
-
-static void StopAudioStream()
-{
-   // MsgAPI or PinMAME thread
-   std::unique_lock lock(audioMutex);
-   if (audioUpdate == nullptr)
-      return;
-
-   AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
-   pendingAudioUpdate->sourceId = audioUpdate->sourceId;
-   pendingAudioUpdate->streamId = audioUpdate->streamId;
-   pendingAudioUpdate->buffer = nullptr;
-   audioUpdate = nullptr;
-   lock.unlock();
-
-   msgApi->RunOnMainThread(
-      endpointId, 0,
-      [](void* userData)
-      {
-         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
-         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg); // End of stream
-         msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr); // Audio source change
-         delete msg;
-      },
-      pendingAudioUpdate);
-}
-
-int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData)
-{
-   // PinMAME thread
-   LOGI(std::format("format={}, channels={}, sampleRate={:.2f}, framesPerSecond={:.2f}, samplesPerFrame={}, bufferSize={}",
-      p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16 ? "INT16" : "FLOAT", p_audioInfo->channels, p_audioInfo->sampleRate, p_audioInfo->framesPerSecond, p_audioInfo->samplesPerFrame,
-      p_audioInfo->bufferSize));
-   if (p_audioInfo->sampleRate > 0 && ((p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) || (p_audioInfo->format == PINMAME_AUDIO_FORMAT_FLOAT))
-      && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
-   {
-      std::unique_lock lock(audioMutex);
-      audioUpdate = std::make_unique<AudioUpdateMsg>();
-      audioUpdate->volume = 1.0f;
-      audioUpdate->sourceId = { endpointId, 0 }; // Source is always tied to endpoint
-      audioUpdate->streamId = { endpointId, 0 }; // Single stream source
-      audioUpdate->channelFormat = (p_audioInfo->channels == 1) ? CTLPI_AUDIO_FORMAT_CHANNEL_MONO : CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
-      audioUpdate->sampleFormat = (p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) ? CTLPI_AUDIO_FORMAT_SAMPLE_INT16 : CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
-      audioUpdate->sampleRate = p_audioInfo->sampleRate;
-      lock.unlock();
-
-      msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onAudioSrcChangedId, nullptr); }, nullptr);
-   }
-   else
-   {
-      StopAudioStream();
-   }
-   return p_audioInfo->samplesPerFrame;
-}
-
-int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUserData)
-{
-   // PinMAME thread
-   std::unique_lock lock(audioMutex);
-   if (audioUpdate == nullptr)
-      return samples;
-
-   AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
-   memcpy(pendingAudioUpdate, audioUpdate.get(), sizeof(AudioUpdateMsg));
-   lock.unlock();
-
-   // Data are only valid in the context of the call, we need to copy the data to feed them on the message thread.
-   const int bytePerSample = (audioUpdate->sampleFormat == CTLPI_AUDIO_FORMAT_SAMPLE_INT16) ? 2 : 4;
-   const int nChannels = (audioUpdate->channelFormat == CTLPI_AUDIO_FORMAT_CHANNEL_MONO) ? 1 : 2;
-   pendingAudioUpdate->bufferSize = samples * bytePerSample * nChannels;
-   pendingAudioUpdate->buffer = new uint8_t[pendingAudioUpdate->bufferSize];
-   memcpy(pendingAudioUpdate->buffer, p_buffer, pendingAudioUpdate->bufferSize);
-
-   msgApi->RunOnMainThread(endpointId, 0, [](void* userData) {
-         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
-         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-         delete[] msg->buffer;
-         delete msg;
-      }, pendingAudioUpdate);
-   return samples;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
@@ -354,12 +249,10 @@ static void OnControllerGameStart(Controller*)
 
 static void OnControllerGameEnd(Controller*)
 {
-   StopAudioStream();
 }
 
 static void OnControllerDestroyed(Controller*)
 {
-   StopAudioStream();
    controller = nullptr;
 }
 
@@ -383,17 +276,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
 
-   audioSrcDef.id.endpointId = endpointId;
-
-   msgApi->RegisterSetting(endpointId, &enableSoundProp);
    msgApi->RegisterSetting(endpointId, &pinMAMEPathProp);
    msgApi->RegisterSetting(endpointId, &cheatProp);
-
-   // Setup our contribution to the controller messages
-   onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
-   onAudioSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_SRC_CHG_MSG);
-   getAudioSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
-   msgApi->SubscribeMsg(endpointId, getAudioSrcId, OnGetAudioSrc, nullptr);
 
    // Contribute our API to the script engine
    getScriptApiMsgId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
@@ -422,8 +306,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          NULL, // State update => prefer update on request
          NULL, // Display available => prefer state block
          NULL, // Display updated => prefer update on request
-         enableSoundProp_Val ? &OnAudioAvailable : NULL, //
-         enableSoundProp_Val ? &OnAudioUpdated : NULL, //
+         NULL, //
+         NULL, //
          NULL, // Mech available
          NULL, // Mech updated
          NULL, // Solenoid updated => prefer update on request
@@ -503,7 +387,6 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
       }
       LOGE(std::format("PinMAME Controller was not destroyed before unloading the plugin ({} remaining references)", nRemainingRef));
    }
-   StopAudioStream();
 
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    auto regLambda = [](ScriptClassDef* scd) { scriptApi->UnregisterScriptClass(scd); };
@@ -522,10 +405,6 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
 
    msgApi->ReleaseMsgID(getVpxApiMsgId);
    msgApi->ReleaseMsgID(getScriptApiMsgId);
-   msgApi->ReleaseMsgID(onAudioUpdateId);
-   msgApi->UnsubscribeMsg(getAudioSrcId, OnGetAudioSrc, nullptr);
-   msgApi->ReleaseMsgID(getAudioSrcId);
-   msgApi->ReleaseMsgID(onAudioSrcChangedId);
    msgApi->FlushPendingCallbacks(endpointId);
    PinmameSetMsgAPI(nullptr, 0);
    msgApi = nullptr;
