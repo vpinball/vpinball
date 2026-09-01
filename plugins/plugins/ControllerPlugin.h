@@ -478,8 +478,7 @@ template <class T> class CtrlItemProvider
 {
 public:
    CtrlItemProvider(const MsgPluginAPI* msgApi, uint32_t endpointId, const char* getMsgName, const char* onChangeMsgName)
-      : m_threadLock(std::this_thread::get_id())
-      , m_msgApi(msgApi)
+      : m_msgApi(msgApi)
       , m_endpointId(endpointId)
       , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
       , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
@@ -531,6 +530,12 @@ public:
       m_msgApi->BroadcastMsg(m_endpointId, m_onChangeMsgId, nullptr);
    }
 
+   const std::vector<T>& GetItems() const
+   {
+      assert(std::this_thread::get_id() == m_threadLock);
+      return m_items;
+   }
+
 private:
    static void OnGetItems(const unsigned int eventId, void* userData, void* msgData)
    {
@@ -547,7 +552,7 @@ private:
       getMsg->count += static_cast<unsigned int>(std::distance(it, me->m_items.end()));
    }
 
-   const std::thread::id m_threadLock;
+   const std::thread::id m_threadLock { std::this_thread::get_id() };
    const MsgPluginAPI* m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_getMsgId;
@@ -615,8 +620,7 @@ public:
       const std::function<void(std::vector<T>&)>& filterItems,
       const std::function<void()>& onItemsAboutToChange,
       const std::function<void()>& onItemsChanged)
-      : m_msgApiThreadId(std::this_thread::get_id())
-      , m_msgApi(msgApi)
+      : m_msgApi(msgApi)
       , m_endpointId(endpointId)
       , m_getMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, getMsgName))
       , m_onChangeMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, onChangeMsgName))
@@ -748,7 +752,7 @@ private:
       me->UpdateList();
    }
 
-   const std::thread::id m_msgApiThreadId;
+   const std::thread::id m_msgApiThreadId { std::this_thread::get_id() };
    const MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_getMsgId;
