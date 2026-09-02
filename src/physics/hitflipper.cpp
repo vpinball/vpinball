@@ -998,6 +998,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          m_flipperMover.m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit); // simple hit event
       else
          m_flipperMover.m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
+      g_pplayer->m_pininput.PlayFlipperContactRumble(bnv);
    }
 
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
