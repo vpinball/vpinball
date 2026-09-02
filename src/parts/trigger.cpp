@@ -972,6 +972,7 @@ void Trigger::Load(IObjectReader& reader)
          }
          return true;
       });
+   UpdateStatusBarInfo();
 }
 
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
