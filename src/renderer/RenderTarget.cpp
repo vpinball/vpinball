@@ -550,9 +550,12 @@ RenderTarget::~RenderTarget()
 #if defined(ENABLE_BGFX)
    if (bgfx::isValid(m_framebuffer))
       bgfx::destroy(m_framebuffer);
+   for (uint16_t i = 0; i < static_cast<uint16_t>(m_nLayers); i++)
+      if (bgfx::isValid(m_framebuffer_layers[i]))
+         bgfx::destroy(m_framebuffer_layers[i]);
    if (bgfx::isValid(m_color_tex))
       bgfx::destroy(m_color_tex);
-   if (bgfx::isValid(m_depth_tex))
+   if (!m_shared_depth && bgfx::isValid(m_depth_tex))
       bgfx::destroy(m_depth_tex);
 
    if (bgfx::isValid(m_msaaDepthResolveFramebuffer))
