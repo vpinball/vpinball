@@ -134,7 +134,7 @@ DisplayFrame FlexDMD::GetRenderFrame(void* callContext)
 
 SegDisplayFrame FlexDMD::GetSegState(void* callContext)
 {
-   static int sizes[17][14] = {
+   static const int sizes[17][14] = {
       {}, // RenderMode_DMD_GRAY_2
       {}, // RenderMode_DMD_GRAY_4
       {}, // RenderMode_DMD_RGB
@@ -158,7 +158,7 @@ SegDisplayFrame FlexDMD::GetSegState(void* callContext)
    uint32_t subId = ctx->index;
    int pos = 0;
    static thread_local float segLuminances[16 * 128] = { };
-   float* lum = segLuminances;
+   float* __restrict lum = segLuminances;
    for (uint32_t i = 0; i < subId; i++)
    {
       pos += sizes[me->GetRenderMode()][i];

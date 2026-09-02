@@ -474,7 +474,7 @@ struct Trampoline<MemFn>
 };
 
 // Extract get game from controller gameId (format is layout :: gameid)
-inline std::string_view CtrlGetGameKey(const char* gameId)
+inline const std::string_view CtrlGetGameKey(const char* gameId)
 {
    const std::string_view id(gameId);
    const size_t sep = id.find("::");
