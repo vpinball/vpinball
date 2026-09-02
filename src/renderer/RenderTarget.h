@@ -86,7 +86,7 @@ private:
    std::shared_ptr<Sampler> m_msaa_depth_sampler;
    bgfx::TextureHandle m_msaaDepthResolveColorTex = BGFX_INVALID_HANDLE;
    bgfx::FrameBufferHandle m_msaaDepthResolveFramebuffer = BGFX_INVALID_HANDLE;
-   bgfx::FrameBufferHandle m_framebuffer_layers[6];
+   bgfx::FrameBufferHandle m_framebuffer_layers[6] { BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE };
    bgfx::FrameBufferHandle m_framebuffer = BGFX_INVALID_HANDLE;
    bool m_needResolve = false;
 #elif defined(ENABLE_OPENGL)
