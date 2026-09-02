@@ -151,6 +151,11 @@ public:
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
 
+   // Rumble on flipper/ball contact, scaled by the relative normal velocity of the impact
+   void PlayFlipperContactRumble(const float normalImpactSpeed);
+   float GetFlipperContactRumbleStrength() const { return m_rumbleFlipperContact; }
+   void SetFlipperContactRumbleStrength(const float strength) { m_rumbleFlipperContact = strength; }
+
    int m_leftFlipperLastChangePollDelay = 0;
 
    // Used to add/remove the OpenXR input handler
@@ -257,6 +262,7 @@ private:
    int m_autoStartDirectStateSlot = -1;
 
    int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
+   float m_rumbleFlipperContact = 1.f; // Strength of the rumble played on flipper/ball contact, 0 disables it
 
 #ifdef _WIN32
    HHOOK m_hKeyboardHook = nullptr;

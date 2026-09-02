@@ -68,6 +68,7 @@ InputManager::InputManager(Player* player)
    addTouchRegion(RECT { 70, 90, 100, 100 }, GetLaunchBallActionId());
 
    m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
+   m_rumbleFlipperContact = g_app->m_settings.GetPlayer_RumbleFlipperContact();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -1134,6 +1135,18 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       };
       VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_RUMBLE, &rumbleData);
    #endif
+}
+
+void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
+{
+   if (m_rumbleFlipperContact <= 0.f)
+      return;
+
+   // A relative normal velocity of roughly 17 units corresponds to a hard hit. Both motors are
+   // driven, since short pulses on the high frequency motor alone are barely noticeable on many
+   // gamepads.
+   const float impact = clamp(fabsf(normalImpactSpeed) * 0.06f, 0.05f, 1.f);
+   PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * m_rumbleFlipperContact, 120);
 }
 
 void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
