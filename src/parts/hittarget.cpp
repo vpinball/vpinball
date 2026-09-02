@@ -856,6 +856,7 @@ void HitTarget::Load(IObjectReader& reader)
          }
          return true;
       });
+   UpdateStatusBarInfo();
 }
 
 
