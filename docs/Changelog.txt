@@ -75,7 +75,7 @@ FEATURES:
   . the legacy asymetric sensor calibration was removed (this was removed from joystick calibration before Windows 10 and always gave worse results compared to the default symetric calibration)
   . the legacy (optional) position filter was removed
 
-- the BGFX library employs all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL, ...) with some unique benefits: (note that DX11 should be preferred on Windows) (DX12 currently disabled)
+- the BGFX library employs all the latest rendering backends (Vulkan, Metal, DirectX11, DirectX12, OpenGL, ...) with some unique benefits: (note that DX11 should be preferred on Windows)
   . it supports Variable Refresh Rate display (when VSync is switched off)
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency,
     better nudging, more stable gameplay emulation, as well as a performance boost

@@ -1167,10 +1167,6 @@ std::vector<std::string> RenderDevice::GetSelectableBackendNames()
       const bgfx::RendererType::Enum renderer = supported[i];
       if (renderer == bgfx::RendererType::Noop || renderer == bgfx::RendererType::WebGPU)
          continue; // no-op / web backend, not a usable desktop choice
-      #if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
-      if (renderer == bgfx::RendererType::Direct3D12)
-         continue;
-      #endif
       result.push_back(bgfxRendererName(renderer));
    }
    return result;
@@ -1260,10 +1256,6 @@ RenderDevice::RenderDevice(
    if (!backendMatched && !gfxBackend.empty() && gfxBackend != "Default"s) {
       PLOGW << "Ignoring unknown or unsupported graphics backend '" << gfxBackend << "' (case sensitive), using platform default. Valid values: " << validBackends;
    }
-#if !defined(_DEBUG) && !defined(ENABLE_BGFX_DX12)
-   if (init.type == bgfx::RendererType::Direct3D12)
-      init.type = bgfx::RendererType::Count;
-#endif
    if (init.type == bgfx::RendererType::Noop)
       init.type = bgfx::RendererType::Count;
    if (g_pplayer->m_vrDevice == nullptr)
