@@ -40,11 +40,7 @@ private:
    PinballPlugin::Controller::CtrlItemConsumer<ControllerDef> m_pinmameControllers;
    mutable PinballPlugin::Controller::CtrlItemConsumer<StateSrcId> m_stateSources;
    void OnStateSrcChanged(const std::vector<StateSrcId>& items);
-
-   unsigned int m_getSegSrcMsgId = 0;
-   unsigned int m_onSegChangedMsgId = 0;
-   static void OnSegSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   vector<SegSrcId> m_segDisplays;
+   mutable PinballPlugin::Controller::CtrlItemConsumer<SegSrcId> m_segSources;
 
    PinballPlugin::ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
