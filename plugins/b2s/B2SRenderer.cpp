@@ -31,7 +31,23 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
            const string pinmamePrefix(PMPI_GAMEID_PREFIX);
            std::erase_if(items, [&pinmamePrefix](const ControllerDef& src) { return !string(src.gameId).starts_with(pinmamePrefix); });
         },
-        nullptr, [this]() { m_stateSources.Refresh(); })
+        nullptr, [this]() { m_stateSources.Refresh(); m_segSources.Refresh(); })
+   , m_segSources(
+        msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG,
+        [this](std::vector<SegSrcId>& items)
+        {
+           m_pinmameControllers.With(
+              [&items](const std::vector<ControllerDef>& controllers)
+              {
+                 std::erase_if(items,
+                    [&controllers](const SegSrcId& source)
+                    {
+                       return std::find_if(controllers.begin(), controllers.end(), [source](const ControllerDef& ctrl) { return ctrl.endpointId == source.id.endpointId; })
+                          == controllers.end();
+                    });
+              });
+        },
+        nullptr, nullptr)
    , m_stateSources(
         msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG,
         [this](std::vector<StateSrcId>& items)
@@ -59,51 +75,21 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const VPXPluginAPI* c
    m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
    m_dmdHeight = dmdTexInfo ? static_cast<float>(dmdTexInfo->height) : 768.f;
 
-   m_getSegSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
-   m_onSegChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
-   m_msgApi->SubscribeMsg(m_endpointId, m_onSegChangedMsgId, OnSegSrcChanged, this);
-   OnSegSrcChanged(m_onSegChangedMsgId, this, nullptr);
-
+   m_segSources.Subscribe();
    m_stateSources.Subscribe();
    m_pinmameControllers.Subscribe();
 }
 
 B2SRenderer::~B2SRenderer()
 {
+   m_segSources.Unsubscribe();
    m_stateSources.Unsubscribe();
    m_pinmameControllers.Unsubscribe();
-   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged, this);
-   m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
-   m_msgApi->ReleaseMsgID(m_getSegSrcMsgId);
-   m_segDisplays.clear();
 }
 
 void B2SRenderer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
    msgApi->RegisterSetting(endpointId, &showGrillProp);
-}
-
-void B2SRenderer::OnSegSrcChanged(const unsigned int, void* userData, void*)
-{
-   auto me = static_cast<B2SRenderer*>(userData);
-   me->m_segDisplays.clear();
-
-   unsigned int pinmameEndpoint = me->m_msgApi->GetPluginEndpoint("PinMAME");
-   if (pinmameEndpoint == 0)
-      return;
-
-   GetSegSrcMsg getSrcMsg = { 0, 0, nullptr };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcMsgId, pinmameEndpoint, &getSrcMsg);
-   vector<SegSrcId> entries(getSrcMsg.count);
-   getSrcMsg = { getSrcMsg.count, 0, entries.data() };
-   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getSegSrcMsgId, pinmameEndpoint, &getSrcMsg);
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
-   {
-      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint)
-      {
-         me->m_segDisplays.push_back(getSrcMsg.entries[i]);
-      }
-   }
 }
 
 void B2SRenderer::OnStateSrcChanged(const std::vector<StateSrcId>& items)
@@ -217,66 +203,68 @@ void B2SRenderer::RenderScores(VPXRenderContext2D* ctx, B2SServer* server, const
    vector<float> luminances;
    vector<VPXSegDisplayRenderStyle> styles;
    vector<VPXSegDisplayHint> hints;
-   int digitIndex = 1;
-   for (const auto& display : m_segDisplays)
-   {
-      SegDisplayFrame state = display.GetState(display.callContext);
-      for (unsigned int i = 0; i < display.nElements; i++)
+   m_segSources.With([&segTypes, &styles, &hints, &luminances, server](const std::vector<SegSrcId>& segDisplays){
+      int digitIndex = 1;
+      for (const auto& display : segDisplays)
       {
-         VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
-         VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
-         if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_NEON_PLASMA)
-            style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
-         else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_GREEN)
-            style = VPXSegDisplayRenderStyle::VPXSegStyle_GreenVFD;
-         else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_BLUE)
+         SegDisplayFrame state = display.GetState(display.callContext);
+         for (unsigned int i = 0; i < display.nElements; i++)
          {
-            style = VPXSegDisplayRenderStyle::VPXSegStyle_BlueVFD;
-            if (display.hardware == CTLPI_SEG_HARDWARE_GTS1_4DIGIT //
-               || display.hardware == CTLPI_SEG_HARDWARE_GTS1_6DIGIT //
-               || display.hardware == CTLPI_SEG_HARDWARE_GTS80A_7DIGIT //
-               || display.hardware == CTLPI_SEG_HARDWARE_GTS80B_20DIGIT //
-            )
-               hint = VPXSegDisplayHint::Gottlieb;
-         }
-         segTypes.push_back(display.elementType[i]);
-         styles.push_back(style);
-         hints.push_back(hint);
+            VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
+            VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+            if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_NEON_PLASMA)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+            else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_GREEN)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_GreenVFD;
+            else if ((display.hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_BLUE)
+            {
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_BlueVFD;
+               if (display.hardware == CTLPI_SEG_HARDWARE_GTS1_4DIGIT //
+                  || display.hardware == CTLPI_SEG_HARDWARE_GTS1_6DIGIT //
+                  || display.hardware == CTLPI_SEG_HARDWARE_GTS80A_7DIGIT //
+                  || display.hardware == CTLPI_SEG_HARDWARE_GTS80B_20DIGIT //
+               )
+                  hint = VPXSegDisplayHint::Gottlieb;
+            }
+            segTypes.push_back(display.elementType[i]);
+            styles.push_back(style);
+            hints.push_back(hint);
 
-         int bitState = 0;
-         for (int j = 0; j < 16; j++)
-         {
-            luminances.push_back(state.frame[i * 16 + j]);
-            if (state.frame[i * 16 + j] > 0.5f)
-               bitState |= 1 << j;
+            int bitState = 0;
+            for (int j = 0; j < 16; j++)
+            {
+               luminances.push_back(state.frame[i * 16 + j]);
+               if (state.frame[i * 16 + j] > 0.5f)
+                  bitState |= 1 << j;
+            }
+            int ret;
+            switch (bitState & ~0x80) // Remove the comma
+            {
+            // 7-segment stuff
+            case 0x003F: ret = 0; break;
+            case 0x0006: ret = 1; break;
+            case 0x005B: ret = 2; break;
+            case 0x004F: ret = 3; break;
+            case 0x0066: ret = 4; break;
+            case 0x006D: ret = 5; break;
+            case 0x007D: ret = 6; break;
+            case 0x0007: ret = 7; break;
+            case 0x007F: ret = 8; break;
+            case 0x006F: ret = 9; break;
+            // Additional 10-segment stuff
+            case 0x0300: ret = 1; break;
+            case 0x007C: ret = 6; break;
+            case 0x0067: ret = 9; break;
+            // Default is empty
+            default: ret = -1; break;
+            }
+            server->B2SSetScoreDigit(digitIndex, ret);
+            digitIndex++;
          }
-         int ret;
-         switch (bitState & ~0x80) // Remove the comma
-         {
-         // 7-segment stuff
-         case 0x003F: ret = 0; break;
-         case 0x0006: ret = 1; break;
-         case 0x005B: ret = 2; break;
-         case 0x004F: ret = 3; break;
-         case 0x0066: ret = 4; break;
-         case 0x006D: ret = 5; break;
-         case 0x007D: ret = 6; break;
-         case 0x0007: ret = 7; break;
-         case 0x007F: ret = 8; break;
-         case 0x006F: ret = 9; break;
-         // Additional 10-segment stuff
-         case 0x0300: ret = 1; break;
-         case 0x007C: ret = 6; break;
-         case 0x0067: ret = 9; break;
-         // Default is empty
-         default: ret = -1; break;
-         }
-         server->B2SSetScoreDigit(digitIndex, ret);
-         digitIndex++;
       }
-   }
+   });
 
-   digitIndex = 1;
+   int digitIndex = 1;
    for (const auto& reel : scores.m_scores)
    {
       // Skip digits located on the grill when the grill is hidden
