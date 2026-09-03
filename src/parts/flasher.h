@@ -173,7 +173,7 @@ public:
    bool m_inPlayState = false;
 
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr; // DMD defined through script API
-   unsigned int m_dmdFrameId = 0;
+   std::atomic_uint m_dmdFrameId = 0;
 
 private:
    void InitShape();
@@ -202,7 +202,7 @@ private:
    HWND m_videoCapHwnd = nullptr;
    std::shared_ptr<BaseTexture> m_videoCapTex = nullptr;
 
-   int2 m_dmdSize = int2(0,0);
+   int2 m_dmdSize = int2(0,0); // dmd size is actually commited when pixels are commited
 
    std::shared_ptr<BaseTexture> m_renderFrame = nullptr;
 

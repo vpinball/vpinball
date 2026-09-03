@@ -299,9 +299,9 @@ public:
    Flasher *m_implicitVRBackglass = nullptr;
 
    // External DMD and displays, defined from script or captured
-   int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
+   int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels, dmd size is actually commited when pixels are commited
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
-   unsigned int m_dmdFrameId = 0;
+   std::atomic_uint m_dmdFrameId = 0;
 
    int m_nFrameToCapture = 0;
    int m_frameCaptureFPS = 0;
