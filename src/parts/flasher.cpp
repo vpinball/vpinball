@@ -864,12 +864,14 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
 
    if (m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::BW_FP32))
       g_pplayer->m_pluginAPI.OnDMDUpdated(this, nullptr);
+   const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
+   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    float *const data = static_cast<float*>(m_dmdFrame->data());
-   for (int ofs = 0; ofs < size; ++ofs)
+   for (int ofs = 0; ofs < size; ++ofs) // To be lock free, we accept a minor race condition here as we are writing the new frame while it may be read through the plugin API
       data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
@@ -887,15 +889,20 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
+   if (m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::SRGBA))
+      g_pplayer->m_pluginAPI.OnDMDUpdated(this, nullptr);
+   const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
-   uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
+   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    // gamma compressed [0..255] sRGB
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   for (int ofs = 0; ofs < size; ++ofs)
+   uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
+   for (int ofs = 0; ofs < size; ++ofs) // To be lock free, we accept a minor race condition here as we are writing the new frame while it may be read through the plugin API
       data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
+   g_pplayer->m_pluginAPI.OnDMDUpdated(this, m_dmdFrame);
    return S_OK;
 }
 

@@ -136,6 +136,7 @@ private:
    mutable uint8_t m_md5Hash[16] = {};
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
+   mutable std::mutex m_aliasMutex;
    mutable ankerl::unordered_dense::map<Format, std::shared_ptr<BaseTexture>> m_aliases;
 };
 
