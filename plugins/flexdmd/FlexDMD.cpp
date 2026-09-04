@@ -473,9 +473,9 @@ const std::vector<uint8_t>& FlexDMD::GetDmdPixels()
 
 void FlexDMD::SetSegments(const std::vector<uint16_t>& segments)
 {
-   if (memcmp(m_segData, segments.data(), 38 * sizeof(uint16_t)) != 0)
+   if (memcmp(m_segData, segments.data(), segments.size() * sizeof(uint16_t)) != 0)
    {
-      memcpy(m_segData, segments.data(), 38 * sizeof(uint16_t));
+      memcpy(m_segData, segments.data(), segments.size() * sizeof(uint16_t));
       m_frameId++;
    }
 }
