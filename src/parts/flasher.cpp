@@ -1374,9 +1374,9 @@ void Flasher::Render(const unsigned int renderMask)
             // Display mode below is the intended way to show these
             PinballPlugin::ResURIResolver::DisplayState dmd { nullptr };
             if (!m_d.m_imageSrcLink.empty())
-               dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState(m_d.m_imageSrcLink);
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
-               dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState("ctrl://default/display"s);
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display?dmd_only=1"s);
             if (dmd.state.frame != nullptr)
                UploadRenderFrame(dmd);
          }

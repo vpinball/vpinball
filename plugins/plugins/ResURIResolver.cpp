@@ -290,21 +290,6 @@ const DisplaySrcId *ResURIResolver::GetDefaultDisplaySource(const std::vector<Di
    return displaySource;
 }
 
-// 'ctrl://default/display' resolves to e.g. a Pinball 2000 set's CRT, that being the only display it has, so every
-// dot matrix element would otherwise draw a 640x480 picture through its DMD related shader(s). Filtered here rather than
-// in GetDefaultDisplaySource() so that URI keeps meaning what it documents, the default DMD *or* display
-ResURIResolver::DisplayState ResURIResolver::GetDmdDisplayState(const string &link)
-{
-   const DisplayState state = GetDisplayState(link);
-   if (state.source != nullptr)
-   {
-      const unsigned int family = state.source->hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
-      if ((family == CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY) || (family == CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY))
-         return { };
-   }
-   return state;
-}
-
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
 {
    return m_displaySources->With(
@@ -320,11 +305,22 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
          }
          else if ((uri.scheme == "ctrl") && (uri.path == "/display"))
          {
+            std::vector<DisplaySrcId> filteredSources;
+            if (auto dmdOnlyPart = uri.query.find("dmd_only"s); dmdOnlyPart != uri.query.end())
+            {
+               std::copy_if(sources.begin(), sources.end(), std::back_inserter(filteredSources), [](const DisplaySrcId &source) {
+                  const unsigned int family = source.hardware & CTLPI_DISPLAY_HARDWARE_FAMILY_MASK;
+                  return (family != CTLPI_DISPLAY_HARDWARE_CRT_DISPLAY) && (family != CTLPI_DISPLAY_HARDWARE_LCD_DISPLAY);
+               });
+            }
+            else
+               filteredSources = sources;
+
             const DisplaySrcId *displaySource = nullptr;
             bool walkDownOverrides = true;
             if (uri.authority.host == "default")
             {
-               displaySource = GetDefaultDisplaySource(sources);
+               displaySource = GetDefaultDisplaySource(filteredSources);
             }
             else
             {
@@ -334,24 +330,24 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                   int resId = 0;
                   if (auto resIdPart = uri.query.find("id"s); resIdPart != uri.query.end() && try_parse_int(resIdPart->second, resId))
                   {
-                     auto source = std::ranges::find_if(sources, [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
-                     if (source != sources.end())
+                     auto source = std::ranges::find_if(filteredSources, [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
+                     if (source != filteredSources.end())
                         displaySource = std::to_address(source);
                   }
                   else
                   {
                      // No id: select first source from selected endpoint
-                     auto source = sources.end();
+                     auto source = filteredSources.end();
                      uint32_t bestResId = UINT32_MAX;
-                     for (auto it = sources.begin(); it != sources.end(); ++it)
+                     for (auto it = filteredSources.begin(); it != filteredSources.end(); ++it)
                      {
-                        if (it->id.endpointId == plugin && (source == sources.end() || it->id.resId < bestResId))
+                        if (it->id.endpointId == plugin && (source == filteredSources.end() || it->id.resId < bestResId))
                         {
                            source = it;
                            bestResId = it->id.resId;
                         }
                      }
-                     if (source != sources.end())
+                     if (source != filteredSources.end())
                         displaySource = std::to_address(source);
                   }
                }
@@ -374,7 +370,10 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
             }
 
             if (displaySource != nullptr)
+            {
+               displaySource = std::to_address(std::ranges::find_if(sources, [displaySource](const DisplaySrcId &source) { return source.id.id == displaySource->id.id; }));
                lambda = [displaySource](const string &) { return DisplayState { displaySource, displaySource->GetRenderFrame(displaySource->callContext) }; };
+            }
          }
 
          if (lambda == nullptr)
