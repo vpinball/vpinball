@@ -297,7 +297,7 @@ void B2SServer::UpdateStateSrc()
 void MSGPIAPI B2SServer::GetLampState(void* callContext, void* pResult)
 {
    auto ctx = static_cast<CallContext*>(callContext);
-   *static_cast<int64_t*>(pResult) = static_cast<int64_t>(ctx->me->GetLampState(ctx->id));
+   *static_cast<float*>(pResult) = static_cast<float>(ctx->me->GetLampState(ctx->id));
 }
 
 void MSGPIAPI B2SServer::GetPlayerScore(void* callContext, void* pResult)
