@@ -545,6 +545,7 @@ public:
    void SetMatrix(const ShaderUniform uniformName, const D3DMATRIX* const pMatrix, const unsigned int count = 1);
    #endif
    void SetMatrix(const ShaderUniform uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1);
+   const Matrix3D& GetMatrix(const ShaderUniform uniformName) const;
    void SetVector(const ShaderUniform uniformName, const vec4* const pVector);
    void SetVector(const ShaderUniform uniformName, const vec4* const pVector, const unsigned int count);
    void SetVector(const ShaderUniform uniformName, const float x, const float y, const float z, const float w);
