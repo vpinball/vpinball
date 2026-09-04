@@ -1970,10 +1970,10 @@ void Renderer::RenderDynamics()
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
 
+   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode();
    if (m_shadeMode == ShadeMode::Default)
    {
       const unsigned int mask = m_render_mask;
-      const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode();
       m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
       DrawBulbLightBuffer();
       for (auto renderable : g_pplayer->m_ptable->GetParts())
@@ -1986,6 +1986,9 @@ void Renderer::RenderDynamics()
       constexpr vec4 edgeColor{0.f, 0.f, 0.f, 1.f};
       for (auto renderable : g_pplayer->m_ptable->GetParts())
       {
+         if (isNoBackdrop && renderable->m_desktopBackdrop)
+            continue;
+
          const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
          SetSpaceReference(spaceReference, false);
          DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
