@@ -16,7 +16,16 @@
 
 namespace Inspector {
 
-class WebServer {
+enum class SetSwitchResult
+{
+   Success,
+   NotFound,
+   NotASwitch,
+   NotWritable
+};
+
+class WebServer
+{
 public:
    WebServer();
    ~WebServer();
@@ -32,7 +41,8 @@ private:
    void Info(struct mg_connection *c, struct mg_http_message* hm);
    void ApiTree(struct mg_connection *c, struct mg_http_message* hm);
    void ApiStates(struct mg_connection *c, struct mg_http_message *hm);
-   void Asset(struct mg_connection *c, struct mg_http_message *hm, const char* name);
+   void ApiState(struct mg_connection *c, struct mg_http_message *hm);
+   void Asset(struct mg_connection *c, struct mg_http_message *hm, const char *name);
    void Root(struct mg_connection *c, struct mg_http_message *hm);
    void Displays(struct mg_connection *c, struct mg_http_message *hm);
    void DisplayWsUpgrade(struct mg_connection *c, struct mg_http_message *hm);

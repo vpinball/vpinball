@@ -56,6 +56,51 @@
         .matrix-list-item { break-inside: avoid; color: #E0E0E0; }
         .matrix-list-mapping { color: #B0BEC5; }
         .matrix-list-name { color: #FFFFFF; }
+
+        .matrix-table td.switch-cell {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s, transform 0.05s, filter 0.15s;
+        }
+        .matrix-table td.switch-cell:hover {
+            outline: 1px solid #4CAF50;
+            filter: brightness(1.25);
+        }
+        .matrix-table td.switch-cell:active {
+            transform: scale(0.95);
+        }
+
+        .node-item.switch-node {
+            cursor: pointer;
+            user-select: none;
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background 0.15s;
+        }
+        .node-item.switch-node:hover {
+            background: #222222;
+        }
+        .node-item.switch-node .node-state {
+            color: #9BE79B;
+        }
+        .node-item.switch-node:active {
+            opacity: 0.8;
+        }
+
+        .matrix-list-item.switch-list-item {
+            cursor: pointer;
+            user-select: none;
+            border-radius: 3px;
+            padding: 1px 4px;
+            transition: background 0.15s;
+        }
+        .matrix-list-item.switch-list-item:hover {
+            background: #222222;
+            color: #9BE79B;
+        }
+        .matrix-list-item.switch-list-item:active {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -100,7 +145,6 @@
             const cell = el.closest('.matrix-cell');
 			if (type == 1) { // Switch
 				if (format == 'float') {
-					
 					el.textContent = formatBinaryState(state > 0.);
 					if (cell) {
 						cell.classList.toggle('active', state > 0.);
@@ -212,8 +256,9 @@
         }
 
 		function buildLeafNode(node) {
+			const isSwitch = (node.outputType === 1);
 			const titleAttr = node.desc ? ` title="${escapeHtml(node.desc)}"` : '';
-			return `<div class="node-item">
+			return `<div class="node-item ${isSwitch ? 'switch-node' : ''}" ${isSwitch ? `switch-state-id="${node.id}"` : ''}>
 				<span class="node-mapping">${node.mapping}</span>
 				<span class="node-state">${buildStateSpan(node)}</span>
 				<span class="node-name"${titleAttr}>${escapeHtml(node.name)}</span>
@@ -237,8 +282,9 @@
                 table += '<tr>';
                 for (let col = 0; col < MATRIX_COLUMNS; ++col) {
                     const child = children[row * MATRIX_COLUMNS + col];
+                    const isSwitch = (child.outputType === 1);
                     const activeClass = 'inactive';
-                    table += `<td class="matrix-cell ${activeClass}" title="${escapeHtml(child.name)}">
+                    table += `<td class="matrix-cell ${activeClass} ${isSwitch ? 'switch-cell' : ''}" ${isSwitch ? `switch-state-id="${child.id}"` : ''} title="${escapeHtml(child.name)}">
                         <span class="matrix-state">${buildStateSpan(child)}</span>
                         <span class="matrix-mapping">${child.mapping}</span>
                     </td>`;
@@ -249,7 +295,8 @@
 
             let list = '<div class="matrix-list">';
             for (const child of children) {
-                list += `<div class="matrix-list-item"><span class="matrix-list-mapping">${child.mapping}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
+                const isSwitch = (child.outputType === 1);
+                list += `<div class="matrix-list-item ${isSwitch ? 'switch-list-item' : ''}" ${isSwitch ? `switch-state-id="${child.id}"` : ''}><span class="matrix-list-mapping">${child.mapping}</span> - <span class="matrix-list-name">${escapeHtml(child.name)}</span></div>`;
             }
             list += '</div>';
 
@@ -339,6 +386,42 @@
 					setTimeout(fetchTree, 1000);
                 });
         }
+
+        async function toggleSwitchState(stateId) {
+            try {
+                const res = await fetchWithTimeout(`/api/state/toggle?id=${encodeURIComponent(stateId)}`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data.state === 'boolean') {
+                        document.querySelectorAll(`[data-state-id="${stateId}"]`).forEach(el => {
+                            updateVisualState(el, 'uint8', 1, data.state ? 1 : 0);
+                        });
+                    }
+                } else {
+                    console.error('Failed to toggle switch', stateId, res.status);
+                }
+            } catch (err) {
+                console.error('Error toggling switch', stateId, err);
+            }
+        }
+
+        document.getElementById('tree').addEventListener('click', (e) => {
+            if (e.target.closest('summary')) {
+                return;
+            }
+
+            const target = e.target.closest('.switch-cell, .switch-node, .switch-list-item');
+            if (!target) {
+                return;
+            }
+
+            const stateId = target.getAttribute('switch-state-id') || target.querySelector('[switch-state-id]')?.getAttribute('switch-state-id');
+            if (stateId) {
+                toggleSwitchState(stateId);
+            }
+        });
 
         // Initial load
         fetchTree();

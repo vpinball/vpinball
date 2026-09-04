@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <optional>
+#include <nlohmann/json.hpp>
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -16,6 +18,7 @@ namespace Inspector
 {
 
 extern std::string GetStatesJson();
+extern SetSwitchResult SetSwitchState(const std::string& stateId, std::optional<bool> targetValue = std::nullopt, bool* outNewState = nullptr);
 extern bool IsDisplayKnown(uint64_t mapping);
 extern bool GetDisplayFrameRGB(uint64_t mapping, const uint32_t* lastFrameId, size_t headerSize, std::vector<uint8_t>& rgb, uint32_t& width, uint32_t& height, uint32_t& frameId);
 
@@ -106,6 +109,8 @@ void WebServer::EventHandler(struct mg_connection* c, int ev, void* ev_data)
          webServer->ApiTree(c, hm);
       else if (mg_match(hm->uri, mg_str("/api/states"), NULL))
          webServer->ApiStates(c, hm);
+      else if (mg_match(hm->uri, mg_str("/api/state/toggle"), NULL) || mg_match(hm->uri, mg_str("/api/state"), NULL))
+         webServer->ApiState(c, hm);
       else if (mg_match(hm->uri, mg_str("/ws/display"), NULL))
          webServer->DisplayWsUpgrade(c, hm);
       else if (mg_match(hm->uri, mg_str("/display-stream.js"), NULL))
@@ -202,6 +207,71 @@ void WebServer::ApiStates(struct mg_connection* c, struct mg_http_message* hm)
 {
    std::string response = GetStatesJson();
    mg_http_reply(c, STATUS_OK, HEADER_JSON, "%s", response.c_str());
+}
+
+void WebServer::ApiState(struct mg_connection* c, struct mg_http_message* hm)
+{
+   char idBuf[64] = { 0 };
+   int idLen = mg_http_get_var(&hm->query, "id", idBuf, sizeof(idBuf) - 1);
+   if (idLen <= 0)
+      idLen = mg_http_get_var(&hm->body, "id", idBuf, sizeof(idBuf) - 1);
+   
+   std::optional<bool> optValue;
+   char valBuf[16] = { 0 };
+   int valLen = mg_http_get_var(&hm->query, "value", valBuf, sizeof(valBuf) - 1);
+   if (valLen <= 0)
+      valLen = mg_http_get_var(&hm->body, "value", valBuf, sizeof(valBuf) - 1);
+   if (valLen > 0)
+   {
+      valBuf[valLen] = '\0';
+      if (strcmp(valBuf, "true") == 0 || strcmp(valBuf, "1") == 0)
+         optValue = true;
+      else if (strcmp(valBuf, "false") == 0 || strcmp(valBuf, "0") == 0)
+         optValue = false;
+   }
+
+   if (idLen <= 0 && hm->body.len > 0)
+   {
+      try
+      {
+         const auto bodyJson = nlohmann::json::parse(std::string_view(hm->body.buf, hm->body.len));
+         if (bodyJson.contains("id") && bodyJson["id"].is_string())
+         {
+            const std::string idStr = bodyJson["id"];
+            if (idStr.length() < sizeof(idBuf))
+            {
+               memcpy(idBuf, idStr.c_str(), idStr.length());
+               idBuf[idStr.length()] = '\0';
+               idLen = static_cast<int>(idStr.length());
+            }
+         }
+         if (bodyJson.contains("value") && bodyJson["value"].is_boolean())
+         {
+            optValue = bodyJson["value"].get<bool>();
+         }
+      }
+      catch (...)
+      {
+      }
+   }
+
+   if (idLen <= 0)
+   {
+      mg_http_reply(c, 400, HEADER_JSON, "{\"status\": \"error\", \"message\": \"Missing 'id' parameter\"}\n");
+      return;
+   }
+
+   idBuf[idLen] = '\0';
+   bool newState = false;
+   const SetSwitchResult result = SetSwitchState(idBuf, optValue, &newState);
+
+   switch (result)
+   {
+   case SetSwitchResult::Success: mg_http_reply(c, STATUS_OK, HEADER_JSON, "{\"status\": \"ok\", \"id\": \"%s\", \"state\": %s}\n", idBuf, newState ? "true" : "false"); break;
+   case SetSwitchResult::NotFound: mg_http_reply(c, 404, HEADER_JSON, "{\"status\": \"error\", \"message\": \"State not found\"}\n"); break;
+   case SetSwitchResult::NotASwitch: mg_http_reply(c, 400, HEADER_JSON, "{\"status\": \"error\", \"message\": \"State is not a switch\"}\n"); break;
+   case SetSwitchResult::NotWritable: mg_http_reply(c, 403, HEADER_JSON, "{\"status\": \"error\", \"message\": \"Switch is read-only\"}\n"); break;
+   }
 }
 
 void WebServer::Asset(struct mg_connection* c, struct mg_http_message* hm, const char* name)

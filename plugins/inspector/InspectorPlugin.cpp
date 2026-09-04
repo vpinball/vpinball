@@ -13,6 +13,7 @@
 #include <vector>
 #include <mutex>
 #include <cstring>
+#include <optional>
 
 #include <string>
 using namespace std::string_literals;
@@ -136,6 +137,7 @@ void UpdateTreeCache()
                item["desc"s] = stateDef.stateDefs[j].desc ? stateDef.stateDefs[j].desc : "No description available";
                item["format"s] = stateDef.stateDefs[j].dataFormat;
                item["outputType"s] = stateDef.stateDefs[j].semanticType;
+               item["writable"s] = stateDef.stateDefs[j].SetState != nullptr;
                gNode["children"s].push_back(item);
             }
             (*cNode)["children"s].push_back(gNode);
@@ -209,80 +211,291 @@ void UpdateTreeCache()
 
 std::string GetStatesJson()
 {
-   json states = json::array();
-   stateSources->With(
-      [&states](const std::vector<StateSrcId>& items)
-      {
-      for (const StateSrcId& stateDef : items)
-      {
-         json dItem = json::object();
-         for (unsigned int j = 0; j < stateDef.nStates; j++)
-         {
-            const StateDef& def = stateDef.stateDefs[j];
-            if (def.GetState == nullptr)
-               continue;
-            dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, def.mappingId);
-            dItem["type"s] = def.semanticType;
-            switch (def.dataFormat)
-            {
-            case CTLPI_STATE_FORMAT_FLOAT:
-            {
-               float state;
-               def.GetState(def.callContext, &state);
-               dItem["format"s] = "float";
-               dItem["state"s] = state;
-               states.push_back(dItem);
-            }
-            break;
-
-            case CTLPI_STATE_FORMAT_UINT8:
-            {
-               uint8_t state;
-               def.GetState(def.callContext, &state);
-               dItem["format"s] = "uint8";
-               dItem["state"s] = state;
-               states.push_back(dItem);
-            }
-            break;
-
-            case CTLPI_STATE_FORMAT_INT32:
-            {
-               int32_t state;
-               def.GetState(def.callContext, &state);
-               dItem["format"s] = "int32";
-               dItem["state"s] = state;
-               states.push_back(dItem);
-            }
-            break;
-
-            case CTLPI_STATE_FORMAT_INT64:
-            {
-               int64_t state;
-               def.GetState(def.callContext, &state);
-               dItem["format"s] = "int64";
-               dItem["state"s] = std::to_string(state);
-               states.push_back(dItem);
-            }
-            break;
-
-            case CTLPI_STATE_FORMAT_STRING:
-            {
-               char* state = nullptr;
-               def.GetState(def.callContext, &state);
-               dItem["format"s] = "string";
-               dItem["state"s] = state != nullptr ? state : "";
-               states.push_back(dItem);
-            }
-            break;
-            }
-         }
-      }
-   });
-
    json root = json::object();
    root["treeId"s] = treeId;
-   root["states"s] = states;
+   root["states"s] = stateSources->With(
+      [](const std::vector<StateSrcId>& items)
+      {
+         json states = json::array();
+         for (const StateSrcId& stateDef : items)
+         {
+            json dItem = json::object();
+            for (unsigned int j = 0; j < stateDef.nStates; j++)
+            {
+               const StateDef& def = stateDef.stateDefs[j];
+               if (def.GetState == nullptr)
+                  continue;
+               dItem["id"s] = std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, def.mappingId);
+               dItem["type"s] = def.semanticType;
+               switch (def.dataFormat)
+               {
+               case CTLPI_STATE_FORMAT_FLOAT:
+               {
+                  float state;
+                  def.GetState(def.callContext, &state);
+                  dItem["format"s] = "float";
+                  dItem["state"s] = state;
+                  states.push_back(dItem);
+               }
+               break;
+
+               case CTLPI_STATE_FORMAT_UINT8:
+               {
+                  uint8_t state;
+                  def.GetState(def.callContext, &state);
+                  dItem["format"s] = "uint8";
+                  dItem["state"s] = state;
+                  states.push_back(dItem);
+               }
+               break;
+
+               case CTLPI_STATE_FORMAT_INT32:
+               {
+                  int32_t state;
+                  def.GetState(def.callContext, &state);
+                  dItem["format"s] = "int32";
+                  dItem["state"s] = state;
+                  states.push_back(dItem);
+               }
+               break;
+
+               case CTLPI_STATE_FORMAT_INT64:
+               {
+                  int64_t state;
+                  def.GetState(def.callContext, &state);
+                  dItem["format"s] = "int64";
+                  dItem["state"s] = std::to_string(state);
+                  states.push_back(dItem);
+               }
+               break;
+
+               case CTLPI_STATE_FORMAT_STRING:
+               {
+                  char* state = nullptr;
+                  def.GetState(def.callContext, &state);
+                  dItem["format"s] = "string";
+                  dItem["state"s] = state != nullptr ? state : "";
+                  states.push_back(dItem);
+               }
+               break;
+               }
+            }
+         }
+         return states;
+      });
    return root.dump();
+}
+
+SetSwitchResult SetSwitchState(const std::string& stateId, std::optional<bool> targetValue, bool* outNewState)
+{
+   if (!stateSources)
+      return SetSwitchResult::NotFound;
+
+   uint32_t epId = 0, resId = 0, mapId = 0;
+#ifndef _WIN32
+#define sscanf_s sscanf
+#endif
+   const bool hasParsed = (sscanf_s(stateId.c_str(), "%x.%x.%x", &epId, &resId, &mapId) == 3);
+
+   SetSwitchResult result = SetSwitchResult::NotFound;
+
+   stateSources->With(
+      [&](const std::vector<StateSrcId>& items)
+      {
+         for (const StateSrcId& stateDef : items)
+         {
+            if (hasParsed && (stateDef.id.endpointId != epId || stateDef.id.resId != resId))
+               continue;
+
+            for (unsigned int j = 0; j < stateDef.nStates; j++)
+            {
+               const StateDef& def = stateDef.stateDefs[j];
+               const bool match = hasParsed ? (def.mappingId == mapId) : (std::format("{:04X}.{:04X}.{:04X}", stateDef.id.endpointId, stateDef.id.resId, def.mappingId) == stateId);
+
+               if (match)
+               {
+                  if (def.semanticType != CTLPI_STATE_TYPE_SWITCH)
+                  {
+                     result = SetSwitchResult::NotASwitch;
+                     return;
+                  }
+
+                  if (def.SetState == nullptr)
+                  {
+                     result = SetSwitchResult::NotWritable;
+                     return;
+                  }
+
+                  bool current = false;
+                  if (def.GetState != nullptr)
+                  {
+                     switch (def.dataFormat)
+                     {
+                     case CTLPI_STATE_FORMAT_UINT8:
+                     {
+                        uint8_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_INT8:
+                     {
+                        int8_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_UINT16:
+                     {
+                        uint16_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_INT16:
+                     {
+                        int16_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_UINT32:
+                     {
+                        uint32_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_INT32:
+                     {
+                        int32_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_UINT64:
+                     {
+                        uint64_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_INT64:
+                     {
+                        int64_t v = 0;
+                        def.GetState(def.callContext, &v);
+                        current = (v != 0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_FLOAT:
+                     {
+                        float v = 0.0f;
+                        def.GetState(def.callContext, &v);
+                        current = (v > 0.0f);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_DOUBLE:
+                     {
+                        double v = 0.0;
+                        def.GetState(def.callContext, &v);
+                        current = (v > 0.0);
+                        break;
+                     }
+                     case CTLPI_STATE_FORMAT_STRING:
+                     {
+                        char* v = nullptr;
+                        def.GetState(def.callContext, &v);
+                        current = (v != nullptr && *v != '\0' && strcmp(v, "0") != 0);
+                        break;
+                     }
+                     default: break;
+                     }
+                  }
+
+                  const bool target = targetValue.has_value() ? *targetValue : !current;
+
+                  switch (def.dataFormat)
+                  {
+                  case CTLPI_STATE_FORMAT_UINT8:
+                  {
+                     uint8_t bv = target ? 0xFF : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_INT8:
+                  {
+                     int8_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_UINT16:
+                  {
+                     uint16_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_INT16:
+                  {
+                     int16_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_UINT32:
+                  {
+                     uint32_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_INT32:
+                  {
+                     int32_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_UINT64:
+                  {
+                     uint64_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_INT64:
+                  {
+                     int64_t bv = target ? 1 : 0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_FLOAT:
+                  {
+                     float bv = target ? 1.0f : 0.0f;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_DOUBLE:
+                  {
+                     double bv = target ? 1.0 : 0.0;
+                     def.SetState(def.callContext, &bv);
+                     break;
+                  }
+                  case CTLPI_STATE_FORMAT_STRING:
+                  {
+                     const char* bv = target ? "1" : "0";
+                     def.SetState(def.callContext, bv);
+                     break;
+                  }
+                  default: break;
+                  }
+
+                  if (outNewState)
+                     *outNewState = target;
+
+                  result = SetSwitchResult::Success;
+                  return;
+               }
+            }
+         }
+      });
+
+   return result;
 }
 
 namespace
