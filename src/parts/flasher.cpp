@@ -862,11 +862,12 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
-   if (m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::BW_FP32))
+   const bool unAdvertise = m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::BW_FP32);
+   if (unAdvertise)
       g_pplayer->m_pluginAPI.OnDMDUpdated(this, nullptr);
    const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
-   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
+   assert(unAdvertise || prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
@@ -889,11 +890,12 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
-   if (m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::SRGBA))
+   const bool unAdvertise = m_dmdFrame != nullptr && (m_dmdFrame->width() != m_dmdSize.x || m_dmdFrame->height() != m_dmdSize.y || m_dmdFrame->m_format != BaseTexture::SRGBA);
+   if (unAdvertise)
       g_pplayer->m_pluginAPI.OnDMDUpdated(this, nullptr);
    const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
-   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
+   assert(unAdvertise || prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    // gamma compressed [0..255] sRGB
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);

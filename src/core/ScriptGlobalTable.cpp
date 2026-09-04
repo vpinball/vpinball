@@ -878,12 +878,13 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
-   if (g_pplayer->m_dmdFrame != nullptr
-      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW_FP32))
+   const bool unAdvertise = g_pplayer->m_dmdFrame != nullptr
+      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW_FP32);
+   if (unAdvertise)
       g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, nullptr);
    const BaseTexture * const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
-   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
+   assert(unAdvertise || prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
@@ -906,12 +907,13 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (!SafeArrayHasAtLeast(psa, size))
       return E_FAIL;
 
-   if (g_pplayer->m_dmdFrame != nullptr
-      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::SRGBA))
+   const bool unAdvertise = g_pplayer->m_dmdFrame != nullptr
+      && (g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y || g_pplayer->m_dmdFrame->m_format != BaseTexture::SRGBA);
+   if (unAdvertise)
       g_pplayer->m_pluginAPI.OnDMDUpdated(nullptr, nullptr);
    const BaseTexture *const prev = g_pplayer->m_dmdFrame.get();
    BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::SRGBA, nullptr);
-   assert(prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
+   assert(unAdvertise || prev == nullptr || prev == g_pplayer->m_dmdFrame.get()); // Update() must not change the pointer as it would break async requests from Pinball Plugin API
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    // gamma compressed [0..255] sRGB
    VARIANT *p;
