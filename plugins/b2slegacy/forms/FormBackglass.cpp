@@ -327,7 +327,16 @@ const SDL_FRect& FormBackglass::GetScaleFactor() const
 void FormBackglass::LoadB2SData()
 {
    const std::filesystem::path tablePath(m_pB2SData->GetTableFileName());
-   const std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   std::filesystem::path b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / tablePath.filename().replace_extension(".directb2s"));
+   
+   // Search for a file matching the template 'foldername.directb2s' for file layout where tables are located in a folder with their companion files (b2s, pup, flex, music, ...)
+   if (b2sFilename.empty())
+   {
+      std::filesystem::path folderName = tablePath.parent_path().filename();
+      folderName += ".directb2s"sv;
+      b2sFilename = find_case_insensitive_file_path(tablePath.parent_path() / folderName);
+   }
+
    if (b2sFilename.empty()) {
       LOGD("No directb2s file found"s);
       throw std::exception();
