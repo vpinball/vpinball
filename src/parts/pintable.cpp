@@ -1360,7 +1360,7 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
       string script = m_script_text;
       if (!m_external_script_name.empty())
       {
-         std::ofstream file(m_external_script_name);
+         std::ofstream file(m_external_script_name, std::ios::binary);
          if (file)
          {
             file.write(script.data(), script.size());
