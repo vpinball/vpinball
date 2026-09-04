@@ -307,7 +307,7 @@ void Textbox::Render(const unsigned int renderMask)
          { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
       };
 
-      PinballPlugin::ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDmdDisplayState("ctrl://default/display"s);
+      PinballPlugin::ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display?dmd_only=1"s);
       if (dmd.state.frame == nullptr)
          return;
 

@@ -47,6 +47,7 @@
 //
 //   examples:
 //   - ctrl://default/display                  => Default DMD or display
+//   - ctrl://default/display?dmd_only         => Default DMD (rejecting LCD or CRT displays)
 //   - ctrl://flexdmd/display                  => FlexDMD first DMD
 //   - ctrl://pinmame/display?x=0&y=0          => Relative luminance of the top left dot of PinMAME's first display [Unimplemented]
 //   - ctrl://pinmame/display?override=no      => Untouched version of PinMAME first display (no colorization or upscaling) [Unimplemented]
@@ -73,9 +74,6 @@ public:
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
-   // Same, for elements that render dots (DMDs): resolves as above, then reports no frame for a CRT or LCD source.
-   // Anything that can legitimately show a video screen (a flasher in Display mode) keeps using GetDisplayState()
-   DisplayState GetDmdDisplayState(const std::string &link);
    std::string DumpDisplaySources() const;
    static const DisplaySrcId *GetDefaultDisplaySource(const std::vector<DisplaySrcId> &sources);
    
