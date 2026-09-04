@@ -2419,8 +2419,9 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          else
          {
             string script;
-            script.resize(cchar + 1);
+            script.resize(cchar + 1); // Scintilla expects a buffer with an extra byte for the null terminator
             ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
+            script.resize(cchar);
             pcv->m_table->m_script_text = script;
          }
          return TRUE;
