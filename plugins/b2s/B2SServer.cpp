@@ -203,78 +203,76 @@ struct B2SPluginEvent
 
 void B2SServer::UpdateStateSrc()
 {
+   // Ensure that no other thread is using the exposed states while we are updating them
    m_exposedStates.ClearItems();
 
    {
-      const std::lock_guard lock(m_stateMutex);
+      m_lampStateDefs.clear();
+      m_lampStateIds.clear();
+      m_lampStateIds.reserve(m_lampStates.size());
+      for (const auto& [id, _] : m_lampStates)
+         m_lampStateIds.push_back({ this, id });
+      std::ranges::sort(m_lampStateIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
+      m_lampStateNames.resize(m_lampStates.size());
+      for (size_t index = 0; index < m_lampStateIds.size(); ++index)
       {
-         m_lampStateDefs.clear();
-         m_lampStateIds.clear();
-         m_lampStateIds.reserve(m_lampStates.size());
-         for (const auto& [id, _] : m_lampStates)
-            m_lampStateIds.push_back({ this, id });
-         std::ranges::sort(m_lampStateIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
-         m_lampStateNames.resize(m_lampStates.size());
-         for (size_t index = 0; index < m_lampStateIds.size(); ++index)
+         const auto id = m_lampStateIds[index].id;
+         m_lampStateNames[index] = std::format("Illumination #{}", id);
+         if (m_defaultStateNameMask & (1ull << id))
          {
-            const auto id = m_lampStateIds[index].id;
-            m_lampStateNames[index] = std::format("Illumination #{}", id);
-            if (m_defaultStateNameMask & (1ull << id))
+            switch (id)
             {
-               switch (id)
-               {
-               case 25: m_lampStateNames[index] = "Player #1 Active"sv; break;
-               case 26: m_lampStateNames[index] = "Player #2 Active"sv; break;
-               case 27: m_lampStateNames[index] = "Player #3 Active"sv; break;
-               case 28: m_lampStateNames[index] = "Player #4 Active"sv; break;
-               case 30: m_lampStateNames[index] = "Player Up"sv; break;
-               case 31: m_lampStateNames[index] = "Can Play"sv; break;
-               case 32: m_lampStateNames[index] = "Ball In Play"sv; break;
-               case 33: m_lampStateNames[index] = "Tilt"sv; break;
-               case 34: m_lampStateNames[index] = "Match"sv; break;
-               case 35: m_lampStateNames[index] = "Game Over"sv; break;
-               case 36: m_lampStateNames[index] = "Shoot Again"sv; break;
-               }
+            case 25: m_lampStateNames[index] = "Player #1 Active"sv; break;
+            case 26: m_lampStateNames[index] = "Player #2 Active"sv; break;
+            case 27: m_lampStateNames[index] = "Player #3 Active"sv; break;
+            case 28: m_lampStateNames[index] = "Player #4 Active"sv; break;
+            case 30: m_lampStateNames[index] = "Player Up"sv; break;
+            case 31: m_lampStateNames[index] = "Can Play"sv; break;
+            case 32: m_lampStateNames[index] = "Ball In Play"sv; break;
+            case 33: m_lampStateNames[index] = "Tilt"sv; break;
+            case 34: m_lampStateNames[index] = "Match"sv; break;
+            case 35: m_lampStateNames[index] = "Game Over"sv; break;
+            case 36: m_lampStateNames[index] = "Shoot Again"sv; break;
             }
-            m_lampStateDefs.emplace_back(StateDef {
-               m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &m_lampStateIds[index], GetLampState, nullptr });
          }
+         m_lampStateDefs.emplace_back(StateDef {
+            m_lampStateNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_FLOAT, CTLPI_STATE_TYPE_CUSTOM, &m_lampStateIds[index], GetLampState, nullptr });
       }
+   }
 
+   {
+      m_playerScoreStateDefs.clear();
+      m_playerScoreIds.clear();
+      m_playerScoreIds.reserve(m_playerScores.size());
+      for (const auto& [id, _] : m_playerScores)
+         m_playerScoreIds.push_back({ this, id });
+      std::ranges::sort(m_playerScoreIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
+      m_playerScoreNames.resize(m_playerScores.size());
+      for (size_t index = 0; index < m_playerScoreIds.size(); ++index)
       {
-         m_playerScoreStateDefs.clear();
-         m_playerScoreIds.clear();
-         m_playerScoreIds.reserve(m_playerScores.size());
-         for (const auto& [id, _] : m_playerScores)
-            m_playerScoreIds.push_back({ this, id });
-         std::ranges::sort(m_playerScoreIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
-         m_playerScoreNames.resize(m_playerScores.size());
-         for (size_t index = 0; index < m_playerScoreIds.size(); ++index)
-         {
-            const auto id = m_playerScoreIds[index].id;
-            m_playerScoreNames[index] = std::format("Player Score #{}", id);
-            if (id == 29 && m_defaultStateNameMask & (1ull << id))
-               m_playerScoreNames[index] = "Credits"sv;
-            m_playerScoreStateDefs.emplace_back(StateDef {
-               m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_playerScoreIds[index], GetPlayerScore, nullptr });
-         }
+         const auto id = m_playerScoreIds[index].id;
+         m_playerScoreNames[index] = std::format("Player Score #{}", id);
+         if (id == 29 && m_defaultStateNameMask & (1ull << id))
+            m_playerScoreNames[index] = "Credits"sv;
+         m_playerScoreStateDefs.emplace_back(StateDef {
+            m_playerScoreNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_playerScoreIds[index], GetPlayerScore, nullptr });
       }
+   }
 
+   {
+      m_scoreDigitStateDefs.clear();
+      m_scoreDigitIds.clear();
+      m_scoreDigitIds.reserve(m_scoreDigits.size());
+      for (const auto& [id, _] : m_scoreDigits)
+         m_scoreDigitIds.push_back({ this, id });
+      std::ranges::sort(m_scoreDigitIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
+      m_scoreDigitNames.resize(m_scoreDigits.size());
+      for (size_t index = 0; index < m_scoreDigitIds.size(); ++index)
       {
-         m_scoreDigitStateDefs.clear();
-         m_scoreDigitIds.clear();
-         m_scoreDigitIds.reserve(m_scoreDigits.size());
-         for (const auto& [id, _] : m_scoreDigits)
-            m_scoreDigitIds.push_back({ this, id });
-         std::ranges::sort(m_scoreDigitIds, [](const CallContext& a, const CallContext& b) { return a.id < b.id; });
-         m_scoreDigitNames.resize(m_scoreDigits.size());
-         for (size_t index = 0; index < m_scoreDigitIds.size(); ++index)
-         {
-            const auto id = m_scoreDigitIds[index].id;
-            m_scoreDigitNames[index] = std::format("Digit Score #{}", id);
-            m_scoreDigitStateDefs.emplace_back(StateDef {
-               m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_scoreDigitIds[index], GetScoreDigit, nullptr });
-         }
+         const auto id = m_scoreDigitIds[index].id;
+         m_scoreDigitNames[index] = std::format("Digit Score #{}", id);
+         m_scoreDigitStateDefs.emplace_back(StateDef {
+            m_scoreDigitNames[index].c_str(), nullptr, static_cast<uint32_t>(id), CTLPI_STATE_FORMAT_INT64, CTLPI_STATE_TYPE_CUSTOM, &m_scoreDigitIds[index], GetScoreDigit, nullptr });
       }
    }
 
@@ -319,17 +317,16 @@ void MSGPIAPI B2SServer::GetScoreDigit(void* callContext, void* pResult)
 
 void B2SServer::B2SSetScore(int digit, int value, bool animate)
 {
-   bool sourceChanged = false;
+   if (auto it = m_scoreDigits.find(digit); it != m_scoreDigits.end())
    {
-      const std::lock_guard lock(m_stateMutex);
-      const auto [it, inserted] = m_scoreDigits.try_emplace(digit, value);
-      if (!inserted)
-         it->second = value;
-      sourceChanged = inserted;
+      it->second = value;
    }
-
-   if (sourceChanged)
+   else
+   {
+      m_exposedStates.ClearItems();
+      m_scoreDigits[digit] = value;
       UpdateStateSrc();
+   }
 
    B2SPluginEvent event { 'B', digit, value };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
@@ -337,24 +334,22 @@ void B2SServer::B2SSetScore(int digit, int value, bool animate)
 
 int B2SServer::GetScoreDigit(int digit) const
 {
-   std::lock_guard lock(m_stateMutex);
    const auto it = m_scoreDigits.find(digit);
-   return it == m_scoreDigits.end() ? 0 : it->second;
+   return it == m_scoreDigits.end() ? 0 : it->second.load();
 }
 
 void B2SServer::B2SSetScorePlayer(int playerno, int score)
 {
-   bool sourceChanged = false;
+   if (auto it = m_playerScores.find(playerno); it != m_playerScores.end())
    {
-      const std::lock_guard lock(m_stateMutex);
-      const auto [it, inserted] = m_playerScores.try_emplace(playerno, score);
-      if (!inserted)
-         it->second = score;
-      sourceChanged = inserted;
+      it->second = score;
    }
-
-   if (sourceChanged)
+   else
+   {
+      m_exposedStates.ClearItems();
+      m_playerScores[playerno] = score;
       UpdateStateSrc();
+   }
 
    B2SPluginEvent event { 'C', playerno, score };
    m_msgApi->BroadcastMsg(m_endpointId, m_onStateChangeEventId, &event);
@@ -362,9 +357,11 @@ void B2SServer::B2SSetScorePlayer(int playerno, int score)
 
 int B2SServer::GetPlayerScore(int player) const
 {
-   std::lock_guard lock(m_stateMutex);
+   // This function is exposed through:
+   // - scripting API which guarantees single-threaded access on the MsgAPI thread, which is the thread where m_playerScores mutates
+   // - Controller advertised state, which is accessed from any thread, but only when advertised. m_playerScores onyl mutates when states are NOT advertised
    const auto it = m_playerScores.find(player);
-   return it == m_playerScores.end() ? 0 : it->second;
+   return it == m_playerScores.end() ? 0 : it->second.load();
 }
 
 
@@ -384,17 +381,16 @@ void B2SServer::B2SSetData(int b2sId, int value, bool sendPluginEvent)
 {
    LOGD(std::format("B2SSetData {}={}", b2sId, value));
 
-   bool sourceChanged = false;
+   if (auto it = m_lampStates.find(b2sId); it != m_lampStates.end())
    {
-      const std::lock_guard lock(m_stateMutex);
-      const auto [it, inserted] = m_lampStates.try_emplace(b2sId, static_cast<float>(value));
-      if (!inserted)
-         it->second = static_cast<float>(value);
-      sourceChanged = inserted;
+      it->second = static_cast<float>(value);
    }
-
-   if (sourceChanged)
+   else
+   {
+      m_exposedStates.ClearItems();
+      m_lampStates[b2sId] = static_cast<float>(value);
       UpdateStateSrc();
+   }
 
    if (sendPluginEvent)
    {
@@ -411,7 +407,6 @@ void B2SServer::B2SSetData(const std::string& group, const std::string& value)
 
 void B2SServer::B2SSetData(const std::string& group, int value)
 {
-   std::lock_guard lock(m_stateMutex);
    // Same as B2SSetData, applied to a group of illumination elements, but does not broadcast a plugin event
    // FIXME implement
    assert(false);
@@ -419,9 +414,8 @@ void B2SServer::B2SSetData(const std::string& group, int value)
 
 float B2SServer::GetLampState(int b2sId) const
 {
-   std::lock_guard lock(m_stateMutex);
    const auto it = m_lampStates.find(b2sId);
-   return it == m_lampStates.end() ? 0.f : it->second;
+   return it == m_lampStates.end() ? 0.f : it->second.load();
 }
 
 }

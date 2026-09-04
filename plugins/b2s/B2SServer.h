@@ -132,6 +132,7 @@ private:
    const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
    const VPXPluginAPI* const m_vpxApi;
+   const std::thread::id m_msgApiThreadId { std::this_thread::get_id() };
 
    std::future<std::shared_ptr<B2STable>> m_loadedB2S;
    std::function<void(B2SServer*)> m_onDestroyHandler;
@@ -149,9 +150,9 @@ private:
    string m_controllerGameId;
    bool m_gameRunning = false;
    uint64_t m_defaultStateNameMask = 0;
-   ankerl::unordered_dense::map<int, float> m_lampStates;
-   ankerl::unordered_dense::map<int, int> m_playerScores;
-   ankerl::unordered_dense::map<int, int> m_scoreDigits;
+   std::map<int, std::atomic<float>> m_lampStates;
+   std::map<int, std::atomic<int>> m_playerScores;
+   std::map<int, std::atomic<int>> m_scoreDigits;
    const unsigned int m_onStateChangeEventId;
    PinballPlugin::Controller::CtrlItemProvider<ControllerDef> m_exposedControllers;
    PinballPlugin::Controller::CtrlItemProvider<StateSrcId> m_exposedStates;
