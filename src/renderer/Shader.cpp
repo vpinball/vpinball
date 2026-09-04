@@ -767,6 +767,7 @@ void Shader::SetUniformBlock(const ShaderUniform uniformName, const float* const
 void Shader::SetMatrix(const ShaderUniform uniformName, const D3DMATRIX* const pMatrix, const unsigned int count) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
 #endif
 void Shader::SetMatrix(const ShaderUniform uniformName, const Matrix3D* const pMatrix, const unsigned int count) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+const Matrix3D& Shader::GetMatrix(const ShaderUniform uniformName) const { return m_state->GetMatrix(uniformName); }
 void Shader::SetVector(const ShaderUniform uniformName, const vec4* const pVector) { m_state->SetVector(uniformName, pVector); }
 void Shader::SetVector(const ShaderUniform uniformName, const vec4* const pVector, const unsigned int count) { m_state->SetVector(uniformName, pVector, count); }
 void Shader::SetVector(const ShaderUniform uniformName, const float x, const float y, const float z, const float w)

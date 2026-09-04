@@ -1055,7 +1055,7 @@ void Primitive::Render(const unsigned int renderMask)
    }
 
    // Do not render ourself inside our reflection probe (no self reflection)
-   RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
+   RenderProbe * const reflection_probe = (isUIPass || m_d.m_reflectionStrength <= 0) ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
    if (reflection_probe != nullptr && reflection_probe->IsRendering())
       return;
    
