@@ -30,10 +30,10 @@ static VPXPluginAPI* vpxApi = nullptr;
 
 static uint32_t endpointId;
 static unsigned int getVpxApiId;
-static unsigned int onControllersChangedId;
-static unsigned int onDisplaySrcChgId;
-static unsigned int onSegSrcChgId;
 
+static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>> controllerSources;
+static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>> segSources;
+static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>> displaySources;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>> stateSources;
 
 MSGPI_INT_VAL_SETTING(portSetting, "port", "Web Server Port", "Port used by the inspector web server", true, 1024, 65535, 2113);
@@ -59,9 +59,6 @@ void UpdateTreeCache()
    if (!webServer)
       return;
 
-   std::lock_guard lock(displayStateMutex);
-   displayGetters.clear();
-
    json root = json::object();
    root["treeId"s] = treeId;
    root["tree"s] = json::array();
@@ -72,23 +69,28 @@ void UpdateTreeCache()
       return;
    }
 
-   const unsigned int getControllersId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_GET_MSG);
-   vector<ControllerDef> controllerDefs = GetCtrlItems<ControllerDef>(msgApi, endpointId, getControllersId);
-   msgApi->ReleaseMsgID(getControllersId);
+   // Controllers
+   std::map<uint32_t, std::unique_ptr<json>> controllers;
+   controllerSources->With(
+      [&controllers](const std::vector<ControllerDef>& items)
+      {
+         for (const ControllerDef& controller : items)
+         {
+            MsgEndpointInfo info;
+            msgApi->GetEndpointInfo(controller.endpointId, &info);
+            json cNode = json::object();
+            cNode["id"s] = controller.endpointId;
+            cNode["name"s] = info.name ? info.name : (info.id ? info.id : "Unknown Controller");
+            cNode["type"s] = "controller";
+            cNode["children"s] = json::array();
+            cNode["game"s] = controller.gameId ? controller.gameId : "";
+            controllers[controller.endpointId] = std::make_unique<json>(cNode);
+         }
+      });
 
-   json tree = json::array();
-
-   if (controllerDefs.empty())
+   auto getController = [&](uint32_t epId) -> json*
    {
-      root["tree"s] = tree;
-      webServer->UpdateTreeJson(root.dump());
-      return;
-   }
-
-   std::map<uint32_t, json> controllers;
-   auto getController = [&](uint32_t epId) -> json&
-   {
-      if (controllers.find(epId) == controllers.end())
+      if (auto it = controllers.find(epId); it == controllers.end())
       {
          MsgEndpointInfo info;
          msgApi->GetEndpointInfo(epId, &info);
@@ -97,14 +99,15 @@ void UpdateTreeCache()
          cNode["name"s] = info.name ? info.name : (info.id ? info.id : "Unknown Controller");
          cNode["type"s] = "controller";
          cNode["children"s] = json::array();
-         const auto ctrlDef = std::ranges::find_if(controllerDefs, [epId](const auto& ctrl) { return ctrl.endpointId == epId; });
-         cNode["game"s] = ctrlDef == controllerDefs.end() ? "" : ctrlDef->gameId;
-         controllers[epId] = cNode;
+         controllers[epId] = std::make_unique<json>(cNode);
       }
-      return controllers[epId];
+      return controllers[epId].get();
    };
-   for (const ControllerDef& controller : controllerDefs)
-      getController(controller.endpointId);
+
+   std::lock_guard lock(displayStateMutex);
+   displayGetters.clear();
+
+   json tree = json::array();
 
    // States
    stateSources->With(
@@ -112,7 +115,10 @@ void UpdateTreeCache()
       {
          for (const StateSrcId& stateDef : items)
          {
-            auto& cNode = getController(stateDef.id.endpointId);
+            auto* cNode = getController(stateDef.id.endpointId);
+            if (!cNode)
+               continue;
+
             json gNode = json::object();
             gNode["id"s] = stateDef.id.resId;
             gNode["name"s] = stateDef.name ? stateDef.name : "Unnamed state group";
@@ -132,65 +138,69 @@ void UpdateTreeCache()
                item["outputType"s] = stateDef.stateDefs[j].semanticType;
                gNode["children"s].push_back(item);
             }
-            cNode["children"s].push_back(gNode);
+            (*cNode)["children"s].push_back(gNode);
          }
       });
 
    // Displays
-   {
-      unsigned int getDisplaysMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-      std::map<uint32_t, json> displayCats;
-      for (const DisplaySrcId& displayDef : GetCtrlItems<DisplaySrcId>(msgApi, endpointId, getDisplaysMsgId))
+   displaySources->With(
+      [&getController](const std::vector<DisplaySrcId>& items)
       {
-         uint32_t epId = displayDef.id.endpointId;
-         if (displayCats.find(epId) == displayCats.end())
+         std::map<uint32_t, json> displayCats;
+         for (const DisplaySrcId& displayDef : items)
          {
-            json catNode = json::object();
-            catNode["name"s] = "Displays";
-            catNode["type"s] = "category";
-            catNode["children"s] = json::array();
-            displayCats[epId] = catNode;
+            uint32_t epId = displayDef.id.endpointId;
+            if (displayCats.find(epId) == displayCats.end())
+            {
+               json catNode = json::object();
+               catNode["name"s] = "Displays";
+               catNode["type"s] = "category";
+               catNode["children"s] = json::array();
+               displayCats[epId] = catNode;
+            }
+            json item = json::object();
+            item["type"s] = "display";
+            item["id"s] = std::to_string(displayDef.id.id);
+            item["mapping"s] = std::format("{:02d}", displayDef.id.resId);
+            item["name"s] = std::format("Display {} {}x{}", displayDef.id.resId, displayDef.width, displayDef.height);
+            item["format"s] = displayDef.frameFormat;
+            item["hardware"s] = displayDef.hardware;
+            displayCats[epId]["children"s].push_back(item);
+            displayGetters[displayDef.id.id] = { displayDef.id, displayDef.width, displayDef.height, displayDef.frameFormat, displayDef.callContext, displayDef.GetRenderFrame };
          }
-         json item = json::object();
-         item["type"s] = "display";
-         item["id"s] = std::to_string(displayDef.id.id);
-         item["mapping"s] = std::format("{:02d}", displayDef.id.resId);
-         item["name"s] = std::format("Display {} {}x{}", displayDef.id.resId, displayDef.width, displayDef.height);
-         item["format"s] = displayDef.frameFormat;
-         item["hardware"s] = displayDef.hardware;
-         displayCats[epId]["children"s].push_back(item);
-         displayGetters[displayDef.id.id] = { displayDef.id, displayDef.width, displayDef.height, displayDef.frameFormat, displayDef.callContext, displayDef.GetRenderFrame };
-      }
-      for (auto& pair : displayCats)
-      {
-         auto& cNode = getController(pair.first);
-         cNode["children"s].push_back(pair.second);
-      }
-      msgApi->ReleaseMsgID(getDisplaysMsgId);
-   }
+         for (auto& pair : displayCats)
+         {
+            auto* cNode = getController(pair.first);
+            if (!cNode)
+               continue;
+            (*cNode)["children"s].push_back(pair.second);
+         }
+      });
 
    // Segment Displays
-   {
-      unsigned int getSegsMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
-      for (const SegSrcId& segDef : GetCtrlItems<SegSrcId>(msgApi, endpointId, getSegsMsgId))
+   segSources->With(
+      [&getController](const std::vector<SegSrcId>& items)
       {
-         auto& cNode = getController(segDef.id.endpointId);
-         json catNode = json::object();
-         catNode["name"s] = "Segment Displays";
-         catNode["type"s] = "category";
-         catNode["children"s] = json::array();
-         json item = json::object();
-         item["type"s] = "seg_display";
-         item["name"s] = std::format("Seg Display {}", segDef.id.resId);
-         item["mapping"s] = std::format("{:02d}", segDef.id.resId);
-         catNode["children"s].push_back(item);
-         cNode["children"s].push_back(catNode);
-      }
-      msgApi->ReleaseMsgID(getSegsMsgId);
-   }
+         for (const SegSrcId& segDef : items)
+         {
+            auto* cNode = getController(segDef.id.endpointId);
+            if (!cNode)
+               continue;
+            json catNode = json::object();
+            catNode["name"s] = "Segment Displays";
+            catNode["type"s] = "category";
+            catNode["children"s] = json::array();
+            json item = json::object();
+            item["type"s] = "seg_display";
+            item["name"s] = std::format("Seg Display {}", segDef.id.resId);
+            item["mapping"s] = std::format("{:02d}", segDef.id.resId);
+            catNode["children"s].push_back(item);
+            (*cNode)["children"s].push_back(catNode);
+         }
+      });
 
    for (auto& pair : controllers)
-      tree.push_back(pair.second);
+      tree.push_back(*pair.second);
 
    root["tree"s] = tree;
 
@@ -381,14 +391,19 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
    endpointId = sessionId;
    msgApi->BroadcastMsg(endpointId, getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &vpxApi);
 
-   msgApi->SubscribeMsg(endpointId, onControllersChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_CONTROLLERS_ON_CHG_MSG), OnSrcChanged, nullptr);
-   msgApi->SubscribeMsg(endpointId, onDisplaySrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), OnSrcChanged, nullptr);
-   msgApi->SubscribeMsg(endpointId, onSegSrcChgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG), OnSrcChanged, nullptr);
    msgApi->RegisterSetting(endpointId, &portSetting);
+
+   controllerSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>>(
+      msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, nullptr, nullptr, []() { UpdateTreeCache(); });
+
+   displaySources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<DisplaySrcId>>(
+      msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, nullptr, nullptr, []() { UpdateTreeCache(); });
+
+   segSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<SegSrcId>>(
+      msgApi, endpointId, CTLPI_SEG_GET_SRC_MSG, CTLPI_SEG_ON_SRC_CHG_MSG, nullptr, nullptr, []() { UpdateTreeCache(); });
 
    stateSources = std::make_unique<PinballPlugin::Controller::CtrlItemConsumer<StateSrcId>>(
       msgApi, endpointId, CTLPI_STATE_GET_SRC_MSG, CTLPI_STATE_ON_SRC_CHG_MSG, nullptr, nullptr, []() { UpdateTreeCache(); });
-   stateSources->Subscribe();
 
    std::filesystem::path path;
 #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
@@ -403,7 +418,10 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginLoad(const uint32_t sessionId, const M
    webServer = std::make_unique<WebServer>();
    webServer->Start(portSetting_Get(), path.string());
 
-   OnSrcChanged(onControllersChangedId, nullptr, nullptr);
+   controllerSources->Subscribe();
+   displaySources->Subscribe();
+   segSources->Subscribe();
+   stateSources->Subscribe();
    UpdateTreeCache();
 }
 
@@ -415,18 +433,17 @@ MSGPI_EXPORT void MSGPIAPI InspectorPluginUnload()
       webServer.reset();
    }
 
-   if (stateSources)
-      stateSources->Unsubscribe();
+   controllerSources->Unsubscribe();
+   displaySources->Unsubscribe();
+   segSources->Unsubscribe();
+   stateSources->Unsubscribe();
+
+   controllerSources = nullptr;
+   displaySources = nullptr;
+   segSources = nullptr;
    stateSources = nullptr;
 
-   msgApi->UnsubscribeMsg(onControllersChangedId, OnSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onDisplaySrcChgId, OnSrcChanged, nullptr);
-   msgApi->UnsubscribeMsg(onSegSrcChgId, OnSrcChanged, nullptr);
-
    msgApi->ReleaseMsgID(getVpxApiId);
-   msgApi->ReleaseMsgID(onControllersChangedId);
-   msgApi->ReleaseMsgID(onDisplaySrcChgId);
-   msgApi->ReleaseMsgID(onSegSrcChgId);
 
    vpxApi = nullptr;
    msgApi = nullptr;
