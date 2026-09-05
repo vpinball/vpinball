@@ -44,8 +44,8 @@
 // - byref arguments
 //
 
-#define SCRIPTPI_NAMESPACE                 "Scriptable" // Namespace used for all scriptable API message definition
-#define SCRIPTPI_MSG_GET_API               "GetAPI"     // Get the plugin API
+#define SCRIPTPI_NAMESPACE                 "Scriptable"   // Namespace used for all scriptable API message definition
+#define SCRIPTPI_MSG_GET_API               "GetAPI:1"     // Get the plugin API
 
 typedef struct ScriptTypeNameDef
 {
@@ -122,6 +122,8 @@ typedef struct ScriptClassDef
 
 typedef struct ScriptablePluginAPI
 {
+   int version; // Must be 1. Included to allow extending the API with new functions at a later point in time
+
    // Define types, then submit them
    void (MSGPIAPI *RegisterScriptClass)(ScriptClassDef* classDef);
    void (MSGPIAPI *RegisterScriptTypeAlias)(const char* name, const char* aliasedType);

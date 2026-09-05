@@ -17,7 +17,7 @@
 //
 
 #define LOGPI_NAMESPACE                 "Login"      // Namespace
-#define LOGPI_MSG_GET_API               "GetAPI"     // Get the plugin API
+#define LOGPI_MSG_GET_API               "GetAPI:1"   // Get the plugin API
 
 #define LPI_LVL_DEBUG      0x00
 #define LPI_LVL_INFO       0x10
@@ -32,6 +32,8 @@
 
 typedef struct LoggingPluginAPI
 {
+   int version; // Must be 1. Included to allow extending the API with new functions at a later point in time
+
    void (MSGPIAPI *Log)(const char* source, const char* func, int line, unsigned int level, const char* message);
 } LoggingPluginAPI;
 

@@ -21,8 +21,8 @@ B2SPluginEventStream::B2SPluginEventStream(const MsgPluginAPI* msgApi, uint32_t 
    , m_onSegSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG))
    , m_getDmdSrcId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG))
    , m_onDmdSrcChangedId(m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG))
-   , m_onSerumTriggerId(m_msgApi->GetMsgID("Serum", "OnDmdTrigger"))
-   , m_onB2SStateChangeId(m_msgApi->GetMsgID("B2S", "OnStateChange"))
+   , m_onSerumTriggerId(m_msgApi->GetMsgID("Serum", "OnDmdTrigger:1"))
+   , m_onB2SStateChangeId(m_msgApi->GetMsgID("B2S", "OnStateChange:1"))
    , m_controllers(
         msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,
         [this](std::vector<ControllerDef>& controllers)
