@@ -54,6 +54,7 @@ MsgPluginManager::MsgPluginManager()
 {
    assert(m_pluginManager == nullptr);
    m_pluginManager = this;
+   m_api.version = 1;
    m_api.GetPluginEndpoint = GetPluginEndpoint;
    m_api.GetEndpointInfo = GetEndpointInfo;
    m_api.GetMsgID = GetMsgID;
@@ -145,6 +146,8 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
    freeMsg->name_space = name_space;
    freeMsg->name = name;
    freeMsg->callbacks.clear();
+   assert(nameView.rfind(':') != std::string_view::npos); // Message name must include a version marker separated by a colon (e.g. "OnDmdTrigger:1")
+   assert(nameView.rfind(':') != 0); // Message name may not be just a version marker (e.g. ":1" is invalid)
    return freeMsg->id;
 }
 

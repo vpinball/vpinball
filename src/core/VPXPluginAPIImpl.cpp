@@ -695,6 +695,8 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
       [this](const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef) { UpdateSetting(pluginId, action, settingDef); });
 
    // VPX API
+   m_api.version = 1;
+
    m_api.GetVpxInfo = GetVpxInfo;
    m_api.GetTableInfo = GetTableInfo;
 
@@ -725,10 +727,12 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager)
    m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, nullptr);
 
    // Logging API
+   m_loggingApi.version = 1;
    m_loggingApi.Log = PluginLog;
    m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, nullptr);
 
    // Scriptable API
+   m_scriptableApi.version = 1;
    m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
    m_scriptableApi.RegisterScriptTypeAlias = RegisterScriptTypeAlias;
    m_scriptableApi.RegisterScriptArrayType = RegisterScriptArray;

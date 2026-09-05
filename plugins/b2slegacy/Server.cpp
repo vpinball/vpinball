@@ -38,7 +38,7 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi, 
    , m_onGetAuxRendererId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER))
    , m_onAuxRendererChgId(msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG))
    , m_onStateChangedMsgId(msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_STATE_ON_SRC_CHG_MSG))
-   , m_onStateChangeEventId(msgApi->GetMsgID("B2S", "OnStateChange"))
+   , m_onStateChangeEventId(msgApi->GetMsgID("B2S", "OnStateChange:1"))
    , m_pinmameApi(msgApi, endpointId, this, serverClassDef)
    , m_pinmameControllers(
         msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG,

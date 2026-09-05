@@ -65,6 +65,13 @@
 //   to their submission timing parameters.
 //
 // This header is a common header to be used both by host and plugins.
+//
+// Two conventions are used to avoid discrepancies between provider & consumer message formats:
+// - Messages ends by a version marker 'xxx:1', a new version with a new behavior/message format /...
+//   must change its version marker to avoid old plugins to wrongly interpret & likely crash.
+// - Messages that provide a structure that may be expanded, like an API dispatch table
+//   that may be extended with new API entry point, should include a version number and
+//   increase it accordingly.
 
 
 #if defined(_MSC_VER)
@@ -200,12 +207,14 @@ typedef struct MsgSettingDef
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, &varName##_Get, &varName##_Set } }
 
 #define MSGPI_NAMESPACE                  "MsgPlugin"
-#define MSGPI_EVT_ON_PLUGIN_LOADED       "OnPluginLoaded"       // Broadcasted when a plugin is loaded
-#define MSGPI_EVT_ON_PLUGIN_UNLOADED     "OnPluginUnloaded"     // Broadcasted when a plugin is unloaded
+#define MSGPI_EVT_ON_PLUGIN_LOADED       "OnPluginLoaded:1"       // Broadcasted when a plugin is loaded
+#define MSGPI_EVT_ON_PLUGIN_UNLOADED     "OnPluginUnloaded:1"     // Broadcasted when a plugin is unloaded
 
 
 typedef struct MsgPluginAPI
 {
+   int version; // Must be 1. Included to allow extending the API with new functions at a later point in time
+   
    // Messaging
    unsigned int(MSGPIAPI* GetPluginEndpoint)(const char* id);
    void(MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
@@ -215,10 +224,13 @@ typedef struct MsgPluginAPI
    void (MSGPIAPI* BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
    void (MSGPIAPI* SendMsg)(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    void (MSGPIAPI* ReleaseMsgID)(const unsigned int msgId);
+   
    // Setting
    void(MSGPIAPI* RegisterSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Register a setting that the host will initialize either from a previously persisted value or the default
    void(MSGPIAPI* SaveSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Request the host to persist a setting
+   
    // Threading
    void (MSGPIAPI *RunOnMainThread)(const uint32_t endpointId, const double delayInS, const msgpi_timer_callback callback, void* userData);
    void (MSGPIAPI *FlushPendingCallbacks)(const uint32_t endpointId);
+   
 } MsgPluginAPI;
