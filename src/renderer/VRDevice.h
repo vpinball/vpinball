@@ -13,6 +13,15 @@
       #define BX_PLATFORM_ANDROID 1
    #endif
 
+   // libwinevbs / Wine headers define _WIN32 on standalone Linux, so bx/platform.h
+   // incorrectly reports BX_PLATFORM_WINDOWS and we pull in d3d11.h / d3d12.h.
+   #if defined(__STANDALONE__) && defined(__linux__) && !defined(__ANDROID__)
+      #undef BX_PLATFORM_WINDOWS
+      #define BX_PLATFORM_WINDOWS 0
+      #undef BX_PLATFORM_LINUX
+      #define BX_PLATFORM_LINUX 1
+   #endif
+
    #if BX_PLATFORM_WINDOWS
       #define XR_USE_PLATFORM_WIN32
       #define XR_USE_GRAPHICS_API_VULKAN
@@ -26,6 +35,9 @@
       #define XR_USE_PLATFORM_ANDROID
       #define XR_USE_GRAPHICS_API_VULKAN
       //#define XR_USE_GRAPHICS_API_OPENGL_ES
+   #elif BX_PLATFORM_LINUX
+      #define XR_USE_TIMESPEC
+      #define XR_USE_GRAPHICS_API_VULKAN
    #endif
 
 
@@ -276,7 +288,7 @@ private:
    #if BX_PLATFORM_WINDOWS
    bool m_win32PerfCounterExtensionSupported = false;
    PFN_xrConvertTimeToWin32PerformanceCounterKHR m_xrConvertTimeToWin32PerformanceCounterKHR = nullptr;
-   #elif BX_PLATFORM_ANDROID
+   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
    bool m_convertTimespecTimeExtensionSupported = false;
    PFN_xrConvertTimeToTimespecTimeKHR m_xrConvertTimeToTimespecTimeKHR = nullptr;
    #endif
