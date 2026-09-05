@@ -419,6 +419,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atl/include
       ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/atlmfc/include
       ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include
+      ${CMAKE_SOURCE_DIR}/third-party/include/libwinevbs/wine/include/msvcrt
       src
       plugins
    )
