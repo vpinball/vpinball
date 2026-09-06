@@ -44,6 +44,15 @@ static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<class SerumColorizer> colorizer;
 
 MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cROMc, cRZ)", true, "", 1024);
+// Serum skips frames it cannot identify. How long to keep showing the last
+// known-good colorized frame before giving up on the unknown run, and how many
+// unknown frames to skip within it, are colorization- and ROM-dependent, so
+// they have to be tunable by the host. libserum defaults to 0/0, which means
+// "no timeout, skip nothing".
+MSGPI_INT_VAL_SETTING(serumIgnoreUnknownFramesTimeoutProp, "IgnoreUnknownFramesTimeout", "Ignore unknown frames timeout",
+   "Milliseconds to keep the last colorized frame while frames cannot be identified (0 disables)", true, 0, 65535, 0);
+MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSkip", "Maximum unknown frames to skip",
+   "How many consecutive unidentified frames may be skipped (0 disables)", true, 0, 255, 0);
 
 // A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
 static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
@@ -62,6 +71,9 @@ public:
    {
       if (m_pSerum)
       {
+         Serum_SetIgnoreUnknownFramesTimeout(static_cast<uint16_t>(serumIgnoreUnknownFramesTimeoutProp_Get()));
+         Serum_SetMaximumUnknownFramesToSkip(static_cast<uint8_t>(serumMaxUnknownFramesToSkipProp_Get()));
+
          m_dmdSource.Subscribe();
       }
       else
@@ -420,6 +432,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    endpointId = sessionId;
    LPISetup(endpointId, msgApi);
    msgApi->RegisterSetting(endpointId, &serumPathProp);
+   msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
+   msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
