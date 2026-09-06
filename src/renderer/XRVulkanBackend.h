@@ -12,20 +12,6 @@
 #include <vulkan/vulkan_android.h>
 #endif
 
-#if BX_PLATFORM_LINUX
-// Disabled preview-window path still references these tokens at compile time.
-// Avoid vulkan_wayland.h / vulkan_xlib.h / vulkan_xcb.h (X11 None/Success clashes).
-#ifndef VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
-#define VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "VK_KHR_wayland_surface"
-#endif
-#ifndef VK_KHR_XLIB_SURFACE_EXTENSION_NAME
-#define VK_KHR_XLIB_SURFACE_EXTENSION_NAME "VK_KHR_xlib_surface"
-#endif
-#ifndef VK_KHR_XCB_SURFACE_EXTENSION_NAME
-#define VK_KHR_XCB_SURFACE_EXTENSION_NAME "VK_KHR_xcb_surface"
-#endif
-#endif
-
 #include "bx/os.h"
 
 class LibVulkan
@@ -119,9 +105,9 @@ public:
 #if BX_PLATFORM_ANDROID
          instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_LINUX
-         instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back("VK_KHR_wayland_surface");
+         instanceExtensions.push_back("VK_KHR_xlib_surface");
+         instanceExtensions.push_back("VK_KHR_xcb_surface");
 #elif BX_PLATFORM_WINDOWS
          instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_OSX
