@@ -517,6 +517,8 @@ STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down
    if (m_phitflipper)
    {
       m_phitflipper->m_flipperMover.m_enableRotateEvent = 1;
+      if (!m_phitflipper->m_flipperMover.m_solState)
+         g_pplayer->m_pininput.PlayFlipperButtonRumble(); // The solenoid energizes: this is what a player feels in the cabinet, not the button
       m_phitflipper->m_flipperMover.SetSolenoidState(true);
    }
 

@@ -703,12 +703,8 @@ void InputManager::CreateInputActions()
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
                return;
-            if (isPressed)
-            {
-               m_player->m_pininput.PlayFlipperButtonRumble();
-               if (m_player->IsPlaying())
-                  SDL_HideCursor();
-            }
+            if (isPressed && m_player->IsPlaying())
+               SDL_HideCursor();
          
             if (action.GetActionId() == m_leftFlipperActionId)
                m_leftFlipperLastChangePollDelay = m_player->m_logicProfiler.GetPrev(FrameProfiler::ProfileSection::PROFILE_INPUT_POLL_PERIOD);
@@ -1268,14 +1264,16 @@ void InputManager::PlayBumperRumble()
 {
    if (m_rumbleBumper < RUMBLE_OFF_LEVEL)
       return;
-   PlayRumble(0.1f * m_rumbleBumper, 0.05f * m_rumbleBumper, 100);
+   // The former fixed 0.10/0.05 for 100 ms is below what the motors render
+   PlayRumble(0.6f * m_rumbleBumper, 0.35f * m_rumbleBumper, 150);
 }
 
 void InputManager::PlaySlingshotRumble()
 {
    if (m_rumbleSlingshot < RUMBLE_OFF_LEVEL)
       return;
-   PlayRumble(0.15f * m_rumbleSlingshot, 0.1f * m_rumbleSlingshot, 100);
+   // 0.5 was still missed now and then, twice that always comes through
+   PlayRumble(0.8f * m_rumbleSlingshot, 0.5f * m_rumbleSlingshot, 150);
 }
 
 void InputManager::PlayPlungerRumble(const float fireSpeed)
@@ -1292,7 +1290,9 @@ void InputManager::PlayFlipperButtonRumble()
 {
    if (m_rumbleFlipperButton < RUMBLE_OFF_LEVEL)
       return;
-   PlayRumble(0.f, 0.2f * m_rumbleFlipperButton, 150);
+   // A solenoid is a thump, not a buzz, so both motors carry it. Kept below the kick level on purpose: the
+   // ball hit that follows a few tens of milliseconds later is the bigger event and must stand out.
+   PlayRumble(0.35f * m_rumbleFlipperButton, 0.2f * m_rumbleFlipperButton, 150);
 }
 
 void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
