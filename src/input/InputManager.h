@@ -174,6 +174,10 @@ public:
    void SetPlungerRumbleStrength(const float strength) { m_rumblePlunger = strength; }
    float GetFlipperButtonRumbleStrength() const { return m_rumbleFlipperButton; }
    void SetFlipperButtonRumbleStrength(const float strength) { m_rumbleFlipperButton = strength; }
+   // Rumble on cabinet nudge, scaled by the cabinet acceleration (m/s^2). Called once per physics millisecond.
+   void PlayNudgeRumble(const Vertex2D& cabinetAcceleration);
+   float GetNudgeRumbleStrength() const { return m_rumbleNudge; }
+   void SetNudgeRumbleStrength(const float strength) { m_rumbleNudge = strength; }
 
    int m_leftFlipperLastChangePollDelay = 0;
 
@@ -317,6 +321,8 @@ private:
    float m_rumbleSlingshot = 1.f; // Strength of the slingshot rumble, 0 disables it
    float m_rumblePlunger = 1.f; // Strength of the plunger rumble, 0 disables it
    float m_rumbleFlipperButton = 1.f; // Strength of the flipper solenoid pulse, 0 disables it
+   float m_rumbleNudge = 1.f; // Strength of the rumble played on cabinet nudge, 0 disables it
+   int m_nudgeRumbleCooldownMs = 0; // Physics milliseconds left before another nudge rumble may be played
 
 #ifdef _WIN32
    HHOOK m_hKeyboardHook = nullptr;
