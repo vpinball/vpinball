@@ -335,27 +335,36 @@ static std::filesystem::path GetColorization(const std::string_view& gameId)
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
-   if (vpxApi == nullptr)
-      return std::filesystem::path();
-   vpxApi->GetTableInfo(&tableInfo);
-
-   std::filesystem::path tablePath = tableInfo.path;
 
    const std::filesystem::path cromc = std::format("{}{}", gameId, ".cROMc");
    const std::filesystem::path crz = std::format("{}{}", gameId, ".cRZ");
 
-   // Priority 1: serum/rom/rom.cromc or .crz
-   if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
-      return path1.parent_path().parent_path();
-   else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
-      return path2.parent_path().parent_path();
-   // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
-   else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
-      return path3.parent_path().parent_path();
-   else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
-      return path4.parent_path().parent_path();
+   // Priorities 1 and 2 are relative to the table, so they only apply in a host
+   // that has tables. Other hosts of this plugin -- PPUC drives real pinball
+   // hardware, and there are headless colorization tools -- have no VPX API at
+   // all, and must still reach the global setting below. Returning early here
+   // made GetColorization report "no colorization" for every game in those
+   // hosts, which SelectController reads as "this controller cannot be
+   // colorized", so Serum never loaded at all.
+   if (vpxApi != nullptr)
+   {
+      vpxApi->GetTableInfo(&tableInfo);
+      const std::filesystem::path tablePath = tableInfo.path;
+
+      // Priority 1: serum/rom/rom.cromc or .crz
+      if (auto path1 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / cromc); !path1.empty())
+         return path1.parent_path().parent_path();
+      else if (auto path2 = find_case_insensitive_file_path(tablePath.parent_path() / "serum"sv / gameId / crz); !path2.empty())
+         return path2.parent_path().parent_path();
+      // Priority 2: pinmame/altcolor/rom/rom.cromc or .crz
+      else if (auto path3 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / cromc); !path3.empty())
+         return path3.parent_path().parent_path();
+      else if (auto path4 = find_case_insensitive_file_path(tablePath.parent_path() / "pinmame"sv / "altcolor"sv / gameId / crz); !path4.empty())
+         return path4.parent_path().parent_path();
+   }
+
    // Priority 3: global setting path
-   else if (std::filesystem::path serumPath = serumPathProp_Get();
+   if (std::filesystem::path serumPath = serumPathProp_Get();
       !serumPath.empty() && (!find_case_insensitive_file_path(serumPath / gameId / cromc).empty() || !find_case_insensitive_file_path(serumPath / gameId / crz).empty()))
       return serumPath;
 
