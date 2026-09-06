@@ -164,6 +164,7 @@ public:
    void PlayBumperRumble();
    void PlaySlingshotRumble();
    void PlayPlungerRumble(const float fireSpeed);
+   void PlayPlungerLaunchRumble(const float impact); // 0..1 from the closing speed of the tip and the ball
    void PlayFlipperButtonRumble();
    float GetBumperRumbleStrength() const { return m_rumbleBumper; }
    void SetBumperRumbleStrength(const float strength) { m_rumbleBumper = strength; }

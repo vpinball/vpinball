@@ -1281,9 +1281,25 @@ void InputManager::PlayPlungerRumble(const float fireSpeed)
    if (m_rumblePlunger < RUMBLE_OFF_LEVEL)
       return;
    // fireSpeed is signed (negative on the forward stroke) and PlayRumble saturates to 0..1, so the strongest
-   // bounce, the one that strikes the ball, used to be clamped to silence: only the magnitude matters.
-   const float speed = fabsf(fireSpeed) * 0.05f;
-   PlayRumble(speed * m_rumblePlunger, speed * m_rumblePlunger, 50);
+   // bounce, the one that strikes the ball, used to be clamped to silence: only the magnitude matters. 0.15
+   // rather than the former 0.05 so the spring rebounds are felt as the rattle after the strike.
+   const float speed = fabsf(fireSpeed) * 0.15f;
+   PlayRumble(speed * m_rumblePlunger, speed * m_rumblePlunger, 60);
+}
+
+void InputManager::PlayPlungerLaunchRumble(const float impact)
+{
+   if (m_rumblePlunger < RUMBLE_OFF_LEVEL)
+      return;
+   // A launch shakes the whole cabinet, so at full impact this is the longest and strongest pulse; a ball
+   // rolling back onto the tip is a short light clack.
+   const float i = clamp(impact, 0.f, 1.f);
+   if (i <= 0.f)
+      return;
+   // A short pulse is only felt with the start kick, so a light contact is told apart from the strike by its
+   // length (the kick alone, 80 ms) rather than by a lower level; the full strike runs 250 ms
+   const float s = (0.45f + 0.55f * i) * m_rumblePlunger;
+   PlayRumble(s, 0.6f * s, 80 + static_cast<int>(170.f * i));
 }
 
 void InputManager::PlayFlipperButtonRumble()
