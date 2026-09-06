@@ -288,6 +288,7 @@ if(PLATFORM STREQUAL "windows")
       /w44005
       /Zc:__cplusplus
       /std:c++20
+      /Zi
       $<$<NOT:$<STREQUAL:${ARCH},x64>>:/arch:SSE2>
    )
 
@@ -348,6 +349,7 @@ if(PLATFORM STREQUAL "windows")
       $<$<CONFIG:Release>:/OPT:REF>
       $<$<CONFIG:Release>:/OPT:ICF>
       $<$<CONFIG:Release>:/LTCG>
+      $<$<CONFIG:Release>:/DEBUG:FULL>
       $<$<CONFIG:Release>:/DYNAMICBASE:NO>
       $<IF:$<STREQUAL:${ARCH},x64>,$<$<CONFIG:Release>:/SAFESEH:NO>,/SAFESEH:NO>
       $<$<NOT:$<STREQUAL:${ARCH},x64>>:/LARGEADDRESSAWARE>
@@ -440,6 +442,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
 
    target_compile_options(vpinball PUBLIC
       -mssse3
+      $<$<CONFIG:Release>:-g1>
       $<$<CXX_COMPILER_ID:GNU>:
          -ffast-math
          -ffp-contract=off
@@ -476,6 +479,14 @@ elseif(PLATFORM STREQUAL "windows-mingw")
    set_target_properties(vpinball PROPERTIES
       RUNTIME_OUTPUT_NAME "VPinballX_BGFX64"
    )
+
+   if(CMAKE_BUILD_TYPE STREQUAL "Release")
+      add_custom_command(TARGET vpinball POST_BUILD
+         COMMAND "${CMAKE_OBJCOPY}" --only-keep-debug "$<TARGET_FILE:vpinball>" "$<TARGET_FILE_DIR:vpinball>/VPinballX_BGFX64.debug"
+         COMMAND "${CMAKE_OBJCOPY}" --strip-debug "$<TARGET_FILE:vpinball>"
+         COMMAND "${CMAKE_OBJCOPY}" --add-gnu-debuglink="$<TARGET_FILE_DIR:vpinball>/VPinballX_BGFX64.debug" "$<TARGET_FILE:vpinball>"
+      )
+   endif()
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"

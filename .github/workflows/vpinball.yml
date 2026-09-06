@@ -289,6 +289,11 @@ jobs:
             else
               cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}.exe stage
             fi
+            if [[ "${{ matrix.platform }}" == "windows" ]]; then
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.pdb stage
+            else
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.debug stage
+            fi
             cp build/${{ matrix.config }}/*.dll stage
             if [[ "${{ matrix.type }}" == "GL" ]]; then
               cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
@@ -391,6 +396,7 @@ jobs:
           else
             cp build/${{ matrix.config }}/VPinballX.exe stage
           fi
+          cp build/${{ matrix.config }}/VPinballX*.pdb stage
           cp build/${{ matrix.config }}/*.dll stage
           cp -r build/${{ matrix.config }}/assets stage
           cp -r build/${{ matrix.config }}/scripts stage
