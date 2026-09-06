@@ -11,6 +11,7 @@
 #include "MsgPlugin.h"
 
 #include <chrono>
+#include <deque>
 #include <list>
 #include <vector>
 #include <string>
@@ -156,7 +157,14 @@ private:
       unsigned int id;
       std::list<CallbackEntry> callbacks;
    };
-   std::vector<MsgEntry> m_msgs;
+   // deque, not vector: message ids are indices into this container, and
+   // BroadcastMsg/SendMsg iterate m_msgs[msgId].callbacks while invoking
+   // subscribers. A subscriber that resolves a new message id from inside its
+   // own callback -- which is ordinary, plugins do it to answer a query -- can
+   // grow this container mid-iteration. With a vector that reallocates and the
+   // range-for's bound reference dangles. deque never invalidates references to
+   // existing elements when growing at the back.
+   std::deque<MsgEntry> m_msgs;
 
    struct TimerEntry
    {
