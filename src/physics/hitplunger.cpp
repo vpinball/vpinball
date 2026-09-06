@@ -712,6 +712,40 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
    }
 }
 
+void HitPlunger::PlayContactRumble(const float impactSpeed)
+{
+   // A ball landing on the tip or the lane end bounces a few times within a third of a second. That is one
+   // landing, so within half a second a further contact only plays when it is stronger than the last one played
+   // (the launch right after a landing is), and never inside 150 ms.
+   const uint32_t now = g_pplayer->m_time_msec;
+   const uint32_t sinceLast = now - m_lastStrikeRumbleMs;
+   if (sinceLast <= 150 || (sinceLast < 500 && impactSpeed <= m_lastContactImpact))
+      return;
+   m_lastStrikeRumbleMs = now;
+   m_lastContactImpact = impactSpeed;
+   // Below half a unit it is the ball settling on the tip; a ball rolling back is a light clack, a launch the
+   // full strike
+   g_pplayer->m_pininput.PlayPlungerLaunchRumble(clamp((impactSpeed - 0.5f) * (1.f / 16.5f), 0.f, 1.f));
+}
+
+void HitPlunger::OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNormal, const float impactSpeed)
+{
+   // Many tables park the tip behind the end of the shooter lane, so a ball rolling back never reaches the tip:
+   // it lands on that wall, and only the launch stroke carries the tip to the ball. A hit against a wall facing
+   // up the lane, within the plunger's width and less than a ball diameter in front of the resting tip, is that
+   // landing.
+   if (impactSpeed < 0.5f || hitNormal.y > -0.7f)
+      return;
+   const float x = ball.m_d.m_pos.x;
+   if (x < m_plungerMover.m_x || x > m_plungerMover.m_x2)
+      return;
+   const float restTipY = m_plungerMover.m_frameEnd + m_plungerMover.m_restPos * m_plungerMover.m_frameLen;
+   const float gap = restTipY - (ball.m_d.m_pos.y + ball.m_d.m_radius);
+   if (gap < 0.f || gap > 2.f * ball.m_d.m_radius)
+      return;
+   PlayContactRumble(impactSpeed);
+}
+
 void HitPlunger::Collide(const CollisionEvent& coll)
 {
    HitBall* const pball = coll.m_ball;
@@ -745,6 +779,12 @@ void HitPlunger::Collide(const CollisionEvent& coll)
 
    // figure the basic impulse
    const float impulse = dot * -1.45f / (1.0f + 1.0f / PlungerMoverObject::m_mass);
+
+   // The strike: the tip hitting the ball. This is the one place every kind of launch passes through - Fire(),
+   // the launch key and a plunger following an analog sensor, which never calls Fire(). The closing speed is on
+   // the same scale as the flipper contact.
+   if (coll.m_hitvel.y != 0.0f || dot < -1.f)
+      PlayContactRumble(-dot);
 
    // We hit the ball, so attenuate any plunger bounce we have queued up
    // for a Fire event.  Real plungers bounce quite a bit when fired without

@@ -244,6 +244,10 @@ public:
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override { } // FIXME implement
  
    PlungerMoverObject m_plungerMover;
+   uint32_t m_lastStrikeRumbleMs = 0; // one contact pulse per landing, see PlayContactRumble()
+   float m_lastContactImpact = 0.f;
+   void PlayContactRumble(const float impactSpeed);
+   void OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNormal, const float impactSpeed); // a ball landing on the lane end in front of the parked tip
 
    Plunger *m_pplunger;
 };
