@@ -176,6 +176,10 @@ public:
    void SetFlipperButtonRumbleStrength(const float strength) { m_rumbleFlipperButton = strength; }
    // Rumble on cabinet nudge, scaled by the cabinet acceleration (m/s^2). Called once per physics millisecond.
    void PlayNudgeRumble(const Vertex2D& cabinetAcceleration);
+   // Rumble on ball/ball collision, scaled by the closing speed along the contact normal
+   void PlayBallBallRumble(const float impactSpeed);
+   float GetBallBallRumbleStrength() const { return m_rumbleBallBall; }
+   void SetBallBallRumbleStrength(const float strength) { m_rumbleBallBall = strength; }
    float GetNudgeRumbleStrength() const { return m_rumbleNudge; }
    void SetNudgeRumbleStrength(const float strength) { m_rumbleNudge = strength; }
 
@@ -322,6 +326,7 @@ private:
    float m_rumblePlunger = 1.f; // Strength of the plunger rumble, 0 disables it
    float m_rumbleFlipperButton = 1.f; // Strength of the flipper solenoid pulse, 0 disables it
    float m_rumbleNudge = 1.f; // Strength of the rumble played on cabinet nudge, 0 disables it
+   float m_rumbleBallBall = 1.f; // Strength of the rumble played when two balls collide, 0 disables it
    int m_nudgeRumbleCooldownMs = 0; // Physics milliseconds left before another nudge rumble may be played
 
 #ifdef _WIN32

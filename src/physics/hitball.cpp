@@ -246,7 +246,10 @@ void HitBall::Collide(const CollisionEvent& coll)
 
    // send ball/ball collision event to script function
    if (dot < -0.25f) // only collisions with at least some small true impact velocity (no contacts)
+   {
       g_pplayer->m_ptable->InvokeBallBallCollisionCallback(this, pball, -dot);
+      g_pplayer->m_pininput.PlayBallBallRumble(-dot);
+   }
 
 #ifdef C_DISP_GAIN
    float edist = -C_DISP_GAIN * coll.m_hitdistance;

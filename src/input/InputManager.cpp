@@ -74,6 +74,7 @@ InputManager::InputManager(Player* player)
    m_rumblePlunger = g_app->m_settings.GetPlayer_RumblePlunger();
    m_rumbleFlipperButton = g_app->m_settings.GetPlayer_RumbleFlipperButton();
    m_rumbleNudge = g_app->m_settings.GetPlayer_RumbleNudge();
+   m_rumbleBallBall = g_app->m_settings.GetPlayer_RumbleBallBall();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -1310,6 +1311,16 @@ void InputManager::PlayFlipperButtonRumble()
    // A solenoid is a thump, not a buzz, so both motors carry it. Kept below the kick level on purpose: the
    // ball hit that follows a few tens of milliseconds later is the bigger event and must stand out.
    PlayRumble(0.35f * m_rumbleFlipperButton, 0.2f * m_rumbleFlipperButton, 150);
+}
+
+void InputManager::PlayBallBallRumble(const float impactSpeed)
+{
+   if (m_rumbleBallBall < RUMBLE_OFF_LEVEL)
+      return;
+   // Same scale as the flipper contact (roughly 17 units for a hard hit). Steel on steel is a short, sharp clack,
+   // so the high frequency motor carries most of it.
+   const float impact = clamp(fabsf(impactSpeed) * 0.06f, 0.08f, 1.f);
+   PlayRumble(impact * 0.35f * m_rumbleBallBall, impact * 0.9f * m_rumbleBallBall, 70);
 }
 
 void InputManager::PlayNudgeRumble(const Vertex2D& cabinetAcceleration)
