@@ -159,6 +159,20 @@ public:
    float GetFlipperContactRumbleStrength() const { return m_rumbleFlipperContact; }
    void SetFlipperContactRumbleStrength(const float strength) { m_rumbleFlipperContact = strength; }
 
+   // The generic rumbles that used to be fixed-strength calls at their sites; the strength settings scale
+   // them, with 0 disabling the effect.
+   void PlayBumperRumble();
+   void PlaySlingshotRumble();
+   void PlayPlungerRumble(const float fireSpeed);
+   void PlayFlipperButtonRumble();
+   float GetBumperRumbleStrength() const { return m_rumbleBumper; }
+   void SetBumperRumbleStrength(const float strength) { m_rumbleBumper = strength; }
+   float GetSlingshotRumbleStrength() const { return m_rumbleSlingshot; }
+   void SetSlingshotRumbleStrength(const float strength) { m_rumbleSlingshot = strength; }
+   float GetPlungerRumbleStrength() const { return m_rumblePlunger; }
+   void SetPlungerRumbleStrength(const float strength) { m_rumblePlunger = strength; }
+   float GetFlipperButtonRumbleStrength() const { return m_rumbleFlipperButton; }
+   void SetFlipperButtonRumbleStrength(const float strength) { m_rumbleFlipperButton = strength; }
 
    int m_leftFlipperLastChangePollDelay = 0;
 
@@ -298,6 +312,10 @@ private:
    void UpdateRumbleOutput(const uint32_t now); // m_rumbleMutex must be held
    void SendRumble(const float low, const float high, const int ms_duration);
    float m_rumbleFlipperContact = 1.f; // Strength of the rumble played on flipper/ball contact, 0 disables it
+   float m_rumbleBumper = 1.f; // Strength of the bumper rumble, 0 disables it
+   float m_rumbleSlingshot = 1.f; // Strength of the slingshot rumble, 0 disables it
+   float m_rumblePlunger = 1.f; // Strength of the plunger rumble, 0 disables it
+   float m_rumbleFlipperButton = 1.f; // Strength of the flipper solenoid pulse, 0 disables it
 
 #ifdef _WIN32
    HHOOK m_hKeyboardHook = nullptr;

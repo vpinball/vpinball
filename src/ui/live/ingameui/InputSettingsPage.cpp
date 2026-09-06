@@ -48,6 +48,22 @@ void InputSettingsPage::BuildPage()
       Settings::m_propPlayer_RumbleFlipperContact, 1.f, "%3.2f"s, //
       [this]() { return m_player->m_pininput.GetFlipperContactRumbleStrength(); }, //
       [this](float, float v) { m_player->m_pininput.SetFlipperContactRumbleStrength(v); }));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumbleBumper, 1.f, "%3.2f"s, //
+      [this]() { return m_player->m_pininput.GetBumperRumbleStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.SetBumperRumbleStrength(v); }));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumbleSlingshot, 1.f, "%3.2f"s, //
+      [this]() { return m_player->m_pininput.GetSlingshotRumbleStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.SetSlingshotRumbleStrength(v); }));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumblePlunger, 1.f, "%3.2f"s, //
+      [this]() { return m_player->m_pininput.GetPlungerRumbleStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.SetPlungerRumbleStrength(v); }));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumbleFlipperButton, 1.f, "%3.2f"s, //
+      [this]() { return m_player->m_pininput.GetFlipperButtonRumbleStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.SetFlipperButtonRumbleStrength(v); }));
    // FIXME deprecated, just remove
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
