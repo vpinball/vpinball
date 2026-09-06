@@ -7,6 +7,7 @@
 #include "PhysicsEngine.h"
 
 #include "hitflipper.h"
+#include "hitplunger.h"
 
 #include "input/PlungerHandler.h"
 #include "physics/cabinet/NudgeHandler.h"
@@ -41,6 +42,8 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
    {
       if (pho->GetType() == eFlipper)
          m_vFlippers.push_back(static_cast<HitFlipper*>(pho));
+      else if (pho->GetType() == ePlunger)
+         m_vPlungers.push_back(static_cast<HitPlunger*>(pho));
       MoverObject * const pmo = pho->GetMoverObject();
       if (pmo && pmo->AddToList()) // Spinner, Gate, Flipper, Plunger (ball is added separately on each create ball)
          m_vmover.push_back(pmo);
@@ -775,4 +778,10 @@ string PhysicsEngine::GetPerfInfo(bool resetMax)
 #endif
 
    return info.str();
+}
+
+void PhysicsEngine::OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNormal, const float impactSpeed)
+{
+   for (HitPlunger* const plunger : m_vPlungers)
+      plunger->OnBallWallHit(ball, hitNormal, impactSpeed);
 }

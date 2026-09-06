@@ -78,6 +78,12 @@ private:
    unsigned int m_onUpdatePhysicsMsgId;
 
    vector<class HitFlipper *> m_vFlippers;
+   vector<class HitPlunger *> m_vPlungers;
+
+public:
+   void OnBallWallHit(const class HitBall& ball, const Vertex3Ds& hitNormal, const float impactSpeed); // a ball hitting static geometry, offered to the plungers (shooter lane end)
+
+private:
    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
    HitPlane m_hitTopGlass;
 
