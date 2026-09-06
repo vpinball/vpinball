@@ -207,6 +207,7 @@ PropFloat(Player, RumbleBumper, "Bumper Rumble"s, "Strength of the rumble played
 PropFloat(Player, RumbleSlingshot, "Slingshot Rumble"s, "Strength of the rumble played when a slingshot fires (0 disables it)"s, 0.f, 3.f, 1.f);
 PropFloat(Player, RumblePlunger, "Plunger Rumble"s, "Strength of the rumble played when the plunger tip strikes the ball or the ball lands on the plunger, scaled by the impact (0 disables it)"s, 0.f, 3.f, 1.f);
 PropFloat(Player, RumbleFlipperButton, "Flipper Button Rumble"s, "Strength of the pulse played when a flipper fires on its button, whether or not it hits a ball (0 disables it). Ball hits on the flipper are the Flipper Contact Rumble."s, 0.f, 3.f, 0.5f);
+PropFloat(Player, RumbleNudge, "Nudge Rumble"s, "Strength of the rumble played when the cabinet is nudged, scaled by the cabinet acceleration (0 disables it)"s, 0.f, 3.f, 1.f);
 PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack (e.g. if script execution or physics takes very long, comes at the price of "slower" gameplay). Not supported by BGFX variant (due to its multithreaded loop)
 PropIntUnbounded(Player, PhysicsMaxLoops, "Physics Max Loops"s,
    "Maximum number of physics iteration above which physics engine just skip to stay playable.\nThis is somewhat hacky, override table setup, and may cause gameplay issues. This should not be used anymore."s,

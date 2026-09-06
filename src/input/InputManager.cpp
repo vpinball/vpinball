@@ -73,6 +73,7 @@ InputManager::InputManager(Player* player)
    m_rumbleSlingshot = g_app->m_settings.GetPlayer_RumbleSlingshot();
    m_rumblePlunger = g_app->m_settings.GetPlayer_RumblePlunger();
    m_rumbleFlipperButton = g_app->m_settings.GetPlayer_RumbleFlipperButton();
+   m_rumbleNudge = g_app->m_settings.GetPlayer_RumbleNudge();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -1309,6 +1310,29 @@ void InputManager::PlayFlipperButtonRumble()
    // A solenoid is a thump, not a buzz, so both motors carry it. Kept below the kick level on purpose: the
    // ball hit that follows a few tens of milliseconds later is the bigger event and must stand out.
    PlayRumble(0.35f * m_rumbleFlipperButton, 0.2f * m_rumbleFlipperButton, 150);
+}
+
+void InputManager::PlayNudgeRumble(const Vertex2D& cabinetAcceleration)
+{
+   if (m_nudgeRumbleCooldownMs > 0)
+   {
+      m_nudgeRumbleCooldownMs--;
+      return;
+   }
+   if (m_rumbleNudge < RUMBLE_OFF_LEVEL)
+      return;
+
+   // The nudge models settle on 0.5g as the peak of a strong nudge, and the intent handler ignores anything below
+   // 1 m/s^2, so the same bounds are used here. The cooldown keeps the decaying cabinet oscillation from retriggering.
+   constexpr float thresholdAcceleration = 1.f; // m/s^2
+   constexpr float fullAcceleration = 0.5f * 9.80665f; // m/s^2
+   const float acceleration = cabinetAcceleration.Length();
+   if (acceleration < thresholdAcceleration)
+      return;
+
+   const float impact = clamp(acceleration / fullAcceleration, 0.1f, 1.f);
+   PlayRumble(impact * m_rumbleNudge, impact * 0.5f * m_rumbleNudge, 80);
+   m_nudgeRumbleCooldownMs = 200;
 }
 
 void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)

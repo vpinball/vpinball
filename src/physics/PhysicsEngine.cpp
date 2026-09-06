@@ -463,7 +463,9 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
 
       g_pplayer->m_pininput.m_plungerHandler->StepOneMillisecond();
 
-      m_plumbHandler.StepOneMillisecond(g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration());
+      const Vertex2D &cabinetAcceleration = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration();
+      m_plumbHandler.StepOneMillisecond(cabinetAcceleration);
+      g_pplayer->m_pininput.PlayNudgeRumble(cabinetAcceleration);
 
       for (size_t i = 0; i < m_vmover.size(); i++)
          m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
