@@ -64,6 +64,10 @@ void InputSettingsPage::BuildPage()
       Settings::m_propPlayer_RumbleFlipperButton, 1.f, "%3.2f"s, //
       [this]() { return m_player->m_pininput.GetFlipperButtonRumbleStrength(); }, //
       [this](float, float v) { m_player->m_pininput.SetFlipperButtonRumbleStrength(v); }));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_RumbleNudge, 1.f, "%3.2f"s, //
+      [this]() { return m_player->m_pininput.GetNudgeRumbleStrength(); }, //
+      [this](float, float v) { m_player->m_pininput.SetNudgeRumbleStrength(v); }));
    // FIXME deprecated, just remove
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
