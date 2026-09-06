@@ -69,6 +69,10 @@ InputManager::InputManager(Player* player)
 
    m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
    m_rumbleFlipperContact = g_app->m_settings.GetPlayer_RumbleFlipperContact();
+   m_rumbleBumper = g_app->m_settings.GetPlayer_RumbleBumper();
+   m_rumbleSlingshot = g_app->m_settings.GetPlayer_RumbleSlingshot();
+   m_rumblePlunger = g_app->m_settings.GetPlayer_RumblePlunger();
+   m_rumbleFlipperButton = g_app->m_settings.GetPlayer_RumbleFlipperButton();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -701,7 +705,7 @@ void InputManager::CreateInputActions()
                return;
             if (isPressed)
             {
-               m_player->m_pininput.PlayRumble(0.f, 0.2f, 150);
+               m_player->m_pininput.PlayFlipperButtonRumble();
                if (m_player->IsPlaying())
                   SDL_HideCursor();
             }
@@ -1250,7 +1254,7 @@ void InputManager::SendRumble(const float low, const float high, const int ms_du
 
 void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
 {
-   if (m_rumbleFlipperContact <= 0.f)
+   if (m_rumbleFlipperContact < RUMBLE_OFF_LEVEL)
       return;
 
    // A relative normal velocity of roughly 17 units corresponds to a hard hit. Both motors are
@@ -1258,6 +1262,37 @@ void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
    // gamepads.
    const float impact = clamp(fabsf(normalImpactSpeed) * 0.06f, 0.05f, 1.f);
    PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * m_rumbleFlipperContact, 120);
+}
+
+void InputManager::PlayBumperRumble()
+{
+   if (m_rumbleBumper < RUMBLE_OFF_LEVEL)
+      return;
+   PlayRumble(0.1f * m_rumbleBumper, 0.05f * m_rumbleBumper, 100);
+}
+
+void InputManager::PlaySlingshotRumble()
+{
+   if (m_rumbleSlingshot < RUMBLE_OFF_LEVEL)
+      return;
+   PlayRumble(0.15f * m_rumbleSlingshot, 0.1f * m_rumbleSlingshot, 100);
+}
+
+void InputManager::PlayPlungerRumble(const float fireSpeed)
+{
+   if (m_rumblePlunger < RUMBLE_OFF_LEVEL)
+      return;
+   // fireSpeed is signed (negative on the forward stroke) and PlayRumble saturates to 0..1, so the strongest
+   // bounce, the one that strikes the ball, used to be clamped to silence: only the magnitude matters.
+   const float speed = fabsf(fireSpeed) * 0.05f;
+   PlayRumble(speed * m_rumblePlunger, speed * m_rumblePlunger, 50);
+}
+
+void InputManager::PlayFlipperButtonRumble()
+{
+   if (m_rumbleFlipperButton < RUMBLE_OFF_LEVEL)
+      return;
+   PlayRumble(0.f, 0.2f * m_rumbleFlipperButton, 150);
 }
 
 void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
