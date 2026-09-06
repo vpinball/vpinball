@@ -12,6 +12,12 @@
 
 namespace
 {
+#ifdef _WIN64
+	constexpr DWORD kStackWalkMachine = IMAGE_FILE_MACHINE_AMD64;
+#else
+	constexpr DWORD kStackWalkMachine = IMAGE_FILE_MACHINE_I386;
+#endif
+
 	void GetFileFromPath(const char* path, char* file, int fileNameSize)
 	{
 		char ext[_MAX_EXT] = {};
@@ -144,7 +150,7 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
     HANDLE thread	= GetCurrentThread(); 
 
 	int numEntries(0);
-	while (::StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, 
+	while (::StackWalk64(kStackWalkMachine, process, thread, 
 		&stackFrame, context, 0, SymFunctionTableAccess64, SymGetModuleBase64, nullptr) &&
 		stackFrame.AddrFrame.Offset != 0 && numEntries < maxDepth)
 	{
@@ -277,7 +283,7 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 	stackFrame.AddrStack.Mode	= AddrModeFlat;
 
 	while (maxSymbolLen > 0 &&
-		::StackWalk64(IMAGE_FILE_MACHINE_I386,
+		::StackWalk64(kStackWalkMachine,
 			::GetCurrentProcess(), ::GetCurrentThread(), &stackFrame,
 			context, nullptr, /*Internal_ReadProcessMemory,*/
 			SymFunctionTableAccess64, SymGetModuleBase64, nullptr) != FALSE &&
