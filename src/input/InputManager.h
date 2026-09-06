@@ -3,6 +3,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <mutex>
 
 #include "input/InputAction.h"
 #include "input/PhysicsSensor.h"
@@ -148,13 +149,16 @@ public:
    // Used by actions to report state changes and query if local processing should be performed
    bool OnInputActionStateChanged(InputAction* action);
 
-   // Speed: 0..1
+   // Speed: 0..1. Pulses are mixed, not replaced: the device plays the strongest active pulse per motor, and
+   // falls back to the next one when that runs out (see UpdateRumble).
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
+   void UpdateRumble(); // Called once per frame: drops expired pulses and re-evaluates the output
 
    // Rumble on flipper/ball contact, scaled by the relative normal velocity of the impact
    void PlayFlipperContactRumble(const float normalImpactSpeed);
    float GetFlipperContactRumbleStrength() const { return m_rumbleFlipperContact; }
    void SetFlipperContactRumbleStrength(const float strength) { m_rumbleFlipperContact = strength; }
+
 
    int m_leftFlipperLastChangePollDelay = 0;
 
@@ -262,6 +266,37 @@ private:
    int m_autoStartDirectStateSlot = -1;
 
    int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
+
+   // Active rumble pulses. Called from the physics thread (collisions, solenoids) and the OS thread (UpdateRumble
+   // once per frame), hence the mutex. Eight slots are plenty: pulses last 60..250 ms and rarely more than three overlap.
+   struct RumblePulse
+   {
+      float low = 0.f;
+      float high = 0.f;
+      uint32_t endMs = 0;
+   };
+   static constexpr int RUMBLE_PULSE_SLOTS = 8;
+   RumblePulse m_rumblePulses[RUMBLE_PULSE_SLOTS];
+   std::mutex m_rumbleMutex;
+   float m_rumbleSentLow = 0.f; // What the device is currently playing
+   float m_rumbleSentHigh = 0.f;
+   uint32_t m_rumbleSentEndMs = 0;
+   // Measured with an accelerometer on the pad: eccentric mass motors need well over 100 ms from rest to full
+   // amplitude, do not move below 0.3 and are full at about 0.86. So every level is mapped onto the usable range
+   // (RUMBLE_MOTOR_FLOOR), and a step up of the mix by RUMBLE_KICK_STEP to at least RUMBLE_KICK_MIN_LEVEL is
+   // driven at twice the mapped level (capped) for RUMBLE_KICK_MS. Lower levels are meant as a light touch.
+   static constexpr float RUMBLE_OFF_LEVEL = 0.01f; // below this a strength setting or a pulse level counts as off
+   static constexpr float RUMBLE_MOTOR_FLOOR = 0.3f;
+   static constexpr uint32_t RUMBLE_KICK_MS = 80;
+   static constexpr float RUMBLE_KICK_GAIN = 2.f;
+   static constexpr float RUMBLE_KICK_MIN_LEVEL = 0.6f; // mapped level from which a pulse gets the kick; pulses meant as a light touch stay below it
+   static constexpr float RUMBLE_KICK_STEP = 0.2f; // minimum rise of the output that triggers a kick
+   float m_rumbleMixLow = 0.f; // The mix before the kick, to tell a real step up from a kick ending
+   float m_rumbleMixHigh = 0.f;
+   uint32_t m_rumbleKickLowEndMs = 0;
+   uint32_t m_rumbleKickHighEndMs = 0;
+   void UpdateRumbleOutput(const uint32_t now); // m_rumbleMutex must be held
+   void SendRumble(const float low, const float high, const int ms_duration);
    float m_rumbleFlipperContact = 1.f; // Strength of the rumble played on flipper/ball contact, 0 disables it
 
 #ifdef _WIN32

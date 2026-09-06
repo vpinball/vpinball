@@ -414,6 +414,8 @@ void InputManager::ProcessInput()
    for (const auto& handler : m_inputHandlers)
       handler->Update();
 
+   UpdateRumble();
+
    // Handle automatic start
    if (m_player->m_ptable->m_tblAutoStartEnabled)
       Autostart(m_player->m_ptable->m_tblAutoStart, m_player->m_ptable->m_tblAutoStartRetry);
@@ -1121,11 +1123,128 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
    if (m_rumbleMode == 0)
       return;
 
+   // SDL_RumbleJoystick cancels whatever is playing on every call, so forwarding calls as they come lets the last
+   // caller win, however weak (a plunger release calls every 2 ms while its spring rings down). Pulses are
+   // therefore collected here and mixed per motor.
+   // A slider that did not quite reach zero must not leave a faint pulse behind once the motor curve lifts it
+   float low = saturate(lowFrequencySpeed);
+   float high = saturate(highFrequencySpeed);
+   if (low < RUMBLE_OFF_LEVEL)
+      low = 0.f;
+   if (high < RUMBLE_OFF_LEVEL)
+      high = 0.f;
+   if (low <= 0.f && high <= 0.f)
+      return;
+   // Map onto the range the motors actually render (see RUMBLE_MOTOR_FLOOR)
+   if (low > 0.f)
+      low = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * low;
+   if (high > 0.f)
+      high = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * high;
+   const uint32_t now = msec();
+
+   std::lock_guard<std::mutex> lock(m_rumbleMutex);
+   // Take a free slot. With all slots busy, a pulse that would not change the mix - no stronger on either motor
+   // and not outlasting it - is not needed; anything else replaces the weakest.
+   const uint32_t endMs = now + static_cast<uint32_t>(max(ms_duration, 1));
+   int slot = -1;
+   float weakest = 2.f;
+   float mixLow = 0.f;
+   float mixHigh = 0.f;
+   uint32_t mixEndMs = 0;
+   for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
+   {
+      const RumblePulse& p = m_rumblePulses[i];
+      if (p.endMs <= now)
+      {
+         slot = i;
+         break;
+      }
+      mixLow = max(mixLow, p.low);
+      mixHigh = max(mixHigh, p.high);
+      mixEndMs = max(mixEndMs, p.endMs);
+      if (max(p.low, p.high) < weakest)
+      {
+         weakest = max(p.low, p.high);
+         slot = i;
+      }
+   }
+   if (m_rumblePulses[slot].endMs > now && low <= mixLow && high <= mixHigh && endMs <= mixEndMs)
+      return;
+   m_rumblePulses[slot] = { low, high, endMs };
+   // A pulse that the new one covers on both motors is over: its event has been superseded, and letting it
+   // resurface once the new pulse ends would play a vibration for something long past
+   for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
+      if (i != slot && m_rumblePulses[i].endMs > now && m_rumblePulses[i].low <= low && m_rumblePulses[i].high <= high)
+         m_rumblePulses[i].endMs = now;
+   UpdateRumbleOutput(now);
+}
+
+void InputManager::UpdateRumble()
+{
+   std::lock_guard<std::mutex> lock(m_rumbleMutex);
+   if (m_rumbleMode == 0)
+   {
+      // Switched off while something was playing: silence the device and forget the pulses
+      if (m_rumbleSentLow != 0.f || m_rumbleSentHigh != 0.f)
+      {
+         for (RumblePulse& p : m_rumblePulses)
+            p.endMs = 0;
+         UpdateRumbleOutput(msec());
+      }
+      return;
+   }
+   UpdateRumbleOutput(msec());
+}
+
+void InputManager::UpdateRumbleOutput(const uint32_t now)
+{
+   // Strongest active pulse per motor; the output lasts until the last active pulse ends and is re-evaluated
+   // every frame, so it steps down to the next pulse once the strongest has run out.
+   float low = 0.f;
+   float high = 0.f;
+   uint32_t endMs = 0;
+   for (const RumblePulse& p : m_rumblePulses)
+   {
+      if (p.endMs <= now)
+         continue;
+      low = max(low, p.low);
+      high = max(high, p.high);
+      endMs = max(endMs, p.endMs);
+   }
+   // Start kick: a step up of the mix is driven at RUMBLE_KICK_GAIN times the level for RUMBLE_KICK_MS first. It
+   // goes with every step up, not only with the start from rest, so a ball hit that follows the flipper solenoid
+   // pulse still stands out; only levels meant as a hit get it, a light touch stays light. The step is measured
+   // against the mix before any kick, otherwise a hit arriving during another event's kick would count as a
+   // step down.
+   if (low >= RUMBLE_KICK_MIN_LEVEL && low - m_rumbleMixLow >= RUMBLE_KICK_STEP)
+      m_rumbleKickLowEndMs = now + RUMBLE_KICK_MS;
+   else if (low < m_rumbleMixLow)
+      m_rumbleKickLowEndMs = 0; // the pulse that earned the kick is over; a weaker remainder must not be doubled
+   if (high >= RUMBLE_KICK_MIN_LEVEL && high - m_rumbleMixHigh >= RUMBLE_KICK_STEP)
+      m_rumbleKickHighEndMs = now + RUMBLE_KICK_MS;
+   else if (high < m_rumbleMixHigh)
+      m_rumbleKickHighEndMs = 0;
+   m_rumbleMixLow = low;
+   m_rumbleMixHigh = high;
+   if (low > 0.f && now < m_rumbleKickLowEndMs)
+      low = min(1.f, low * RUMBLE_KICK_GAIN);
+   if (high > 0.f && now < m_rumbleKickHighEndMs)
+      high = min(1.f, high * RUMBLE_KICK_GAIN);
+   if (low == m_rumbleSentLow && high == m_rumbleSentHigh && endMs == m_rumbleSentEndMs)
+      return;
+   m_rumbleSentLow = low;
+   m_rumbleSentHigh = high;
+   m_rumbleSentEndMs = endMs;
+   SendRumble(low, high, (endMs > now) ? static_cast<int>(endMs - now) : 0);
+}
+
+void InputManager::SendRumble(const float low, const float high, const int ms_duration)
+{
    for (const auto& handler : m_inputHandlers)
-      handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
+      handler->PlayRumble(low, high, ms_duration);
 
    #if defined(__LIBVPINBALL__) && defined(__APPLE__)
-      VPinballLib::VPinballLib::PlayRumble(saturate(lowFrequencySpeed), saturate(highFrequencySpeed), (unsigned int)ms_duration);
+      VPinballLib::VPinballLib::PlayRumble(low, high, (unsigned int)ms_duration);
    #endif
 }
 
