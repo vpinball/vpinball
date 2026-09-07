@@ -9,7 +9,7 @@
 #include "parts/Collection.h"
 #include "plugins/VPXPlugin.h"
 
-#ifdef CRASH_HANDLER
+#if defined(CRASH_HANDLER) || defined(VPX_STANDALONE_CRASH_HANDLER)
 #include "utils/CrashHandler.h"
 #include "utils/BlackBox.h"
 #endif
@@ -148,7 +148,7 @@ VPApp::VPApp()
    SetThreadName("Main"s);
 #endif
 
-   #ifdef CRASH_HANDLER
+   #if defined(CRASH_HANDLER) || defined(VPX_STANDALONE_CRASH_HANDLER)
       rde::CrashHandler::Init();
    #endif
 
