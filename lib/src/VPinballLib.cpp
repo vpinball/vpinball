@@ -182,9 +182,10 @@ bool VPinballLib::PollAppEvent(SDL_Event& event)
    return true;
 }
 
-void VPinballLib::Init(VPinballEventCallback callback)
+void VPinballLib::Init(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback)
 {
-   SetEventCallback(callback);
+   SetEventCallback(eventCallback);
+   SetRumbleCallback(rumbleCallback);
 
    SDL_RunOnMainThread([](void* userdata) {
       auto* lib = static_cast<VPinballLib*>(userdata);
@@ -217,15 +218,6 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
                jsonData = jsonString.c_str();
                break;
             }
-            case VPINBALL_EVENT_RUMBLE: {
-               RumbleData* rumbleData = (RumbleData*)data;
-               j["lowFrequencyRumble"] = rumbleData->lowFrequencyRumble;
-               j["highFrequencyRumble"] = rumbleData->highFrequencyRumble;
-               j["durationMs"] = rumbleData->durationMs;
-               jsonString = j.dump();
-               jsonData = jsonString.c_str();
-               break;
-            }
             case VPINBALL_EVENT_WEB_SERVER: {
                WebServerData* webServerData = (WebServerData*)data;
                j["url"] = webServerData->url;
@@ -249,6 +241,13 @@ void VPinballLib::SetEventCallback(VPinballEventCallback callback)
       callback(event, jsonData);
       return nullptr;
    };
+}
+
+void VPinballLib::PlayRumble(float lowFrequencySpeed, float highFrequencySpeed, unsigned int durationMs)
+{
+   auto callback = Instance().m_rumbleCallback;
+   if (callback)
+      callback(lowFrequencySpeed, highFrequencySpeed, durationMs);
 }
 
 void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)

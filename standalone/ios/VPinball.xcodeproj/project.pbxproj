@@ -13,6 +13,7 @@
 		C114190C2C277D9900582B6F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C114190B2C277D9900582B6F /* Preview Assets.xcassets */; };
 		C11419182C28C5C500582B6F /* Shimmer.metal in Sources */ = {isa = PBXBuildFile; fileRef = C11419162C28C5C500582B6F /* Shimmer.metal */; };
 		C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119B03A2C32D48A00A4E74D /* VPinballManager.swift */; };
+		C1A3F0E12F3C1A0000A4E74D /* HapticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A3F0E02F3C1A0000A4E74D /* HapticsManager.swift */; };
 		C120EA732CA703810048EB24 /* VPinballFramework.dSYM in Copy VPinballFramework.dSYM */ = {isa = PBXBuildFile; fileRef = C120EA722CA703810048EB24 /* VPinballFramework.dSYM */; };
 		C12124612D04725900EB0481 /* VPinballInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12124602D04725900EB0481 /* VPinballInterop.swift */; };
 		C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */; };
@@ -83,6 +84,7 @@
 		C114191F2C28C9B800582B6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C119B0392C32060400A4E74D /* VPinball.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VPinball.entitlements; sourceTree = "<group>"; };
 		C119B03A2C32D48A00A4E74D /* VPinballManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballManager.swift; sourceTree = "<group>"; };
+		C1A3F0E02F3C1A0000A4E74D /* HapticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsManager.swift; sourceTree = "<group>"; };
 		C120EA722CA703810048EB24 /* VPinballFramework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = VPinballFramework.dSYM; path = VPinball/Frameworks/dSYM/VPinballFramework.dSYM; sourceTree = "<group>"; };
 		C12124602D04725900EB0481 /* VPinballInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPinballInterop.swift; sourceTree = "<group>"; };
 		C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HUDOverlayView.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				C1610F1F2C4D31350049ED87 /* Enums.swift */,
 				C16266402C29955E0002FD15 /* Extensions.swift */,
 				C13A42CB2E871BB0001A44AD /* StatusBarManager.swift */,
+				C1A3F0E02F3C1A0000A4E74D /* HapticsManager.swift */,
 				C15528C32EA016BA005CBB91 /* TableFileOperations.swift */,
 				C1F802E52E9926EB00A99C73 /* TableManager.swift */,
 				C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */,
@@ -369,6 +372,7 @@
 				C19E19C92F38DCB900B9030B /* TableContextPreview.swift in Sources */,
 				C13A42CC2E871BB0001A44AD /* StatusBarManager.swift in Sources */,
 				C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */,
+				C1A3F0E12F3C1A0000A4E74D /* HapticsManager.swift in Sources */,
 				C1F802E62E9926EB00A99C73 /* TableManager.swift in Sources */,
 				C15DE57C2C75A324001F1D13 /* CodeWebView.swift in Sources */,
 				C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */,

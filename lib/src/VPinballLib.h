@@ -20,12 +20,6 @@ struct ProgressData {
    unsigned int progress;
 };
 
-struct RumbleData {
-   uint16_t lowFrequencyRumble;
-   uint16_t highFrequencyRumble;
-   uint32_t durationMs;
-};
-
 struct WebServerData {
    string url;
 };
@@ -54,8 +48,9 @@ public:
    void SetMetalLayer(void* layer) { m_pMetalLayer = layer; }
 #endif
    string GetVersionStringFull() { return VP_VERSION_STRING_FULL_LITERAL; };
-   void Init(VPinballEventCallback callback);
+   void Init(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback);
    static void SendEvent(VPINBALL_EVENT event, void* data);
+   static void PlayRumble(float lowFrequencySpeed, float highFrequencySpeed, unsigned int durationMs);
    void Log(VPINBALL_LOG_LEVEL level, const string& message);
    void ResetLog();
    int LoadValueInt(const string& sectionName, const string& key, int defaultValue);
@@ -83,6 +78,7 @@ private:
    VPinballLib(const VPinballLib&) = delete;
    VPinballLib& operator=(const VPinballLib&) = delete;
    void SetEventCallback(VPinballEventCallback callback);
+   void SetRumbleCallback(VPinballRumbleCallback callback) { m_rumbleCallback = callback; }
 
    SDL_Window* m_pWindow = nullptr;
 #ifdef __APPLE__
@@ -90,6 +86,7 @@ private:
 #endif
    WebServer m_webServer;
    std::function<void*(VPINBALL_EVENT, void*)> m_eventCallback = nullptr;
+   VPinballRumbleCallback m_rumbleCallback = nullptr;
    std::function<void()> m_gameLoop = nullptr;
    std::queue<SDL_Event> m_eventQueue;
    std::mutex m_eventMutex;

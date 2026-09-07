@@ -1124,16 +1124,8 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
    for (const auto& handler : m_inputHandlers)
       handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
 
-   #ifdef __LIBVPINBALL__
-      if (!g_app->m_settings.GetStandalone_Haptics())
-         return;
-
-      VPinballLib::RumbleData rumbleData = {
-         (uint16_t)(saturate(lowFrequencySpeed) * 65535.f),
-         (uint16_t)(saturate(highFrequencySpeed) * 65535.f),
-         (uint32_t)ms_duration
-      };
-      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_RUMBLE, &rumbleData);
+   #if defined(__LIBVPINBALL__) && defined(__APPLE__)
+      VPinballLib::VPinballLib::PlayRumble(saturate(lowFrequencySpeed), saturate(highFrequencySpeed), (unsigned int)ms_duration);
    #endif
 }
 

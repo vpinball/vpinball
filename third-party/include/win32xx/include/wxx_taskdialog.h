@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -49,10 +49,11 @@
 //  Task dialogs are only supported on Windows Vista and above.
 //  Task dialogs require XP themes enabled (use version 6 of Common Controls)
 //  Task dialogs are always modal.
+//  Task dialogs require Unicode.
 
 
-#ifndef _WIN32XX_TASKDIALOG_H_
-#define _WIN32XX_TASKDIALOG_H_
+#ifndef WIN32XX_TASKDIALOG_H_
+#define WIN32XX_TASKDIALOG_H_
 
 #include "wxx_wincore.h"
 
@@ -175,14 +176,25 @@ namespace Win32xx
     // TD_WARNING_ICON; TD_ERROR_ICON; TD_INFORMATION_ICON; TD_SHIELD_ICON.
     // TaskDialogs support per monitor DPI aware version 2, but a MessageBox
     // currently does not. TaskDialogs are not supported on Windows XP.
-    inline void TaskDialogBox(HWND wnd, LPCTSTR text, LPCTSTR caption,
-        LPTSTR iconType = TD_INFORMATION_ICON)
+    // Returns S_OK on success, otherwise returns E_OUTOFMEMORY, E_INVALIDARG,
+    // or E_FAIL.
+    inline HRESULT TaskDialogBox(HWND parent, LPCWSTR text, LPCWSTR caption,
+        LPWSTR iconType = TD_INFORMATION_ICON)
     {
-        CTaskDialog taskDialog;
-        taskDialog.SetContent(text);
-        taskDialog.SetWindowTitle(caption);
-        taskDialog.SetMainIcon(iconType);
-        taskDialog.DoModal(wnd);
+        // Fill the TASKDIALOGCONFIG struct.
+        TASKDIALOGCONFIG tc = {};
+        tc.cbSize = sizeof(tc);
+        tc.hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        tc.hwndParent = parent;
+        tc.pszWindowTitle = caption;
+        tc.pszMainInstruction = text;
+        tc.pszMainIcon = iconType;
+
+        // Create the task dialog.
+        HRESULT result = ::TaskDialogIndirect(&tc, nullptr,
+            nullptr, nullptr);
+
+        return result;
     }
 
     /////////////////////////////////////////
@@ -311,7 +323,8 @@ namespace Win32xx
 
     // Adds a shield icon to indicate that the button's action requires
     // elevated privileges.
-    // Refer to TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE in the Windows API documentation for more information.
+    // Refer to TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE in the Windows API
+    // documentation for more information.
     inline void CTaskDialog::ElevateButton(int buttonID, BOOL isElevated) const
     {
         assert(GetHwnd());
@@ -346,7 +359,7 @@ namespace Win32xx
         CStringW str;
         if (IS_INTRESOURCE(text))      // support MAKEINTRESOURCE
         {
-            UINT textID = static_cast<UINT>(reinterpret_cast<UINT_PTR>(text));
+            UINT textID = LOWORD(reinterpret_cast<ULONG_PTR>(text));
             str.LoadString(textID);
         }
         else
@@ -479,7 +492,8 @@ namespace Win32xx
     //  TDCBF_CANCEL_BUTTON     Cancel button
     //  TDCBF_RETRY_BUTTON      Retry button
     //  TDCBF_CLOSE_BUTTON      Close button
-    inline void CTaskDialog::SetCommonButtons(TASKDIALOG_COMMON_BUTTON_FLAGS commonButtons)
+    inline void CTaskDialog::SetCommonButtons(
+        TASKDIALOG_COMMON_BUTTON_FLAGS commonButtons)
     {
         assert (GetHwnd() == nullptr);
         m_tc.dwCommonButtons = commonButtons;
@@ -558,7 +572,8 @@ namespace Win32xx
     // Possible icons:
     // TD_ERROR_ICON        A stop-sign icon appears in the task dialog.
     // TD_WARNING_ICON      An exclamation-point icon appears in the task dialog.
-    // TD_INFORMATION_ICON  An icon consisting of a lowercase letter i in a circle appears in the task dialog.
+    // TD_INFORMATION_ICON  An icon consisting of a lowercase letter i in a
+    //                      circle appears in the task dialog.
     // TD_SHIELD_ICON       A shield icon appears in the task dialog.
     //  or a value passed via MAKEINTRESOURCE
     // Refer to TDM_UPDATE_ICON in the Windows API documentation for more information.
@@ -568,7 +583,7 @@ namespace Win32xx
         WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_FOOTER);
         LPARAM lparam = reinterpret_cast<LPARAM>(footerIcon);
         TASKDIALOG_FLAGS flags = GetOptions();
-        SetOptions(flags &= ~TDF_USE_HICON_FOOTER);
+        SetOptions(flags & ~TDF_USE_HICON_FOOTER);
 
         if (IsWindow())
             SendMessage(TDM_UPDATE_ICON, wparam, lparam);
@@ -604,7 +619,8 @@ namespace Win32xx
     // Possible icons:
     // TD_ERROR_ICON        A stop-sign icon appears in the task dialog.
     // TD_WARNING_ICON      An exclamation-point icon appears in the task dialog.
-    // TD_INFORMATION_ICON  An icon consisting of a lowercase letter i in a circle appears in the task dialog.
+    // TD_INFORMATION_ICON  An icon consisting of a lowercase letter i in a
+    //                      circle appears in the task dialog.
     // TD_SHIELD_ICON       A shield icon appears in the task dialog.
     // Refer to TDM_UPDATE_ICON in the Windows API documentation for more information.
     inline void CTaskDialog::SetMainIcon(LPCWSTR mainIcon)
@@ -613,7 +629,7 @@ namespace Win32xx
         WPARAM wparam = static_cast<WPARAM>(TDIE_ICON_MAIN);
         LPARAM lparam = reinterpret_cast<LPARAM>(mainIcon);
         TASKDIALOG_FLAGS flags = GetOptions();
-        SetOptions(flags &= ~TDF_USE_HICON_MAIN);
+        SetOptions(flags & ~TDF_USE_HICON_MAIN);
 
         if (IsWindow())
             SendMessage(TDM_UPDATE_ICON, wparam, lparam);
@@ -625,7 +641,7 @@ namespace Win32xx
     {
         m_mainInstruction = FillString(mainInstruction);
         m_tc.pszMainInstruction = m_mainInstruction;
-        WPARAM wparam = static_cast<WPARAM>(TDE_FOOTER);
+        WPARAM wparam = static_cast<WPARAM>(TDE_MAIN_INSTRUCTION);
         LPARAM lparam = reinterpret_cast<LPARAM>(m_mainInstruction.c_str());
 
         if (IsWindow())
@@ -755,7 +771,7 @@ namespace Win32xx
         LPARAM lparam)
     {
         int button = static_cast<int>(wparam);
-        BOOL isClicked = static_cast<BOOL>(wparam);
+        BOOL isClicked = (wparam) ? TRUE : FALSE;
         LPCWSTR hyperLink = reinterpret_cast<LPCWSTR>(lparam);
         DWORD milliseconds = static_cast<DWORD>(wparam);
         switch(msg)
@@ -793,6 +809,8 @@ namespace Win32xx
         case TDN_VERIFICATION_CLICKED:
             OnTDVerificationCheckboxClicked(isClicked);
             break;
+
+        default: break;
         }
 
         return S_OK;
@@ -812,6 +830,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to TaskDialogProcDefault
@@ -837,7 +857,7 @@ namespace Win32xx
     {
         if (IS_INTRESOURCE(text))        // support MAKEINTRESOURCE
         {
-            UINT textID = static_cast<UINT>(reinterpret_cast<UINT_PTR>(text));
+            UINT textID = LOWORD(reinterpret_cast<ULONG_PTR>(text));
             buttonText.LoadString(textID);
         }
         else
@@ -847,4 +867,4 @@ namespace Win32xx
 }
 
 
-#endif // _WIN32XX_TASKDIALOG_H_
+#endif // WIN32XX_TASKDIALOG_H_

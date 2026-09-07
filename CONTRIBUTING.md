@@ -122,6 +122,7 @@ If you do use AI assistance:
 - **Proofread and validate** everything it generates. Do not submit AI output as-is.
 - **Test thoroughly** on real hardware with representative tables before submitting.
 - **Disclose** what you used AI for in your PR description.
+- **Shorten** comments and explanations, including the PR description itself. It's of no use to read through endless walls of text and x replicas of the same in different places.
 
 Maintainers invest significant time in review. Please only submit something you have genuinely thought through
 and tested.
@@ -136,10 +137,13 @@ issue and used AI to generate a fix for it, you may still submit it under the fo
   steps to reproduce and any relevant context.
 - The PR description must **clearly state that this is an AI-generated fix**, offered as a starting point to help
   design the final solution — not as a finished, reviewed contribution.
+- Keep comments and explanations tight, no need to describe every step in excessive details or include every failure on the way.
 
 This exception exists to let issues surface along with a possible direction for a fix, without implying the fix
 itself carries the same confidence as a human-validated contribution. Maintainers or other contributors may then
 pick up the draft, refine it, or use it purely as a reference while implementing their own solution.
+
+In general we prefer to communicate directly with humans, so please avoid letting your agent(s) directly answer within issues and PRs!
 
 ---
 

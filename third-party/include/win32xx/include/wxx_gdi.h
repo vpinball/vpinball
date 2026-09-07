@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -171,8 +171,8 @@
 //  memDC.GetDIBits(bitmap, 0, pbmi->bmiHeader.biHeight, nullptr, pbmi, DIB_RGB_COLORS);
 
 
-#ifndef _WIN32XX_GDI_H_
-#define _WIN32XX_GDI_H_
+#ifndef WIN32XX_GDI_H_
+#define WIN32XX_GDI_H_
 
 
 #include "wxx_appcore0.h"
@@ -195,7 +195,7 @@ namespace Win32xx
         CGDIObject();
         CGDIObject(const CGDIObject& rhs);
         virtual ~CGDIObject();
-        CGDIObject& operator=(const CGDIObject& rhs);
+        CGDIObject& operator=(CGDIObject rhs);
         CGDIObject& operator=(HGDIOBJ object);
 
         void    Attach(HGDIOBJ object);
@@ -222,10 +222,10 @@ namespace Win32xx
         CBitmap(HBITMAP bitmap);
         CBitmap(LPCTSTR resourceName);
         CBitmap(UINT resourceID);
-        CBitmap(const CBitmap& rhs);
-        CBitmap& operator=(const CBitmap& rhs);
+        CBitmap(const CBitmap& rhs) = default;
+        CBitmap& operator=(const CBitmap& rhs) = default;
         operator HBITMAP() const;
-        virtual ~CBitmap() override;
+        virtual ~CBitmap() = default;
 
         void ConvertToDisabled(COLORREF mask) const;
         void CopyImage(HBITMAP origBitmap, int cxDesired = 0, int cyDesired = 0, UINT flags = 0);
@@ -268,10 +268,10 @@ namespace Win32xx
         CBrush();
         CBrush(HBRUSH brush);
         CBrush(COLORREF color);
-        CBrush(const CBrush& rhs);
-        CBrush& operator=(const CBrush& rhs);
+        CBrush(const CBrush& rhs) = default;
+        CBrush& operator=(const CBrush& rhs) = default;
         operator HBRUSH() const;
-        virtual ~CBrush() override;
+        virtual ~CBrush() = default;
 
         void CreateBrushIndirect(LOGBRUSH logBrush);
         void CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec);
@@ -291,10 +291,10 @@ namespace Win32xx
         CFont();
         CFont(HFONT font);
         CFont(const LOGFONT& logFont);
-        CFont(const CFont& rhs);
-        CFont& operator=(const CFont& rhs);
+        CFont(const CFont& rhs) = default;
+        CFont& operator=(const CFont& rhs) = default;
         operator HFONT() const;
-        virtual ~CFont() override;
+        virtual ~CFont() = default;
 
         // Create methods
         void CreateFontIndirect(const LOGFONT& logFont);
@@ -319,10 +319,10 @@ namespace Win32xx
       public:
         CPalette();
         CPalette(HPALETTE palette);
-        CPalette(const CPalette& rhs);
-        CPalette& operator=(const CPalette& rhs);
+        CPalette(const CPalette& rhs) = default;
+        CPalette& operator=(const CPalette& rhs) = default;
         operator HPALETTE() const;
-        virtual ~CPalette() override;
+        virtual ~CPalette() = default;
 
         // Create methods
         void CreateHalftonePalette(HDC dc);
@@ -350,10 +350,10 @@ namespace Win32xx
         CPen(int penStyle, int width, COLORREF color);
         CPen(int penStyle, int width, LOGBRUSH logBrush,
             int styleCount = 0, const DWORD* pStyle = nullptr);
-        CPen(const CPen& rhs);
-        CPen& operator=(const CPen& rhs);
+        CPen(const CPen& rhs) = default;
+        CPen& operator=(const CPen& rhs) = default;
         operator HPEN() const;
-        virtual ~CPen() override;
+        virtual ~CPen() = default;
 
         void CreatePen(int penStyle, int width, COLORREF color);
         void CreatePenIndirect(LOGPEN logPen);
@@ -371,10 +371,10 @@ namespace Win32xx
       public:
         CRgn();
         CRgn(HRGN rgn);
-        CRgn(const CRgn& rhs);
-        CRgn& operator=(const CRgn& rhs);
+        CRgn(const CRgn& rhs) = default;
+        CRgn& operator=(const CRgn& rhs) = default;
         operator HRGN() const;
-        virtual ~CRgn() override;
+        virtual ~CRgn() = default;
 
         // Create methods
         void CreateEllipticRgn(int x1, int y1, int x2, int y2);
@@ -414,6 +414,30 @@ namespace Win32xx
             ps = {};
         }
 
+        // Destructor handles the actual resource cleanup safely.
+        ~CDC_Data()
+        {
+            if (dc != nullptr)
+            {
+                GetApp()->RemoveDCFromMap(dc);
+                ::RestoreDC(dc, savedDCState);
+                if (isManagedHDC)
+                {
+                    // We need to release a window DC, end a paint DC,
+                    // and delete a memory DC.
+                    if (wnd != nullptr)
+                    {
+                        if (isPaintDC)
+                            ::EndPaint(wnd, &ps);
+                        else
+                            ::ReleaseDC(wnd, dc);
+                    }
+                    else
+                        ::DeleteDC(dc);
+                }
+            }
+        }
+
         CBitmap bitmap;
         CBrush  brush;
         CFont   font;
@@ -448,7 +472,7 @@ namespace Win32xx
         CDC(const CDC& rhs);                    // Constructs a new copy of the CDC.
         virtual ~CDC();
         operator HDC() const { return GetHDC(); }   // Converts a CDC to a HDC.
-        CDC& operator=(const CDC& rhs);         // Assigns a CDC to an existing CDC.
+        CDC& operator=(CDC rhs);                // Assigns a CDC to an existing CDC.
         CDC& operator=(HDC dc);
 
         void Attach(HDC dc);
@@ -784,9 +808,9 @@ namespace Win32xx
     {
     public:
         CClientDC(HWND wnd);
-        CClientDC(const CClientDC& rhs);
-        CClientDC& operator=(const CClientDC& rhs);
-        virtual ~CClientDC() override;
+        CClientDC(const CClientDC& rhs) = default;
+        CClientDC& operator=(const CClientDC& rhs) = default;
+        virtual ~CClientDC() = default;
     };
 
 
@@ -800,9 +824,9 @@ namespace Win32xx
     {
     public:
         CClientDCEx(HWND wnd, HRGN clip, DWORD flags);
-        CClientDCEx(const CClientDCEx& rhs);
-        CClientDCEx& operator=(const CClientDCEx& rhs);
-        virtual ~CClientDCEx() override;
+        CClientDCEx(const CClientDCEx& rhs) = default;
+        CClientDCEx& operator=(const CClientDCEx& rhs) = default;
+        virtual ~CClientDCEx() = default;
     };
 
 
@@ -814,9 +838,9 @@ namespace Win32xx
     {
     public:
         explicit CMemDC(HDC dc);
-        CMemDC(const CMemDC& rhs);
-        CMemDC& operator=(const CMemDC& rhs);
-        virtual ~CMemDC() override;
+        CMemDC(const CMemDC& rhs) = default;
+        CMemDC& operator=(const CMemDC& rhs) = default;
+        virtual ~CMemDC() = default;
     };
 
 
@@ -827,9 +851,9 @@ namespace Win32xx
     {
     public:
         CPaintDC(HWND wnd);
-        CPaintDC(const CPaintDC& rhs);
-        CPaintDC& operator=(const CPaintDC& rhs);
-        virtual ~CPaintDC() override;
+        CPaintDC(const CPaintDC& rhs) = default;
+        CPaintDC& operator=(const CPaintDC& rhs) = default;
+        virtual ~CPaintDC() = default;
     };
 
 
@@ -839,10 +863,10 @@ namespace Win32xx
     class CWindowDC final : public CDC
     {
     public:
-        CWindowDC(HWND wnd);
-        CWindowDC(const CWindowDC& rhs);
-        CWindowDC& operator=(const CWindowDC& rhs);
-        virtual ~CWindowDC() override;
+        CWindowDC(HWND wnd);;
+        CWindowDC(const CWindowDC& rhs) = default;
+        CWindowDC& operator=(const CWindowDC& rhs) = default;
+        virtual ~CWindowDC() = default;
     };
 
 
@@ -852,30 +876,34 @@ namespace Win32xx
     class CMetaFileDC final : public CDC
     {
     public:
-        CMetaFileDC();
-        CMetaFileDC(const CMetaFileDC& rhs);
-        CMetaFileDC& operator=(const CMetaFileDC& rhs);
+        CMetaFileDC() = default;
+        CMetaFileDC(const CMetaFileDC&) = default;
+        CMetaFileDC& operator=(const CMetaFileDC&) = default;
         virtual ~CMetaFileDC() override;
 
         CMetaFile Close();
-        void Create(LPCTSTR fileName = nullptr);
+        BOOL Create(LPCTSTR fileName = nullptr);
+
+    private:
     };
 
 
-    ///////////////////////////////////////////////////////////////////
-    // CEnhMetaFileDC manages a GDI device context for a Windows-format
-    // enhanced metafile.
+    //////////////////////////////////////////////////////////////////////////
+    // CEnhMetaFileDC manages an Enhanced Windows Metafile DC (HENHMETAFILE).
+    // Inherits from CDC to allow all standard GDI drawing primitives.
     class CEnhMetaFileDC final : public CDC
     {
     public:
-        CEnhMetaFileDC();
-        CEnhMetaFileDC(const CEnhMetaFileDC& rhs);
-        CEnhMetaFileDC& operator=(const CEnhMetaFileDC& rhs);
+        CEnhMetaFileDC() = default;
+        CEnhMetaFileDC(const CEnhMetaFileDC&) = default;
+        CEnhMetaFileDC& operator=(const CEnhMetaFileDC&) = default;
         virtual ~CEnhMetaFileDC() override;
 
         CEnhMetaFile CloseEnhanced();
-        void CreateEnhanced(HDC ref, LPCTSTR fileName, const RECT* pBounds,
-                LPCTSTR description);
+        BOOL CreateEnhanced(HDC ref, LPCTSTR fileName, const RECT* pBounds,
+            LPCTSTR description);
+
+    private:
     };
 
 
@@ -934,14 +962,9 @@ namespace Win32xx
 
     // Note: A copy of a CGDIObject is a clone of the original.
     //       Both objects manipulate the one HGDIOBJ.
-    inline CGDIObject& CGDIObject::operator=( const CGDIObject& rhs )
+    inline CGDIObject& CGDIObject::operator=(CGDIObject rhs)
     {
-        if (this != &rhs)
-        {
-            Release();
-            m_pData = rhs.m_pData;
-        }
-
+        std::swap(m_pData, rhs.m_pData);
         return *this;
     }
 
@@ -963,9 +986,9 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (m_pData && object != m_pData->hGDIObject)
+        if (object != m_pData->hGDIObject)
         {
-            // Release any existing GDI object.
+            // Release any existing CGDI_Data.
             if (m_pData->hGDIObject != nullptr)
             {
                 Release();
@@ -974,15 +997,15 @@ namespace Win32xx
 
             if (object != nullptr)
             {
-                // Add the GDI object to this CCGDIObject.
+                // Assign the CGDI_Data to this CCGDIObject.
                 std::shared_ptr<CGDI_Data> pCGDIData = GetApp()->GetCGDIData(object).lock();
                 if (pCGDIData)
                 {
-                    m_pData = std::move(pCGDIData);
+                    m_pData = pCGDIData;
                 }
                 else
                 {
-                    // Add the GDI object data to the map.
+                    // Add the CGDI_Data to the map.
                     m_pData->hGDIObject = object;
                     GetApp()->AddCGDIDataToMap(object, m_pData);
                 }
@@ -996,16 +1019,16 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (m_pData && m_pData->hGDIObject != nullptr)
+        if (m_pData->hGDIObject != nullptr)
         {
-            if (IsAppRunning()) // Is the CWinApp object still valid?
-                GetApp()->RemoveGDIObjectFromMap(m_pData->hGDIObject);
-
             if (m_pData->isManagedObject)
+            {
+                GetApp()->RemoveGDIObjectFromMap(m_pData->hGDIObject);
                 ::DeleteObject(m_pData->hGDIObject);
+            }
 
-            // Nullify all copies of m_pData.
-            *m_pData.get() = {};
+            m_pData->hGDIObject = nullptr;
+            m_pData->isManagedObject = false;
         }
     }
 
@@ -1019,15 +1042,18 @@ namespace Win32xx
     inline HGDIOBJ CGDIObject::Detach()
     {
         assert(m_pData);
-        assert(m_pData->hGDIObject);
 
         HGDIOBJ object = m_pData->hGDIObject;
-        GetApp()->RemoveGDIObjectFromMap(object);
+        if (object != nullptr)
+        {
+            GetApp()->RemoveGDIObjectFromMap(object);
 
-        // Nullify all copies of m_pData.
-        *m_pData.get() = {};
+            // Sever the ties for this instance and all shared copies safely.
+            m_pData->hGDIObject = nullptr;
+            m_pData->isManagedObject = false;
+        }
 
-        // Make a new shared_ptr for this object.
+        // Provision a clean state for this specific instance wrapper.
         m_pData = std::make_shared<CGDI_Data>();
 
         return object;
@@ -1051,12 +1077,7 @@ namespace Win32xx
     // Destroys m_pData if this is the only copy of the CGDIObject.
     inline void CGDIObject::Release()
     {
-        assert(m_pData);
-
-        if (m_pData.use_count() == 1)
-        {
-            Destroy();
-        }
+        m_pData.reset();
     }
 
 
@@ -1075,31 +1096,23 @@ namespace Win32xx
 
     inline CBitmap::CBitmap(LPCTSTR resourceName)
     {
-        LoadBitmap(resourceName);
+        if (!LoadBitmap(resourceName))
+        {
+            TRACE("CBitmap::CBitmap: LoadBitmap(resourceName) failed\n");
+        }
     }
 
     inline CBitmap::CBitmap(UINT resourceID)
     {
-        LoadBitmap(resourceID);
-    }
-
-    inline CBitmap::CBitmap(const CBitmap& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CBitmap& CBitmap::operator=(const CBitmap& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
+        if (!LoadBitmap(resourceID))
+        {
+            TRACE("CBitmap::CBitmap: LoadBitmap(resourceID) failed\n");
+        }
     }
 
     inline CBitmap::operator HBITMAP() const
     {
         return static_cast<HBITMAP>(GetHandle());
-    }
-
-    inline CBitmap::~CBitmap()
-    {
     }
 
     // Loads a bitmap from a resource using the resource ID.
@@ -1379,7 +1392,7 @@ namespace Win32xx
         UINT scanLines = static_cast<UINT>(bmiHeader.biHeight);
         VERIFY(GetDIBits(memDC, 0, scanLines, nullptr, pbmi, DIB_RGB_COLORS));
         std::vector<byte> vBits(bmiHeader.biSizeImage, 0);
-        byte* pByteArray = &vBits[0];
+        byte* pByteArray = vBits.data();
 
         memDC.GetDIBits(*this, 0, scanLines, pByteArray, pbmi, DIB_RGB_COLORS);
         UINT heightBytes = bmiHeader.biSizeImage/bmiHeader.biHeight;
@@ -1434,7 +1447,7 @@ namespace Win32xx
         UINT scanLines = static_cast<UINT>(bmiHeader.biHeight);
         VERIFY(GetDIBits(memDC, 0, scanLines, nullptr, pbmi, DIB_RGB_COLORS));
         std::vector<byte> vBits(bmiHeader.biSizeImage, 0);
-        byte* pByteArray = &vBits[0];
+        byte* pByteArray = vBits.data();
 
         VERIFY(GetDIBits(memDC, 0, scanLines, pByteArray, pbmi, DIB_RGB_COLORS));
         UINT widthBytes = bmiHeader.biSizeImage/bmiHeader.biHeight;
@@ -1559,23 +1572,9 @@ namespace Win32xx
         }
     }
 
-    inline CBrush::CBrush(const CBrush& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CBrush& CBrush::operator=(const CBrush& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
-    }
-
     inline CBrush::operator HBRUSH() const
     {
         return static_cast<HBRUSH>(GetHandle());
-    }
-
-    inline CBrush::~CBrush()
-    {
     }
 
     // Creates a logical brush that has the specified solid color.
@@ -1686,23 +1685,9 @@ namespace Win32xx
         }
     }
 
-    inline CFont::CFont(const CFont& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CFont& CFont::operator=(const CFont& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
-    }
-
     inline CFont::operator HFONT() const
     {
         return static_cast<HFONT>(GetHandle());
-    }
-
-    inline CFont::~CFont()
-    {
     }
 
     // Creates a logical font that has the specified characteristics.
@@ -1800,23 +1785,9 @@ namespace Win32xx
         Attach(palette);
     }
 
-    inline CPalette::CPalette(const CPalette& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CPalette& CPalette::operator=(const CPalette& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
-    }
-
     inline CPalette::operator HPALETTE() const
     {
         return static_cast<HPALETTE>(GetHandle());
-    }
-
-    inline CPalette::~CPalette ()
-    {
     }
 
     // Creates a logical palette from the information in the specified LOGPALETTE structure.
@@ -1943,23 +1914,9 @@ namespace Win32xx
         }
     }
 
-    inline CPen::CPen(const CPen& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CPen& CPen::operator=(const CPen& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
-    }
-
     inline CPen::operator HPEN () const
     {
         return static_cast<HPEN>(GetHandle());
-    }
-
-    inline CPen::~CPen()
-    {
     }
 
     // Creates a logical pen that has the specified style, width, and color.
@@ -2026,23 +1983,9 @@ namespace Win32xx
         Attach(rgn);
     }
 
-    inline CRgn::CRgn(const CRgn& rhs) : CGDIObject(rhs)
-    {
-    }
-
-    inline CRgn& CRgn::operator=(const CRgn& rhs)
-    {
-        CGDIObject::operator =(rhs);
-        return *this;
-    }
-
     inline CRgn::operator HRGN() const
     {
         return static_cast<HRGN>(GetHandle());
-    }
-
-    inline CRgn::~CRgn()
-    {
     }
 
     // Creates a rectangular region.
@@ -2293,14 +2236,9 @@ namespace Win32xx
 
     // Note: A copy of a CDC is a clone of the original.
     //       Both objects manipulate the one HDC
-    inline CDC& CDC::operator=(const CDC& rhs)
+    inline CDC& CDC::operator=(CDC rhs)
     {
-        if (this != &rhs)
-        {
-            Release();
-            m_pData = rhs.m_pData;
-        }
-
+        std::swap(m_pData, rhs.m_pData);
         return *this;
     }
 
@@ -2327,8 +2265,9 @@ namespace Win32xx
     {
         assert(m_pData);
 
-        if (m_pData && dc != m_pData->dc)
+        if (dc != m_pData->dc)
         {
+            // Release any existing CDC_Data.
             if (m_pData->dc)
             {
                 Release();
@@ -2339,20 +2278,52 @@ namespace Win32xx
 
             if (dc != nullptr)
             {
+                // Assign the CDC_Data to this CDC.
                 std::shared_ptr<CDC_Data> pCDCData = GetApp()->GetCDCData(dc).lock();
                 if (pCDCData)
                 {
-                    m_pData = std::move(pCDCData);
+                    m_pData = pCDCData;
                 }
                 else
                 {
                     m_pData->dc = dc;
 
-                    // Add the CDC data to the map.
+                    // Add the CDC_Data to the map.
                     GetApp()->AddCDCDataToMap(dc, m_pData);
                     m_pData->savedDCState = SaveDC();
                 }
             }
+        }
+    }
+
+    // Deletes or releases the device context if managed and returns this
+    // object to its default state.
+    inline void CDC::Destroy()
+    {
+        if (m_pData->dc != nullptr)
+        {
+            // Return the DC back to its initial state.
+            HDC dc = m_pData->dc;
+            ::RestoreDC(dc, m_pData->savedDCState);
+
+            if (m_pData->isManagedHDC)
+            {
+                GetApp()->RemoveDCFromMap(m_pData->dc);
+                // We need to release a window DC, end a paint DC,
+                // and delete a memory DC.
+                if (m_pData->wnd != nullptr)
+                {
+                    if (m_pData->isPaintDC)
+                        ::EndPaint(m_pData->wnd, &m_pData->ps);
+                    else
+                        ::ReleaseDC(m_pData->wnd, dc);
+                }
+                else
+                    ::DeleteDC(dc);
+            }
+
+            m_pData->dc = nullptr;
+            m_pData->isManagedHDC = false;
         }
     }
 
@@ -2368,15 +2339,18 @@ namespace Win32xx
     inline HDC CDC::Detach()
     {
         assert(m_pData);
-        assert(m_pData->dc != nullptr);
 
         HDC dc = m_pData->dc;
-        GetApp()->RemoveDCFromMap(dc);
+        if (dc != nullptr)
+        {
+            GetApp()->RemoveDCFromMap(dc);
 
-        // Nullify all copies of m_pData.
-        *m_pData.get() = {};
+            // Sever the ties for this instance and all shared copies safely.
+            m_pData->dc = nullptr;
+            m_pData->isManagedHDC = false;
+        }
 
-        // Make a new shared_ptr for this object.
+        // Provision a clean state for this specific instance wrapper.
         m_pData = std::make_shared<CDC_Data>();
 
         return dc;
@@ -2496,12 +2470,7 @@ namespace Win32xx
     // Destroys m_pData if this is the only copy of the CDC object.
     inline void CDC::Release()
     {
-        assert(m_pData);
-
-        if (m_pData.use_count() == 1)
-        {
-            Destroy();
-        }
+        m_pData.reset();
     }
 
     // Restores a device context (DC) to the specified state.
@@ -2621,7 +2590,7 @@ namespace Win32xx
     inline void CDC::SolidFill(COLORREF color, RECT rc) const
     {
         COLORREF oldColor = SetBkColor(color);
-        VERIFY(ExtTextOut(0, 0, ETO_OPAQUE, rc, nullptr, 0, 0));
+        VERIFY(ExtTextOut(0, 0, ETO_OPAQUE, rc, nullptr, 0, nullptr));
         SetBkColor(oldColor);
     }
 
@@ -2697,44 +2666,9 @@ namespace Win32xx
 
         // Create a stock bitmap to replace the current one.
         CBitmap bitmap;
-        bitmap.CreateBitmap(1, 1, 1, 1, 0);
+        bitmap.CreateBitmap(1, 1, 1, 1, nullptr);
 
         return SelectObject(bitmap);
-    }
-
-    // Deletes or releases the device context if managed and returns this
-    // object to its default state.
-    inline void CDC::Destroy()
-    {
-        assert(m_pData);
-
-        if (m_pData->dc != nullptr)
-        {
-            // Return the DC back to its initial state.
-            HDC dc = m_pData->dc;
-            ::RestoreDC(dc, m_pData->savedDCState);
-
-            if (IsAppRunning()) // Is the CWinApp object still valid?
-                GetApp()->RemoveDCFromMap(dc);
-
-            if (m_pData->isManagedHDC)
-            {
-                // We need to release a window DC, end a paint DC,
-                // and delete a memory DC.
-                if (m_pData->wnd != nullptr)
-                {
-                    if (m_pData->isPaintDC)
-                        ::EndPaint(m_pData->wnd, &m_pData->ps);
-                    else
-                        ::ReleaseDC(m_pData->wnd, dc);
-                }
-                else
-                    ::DeleteDC(dc);
-            }
-
-            // Nullify all copies of m_pData.
-            *m_pData.get() = {};
-        }
     }
 
     // Retrieves the BITMAP information for the current HBITMAP.
@@ -4118,7 +4052,7 @@ namespace Win32xx
         system.ReleaseBuffer();
 
         // Use runtime dynamic linking. Avoids the need to explicitly link Msimg32.lib.
-        static HMODULE msimg32 = ::LoadLibrary(system + _T("\\msimg32.dll"));
+        HMODULE msimg32 = ::LoadLibrary(system + _T("\\msimg32.dll"));
         if (msimg32)
         {
             using PGRADIENTFILL = BOOL(WINAPI*)(HDC, PTRIVERTEX, ULONG, PVOID,
@@ -4129,6 +4063,8 @@ namespace Win32xx
 
             if (pGradientFill)
                 return pGradientFill(m_pData->dc, pVertex, vertex, pMesh, mesh, mode);
+
+            ::FreeLibrary(msimg32);
         }
 
         return FALSE;
@@ -4290,7 +4226,8 @@ namespace Win32xx
     // in the specified DIB.
     // A CBitmapInfoPtr object can be used for the LPBITMAPINFO parameter.
     // Refer to SetDIBits in the Windows API documentation for more information.
-    inline int CDC::SetDIBits(HBITMAP bitmap, UINT startScan, UINT scanLines, LPCVOID pBits, LPBITMAPINFO pBMI, UINT colorUse) const
+    inline int CDC::SetDIBits(HBITMAP bitmap, UINT startScan, UINT scanLines, LPCVOID pBits,
+        LPBITMAPINFO pBMI, UINT colorUse) const
     {
         assert(m_pData->dc != nullptr);
         return ::SetDIBits(m_pData->dc, bitmap, startScan, scanLines, pBits, pBMI, colorUse);
@@ -4668,7 +4605,7 @@ namespace Win32xx
         assert(m_pData->dc != nullptr);
 
         if (count == -1)
-            count = lstrlen (string);
+            count = static_cast<int>(_tcslen(string));
 
         return ::ExtTextOut(m_pData->dc, x, y, options, &rc, string,
                static_cast<UINT>(count), pDxWidths);
@@ -4825,7 +4762,7 @@ namespace Win32xx
     {
         assert(m_pData->dc != nullptr);
         assert(string != nullptr);
-        assert(count <= lstrlen(string));
+        assert(count <= static_cast<int>(_tcslen(string)));
         CSize sz;
         VERIFY(::GetTextExtentPoint32(m_pData->dc, string, count, &sz));
         return sz;
@@ -4836,7 +4773,7 @@ namespace Win32xx
     inline CSize CDC::GetTextExtentPoint32(LPCTSTR string) const
     {
         assert(string != nullptr);
-        return GetTextExtentPoint32(string, lstrlen(string));
+        return GetTextExtentPoint32(string, static_cast<int>(_tcslen(string)));
     }
 
     // Computes the width and height of a character string.
@@ -4905,7 +4842,7 @@ namespace Win32xx
     {
         assert(m_pData->dc != nullptr);
         if (count == -1)
-            count = lstrlen (string);
+            count = static_cast<int>(_tcslen(string));
 
         return ::TextOut(m_pData->dc, x, y, string, count);
     }
@@ -4956,20 +4893,6 @@ namespace Win32xx
         }
     }
 
-    inline CClientDC::CClientDC(const CClientDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CClientDC& CClientDC::operator=(const CClientDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline CClientDC::~CClientDC()
-    {
-    }
-
 
     /////////////////////////////////////////
     // Definitions for the CClientDCEx class.
@@ -5003,20 +4926,6 @@ namespace Win32xx
         }
     }
 
-    inline CClientDCEx::CClientDCEx(const CClientDCEx& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CClientDCEx& CClientDCEx::operator=(const CClientDCEx& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline CClientDCEx::~CClientDCEx()
-    {
-    }
-
 
     ////////////////////////////////////
     // Definitions for the CMemDC class.
@@ -5034,20 +4943,6 @@ namespace Win32xx
             Release();  // Cleanup
             throw;      // Rethrow
         }
-    }
-
-    inline CMemDC::CMemDC(const CMemDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CMemDC& CMemDC::operator=(const CMemDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline CMemDC::~CMemDC()
-    {
     }
 
 
@@ -5077,20 +4972,6 @@ namespace Win32xx
         }
     }
 
-    inline CPaintDC::CPaintDC(const CPaintDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CPaintDC& CPaintDC::operator=(const CPaintDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline CPaintDC::~CPaintDC()
-    {
-    }
-
 
     ///////////////////////////////////////
     // Definitions for the CWindowDC class.
@@ -5118,81 +4999,48 @@ namespace Win32xx
         }
     }
 
-    inline CWindowDC::CWindowDC(const CWindowDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CWindowDC& CWindowDC::operator=(const CWindowDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline CWindowDC::~CWindowDC()
-    {
-    }
-
 
     /////////////////////////////////////////
     // Definitions for the CMetaFileDC class.
     //
 
-    inline CMetaFileDC::CMetaFileDC()
+    inline CMetaFileDC::~CMetaFileDC()
     {
-    }
-
-    inline CMetaFileDC::CMetaFileDC(const CMetaFileDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CMetaFileDC& CMetaFileDC::operator=(const CMetaFileDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
-    inline  CMetaFileDC::~CMetaFileDC()
-    {
-        if (m_pData.use_count() == 1)
+        HDC dc = GetHDC();
+        if (dc != nullptr)
         {
-            // Assert here if the metafile was created but not closed.
-            assert(GetHDC() == nullptr);
-
-            if (GetHDC())
-            {
-                ::DeleteMetaFile(Close());
-            }
+            ::DeleteMetaFile(::CloseMetaFile(dc));
+            Detach();
         }
+    }
+
+    inline BOOL CMetaFileDC::Create(LPCTSTR fileName /*= nullptr*/)
+    {
+        if (GetHDC() != nullptr)
+            return FALSE;
+
+        HDC dc = ::CreateMetaFile(fileName);
+        if (dc == nullptr)
+            return FALSE;
+
+        Attach(dc);
+        return TRUE;
     }
 
     // Closes the metafile and returns a CMetaFile object.
-    // The CMetaFile object automatically deletes the HMETAFILE when the last
-    // copy of the CMetaFile goes out of scope.
     inline CMetaFile CMetaFileDC::Close()
     {
-        assert(GetHDC());
+        HDC dc = GetHDC();
+        if (dc == nullptr)
+            return CMetaFile();
 
-        HDC dc = Detach();
         HMETAFILE meta = ::CloseMetaFile(dc);
+        Detach();
+
+        if (meta == nullptr)
+            return CMetaFile();
+
         return CMetaFile(meta);
-    }
-
-    inline void CMetaFileDC::Create(LPCTSTR fileName /*= nullptr*/)
-    {
-        try
-        {
-            assert(GetHDC() == nullptr);
-            HDC dc = ::CreateMetaFile(fileName);
-            if (dc == nullptr)
-                throw CResourceException(GetApp()->MsgGdiDC());
-
-            Assign(dc);
-        }
-        catch (...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow
-        }
     }
 
 
@@ -5200,63 +5048,44 @@ namespace Win32xx
     // Definitions for the CEnhMetaFileDC class.
     //
 
-    inline CEnhMetaFileDC::CEnhMetaFileDC()
-    {
-    }
-
-    inline CEnhMetaFileDC::CEnhMetaFileDC(const CEnhMetaFileDC& rhs) : CDC(rhs)
-    {
-    }
-
-    inline CEnhMetaFileDC& CEnhMetaFileDC::operator=(const CEnhMetaFileDC& rhs)
-    {
-        CDC::operator=(rhs);
-        return *this;
-    }
-
     inline CEnhMetaFileDC::~CEnhMetaFileDC()
     {
-        if (m_pData.use_count() == 1)
+        HDC dc = GetHDC();
+        if (dc != nullptr)
         {
-            // Assert here if the enhanced metafile was created but not closed.
-            assert(GetHDC() == nullptr);
-
-            if (GetHDC())
-            {
-                ::DeleteEnhMetaFile(CloseEnhanced());
-            }
+            ::DeleteEnhMetaFile(::CloseEnhMetaFile(dc));
+            Detach();
         }
+    }
+
+    inline BOOL CEnhMetaFileDC::CreateEnhanced(HDC ref, LPCTSTR fileName, const RECT* pBounds,
+        LPCTSTR description)
+    {
+        if (GetHDC() != nullptr)
+            return FALSE;
+
+        HDC dc = ::CreateEnhMetaFile(ref, fileName, pBounds, description);
+        if (dc == nullptr)
+            return FALSE;
+
+        Attach(dc);
+        return TRUE;
     }
 
     // Closes the enhanced metafile and returns a CEnhMetaFile object.
-    // The CEnhMetaFile object automatically deletes the HENHMETAFILE when the
-    // last copy of the CEnhMetaFile goes out of scope.
     inline CEnhMetaFile CEnhMetaFileDC::CloseEnhanced()
     {
-        assert(GetHDC());
+        HDC dc = GetHDC();
+        if (dc == nullptr)
+            return CEnhMetaFile();
 
-        HDC dc = Detach();
         HENHMETAFILE enhMeta = ::CloseEnhMetaFile(dc);
+        Detach();
+
+        if (enhMeta == nullptr)
+            return CEnhMetaFile();
+
         return CEnhMetaFile(enhMeta);
-    }
-
-    inline void CEnhMetaFileDC::CreateEnhanced(HDC ref, LPCTSTR fileName,
-        const RECT* pBounds, LPCTSTR description)
-    {
-        try
-        {
-            assert(GetHDC() == nullptr);
-            HDC dc = ::CreateEnhMetaFile(ref, fileName, pBounds, description);
-            if (dc == nullptr)
-                throw CResourceException(GetApp()->MsgGdiDC());
-
-            Assign(dc);
-        }
-        catch (...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow
-        }
     }
 
 
@@ -5317,5 +5146,5 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_GDI_H_
+#endif // WIN32XX_GDI_H_
 

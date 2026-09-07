@@ -56,21 +56,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("General") {
-                    if UIDevice.current.userInterfaceIdiom != .pad {
-                        VStack(alignment: .leading) {
-                            Toggle(isOn: $settingsModel.haptics) {
-                                Text("Haptics")
-                            }
-                            .tint(Color.vpxRed)
-
-                            Text("Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.")
-                                .font(.footnote)
-                                .foregroundStyle(Color.secondary)
-                        }
-                    }
-                }
-
                 SettingsPerformanceView(settingsModel: settingsModel)
                     .id("performance")
 
@@ -287,9 +272,6 @@ struct SettingsView: View {
             {
                 handleResetAllSettings()
             }
-        }
-        .onChange(of: settingsModel.haptics) {
-            settingsModel.handleHaptics()
         }
         .onChange(of: settingsModel.renderingModeOverride) {
             settingsModel.handleRenderingModeOverride()

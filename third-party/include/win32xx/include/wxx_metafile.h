@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -52,24 +52,25 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_METAFILE_H_
-#define _WIN32XX_METAFILE_H_
+#ifndef WIN32XX_METAFILE_H_
+#define WIN32XX_METAFILE_H_
 
 namespace Win32xx
 {
-
-    struct MetaFileData   // A structure that contains the data members for CMetaFile.
+    // Managed data structure for CMetaFile
+    struct MetaFileData
     {
-        // Constructor
         MetaFileData() : metaFile(nullptr) {}
+        ~MetaFileData() { ::DeleteMetaFile(metaFile); }
 
         HMETAFILE metaFile;
     };
 
-    struct EnhMetaFileData    // A structure that contains the data members for CEnhMetaFile.
+    // Managed data structure for CEnhMetaFile
+    struct EnhMetaFileData
     {
-        // Constructor
         EnhMetaFileData() : enhMetaFile(nullptr) {}
+        ~EnhMetaFileData() { ::DeleteEnhMetaFile(enhMetaFile); }
 
         HENHMETAFILE enhMetaFile;
     };
@@ -77,7 +78,7 @@ namespace Win32xx
     //////////////////////////////////////////////////////////////////////////
     // CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE
     // can be used. CMetaFile objects are reference counted, so they can be
-    // safely copied. CMetatFile automatically deletes the HMETAFILE when the
+    // safely copied. CMetaFile automatically deletes the HMETAFILE when the
     // last copy of the CMetaFile object goes out of scope. The
     // CMetaFileDC::Close function returns a CMetaFile object.
     class CMetaFile final
@@ -86,20 +87,21 @@ namespace Win32xx
 
     public:
         CMetaFile();
-        CMetaFile(const CMetaFile& rhs);
-        ~CMetaFile();
-        CMetaFile& operator=(const CMetaFile& rhs);
-        operator HMETAFILE() { return m_pData->metaFile; }
+        CMetaFile(const CMetaFile& rhs) = default;
+        CMetaFile(CMetaFile&& rhs) = default;
+        CMetaFile& operator=(const CMetaFile& rhs) = default;
+        CMetaFile& operator=(CMetaFile&& rhs) = default;
+        ~CMetaFile() = default;
+
+        operator HMETAFILE() const;
 
     private:
         CMetaFile(HMETAFILE metaFile);
-        void Release();
 
         MetaDataPtr m_pData;
     };
 
-
-    /////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     // CEnhMetaFile wraps a HENHMETAFILE. CEnhMetaFile can be used anywhere a
     // HENHMETAFILE can be used. CEnhMetaFile objects are reference counted,
     // so they can be safely copied. CEnhMetaFile automatically deletes the
@@ -112,17 +114,20 @@ namespace Win32xx
 
     public:
         CEnhMetaFile();
-        CEnhMetaFile(const CEnhMetaFile& rhs);
-        ~CEnhMetaFile();
-        CEnhMetaFile& operator=(const CEnhMetaFile& rhs);
-        operator HENHMETAFILE() { return m_pData->enhMetaFile; }
+
+        CEnhMetaFile(const CEnhMetaFile& rhs) = default;
+        CEnhMetaFile(CEnhMetaFile&& rhs) = default;
+        CEnhMetaFile& operator=(const CEnhMetaFile& rhs) = default;
+        CEnhMetaFile& operator=(CEnhMetaFile&& rhs) = default;
+        ~CEnhMetaFile() = default;
+
+        operator HENHMETAFILE() const;
 
     private:
         CEnhMetaFile(HENHMETAFILE enhMetaFile);
-        void Release();
+
         EnhMetaDataPtr m_pData;
     };
-
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,41 +143,16 @@ namespace Win32xx
     }
 
     // A private constructor used by CMetaFileDC.
-    inline CMetaFile::CMetaFile(HMETAFILE metaFile) : m_pData(std::make_shared<MetaFileData>())
+    inline CMetaFile::CMetaFile(HMETAFILE metaFile) : m_pData(
+        std::make_shared<MetaFileData>())
     {
         m_pData->metaFile = metaFile;
     }
 
-    inline CMetaFile::CMetaFile(const CMetaFile& rhs)
+    inline CMetaFile::operator HMETAFILE() const
     {
-        m_pData = rhs.m_pData;
+        return m_pData ? m_pData->metaFile : nullptr;
     }
-
-    inline CMetaFile::~CMetaFile()
-    {
-        Release();
-    }
-
-    inline CMetaFile& CMetaFile::operator=(const CMetaFile& rhs)
-    {
-        if (this != &rhs)
-        {
-            Release();
-            m_pData = rhs.m_pData;
-        }
-
-        return *this;
-    }
-
-    inline void CMetaFile::Release()
-    {
-        // Delete the metafile when the last copy goes out of scope.
-        if (m_pData.use_count() == 1 && m_pData->metaFile != nullptr)
-        {
-            VERIFY(::DeleteMetaFile(m_pData->metaFile));
-        }
-    }
-
 
     //////////////////////////////////////////////
     // Definitions for the the CEnhMetaFile class.
@@ -188,36 +168,11 @@ namespace Win32xx
         m_pData->enhMetaFile = enhMetaFile;
     }
 
-    inline CEnhMetaFile::CEnhMetaFile(const CEnhMetaFile& rhs)
+    inline CEnhMetaFile::operator HENHMETAFILE() const
     {
-        m_pData = rhs.m_pData;
+        return m_pData ? m_pData->enhMetaFile : nullptr;
     }
 
-    inline CEnhMetaFile::~CEnhMetaFile()
-    {
-        Release();
-    }
+}
 
-    inline CEnhMetaFile& CEnhMetaFile::operator=(const CEnhMetaFile& rhs)
-    {
-        if (this != &rhs)
-        {
-            Release();
-            m_pData = rhs.m_pData;
-        }
-        return *this;
-    }
-
-    inline void CEnhMetaFile::Release()
-    {
-        // Delete the enhanced metafile when the last copy goes out of scope.
-        if (m_pData.use_count() == 1 && m_pData->enhMetaFile != nullptr)
-        {
-            VERIFY(::DeleteEnhMetaFile(m_pData->enhMetaFile));
-        }
-    }
-
-
-}  // namespace Win32xx
-
-#endif // _WIN32XX_METAFILE_H_
+#endif // WIN32XX_METAFILE_H_

@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -41,8 +41,8 @@
 // This file contains the declaration of the CWnd class.
 //
 
-#ifndef _WIN32XX_WINCORE0_H_
-#define _WIN32XX_WINCORE0_H_
+#ifndef WIN32XX_WINCORE0_H_
+#define WIN32XX_WINCORE0_H_
 
 #include "wxx_appcore0.h"
 #include "wxx_rect.h"
@@ -154,10 +154,10 @@ namespace Win32xx
         virtual void CenterWindow() const;
         virtual HWND Create(HWND parent = nullptr);
         virtual HWND CreateEx(DWORD exStyle, LPCTSTR className, LPCTSTR windowName,
-                              DWORD style, int x, int y, int width, int height, HWND parent,
-                              HMENU idOrMenu, LPVOID lparam = nullptr);
+            DWORD style, int x, int y, int width, int height, HWND parent,
+            HMENU idOrMenu, LPVOID lparam = nullptr);
         virtual HWND CreateEx(DWORD exStyle, LPCTSTR className, LPCTSTR windowName,
-                              DWORD style, RECT rectc, HWND parent, UINT id, LPVOID lparam = nullptr);
+            DWORD style, RECT rectc, HWND parent, UINT id, LPVOID lparam = nullptr);
         virtual void Destroy();
         virtual HWND Detach();
         static  CWnd* GetCWndPtr(HWND wnd);
@@ -176,19 +176,25 @@ namespace Win32xx
         // These functions aren't virtual, and shouldn't be overridden.
         HDC     BeginPaint(PAINTSTRUCT& ps) const;
         BOOL    BringWindowToTop() const;
-        LRESULT CallWindowProc(WNDPROC pPrevWndFunc, UINT msg, WPARAM wparam, LPARAM lparam) const;
+        LRESULT CallWindowProc(WNDPROC pPrevWndFunc, UINT msg, WPARAM wparam,
+            LPARAM lparam) const;
         BOOL    CheckDlgButton(UINT buttonID, UINT check) const;
-        BOOL    CheckRadioButton(UINT firstButtonID, UINT lastButtonID, UINT checkButtonID) const;
+        BOOL    CheckRadioButton(UINT firstButtonID, UINT lastButtonID,
+            UINT checkButtonID) const;
         CWnd    ChildWindowFromPoint(POINT point) const;
         BOOL    ClientToScreen(POINT& point) const;
         BOOL    ClientToScreen(RECT& rect) const;
         void    Close() const;
         BOOL    CloseWindow() const;
-        HDWP    DeferWindowPos(HDWP winPosInfo, HWND insertAfter, int x, int y, int cx, int cy, UINT flags) const;
-        HDWP    DeferWindowPos(HDWP winPosInfo, HWND insertAfter, RECT rect, UINT flags) const;
+        HDWP    DeferWindowPos(HDWP winPosInfo, HWND insertAfter, int x, int y,
+            int cx, int cy, UINT flags) const;
+        HDWP    DeferWindowPos(HDWP winPosInfo, HWND insertAfter, RECT rect,
+            UINT flags) const;
         LRESULT DefWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) const;
-        int     DlgDirList(LPTSTR pathSpec, UINT listBoxID, UINT staticPathID, UINT fileType) const;
-        int     DlgDirListComboBox(LPTSTR pathSpec, UINT comboBoxID, UINT staticPathID, UINT filetype) const;
+        int     DlgDirList(LPTSTR pathSpec, UINT listBoxID, UINT staticPathID,
+            UINT fileType) const;
+        int     DlgDirListComboBox(LPTSTR pathSpec, UINT comboBoxID,
+            UINT staticPathID, UINT filetype) const;
         BOOL    DlgDirSelectEx(LPTSTR string, int count, UINT listBoxID) const;
         BOOL    DlgDirSelectComboBoxEx(LPTSTR string, int count, UINT comboBoxID) const;
         CFont   DpiScaleFont(const CFont& font, int pointSize) const;
@@ -265,16 +271,20 @@ namespace Win32xx
         BOOL    PostMessage(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) const;
         BOOL    PostMessage(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) const;
         void    Print(HDC dc, DWORD flags) const;
-        BOOL    RedrawWindow(RECT updateRect, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
-        BOOL    RedrawWindow(HRGN rgn, UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
-        BOOL    RedrawWindow(UINT flags = RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
+        BOOL    RedrawWindow(RECT updateRect, UINT flags = RDW_INVALIDATE |
+            RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
+        BOOL    RedrawWindow(HRGN rgn, UINT flags = RDW_INVALIDATE |
+            RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN) const;
+        BOOL    RedrawWindow(UINT flags = RDW_INVALIDATE | RDW_UPDATENOW |
+            RDW_ERASE | RDW_ALLCHILDREN) const;
         int     ReleaseDC(HDC dc) const;
         BOOL    ScreenToClient(POINT& point) const;
         BOOL    ScreenToClient(RECT& rect) const;
-        BOOL    ScrollWindow(int xAmount, int yAmount, RECT scrollRect, LPCRECT pClipRect = nullptr) const;
+        BOOL    ScrollWindow(int xAmount, int yAmount, RECT scrollRect,
+            LPCRECT pClipRect = nullptr) const;
         BOOL    ScrollWindow(int xAmount, int yAmount, LPCRECT pClipRect = nullptr) const;
-        int     ScrollWindowEx(int dx, int dy, LPCRECT pScrollRect, LPCRECT pClipRect,
-                               HRGN updateRgn, LPRECT updateRect, UINT flags) const;
+        int     ScrollWindowEx(int dx, int dy, LPCRECT pScrollRect,
+            LPCRECT pClipRect, HRGN updateRgn, LPRECT updateRect, UINT flags) const;
         LRESULT SendDlgItemMessage(UINT dlgItemID, UINT msg, WPARAM wparam, LPARAM lparam) const;
         LRESULT SendMessage(UINT msg, WPARAM wparam = 0, LPARAM lparam = 0) const;
         LRESULT SendMessage(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) const;
@@ -325,12 +335,15 @@ namespace Win32xx
 
     protected:
         // Override these functions as required.
+        virtual CRect   GetViewRect() const { return GetClientRect(); }
         virtual LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnActivate(UINT, WPARAM, LPARAM) { return 0; }
         virtual void    OnAttach();
         virtual BOOL    OnCommand(WPARAM wparam, LPARAM lparam);
         virtual void    OnClose();
         virtual int     OnCreate(CREATESTRUCT& cs);
         virtual void    OnDestroy();
+        virtual LRESULT OnDpiChanged(UINT, WPARAM, LPARAM) { return 0; }
         virtual void    OnDraw(CDC& dc);
         virtual BOOL    OnEraseBkgnd(CDC& dc);
         virtual void    OnInitialUpdate();
@@ -339,6 +352,11 @@ namespace Win32xx
         virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnSettingChange(UINT, WPARAM, LPARAM) { return 0; }
+        virtual LRESULT OnSize(UINT, WPARAM, LPARAM) { return 0; }
+        virtual LRESULT OnSysColorChange(UINT, WPARAM, LPARAM) { return 0; }
+        virtual LRESULT OnSysCommand(UINT, WPARAM, LPARAM) { return 0; }
+        virtual LRESULT OnWindowPosChanged(UINT, WPARAM, LPARAM) { return 0; }
         virtual void    PreCreate(CREATESTRUCT& cs);
         virtual void    PreRegisterClass(WNDCLASS& wc);
         virtual BOOL    PreTranslateMessage(MSG& msg);
@@ -350,7 +368,8 @@ namespace Win32xx
     private:
         CWnd(HWND wnd);                 // Private constructor used internally.
 
-        static LRESULT CALLBACK StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
+        static LRESULT CALLBACK StaticWindowProc(HWND wnd, UINT msg,
+            WPARAM wparam, LPARAM lparam);
 
         void    AddToMap();
         void    Cleanup();
@@ -360,9 +379,9 @@ namespace Win32xx
 
         HWND m_wnd;                    // Handle to this object's window.
         WNDPROC m_prevWindowProc;      // The old window procedure.
-    }; // class CWnd
+    };
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_WINCORE0_H_
+#endif // WIN32XX_WINCORE0_H_
 

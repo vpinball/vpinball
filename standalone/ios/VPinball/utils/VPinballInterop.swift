@@ -88,7 +88,6 @@ enum VPinballEvent: CInt {
     case loading
     case prerendering
     case playerStarted
-    case rumble
     case playerClosed
     case webServer
     case command
@@ -113,12 +112,6 @@ struct ProgressEventData: Codable {
     let progress: Int
 }
 
-struct RumbleData: Codable {
-    let lowFrequencyRumble: UInt16
-    let highFrequencyRumble: UInt16
-    let durationMs: UInt32
-}
-
 struct WebServerData: Codable {
     let url: String
 }
@@ -131,6 +124,7 @@ struct CommandData: Codable {
 // VPinball Callbacks (hybrid approach: JSON)
 
 typealias VPinballEventCallback = @convention(c) (CInt, UnsafePointer<CChar>?) -> Void
+typealias VPinballRumbleCallback = @convention(c) (Float, Float, CUnsignedInt) -> Void
 
 // VPinball C Definitions
 
@@ -138,7 +132,7 @@ typealias VPinballEventCallback = @convention(c) (CInt, UnsafePointer<CChar>?) -
 func VPinballGetVersionStringFull() -> UnsafePointer<CChar>
 
 @_silgen_name("VPinballInit")
-func VPinballInit(_ callback: VPinballEventCallback)
+func VPinballInit(_ eventCallback: VPinballEventCallback, _ rumbleCallback: VPinballRumbleCallback?)
 
 @_silgen_name("VPinballLog")
 func VPinballLog(_ level: CInt, _ pMessage: UnsafePointer<CChar>)

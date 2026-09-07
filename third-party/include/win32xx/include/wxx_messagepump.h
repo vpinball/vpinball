@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -37,8 +37,8 @@
 
 
 
-#ifndef _WIN32XX_MESSAGEPUMP_H_
-#define _WIN32XX_MESSAGEPUMP_H_
+#ifndef WIN32XX_MESSAGEPUMP_H_
+#define WIN32XX_MESSAGEPUMP_H_
 
 #include "wxx_messagepump0.h"
 
@@ -90,10 +90,11 @@ namespace Win32xx
         return LOWORD(msg.wParam);
     }
 
-    // This function is called by the MessageLoop. It is called when the message queue
-    // is empty. Return TRUE to continue idle processing or FALSE to end idle processing
-    // until another message is queued. The count is incremented each time OnIdle is
-    // called, and reset to 0 each time a new messages is processed.
+    // This function is called by the MessageLoop. It is called when the
+    // message queue is empty. Return TRUE to continue idle processing or FALSE
+    // to end idle processing until another message is queued. The count is
+    // incremented each time OnIdle is called, and reset to 0 each time a new
+    // messages is processed.
     inline BOOL CMessagePump::OnIdle(LONG)
     {
         return FALSE;
@@ -159,4 +160,4 @@ namespace Win32xx
 
 }
 
-#endif // _WIN32XX_MESSAGEPUMP_H_
+#endif // WIN32XX_MESSAGEPUMP_H_

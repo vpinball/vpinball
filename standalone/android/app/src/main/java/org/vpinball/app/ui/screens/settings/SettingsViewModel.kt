@@ -23,9 +23,6 @@ import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 class SettingsViewModel : ViewModel() {
     // General
 
-    var haptics by mutableStateOf(false)
-        private set
-
     var renderingModeOverride by mutableStateOf(false)
         private set
 
@@ -78,7 +75,6 @@ class SettingsViewModel : ViewModel() {
     fun loadSettings() {
         // General
 
-        haptics = VPinballManager.loadValue(STANDALONE, "Haptics", true)
         renderingModeOverride = (VPinballManager.loadValue(STANDALONE, "RenderingModeOverride", -1) == 2)
         gfxBackend = VPinballGfxBackend.fromString(VPinballManager.loadValue(PLAYER, "GfxBackend", VPinballGfxBackend.OPENGLES.value))
 
@@ -129,11 +125,6 @@ class SettingsViewModel : ViewModel() {
     }
 
     // General
-
-    fun handleHaptics(value: Boolean) {
-        haptics = value
-        VPinballManager.saveValue(STANDALONE, "Haptics", haptics)
-    }
 
     fun handleRenderingModeOverride(value: Boolean) {
         renderingModeOverride = value

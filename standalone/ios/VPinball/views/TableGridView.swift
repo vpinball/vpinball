@@ -239,9 +239,13 @@ extension TableGridView {
 
         let smallColumns = max(3, smallColumnsRaw)
         var mediumColumns = min(mediumColumnsRaw, smallColumns - 1)
-        if mediumColumns < 2 { mediumColumns = max(2, smallColumns - 1) }
+        if mediumColumns < 2 {
+            mediumColumns = max(2, smallColumns - 1)
+        }
         var largeColumns = min(largeColumnsRaw, mediumColumns - 1)
-        if largeColumns < 1 { largeColumns = 1 }
+        if largeColumns < 1 {
+            largeColumns = 1
+        }
 
         return (smallColumns, mediumColumns, largeColumns, baseCap)
     }
@@ -271,9 +275,13 @@ extension TableGridView {
 
         let effectiveSmall = min(tiers.small, 6)
         var effectiveMedium = min(tiers.medium, effectiveSmall - 1)
-        if effectiveMedium < 2 { effectiveMedium = max(1, effectiveSmall - 1) }
+        if effectiveMedium < 2 {
+            effectiveMedium = max(1, effectiveSmall - 1)
+        }
         var effectiveLarge = min(tiers.large, effectiveMedium - 1)
-        if effectiveLarge < 1 { effectiveLarge = 1 }
+        if effectiveLarge < 1 {
+            effectiveLarge = 1
+        }
         let columns: Int = {
             switch gridSize {
             case .small: return effectiveSmall

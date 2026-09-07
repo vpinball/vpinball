@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -41,8 +41,8 @@
 //  Declaration of CDockFrame and CMDIDockFrame.
 
 
-#ifndef _WIN32XX_DOCKFRAME_H_
-#define _WIN32XX_DOCKFRAME_H_
+#ifndef WIN32XX_DOCKFRAME_H_
+#define WIN32XX_DOCKFRAME_H_
 
 
 #include "wxx_docking.h"
@@ -234,6 +234,8 @@ namespace Win32xx
         case UWM_DOCKACTIVATE:      return OnDockActivated(msg, wparam, lparam);
         case UWM_DOCKDESTROYED:     return OnDockDestroyed(msg, wparam, lparam);
         case UWM_GETCDOCKER:        return reinterpret_cast<LRESULT>(this);
+
+        default: break;
         }
 
         return CFrameT<CDocker>::WndProcDefault(msg, wparam, lparam);
@@ -262,4 +264,4 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_DOCKFRAME_H_
+#endif // WIN32XX_DOCKFRAME_H_

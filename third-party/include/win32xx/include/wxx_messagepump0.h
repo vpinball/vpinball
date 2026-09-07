@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,44 +36,12 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_MESSAGEPUMP0_H_
-#define _WIN32XX_MESSAGEPUMP0_H_
+#ifndef WIN32XX_MESSAGEPUMP0_H_
+#define WIN32XX_MESSAGEPUMP0_H_
 
-#include "wxx_textconv.h"
 
 namespace Win32xx
 {
-
-    class CArchive;
-
-    ////////////////////////////////////////////////////////////////////
-    // The CObject class provides support for serialization by CArchive.
-    // Any class that uses CArchive to serialize data can inherit from
-    // CObject.
-
-    class CObject
-    {
-    public:
-        CObject() = default;
-        virtual ~CObject() = default;
-
-        virtual void Serialize(CArchive& /*ar*/)
-        {
-            //  Override Serialize in the class inherited from CObject like this.
-
-            //  if (ar.IsStoring())
-            //  {
-            //      // Store a member variable in the archive
-            //      ar << m_someValue;
-            //  }
-            //  else
-            //  {
-            //      // Load a member variable from the archive
-            //      ar >> m_someValue;
-            //  }
-        }
-    };
-
     class CMessagePump : public CObject
     {
     public:
@@ -104,4 +72,4 @@ namespace Win32xx
 
 }
 
-#endif // _WIN32XX_MESSAGEPUMP0_H_
+#endif // WIN32XX_MESSAGEPUMP0_H_

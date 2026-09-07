@@ -30,7 +30,6 @@ typedef enum {
    VPINBALL_EVENT_LOADING,
    VPINBALL_EVENT_PRERENDERING,
    VPINBALL_EVENT_PLAYER_STARTED,
-   VPINBALL_EVENT_RUMBLE,
    VPINBALL_EVENT_PLAYER_CLOSED,
    VPINBALL_EVENT_WEB_SERVER,
    VPINBALL_EVENT_COMMAND
@@ -46,12 +45,13 @@ typedef enum {
 // Callbacks
 
 typedef void (*VPinballEventCallback)(VPINBALL_EVENT, const char*);
+typedef void (*VPinballRumbleCallback)(float lowFrequencySpeed, float highFrequencySpeed, unsigned int durationMs);
 typedef void (*VPinballZipCallback)(int current, int total, const char* filename);
 
 // Functions
 
 VPINBALLAPI const char* VPinballGetVersionStringFull();
-VPINBALLAPI void VPinballInit(VPinballEventCallback callback);
+VPINBALLAPI void VPinballInit(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback);
 VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* message);
 VPINBALLAPI void VPinballResetLog();
 

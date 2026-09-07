@@ -132,16 +132,7 @@ fun SettingsScreen(
                                 option = viewModel.gfxBackend,
                                 onOptionChanged = { viewModel.handleGfxBackend(value = it) },
                             )
-
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         }
-
-                        SwitchRow(
-                            label = "Haptics",
-                            isChecked = viewModel.haptics,
-                            onCheckedChange = { viewModel.handleHaptics(value = it) },
-                            description = "Provide haptic feedback when balls collide with flippers, bumpers, and slingshots.",
-                        )
                     }
                 }
 

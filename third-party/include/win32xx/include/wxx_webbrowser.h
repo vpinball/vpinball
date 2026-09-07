@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -35,12 +35,20 @@
 //
 ////////////////////////////////////////////////////////
 
-#ifndef _WIN32XX_WEBBROWSER_H_
-#define _WIN32XX_WEBBROWSER_H_
+
+//////////////////////////////////////////////////////////////////////////////
+// Warning: This class is deprecated. For modern applications, using
+// IWebBrowser2 is heavily discouraged due to obsolete security parameters and
+// lack of HTML5/CSS3 compatibility. Microsoft replaces this stack with the
+// Chromium-powered WebView2 control, which provides similar hosting logic but
+// maps directly to Microsoft Edge.
+
+#ifndef WIN32XX_WEBBROWSER_H_
+#define WIN32XX_WEBBROWSER_H_
 
 #include "wxx_appcore0.h"
-#include <ExDisp.h>
-#include <OCidl.h>
+#include <exdisp.h>
+#include <ocidl.h>
 
 
 namespace Win32xx
@@ -67,7 +75,8 @@ namespace Win32xx
         // IDispatch Methods
         virtual STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR** names,
             unsigned int namesCount, LCID lcid, DISPID* pID) override;
-        virtual STDMETHODIMP GetTypeInfo(unsigned int itinfo, LCID lcid, ITypeInfo** pptinfo) override;
+        virtual STDMETHODIMP GetTypeInfo(unsigned int itinfo, LCID lcid,
+            ITypeInfo** pptinfo) override;
         virtual STDMETHODIMP GetTypeInfoCount(unsigned int* pctinfo) override;
         virtual STDMETHODIMP Invoke(DISPID dispID, REFIID riid, LCID lcid, WORD flags,
             DISPPARAMS* pParams, VARIANT* result, EXCEPINFO* pExecInfo,
@@ -75,7 +84,8 @@ namespace Win32xx
 
         // IOleClientSite Methods
         virtual STDMETHODIMP GetContainer(LPOLECONTAINER* ppContainer) override;
-        virtual STDMETHODIMP GetMoniker(DWORD assign, DWORD whichMoniker, LPMONIKER* ppMk) override;
+        virtual STDMETHODIMP GetMoniker(DWORD assign, DWORD whichMoniker,
+            LPMONIKER* ppMk) override;
         virtual STDMETHODIMP OnShowWindow(BOOL show) override;
         virtual STDMETHODIMP RequestNewObjectLayout() override;
         virtual STDMETHODIMP SaveObject() override;
@@ -87,14 +97,17 @@ namespace Win32xx
         virtual STDMETHODIMP OnControlInfoChanged() override;
         virtual STDMETHODIMP OnFocus(BOOL gotFocus) override;
         virtual STDMETHODIMP ShowPropertyFrame() override;
-        virtual STDMETHODIMP TransformCoords(POINTL* pHimetric, POINTF* pContainer, DWORD flags) override;
+        virtual STDMETHODIMP TransformCoords(POINTL* pHimetric,
+            POINTF* pContainer, DWORD flags) override;
         virtual STDMETHODIMP TranslateAccelerator(LPMSG pMsg, DWORD modifiers) override;
 
         // IOleInPlaceFrame Methods
         virtual STDMETHODIMP EnableModeless(BOOL enable) override;
-        virtual STDMETHODIMP InsertMenus(HMENU shared, LPOLEMENUGROUPWIDTHS pMenuWidths) override;
+        virtual STDMETHODIMP InsertMenus(HMENU shared,
+            LPOLEMENUGROUPWIDTHS pMenuWidths) override;
         virtual STDMETHODIMP RemoveMenus(HMENU shared) override;
-        virtual STDMETHODIMP SetMenu(HMENU shared, HOLEMENU holemenu, HWND activeObject) override;
+        virtual STDMETHODIMP SetMenu(HMENU shared, HOLEMENU holemenu,
+            HWND activeObject) override;
         virtual STDMETHODIMP SetStatusText(LPCOLESTR pStatusText) override;
         virtual STDMETHODIMP TranslateAccelerator(LPMSG pMsg, WORD id) override;
 
@@ -180,16 +193,20 @@ namespace Win32xx
 
         // Operations
         HRESULT AddWebBrowserControl();
-        HRESULT ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn, VARIANT* pOut) const;
+        HRESULT ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdExecOpt, VARIANT* pIn,
+            VARIANT* pOut) const;
         HRESULT GoBack() const;
         HRESULT GoForward() const;
         HRESULT GoHome() const;
         HRESULT GoSearch() const;
-        HRESULT Navigate(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = nullptr,
-            LPCTSTR headers = nullptr, LPVOID pPostData = nullptr, DWORD postDataLen = 0) const;
-        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0, LPCTSTR targetFrameName = nullptr) const;
-        HRESULT Navigate2(LPCTSTR URL, DWORD flags = 0, LPCTSTR targetFrameName = nullptr,
-            LPCTSTR headers = nullptr, LPVOID pPostData = nullptr, DWORD postDataLen = 0) const;
+        HRESULT Navigate(LPCTSTR URL, DWORD flags = 0,
+            LPCTSTR targetFrameName = nullptr, LPCTSTR headers = nullptr,
+            LPVOID pPostData = nullptr, DWORD postDataLen = 0) const;
+        HRESULT Navigate2(LPITEMIDLIST pIDL, DWORD flags = 0,
+            LPCTSTR targetFrameName = nullptr) const;
+        HRESULT Navigate2(LPCTSTR URL, DWORD flags = 0,
+            LPCTSTR targetFrameName = nullptr, LPCTSTR headers = nullptr,
+            LPVOID pPostData = nullptr, DWORD postDataLen = 0) const;
         HRESULT PutProperty(LPCTSTR propertyName, const VARIANT& value) const;
         HRESULT PutProperty(LPCTSTR propertyName, double value) const;
         HRESULT PutProperty(LPCTSTR propertyName, long value) const;
@@ -833,11 +850,13 @@ namespace Win32xx
         switch (msg)
         {
         case WM_SIZE:
+        {
             OnSize(LOWORD(lparam), HIWORD(lparam));
-            break;
+            return CWnd::WndProcDefault(msg, wparam, lparam);
         }
 
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
+        }
     }
 
     //////////////////////////////////////////////////
@@ -1317,4 +1336,4 @@ namespace Win32xx
 
 }
 
-#endif  // _WIN32XX_WEBBROWSER_H_
+#endif  // WIN32XX_WEBBROWSER_H_

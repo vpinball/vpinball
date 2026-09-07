@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,8 +36,10 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_THREAD_H_
-#define _WIN32XX_THREAD_H_
+#ifndef WIN32XX_THREAD_H_
+#define WIN32XX_THREAD_H_
+
+#include <process.h>
 
 namespace Win32xx
 {
@@ -52,7 +54,6 @@ namespace Win32xx
     public:
         CThreadT();
         CThreadT(PTHREADPROC pThreadProc, LPVOID pParam);
-        virtual ~CThreadT() override;
 
         // Operations
         HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0,
@@ -60,12 +61,15 @@ namespace Win32xx
         HANDLE  GetThread() const;
         UINT    GetThreadID() const;
         int     GetThreadPriority() const;
-        BOOL    IsRunning() const { return (WaitForSingleObject(m_thread, 0) == WAIT_TIMEOUT); }
+        BOOL    IsRunning() const;
         BOOL    PostThreadMessage(UINT message, WPARAM wparam, LPARAM lparam) const;
         DWORD   ResumeThread() const;
         BOOL    SetThreadPriority(int priority) const;
         DWORD   SuspendThread() const;
         operator HANDLE () const { return GetThread(); }
+
+    protected:
+        virtual ~CThreadT() override;
 
     private:
         CThreadT(const CThreadT&) = delete;
@@ -127,18 +131,22 @@ namespace Win32xx
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT() : m_pThreadProc(0), m_pThreadParams(0),
-        m_thread(0), m_threadID(0)
+    inline CThreadT<T>::CThreadT() :
+        m_pThreadProc(nullptr),
+        m_pThreadParams(nullptr),
+        m_thread(nullptr),
+        m_threadID(0)
     {
     }
 
     // CThreadT constructor.
     template <class T>
     inline CThreadT<T>::CThreadT(PTHREADPROC pThreadProc, LPVOID pParam) :
-        m_pThreadProc(0), m_pThreadParams(0), m_thread(0), m_threadID(0)
+        m_pThreadProc(pThreadProc),
+        m_pThreadParams(pParam),
+        m_thread(nullptr),
+        m_threadID(0)
     {
-        m_pThreadProc = pThreadProc;
-        m_pThreadParams = pParam;
     }
 
     // CThreadT destructor.
@@ -211,17 +219,26 @@ namespace Win32xx
         return ::GetThreadPriority(m_thread);
     }
 
-    // Posts a message to the thread. The message will reach the MessageLoop, but
-    // will not call a CWnd's WndProc.
+    // Returns TRUE if the thread is running.
+    template <class T>
+    inline BOOL CThreadT<T>::IsRunning() const
+    {
+        return (WaitForSingleObject(m_thread, 0) == WAIT_TIMEOUT);
+    }
+
+    // Posts a message to the thread. The message will reach the MessageLoop,
+    // but will not call a CWnd's WndProc.
     // Refer to PostThreadMessage in the Windows API documentation for more information.
     template <class T>
-    inline BOOL CThreadT<T>::PostThreadMessage(UINT msg, WPARAM wparam, LPARAM lparam) const
+    inline BOOL CThreadT<T>::PostThreadMessage(UINT msg, WPARAM wparam,
+        LPARAM lparam) const
     {
         assert(m_thread);
         return ::PostThreadMessage(GetThreadID(), msg, wparam, lparam);
     }
 
-    // Resumes a thread that has been suspended, or created with the CREATE_SUSPENDED flag.
+    // Resumes a thread that has been suspended, or created with the
+    // CREATE_SUSPENDED flag.
     // Refer to ResumeThread in the Windows API documentation for more information.
     template <class T>
     inline DWORD CThreadT<T>::ResumeThread() const
@@ -232,9 +249,9 @@ namespace Win32xx
 
     // Sets the priority of this thread. The priority parameter can be:
     // THREAD_PRIORITY_IDLE, THREAD_PRIORITY_LOWEST, THREAD_PRIORITY_BELOW_NORMAL,
-    // THREAD_PRIORITY_NORMAL, THREAD_PRIORITY_ABOVE_NORMAL, THREAD_PRIORITY_HIGHEST,
-    // THREAD_PRIORITY_TIME_CRITICAL or other values permitted by the
-    // SetThreadPriority Windows API function.
+    // THREAD_PRIORITY_NORMAL, THREAD_PRIORITY_ABOVE_NORMAL,
+    // THREAD_PRIORITY_HIGHEST, THREAD_PRIORITY_TIME_CRITICAL or other values
+    // permitted by the SetThreadPriority Windows API function.
     // Refer to SetThreadPriority in the Windows API documentation for more information.
     template <class T>
     inline BOOL CThreadT<T>::SetThreadPriority(int priority) const
@@ -265,8 +282,11 @@ namespace Win32xx
             PostThreadMessage(WM_QUIT, 0, 0);
         }
 
-        // Wait up to 1 second for the thread to end.
-        ::WaitForSingleObject(*this, 1000);
+        if (IsRunning())
+        {
+            // Wait for the thread to end.
+            ::WaitForSingleObject(*this, INFINITE);
+        }
     }
 
     // When the GUI thread starts, it runs this function.
@@ -293,4 +313,4 @@ namespace Win32xx
 
 }
 
-#endif // _WIN32XX_THREAD_H_
+#endif // WIN32XX_THREAD_H_

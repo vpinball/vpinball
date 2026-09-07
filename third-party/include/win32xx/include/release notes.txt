@@ -9,11 +9,10 @@ Win32++ supports the following compilers and development environments:
 
 * Code::Blocks
 * Embarcadero Dev-C++
-* Embarcadero Rad Studio 12 Community Edition  
-* Microsoft Visual Studio Community 2015
-* Microsoft Visual Studio Community 2019
+* Embarcadero C++ Builder 12 Community Edition  
 * Microsoft Visual Studio Community 2022
-* MinGW compiler
+* Microsoft Visual Studio Community 2026
+* MinGW x86 compiler
 * MinGW x64 compiler
 * Clang compiler provided with Visual Studio Community 2019 and above.
 

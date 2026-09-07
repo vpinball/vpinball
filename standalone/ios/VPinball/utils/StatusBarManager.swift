@@ -25,7 +25,9 @@ class StatusBarManager {
     func setHidden(_ hidden: Bool, style: UIStatusBarStyle? = nil, animated: Bool = true) {
         guard attachedRootViewController != nil else { return }
         self.hidden = hidden
-        if let s = style { self.style = s }
+        if let s = style {
+            self.style = s
+        }
         self.animated = animated
         ensureAttached()
         guard let viewController = owningViewController else { return }
@@ -58,14 +60,18 @@ class StatusBarManager {
 
     func ensureAttached() {
         guard let rootViewController = attachedRootViewController else { return }
-        if owningViewController == nil { owningViewController = topMost(from: rootViewController) }
+        if owningViewController == nil {
+            owningViewController = topMost(from: rootViewController)
+        }
         if let viewController = owningViewController, objc_getAssociatedObject(viewController, &Self.kInstalledKey) == nil {
             swizzleIfNeeded(on: viewController)
         }
     }
 
     func swizzleIfNeeded(on viewController: UIViewController) {
-        if objc_getAssociatedObject(viewController, &Self.kInstalledKey) != nil { return }
+        if objc_getAssociatedObject(viewController, &Self.kInstalledKey) != nil {
+            return
+        }
         guard let origClass: AnyClass = object_getClass(viewController) else { return }
         let subclassName = "\(NSStringFromClass(origClass))_StatusBarProxy"
         let subclass: AnyClass

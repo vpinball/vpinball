@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,8 +46,8 @@
 //
 ////////////////////////////////////////////////////////
 
-#ifndef _WIN32XX_COMMONDLG_H_
-#define _WIN32XX_COMMONDLG_H_
+#ifndef WIN32XX_COMMONDLG_H_
+#define WIN32XX_COMMONDLG_H_
 
 #include "wxx_dialog.h"
 #include "wxx_richedit.h"
@@ -416,6 +416,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault
@@ -429,8 +431,11 @@ namespace Win32xx
     {
         switch (msg)
         {
-        case WM_INITDIALOG:     return OnInitDialog();
-        case WM_COMMAND:        if (LOWORD(wparam) == pshHelp)  OnHelpButton();
+        case WM_INITDIALOG:  return OnInitDialog();
+        case WM_COMMAND:     if (LOWORD(wparam) == pshHelp)  OnHelpButton();
+            break;
+
+        default: break;
         }
 
         // Return 0 to allow default processing of the message.
@@ -458,6 +463,7 @@ namespace Win32xx
 
         if (!isValid)
         {
+            Cleanup();
             int error = static_cast<int>(CommDlgExtendedError());
             if ((error != 0) && (error != CDERR_DIALOGFAILURE))
                 // Ignore the exception caused by closing the dialog.
@@ -558,6 +564,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault
@@ -593,11 +601,13 @@ namespace Win32xx
                 {
                     LRESULT result = OnNotify(wparam, lparam);
                     SetWindowLongPtr(DWLP_MSGRESULT, result);
-                    return result;
+                    return TRUE;
                 }
 
-                return 0;
+                return FALSE;
             }
+
+            default: break;
         }
 
         // Dispatch special open/save file dialog messages.
@@ -634,11 +644,6 @@ namespace Win32xx
 
     // Display either a FileOpen or FileSave dialog, and allow the user to
     // select various options. An exception is thrown if the dialog isn't created.
-    //
-    // If the OFN_ALLOWMULTISELECT flag is used, the size of the buffer required
-    // to hold the file names can be quite large. An exception is thrown if the
-    // buffer size specified by m_OFN.nMaxFile turns out to be too small.
-    // Use SetParamaters to set a larger size if required.
     inline INT_PTR CFileDialog::DoModal(HWND owner /* = nullptr */)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
@@ -660,6 +665,7 @@ namespace Win32xx
         // The result of the file choice box is processed here.
         if (!ok)
         {
+            Cleanup();
             int error = static_cast<int>(CommDlgExtendedError());
             if (error != 0)
             {
@@ -734,24 +740,22 @@ namespace Win32xx
 
         bool isExplorer = (m_ofn.Flags & OFN_EXPLORER) != 0;
         TCHAR delimiter = (isExplorer ? _T('\0') : _T(' '));
-        int maxFileSize = static_cast<int>(m_ofn.nMaxFile);
-        int bufferSize = std::min(MAX_PATH, maxFileSize - pos);
-        CString fileNames(m_ofn.lpstrFile + pos, bufferSize);
+        CString fileNames(m_ofn.lpstrFile + pos);
         int index = 0;
         if (pos == 0)
         {
             index = fileNames.Find(delimiter);
 
-            if ( (index < 0) || (fileNames.GetAt(++index) == _T('\0')))
+            if ((index < 0) || (fileNames.GetAt(++index) == _T('\0')))
             {
-                // Only one file selected. m_OFN.lpstrFile contains a single
+                // Only one file selected. m_ofn.lpstrFile contains a single
                 // string consisting of the path and file name.
                 pos = -1;
                 return m_ofn.lpstrFile;
             }
         }
 
-        // Multiple files selected. m_OFN.lpstrFile contains a set of
+        // Multiple files selected. m_ofn.lpstrFile contains a set of
         // substrings separated by delimiters. The first substring is the path,
         // the following ones are file names.
         CString pathName = m_ofn.lpstrFile; // strPath is terminated by first null
@@ -770,17 +774,17 @@ namespace Win32xx
         }
 
         // Update pos to point to the next file.
-        int fileLength = lstrlen(fileName);
+        int fileLength = static_cast<int>(_tcslen(fileName));
         if (fileNames.GetAt(index + fileLength + 1) == _T('\0'))
             pos = -1;
         else
-            pos = pos + index + fileLength +1;
+            pos = pos + index + fileLength + 1;
 
         if (!pathName.IsEmpty())
         {
             // Get the last character from the path.
             int pathLength = pathName.GetLength();
-            TCHAR termination = pathName.GetAt(pathLength -1);
+            TCHAR termination = pathName.GetAt(pathLength - 1);
 
             if (termination == _T('\\'))
             {
@@ -870,6 +874,8 @@ namespace Win32xx
 
     // This method handles the WM_NOTIFY message loop functions of the hook
     // procedure.
+    // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result)
+    // for non-zero returns.
     inline LRESULT CFileDialog::OnNotify(WPARAM, LPARAM lparam)
     {
         OFNOTIFY* pNotify = reinterpret_cast<OFNOTIFY*>(lparam);
@@ -903,11 +909,9 @@ namespace Win32xx
             case CDN_TYPECHANGE:
                 OnTypeChange();
                 return TRUE;
-        }
 
-        // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result)
-        // for non-zero returns.
-        return FALSE;   // not handled
+            default: return FALSE;   // not handled
+        }
     }
 
     // Override this function to provide custom handling of share violations.
@@ -1147,6 +1151,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault
@@ -1172,6 +1178,8 @@ namespace Win32xx
 
                 return 0;
             }
+
+        default: break;
         }
 
         return 0;
@@ -1255,12 +1263,12 @@ namespace Win32xx
     // The parameters are set to sensible values.
     inline void CFindReplaceDialog::SetParameters(const FINDREPLACE& fr)
     {
-        int maxChars = 128;
+        size_t maxChars = 128;
 
         if (fr.lpstrFindWhat)
         {
             m_findWhat = fr.lpstrFindWhat;
-            maxChars = std::max(maxChars, lstrlen(fr.lpstrFindWhat));
+            maxChars = std::max(maxChars, _tcslen(fr.lpstrFindWhat));
         }
         else
             m_findWhat.Empty();
@@ -1268,7 +1276,7 @@ namespace Win32xx
         if (fr.lpstrReplaceWith)
         {
             m_replaceWith = fr.lpstrReplaceWith;
-            maxChars = std::max(maxChars, lstrlen(fr.lpstrReplaceWith));
+            maxChars = std::max(maxChars, _tcslen(fr.lpstrReplaceWith));
         }
         else
             m_replaceWith.Empty();
@@ -1304,15 +1312,13 @@ namespace Win32xx
     inline CFontDialog::CFontDialog(const LOGFONT& initial, DWORD flags /* = 0 */,
         HDC printer /* = nullptr */)
     {
-        m_logFont = {};
+        m_logFont = initial;
 
         // Set the dialog parameters.
         m_cf = {};
-        m_cf.rgbColors   = 0; // black
         m_cf.lStructSize = sizeof(m_cf);
-        m_cf.Flags  = flags;
-        m_cf.Flags |= CF_INITTOLOGFONTSTRUCT;
-        m_cf.lpLogFont = const_cast<LOGFONT*>(&initial);
+        m_cf.Flags = flags | CF_INITTOLOGFONTSTRUCT;
+        m_cf.lpLogFont = &m_logFont;
 
         if (printer)
         {
@@ -1404,6 +1410,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault
@@ -1607,9 +1615,9 @@ namespace Win32xx
         else
             m_logFont = {};
 
-        if (cf.lpszStyle)
+        if (cf.lpszStyle && cf.lpszStyle != m_styleName.c_str())
             m_styleName = cf.lpszStyle;
-        else
+        else if (!cf.lpszStyle)
             m_styleName.Empty();
 
         m_cf.lStructSize    = sizeof(m_cf);
@@ -1623,13 +1631,18 @@ namespace Win32xx
         m_cf.lpfnHook       = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
         m_cf.lpTemplateName = cf.lpTemplateName;
         m_cf.hInstance      = GetApp()->GetInstanceHandle();
-        m_cf.lpszStyle      = const_cast<LPTSTR>(m_styleName.c_str());
         m_cf.nFontType      = cf.nFontType;
         m_cf.nSizeMin       = cf.nSizeMin;
         m_cf.nSizeMax       = cf.nSizeMax;
+
+        // Fix: Only bind the pointer if the buffer is actively expected by the API flags
+        if (m_cf.Flags & CF_USESTYLE)
+            m_cf.lpszStyle = const_cast<LPTSTR>(m_styleName.c_str());
+        else
+            m_cf.lpszStyle = nullptr;
     }
 
 }
 
 
-#endif // _WIN32XX_COMMONDLG_H_
+#endif // WIN32XX_COMMONDLG_H_

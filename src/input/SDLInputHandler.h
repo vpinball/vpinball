@@ -25,6 +25,10 @@ public:
       SDL_JoystickID* const joystickIds = SDL_GetJoysticks(&joystickCount);
       for (int i = 0; i < joystickCount; i++)
          OnJoystickAdded(joystickIds[i]);
+
+      #ifdef __ANDROID__
+         OpenDeviceVibrator();
+      #endif
    }
 
    SDLInputHandler& operator=(SDLInputHandler&&) = delete;
@@ -33,6 +37,10 @@ public:
    {
       for (const auto& joy : m_joysticks)
          OnJoystickRemoved(SDL_GetJoystickID(joy));
+
+      #ifdef __ANDROID__
+         CloseDeviceVibrator();
+      #endif
       SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
    }
 
@@ -44,6 +52,19 @@ public:
          Uint16 highFreq = (Uint16)(saturate(highFrequencySpeed) * 65535.0f);
          SDL_RumbleJoystick(joy, lowFreq, highFreq, ms_duration);
       }
+
+      #ifdef __ANDROID__
+         if (m_deviceVibrator)
+         {
+            SDL_HapticEffect effect = {};
+            effect.leftright.type = SDL_HAPTIC_LEFTRIGHT;
+            effect.leftright.large_magnitude = (Uint16)(cbrtf(saturate(lowFrequencySpeed)) * 32767.0f);
+            effect.leftright.small_magnitude = (Uint16)(cbrtf(saturate(highFrequencySpeed)) * 32767.0f);
+            effect.leftright.length = ms_duration;
+            SDL_UpdateHapticEffect(m_deviceVibrator, m_deviceVibratorEffect, &effect);
+            SDL_RunHapticEffect(m_deviceVibrator, m_deviceVibratorEffect, 1);
+         }
+      #endif
    }
 
    void Update() override
@@ -527,6 +548,53 @@ private:
       m_pininput.UnregisterDevice(deviceId);
       m_joystickIds.erase(id);
    }
+
+#ifdef __ANDROID__
+   void OpenDeviceVibrator()
+   {
+      if (!SDL_InitSubSystem(SDL_INIT_HAPTIC))
+      {
+         PLOGE << "Failed to initialize haptic with error: " << SDL_GetError();
+         return;
+      }
+      int hapticCount = 0;
+      SDL_HapticID* const hapticIds = SDL_GetHaptics(&hapticCount);
+      for (int i = 0; i < hapticCount && m_deviceVibrator == nullptr; i++)
+      {
+         const char* const name = SDL_GetHapticNameForID(hapticIds[i]);
+         if (name && strcmp(name, "VIBRATOR_SERVICE") == 0)
+            m_deviceVibrator = SDL_OpenHaptic(hapticIds[i]);
+      }
+      SDL_free(hapticIds);
+      if (m_deviceVibrator == nullptr)
+         return;
+      SDL_HapticEffect effect = {};
+      effect.type = SDL_HAPTIC_LEFTRIGHT;
+      m_deviceVibratorEffect = SDL_CreateHapticEffect(m_deviceVibrator, &effect);
+      if (m_deviceVibratorEffect < 0)
+      {
+         PLOGE << "Failed to create device vibrator effect with error: " << SDL_GetError();
+         SDL_CloseHaptic(m_deviceVibrator);
+         m_deviceVibrator = nullptr;
+      }
+   }
+
+   void CloseDeviceVibrator()
+   {
+      if (m_deviceVibrator)
+      {
+         if (m_deviceVibratorEffect >= 0)
+            SDL_DestroyHapticEffect(m_deviceVibrator, m_deviceVibratorEffect);
+         SDL_CloseHaptic(m_deviceVibrator);
+      }
+      m_deviceVibrator = nullptr;
+      m_deviceVibratorEffect = -1;
+      SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+   }
+
+   SDL_Haptic* m_deviceVibrator = nullptr;
+   SDL_HapticEffectID m_deviceVibratorEffect = -1;
+#endif
 
    InputManager& m_pininput;
    vector<SDL_Joystick*> m_joysticks;

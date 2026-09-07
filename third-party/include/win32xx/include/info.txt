@@ -7,6 +7,7 @@ Extension | Description
 cbp       | A project file used by CodeBlocks
 cbproj    | A project file used by Embarcadero RAD Studio 12
 sln       | A project file used by Visual Studio 2003 and above
+slnx      | A project file used by Visual Studio 2026 and above
 vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
 vcxproj   | A project file used by Visual Studio 2010 and above
 filters   | An additional project file used by Visual Studio 2010 and above

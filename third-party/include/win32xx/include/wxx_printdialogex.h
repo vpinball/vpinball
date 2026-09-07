@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -72,8 +72,8 @@
 //     CDC printerDC = printDialog.GetPrinterDC();
 //
 
-#ifndef _WIN32XX_PRINTDIALOGEX_H_
-#define _WIN32XX_PRINTDIALOGEX_H_
+#ifndef WIN32XX_PRINTDIALOGEX_H_
+#define WIN32XX_PRINTDIALOGEX_H_
 
 #include "wxx_wincore.h"
 #include "wxx_commondlg.h"
@@ -97,8 +97,8 @@ namespace Win32xx
     {
     public:
         // Constructor
-        CPrintDialogEx(DWORD flags = PD_ALLPAGES | PD_USEDEVMODECOPIES | PD_NOPAGENUMS
-                                   | PD_NOSELECTION | PD_NOCURRENTPAGE);
+        CPrintDialogEx(DWORD flags = PD_ALLPAGES | PD_USEDEVMODECOPIES |
+            PD_NOPAGENUMS | PD_NOSELECTION | PD_NOCURRENTPAGE);
 
         // Destructor
         virtual ~CPrintDialogEx() override = default;
@@ -108,7 +108,7 @@ namespace Win32xx
         virtual void OnPrint(){}              // Print button pressed.
 
         // Operations
-        INT_PTR DoModal(HWND owner /* = nullptr */) override;
+        INT_PTR DoModal(HWND owner = nullptr ) override;
         int GetCopies() const;
         CDevMode GetCurrentDevMode();
         CStringW GetCurrentPortName() const;
@@ -253,6 +253,8 @@ namespace Win32xx
             OnPrint();
             break;
         }
+
+        default: break;
         }
 
         m_pdex.hDevMode = 0;
@@ -420,7 +422,8 @@ namespace Win32xx
         if (GetApp()->GetHDevNames().Get() == nullptr)
             GetApp()->UpdateDefaultPrinter();
 
-        if ((GetApp()->GetHDevNames().Get() != nullptr) && (GetApp()->GetHDevMode().Get() != 0))
+        if ((GetApp()->GetHDevNames().Get() != nullptr) &&
+            (GetApp()->GetHDevMode().Get() != 0))
         {
             dc.CreateDC(GetDriverName(), GetDeviceName(),
                 GetPortName(), GetDevMode());
@@ -432,7 +435,8 @@ namespace Win32xx
         return dc;
     }
 
-    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::GetSite(REFIID riid, void** ppvSite)
+    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::GetSite(REFIID riid,
+        void** ppvSite)
     {
         if (riid == IID_IPrintDialogServices)
         {
@@ -444,8 +448,8 @@ namespace Win32xx
     }
 
     // Passes messages on to the DialogProc for processing.
-    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::HandleMessage(HWND wnd, UINT msg, WPARAM wparam,
-                                                      LPARAM lparam, LRESULT* pResult)
+    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::HandleMessage(HWND wnd,
+        UINT msg, WPARAM wparam, LPARAM lparam, LRESULT* pResult)
     {
         if (GetHwnd() == nullptr)
             Attach(wnd);
@@ -485,7 +489,8 @@ namespace Win32xx
     }
 
     // Returns a pointer to the requested object.
-    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::QueryInterface(REFIID riid, void** ppvObject)
+    inline DECLSPEC_NOTHROW HRESULT CPrintDialogEx::QueryInterface(REFIID riid,
+        void** ppvObject)
     {
         if (ppvObject == nullptr)
             return E_POINTER;
@@ -552,5 +557,5 @@ namespace Win32xx
 
 #endif  // define (__GNUC__) || (defined (__GNUC__) && defined (UNICODE))
 
-#endif  // define _WIN32XX_PRINTDIALOGEX_H_
+#endif  // define WIN32XX_PRINTDIALOGEX_H_
 

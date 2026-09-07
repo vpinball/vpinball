@@ -1,10 +1,6 @@
 package org.vpinball.app
 
 import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import android.util.Size
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +17,6 @@ import org.vpinball.app.jni.VPinballJNI
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballPath
 import org.vpinball.app.jni.VPinballProgressData
-import org.vpinball.app.jni.VPinballRumbleData
 import org.vpinball.app.jni.VPinballSettingsSection
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStatus
@@ -35,7 +30,6 @@ object VPinballManager : KoinComponent {
     private lateinit var context: Context
     private lateinit var cacheDir: File
     private lateinit var displaySize: Size
-    private lateinit var vibrator: Vibrator
 
     private var playerActivity: VPinballPlayerActivity? = null
     private var mainActivity: VPinballActivity? = null
@@ -61,14 +55,6 @@ object VPinballManager : KoinComponent {
         val width = displayMetrics.widthPixels
         val height = displayMetrics.heightPixels
         displaySize = if (width > height) Size(height, width) else Size(width, height)
-
-        vibrator =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vibratorManager.defaultVibrator
-            } else {
-                context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            }
 
         SAFFileSystem.initialize(context)
     }
@@ -135,18 +121,6 @@ object VPinballManager : KoinComponent {
                         delay(500)
                         viewModel.hideHUD()
                     }
-                }
-                VPinballEvent.RUMBLE -> {
-                    val rumbleData =
-                        jsonData?.let { jsonStr ->
-                            try {
-                                Json.decodeFromString<VPinballRumbleData>(jsonStr)
-                            } catch (e: Exception) {
-                                log(VPinballLogLevel.WARN, "Failed to parse rumble data JSON: $jsonStr - ${e.message}")
-                                null
-                            }
-                        }
-                    rumbleData?.let { rumble(it) }
                 }
                 VPinballEvent.PLAYER_CLOSED -> {
                     val tableToCleanup = viewModel.activeTable
@@ -255,20 +229,6 @@ object VPinballManager : KoinComponent {
 
     fun log(level: VPinballLogLevel, message: String) {
         vpinballJNI.VPinballLog(level.value, message)
-    }
-
-    private fun rumble(data: VPinballRumbleData) {
-        if (data.lowFrequencyRumble > 0 || data.highFrequencyRumble > 0) {
-            val amplitude =
-                when {
-                    data.lowFrequencyRumble == data.highFrequencyRumble -> VibrationEffect.DEFAULT_AMPLITUDE
-                    data.lowFrequencyRumble > 20000 || data.highFrequencyRumble > 20000 -> 255
-                    data.lowFrequencyRumble > 10000 || data.highFrequencyRumble > 10000 -> 200
-                    data.lowFrequencyRumble > 1000 || data.highFrequencyRumble > 1000 -> 100
-                    else -> 50
-                }
-            vibrator.vibrate(VibrationEffect.createOneShot(15, amplitude))
-        }
     }
 
     fun updateWebServer() {

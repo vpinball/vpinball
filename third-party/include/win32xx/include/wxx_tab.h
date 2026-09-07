@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -40,8 +40,8 @@
 // wxx_tab.h
 //  Declaration of the CTab and CMDITab classes.
 
-#ifndef _WIN32XX_TAB_H_
-#define _WIN32XX_TAB_H_
+#ifndef WIN32XX_TAB_H_
+#define WIN32XX_TAB_H_
 
 #include "wxx_wincore.h"
 #include "wxx_dialog.h"
@@ -59,7 +59,7 @@ namespace Win32xx
         int tabImage;       // index of this tab's image
         int tabID;          // identifier for this tab (used by TabbedMDI)
         CWnd* pView;        // pointer to the view window
-        TabPageInfo() : tabIcon(nullptr), tabImage(0), tabID(0), pView(nullptr) {}    // constructor
+        TabPageInfo() : tabIcon(nullptr), tabImage(0), tabID(0), pView(nullptr) {}
     };
 
     struct TABNMHDR
@@ -202,7 +202,7 @@ namespace Win32xx
         virtual LRESULT OnSetFocus(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnTCNSelChange(LPNMHDR pNMHDR);
         virtual LRESULT OnDpiChangedAfterParent(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void    NotifyChanged();
         virtual void    NotifyDragged();
@@ -278,7 +278,7 @@ namespace Win32xx
         virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnSetFocus(UINT, WPARAM, LPARAM);
         virtual BOOL    OnTabClose(int tab);
-        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual void    RecalcLayout();
 
         // Not intended to be overwritten
@@ -349,7 +349,8 @@ namespace Win32xx
         LANGUAGE LANG_NEUTRAL, 0x1
         FONT 8, "MS Shell Dlg"
         {
-           CONTROL "", 122, LISTBOX, LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_TABSTOP, 16, 16, 176, 163 , WS_EX_STATICEDGE
+           CONTROL "", 122, LISTBOX, LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE |
+               WS_VSCROLL | WS_TABSTOP, 16, 16, 176, 163 , WS_EX_STATICEDGE
            CONTROL "Cancel", 2, BUTTON, BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 39, 183, 49, 14
            CONTROL "OK", 1, BUTTON, BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 119, 183, 50, 14
         }
@@ -417,7 +418,7 @@ namespace Win32xx
         assert(IsWindow());
         CWnd* pView = view.get();
         assert(pView);
-        assert(lstrlen(tabText) < WXX_MAX_STRING_SIZE);
+        assert(_tcslen(tabText) < WXX_MAX_STRING_SIZE);
         if (pView == nullptr)
             return nullptr;
 
@@ -527,6 +528,7 @@ namespace Win32xx
             }
             break;
 
+            default: break;
             }
 
             // Draw the close button (a Marlett "r" looks like "X").
@@ -596,6 +598,7 @@ namespace Win32xx
             }
             break;
 
+            default: break;
             }
 
             if (GetWinVersion() >= 3000)  // Windows 10 or later.
@@ -727,8 +730,11 @@ namespace Win32xx
         {
             rc = GetClientRect();
             int gap = DpiScaleInt(1);
-            int cx = GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
-            int cy = GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+            int cx = GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) /
+                GetWindowDpi(HWND_DESKTOP);
+            int cy = GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) /
+                GetWindowDpi(HWND_DESKTOP);
+
             rc.right -= gap;
             rc.left = rc.right - cx;
 
@@ -814,7 +820,7 @@ namespace Win32xx
             tcItem.pszText = str.GetBuffer(WXX_MAX_STRING_SIZE);
             GetItem(i, &tcItem);
             str.ReleaseBuffer();
-            CSize TempSize = dcClient.GetTextExtentPoint32(str, lstrlen(str));
+            CSize TempSize = dcClient.GetTextExtentPoint32(str, static_cast<int>(_tcslen(str)));
 
             int imageSize = 0;
             int padding = DpiScaleInt(10);
@@ -844,7 +850,7 @@ namespace Win32xx
     {
         CClientDC dcClient(*this);
         dcClient.SelectObject(m_tabFont);
-        CSize szText = dcClient.GetTextExtentPoint32(_T("Text"), lstrlen(_T("Text")));
+        CSize szText = dcClient.GetTextExtentPoint32(_T("Text"), static_cast<int>(_tcslen(_T("Text"))));
         return szText.cy;
     }
 
@@ -929,7 +935,7 @@ namespace Win32xx
         LPARAM lparam = reinterpret_cast<LPARAM>(&tabNMHDR);
 
         // The default return value is zero.
-        return static_cast<BOOL>(GetParent().SendMessage(WM_NOTIFY, wparam, lparam));
+        return (GetParent().SendMessage(WM_NOTIFY, wparam, lparam)) ? TRUE : FALSE;
     }
 
     // Called when this object is attached to a tab control.
@@ -1070,6 +1076,8 @@ namespace Win32xx
         switch (pHeader->code)
         {
         case TCN_SELCHANGE: return OnTCNSelChange(pHeader);
+
+        default: break;
         }
 
         return 0;
@@ -1275,13 +1283,13 @@ namespace Win32xx
     // Removes a tab and its view page.
     inline void CTab::RemoveTabPage(int page)
     {
-        if ((page < 0) || (page > static_cast<int>(m_allTabPageInfo.size() -1)))
+        if ((page < 0) || (page >= static_cast<int>(m_allTabPageInfo.size())))
             return;
 
         // Remove the tab.
         DeleteItem(page);
 
-        // Remove the TapPageInfo entry.
+        // Remove the TabPageInfo entry.
         auto itTPI = m_allTabPageInfo.begin() + page;
         CWnd* pView = (*itTPI).pView;
         int image = (*itTPI).tabImage;
@@ -1289,7 +1297,7 @@ namespace Win32xx
             RemoveImage(image);
 
         if (pView == m_pActiveView)
-            m_pActiveView = 0;
+            m_pActiveView = nullptr;
 
         (*itTPI).pView->Destroy();
         m_allTabPageInfo.erase(itTPI);
@@ -1346,7 +1354,9 @@ namespace Win32xx
     inline void CTab::SetOwnerDraw(BOOL isEnabled)
     {
         DWORD style = GetStyle();
-        style = isEnabled ? style | TCS_OWNERDRAWFIXED | TCS_FIXEDWIDTH : style & ~TCS_OWNERDRAWFIXED;
+        style = isEnabled ? style | TCS_OWNERDRAWFIXED | TCS_FIXEDWIDTH :
+            style & ~TCS_OWNERDRAWFIXED;
+
         SetStyle(style);
         UpdateImageList();
         RecalcLayout();
@@ -1371,7 +1381,9 @@ namespace Win32xx
     // Changes or sets the tab's icon.
     inline void CTab::SetTabIcon(int tab, UINT iconID)
     {
-        HICON icon = static_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, 0, 0, LR_SHARED));
+        HICON icon = static_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON,
+            0, 0, LR_SHARED));
+
         SetTabIcon(tab, icon);
     }
 
@@ -1501,7 +1513,9 @@ namespace Win32xx
             // Choosing the frame's CWnd for the menu's messages will automatically theme the popup menu.
             int page = 0;
             m_isListMenuActive = TRUE;
-            page = GetListMenu().TrackPopupMenuEx(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, GetAncestor(), nullptr) - IDW_FIRSTCHILD;
+            page = GetListMenu().TrackPopupMenuEx(TPM_LEFTALIGN | TPM_TOPALIGN |
+                TPM_RETURNCMD, pt.x, pt.y, GetAncestor(), nullptr) - IDW_FIRSTCHILD;
+
             if ((page >= 0) && (page < 9)) SelectPage(page);
             if (page == 9) ShowListDialog();
             m_isListMenuActive = FALSE;
@@ -1627,10 +1641,10 @@ namespace Win32xx
         case WM_WINDOWPOSCHANGED:   return OnWindowPosChanged(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGING:  return OnWindowPosChanging(msg, wparam, lparam);
         case WM_DPICHANGED_AFTERPARENT: return OnDpiChangedAfterParent(msg, wparam, lparam);
-        }
 
-        // Pass unhandled messages on for default processing.
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        // Do default processing for other messages.
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
+        }
     }
 
     // Wrappers for Win32 Macros.
@@ -1646,7 +1660,8 @@ namespace Win32xx
         SendMessage(TCM_ADJUSTRECT, wparam, lparam);
     }
 
-    // Removes all items from a tab control. Use this function to remove tabs added by InsertItem.
+    // Removes all items from a tab control. Use this function to remove tabs
+    // added by InsertItem.
     // Refer to TabCtrl_DeleteAllItems in the Windows API documentation for more information.
     inline BOOL CTab::DeleteAllItems() const
     {
@@ -1664,7 +1679,8 @@ namespace Win32xx
         return TabCtrl_DeleteItem(*this, tab);
     }
 
-    // Resets items in a tab control, clearing any that were set to the TCIS_BUTTONPRESSED state.
+    // Resets items in a tab control, clearing any that were set to the
+    // TCIS_BUTTONPRESSED state.
     // Refer to TabCtrl_DeselectAll in the Windows API documentation for more information.
     inline void CTab::DeselectAll(UINT excludeFocus) const
     {
@@ -1835,7 +1851,8 @@ namespace Win32xx
         return TabCtrl_SetItem(*this, tab, pTabInfo);
     }
 
-    // Sets the number of bytes per tab reserved for application-defined data in a tab control.
+    // Sets the number of bytes per tab reserved for application-defined data
+    // in a tab control.
     // Refer to TabCtrl_SetItemExtra in the Windows API documentation for more information.
     inline BOOL CTab::SetItemExtra(int cb) const
     {
@@ -1889,7 +1906,7 @@ namespace Win32xx
     inline CWnd* CTabbedMDI::AddMDIChild(CWnd* pView, LPCTSTR tabText, int mdiChildID)
     {
         assert(pView); // Cannot add null CWnd*.
-        assert(lstrlen(tabText) < WXX_MAX_STRING_SIZE);
+        assert(_tcslen(tabText) < WXX_MAX_STRING_SIZE);
 
         return AddMDIChild(WndPtr(pView), tabText, mdiChildID);
     }
@@ -1901,7 +1918,7 @@ namespace Win32xx
     {
         CWnd* pView = view.get();
         assert(pView); // Cannot add null CWnd*.
-        assert(lstrlen(tabText) < WXX_MAX_STRING_SIZE);
+        assert(_tcslen(tabText) < WXX_MAX_STRING_SIZE);
 
         GetTab().AddTabPage(std::move(view), tabText, 0U, mdiChildID);
 
@@ -2019,7 +2036,7 @@ namespace Win32xx
         {
             const CString mdiKeyName = _T("Software\\") + CString(keyName) + _T("\\MDI Children");
             CRegKey mdiChildKey;
-            if (ERROR_SUCCESS == mdiChildKey.Open(HKEY_CURRENT_USER, mdiKeyName))
+            if (ERROR_SUCCESS == mdiChildKey.Open(HKEY_CURRENT_USER, mdiKeyName, KEY_READ))
             {
                 DWORD dwTabID;
                 int i = 0;
@@ -2030,14 +2047,12 @@ namespace Win32xx
                 // Fill the DockList vector from the registry.
                 while (ERROR_SUCCESS == mdiChildKey.QueryDWORDValue(tabKeyName, dwTabID))
                 {
-                    tabKeyName.Format(_T("Text%d"), i);
-                    DWORD dwBufferSize = 0;
-                    if (ERROR_SUCCESS == mdiChildKey.QueryStringValue(tabKeyName, 0, &dwBufferSize))
-                    {
-                        int bufferSize = static_cast<int>(dwBufferSize);
-                        mdiChildKey.QueryStringValue(tabKeyName, TabText.GetBuffer(bufferSize), &dwBufferSize);
-                        TabText.ReleaseBuffer();
-                    }
+                    TabText.Empty();
+                    CString textKeyName;
+                    textKeyName.Format(_T("Text%d"), i);
+
+                    if (ERROR_SUCCESS != mdiChildKey.QueryStringValue(textKeyName, TabText))
+                        TRACE("Warning: Failed to read MDI tab text string data.\n");
 
                     int tabID = static_cast<int>(dwTabID);
                     WndPtr child = NewMDIChildFromID(tabID);
@@ -2050,7 +2065,7 @@ namespace Win32xx
                     }
                     else
                     {
-                        TRACE("Failed to get TabbedMDI info from registry");
+                        TRACE("Failed to get TabbedMDI info from registry\n");
                         isLoaded = FALSE;
                         break;
                     }
@@ -2096,7 +2111,7 @@ namespace Win32xx
         return view;
     }
 
-    // Called when the TabbeMDI window is created. (The HWND is attached to CTabbedMDI).
+    // Called when the TabbeMDI window is created.
     inline void CTabbedMDI::OnAttach()
     {
         GetTab().Create(*this);
@@ -2118,14 +2133,11 @@ namespace Win32xx
         assert(pHeader);
         if (pHeader != nullptr)
         {
-
             switch(pHeader->code)
             {
-
             case UMN_TABCHANGED:
                 RecalcLayout();
                 break;
-
             case UWN_TABDRAGGED:
                 {
                     CPoint pt = GetCursorPos();
@@ -2142,19 +2154,16 @@ namespace Win32xx
                             SetActiveMDITab(tab);
                         }
                     }
-
                     break;
                 }
-
             case UWN_TABCLOSE:
                 {
                     TABNMHDR* pTabNMHDR = reinterpret_cast<TABNMHDR*>(pHeader);
                     return !OnTabClose(pTabNMHDR->page);
                 }
-
-            }   // switch(pnmhdr->code)
-
-        }   // if (pHeader == nullptr)
+            default: break;
+            }
+        }
 
         return 0;
     }
@@ -2191,22 +2200,20 @@ namespace Win32xx
         {
             const CString appKeyName = _T("Software\\") + CString(keyName);
             const CString mdiChildrenName = _T("MDI Children");
+            CRegKey appKey;
+            CRegKey mdiChildKey;
+
             try
             {
-                CRegKey appKey;
-                if (ERROR_SUCCESS != appKey.Create(HKEY_CURRENT_USER, appKeyName))
-                    throw CUserException();
-                if (ERROR_SUCCESS != appKey.Open(HKEY_CURRENT_USER, appKeyName))
+                if (ERROR_SUCCESS != appKey.Create(HKEY_CURRENT_USER, appKeyName, REG_NONE, REG_OPTION_NON_VOLATILE, KEY_WRITE))
                     throw CUserException();
 
-                appKey.DeleteSubKey(mdiChildrenName);
-                CRegKey mdiChildKey;
-                if (ERROR_SUCCESS != mdiChildKey.Create(appKey, mdiChildrenName))
-                    throw CUserException();
-                if (ERROR_SUCCESS != mdiChildKey.Open(appKey, mdiChildrenName))
+                appKey.RecurseDeleteKey(mdiChildrenName);
+                if (ERROR_SUCCESS != mdiChildKey.Create(appKey, mdiChildrenName, REG_NONE, REG_OPTION_NON_VOLATILE, KEY_WRITE))
                     throw CUserException();
 
-                for (int i = 0; i < GetMDIChildCount(); ++i)
+                int childCount = GetMDIChildCount();
+                for (int i = 0; i < childCount; ++i)
                 {
                     CString tabKeyName;
                     TabPageInfo pdi = GetTab().GetTabPageInfo(i);
@@ -2217,7 +2224,7 @@ namespace Win32xx
                         throw CUserException();
 
                     tabKeyName.Format(_T("Text%d"), i);
-                    CString TabText = GetTab().GetTabPageInfo(i).tabText;
+                    CString TabText = pdi.tabText;
                     if (ERROR_SUCCESS != mdiChildKey.SetStringValue(tabKeyName, TabText))
                         throw CUserException();
                 }
@@ -2232,12 +2239,13 @@ namespace Win32xx
             {
                 TRACE("*** Failed to save TabbedMDI settings in registry. ***\n");
 
-                // Roll back the registry changes by deleting the subkeys.
-                CRegKey appKey;
-                if (ERROR_SUCCESS == appKey.Open(HKEY_CURRENT_USER, appKeyName))
-                {
-                    appKey.DeleteSubKey(mdiChildrenName);
-                }
+                mdiChildKey.Close();
+                appKey.Close();
+
+                // Roll back the registry changes.
+                if (ERROR_SUCCESS == appKey.Open(HKEY_CURRENT_USER, appKeyName, KEY_WRITE))
+                    appKey.RecurseDeleteKey(mdiChildrenName);
+
 
                 return FALSE;
             }
@@ -2280,11 +2288,11 @@ namespace Win32xx
         case WM_SETFOCUS:           return OnSetFocus(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGED:   return OnWindowPosChanged(msg, wparam, lparam);
         case UWM_GETCTABBEDMDI:     return reinterpret_cast<LRESULT>(this);
-        }
 
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
+        }
     }
 
 } // namespace Win32xx
 
-#endif  // _WIN32XX_TAB_H_
+#endif  // WIN32XX_TAB_H_

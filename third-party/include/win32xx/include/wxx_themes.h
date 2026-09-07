@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -42,8 +42,8 @@
 //  MenuTheme, ReBarTheme, StatusBarTheme and ToolBarTheme
 
 
-#ifndef _WIN32XX_THEMES_H_
-#define _WIN32XX_THEMES_H_
+#ifndef WIN32XX_THEMES_H_
+#define WIN32XX_THEMES_H_
 
 
 namespace Win32xx
@@ -53,7 +53,7 @@ namespace Win32xx
     // Declarations of structures for themes.
     //
 
-    // Defines the theme colors for the MenuBar and popup menues.
+    // Defines the theme colors for the MenuBar and popup menus.
     // The popup menu colors are replaced by the Aero theme if available (Vista and above)
     struct MenuTheme
     {
@@ -113,7 +113,9 @@ namespace Win32xx
         if (module != nullptr)
         {
             // Declare pointers to IsCompositionActive function.
-            FARPROC pIsCompositionActive = ::GetProcAddress(module, "IsCompositionActive");
+            typedef BOOL (WINAPI *PFN_ISCOMPOSITIONACTIVE)();
+            PFN_ISCOMPOSITIONACTIVE pIsCompositionActive = reinterpret_cast<PFN_ISCOMPOSITIONACTIVE>(
+                    reinterpret_cast<void*>(::GetProcAddress(module, "IsCompositionActive")));
 
             if (pIsCompositionActive)
             {
@@ -129,5 +131,5 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_THEMES_H_
+#endif // WIN32XX_THEMES_H_
 

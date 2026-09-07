@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -87,8 +87,8 @@
 //     CDC printerDC = printDialog.GetDefaults();
 //
 
-#ifndef _WIN32XX_PRINTDIALOGS_H_
-#define _WIN32XX_PRINTDIALOGS_H_
+#ifndef WIN32XX_PRINTDIALOGS_H_
+#define WIN32XX_PRINTDIALOGS_H_
 
 #include "wxx_wincore.h"
 #include "wxx_commondlg.h"
@@ -224,7 +224,8 @@ namespace Win32xx
         if (GetApp()->GetHDevNames().Get() == nullptr)
             GetApp()->UpdateDefaultPrinter();
 
-        if ((GetApp()->GetHDevNames().Get() != nullptr) && (GetApp()->GetHDevMode().Get() != nullptr))
+        if ((GetApp()->GetHDevNames().Get() != nullptr) &&
+            (GetApp()->GetHDevMode().Get() != nullptr))
         {
             dc.CreateDC(GetDriverName(), GetDeviceName(),
                 GetPortName(), GetDevMode());
@@ -253,6 +254,8 @@ namespace Win32xx
         //      return x;   // Don't do default processing, but
         //              // instead return a value recommended
         //              // by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault.
@@ -273,14 +276,15 @@ namespace Win32xx
 
             case WM_COMMAND:
             {
-                switch (LOWORD(wparam))
+                if (LOWORD(wparam) == pshHelp)
                 {
-                    case pshHelp:
                     OnHelpButton();
                     return TRUE;
                 }
                 break;
             }
+
+            default: break;
         }
 
         return 0;
@@ -375,15 +379,14 @@ namespace Win32xx
         return str;
     }
 
-    // Returns a pointer to the locked hDevMode memory encapsulated in a CDevMode object.
-    // There is no need to unlock this memory. The CDevMode object automatically
-    // unlocks the memory when it goes out of scope.
+    // Returns a pointer to the locked hDevMode memory encapsulated in a
+    // CDevMode object. There is no need to unlock this memory. The CDevMode
+    // object automatically unlocks the memory when it goes out of scope.
     // Usage:
     //  CDevMode pDevMode = GetDevMode();
     //  Then use pDevMode as if it were a LPDEVMODE.
     inline CDevMode CPrintDialog::GetDevMode() const
     {
-
         if (GetApp()->GetHDevMode().Get() == nullptr)
             GetApp()->UpdateDefaultPrinter();
 
@@ -514,7 +517,6 @@ namespace Win32xx
     // Definitions for the CPageSetupDialog class.
     //
 
-
     // Constructor for CPageSetupDialog class. The flags parameter specifies the
     // flags for the PAGESETUPDLG structure. Refer to the description of the
     // PAGESETUPDLG struct in the Windows API documentation.
@@ -548,6 +550,8 @@ namespace Win32xx
         //      return x;   // Don't do default processing, but
         //              // instead return a value recommended
         //              // by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault.
@@ -569,15 +573,15 @@ namespace Win32xx
 
         case WM_COMMAND:
             {
-                switch (LOWORD(wparam))
+                if (LOWORD(wparam) == pshHelp)
                 {
-                case pshHelp:
                     OnHelpButton();
                     return TRUE;
-
                 }
                 break;
             }
+
+        default: break;
         }
 
         return 0;
@@ -723,6 +727,8 @@ namespace Win32xx
                 return static_cast<INT_PTR>(pDlg->OnDrawPage(
                     reinterpret_cast<HDC>(wparam), message, rc));
             }
+
+        default: break;
         }
         return 0;
     }
@@ -755,11 +761,13 @@ namespace Win32xx
         m_psd.hInstance         = GetApp()->GetResourceHandle();
         m_psd.lCustData         = psd.lCustData;
         m_psd.lpfnPageSetupHook = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
-        m_psd.lpfnPagePaintHook = reinterpret_cast<LPCCHOOKPROC>(CPageSetupDialog::PaintHookProc);
+        m_psd.lpfnPagePaintHook = reinterpret_cast<LPCCHOOKPROC>(
+            CPageSetupDialog::PaintHookProc);
+
         m_psd.lpPageSetupTemplateName = psd.lpPageSetupTemplateName;
         m_psd.hPageSetupTemplate = psd.hPageSetupTemplate;
     }
 
 }
 
-#endif // _WIN32XX_PRINTDIALOGS_H_
+#endif // WIN32XX_PRINTDIALOGS_H_

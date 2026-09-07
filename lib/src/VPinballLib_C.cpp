@@ -38,9 +38,9 @@ VPINBALLAPI const char* VPinballGetVersionStringFull()
    return version.c_str();
 }
 
-VPINBALLAPI void VPinballInit(VPinballEventCallback callback)
+VPINBALLAPI void VPinballInit(VPinballEventCallback eventCallback, VPinballRumbleCallback rumbleCallback)
 {
-   VPinballLib::VPinballLib::Instance().Init(callback);
+   VPinballLib::VPinballLib::Instance().Init(eventCallback, rumbleCallback);
 }
 
 VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* pMessage)

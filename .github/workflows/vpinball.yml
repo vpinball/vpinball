@@ -91,17 +91,13 @@ jobs:
           if [[ "${{ needs.context.outputs.is_pr }}" != "true" ]]; then
             DESKTOP='{"include":[
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Debug"},
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x86","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x86","config":"Debug"},
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"x64","config":"Release"},
               {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x86","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x64","config":"Debug"},
-              {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x86","config":"Debug"},
               {"os":"macos-15","type":"GL","platform":"macos","arch":"arm64","config":"Release"},
               {"os":"macos-15","type":"GL","platform":"macos","arch":"x64","config":"Release"},
               {"os":"ubuntu-24.04","type":"GL","platform":"linux","arch":"x64","config":"Release"}
@@ -114,9 +110,7 @@ jobs:
             ]}'
             DX='{"include":[
               {"platform":"windows","arch":"x64","config":"Release"},
-              {"platform":"windows","arch":"x64","config":"Debug"},
-              {"platform":"windows","arch":"x86","config":"Release"},
-              {"platform":"windows","arch":"x86","config":"Debug"}
+              {"platform":"windows","arch":"x86","config":"Release"}
             ]}'
             ANDROID_FLAVORS='["quest","mobile"]'
           else
@@ -289,6 +283,11 @@ jobs:
             else
               cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}.exe stage
             fi
+            if [[ "${{ matrix.platform }}" == "windows" ]]; then
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.pdb stage
+            else
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.debug stage
+            fi
             cp build/${{ matrix.config }}/*.dll stage
             if [[ "${{ matrix.type }}" == "GL" ]]; then
               cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
@@ -391,6 +390,7 @@ jobs:
           else
             cp build/${{ matrix.config }}/VPinballX.exe stage
           fi
+          cp build/${{ matrix.config }}/VPinballX*.pdb stage
           cp build/${{ matrix.config }}/*.dll stage
           cp -r build/${{ matrix.config }}/assets stage
           cp -r build/${{ matrix.config }}/scripts stage

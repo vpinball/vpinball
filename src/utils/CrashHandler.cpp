@@ -13,10 +13,6 @@
 #include <cassert>
 #include "core/vpversion.h"
 
-#ifdef ENABLE_BGFX
-#include "bx/readerwriter.h"
-#endif
-
 namespace
 {
    static string s_miniDumpFileName = "crash.dmp"s;
@@ -272,19 +268,9 @@ namespace
 
    void WriteCallStack(FILE* f, PCONTEXT context)
    {
-      #ifdef ENABLE_BGFX
-      char temp[8192];
-      bx::StaticMemoryBlockWriter smb(temp, BX_COUNTOF(temp));
-      uintptr_t stack[32];
-      const uint32_t num = bx::getCallStackExact(3, BX_COUNTOF(stack), stack); // 3 to skip exception handler calls
-      const int32_t total = bx::writeCallstack(&smb, stack, num, bx::ErrorIgnore {});
-      temp[total] = '\0';
-      fprintf(f, "Call stack\n==========\n%s\n", temp);
-      #else
       char callStack[2048] = {};
       rde::StackTrace::GetCallStack(context, true, callStack, sizeof(callStack) - 1);
       fprintf(f, "Call stack\n==========\n%s\n", callStack);
-      #endif
    }
 
    volatile bool s_inFilter = 0;

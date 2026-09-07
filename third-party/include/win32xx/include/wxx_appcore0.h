@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -37,8 +37,8 @@
 
 
 
-#ifndef _WIN32XX_APPCORE0_H_
-#define _WIN32XX_APPCORE0_H_
+#ifndef WIN32XX_APPCORE0_H_
+#define WIN32XX_APPCORE0_H_
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,9 @@ namespace Win32xx
     class CWindowDC;
     class CWnd;
     struct CDC_Data;
+    struct CGDI_Data;
+    struct CMenu_Data;
+    struct CIml_Data;
     struct EnhMetaFileData;
     struct MenuItemData;
     struct MetaFileData;
@@ -106,36 +109,6 @@ namespace Win32xx
     using WinThreadPtr = std::unique_ptr<CWinThread>;
     using WorkThreadPtr = std::unique_ptr<CWorkThread>;
     using WndPtr = std::unique_ptr<CWnd>;
-
-    // A structure that contains the data members for CGDIObject.
-    struct CGDI_Data
-    {
-        // Constructor
-        CGDI_Data() : hGDIObject(nullptr), isManagedObject(false) {}
-
-        HGDIOBJ hGDIObject;
-        bool    isManagedObject;
-    };
-
-    // A structure that contains the data members for CImageList.
-    struct CIml_Data
-    {
-        // Constructor
-        CIml_Data() : images(nullptr), isManagedHiml(false) {}
-
-        HIMAGELIST  images;
-        bool        isManagedHiml;
-    };
-
-    // A structure that contains the data members for CMenu.
-    struct CMenu_Data
-    {
-        // Constructor
-        CMenu_Data() : menu(nullptr), isManagedMenu(false) {}
-
-        HMENU menu;
-        bool isManagedMenu;
-    };
 
     // Used for Thread Local Storage (TLS)
     struct TLSData
@@ -157,7 +130,7 @@ namespace Win32xx
 
 
     ///////////////////////////////////////////////////////////////////
-    // CGlobaLock is a class template used to provide a self unlocking
+    // CGlobalLock is a class template used to provide a self unlocking
     // object to global memory. It is used to provide convenient access
     // to the memory provided by hDevMode and hDevNames handles.
     // The framework uses this class to eliminate the need to manually
@@ -217,6 +190,10 @@ namespace Win32xx
         friend class CPropertyPage;
         friend class CWinThread;
         friend class CWnd;
+        friend struct CDC_Data;
+        friend struct CGDI_Data;
+        friend struct CIml_Data;
+        friend struct CMenu_Data;
         friend CWinApp* GetApp();
         friend BOOL IsAppRunning();
 
@@ -236,7 +213,7 @@ namespace Win32xx
         HCURSOR   LoadCursor(UINT cursorID) const;
         HICON     LoadIcon(LPCTSTR resourceName) const;
         HICON     LoadIcon(UINT iconID) const;
-        HANDLE    LoadImage(LPCTSTR resourceName, UINT type, int cx, int  cy,
+        HANDLE    LoadImage(LPCTSTR resourceName, UINT type, int cx, int cy,
             UINT flags = LR_DEFAULTCOLOR) const;
         HANDLE    LoadImage(UINT imageID, UINT type, int cx, int cy,
             UINT flags = LR_DEFAULTCOLOR) const;
@@ -269,14 +246,11 @@ namespace Win32xx
         void RemoveMenuFromMap(HMENU menu);
         void SetCallback();
         void SetTlsData();
-
-        static CWinApp* SetnGetThis(CWinApp* pThis = nullptr, bool reset = false);
-
-        std::map<HDC, std::weak_ptr<CDC_Data>> m_mapCDCData;
-        std::map<HGDIOBJ, std::weak_ptr<CGDI_Data>> m_mapCGDIData;
-        std::map<HIMAGELIST, std::weak_ptr<CIml_Data>> m_mapCImlData;
-        std::map<HMENU, std::weak_ptr<CMenu_Data>> m_mapCMenuData;
-        std::map<HWND, CWnd*> m_mapHWND;       // maps window handles to CWnd objects
+        std::unordered_map<HDC, std::weak_ptr<CDC_Data>> m_mapCDCData;
+        std::unordered_map<HGDIOBJ, std::weak_ptr<CGDI_Data>> m_mapCGDIData;
+        std::unordered_map<HIMAGELIST, std::weak_ptr<CIml_Data>> m_mapCImlData;
+        std::unordered_map<HMENU, std::weak_ptr<CMenu_Data>> m_mapCMenuData;
+        std::unordered_map<HWND, CWnd*> m_mapHWND;  // maps window handles to CWnd objects
         std::vector<TLSDataPtr> m_allTLSData;  // vector of TLSData smart pointers, one for each thread
         CCriticalSection m_appLock;   // thread synchronization for CWinApp and TLS
         CCriticalSection m_gdiLock;   // thread synchronization for m_mapCDCData and m_mapCGDIData
@@ -285,9 +259,11 @@ namespace Win32xx
         HINSTANCE m_instance;         // handle to the application's instance
         HINSTANCE m_resource;         // handle to the application's resources
         DWORD m_tlsData;              // Thread Local Storage data
-        WNDPROC m_callback;           // callback address of CWnd::StaticWndowProc
+        WNDPROC m_callback;           // callback address of CWnd::StaticWindowProc
         CHGlobal m_devMode;           // Used by CPrintDialog and CPageSetupDialog
         CHGlobal m_devNames;          // Used by CPrintDialog and CPageSetupDialog
+
+        inline static CWinApp* m_pCWinApp = nullptr;
 
     public:
         // Message strings used for exceptions.
@@ -323,12 +299,13 @@ namespace Win32xx
         // Message strings used for files.
         virtual CString MsgFileClose() const;
         virtual CString MsgFileFlush() const;
+        virtual CString MsgFileLength() const;
         virtual CString MsgFileLock() const;
         virtual CString MsgFileOpen() const;
         virtual CString MsgFileRead() const;
         virtual CString MsgFileRename() const;
         virtual CString MsgFileRemove() const;
-        virtual CString MsgFileLength() const;
+        virtual CString MsgFileSeek() const;
         virtual CString MsgFileUnlock() const;
         virtual CString MsgFileWrite() const;
 
@@ -369,10 +346,6 @@ namespace Win32xx
 
         // Message string used for time.
         virtual CString MsgTimeValid() const;
-
-        // Message used for CWinApp.
-        virtual CString MsgCWinApp() const;
-        virtual CString MsgTlsIndexes() const;
     };
 
     // Returns a pointer to the CWinApp object.
@@ -380,7 +353,7 @@ namespace Win32xx
     // or an object inherited from CWinApp to start Win32++.
     inline CWinApp* GetApp()
     {
-        CWinApp* pApp = CWinApp::SetnGetThis();
+       CWinApp* pApp = CWinApp::m_pCWinApp;
         assert(pApp);  // This assert fails if Win32++ isn't started.
         return pApp;
     }
@@ -389,10 +362,73 @@ namespace Win32xx
     // object, or an object inherited from CWinApp to start Win32++.
     inline BOOL IsAppRunning()
     {
-        return  (CWinApp::SetnGetThis() != nullptr);
+        return  (CWinApp::m_pCWinApp != nullptr) ? TRUE : FALSE;
     }
+
+    // A structure that contains the data members for CGDIObject.
+    struct CGDI_Data
+    {
+        // Constructor and destructor.
+        CGDI_Data() : hGDIObject(nullptr), isManagedObject(false) {}
+        ~CGDI_Data()
+        {
+            if (hGDIObject != nullptr)
+            {
+                GetApp()->RemoveGDIObjectFromMap(hGDIObject);
+                if (isManagedObject)
+                {
+                    ::DeleteObject(hGDIObject);
+                }
+            }
+        }
+
+        HGDIOBJ hGDIObject;
+        bool    isManagedObject;
+    };
+
+    // A structure that contains the data members for CImageList.
+    struct CIml_Data
+    {
+        // Constructor and destructor.
+        CIml_Data() : images(nullptr), isManagedHiml(false) {}
+        ~CIml_Data()
+        {
+            if (images != nullptr)
+            {
+                GetApp()->RemoveImageListFromMap(images);
+                if (isManagedHiml)
+                {
+                    ::ImageList_Destroy(images);
+                }
+            }
+        }
+
+        HIMAGELIST  images;
+        bool        isManagedHiml;
+    };
+
+    // A structure that contains the data members for CMenu.
+    struct CMenu_Data
+    {
+        // Constructor and destructor.
+        CMenu_Data() : menu(nullptr), isManagedMenu(false) {}
+        ~CMenu_Data()
+        {
+            if (menu != nullptr)
+            {
+                GetApp()->RemoveMenuFromMap(menu);
+                if (isManagedMenu)
+                {
+                    ::DestroyMenu(menu);
+                }
+            }
+        }
+
+        HMENU menu;
+        bool isManagedMenu;
+    };
 
 } // namespace Win32xx
 
 
-#endif // _WIN32XX_APPCORE0_H_
+#endif // WIN32XX_APPCORE0_H_

@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -41,8 +41,8 @@
 // in developing this class.
 
 
-#ifndef _WIN32XX_PREVIEW_H_
-#define _WIN32XX_PREVIEW_H_
+#ifndef WIN32XX_PREVIEW_H_
+#define WIN32XX_PREVIEW_H_
 
 #include "wxx_wincore.h"
 #include "wxx_dialog.h"
@@ -178,11 +178,11 @@ namespace Win32xx
         virtual void UpdateButtons();
 
     protected:
+        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual void OnCancel() override { OnCloseButton(); }
+        virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
         virtual BOOL OnInitDialog() override;
         virtual void OnOK() override { OnCloseButton(); }
-        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
-        virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
 
     private:
         CPrintPreview(const CPrintPreview&) = delete;
@@ -276,6 +276,9 @@ namespace Win32xx
         if (m_bitmap.GetHandle())
         {
             BITMAP bm = m_bitmap.GetBitmapData();
+            if (bm.bmWidth <= 0 || bm.bmHeight <= 0)
+                return;
+
             int border = 10;
             CRect rcClient = GetClientRect();
 
@@ -353,7 +356,7 @@ namespace Win32xx
     template <typename T>
     inline CPrintPreview<T>::CPrintPreview(T& source)
         : CDialog(reinterpret_cast<LPCDLGTEMPLATE>(previewTemplate)),
-        m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
+        m_pSource(nullptr), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
     {
         m_pPreviewPane = &m_previewPane;
         SetSource(source);
@@ -363,16 +366,36 @@ namespace Win32xx
     template <typename T>
     inline INT_PTR CPrintPreview<T>::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        // Pass resizing messages on to the resizer
-        m_resizer.HandleMessage(msg, wparam, lparam);
+        try
+        {
+            // Pass resizing messages on to the resizer
+            m_resizer.HandleMessage(msg, wparam, lparam);
 
-        //  switch (msg)
-        //  {
-        //  Additional messages to be handled go here
-        //  }
+            // Pass unhandled messages on to parent DialogProc
+            return DialogProcDefault(msg, wparam, lparam);
+        }
 
-        // Pass unhandled messages on to parent DialogProc
-        return DialogProcDefault(msg, wparam, lparam);
+        // Catch all unhandled CException types.
+        catch (const CException& e)
+        {
+            // Display the exception and continue.
+            CString str1;
+            str1 << L"Error: " << e.what();
+            CString str2;
+            str2 << e.GetText() << L'\n' << e.GetErrorString();
+
+            Trace(str1 + "   " + str2 + "\n");
+        }
+
+        // Catch all unhandled std::exception types.
+        catch (const std::exception& e)
+        {
+            // Display the exception and continue.
+            CString str1 = e.what();
+            Trace(str1 + "\n");
+        }
+
+        return 0;
     }
 
     // Called when the close button is pressed.
@@ -395,9 +418,9 @@ namespace Win32xx
         case IDW_PREVIEWPREV:    return OnPrevButton();
         case IDW_PREVIEWNEXT:    return OnNextButton();
         case IDW_PREVIEWCLOSE:   return OnCloseButton();
-        }
 
-        return FALSE;
+        default: return FALSE;
+        }
     }
 
     // Called when the dialog is initialized.
@@ -426,7 +449,8 @@ namespace Win32xx
         m_resizer.AddChild(m_buttonPrev, CResizer::topleft, 0);
         m_resizer.AddChild(m_buttonNext, CResizer::topleft, 0);
         m_resizer.AddChild(m_buttonClose, CResizer::topleft, 0);
-        m_resizer.AddChild(GetPreviewPane(), CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+        m_resizer.AddChild(GetPreviewPane(), CResizer::topleft,
+            RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
         return TRUE;
     }
@@ -502,6 +526,10 @@ namespace Win32xx
         int width = printerDC.GetDeviceCaps(HORZRES);
         int height = printerDC.GetDeviceCaps(VERTRES);
 
+        // Validate device dimensions.
+        if (width <= 0 || height <= 0)
+            throw CResourceException(GetApp()->MsgPrintFound());
+
         // A bitmap to hold all the pixels of the printed page would be too large.
         // Shrinking its dimensions by 4 reduces it to 1/16th its original size.
         int shrink = width > 8000 ? 8 : 4;
@@ -521,6 +549,9 @@ namespace Win32xx
 
         // Detach the bitmap from the memory DC and save it.
         CBitmap bitmap = memDC.DetachBitmap();
+        if (!bitmap.GetHandle())
+            throw CResourceException(GetApp()->MsgPrintFound());
+
         GetPreviewPane().SetBitmap(bitmap);
 
         // Display the print preview.
@@ -540,4 +571,4 @@ namespace Win32xx
 }
 
 
-#endif // _WIN32XX_PREVIEW_H_
+#endif // WIN32XX_PREVIEW_H_

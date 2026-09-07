@@ -3,20 +3,12 @@ import SwiftUI
 class VPinballManager {
     static let shared = VPinballManager()
 
-    let impactGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [
-        .heavy: UIImpactFeedbackGenerator(style: .heavy),
-        .light: UIImpactFeedbackGenerator(style: .light),
-        .medium: UIImpactFeedbackGenerator(style: .medium),
-        .rigid: UIImpactFeedbackGenerator(style: .rigid),
-        .soft: UIImpactFeedbackGenerator(style: .soft),
-    ]
-
-    private init() {
-        impactGenerators.forEach { $0.value.prepare() }
-    }
+    private init() {}
 
     func startup() {
-        VPinballInit { value, data in
+        HapticsManager.shared.start()
+
+        VPinballInit({ value, data in
             let event = VPinballEvent(rawValue: value)
             switch event {
             case .extractScript,
@@ -44,16 +36,6 @@ class VPinballManager {
             case .playerStarted:
                 Task { @MainActor in
                     VPinballModel.shared.isPlaying = true
-                }
-            case .rumble:
-                if let data = data {
-                    let json = String(cString: UnsafePointer<CChar>(data))
-                    if let jsonData = json.data(using: .utf8),
-                       let rumbleData = try? JSONDecoder().decode(RumbleData.self,
-                                                                  from: jsonData)
-                    {
-                        VPinballManager.shared.rumble(rumbleData)
-                    }
                 }
             case .playerClosed:
                 Task { @MainActor in
@@ -104,7 +86,11 @@ class VPinballManager {
             default:
                 break
             }
-        }
+        }, { lowFrequencySpeed, highFrequencySpeed, durationMs in
+            HapticsManager.shared.play(lowFrequencySpeed: lowFrequencySpeed,
+                                       highFrequencySpeed: highFrequencySpeed,
+                                       durationMs: durationMs)
+        })
     }
 
     static func log(_ level: VPinballLogLevel, _ message: String) {
@@ -149,26 +135,6 @@ class VPinballManager {
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: String) {
         VPinballSaveValueString(section.rawValue.cstring, key.cstring, value.cstring)
-    }
-
-    func rumble(_ data: RumbleData) {
-        if data.lowFrequencyRumble > 0 || data.highFrequencyRumble > 0 {
-            let style: UIImpactFeedbackGenerator.FeedbackStyle
-
-            if data.lowFrequencyRumble == data.highFrequencyRumble {
-                style = .rigid
-            } else if data.lowFrequencyRumble > 20000 || data.highFrequencyRumble > 20000 {
-                style = .heavy
-            } else if data.lowFrequencyRumble > 10000 || data.highFrequencyRumble > 10000 {
-                style = .medium
-            } else if data.lowFrequencyRumble > 1000 || data.highFrequencyRumble > 1000 {
-                style = .light
-            } else {
-                style = .soft
-            }
-
-            impactGenerators[style]?.impactOccurred()
-        }
     }
 
     func play(table: Table) async -> Bool {

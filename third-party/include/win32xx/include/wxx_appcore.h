@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,8 +36,8 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_APPCORE_H_
-#define _WIN32XX_APPCORE_H_
+#ifndef WIN32XX_APPCORE_H_
+#define WIN32XX_APPCORE_H_
 
 
 ///////////////////////////////////////////////////////
@@ -146,12 +146,30 @@ namespace Win32xx
 
 #ifndef WIN32_LEAN_AND_MEAN
 
+    template <class T>
+    inline LPCTSTR CGlobalLock<T>::c_str() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "c_str() is only supported for CDevNames.");
+
+        return nullptr;
+    }
+
     // Returns a const TCHAR* for the DEVNAMES in the global memory.
     template <>
     inline LPCTSTR CDevNames::c_str() const
     {
         assert(m_p != nullptr);
         return reinterpret_cast<LPCTSTR>(m_p);
+    }
+
+    template <class T>
+    inline LPTSTR CGlobalLock<T>::GetString() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "GetString() is only supported for CDevNames.");
+
+        return nullptr;
     }
 
     // Returns a TCHAR* for the DEVNAMES in global the memory.
@@ -162,12 +180,30 @@ namespace Win32xx
         return reinterpret_cast<LPTSTR>(m_p);
     }
 
+    template <class T>
+    inline CString CGlobalLock<T>::GetDeviceName() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "GetDeviceName() is only supported for CDevNames.");
+
+        return _T("");
+    }
+
     // Returns a CString containing the DeviceName from the DEVNAMES
     // in global the memory.
     template<>
     inline CString CDevNames::GetDeviceName() const
     {
         return (m_p != nullptr) ? c_str() + (*this)->wDeviceOffset : _T("");
+    }
+
+    template<class T>
+    inline CString CGlobalLock<T>::GetDriverName() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "GetDriverName() is only supported for CDevNames.");
+
+        return _T("");
     }
 
     // Returns a CString containing the GetDriverName from the DEVNAMES
@@ -178,12 +214,30 @@ namespace Win32xx
         return (m_p != nullptr) ? c_str() + (*this)->wDriverOffset : _T("");
     }
 
+    template<class T>
+    inline CString CGlobalLock<T>::GetPortName() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "GetPortName() is only supported for CDevNames.");
+
+        return _T("");
+    }
+
     // Returns a CString containing the GetPortName from the DEVNAMES
     // in global the memory.
     template<>
     inline CString CDevNames::GetPortName() const
     {
         return (m_p != nullptr) ? c_str() + (*this)->wOutputOffset : _T("");
+    }
+
+    template<class T>
+    inline bool CGlobalLock<T>::IsDefaultPrinter() const
+    {
+        static_assert(std::is_same_v<T, CDevNames>,
+            "IsDefaultPrinter() is only supported for CDevNames.");
+
+        return false;
     }
 
     // Returns true if the DEVNAMES in the global memory is for the
@@ -204,22 +258,19 @@ namespace Win32xx
     inline CWinApp::CWinApp() : m_callback(nullptr)
     {
         CThreadLock appLock(m_appLock);
+        m_tlsData = ::TlsAlloc();
 
-        if (SetnGetThis() == nullptr)
+        // Set the instance handle.
+        m_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+        m_resource = m_instance;
+
+        if (m_pCWinApp == nullptr)
         {
-            m_tlsData = ::TlsAlloc();
-
             // An exception is thrown if all TLS indexes are already allocated by this app.
             // At least 64 TLS indexes per process are allowed.
             // Win32++ requires only one TLS index.
             if (m_tlsData != TLS_OUT_OF_INDEXES)
             {
-                SetnGetThis(this);
-
-                // Set the instance handle.
-                m_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-                m_resource = m_instance;
                 SetTlsData();
                 SetCallback();
                 LoadCommonControls();
@@ -230,13 +281,16 @@ namespace Win32xx
                 //       with COINIT_APARTMENTTHREADED, and provides support
                 //       for other OLE functionality.
                 VERIFY(SUCCEEDED(OleInitialize(nullptr)));
+
+                // Store the pointer to this CWinApp object.
+                CWinApp::m_pCWinApp = this;
             }
             else
-                throw CNotSupportedException(MsgTlsIndexes());
+                throw CResourceException(_T("No available Thread Local Storage Indexes."));
         }
         else
             // Throw an exception if we run more than one instance of CWinApp.
-            throw CNotSupportedException(MsgCWinApp());
+            throw CNotSupportedException(_T("Only one instance of CWinApp can run at a time"));
     }
 
     // Destructor
@@ -261,39 +315,42 @@ namespace Win32xx
             ::TlsFree(m_tlsData);
         }
 
-        SetnGetThis(nullptr, true);
         if (m_resource != m_instance)
             ::FreeLibrary(m_resource);
 
         OleUninitialize();
+
+        // Clear the stored CWinApp pointer before the CWinApp object is
+        // destroyed.
+        CWinApp::m_pCWinApp = nullptr;
     }
 
     // Adds a HDC and CDC_Data* pair to the map.
     inline void CWinApp::AddCDCDataToMap(HDC dc, std::weak_ptr<CDC_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
-        m_mapCDCData.emplace(std::make_pair(dc, pData));
+        m_mapCDCData[dc] = pData;
     }
 
     // Adds a HGDIOBJ and CGDI_Data* pair to the map.
     inline void CWinApp::AddCGDIDataToMap(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
-        m_mapCGDIData.emplace(std::make_pair(gdi, pData));
+        m_mapCGDIData[gdi] = pData;
     }
 
     // Adds a HIMAGELIST and CIml_Data* pair to the map.
     inline void CWinApp::AddCImlDataToMap(HIMAGELIST images, std::weak_ptr<CIml_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
-        m_mapCImlData.emplace(std::make_pair(images, pData));
+        m_mapCImlData[images] = pData;
     }
 
     // Adds a HMENU and CMenu_Data* to the map.
     inline void CWinApp::AddCMenuDataToMap(HMENU menu, std::weak_ptr<CMenu_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
-        m_mapCMenuData.emplace(std::make_pair(menu, pData));
+        m_mapCMenuData[menu] = pData;
     }
 
     // Adds the window handle and CWnd pointer in the HWND map.
@@ -301,14 +358,11 @@ namespace Win32xx
     {
         CThreadLock mapLock(m_wndLock);
 
-        // This HWND is should not be in the map yet.
+        // This HWND should not be in the map yet.
         assert(GetCWndFromMap(wnd) == nullptr);
 
-        // Remove any old map entry for this CWnd (required when the CWnd is reused).
-        RemoveCWndFromMap(pWnd);
-
         // Add the (HWND, CWnd*) pair to the map
-        m_mapHWND.emplace(std::make_pair(wnd, pWnd));
+        m_mapHWND[wnd] = pWnd;
     }
 
     // Retrieves a pointer to CDC_Data from the map.
@@ -317,12 +371,11 @@ namespace Win32xx
         CThreadLock mapLock(m_gdiLock);
 
         // Find the CDC data mapped to this HDC.
-        std::weak_ptr<CDC_Data> pCDCData;
         auto m = m_mapCDCData.find(dc);
         if (m != m_mapCDCData.end())
-            pCDCData = m->second;
+            return m->second;
 
-        return pCDCData;
+        return std::weak_ptr<CDC_Data>();
     }
 
     // Retrieves a pointer to CGDI_Data from the map.
@@ -331,12 +384,11 @@ namespace Win32xx
         CThreadLock mapLock(m_gdiLock);
 
         // Find the CGDIObject data mapped to this HGDIOBJ.
-        std::weak_ptr<CGDI_Data> pCGDIData;
         auto m = m_mapCGDIData.find(object);
         if (m != m_mapCGDIData.end())
-            pCGDIData = m->second;
+            return m->second;
 
-        return pCGDIData;
+        return std::weak_ptr<CGDI_Data>();
     }
 
     // Retrieves a pointer to CIml_Data from the map.
@@ -345,12 +397,11 @@ namespace Win32xx
         CThreadLock mapLock(m_gdiLock);
 
         // Find the CImageList data mapped to this HIMAGELIST.
-        std::weak_ptr<CIml_Data> pCImlData;
         auto m = m_mapCImlData.find(images);
         if (m != m_mapCImlData.end())
-            pCImlData = m->second;
+            return m->second;
 
-        return pCImlData;
+        return std::weak_ptr<CIml_Data>();
     }
 
     // Retrieves a pointer to CMenu_Data from the map.
@@ -359,12 +410,11 @@ namespace Win32xx
         CThreadLock mapLock(m_wndLock);
 
         // Find the CMenu data mapped to this HMENU.
-        std::weak_ptr<CMenu_Data> pCMenuData;
         auto m = m_mapCMenuData.find(menu);
         if (m != m_mapCMenuData.end())
-            pCMenuData = m->second;
+            return m->second;
 
-        return pCMenuData;
+        return std::weak_ptr<CMenu_Data>();
     }
 
     // Retrieves the CWnd pointer associated with the specified wnd.
@@ -404,14 +454,24 @@ namespace Win32xx
     // Refer to LoadCursor in the Windows API documentation for more information.
     inline HCURSOR CWinApp::LoadCursor(LPCTSTR resourceName) const
     {
-        return ::LoadCursor(GetResourceHandle(), resourceName);
+        HCURSOR h = ::LoadCursor(GetResourceHandle(), resourceName);
+        if (h == nullptr)
+        {
+            TRACE("LoadCursor(resourceName) failed\n");
+        }
+        return h;
     }
 
     // Loads the cursor resource from the resource script (resource.rc)
     // Refer to LoadCursor in the Windows API documentation for more information.
     inline HCURSOR CWinApp::LoadCursor(UINT cursorID) const
     {
-        return ::LoadCursor(GetResourceHandle(), MAKEINTRESOURCE (cursorID));
+        HCURSOR h = ::LoadCursor(GetResourceHandle(), MAKEINTRESOURCE(cursorID));
+        if (h == nullptr)
+        {
+            TRACE("LoadCursor(cursorID) failed\n");
+        }
+        return h;
     }
 
     // Returns the handle of a standard cursor. Standard cursors include:
@@ -420,7 +480,12 @@ namespace Win32xx
     // Refer to LoadCursor in the Windows API documentation for more information.
     inline HCURSOR CWinApp::LoadStandardCursor(LPCTSTR cursorName) const
     {
-        return ::LoadCursor(nullptr, cursorName);
+        HCURSOR h = ::LoadCursor(nullptr, cursorName);
+        if (h == nullptr)
+        {
+            TRACE("LoadStandardCursor failed\n");
+        }
+        return h;
     }
 
     // Loads the icon resource whose size conforms to the SM_CXICON and SM_CYICON system metric values.
@@ -428,14 +493,24 @@ namespace Win32xx
     // Refer to LoadIcon in the Windows API documentation for more information.
     inline HICON CWinApp::LoadIcon(LPCTSTR resourceName) const
     {
-        return ::LoadIcon(GetResourceHandle(), resourceName);
+        HICON h = ::LoadIcon(GetResourceHandle(), resourceName);
+        if (h == nullptr)
+        {
+            TRACE("LoadIcon(resourceName) failed\n");
+        }
+        return h;
     }
 
     // Loads the icon resource whose size conforms to the SM_CXICON and SM_CYICON system metric values.
     // Refer to LoadIcon in the Windows API documentation for more information.
     inline HICON CWinApp::LoadIcon(UINT iconID) const
     {
-        return ::LoadIcon(GetResourceHandle(), MAKEINTRESOURCE (iconID));
+        HICON h = ::LoadIcon(GetResourceHandle(), MAKEINTRESOURCE(iconID));
+        if (h == nullptr)
+        {
+            TRACE("LoadIcon(iconID) failed\n");
+        }
+        return h;
     }
 
     // Returns the handle of a standard Icon. Standard Icons include:
@@ -444,7 +519,12 @@ namespace Win32xx
     // Refer to LoadIcon in the Windows API documentation for more information.
     inline HICON CWinApp::LoadStandardIcon(LPCTSTR iconName) const
     {
-        return ::LoadIcon(nullptr, iconName);
+        HICON h = ::LoadIcon(nullptr, iconName);
+        if (h == nullptr)
+        {
+            TRACE("LoadStandardIcon failed\n");
+        }
+        return h;
     }
 
     // Loads an icon, cursor, animated cursor, or bitmap image.
@@ -468,7 +548,12 @@ namespace Win32xx
     // Refer to LoadImage in the Windows API documentation for more information.
     inline HANDLE CWinApp::LoadImage(UINT imageID, UINT type, int cx, int cy, UINT flags) const
     {
-        return ::LoadImage(GetResourceHandle(), MAKEINTRESOURCE (imageID), type, cx, cy, flags);
+        HANDLE h = ::LoadImage(GetResourceHandle(), MAKEINTRESOURCE(imageID), type, cx, cy, flags);
+        if (h == nullptr)
+        {
+            TRACE("LoadImage(imageID) failed\n");
+        }
+        return h;
     }
 
     // Removes this CWnd's pointer from m_mapHWND.
@@ -476,11 +561,11 @@ namespace Win32xx
     {
         CThreadLock mapLock(m_wndLock);
 
-        // Erase the CWnd pointer entry from the map.
         auto& map = GetApp()->m_mapHWND;
         for (auto it = map.begin(); it != map.end(); ++it)
         {
-            if (pWnd == it->second)
+            auto& [hwnd, wndPtr] = *it;
+            if (pWnd == wndPtr)
             {
                 map.erase(it);
                 break;
@@ -555,21 +640,7 @@ namespace Win32xx
     // address of CWnd::StaticWindowProc.
     inline void CWinApp::SetCallback()
     {
-        WNDCLASS defaultWC = {};
-        LPCTSTR className    = _T("Win32++ Temporary Window Class");
-        defaultWC.hInstance     = GetInstanceHandle();
-        defaultWC.lpfnWndProc   = CWnd::StaticWindowProc;
-        defaultWC.lpszClassName = className;
-        VERIFY(::RegisterClass(&defaultWC));
-
-        // Retrieve the class information.
-        defaultWC = {};
-        VERIFY(::GetClassInfo(GetInstanceHandle(), className, &defaultWC));
-
-        // Save the callback address of CWnd::StaticWindowProc.
-        assert(defaultWC.lpfnWndProc);  // Assert fails when running UNICODE build on ANSI OS.
-        m_callback = defaultWC.lpfnWndProc;
-        VERIFY(::UnregisterClass(className, GetInstanceHandle()));
+        m_callback = CWnd::StaticWindowProc;
     }
 
     // Sets the current cursor and returns the previous one.
@@ -580,29 +651,6 @@ namespace Win32xx
     inline HCURSOR CWinApp::SetCursor(HCURSOR cursor) const
     {
         return ::SetCursor(cursor);
-    }
-
-    // This function stores the 'this' pointer in a static variable.
-    // Once stored, it can be used later to return the 'this' pointer.
-    // CWinApp's constructor calls this function and sets the static variable.
-    // CWinApp's destructor resets pWinApp to nullptr.
-    inline CWinApp* CWinApp::SetnGetThis(CWinApp* pThis /*= nullptr*/, bool reset /*= false*/)
-    {
-        static CWinApp* pWinApp = nullptr;
-
-        if (reset)
-        {
-            pWinApp = nullptr;
-        }
-        else
-        {
-            if (pWinApp == nullptr)
-                pWinApp = pThis;
-            else
-                assert(pThis == nullptr);
-        }
-
-        return pWinApp;
     }
 
     // Sets the main window for this thread.
@@ -695,11 +743,6 @@ namespace Win32xx
                         m_devNames.Free();
                         m_devMode.Reassign(pd.hDevMode);
                         m_devNames.Reassign(pd.hDevNames);
-                    }
-                    else
-                    {
-                        ::GlobalFree(pd.hDevMode);
-                        ::GlobalFree(pd.hDevNames);
                     }
                 }
             }
@@ -799,6 +842,9 @@ namespace Win32xx
 
     inline CString CWinApp::MsgFileLength() const
     { return _T("Failed to change the file length."); }
+
+    inline CString CWinApp::MsgFileSeek() const
+    { return _T("File seek failed"); }
 
     inline CString CWinApp::MsgFileUnlock() const
     { return _T("Failed to unlock the file."); }
@@ -901,13 +947,6 @@ namespace Win32xx
     inline CString CWinApp::MsgTimeValid() const
     { return _T("Invalid time."); }
 
-    // CWinApp messages
-    inline CString CWinApp::MsgCWinApp() const
-    { return _T("Only one instance of CWinApp can run at a time"); }
-
-    inline CString CWinApp::MsgTlsIndexes() const
-    { return _T("No available Thread Local Storage Indexes."); }
-
 
     /////////////////////////////////////////////////////////
     // Definitions of CString functions that require CWinApp
@@ -1009,5 +1048,5 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_APPCORE_H_
+#endif // WIN32XX_APPCORE_H_
 
