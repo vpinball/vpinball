@@ -413,6 +413,15 @@ elseif(PLATFORM STREQUAL "windows-mingw")
 
    add_executable(vpinball
       ${VPX_STANDALONE_SOURCES}
+
+      src/utils/StackTrace.cpp
+      src/utils/StackTrace.h
+      src/utils/MemoryStatus.cpp
+      src/utils/MemoryStatus.h
+      src/utils/BlackBox.cpp
+      src/utils/BlackBox.h
+      src/utils/CrashHandler.cpp
+      src/utils/CrashHandler.h
    )
 
    target_include_directories(vpinball PUBLIC
@@ -438,6 +447,8 @@ elseif(PLATFORM STREQUAL "windows-mingw")
 
       ENABLE_BGFX
       $<IF:$<CONFIG:Debug>,BX_CONFIG_DEBUG=1,BX_CONFIG_DEBUG=0>
+
+      VPX_STANDALONE_CRASH_HANDLER
    )
 
    target_compile_options(vpinball PUBLIC
@@ -468,6 +479,8 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       hidapi64
       openxr_loader64
       winevbs64
+      backtrace
+      dbghelp
    )
 
    target_link_options(vpinball PUBLIC
@@ -479,14 +492,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
    set_target_properties(vpinball PROPERTIES
       RUNTIME_OUTPUT_NAME "VPinballX_BGFX64"
    )
-
-   if(CMAKE_BUILD_TYPE STREQUAL "Release")
-      add_custom_command(TARGET vpinball POST_BUILD
-         COMMAND "${CMAKE_OBJCOPY}" --only-keep-debug "$<TARGET_FILE:vpinball>" "$<TARGET_FILE_DIR:vpinball>/VPinballX_BGFX64.debug"
-         COMMAND "${CMAKE_OBJCOPY}" --strip-debug "$<TARGET_FILE:vpinball>"
-         COMMAND "${CMAKE_OBJCOPY}" --add-gnu-debuglink="$<TARGET_FILE_DIR:vpinball>/VPinballX_BGFX64.debug" "$<TARGET_FILE:vpinball>"
-      )
-   endif()
 
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"

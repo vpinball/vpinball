@@ -312,7 +312,7 @@ namespace
       return returnCode;
    }
 
-#ifdef CRASH_HANDLER
+#if defined(CRASH_HANDLER) && defined(_MSC_VER)
    void __cdecl PureCallHandler()
    {
       ShowError("Pure Virtual Function Call");
@@ -346,7 +346,11 @@ namespace rde
    void CrashHandler::Init()
    {
       SetUnhandledExceptionFilter(MyExceptionFilter);
-#ifdef CRASH_HANDLER
+#if defined(__MINGW32__)
+      // Pre-load symbols on the main thread; libbacktrace loads them lazily and that fails inside a crash on another thread.
+      rde::StackTrace::InitSymbols();
+#endif
+#if defined(CRASH_HANDLER) && defined(_MSC_VER)
       _set_purecall_handler(PureCallHandler);
 #endif
    }

@@ -21,6 +21,7 @@ echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
+echo "  LIBBACKTRACE_SHA: ${LIBBACKTRACE_SHA}"
 echo ""
 
 mkdir -p "external/windows-x64-mingw/${BUILD_TYPE}"
@@ -446,6 +447,36 @@ if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
 fi
 
 #
+# build libbacktrace
+#
+
+LIBBACKTRACE_EXPECTED_SHA="${LIBBACKTRACE_SHA}"
+LIBBACKTRACE_FOUND_SHA="$([ -f libbacktrace/cache.txt ] && cat libbacktrace/cache.txt || echo "")"
+
+if [ "${LIBBACKTRACE_EXPECTED_SHA}" != "${LIBBACKTRACE_FOUND_SHA}" ]; then
+   echo "Building libbacktrace. Expected: ${LIBBACKTRACE_EXPECTED_SHA}, Found: ${LIBBACKTRACE_FOUND_SHA}"
+
+   rm -rf libbacktrace
+   mkdir libbacktrace
+   cd libbacktrace
+
+   curl -sL https://github.com/ianlancetaylor/libbacktrace/archive/${LIBBACKTRACE_SHA}.tar.gz -o libbacktrace-${LIBBACKTRACE_SHA}.tar.gz
+   tar xzf libbacktrace-${LIBBACKTRACE_SHA}.tar.gz
+   mv libbacktrace-${LIBBACKTRACE_SHA} libbacktrace
+   cd libbacktrace
+   ./configure \
+      --enable-static \
+      --disable-shared \
+      CFLAGS="-g1 -O2"
+   make -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBBACKTRACE_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -549,3 +580,7 @@ cp libzip/libzip/build/lib/libzip64.dll ../../../third-party/runtime-libs/window
 cp libzip/libzip/build/lib/libzip64.dll.a ../../../third-party/build-libs/windows-mingw-x64
 cp libzip/libzip/build/zipconf.h ../../../third-party/include
 cp libzip/libzip/lib/zip.h ../../../third-party/include
+
+cp libbacktrace/libbacktrace/.libs/libbacktrace.a ../../../third-party/build-libs/windows-mingw-x64
+cp libbacktrace/libbacktrace/backtrace.h ../../../third-party/include
+cp libbacktrace/libbacktrace/backtrace-supported.h ../../../third-party/include

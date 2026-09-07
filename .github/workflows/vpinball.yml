@@ -285,8 +285,6 @@ jobs:
             fi
             if [[ "${{ matrix.platform }}" == "windows" ]]; then
               cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.pdb stage
-            else
-              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}*.debug stage
             fi
             cp build/${{ matrix.config }}/*.dll stage
             if [[ "${{ matrix.type }}" == "GL" ]]; then
