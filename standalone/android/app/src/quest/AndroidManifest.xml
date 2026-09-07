@@ -4,6 +4,7 @@
 
     <uses-feature android:name="android.hardware.vr.headtracking" android:required="true" />
     <uses-feature android:name="oculus.software.handtracking" android:required="false" />
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH" android:required="false" />
 
     <application>
         <activity android:name="VPinballActivity"

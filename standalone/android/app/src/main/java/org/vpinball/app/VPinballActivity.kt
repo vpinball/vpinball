@@ -7,6 +7,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.vpinball.app.ui.VPinballContent
@@ -58,6 +61,16 @@ class VPinballActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
+        intent?.getStringExtra("autoplay")?.let { name ->
+            intent.removeExtra("autoplay")
+            VPinballManager.whenReady {
+                lifecycleScope.launch {
+                    val table = TableManager.getInstance().tables.map { list -> list.firstOrNull { it.name == name } }.filterNotNull().first()
+                    viewModel.activeTable = table
+                    viewModel.showHUD(table.name, "Launching")
+                }
+            }
+        }
         val uri = intent?.data ?: return
         LandingScreenViewModel.triggerOpenUri(uri)
     }

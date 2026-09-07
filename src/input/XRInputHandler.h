@@ -69,7 +69,9 @@ public:
          { "/user/hand/right/input/trackpad/x"s, XR_ACTION_TYPE_FLOAT_INPUT }, { "/user/hand/right/input/trackpad/y"s, XR_ACTION_TYPE_FLOAT_INPUT },
 
          // Poses
-         { "/user/hand/left/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT }, { "/user/hand/right/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT }
+         { "/user/hand/left/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT }, { "/user/hand/right/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT },
+
+         { "/user/hand/left/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }, { "/user/hand/right/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }
       };
 
       // Bind them
@@ -101,8 +103,10 @@ public:
          bindings.push_back({ tracker.action, xrPath });
          m_trackers.push_back(tracker);
 
-         if (type != XR_ACTION_TYPE_POSE_INPUT)
+         if (type == XR_ACTION_TYPE_BOOLEAN_INPUT || type == XR_ACTION_TYPE_FLOAT_INPUT)
             m_pininput.RegisterElementName(m_joyId, type == XR_ACTION_TYPE_FLOAT_INPUT, tracker.pinInputId, name);
+         else if (type == XR_ACTION_TYPE_VIBRATION_OUTPUT)
+            m_hapticActions.push_back(tracker.action);
       }
 
       // Register these bindings for major profiles
@@ -198,6 +202,24 @@ public:
       }
    }
 
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
+   {
+      const float amplitude = saturate(max(lowFrequencySpeed, highFrequencySpeed));
+      if (amplitude <= 0.f || ms_duration <= 0)
+         return;
+      XrHapticVibration vibration { XR_TYPE_HAPTIC_VIBRATION };
+      vibration.amplitude = amplitude;
+      vibration.duration = static_cast<XrDuration>(ms_duration) * 1000000LL;
+      vibration.frequency = XR_FREQUENCY_UNSPECIFIED;
+      for (XrAction action : m_hapticActions)
+      {
+         XrHapticActionInfo hapticInfo { XR_TYPE_HAPTIC_ACTION_INFO };
+         hapticInfo.action = action;
+         hapticInfo.subactionPath = XR_NULL_PATH;
+         xrApplyHapticFeedback(m_session, &hapticInfo, reinterpret_cast<const XrHapticBaseHeader*>(&vibration));
+      }
+   }
+
 private:
    void SuggestBindings(const char* profile, std::vector<XrActionSuggestedBinding>& bindings)
    {
@@ -246,6 +268,7 @@ private:
    XrSession m_session;
    XrActionSet m_actionSet;
    std::vector<ActionTracker> m_trackers;
+   std::vector<XrAction> m_hapticActions;
 
    uint16_t m_joyId;
 };

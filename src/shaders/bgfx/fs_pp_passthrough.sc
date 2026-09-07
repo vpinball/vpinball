@@ -15,7 +15,7 @@ void main()
 	if (texStereoNoLod(tex_depth, v_texcoord0).x == 1.0)
 	{
 		// Fixed color keyed passthrough
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+		gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
 	}
 	else
 	{

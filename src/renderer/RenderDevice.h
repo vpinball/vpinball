@@ -23,6 +23,7 @@
 #include <thread>
 #include <mutex>
 #include <semaphore>
+#include <atomic>
 #endif
 
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
@@ -158,7 +159,8 @@ public:
    bool SupportLayeredRendering() const
    {
       #if defined(ENABLE_BGFX)
-      return bgfx::getCaps()->supported & (BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY);
+      constexpr uint64_t caps = BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY;
+      return (bgfx::getCaps()->supported & caps) == caps;
       #elif defined(ENABLE_OPENGL)
       return true;
       #elif defined(ENABLE_DX9)
@@ -194,7 +196,7 @@ public:
    vector<std::shared_ptr<SharedIndexBuffer>> m_pendingSharedIndexBuffers;
    vector<std::shared_ptr<SharedVertexBuffer>> m_pendingSharedVertexBuffers;
 
-   bool m_framePending = false;
+   std::atomic<bool> m_framePending = false;
 
    const int m_nEyes;
    Shader* m_uiShader = nullptr;
@@ -264,6 +266,19 @@ private:
    vector<VPX::Window*> m_screenshotWindow;
    vector<std::filesystem::path> m_screenshotFilename;
    std::function<void(bool)> m_screenshotCallback = [](bool) { };
+   #if defined(ENABLE_BGFX)
+   void OnScreenshotCaptured(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch, bgfx::TextureFormat::Enum format, const void* data, uint32_t size, bool yflip);
+   #if defined(ENABLE_XR)
+   void RequestVRScreenshot(RenderTarget* vrRenderTarget, const std::filesystem::path& filename);
+   void ProcessVRScreenshot();
+   bgfx::TextureHandle m_vrScreenshotTex = BGFX_INVALID_HANDLE;
+   vector<uint8_t> m_vrScreenshotData;
+   uint32_t m_vrScreenshotReadyFrame = 0;
+   uint16_t m_vrScreenshotWidth = 0;
+   uint16_t m_vrScreenshotHeight = 0;
+   std::filesystem::path m_vrScreenshotFilename;
+   #endif
+   #endif
 
    uint64_t m_presentTimestampReference = 0;
 
@@ -308,7 +323,7 @@ private:
    uint32_t m_lastPresentFrameIdx = 0;
    float m_renderLatency = 0.f;
 
-   bool m_renderDeviceAlive;
+   std::atomic<bool> m_renderDeviceAlive;
    std::thread m_renderThread;
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;
