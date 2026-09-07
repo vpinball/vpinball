@@ -69,8 +69,7 @@ bool StackTrace::InitSymbols()
 						SYMOPT_LOAD_LINES |
 						SYMOPT_UNDNAME;
 		SymSetOptions(options);
-		const char* dir = nullptr;
-		if (!SymInitialize(GetCurrentProcess(), dir, options & SYMOPT_DEFERRED_LOADS))
+		if (!SymInitialize(GetCurrentProcess(), SDL_GetBasePath(), options & SYMOPT_DEFERRED_LOADS))
 		{
 			OutputDebugString("Cannot initialize symbol engine");
 			return false;
@@ -101,7 +100,7 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
 	return GetCallStack(pContext, callStack,  maxDepth, entriesToSkip + 1);
 }
 
-int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth, 
+int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 							 int entriesToSkip)
 {
 #if defined(_M_ARM64)
@@ -147,10 +146,10 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 	stackFrame.AddrStack.Mode	= AddrModeFlat;
 
 	HANDLE process	= GetCurrentProcess();
-    HANDLE thread	= GetCurrentThread(); 
+    HANDLE thread	= GetCurrentThread();
 
 	int numEntries(0);
-	while (::StackWalk64(kStackWalkMachine, process, thread, 
+	while (::StackWalk64(kStackWalkMachine, process, thread,
 		&stackFrame, context, 0, SymFunctionTableAccess64, SymGetModuleBase64, nullptr) &&
 		stackFrame.AddrFrame.Offset != 0 && numEntries < maxDepth)
 	{
@@ -197,7 +196,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 		return 0;
 
 	// Start with address.
-	int charsAdded = 
+	int charsAdded =
 		_snprintf_s(symbol, maxSymbolLen, _TRUNCATE, "%p ", address);
 	symbol += charsAdded;
 	maxSymbolLen -= charsAdded;
@@ -251,7 +250,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 		int fileLineChars;
 		if (displacementLine > 0)
 		{
-			fileLineChars = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, 
+			fileLineChars = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE,
 				" %s(%u+%04u byte(s))", fileName, lineInfo.LineNumber, displacementLine);
 		}
 		else
@@ -266,7 +265,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	return charsAdded;
 }
 
-void StackTrace::GetCallStack(void* vcontext, bool includeArguments, 
+void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 							  char* symbol, int maxSymbolLen)
 {
 	const PCONTEXT context = (PCONTEXT)vcontext;
@@ -295,7 +294,7 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 		symbol += charsAdded;
 		if (maxSymbolLen > 0 && includeArguments)
 		{
-			charsAdded = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, 
+			charsAdded = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE,
 				" (0x%08llX 0x%08llX 0x%08llX 0x%08llx)\n", stackFrame.Params[0],
 				stackFrame.Params[1], stackFrame.Params[2], stackFrame.Params[3]);
 			maxSymbolLen -= charsAdded;
