@@ -98,6 +98,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #include "wxx_menu.h"
 #include "wxx_ddx.h"
 
+#include <shellapi.h>
 
 namespace Win32xx
 {
