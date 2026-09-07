@@ -1,3 +1,119 @@
+Version 10.3
+============
+This version focuses on modernising the Win32++ framework. It uses features
+available in C++17. CRegKey, CString and support for the ribbon framework have
+been updated. CPrintDialogEx and CWebBroswer have been depreciated.
+
+The samples that ship with Win32++ have also been updated. Samples with an
+internet browser now use the Microsoft's Edge Browser WebView2 control.
+The Help About in many of the samples also displays the Win32++ version.
+
+New Features and Enhancements
+-----------------------------
+* Win32++ now uses features from C++17.
+  It supports Visual Studio (Community) 2019 and later, C++ Builder 12, Clang
+  and GNU compilers. GNU 32bit compilers can be used to compile Win32++
+  applications for Windows XP.
+
+* Updated the CString class and the ToCString functions.
+  A CString can now also be constructed from a std::string or a std::wstring.
+  The ToCString functions can also be used to convert a std::string and a 
+  std::wstring to a CString. The update includes bug fixes in SpanExcluding
+  and SpanIncluding.
+
+* Updated the CRegKey class.
+  QueryStringValue and SetStringValue can now use a CString parameter.
+  QueryMultiStringValue and SetMultiStringValue can now use a vector of
+  CString parameter.
+
+* Updated support for the Windows Ribbon Framework.
+  The CRibbon class had been replaced by the CRibbonT class template. The code
+  now uses the ComPtr included in the Windows Runtime C++ Template Library.
+  The new code is backwards compatible with code that inherits from
+  CRibbonFrame, CRibbonDockFrame, CRibbonMDIFrame and CRibbonMDIDOckFrame.
+
+* Updated the samples.
+  Project files for Visual Studio 2026 have been added to each sample. The
+  Help About dialog has been updated to display the version of Win32++ used.
+
+* Added the BatchSourceFileEditor Sample
+  This utility edits source files in the selected folder and any subfolders.
+  For each source file (*.cpp, *.h, *.rc) tabs are replaced with spaces,
+  lines with trailing spaces have the trailing spaces removed, and non-ascii
+  characters are removed.
+
+* CWebBrower has been deprecated.
+  For modern applications, using IWebBrowser2 is heavily discouraged due to
+  obsolete security parameters and lack of HTML5/CSS3 compatibility. The
+  following samples demonstrate how to implement a Microsoft Edge Browser
+  using the Chromium-powered WebView2 control:
+   * Browser
+   * CustomControl
+   * EdgeBrowser
+   * EdgeBrowserEx
+
+* CPrintDialogEx has been deprecated.
+  In Windows 11 22H2, Microsoft replaced the legacy print dialog for PrintDlgEx
+  with a new dialog which is unsuitable for C++ Windows API applications.
+  CPrintDialog can be used instead as it displays the legacy print dialog that
+  is suitable for Windows API applications.
+
+  Note that the CustomPrintDlg sample demonstrates how we can create our own
+  customized print dialog, should we need to extend the capabilities of
+  CPrintDialog.
+
+* Added a set of unit tests.
+  These test verify the correct operation of components of the Win32++ library.
+  They also demonstrate how these components can be used.
+
+Changes in detail
+-----------------
+Added BrowserEx                          - sample (replaces Browser)
+Added DirectX12                            sample
+Added CRibbonT                           - class template (replaces CRibbon)
+Added CAtoA::GetLength                   - member function
+Added CAtoBSTR::GetLength                - member function
+Added CAtoW::GetLength                   - member function
+Added CDateTime::SetDefaultRange         - member function
+Added CDateTime::SetMaxRange             - member function
+Added CDateTime::SetMaxRange             - member function
+Added CMonthCalendar::SetDefaultRange    - member function
+Added CMonthCalendar::SetMaxRange        - member function
+Added CMonthCalendar::SetMinRange        - member function
+Added CProgressBar::GetMinRange          - member function
+Added CProgressBar::GetMaxRange          - member function
+Added CProgressBar::SetRange32           - member function
+Added CRegKey::QueryBOOLValue            - member function
+Added CRegKey::SetBOOLValue              - member function
+Added CStringT(const std::string& str)   - constructor
+Added CStringT(const std::wstring& str)  - constructor
+Added CString(const std::string& str)    - constructor
+Added CString(const std::wstring& str)   - constructor
+Added ToCString(const std::string& str)  - global function
+Added ToCString(const std::wstring& str) - global function
+Added CWtoA::GetLength                   - member function
+Added CWtoBSTR:: GetLength               - member function
+Added CWtoW::GetLength                   - member function
+Added CRegKey::QueryMultiStringValue     - additional overload
+Added CRegKey::QueryStringValue          - additional overload
+Added CRegKey::SetMultiStringValue       - additional overload
+Added CRegKey::SetStringValue            - additional overload
+Deprecated CPrintDialogEx                - class
+Deprecated CWebBrowser                   - class
+Modified CStatusBar::GetParts            - added optional parameters
+Removed Browser                          - sample
+Removed BrowserATL                       - sample
+Removed DirectX9                         - sample
+Removed CRibbon                          - class (replaced by CRibbonT)
+Removed CWinApp::MsgCWinApp              - member function
+Removed CWinApp::MsgTlsIndex             - member function
+Renamed the Explorer sample to ExplorerEx
+Renamed CStatusBar::CreateParts  to  CStatusBar::SetParts
+
+Added VS2026 project files to samples
+Removed VS2015 project files from samples
+
+
 Version 10.2
 ============
 This version adds the CFolderDialogEx class, the CPager class, the
@@ -74,6 +190,8 @@ Added CImageList::Destroy         - member function
 Added CMenu::Destroy              - member function
 Removed CGDIObject::DeleteObject
 Removed CImageList::DeleteImageList
+Removed CListBox::GetItemDataPtr
+Removed CListBox::SetiIetmDataPtr
 Removed CMenu::DestroyMenu
 
 
@@ -593,7 +711,7 @@ New Features and Enhancements
 
 * The values for WINVER and related macros now default to values suitable for
   Windows 10 and Windows 11. Different values can be specified before including
-  wincore.h if required. These values can be specified in stdafx.h by including
+  wincore.h if required. These values can be specified in pch.h by including
   targetver.h as shown in the samples. Visual Studio 6 will require WINVER to
   be set to values appropriate for Win95 or Win98.
 
@@ -656,7 +774,7 @@ This version adds print preview support to the framework, and support for
 Microsoft Visual Studio Community 2019.
 
 The following classes have been added:
-* CPrintPage
+* CPrintPreview
 * CHGlobal
 * CGlobalLock
 

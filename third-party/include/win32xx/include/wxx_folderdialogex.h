@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -61,10 +61,8 @@
 //  }
 
 
-#ifndef _WIN32XX_FOLDERDIALOGEX_H_
-#define _WIN32XX_FOLDERDIALOGEX_H_
-
-#include "wxx_dialog.h"
+#ifndef WIN32XX_FOLDERDIALOGEX_H_
+#define WIN32XX_FOLDERDIALOGEX_H_
 
 
 namespace Win32xx
@@ -72,7 +70,7 @@ namespace Win32xx
     ////////////////////////////////////////////////////////////
     // CFolderDialogEx uses the IFileDialog interface to display
     // a dialog that allows the user to select a folder.
-    class CFolderDialogEx : public CDialog
+    class CFolderDialogEx
     {
     public:
         CFolderDialogEx() = default;                  // Constructor
@@ -80,7 +78,7 @@ namespace Win32xx
 
         virtual INT_PTR DoModal(HWND hParent = nullptr);
 
-        const CString& GetFolderName() const;
+        const CStringW& GetFolderName() const;
         void SetInitialFolder(const CStringW& initialFolder);
         void SetTitle(const CStringW& title);
 
@@ -88,9 +86,9 @@ namespace Win32xx
         CFolderDialogEx(const CFolderDialogEx&) = delete;
         CFolderDialogEx& operator=(const CFolderDialogEx&) = delete;
 
-        CString m_folderName;
-        CString m_initialFolderName;
-        CString m_title;
+        CStringW m_folderName;
+        CStringW m_initialFolderName;
+        CStringW m_title;
     };
 }
 
@@ -125,12 +123,16 @@ namespace Win32xx
                 // Set the initial folder if specified.
                 if (!m_initialFolderName.IsEmpty())
                 {
-                    using PSHCREATEITEMFROMPARSINGNAME = HRESULT(WINAPI*)(PCWSTR, IBindCtx*, REFIID, void**);
+                    using PSHCREATEITEMFROMPARSINGNAME = HRESULT(WINAPI*)(PCWSTR,
+                        IBindCtx*, REFIID, void**);
+
                     HMODULE shell32 = ::GetModuleHandle(_T("Shell32.dll"));
                     if (shell32 != nullptr)
                     {
-                        PSHCREATEITEMFROMPARSINGNAME pSHCreateItemFromParsingName = reinterpret_cast<PSHCREATEITEMFROMPARSINGNAME>(
-                            reinterpret_cast<void*>(::GetProcAddress(shell32, "SHCreateItemFromParsingName")));
+                        PSHCREATEITEMFROMPARSINGNAME pSHCreateItemFromParsingName =
+                            reinterpret_cast<PSHCREATEITEMFROMPARSINGNAME>(
+                            reinterpret_cast<void*>(::GetProcAddress(shell32,
+                            "SHCreateItemFromParsingName")));
 
                         if (pSHCreateItemFromParsingName != nullptr)
                         {
@@ -155,8 +157,9 @@ namespace Win32xx
                     IShellItem* pShellItem;
                     if (SUCCEEDED(pFileDialog->GetResult(&pShellItem)))
                     {
-                        PWSTR pFilePath = 0;
-                        if (SUCCEEDED(pShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &pFilePath)))
+                        PWSTR pFilePath = nullptr;
+                        if (SUCCEEDED(pShellItem->GetDisplayName(
+                            SIGDN_DESKTOPABSOLUTEPARSING, &pFilePath)))
                         {
                             m_folderName = pFilePath;
                             CoTaskMemFree(pFilePath);
@@ -178,7 +181,7 @@ namespace Win32xx
 
     // Retrieves a const reference to a CString containing the name of the
     // folder selected by the user when the modal dialog is displayed.
-    inline const CString& CFolderDialogEx::GetFolderName() const
+    inline const CStringW& CFolderDialogEx::GetFolderName() const
     {
         return m_folderName;
     }
@@ -202,4 +205,4 @@ namespace Win32xx
 } // namespace Win32xx
 
 
-#endif // _WIN32XX_FOLDERDIALOGEX_H_
+#endif // WIN32XX_FOLDERDIALOGEX_H_

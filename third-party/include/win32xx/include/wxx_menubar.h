@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,8 +36,8 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_MENUBAR_H_
-#define _WIN32XX_MENUBAR_H_
+#ifndef WIN32XX_MENUBAR_H_
+#define WIN32XX_MENUBAR_H_
 
 #include "wxx_wincore.h"
 #include "wxx_toolbar.h"
@@ -78,12 +78,12 @@ namespace Win32xx
         virtual LRESULT OnMouseLeave(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseMove(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam) override;
-        virtual LRESULT OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnSysKeyDown(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSysKeyUp(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnTBNDropDown(LPNMTOOLBAR pNMTB);
         virtual LRESULT OnTBNHotItemChange(LPNMTBHOTITEM pNMHI);
-        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual void    PreCreate(CREATESTRUCT& cs) override;
         virtual void    PreRegisterClass(WNDCLASS& wc) override;
@@ -96,9 +96,9 @@ namespace Win32xx
         CMenuBar(const CMenuBar&) = delete;
         CMenuBar& operator=(const CMenuBar&) = delete;
 
-        void Cancel() const;
+        void Cancel();
         void DoAltKey(WORD keyCode);
-        void DrawMDIButton(CDC& drawDC, int button, UINT state) const;
+        void DrawMDIButton(CDC& drawDC, int button, UINT state);
         void ExitMenu();
         CWnd* GetActiveMDIChild() const;
         CWnd* GetMDIClient() const;
@@ -107,12 +107,12 @@ namespace Win32xx
         BOOL IsMDIChildMaxed() const;
         BOOL IsMDIFrame() const;
         LRESULT OnPopupMenu();
-        void Press(UINT buttonID, BOOL press) const;
+        void Press(UINT buttonID, BOOL press);
         void ProcessMenuItem();
         void ReleaseFocus();
         void StoreHotItem(int hotItem);
-        void UnpressAll() const;
-        void UpdateMDIButtons(WPARAM wparam, LPARAM lparam) const;
+        void UnpressAll();
+        void UpdateMDIButtons(WPARAM wparam, LPARAM lparam);
         static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam, LPARAM lparam);
 
         enum MDIButtonType
@@ -158,7 +158,7 @@ namespace Win32xx
 
     // Cancel certain modes, such as mouse capture.
     // Cancels a popup menu.
-    inline void CMenuBar::Cancel() const
+    inline void CMenuBar::Cancel()
     {
         SendMessage(WM_CANCELMODE, 0, 0);
     }
@@ -199,8 +199,11 @@ namespace Win32xx
 
         if (IsMDIChildMaxed())
         {
-            int cx = ::GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
-            int cy = ::GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+            int cx = ::GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) /
+                GetWindowDpi(HWND_DESKTOP);
+            int cy = ::GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) /
+            GetWindowDpi(HWND_DESKTOP);
+
             CRect rc = GetClientRect();
             int gap = 4;
             rc.right -= gap;
@@ -232,7 +235,7 @@ namespace Win32xx
     }
 
     // Draws an individual MDI button.
-    inline void CMenuBar::DrawMDIButton(CDC& drawDC, int button, UINT state) const
+    inline void CMenuBar::DrawMDIButton(CDC& drawDC, int button, UINT state)
     {
         if (!IsRectEmpty(&m_mdiRect[button]))
         {
@@ -269,6 +272,8 @@ namespace Win32xx
                 drawDC.SetTextColor(white);
                 drawDC.TextOut(m_mdiRect[button].left, m_mdiRect[button].top, _T("\x64"), 1);
                 break;
+
+            default: break;
             }
 
             switch (button)
@@ -301,6 +306,7 @@ namespace Win32xx
                 break;
             }
 
+            default: break;
             }
         }
     }
@@ -328,7 +334,9 @@ namespace Win32xx
         CWnd* pMDIChild = nullptr;
         if (GetMDIClient())
         {
-            HWND mdiChild = reinterpret_cast<HWND>(GetMDIClient()->SendMessage(WM_MDIGETACTIVE, 0, 0));
+            HWND mdiChild = reinterpret_cast<HWND>(GetMDIClient()->
+                SendMessage(WM_MDIGETACTIVE, 0, 0));
+
             pMDIChild = GetCWndPtr(mdiChild);
         }
 
@@ -345,7 +353,9 @@ namespace Win32xx
         if (GetAncestor().SendMessage(UWM_GETCMDIFRAMET) != 0)
         {
             // Retrieve the window handle of the MDI frame's view.
-            HWND wnd = reinterpret_cast<HWND>(GetAncestor().SendMessage(UWM_GETFRAMEVIEW));
+            HWND wnd = reinterpret_cast<HWND>(GetAncestor().
+                SendMessage(UWM_GETFRAMEVIEW));
+
             pMDIClient = GetCWndPtr(wnd);
         }
 
@@ -356,6 +366,9 @@ namespace Win32xx
     inline UINT CMenuBar::GetMenuItemID() const
     {
         int menuItem = IsMDIChildMaxed() ? m_hotItem - 1 : m_hotItem;
+        if (!IsMenu(m_topMenu))
+            return UINT(-1);
+
         return ::GetMenuItemID(m_topMenu, menuItem);
     }
 
@@ -384,7 +397,7 @@ namespace Win32xx
     // Returns TRUE if the frame is a MDI frame.
     inline BOOL CMenuBar::IsMDIFrame() const
     {
-        return static_cast<BOOL>(GetAncestor().SendMessage(UWM_GETCMDIFRAMET));
+        return (GetAncestor().SendMessage(UWM_GETCMDIFRAMET)) ? TRUE : FALSE;
     }
 
     // Used by CFrameT when a menu is active, and a key is pressed other than
@@ -692,6 +705,8 @@ namespace Win32xx
                     m_isExitAfter = TRUE;
                     break;
 
+                default: break;
+
                 } // switch (wparam)
 
             } // case WM_KEYDOWN
@@ -760,9 +775,10 @@ namespace Win32xx
 
                 // Reflect messages back to the MenuBar for hot tracking.
                 SendMessage(WM_MOUSEMOVE, 0, MAKELPARAM(pt.x, pt.y));
+                break;
             }
-            break;
 
+        default: break;
         }
         return FALSE;
     }
@@ -803,15 +819,19 @@ namespace Win32xx
         LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
         switch (pHeader->code)
         {
-        case TBN_DROPDOWN:      return OnTBNDropDown(reinterpret_cast<LPNMTOOLBAR>(lparam));
-        case TBN_HOTITEMCHANGE: return OnTBNHotItemChange(reinterpret_cast<LPNMTBHOTITEM>(lparam));
+        case TBN_DROPDOWN:
+            return OnTBNDropDown(reinterpret_cast<LPNMTOOLBAR>(lparam));
+        case TBN_HOTITEMCHANGE:
+            return OnTBNHotItemChange(reinterpret_cast<LPNMTBHOTITEM>(lparam));
+
+        default: break;
         }
 
         return 0;
     }
 
-    // Display the popup menu for a menu item. This function doesn't complete until
-    // the popup menu is closed.
+    // Display the popup menu for a menu item. This function doesn't complete
+    // until the popup menu is closed.
     inline LRESULT CMenuBar::OnPopupMenu()
     {
         if (m_isKeyMode)
@@ -856,21 +876,26 @@ namespace Win32xx
 
         // Remove any remaining hook first.
         TLSData* pTLSData = GetApp()->GetTlsData();
-        pTLSData->pMenuBar = this;
+        if (pTLSData)
+            pTLSData->pMenuBar = this;
         if (m_msgHook != nullptr)
             ::UnhookWindowsHookEx(m_msgHook);
 
         // Hook messages about to be processed by the shortcut menu.
         m_msgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook,
-            NULL, ::GetCurrentThreadId());
+            nullptr, ::GetCurrentThreadId());
 
         // Display the shortcut menu.
-        bool isRightToLeft = false;
-        isRightToLeft = (((GetAncestor().GetExStyle()) & WS_EX_LAYOUTRTL)) != 0;
-        int xPos = isRightToLeft ? rc.right : rc.left;
-        UINT id = static_cast<UINT>(::TrackPopupMenuEx(m_popupMenu,
-            TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, xPos, rc.bottom,
-            *this, &tpm));
+        UINT id = 0;
+        if (IsMenu(m_popupMenu))
+        {
+            bool isRightToLeft = false;
+            isRightToLeft = (((GetAncestor().GetExStyle()) & WS_EX_LAYOUTRTL)) != 0;
+            int xPos = isRightToLeft ? rc.right : rc.left;
+            id = static_cast<UINT>(::TrackPopupMenuEx(m_popupMenu,
+                TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, xPos, rc.bottom,
+                *this, &tpm));
+        }
 
         // We get here once the TrackPopupMenuEx has ended.
         // Remove the message hook.
@@ -1039,7 +1064,7 @@ namespace Win32xx
     }
 
     // Sets the pressed state of the menu button (pressed or unpressed).
-    inline void CMenuBar::Press(UINT buttonID, BOOL press) const
+    inline void CMenuBar::Press(UINT buttonID, BOOL press)
     {
         PressButton(buttonID, press);
     }
@@ -1074,7 +1099,9 @@ namespace Win32xx
                 // Pass the Left Mouse Click back up to the frame window (and update cursor).
                 LPARAM lparam = MAKELPARAM(screenPos.x, screenPos.y);
                 HWND frame = GetAncestor();
-                WPARAM wparam = static_cast<WPARAM>(::SendMessage(frame, WM_NCHITTEST, 0, lparam));
+                WPARAM wparam = static_cast<WPARAM>(::SendMessage(
+                    frame, WM_NCHITTEST, 0, lparam));
+
                 ::SendMessage(frame, WM_NCMOUSEMOVE, wparam, lparam);
                 ::SendMessage(frame, WM_SETCURSOR, reinterpret_cast<WPARAM>(frame),
                               MAKELPARAM(wparam, WM_NCMOUSEMOVE));
@@ -1213,7 +1240,7 @@ namespace Win32xx
     }
 
     // Unpress any currently pressed buttons.
-    inline void CMenuBar::UnpressAll() const
+    inline void CMenuBar::UnpressAll()
     {
         for (int i = 0; i < GetButtonCount(); ++i)
         {
@@ -1223,7 +1250,7 @@ namespace Win32xx
     }
 
     // Updates the pressed state of the MDI Buttons.
-    inline void CMenuBar::UpdateMDIButtons(WPARAM wparam, LPARAM lparam) const
+    inline void CMenuBar::UpdateMDIButtons(WPARAM wparam, LPARAM lparam)
     {
         CPoint pt;
         pt.x = GET_X_LPARAM(lparam);
@@ -1244,9 +1271,12 @@ namespace Win32xx
                     // Toggle the MDI button image pressed/unpressed as required.
                     if (MDIButton >= 0)
                     {
-                        DrawMDIButton(MenuBarDC, MDI_MIN,     ((MDIButton == 0) && (m_nMDIButton == 0)) ? 2U : 0U);
-                        DrawMDIButton(MenuBarDC, MDI_RESTORE, ((MDIButton == 1) && (m_nMDIButton == 1)) ? 2U : 0U);
-                        DrawMDIButton(MenuBarDC, MDI_CLOSE,   ((MDIButton == 2) && (m_nMDIButton == 2)) ? 2U : 0U);
+                        DrawMDIButton(MenuBarDC, MDI_MIN,
+                            ((MDIButton == 0) && (m_nMDIButton == 0)) ? 2U : 0U);
+                        DrawMDIButton(MenuBarDC, MDI_RESTORE,
+                            ((MDIButton == 1) && (m_nMDIButton == 1)) ? 2U : 0U);
+                        DrawMDIButton(MenuBarDC, MDI_CLOSE,
+                            ((MDIButton == 2) && (m_nMDIButton == 2)) ? 2U : 0U);
                     }
                     else
                     {
@@ -1302,11 +1332,12 @@ namespace Win32xx
         case UWM_POPUPMENU:         return OnPopupMenu();
         case UWM_GETCMENUBAR:       return reinterpret_cast<LRESULT>(this);
 
-        } // switch (msg)
+        default: break;
+        }
 
         return CToolBar::WndProcDefault(msg, wparam, lparam);
-    } // LRESULT CMenuBar::WndProcDefault(...)
+    }
 
 }
 
-#endif  // _WIN32XX_MENUBAR_H_
+#endif  // WIN32XX_MENUBAR_H_

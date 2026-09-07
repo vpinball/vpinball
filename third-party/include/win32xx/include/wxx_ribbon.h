@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -43,92 +43,81 @@
 //  CRibbonMDIFrame and CRibbonMDIDockFrame.
 //
 
-#ifndef _WIN32XX_RIBBON_H_
-#define _WIN32XX_RIBBON_H_
+#ifndef WIN32XX_RIBBON_H_
+#define WIN32XX_RIBBON_H_
 
 
 // Notes :
-//  1) To compile code using the Ribbon UI you will need a Microsoft compiler.
-//     Visual Studio Community 2013 (or later) is recommended, but older
-//     Microsoft compilers can be used with the Windows 7 SDK.
-//  2) The Ribbon UI only runs on Windows 7 or later operating systems.If the
-//     code is run on an earlier operating system, it reverts back to a menu
-//     and toolbar.
+//  To compile this code you will need a Microsoft compiler, Visual Studio
+//  Community 2019 (or later).
 
-#include <UIRibbon.h>                   // Contained within the Windows 7 SDK
-#include <UIRibbonPropertyHelpers.h>
+#include <uiribbon.h>                   // Contained within the Windows 7 SDK.
+#include <uiribbonpropertyhelpers.h>    // Provides a collection of helper functions.
+#include <wrl/client.h>                 // Provides the ComPtr smart pointer.
+#include <wrl/implements.h>             // Provides the RuntimeClass template.
 
 #include "wxx_frame.h"
 #include "wxx_dockframe.h"
 
 namespace Win32xx
 {
-    ////////////////////////////////////////////////////////////
-    // The CRibbon class is used to add the Ribbon to a window.
-    // The ribbon user interface typically replaces the menu and
-    // toolbar used by a frame window.
-    class CRibbon : public IUICommandHandler, public IUIApplication
+    ///////////////////////////////////////////////////////////
+    // The CRibbonT class template is used to add the Ribbon to
+    // a window. The ribbon user interface typically replaces
+    // the menu and toolbar used by a frame window.
+    template <class T>
+    class CRibbonT : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags
+        <Microsoft::WRL::ClassicCom>, IUIApplication, IUICommandHandler>
     {
     public:
-        CRibbon();
-        virtual ~CRibbon() = default;
+        CRibbonT() : m_pWnd(nullptr) {}
+        void SetWindow(T* pWnd) { m_pWnd = pWnd; }
 
-        // IUIApplication methods
-        virtual STDMETHODIMP OnCreateUICommand(UINT32 nCmdID, __in UI_COMMANDTYPE typeID,
+        // IUIApplication methods.
+        virtual STDMETHODIMP OnCreateUICommand(UINT32 commandId, __in UI_COMMANDTYPE typeID,
             __deref_out IUICommandHandler** ppCommandHandler) override;
         virtual STDMETHODIMP OnDestroyUICommand(UINT32 commandId, __in UI_COMMANDTYPE typeID,
-            __in_opt IUICommandHandler* commandHandler) override;
+            __in_opt IUICommandHandler* pCommandHandler) override;
         virtual STDMETHODIMP OnViewChanged(UINT32 viewId, __in UI_VIEWTYPE typeId,
-            __in IUnknown* pView, UI_VIEWVERB verb, INT uReasonCode) override;
+            __in IUnknown* pView, UI_VIEWVERB verb, INT32 reasonCode) override;
 
-        // IUICommandHandle methods
-        virtual STDMETHODIMP Execute(UINT32 nCmdID, UI_EXECUTIONVERB verb,
+        // IUICommandHandler methods.
+        virtual STDMETHODIMP Execute(UINT32 commandId, UI_EXECUTIONVERB verb,
             __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
             __in_opt IUISimplePropertySet* pCommandExecutionProperties) override;
-        virtual STDMETHODIMP UpdateProperty(UINT32 nCmdID, __in REFPROPERTYKEY key,
+        virtual STDMETHODIMP UpdateProperty(UINT32 commandId, __in REFPROPERTYKEY key,
             __in_opt const PROPVARIANT* currentValue, __out PROPVARIANT* newValue) override;
-        virtual STDMETHODIMP CreateRibbon(HWND wnd);
-        virtual STDMETHODIMP DestroyRibbon();
 
-        // IUnknown methods.
-        STDMETHODIMP_(ULONG) AddRef() override;
-        STDMETHODIMP_(ULONG) Release() override;
-        STDMETHODIMP QueryInterface(REFIID iid, void** ppObject) override;
-
-        // Other
-        STDMETHODIMP_(IUIFramework*) GetRibbonFramework() const { return m_pRibbonFramework; }
+        // Other methods.
+        STDMETHODIMP CreateRibbon(HWND wnd);
+        void DestroyRibbon();
+        Microsoft::WRL::ComPtr<IUIFramework> GetRibbonFramework() const;
         STDMETHODIMP_(UINT32) GetRibbonHeight() const;
 
     private:
-        CRibbon(const CRibbon&) = delete;
-        CRibbon& operator=(const CRibbon&) = delete;
-
-        IUIFramework* m_pRibbonFramework;
+        Microsoft::WRL::ComPtr<IUIFramework> m_pFramework = nullptr;
+        T* m_pWnd;
     };
 
     ///////////////////////////////////////////////////
     // Declaration of the CRibbonFrameT class template.
     //
 
-    // The CRibbonFrameT is the base class for frames that support the Ribbon Framework.
-    // The T parameter can be either CFrame, CDockFrame, CMDIFrame or CMDIDockFrame.
+    // The CRibbonFrameT is the base class for frames that support the Ribbon
+    // Framework. The T parameter can be either CFrame, CDockFrame, CMDIFrame
+    // or CMDIDockFrame.
     template <class T>
-    class CRibbonFrameT : public T, public CRibbon
+    class CRibbonFrameT : public T
     {
     public:
-        // A nested class for the MRU item properties
-        class CRecentFiles : public IUISimplePropertySet
+        // A nested class for the MRU item properties.
+        class CRecentFiles : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags
+        <Microsoft::WRL::ClassicCom>, IUISimplePropertySet>
         {
         public:
             CRecentFiles(PWSTR pFullPath);
-            virtual ~CRecentFiles() = default;
 
-            // IUnknown methods.
-            STDMETHODIMP_(ULONG) AddRef() override;
-            STDMETHODIMP_(ULONG) Release() override;
-            STDMETHODIMP QueryInterface(REFIID iid, void** ppObject) override;
-
-            // IUISimplePropertySet methods
+            // IUISimplePropertySet methods.
             STDMETHODIMP GetValue(__in REFPROPERTYKEY key, __out PROPVARIANT* value) override;
 
         private:
@@ -136,17 +125,34 @@ namespace Win32xx
             WCHAR m_fullPath[MAX_PATH];
         };
 
-        using RecentFilesPtr = std::unique_ptr<CRecentFiles>;
-
-        CRibbonFrameT() = default;
+        CRibbonFrameT();
         virtual ~CRibbonFrameT() override = default;
+
+        // IUIApplication methods.
+        virtual STDMETHODIMP OnCreateUICommand(UINT32 commandId, __in UI_COMMANDTYPE typeID,
+            __deref_out IUICommandHandler** ppCommandHandler);
+        virtual STDMETHODIMP OnDestroyUICommand(UINT32, __in UI_COMMANDTYPE,
+            __in_opt IUICommandHandler*);
+        virtual STDMETHODIMP OnViewChanged(UINT32, UI_VIEWTYPE, IUIApplication::IUnknown*,
+            UI_VIEWVERB, INT32);
+
+        // IUICommandHandler methods.
+        virtual STDMETHODIMP Execute(UINT32, UI_EXECUTIONVERB, const PROPERTYKEY*,
+            const PROPVARIANT*, IUISimplePropertySet*);
+        virtual STDMETHODIMP UpdateProperty(UINT32, __in REFPROPERTYKEY,
+            __in_opt const PROPVARIANT*, __out PROPVARIANT*);
+
+        // Other methods.
+        STDMETHODIMP CreateRibbon(HWND wnd);
+        void DestroyRibbon();
+        Microsoft::WRL::ComPtr<CRibbonT<CRibbonFrameT<T>>> GetRibbon() const;
+        Microsoft::WRL::ComPtr<IUIFramework> GetRibbonFramework() const;
+        STDMETHODIMP_(UINT32) GetRibbonHeight() const;
 
     protected:
         virtual CRect GetViewRect() const override;
         virtual int  OnCreate(CREATESTRUCT& cs) override;
         virtual void OnDestroy() override;
-        virtual STDMETHODIMP OnViewChanged(UINT32 viewId, UI_VIEWTYPE typeId,
-            IUnknown* pView, UI_VIEWVERB verb, INT32 reasonCode) override;
         virtual HRESULT PopulateRibbonRecentItems(PROPVARIANT* value);
         virtual void UpdateMRUMenu() override;
 
@@ -154,7 +160,8 @@ namespace Win32xx
         CRibbonFrameT(const CRibbonFrameT&) = delete;
         CRibbonFrameT& operator=(const CRibbonFrameT&) = delete;
 
-        std::vector<RecentFilesPtr> m_recentFiles;
+        std::vector<Microsoft::WRL::ComPtr<CRecentFiles>> m_recentFiles;
+        Microsoft::WRL::ComPtr<CRibbonT<CRibbonFrameT<T>>> m_ribbon;
     };
 
     /////////////////////////////////////////////////
@@ -220,113 +227,87 @@ namespace Win32xx
 
 namespace Win32xx
 {
-    /////////////////////////////////////
-    // Definitions for the CRibbon class.
+    ///////////////////////////////////////////////
+    // Definitions for the CRibbonT class template.
     //
 
-    inline CRibbon::CRibbon() : m_pRibbonFramework(nullptr)
+    // Responds to execute events on commands bound to the Command handler.
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::Execute(UINT32 commandId,
+        UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key,
+        __in_opt const PROPVARIANT* propValue,
+        __in_opt IUISimplePropertySet* pCommandExecutionProperties)
     {
+        if (!m_pWnd)
+            return E_FAIL;
+
+        return m_pWnd->Execute(commandId, verb, key, propValue, pCommandExecutionProperties);
     }
-
-
-    ///////////////////////////////////
-    // IUnknown method implementations.
-
-
-    inline STDMETHODIMP_(ULONG) CRibbon::AddRef()
-    {
-        // Automatic deletion is not required.
-        return 1;
-    }
-
-    inline STDMETHODIMP_(ULONG) CRibbon::Release()
-    {
-        // Automatic deletion is not required.
-        return 1;
-    }
-
-    // Responds to execute events on Commands bound to the Command handler.
-    inline STDMETHODIMP CRibbon::Execute(UINT32, UI_EXECUTIONVERB,
-        __in_opt const PROPERTYKEY*, __in_opt const PROPVARIANT*,
-        __in_opt IUISimplePropertySet*)
-    {
-        return E_NOTIMPL;
-    }
-
-    inline STDMETHODIMP CRibbon::QueryInterface(REFIID iid, void** ppObject)
-    {
-        if (iid == __uuidof(IUnknown))
-        {
-            *ppObject = static_cast<IUnknown*>(static_cast<IUIApplication*>(this));
-        }
-        else if (iid == __uuidof(IUICommandHandler))
-        {
-            *ppObject = static_cast<IUICommandHandler*>(this);
-        }
-        else if (iid == __uuidof(IUIApplication))
-        {
-            *ppObject = static_cast<IUIApplication*>(this);
-        }
-        else
-        {
-            *ppObject = nullptr;
-            return E_NOINTERFACE;
-        }
-
-        return S_OK;
-    }
-
 
     // Called by the Ribbon framework for each command specified in markup,
     // to bind the Command to an IUICommandHandler.
-    inline STDMETHODIMP CRibbon::OnCreateUICommand(UINT32,
-        __in UI_COMMANDTYPE, __deref_out IUICommandHandler** ppCommandHandler)
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::OnCreateUICommand(UINT32 commandId,
+        __in UI_COMMANDTYPE typeID, __deref_out IUICommandHandler** ppCommandHandler)
     {
-        // By default we use the single command handler provided as part of CRibbon.
-        // Override this function to account for multiple command handlers.
+        if (!m_pWnd)
+            return E_FAIL;
 
-        return QueryInterface(IID_PPV_ARGS(ppCommandHandler));
+        return m_pWnd->OnCreateUICommand(commandId, typeID, ppCommandHandler);
     }
 
     // Called when the state of the Ribbon changes, for example, created,
     // destroyed, or resized.
-    inline STDMETHODIMP CRibbon::OnViewChanged(UINT32, __in UI_VIEWTYPE,
-        __in IUnknown*, UI_VIEWVERB, INT)
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::OnViewChanged(UINT32 viewId,
+        __in UI_VIEWTYPE typeId, __in IUnknown* pView,
+        UI_VIEWVERB verb, INT32 reasonCode)
     {
-        return E_NOTIMPL;
+        if (!m_pWnd)
+            return E_FAIL;
+
+        return m_pWnd->OnViewChanged(viewId, typeId, pView, verb, reasonCode);
     }
 
     // Called by the Ribbon framework for each command at the time of ribbon
     // destruction.
-    inline STDMETHODIMP CRibbon::OnDestroyUICommand(UINT32, __in UI_COMMANDTYPE,
-        __in_opt IUICommandHandler*)
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::OnDestroyUICommand(UINT32 commandId,
+        __in UI_COMMANDTYPE typeID, __in_opt IUICommandHandler* pCommandHandler)
     {
-        return E_NOTIMPL;
+        if (!m_pWnd)
+            return E_FAIL;
+
+        return m_pWnd->OnDestroyUICommand(commandId, typeID, pCommandHandler);
     }
 
     // Called by the Ribbon framework when a command property (PKEY) needs to
     // be updated.
-    inline STDMETHODIMP CRibbon::UpdateProperty(UINT32, __in REFPROPERTYKEY,
-        __in_opt const PROPVARIANT*, __out PROPVARIANT*)
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::UpdateProperty(UINT32 commandId,
+        __in REFPROPERTYKEY key, __in_opt const PROPVARIANT* currentValue,
+        __out PROPVARIANT* newValue)
     {
-        return E_NOTIMPL;
+        if (!m_pWnd)
+            return E_FAIL;
+
+        return m_pWnd->UpdateProperty(commandId, key, currentValue, newValue);
     }
 
     // Creates the ribbon.
-    inline STDMETHODIMP CRibbon::CreateRibbon(HWND wnd)
+    template <class T>
+    inline STDMETHODIMP CRibbonT<T>::CreateRibbon(HWND wnd)
     {
+        // Instantiate the Ribbon framework.
         HRESULT hr;
-        // Instantiate the Ribbon framework object.
         if (SUCCEEDED(hr = ::CoCreateInstance(CLSID_UIRibbonFramework, nullptr,
-            CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pRibbonFramework))))
+            CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pFramework))))
         {
-            // Connect the host application to the Ribbon framework.
-            assert(m_pRibbonFramework);
-            if (SUCCEEDED(hr = m_pRibbonFramework->Initialize(wnd, this)))
+            // Initialize the Ribbon framework.
+            if (SUCCEEDED(hr = m_pFramework->Initialize(wnd, this)))
             {
-                // Load the binary markup. APPLICATION_RIBBON is the default
-                // name generated by uicc.
-                hr = m_pRibbonFramework->LoadUI(::GetModuleHandle(0), L"APPLICATION_RIBBON");
+                // Load the binary markup resource.
+                hr = m_pFramework->LoadUI(GetModuleHandle(0), L"APPLICATION_RIBBON");
             }
         }
 
@@ -334,35 +315,36 @@ namespace Win32xx
     }
 
     // Destroys the ribbon.
-    inline STDMETHODIMP CRibbon::DestroyRibbon()
+    template <class T>
+    inline void CRibbonT<T>::DestroyRibbon()
     {
-        HRESULT hr = S_OK;
-        if (m_pRibbonFramework)
+        if (m_pFramework)
         {
-            hr = m_pRibbonFramework->Destroy();
-            m_pRibbonFramework->Release();
-            m_pRibbonFramework = nullptr;
+            m_pFramework->Destroy();
         }
 
-        return hr;
+        // Set to nullptr to trigger Release() immediately.
+        m_pFramework = nullptr;
     }
 
-    // Retrieves the height of the ribbon.
-    inline STDMETHODIMP_(UINT32) CRibbon::GetRibbonHeight() const
+    // Retrieves a pointer to IUIFramework interface for the Windows Ribbon framework,
+    // assigned when the ribbon is created.
+    template <class T>
+    inline Microsoft::WRL::ComPtr<IUIFramework> CRibbonT<T>::GetRibbonFramework() const
     {
-        HRESULT result = E_FAIL;
-        IUIRibbon* pRibbon = nullptr;
+        return m_pFramework;
+    }
+
+    template <class T>
+    inline STDMETHODIMP_(UINT32) CRibbonT<T>::GetRibbonHeight() const
+    {
+        Microsoft::WRL::ComPtr<IUIRibbon> pRibbon;
         UINT32 ribbonHeight = 0;
 
-        if (GetRibbonFramework())
+        if (m_pFramework && SUCCEEDED(m_pFramework->GetView(0, IID_PPV_ARGS(&pRibbon))))
         {
-            result = GetRibbonFramework()->GetView(0, IID_PPV_ARGS(&pRibbon));
-            if (SUCCEEDED(result))
-            {
-                // Call to the framework to determine the desired height of the Ribbon.
-                result = pRibbon->GetHeight(&ribbonHeight);
-                pRibbon->Release();
-            }
+            if (FAILED(pRibbon->GetHeight(&ribbonHeight)))
+                ribbonHeight = 0;
         }
 
         return ribbonHeight;
@@ -373,12 +355,68 @@ namespace Win32xx
     // Definitions for the CRibbonFrameT class template.
     //
 
+    // Constructor for the CRibbonFrameT class template. Sets the ribbon's
+    // window to this frame.
+    template <class T>
+    inline CRibbonFrameT<T>::CRibbonFrameT()
+    {
+        m_ribbon = Microsoft::WRL::Make<CRibbonT<CRibbonFrameT<T>>>();
+        if (m_ribbon)
+        {
+            m_ribbon->SetWindow(this);
+        }
+    }
+
+    // Creates the ribbon.
+    template <class T>
+    inline HRESULT CRibbonFrameT<T>::CreateRibbon(HWND wnd)
+    {
+        return m_ribbon ? m_ribbon->CreateRibbon(wnd) : E_FAIL;
+    }
+
+    // Destroys the ribbon.
+    template <class T>
+    inline void CRibbonFrameT<T>::DestroyRibbon()
+    {
+        if (m_ribbon) m_ribbon->DestroyRibbon();
+    }
+
+    // Retrieves a pointer to both the IUIApplication and IUICommandHandler
+    // interfaces for the Windows Ribbon framework.
+    template <class T>
+    inline Microsoft::WRL::ComPtr<CRibbonT<CRibbonFrameT<T>>> CRibbonFrameT<T>::GetRibbon() const
+    {
+        return m_ribbon;
+    }
+
+    // Retrieves a pointer to IUIFramework interface for the Windows Ribbon framework,
+    // assigned when the ribbon is created.
+    template <class T>
+    inline Microsoft::WRL::ComPtr<IUIFramework> CRibbonFrameT<T>::GetRibbonFramework() const
+    {
+        return m_ribbon ? m_ribbon->GetRibbonFramework() : nullptr;
+    }
+
+    // Retrieves the height of the ribbon.
+    template <class T>
+    inline UINT32 CRibbonFrameT<T>::GetRibbonHeight() const
+    {
+        return m_ribbon ? m_ribbon->GetRibbonHeight() : 0;
+    }
+
+    // Responds to execute events on commands bound to the Command handler.
+    template <class T>
+    inline STDMETHODIMP CRibbonFrameT<T>::Execute(UINT32, UI_EXECUTIONVERB, const PROPERTYKEY*,
+        const PROPVARIANT*, IUISimplePropertySet*)
+    {
+        return E_NOTIMPL;
+    }
+
     // Get the frame's client area.
     template <class T>
     inline CRect CRibbonFrameT<T>::GetViewRect() const
     {
         CRect clientRect = T::GetClientRect();
-
         clientRect.top += GetRibbonHeight();
 
         if (T::GetStatusBar().IsWindow() && T::GetStatusBar().IsWindowVisible())
@@ -386,9 +424,8 @@ namespace Win32xx
 
         if (T::GetReBar().IsWindow() && T::GetReBar().IsWindowVisible())
             clientRect = T::ExcludeChildRect(clientRect, T::GetReBar());
-        else
-            if (T::GetToolBar().IsWindow() && T::GetToolBar().IsWindowVisible())
-                clientRect = T::ExcludeChildRect(clientRect, T::GetToolBar());
+        else if (T::GetToolBar().IsWindow() && T::GetToolBar().IsWindowVisible())
+            clientRect = T::ExcludeChildRect(clientRect, T::GetToolBar());
 
         return clientRect;
     }
@@ -400,7 +437,7 @@ namespace Win32xx
     template <class T>
     inline int CRibbonFrameT<T>::OnCreate(CREATESTRUCT& cs)
     {
-        if (GetWinVersion() >= 2601)    // WinVersion >= Windows 7
+        if (GetWinVersion() >= 2601) // Windows 7 or newer
         {
             if (SUCCEEDED(CreateRibbon(*this)))
             {
@@ -417,7 +454,7 @@ namespace Win32xx
         T::OnCreate(cs);
         if (GetRibbonFramework())
         {
-            T::SetMenu(nullptr);              // Disable the window menu.
+            T::SetMenu(nullptr);
             T::SetFrameMenu(0);
         }
 
@@ -432,10 +469,31 @@ namespace Win32xx
         T::OnDestroy();
     }
 
-    // Called when the ribbon's view has changed.
+    // Called for each Command specified in the Windows Ribbon framework markup to
+    // bind the Command to an IUICommandHandler.
+    template <class T>
+    inline STDMETHODIMP CRibbonFrameT<T>::OnCreateUICommand(UINT32,
+        __in UI_COMMANDTYPE, __deref_out IUICommandHandler** ppCommandHandler)
+    {
+        if (!m_ribbon) return E_FAIL;
+
+        // Pass the request back to our WRL Ribbon instance
+        return m_ribbon.CopyTo(ppCommandHandler);
+    }
+
+    // // Called for each Command specified in the Windows Ribbon framework markup
+    // when the application window is destroyed.
+    template <class T>
+    inline STDMETHODIMP CRibbonFrameT<T>::OnDestroyUICommand(UINT32, __in UI_COMMANDTYPE,
+        __in_opt IUICommandHandler*)
+    {
+        return E_NOTIMPL;
+    }
+
+    // OnViewChanged is called when the ribbon has changed.
     template <class T>
     inline STDMETHODIMP CRibbonFrameT<T>::OnViewChanged(UINT32,
-        UI_VIEWTYPE typeId, IUIApplication::IUnknown*, UI_VIEWVERB verb, INT32)
+        UI_VIEWTYPE typeId, IUnknown*, UI_VIEWVERB verb, INT32)
     {
         HRESULT result = E_NOTIMPL;
 
@@ -454,6 +512,8 @@ namespace Win32xx
             case UI_VIEWVERB_ERROR:
                 result = E_FAIL;
                 break;
+
+            default: break;
             }
         }
 
@@ -466,31 +526,43 @@ namespace Win32xx
     {
         std::vector<CString> fileNames = T::GetMRUEntries();
         HRESULT result = E_FAIL;
-        SAFEARRAY* psa = SafeArrayCreateVector(VT_UNKNOWN, 0, (ULONG)fileNames.size());
+        SAFEARRAY* psa = ::SafeArrayCreateVector(VT_UNKNOWN, 0, static_cast<ULONG>(fileNames.size()));
         m_recentFiles.clear();
 
-        if (psa != nullptr)
+        if (psa == nullptr)
+            return E_OUTOFMEMORY;
+
+        LONG currentFile = 0;
+        HRESULT hr = S_OK;
+
+        for (const CString& fileName : fileNames)
         {
-            LONG currentFile = 0;
+            WCHAR curFileName[MAX_PATH] = {};
+            StrCopyW(curFileName, TtoW(fileName), MAX_PATH);
 
-            for (const CString& fileName : fileNames)
+            m_recentFiles.push_back(Microsoft::WRL::Make<CRecentFiles>(curFileName));
+            IUnknown* pUnk = m_recentFiles.back().Get();
+            hr = ::SafeArrayPutElement(psa, &currentFile, static_cast<void*>(pUnk));
+            if (FAILED(hr))
             {
-                WCHAR curFileName[MAX_PATH] = {};
-                StrCopyW(curFileName, TtoW(fileName), MAX_PATH);
-
-                m_recentFiles.push_back(std::make_unique<CRecentFiles>(curFileName));
-                result = SafeArrayPutElement(psa, &currentFile,
-                    static_cast<void*>(m_recentFiles.back().get()));
-                ++currentFile;
+                ::SafeArrayDestroy(psa);
+                return hr;
             }
 
-            SAFEARRAYBOUND sab = {static_cast<ULONG>(currentFile), 0};
-            SafeArrayRedim(psa, &sab);
-            result = UIInitPropertyFromIUnknownArray(UI_PKEY_RecentItems, psa, pvarValue);
-
-            SafeArrayDestroy(psa);  // Calls release for each element in the array.
+            ++currentFile;
         }
 
+        SAFEARRAYBOUND sab = { static_cast<ULONG>(currentFile), 0 };
+        hr = ::SafeArrayRedim(psa, &sab);
+        if (FAILED(hr))
+        {
+            ::SafeArrayDestroy(psa);
+            return hr;
+        }
+
+        result = ::UIInitPropertyFromIUnknownArray(UI_PKEY_RecentItems, psa, pvarValue);
+
+        ::SafeArrayDestroy(psa);  // Calls release for each element in the array.
         return result;
     }
 
@@ -503,10 +575,22 @@ namespace Win32xx
             T::UpdateMRUMenu();
     }
 
+    // Called by the Ribbon framework when a command property (PKEY) needs to
+    // be updated.
+    template <class T>
+    inline STDMETHODIMP CRibbonFrameT<T>::UpdateProperty(UINT32, __in REFPROPERTYKEY,
+        __in_opt const PROPVARIANT*, __out PROPVARIANT*)
+    {
+        return E_NOTIMPL;
+    }
+
 
     ////////////////////////////////////////////////
     // Declaration of the nested CRecentFiles class.
     //
+
+    // Constructor for the CRecentFiles class. Initializes the display name and
+    // full path for a recent file.
     template <class T>
     inline CRibbonFrameT<T>::CRecentFiles::CRecentFiles(PWSTR fullPath)
     {
@@ -530,47 +614,7 @@ namespace Win32xx
 
     }
 
-    template <class T>
-    inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::AddRef()
-    {
-        // Automatic deletion is not required.
-        return 1;
-    }
-
-    template <class T>
-    inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::Release()
-    {
-        // Automatic deletion is not required.
-        return 1;
-    }
-
-    template <class T>
-    inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::QueryInterface(
-        REFIID iid, void** ppObject)
-    {
-        if (!ppObject)
-        {
-            return E_POINTER;
-        }
-
-        if (iid == __uuidof(IUnknown))
-        {
-            *ppObject = static_cast<IUnknown*>(this);
-        }
-        else if (iid == __uuidof(IUISimplePropertySet))
-        {
-            *ppObject = static_cast<IUISimplePropertySet*>(this);
-        }
-        else
-        {
-            *ppObject = nullptr;
-            return E_NOINTERFACE;
-        }
-
-        return S_OK;
-    }
-
-    // IUISimplePropertySet methods.
+        //Retrieves the value identified by a property key.
     template <class T>
     inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::GetValue(
         __in REFPROPERTYKEY key, __out PROPVARIANT *ppropvar)
@@ -579,11 +623,11 @@ namespace Win32xx
 
         if (key == UI_PKEY_Label)
         {
-            result = UIInitPropertyFromString(key, m_displayName, ppropvar);
+            result = ::UIInitPropertyFromString(key, m_displayName, ppropvar);
         }
         else if (key == UI_PKEY_LabelDescription)
         {
-            result = UIInitPropertyFromString(key, m_displayName, ppropvar);
+            result = ::UIInitPropertyFromString(key, m_displayName, ppropvar);
         }
 
         return result;
@@ -592,5 +636,5 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif  // _WIN32XX_RIBBON_H_
+#endif  // WIN32XX_RIBBON_H_
 

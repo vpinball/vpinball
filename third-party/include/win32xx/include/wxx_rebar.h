@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,8 +36,8 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_REBAR_H_
-#define _WIN32XX_REBAR_H_
+#ifndef WIN32XX_REBAR_H_
+#define WIN32XX_REBAR_H_
 
 #include "wxx_wincore.h"
 #include "wxx_themes.h"
@@ -135,7 +135,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(band);
-        return static_cast<BOOL>(SendMessage(RB_DELETEBAND, wparam, 0));
+        return SendMessage(RB_DELETEBAND, wparam, 0) ? TRUE : FALSE;
     }
 
     // Returns the zero based band number for this window handle.
@@ -153,7 +153,7 @@ namespace Win32xx
             rbbi.fMask = RBBIM_CHILD;
             GetBandInfo(band, rbbi);
             if (rbbi.hwndChild == wnd)
-                result = band;
+                return band;
         }
 
         return result;
@@ -174,7 +174,7 @@ namespace Win32xx
 
     // Retrieves the count of bands currently in the rebar control.
     // Refer to RB_GETBANDCOUNT in the Windows API documentation for more information.
-    inline int  CReBar::GetBandCount() const
+    inline int CReBar::GetBandCount() const
     {
         assert(IsWindow());
         return static_cast<int>(SendMessage(RB_GETBANDCOUNT, 0, 0));
@@ -191,7 +191,7 @@ namespace Win32xx
         bandInfo.cbSize = GetSizeofRBBI();
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = reinterpret_cast<LPARAM>(&bandInfo);
-        return static_cast<BOOL>(SendMessage(RB_GETBANDINFO, wparam, lparam));
+        return SendMessage(RB_GETBANDINFO, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Retrieves the bounding rectangle for a given band in a rebar control.
@@ -223,7 +223,7 @@ namespace Win32xx
         // REBARINFO describes overall rebar control characteristics
         rebarInfo.cbSize = sizeof(rebarInfo);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rebarInfo);
-        return static_cast<BOOL>(SendMessage(RB_GETBARINFO, 0, lparam));
+        return SendMessage(RB_GETBARINFO, 0, lparam) ? TRUE : FALSE;
     }
 
     // Retrieves the number of rows of bands in a rebar control.
@@ -318,7 +318,7 @@ namespace Win32xx
         bandInfo.cbSize = GetSizeofRBBI();
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = reinterpret_cast<LPARAM>(&bandInfo);
-        return static_cast<BOOL>(SendMessage(RB_INSERTBAND, wparam, lparam));
+        return SendMessage(RB_INSERTBAND, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Returns TRUE if the band is visible.
@@ -331,7 +331,7 @@ namespace Win32xx
         rbbi.fMask = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
 
-        return !(rbbi.fStyle & RBBS_HIDDEN);
+        return !(rbbi.fStyle & RBBS_HIDDEN) ? TRUE : FALSE;
     }
 
     // Permit the parent window to handle the drawing of the rebar's background.
@@ -341,7 +341,7 @@ namespace Win32xx
     {
         WPARAM wparam = reinterpret_cast<WPARAM>(&dc);
         LPARAM lparam = reinterpret_cast<LPARAM>(this);
-        return static_cast<BOOL>(SendMessage(::GetParent(*this), UWM_DRAWRBBKGND, wparam, lparam));
+        return SendMessage(::GetParent(*this), UWM_DRAWRBBKGND, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Sets the CREATESTRUCT parameters prior to window creation.
@@ -383,7 +383,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(from);
         LPARAM lparam = static_cast<LPARAM>(to);
-        return static_cast<BOOL>(SendMessage(RB_MOVEBAND, wparam, lparam));
+        return SendMessage(RB_MOVEBAND, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Repositions the bands so they are left justified.
@@ -500,7 +500,7 @@ namespace Win32xx
         rbbi.cyMinChild = cy;
         rbbi.cyMaxChild = cy;
 
-        return SetBandInfo(band, rbbi );
+        return SetBandInfo(band, rbbi);
     }
 
     // Sets the band's bitmaps.
@@ -517,7 +517,7 @@ namespace Win32xx
 
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rbbi);
-        return static_cast<BOOL>(SendMessage(RB_SETBANDINFO, wparam, lparam));
+        return SendMessage(RB_SETBANDINFO, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Sets the band's color.
@@ -536,7 +536,7 @@ namespace Win32xx
 
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rbbi);
-        return static_cast<BOOL>(SendMessage(RB_SETBANDINFO, wparam, lparam));
+        return SendMessage(RB_SETBANDINFO, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Sets the characteristics of a rebar control.
@@ -549,7 +549,7 @@ namespace Win32xx
         bandInfo.cbSize = GetSizeofRBBI();
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = reinterpret_cast<LPARAM>(&bandInfo);
-        return static_cast<BOOL>(SendMessage(RB_SETBANDINFO, wparam, lparam));
+        return SendMessage(RB_SETBANDINFO, wparam, lparam) ? TRUE : FALSE;
     }
 
     // REBARINFO associates an image list with the rebar.
@@ -561,7 +561,7 @@ namespace Win32xx
 
         rebarInfo.cbSize = sizeof(rebarInfo);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rebarInfo);
-        return static_cast<BOOL>(SendMessage(RB_SETBARINFO, 0, lparam));
+        return SendMessage(RB_SETBARINFO, 0, lparam) ? TRUE : FALSE;
     }
 
     // Show or hide a band.
@@ -571,7 +571,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(band);
         LPARAM lparam = static_cast<LPARAM>(show);
-        return static_cast<BOOL>(SendMessage(RB_SHOWBAND, wparam, lparam));
+        return SendMessage(RB_SHOWBAND, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Show or hide the band's gripper.
@@ -604,7 +604,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rect);
-        return static_cast<BOOL>(SendMessage(RB_SIZETORECT, 0, lparam));
+        return SendMessage(RB_SIZETORECT, 0, lparam) ? TRUE : FALSE;
     }
 
     // Associates a ToolTip control with the rebar control.
@@ -629,12 +629,12 @@ namespace Win32xx
         // Messages defined by Win32++.
         case UWM_TBRESIZE:  return OnToolBarResize(msg, wparam, lparam);
         case UWM_TBWINPOSCHANGING:  return OnTBWinPosChanging(msg, wparam, lparam);
-        }
 
-        // Pass unhandled messages on for default processing.
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        // Do default processing for other messages.
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
+        }
     }
 
 } // namespace Win32xx
 
-#endif // _WIN32XX_REBAR_H_
+#endif // WIN32XX_REBAR_H_

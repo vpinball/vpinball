@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -36,8 +36,8 @@
 ////////////////////////////////////////////////////////
 
 
-#ifndef _WIN32XX_HGLOBAL_H_
-#define _WIN32XX_HGLOBAL_H_
+#ifndef WIN32XX_HGLOBAL_H_
+#define WIN32XX_HGLOBAL_H_
 
 namespace Win32xx
 {
@@ -92,9 +92,14 @@ namespace Win32xx
     inline void CHGlobal::Free()
     {
         if (m_global != nullptr)
-            VERIFY(::GlobalFree(m_global) == nullptr);  // Fails if the memory was already freed.
+        {
+            // Free the global memory. GlobalFree returns NULL on success.
+            HGLOBAL res = ::GlobalFree(m_global);
+            VERIFY(res == nullptr);
 
-        m_global = nullptr;
+            if (res == nullptr)
+                m_global = nullptr;
+        }
     }
 
     // Reassign is used when global memory has been reassigned, as
@@ -109,4 +114,4 @@ namespace Win32xx
 }
 
 
-#endif // _WIN32XX_HGLOBAL_H_
+#endif // WIN32XX_HGLOBAL_H_

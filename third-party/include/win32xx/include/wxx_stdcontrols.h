@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -47,8 +47,8 @@
 // message. Newer controls send their notifications via a WM_NOTIFY message.
 
 
-#ifndef _WIN32XX_STDCONTROLS_H_
-#define _WIN32XX_STDCONTROLS_H_
+#ifndef WIN32XX_STDCONTROLS_H_
+#define WIN32XX_STDCONTROLS_H_
 
 #include "wxx_wincore.h"
 
@@ -177,8 +177,7 @@ namespace Win32xx
         // General Operations
         int  GetCount() const;
         int  GetHorizontalExtent() const;
-        DWORD GetItemData(int index) const;
-        void* GetItemDataPtr(int index) const;
+        ULONG_PTR GetItemData(int index) const;
         int  GetItemHeight(int index) const;
         int  GetItemRect(int index, RECT& rc) const;
         CRect GetItemRect(int index) const;
@@ -190,8 +189,7 @@ namespace Win32xx
         UINT ItemFromPoint(CPoint pt, BOOL& isOutside ) const;
         void SetColumnWidth(int cxWidth) const;
         void SetHorizontalExtent(int cxExtent) const;
-        int  SetItemData(int index, DWORD itemData) const;
-        int  SetItemDataPtr(int index, void* pData) const;
+        int  SetItemData(int index, ULONG_PTR itemData) const;
         int  SetItemHeight(int index, UINT cyItemHeight) const;
         LCID SetLocale(LCID newLocale) const;
         BOOL SetTabStops(int tabStops, LPINT pTabStopsArray) const;
@@ -416,6 +414,8 @@ namespace Win32xx
     // Adds text to the end of the document.
     inline void CEdit::AppendText(LPCTSTR text) const
     {
+        assert(IsWindow());
+
         LRESULT position = SendMessage(WM_GETTEXTLENGTH, 0, 0);
         WPARAM wparam = static_cast<WPARAM>(position);
         LPARAM lparam = static_cast<LPARAM>(position);
@@ -429,7 +429,7 @@ namespace Win32xx
     inline BOOL CEdit::CanUndo() const
     {
         assert(IsWindow());
-        return static_cast<BOOL>(SendMessage(EM_CANUNDO, 0, 0));
+        return SendMessage(EM_CANUNDO, 0, 0) ? TRUE : FALSE;
     }
 
     // Returns the character index and line index of the character nearest the
@@ -543,7 +543,7 @@ namespace Win32xx
     inline BOOL CEdit::GetModify() const
     {
         assert(IsWindow());
-        return static_cast<BOOL>(SendMessage(EM_GETMODIFY, 0, 0));
+        return SendMessage(EM_GETMODIFY, 0, 0) ? TRUE : FALSE;
     }
 
     // Returns the character that edit controls use in conjunction with the
@@ -620,7 +620,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(addEOL);
-        return static_cast<BOOL>(SendMessage(EM_FMTLINES, wparam, 0));
+        return SendMessage(EM_FMTLINES, wparam, 0) ? TRUE : FALSE;
     }
 
     // Sets the text limit of an edit control. The text limit is the maximum
@@ -774,7 +774,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(isReadOnly);
-        return static_cast<BOOL>(SendMessage(EM_SETREADONLY, wparam, 0));
+        return SendMessage(EM_SETREADONLY, wparam, 0) ? TRUE : FALSE;
     }
 
     // Sets the formatting rectangle for the multi-line edit control and
@@ -830,7 +830,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(tabStops);
         LPARAM lparam = reinterpret_cast<LPARAM>(pTabStopsArray);
-        return static_cast<BOOL>(SendMessage(EM_SETTABSTOPS, wparam, lparam));
+        return SendMessage(EM_SETTABSTOPS, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Sets tab-stop positions in the multi-line edit control.
@@ -838,7 +838,7 @@ namespace Win32xx
     inline BOOL CEdit::SetTabStops() const
     {
         assert(IsWindow());
-        return static_cast<BOOL>(SendMessage(EM_SETTABSTOPS, 0, 0));
+        return SendMessage(EM_SETTABSTOPS, 0, 0) ? TRUE : FALSE;
     }
 
     // Sets tab-stop positions in the multi-line edit control.
@@ -848,7 +848,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(1);
         LPARAM lparam = reinterpret_cast<LPARAM>(&cxEachStop);
-        return static_cast<BOOL>(SendMessage(EM_SETTABSTOPS, wparam, lparam));
+        return SendMessage(EM_SETTABSTOPS, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Removes any text that was just inserted or inserts any deleted
@@ -986,20 +986,11 @@ namespace Win32xx
 
     // Returns the value associated with the specified item.
     // Refer to LB_GETITEMDATA in the Windows API documentation for more information.
-    inline DWORD CListBox::GetItemData(int index) const
+    inline ULONG_PTR CListBox::GetItemData(int index) const
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(index);
-        return static_cast<DWORD>(SendMessage(LB_GETITEMDATA, wparam, 0));
-    }
-
-    // Returns the value associated with the specified item.
-    // Refer to LB_GETITEMDATA in the Windows API documentation for more information.
-    inline void* CListBox::GetItemDataPtr(int index) const
-    {
-        assert(IsWindow());
-        WPARAM wparam = static_cast<WPARAM>(index);
-        return reinterpret_cast<void*>(SendMessage(LB_GETITEMDATA, wparam, 0));
+        return static_cast<ULONG_PTR>(SendMessage(LB_GETITEMDATA, wparam, 0));
     }
 
     // Returns the height, in pixels, of an item in a list box.
@@ -1107,7 +1098,9 @@ namespace Win32xx
     inline UINT CListBox::ItemFromPoint(CPoint pt, BOOL& isOutside) const
     {
         assert(IsWindow());
-        DWORD result = static_cast<DWORD>(SendMessage(LB_ITEMFROMPOINT, 0, MAKELPARAM(pt.x, pt.y)));
+        DWORD result = static_cast<DWORD>(SendMessage(LB_ITEMFROMPOINT, 0,
+            MAKELPARAM(pt.x, pt.y)));
+
         isOutside = !!HIWORD(result);
         return LOWORD(result);
     }
@@ -1129,6 +1122,8 @@ namespace Win32xx
                 LPCOMPAREITEMSTRUCT>(lparam);
             return CompareItem(pCompareItemStruct);
         }
+
+        default: break;
         }
 
         return 0;   // Allow other messages to be handled elsewhere.
@@ -1226,21 +1221,11 @@ namespace Win32xx
 
     // Associates a value with a list box item.
     // Refer to LB_SETITEMDATA in the Windows API documentation for more information.
-    inline int CListBox::SetItemData(int index, DWORD itemData) const
+    inline int CListBox::SetItemData(int index, ULONG_PTR itemData) const
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(index);
         LPARAM lparam = static_cast<LPARAM>(itemData);
-        return static_cast<int>(SendMessage(LB_SETITEMDATA, wparam, lparam));
-    }
-
-    // Associates a value with a list box item.
-    // Refer to LB_SETITEMDATA in the Windows API documentation for more information.
-    inline int CListBox::SetItemDataPtr(int index, void* pData) const
-    {
-        assert(IsWindow());
-        WPARAM wparam = static_cast<WPARAM>(index);
-        LPARAM lparam = reinterpret_cast<LPARAM>(pData);
         return static_cast<int>(SendMessage(LB_SETITEMDATA, wparam, lparam));
     }
 
@@ -1280,7 +1265,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(tabStops);
         LPARAM lparam = reinterpret_cast<LPARAM>(pTabStopsArray);
-        return static_cast<BOOL>(SendMessage(LB_SETTABSTOPS, wparam, lparam));
+        return SendMessage(LB_SETTABSTOPS, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Sets the tab stops to those specified in a specified array.
@@ -1298,7 +1283,7 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(1);
         LPARAM lparam = reinterpret_cast<LPARAM>(&cxEachStop);
-        return static_cast<BOOL>(SendMessage(LB_SETTABSTOPS, wparam, lparam));
+        return SendMessage(LB_SETTABSTOPS, wparam, lparam) ? TRUE : FALSE;
     }
 
     // Scrolls the list box so the specified item is at the top of the visible range.
@@ -1412,5 +1397,5 @@ namespace Win32xx
 
 }
 
-#endif  // _WIN32XX_STDCONTROLS_H_
+#endif  // WIN32XX_STDCONTROLS_H_
 

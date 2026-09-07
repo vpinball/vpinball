@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -37,8 +37,8 @@
 
 
 
-#ifndef _WIN32XX_EXCEPTION_H_
-#define _WIN32XX_EXCEPTION_H_
+#ifndef WIN32XX_EXCEPTION_H_
+#define WIN32XX_EXCEPTION_H_
 
 
 //
@@ -86,8 +86,8 @@ namespace Win32xx
     class CException : public std::exception
     {
     public:
-        CException(int messageID) noexcept;
-        CException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
+        explicit CException(int messageID) noexcept;
+        explicit CException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
         CException(const CException& rhs) noexcept;
         CException& operator=(const CException&) noexcept;
         virtual ~CException() noexcept;
@@ -113,8 +113,9 @@ namespace Win32xx
     class CFileException : public CException
     {
     public:
-        CFileException(LPCTSTR filePath, int messageID) noexcept;
-        CFileException(LPCTSTR filePath, LPCTSTR text = nullptr, int messageID = 0) noexcept;
+        explicit CFileException(LPCTSTR filePath, int messageID) noexcept;
+        explicit CFileException(LPCTSTR filePath, LPCTSTR text = nullptr,
+            int messageID = 0) noexcept;
         CFileException(const CFileException& rhs) noexcept;
         CFileException& operator=(const CFileException& rhs)  noexcept;
         virtual ~CFileException() noexcept override;
@@ -135,8 +136,8 @@ namespace Win32xx
     class CNotSupportedException : public CException
     {
     public:
-        CNotSupportedException(int messageID) noexcept;
-        CNotSupportedException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
+        explicit CNotSupportedException(int messageID) noexcept;
+        explicit CNotSupportedException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
         CNotSupportedException(const CNotSupportedException& rhs) noexcept;
         CNotSupportedException& operator=(const CNotSupportedException& rhs) noexcept;
         virtual ~CNotSupportedException() noexcept override;
@@ -151,8 +152,8 @@ namespace Win32xx
     class CResourceException : public CException
     {
     public:
-        CResourceException(int messageID) noexcept;
-        CResourceException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
+        explicit CResourceException(int messageID) noexcept;
+        explicit CResourceException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
         CResourceException(const CResourceException& rhs) noexcept;
         CResourceException& operator=(const CResourceException& rhs)  noexcept;
         virtual ~CResourceException() noexcept override;
@@ -170,8 +171,8 @@ namespace Win32xx
     class CUserException : public CException
     {
     public:
-        CUserException(int messageID) noexcept;
-        CUserException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
+        explicit CUserException(int messageID) noexcept;
+        explicit CUserException(LPCTSTR text = nullptr, int messageID = 0) noexcept;
         CUserException(const CUserException& rhs) noexcept;
         CUserException& operator=(const CUserException& rhs) noexcept;
         virtual ~CUserException() noexcept override;
@@ -186,8 +187,8 @@ namespace Win32xx
     class CWinException : public CException
     {
     public:
-        CWinException(int messageID) noexcept;
-        CWinException(LPCTSTR text= nullptr, int messageID = 0) noexcept;
+        explicit CWinException(int messageID) noexcept;
+        explicit CWinException(LPCTSTR text= nullptr, int messageID = 0) noexcept;
         CWinException(const CWinException& rhs) noexcept;
         CWinException& operator=(const CWinException& rhs) noexcept;
         virtual ~CWinException() noexcept override;
@@ -214,7 +215,8 @@ namespace Win32xx
 
         // Store error information in m_errorString.
         DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessage(flags, nullptr, m_error, 0, m_errorString, WXX_MAX_STRING_SIZE-1, nullptr);
+        ::FormatMessage(flags, nullptr, m_error, 0, m_errorString,
+            WXX_MAX_STRING_SIZE-1, nullptr);
 
         if (m_error == 0 && IsAppRunning())
             StrCopy(m_errorString, GetApp()->MsgNoError(), WXX_MAX_STRING_SIZE);
@@ -309,14 +311,14 @@ namespace Win32xx
         *m_filePath = {};
 
         // Display some text in the debugger.
-        TRACE(_T("*** CFileException thrown ***\n"));
+        TRACE("*** CFileException thrown ***\n");
 
         if (filePath)
         {
             StrCopy(m_filePath, filePath, WXX_MAX_STRING_SIZE);
-            TRACE(_T("File name: "));
+            TRACE("File name: ");
             TRACE(filePath);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (GetError() != 0)
@@ -331,20 +333,20 @@ namespace Win32xx
         *m_filePath = {};
 
         // Display some text in the debugger.
-        TRACE(_T("*** CFileException thrown ***\n"));
+        TRACE("*** CFileException thrown ***\n");
 
         if (filePath)
         {
             StrCopy(m_filePath, filePath, WXX_MAX_STRING_SIZE);
-            TRACE(_T("File name: "));
+            TRACE("File name: ");
             TRACE(filePath);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (text)
         {
             TRACE(text);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (GetError() != 0)
@@ -384,7 +386,7 @@ namespace Win32xx
     inline LPCTSTR CFileException::GetFileName() const noexcept
     {
         // Get the index of the first character after the last '\'.
-        int index = lstrlen(m_filePath);
+        int index = static_cast<int>(_tcslen(m_filePath));
         while ( index > 0  &&  m_filePath[index-1] != _T('\\') )
         {
             --index;
@@ -409,7 +411,7 @@ namespace Win32xx
         : CException(messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CNotSupportedException thrown ***\n"));
+        TRACE("*** CNotSupportedException thrown ***\n");
 
         if (GetError() != 0)
             TRACE(GetErrorString());
@@ -421,12 +423,12 @@ namespace Win32xx
         : CException(text, messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CNotSupportedException thrown ***\n"));
+        TRACE("*** CNotSupportedException thrown ***\n");
 
         if (text)
         {
             TRACE(text);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (GetError() != 0)
@@ -471,7 +473,7 @@ namespace Win32xx
         : CException(messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CResourceException thrown ***\n"));
+        TRACE("*** CResourceException thrown ***\n");
 
         if (GetError() != 0)
             TRACE(GetErrorString());
@@ -483,12 +485,12 @@ namespace Win32xx
         : CException(text, messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CResourceException thrown ***\n"));
+        TRACE("*** CResourceException thrown ***\n");
 
         if (text)
         {
             TRACE(text);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (GetError() != 0)
@@ -502,7 +504,8 @@ namespace Win32xx
     }
 
     // CResourceException assignment operator.
-    inline CResourceException& CResourceException::operator=(const CResourceException& rhs) noexcept
+    inline CResourceException& CResourceException::operator=(
+        const CResourceException& rhs) noexcept
     {
         CException::operator=(rhs);
         return *this;
@@ -529,20 +532,20 @@ namespace Win32xx
             : CException(messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CUserException thrown ***\n"));
+        TRACE("*** CUserException thrown ***\n");
     }
 
     // CUserException constructor.
-    inline CUserException::CUserException(LPCTSTR text /*= nullptr*/, int messageID /*= 0*/) noexcept
-            : CException(text, messageID)
+    inline CUserException::CUserException(LPCTSTR text /*= nullptr*/,
+        int messageID /*= 0*/) noexcept : CException(text, messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CUserException thrown ***\n"));
+        TRACE("*** CUserException thrown ***\n");
 
         if (text)
         {
             TRACE(text);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
     }
 
@@ -580,35 +583,36 @@ namespace Win32xx
         : CException(messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CWinException thrown ***\n"));
+        TRACE("*** CWinException thrown ***\n");
 
         if (GetError() != 0)
             TRACE(GetErrorString());
     }
 
     // CWinException constructor.
-    inline CWinException::CWinException(LPCTSTR text, int messageID) noexcept
+    inline CWinException::CWinException(LPCTSTR text /*= nullptr*/,
+        int messageID /*= 0*/) noexcept
         : CException(text, messageID)
     {
         // Display some text in the debugger.
-        TRACE(_T("*** CWinException thrown ***\n"));
+        TRACE("*** CWinException thrown ***\n");
         if (text)
         {
             TRACE(text);
-            TRACE(_T("\n"));
+            TRACE("\n");
         }
 
         if (GetError() != 0)
             TRACE(GetErrorString());
     }
 
-    // CWinFileException copy constructor.
+    // CWinException copy constructor.
     inline CWinException::CWinException(const CWinException& rhs) noexcept
         : CException(rhs)
     {
     }
 
-    // CWinFileException assignment operator.
+    // CWinException assignment operator.
     inline CWinException& CWinException::operator=(const CWinException& rhs) noexcept
     {
         CException::operator =(rhs);
@@ -630,4 +634,4 @@ namespace Win32xx
 } // namespace Win32xx
 
 
-#endif // _WIN32XX_EXCEPTION_H_
+#endif // WIN32XX_EXCEPTION_H_

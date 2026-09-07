@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -53,8 +53,8 @@
 
 
 
-#ifndef _WIN32XX_SCROLLVIEW_H_
-#define _WIN32XX_SCROLLVIEW_H_
+#ifndef WIN32XX_SCROLLVIEW_H_
+#define WIN32XX_SCROLLVIEW_H_
 
 #include "wxx_appcore0.h"
 
@@ -93,7 +93,7 @@ namespace Win32xx
         virtual LRESULT OnMouseWheel(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnVScroll(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual void    PreCreate(CREATESTRUCT& cs) override;
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
@@ -184,8 +184,7 @@ namespace Win32xx
             newPos.x = si.nTrackPos;
             break;
 
-        default:
-            break;
+        default: break;
         }
 
         int maxPosX = m_totalSize.cx - GetClientRect().Width();
@@ -193,7 +192,7 @@ namespace Win32xx
         newPos.x = std::max(0, std::min(newPosX, maxPosX));
 
         // Scroll the window
-        int deltaX = newPosX - m_currentPos.x;
+        int deltaX = newPos.x - m_currentPos.x;
         ScrollWindowEx(-deltaX, 0, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
@@ -246,8 +245,7 @@ namespace Win32xx
             newPos.y +=  m_lineSize.cy;
             break;
 
-        default:
-            break;
+        default: break;
         }
 
         if (newPos != m_currentPos)
@@ -272,18 +270,24 @@ namespace Win32xx
     // Overrides OnPaint and call OnDraw with a memory DC.
     inline LRESULT CScrollView::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-
         if (m_totalSize != CSize(0, 0))
         {
             CPaintDC dc(*this);
             CMemDC memDC(dc);
 
-            // negative sizes are not allowed.
             assert(m_totalSize.cx > 0);
             assert(m_totalSize.cy > 0);
 
             // Create the compatible bitmap for the memory DC.
             memDC.CreateCompatibleBitmap(GetDC(), m_totalSize.cx, m_totalSize.cy);
+            CBitmap curBmp = memDC.GetCurrentBitmap();
+            if (curBmp.GetHandle() == nullptr)
+            {
+                TRACE("CScrollView::OnPaint - CreateCompatibleBitmap failed.\n");
+                OnDraw(dc);
+                FillOutsideRect(dc, m_bkgndBrush);
+                return 0;
+            }
 
             // Set the background color.
             CRect rcTotal(CPoint(0, 0), m_totalSize);
@@ -293,7 +297,9 @@ namespace Win32xx
             OnDraw(memDC);
 
             // Copy the modified memory DC to the window's DC with scrolling offsets.
-            dc.BitBlt(0, 0, m_totalSize.cx, m_totalSize.cy, memDC, m_currentPos.x, m_currentPos.y, SRCCOPY);
+            CRect rcClient = GetClientRect();
+            dc.BitBlt(0, 0, rcClient.Width(), rcClient.Height(), memDC, m_currentPos.x,
+                m_currentPos.y, SRCCOPY);
 
             // Set the area outside the scrolling area.
             FillOutsideRect(dc, m_bkgndBrush);
@@ -357,8 +363,7 @@ namespace Win32xx
                 newPos.y = si.nTrackPos;
                 break;
 
-            default:
-               break;
+            default: break;
         }
 
         int maxPosY = m_totalSize.cy - GetClientRect().Height();
@@ -422,10 +427,18 @@ namespace Win32xx
     // Sets the current scroll position.
     inline void CScrollView::SetScrollPosition(POINT pt)
     {
-        assert(pt.x >= 0 && pt.x <= m_totalSize.cx);
-        assert(pt.y >= 0 && pt.y <= m_totalSize.cy);
+        int maxX = (m_totalSize.cx > 0) ? m_totalSize.cx : 0;
+        int maxY = (m_totalSize.cy > 0) ? m_totalSize.cy : 0;
 
-        m_currentPos = pt;
+        int x = pt.x;
+        if (x < 0) x = 0;
+        else if (x > maxX) x = maxX;
+
+        int y = pt.y;
+        if (y < 0) y = 0;
+        else if (y > maxY) y = maxY;
+
+        m_currentPos = CPoint(x, y);
         UpdateBars();
     }
 
@@ -568,11 +581,11 @@ namespace Win32xx
         case WM_VSCROLL:            return OnVScroll(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGED:   return OnWindowPosChanged(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGING:  return OnWindowPosChanging(msg, wparam, lparam);
-        }
 
-        // Pass unhandled messages on for default processing.
-        return CWnd::WndProcDefault(msg, wparam, lparam);
+        // Do default processing for other messages.
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
+        }
     }
 }
 
-#endif // _WIN32XX_SCROLLVIEW_H_
+#endif // WIN32XX_SCROLLVIEW_H_

@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,7 +46,7 @@
 // list views, static text etc.
 
 // The layout of a dialog is typically defined in a resource script file
-// (often Resource.rc). While this script file can be constructed manually,
+// (often resource.rc). While this script file can be constructed manually,
 // it is often created using a resource editor.  A resource editor is included
 // with Microsoft's Visual Studio Studio Community.
 
@@ -65,8 +65,8 @@
 // SetDlgItemText.
 
 
-#ifndef _WIN32XX_DIALOG_H_
-#define _WIN32XX_DIALOG_H_
+#ifndef WIN32XX_DIALOG_H_
+#define WIN32XX_DIALOG_H_
 
 #include "wxx_wincore.h"
 
@@ -92,7 +92,7 @@ namespace Win32xx
 
         // Virtual functions
         virtual void AttachItem(UINT id, CWnd& wnd);
-        virtual HWND Create(HWND parent = nullptr)  override { return DoModeless(parent); }
+        virtual HWND Create(HWND parent = nullptr)  override;
         virtual INT_PTR DoModal(HWND parent = nullptr);
         virtual HWND DoModeless(HWND parent = nullptr);
 
@@ -128,8 +128,10 @@ namespace Win32xx
         CDialog(const CDialog&) = delete;
         CDialog& operator=(const CDialog&) = delete;
 
-        static INT_PTR CALLBACK StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
-        static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam, LPARAM lparam);
+        static INT_PTR CALLBACK StaticDialogProc(HWND wnd, UINT msg,
+            WPARAM wparam, LPARAM lparam);
+        static LRESULT CALLBACK StaticMsgHook(int code, WPARAM wparam,
+            LPARAM lparam);
 
         // State functions
         BOOL IsModal() const { return m_isModal; }
@@ -194,7 +196,9 @@ namespace Win32xx
 
         struct ResizeData
         {
-            ResizeData() : corner(topleft), isFixedWidth(false), isFixedHeight(false), wnd(0) {}
+            ResizeData() : corner(topleft), isFixedWidth(false),
+                isFixedHeight(false), wnd(0) {}
+
             CRect childRect;
             Alignment corner;
             bool isFixedWidth;
@@ -289,8 +293,8 @@ namespace Win32xx
         wnd.AttachDlgItem(id, *this);
     }
 
-    // The dialog's message procedure. Override this function in your class derived
-    // from CDialog if you wish to handle messages.
+    // The dialog's message procedure. Override this function in your class
+    // derived from CDialog if you wish to handle messages.
     inline INT_PTR CDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         // A typical function might look like this:
@@ -304,6 +308,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Windows API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault.
@@ -321,41 +327,43 @@ namespace Win32xx
             {
                 // Center the dialog.
                 CenterWindow();
+                return OnInitDialog();
             }
-            return OnInitDialog();
         case WM_CLOSE:
             {
                 OnClose();
                 return 0;
             }
         case WM_COMMAND:
+        {
+            if (HIWORD(wparam) == BN_CLICKED)
             {
-                if (HIWORD(wparam) == BN_CLICKED)
+                switch (LOWORD(wparam))
                 {
-                    switch (LOWORD(wparam))
-                    {
-                    case IDOK:
-                        OnOK();
-                        return TRUE;
-                    case IDCANCEL:
-                        OnCancel();
-                        return TRUE;
-                    }
+                case IDOK:
+                    OnOK();
+                    return TRUE;
+                case IDCANCEL:
+                    OnCancel();
+                    return TRUE;
+
+                default: break;
                 }
-
-                // Reflect this message if it's from a control.
-                CWnd* pWnd = GetCWndPtr(reinterpret_cast<HWND>(lparam));
-                if (pWnd != nullptr)
-                    result = pWnd->OnCommand(wparam, lparam);
-
-                // Handle user commands.
-                if (!result)
-                    result =  OnCommand(wparam, lparam);
-
-                if (result) return 0;
             }
-            break;  // Some commands require default processing.
 
+            // Reflect this message if it's from a control.
+            CWnd* pWnd = GetCWndPtr(reinterpret_cast<HWND>(lparam));
+            if (pWnd != nullptr)
+                result = pWnd->OnCommand(wparam, lparam);
+
+            // Handle user commands.
+            if (!result)
+                result = OnCommand(wparam, lparam);
+
+            if (result) return 0;
+
+            break;  // Some commands require default processing.
+        }
 
         case WM_DESTROY:
             OnDestroy();
@@ -438,11 +446,20 @@ namespace Win32xx
             return TRUE;
         }
 
+        default: break;
         } // switch(msg)
 
         return 0;
 
     } // INT_PTR CALLBACK CDialog::DialogProc(...)
+
+    // Creates a modeless dialog.
+    // Refer to CreateDialog and CreateDialogIndirect in the Windows API
+    // documentation for more information.
+    inline HWND CDialog::Create(HWND parent /* = nullptr */)
+    {
+        return DoModeless(parent);
+    }
 
     // Creates a modal dialog. A modal dialog box must be closed by the user
     // before the application continues.
@@ -470,7 +487,10 @@ namespace Win32xx
         // Create a modal dialog.
         HINSTANCE instance = GetApp()->GetInstanceHandle();
         if (m_pDlgTemplate != nullptr)
-            result = ::DialogBoxIndirect(instance, m_pDlgTemplate, parent, CDialog::StaticDialogProc);
+        {
+            result = ::DialogBoxIndirect(instance, m_pDlgTemplate, parent,
+                CDialog::StaticDialogProc);
+        }
         else
         {
             if (::FindResource(GetApp()->GetResourceHandle(), m_resourceName, RT_DIALOG))
@@ -494,7 +514,8 @@ namespace Win32xx
     }
 
     // Creates a modeless dialog.
-    // Refer to CreateDialog and CreateDialogIndirect in the Windows API documentation for more information.
+    // Refer to CreateDialog and CreateDialogIndirect in the Windows API
+    // documentation for more information.
     inline HWND CDialog::DoModeless(HWND parent /* = nullptr*/)
     {
         assert(m_pDlgTemplate || m_resourceName);  // Dialog layout must be defined.
@@ -513,13 +534,17 @@ namespace Win32xx
 
         // Create the modeless dialog.
         if (m_pDlgTemplate != nullptr)
-            wnd = ::CreateDialogIndirect(instance, m_pDlgTemplate, parent, CDialog::StaticDialogProc);
+        {
+            wnd = ::CreateDialogIndirect(instance, m_pDlgTemplate, parent,
+                CDialog::StaticDialogProc);
+        }
         else
         {
             if (::FindResource(GetApp()->GetResourceHandle(), m_resourceName, RT_DIALOG))
                 instance = GetApp()->GetResourceHandle();
 
-            wnd = ::CreateDialog(instance, m_resourceName, parent, CDialog::StaticDialogProc);
+            wnd = ::CreateDialog(instance, m_resourceName, parent,
+                CDialog::StaticDialogProc);
         }
 
         // Tidy up.
@@ -675,7 +700,8 @@ namespace Win32xx
     }
 
     // This callback function passes messages to DialogProc
-    inline INT_PTR CALLBACK CDialog::StaticDialogProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    inline INT_PTR CALLBACK CDialog::StaticDialogProc(HWND wnd, UINT msg,
+        WPARAM wparam, LPARAM lparam)
     {
         // Find the CWnd pointer mapped to this HWND.
         CDialog* pDialog = static_cast<CDialog*>(GetCWndPtr(wnd));
@@ -710,7 +736,8 @@ namespace Win32xx
     } // INT_PTR CALLBACK CDialog::StaticDialogProc(...)
 
     // Used only by modal dialogs for idle processing and PreTranslateMessage.
-    inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam, LPARAM lparam)
+    inline LRESULT CALLBACK CDialog::StaticMsgHook(int code, WPARAM wparam,
+        LPARAM lparam)
     {
         MSG msg = {};
         LONG count = 0;
@@ -725,7 +752,6 @@ namespace Win32xx
         {
             ++count;
         }
-        count = 0;
 
         if (code == MSGF_DIALOGBOX)
         {
@@ -791,22 +817,13 @@ namespace Win32xx
         rd.childRect = childRect;
         rd.wnd = wnd;
 
-        auto it = m_resizeData.begin();
-        while (it != m_resizeData.end())
-        {
-            if ( it->wnd == wnd)
-            {
-                // Replace the value.
-                *it = rd;
-                break;
-            }
+        auto it = std::find_if(m_resizeData.begin(), m_resizeData.end(),
+            [wnd](const auto& item) { return item.wnd == wnd; });
 
-            ++it;
-        }
-
-        // Add the value.
-        if (it == m_resizeData.end())
-            m_resizeData.push_back(rd);
+        if (it != m_resizeData.end())
+            *it = rd; // Update existing
+        else
+            m_resizeData.push_back(rd); // Add new
     }
 
     // A callback function used by EnumChildWindows.
@@ -824,7 +841,8 @@ namespace Win32xx
         return TRUE;
     }
 
-    // Performs the resizing and scrolling. Call this function from within the window's DialogProc.
+    // Performs the resizing and scrolling. Call this function from within
+    // the window's DialogProc.
     inline void CResizer::HandleMessage(UINT msg, WPARAM wparam, LPARAM lparam)
     {
         switch (msg)
@@ -858,6 +876,8 @@ namespace Win32xx
             if (lparam == 0)
                 OnVScroll(msg, wparam, lparam);
             break;
+
+        default: break;
         }
     }
 
@@ -868,31 +888,34 @@ namespace Win32xx
     {
         assert (::IsWindow(parent));
 
-        m_parent = parent;
-        VERIFY(::GetClientRect(parent, &m_initRect));
+        if (::IsWindow(parent))
+        {
+            m_parent = parent;
+            VERIFY(::GetClientRect(parent, &m_initRect));
 
-        m_minRect = minRect;
-        m_maxRect = maxRect;
+            m_minRect = minRect;
+            m_maxRect = maxRect;
 
-        m_resizeData.clear();
+            m_resizeData.clear();
 
-        // Add scroll bar support to the parent window
-        LONG_PTR style = static_cast<LONG_PTR>(::GetClassLongPtr(parent, GCL_STYLE));
-        style |= WS_HSCROLL | WS_VSCROLL;
-        ::SetClassLongPtr(parent, GCL_STYLE, style);
+            // Add scroll bar support to the parent window
+            LONG_PTR style = static_cast<LONG_PTR>(::GetClassLongPtr(parent, GCL_STYLE));
+            style |= WS_HSCROLL | WS_VSCROLL;
+            ::SetClassLongPtr(parent, GCL_STYLE, style);
 
-        // Calls AddChild for each child window with default settings.
-        ::EnumChildWindows(parent, EnumWindowsProc, reinterpret_cast<LPARAM>(this));
+            // Calls AddChild for each child window with default settings.
+            ::EnumChildWindows(parent, EnumWindowsProc, reinterpret_cast<LPARAM>(this));
 
-        int dpi = GetWindowDpi(m_parent);
-        double scale = static_cast<double>(dpi) / static_cast<double>(m_currentDpi);
+            int dpi = GetWindowDpi(m_parent);
+            double scale = static_cast<double>(dpi) / static_cast<double>(m_currentDpi);
 
-        ScaleRect(m_minRect, scale);
-        ScaleRect(m_maxRect, scale);
+            ScaleRect(m_minRect, scale);
+            ScaleRect(m_maxRect, scale);
 
-        m_currentDpi = dpi;
-        m_initDpi = dpi;
-        RecalcLayout();
+            m_currentDpi = dpi;
+            m_initDpi = dpi;
+            RecalcLayout();
+        }
     }
 
     inline void CResizer::OnBeforeDpiChange()
@@ -1044,147 +1067,163 @@ namespace Win32xx
         assert (m_initRect.Width() > 0 && m_initRect.Height() > 0);
         assert (::IsWindow(m_parent));
 
-        // Skip recalculating the layout if the DPI is changing.
-        if (m_isDpiChanging)
-            return;
-
-        CRect currentRect;
-        VERIFY(::GetClientRect(m_parent, &currentRect));
-
-        // Adjust the scrolling if required
-        m_xScrollPos = std::min(m_xScrollPos, std::max(0, m_minRect.Width()  - currentRect.Width() ) );
-        m_yScrollPos = std::min(m_yScrollPos, std::max(0, m_minRect.Height() - currentRect.Height()) );
-        SCROLLINFO si = {};
-        si.cbSize = sizeof(si);
-        si.fMask  = SIF_RANGE | SIF_PAGE | SIF_POS;
-        si.nMax   = m_minRect.Width();
-        si.nPage  = static_cast<UINT>(currentRect.Width());
-        si.nPos   = m_xScrollPos;
-        ::SetScrollInfo(m_parent, SB_HORZ, &si, TRUE);
-        si.nMax   = m_minRect.Height();
-        si.nPage  = static_cast<UINT>(currentRect.Height());
-        si.nPos   = m_yScrollPos;
-        ::SetScrollInfo(m_parent, SB_VERT, &si, TRUE);
-
-        // Note: calls to SetScrollInfo may have changed the client rect, so
-        // we get it again.
-        VERIFY(::GetClientRect(m_parent, &currentRect));
-
-        currentRect.right  = std::max(currentRect.Width(),  m_minRect.Width() );
-        currentRect.bottom = std::max(currentRect.Height(), m_minRect.Height() );
-        if (!m_maxRect.IsRectEmpty())
+        if (::IsWindow(m_parent))
         {
-            currentRect.right  = std::min(currentRect.Width(),  m_maxRect.Width() );
-            currentRect.bottom = std::min(currentRect.Height(), m_maxRect.Height() );
-        }
+            // Skip recalculating the layout if the DPI is changing.
+            if (m_isDpiChanging)
+                return;
 
-        int dpi = GetWindowDpi(m_parent);
-        double scale = static_cast<double>(dpi) / static_cast<double>(m_initDpi);
+            CRect currentRect;
+            VERIFY(::GetClientRect(m_parent, &currentRect));
 
-        // Allocates memory for the multiple-window-position structure.
-        HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(m_resizeData.size()));
+            // Adjust the scrolling if required
+            m_xScrollPos = std::min(m_xScrollPos, std::max(0, m_minRect.Width() -
+                currentRect.Width()));
+            m_yScrollPos = std::min(m_yScrollPos, std::max(0, m_minRect.Height() -
+                currentRect.Height()));
+            SCROLLINFO si = {};
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+            si.nMax = m_minRect.Width();
+            si.nPage = static_cast<UINT>(currentRect.Width());
+            si.nPos = m_xScrollPos;
+            ::SetScrollInfo(m_parent, SB_HORZ, &si, TRUE);
+            si.nMax = m_minRect.Height();
+            si.nPage = static_cast<UINT>(currentRect.Height());
+            si.nPos = m_yScrollPos;
+            ::SetScrollInfo(m_parent, SB_VERT, &si, TRUE);
 
-        for (const ResizeData& rd : m_resizeData)
-        {
-            int left   = 0;
-            int top    = 0;
-            int width  = 0;
-            int height = 0;
+            // Note: calls to SetScrollInfo may have changed the client rect, so
+            // we get it again.
+            VERIFY(::GetClientRect(m_parent, &currentRect));
 
-            CRect childRect = rd.childRect;
-            ScaleRect(childRect, scale);
-
-            // Calculate the new size and position of the child window.
-            switch(rd.corner )
+            currentRect.right = std::max(currentRect.Width(), m_minRect.Width());
+            currentRect.bottom = std::max(currentRect.Height(), m_minRect.Height());
+            if (!m_maxRect.IsRectEmpty())
             {
-            case topleft:      // Positions top left.
-                width  = rd.isFixedWidth? childRect.Width()  : childRect.Width()  -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = childRect.left;
-                top    = childRect.top;
-                break;
-            case topright:     // Positions top right.
-                width  = rd.isFixedWidth? childRect.Width()  : childRect.Width()  -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = childRect.right - width - m_initRect.Width() + currentRect.Width();
-                top    = childRect.top;
-                break;
-            case bottomleft:   // Positions bottom left.
-                width  = rd.isFixedWidth? childRect.Width()  : childRect.Width()  -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = childRect.left;
-                top    = childRect.bottom - height - m_initRect.Height() + currentRect.Height();
-                break;
-            case bottomright:  // Positions bottom right.
-                width  = rd.isFixedWidth? childRect.Width()  : childRect.Width()  -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = childRect.right   - width - m_initRect.Width() + currentRect.Width();
-                top    = childRect.bottom  - height - m_initRect.Height() + currentRect.Height();
-                break;
-            case center:       // Positions proportionally.
-                width  = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
-                    currentRect.Width()) / m_initRect.Width();
-                height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
-                    currentRect.Height()) / m_initRect.Height();
-                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
-                break;
-            case leftcenter:   // Positions proportionally along the left side.
-                width  = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
-                    currentRect.Height()) / m_initRect.Height();
-                left   = childRect.left;
-                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
-                break;
-            case rightcenter:  // Positions proportionally along the right side.
-                width  = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
-                    m_initRect.Width() + currentRect.Width();
-                height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
-                    currentRect.Height()) / m_initRect.Height();
-                left   = childRect.right - width - m_initRect.Width() + currentRect.Width();
-                top    = (childRect.top * currentRect.Height()) / m_initRect.Height();
-                break;
-            case topcenter:    // Positions proportionally along the top side.
-                width  = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
-                    currentRect.Width()) /  m_initRect.Width();
-                height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = childRect.top;
-                break;
-            case bottomcenter: // Positions proportionally along the bottom side.
-                width  = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
-                    currentRect.Width()) / m_initRect.Width();
-                height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
-                    m_initRect.Height() + currentRect.Height();
-                left   = (childRect.left * currentRect.Width()) / m_initRect.Width();
-                top    = childRect.bottom - height - m_initRect.Height() + currentRect.Height();
-                break;
+                currentRect.right = std::min(currentRect.Width(), m_maxRect.Width());
+                currentRect.bottom = std::min(currentRect.Height(), m_maxRect.Height());
             }
 
-            // Determine the position of the child window.
-            CRect rc(left - m_xScrollPos, top - m_yScrollPos, left + width - m_xScrollPos,
-                top + height - m_yScrollPos);
+            int dpi = GetWindowDpi(m_parent);
+            double scale = static_cast<double>(dpi) / static_cast<double>(m_initDpi);
 
-            // Note: The tab order of the dialog's controls is determined by the order
-            //       they are specified in the resource script (resource.rc).
+            // Allocates memory for the multiple-window-position structure.
+            HDWP hdwp = ::BeginDeferWindowPos(static_cast<int>(m_resizeData.size()));
 
-            // Store the window's new position. Repositioning happens later.
-            hdwp = ::DeferWindowPos(hdwp, rd.wnd, HWND_TOP, rc.left, rc.top,
-                rc.Width(), rc.Height(), SWP_NOZORDER|SWP_NOCOPYBITS);
+            for (const ResizeData& rd : m_resizeData)
+            {
+                int left = 0;
+                int top = 0;
+                int width = 0;
+                int height = 0;
+
+                CRect childRect = rd.childRect;
+                ScaleRect(childRect, scale);
+
+                // Calculate the new size and position of the child window.
+                switch (rd.corner)
+                {
+                case topleft:      // Positions top left.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+                    left = childRect.left;
+                    top = childRect.top;
+                    break;
+                case topright:     // Positions top right.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+                    left = childRect.right - width - m_initRect.Width() + currentRect.Width();
+                    top = childRect.top;
+                    break;
+                case bottomleft:   // Positions bottom left.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+
+                    left = childRect.left;
+                    top = childRect.bottom - height - m_initRect.Height() +
+                        currentRect.Height();
+                    break;
+                case bottomright:  // Positions bottom right.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+
+                    left = childRect.right - width - m_initRect.Width() +
+                        currentRect.Width();
+                    top = childRect.bottom - height - m_initRect.Height() +
+                        currentRect.Height();
+                    break;
+                case center:       // Positions proportionally.
+                    width = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
+                        currentRect.Width()) / m_initRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
+                        currentRect.Height()) / m_initRect.Height();
+                    left = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                    top = (childRect.top * currentRect.Height()) / m_initRect.Height();
+                    break;
+                case leftcenter:   // Positions proportionally along the left side.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
+                        currentRect.Height()) / m_initRect.Height();
+
+                    left = childRect.left;
+                    top = (childRect.top * currentRect.Height()) / m_initRect.Height();
+                    break;
+                case rightcenter:  // Positions proportionally along the right side.
+                    width = rd.isFixedWidth ? childRect.Width() : childRect.Width() -
+                        m_initRect.Width() + currentRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : (childRect.Height() *
+                        currentRect.Height()) / m_initRect.Height();
+
+                    left = childRect.right - width - m_initRect.Width() + currentRect.Width();
+                    top = (childRect.top * currentRect.Height()) / m_initRect.Height();
+                    break;
+                case topcenter:    // Positions proportionally along the top side.
+                    width = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
+                        currentRect.Width()) / m_initRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+
+                    left = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                    top = childRect.top;
+                    break;
+                case bottomcenter: // Positions proportionally along the bottom side.
+                    width = rd.isFixedWidth ? childRect.Width() : (childRect.Width() *
+                        currentRect.Width()) / m_initRect.Width();
+                    height = rd.isFixedHeight ? childRect.Height() : childRect.Height() -
+                        m_initRect.Height() + currentRect.Height();
+
+                    left = (childRect.left * currentRect.Width()) / m_initRect.Width();
+                    top = childRect.bottom - height - m_initRect.Height() + currentRect.Height();
+                    break;
+
+                default: break;
+                }
+
+                // Determine the position of the child window.
+                CRect rc(left - m_xScrollPos, top - m_yScrollPos,
+                    left + width - m_xScrollPos, top + height - m_yScrollPos);
+
+                // Note: The tab order of the dialog's controls is determined by the order
+                //       they are specified in the resource script (resource.rc).
+
+                // Store the window's new position. Repositioning happens later.
+                hdwp = ::DeferWindowPos(hdwp, rd.wnd, HWND_TOP, rc.left, rc.top,
+                    rc.Width(), rc.Height(), SWP_NOZORDER | SWP_NOCOPYBITS);
+            }
+
+            // Reposition all the child windows simultaneously.
+            VERIFY(::EndDeferWindowPos(hdwp));
         }
-
-        // Reposition all the child windows simultaneously.
-        VERIFY(::EndDeferWindowPos(hdwp));
     }
 
     inline void CResizer::ScaleRect(CRect& rc, double scale)
@@ -1198,4 +1237,4 @@ namespace Win32xx
 } // namespace Win32xx
 
 
-#endif // _WIN32XX_DIALOG_H_
+#endif // WIN32XX_DIALOG_H_

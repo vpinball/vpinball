@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -37,8 +37,8 @@
 
 
 
-#ifndef _WIN32XX_CRITICALSECTION_H_
-#define _WIN32XX_CRITICALSECTION_H_
+#ifndef WIN32XX_CRITICALSECTION_H_
+#define WIN32XX_CRITICALSECTION_H_
 
 namespace Win32xx
 {
@@ -64,7 +64,7 @@ namespace Win32xx
         CCriticalSection& operator=(const CCriticalSection&) = delete;
 
         CRITICAL_SECTION m_cs;
-        long m_count;
+        LONG m_count;
     };
 
 
@@ -76,7 +76,7 @@ namespace Win32xx
     class CThreadLock
     {
     public:
-        CThreadLock(CCriticalSection& cs) : m_cs(cs) { m_cs.Lock(); }
+        explicit CThreadLock(CCriticalSection& cs) : m_cs(cs) { m_cs.Lock(); }
         ~CThreadLock() { m_cs.Release(); }
 
     private:
@@ -102,7 +102,7 @@ namespace Win32xx
 
     inline CCriticalSection::~CCriticalSection()
     {
-        while (m_count > 0)
+        while (::InterlockedCompareExchange(&m_count, 0, 0) > 0)
         {
             Release();
         }
@@ -114,21 +114,18 @@ namespace Win32xx
     inline void CCriticalSection::Lock()
     {
         ::EnterCriticalSection(&m_cs);
-        InterlockedIncrement(&m_count);
+        ::InterlockedIncrement(&m_count);
     }
 
     // Leave the critical section and decrement the lock count.
     inline void CCriticalSection::Release()
     {
-        assert(m_count > 0);
-        if (m_count > 0)
-        {
-            ::LeaveCriticalSection(&m_cs);
-            ::InterlockedDecrement(&m_count);
-        }
+        [[maybe_unused]] LONG newCount = ::InterlockedDecrement(&m_count);
+        assert(newCount >= 0);
+        ::LeaveCriticalSection(&m_cs);
     }
 
 }
 
 
-#endif // _WIN32XX_CRITICALSECTION_H_
+#endif // WIN32XX_CRITICALSECTION_H_

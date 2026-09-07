@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -51,8 +51,8 @@
 // can be used.
 
 
-#ifndef _WIN32XX_PROPERTYSHEET_H_
-#define _WIN32XX_PROPERTYSHEET_H_
+#ifndef WIN32XX_PROPERTYSHEET_H_
+#define WIN32XX_PROPERTYSHEET_H_
 
 #include "wxx_dialog.h"
 
@@ -215,6 +215,8 @@ namespace Win32xx
         //      OnMessage2();
         //      return x;       // Don't do default processing, but instead return
         //                      //  a value recommended by the Win32 API documentation
+        //
+        //  default: break;
         //  }
 
         // Always pass unhandled messages on to DialogProcDefault.
@@ -230,6 +232,8 @@ namespace Win32xx
         {
         case PSM_QUERYSIBLINGS:
             return OnQuerySiblings(msg, wparam, lparam);
+
+        default: break;
         }
 
         return CDialog::DialogProcDefault(msg, wparam, lparam);
@@ -368,7 +372,8 @@ namespace Win32xx
 
     // This function is called when the Finish button is pressed on a wizard page.
     // Override this function to perform tasks when the wizard is finished.
-    // Return TRUE if the property sheet is destroyed when the wizard finishes; otherwise return FALSE.
+    // Return TRUE if the property sheet is destroyed when the wizard finishes;
+    // otherwise return FALSE.
     inline BOOL CPropertyPage::OnWizardFinish()
     {
         return TRUE; // Allow wizard to finish.
@@ -447,18 +452,22 @@ namespace Win32xx
     }
 
     // Enables or disables the various buttons on a wizard property page.
-    // flags:  A value that specifies which wizard buttons are enabled. You can combine one or more of the following flags.
-    //  PSWIZB_BACK             Enable the Back button. If this flag is not set, the Back button is displayed as disabled.
+    // flags:  A value that specifies which wizard buttons are enabled. You can
+    //         combine one or more of the following flags.
+    //  PSWIZB_BACK             Enable the Back button. If this flag is not set,
+    //                          the Back button is displayed as disabled.
     //  PSWIZB_DISABLEDFINISH   Display a disabled Finish button.
     //  PSWIZB_FINISH           Display an enabled Finish button.
-    //  PSWIZB_NEXT             Enable the Next button. If this flag is not set, the Next button is displayed as disabled.
+    //  PSWIZB_NEXT             Enable the Next button. If this flag is not set,
+    //                          the Next button is displayed as disabled.
     inline void CPropertyPage::SetWizardButtons(DWORD flags) const
     {
         assert ( IsWindow() );
         PropSheet_SetWizButtons(::GetParent(*this), flags);
     }
 
-    inline UINT CALLBACK CPropertyPage::StaticPropSheetPageProc(HWND, UINT msg, LPPROPSHEETPAGE ppsp)
+    inline UINT CALLBACK CPropertyPage::StaticPropSheetPageProc(HWND, UINT msg,
+        LPPROPSHEETPAGE ppsp)
     {
         switch (msg)
         {
@@ -476,12 +485,15 @@ namespace Win32xx
             pTLSData->pWnd = reinterpret_cast<CWnd*>(ppsp->lParam);
         }
         break;
+
+        default: break;
         }
 
         return TRUE;
     }
 
-    inline INT_PTR CALLBACK CPropertyPage::StaticDialogProc(HWND hDlg, UINT msg, WPARAM wparam, LPARAM lparam)
+    inline INT_PTR CALLBACK CPropertyPage::StaticDialogProc(HWND hDlg,
+        UINT msg, WPARAM wparam, LPARAM lparam)
     {
         // Find matching CWnd pointer for this HWND.
         CPropertyPage* pPage = static_cast<CPropertyPage*>(GetCWndPtr(hDlg));
@@ -620,8 +632,10 @@ namespace Win32xx
                     // to CWnd::StaticWindowProc for handling in WndProc.
                     w->Attach(wnd);
                 }
+                break;
             }
-            break;
+
+        default: break;
         }
     }
 
@@ -777,13 +791,13 @@ namespace Win32xx
     // Returns TRUE of the property sheet is modeless.
     inline BOOL CPropertySheet::IsModeless() const
     {
-        return static_cast<BOOL>(m_psh.dwFlags & PSH_MODELESS);
+        return (m_psh.dwFlags & PSH_MODELESS) ? TRUE : FALSE;
     }
 
     // Returns TRUE if this property sheet is a wizard.
     inline BOOL CPropertySheet::IsWizard() const
     {
-        return static_cast<BOOL>(m_psh.dwFlags & PSH_WIZARD);
+        return (m_psh.dwFlags & PSH_WIZARD) ? TRUE : FALSE;
     }
 
     // Called in response to a DM_SETDEFID message.
@@ -815,11 +829,14 @@ namespace Win32xx
         assert(IsWindow());
 
         int page = GetPageIndex(pPage);
+        if (page < 0 || page >= static_cast<int>(m_allPages.size()))
+            return;
+
         WPARAM wparam = static_cast<WPARAM>(page);
         if (GetHwnd() != nullptr)
             SendMessage(*this, PSM_REMOVEPAGE, wparam, 0);
 
-        m_allPages.erase(m_allPages.begin() + page, m_allPages.begin() + page+1);
+        m_allPages.erase(m_allPages.begin() + page, m_allPages.begin() + page + 1);
         m_psh.nPages = static_cast<UINT>(m_allPages.size());
     }
 
@@ -827,7 +844,8 @@ namespace Win32xx
     // being passed to WndProc.
     inline BOOL CPropertySheet::PreTranslateMessage(MSG& msg)
     {
-        // Allow sheet to translate Ctrl+Tab, Shift+Ctrl+Tab, Ctrl+PageUp, and Ctrl+PageDown.
+        // Allow sheet to translate Ctrl+Tab, Shift+Ctrl+Tab, Ctrl+PageUp, and
+        // Ctrl+PageDown.
         if (msg.message == WM_KEYDOWN && GetAsyncKeyState(VK_CONTROL) < 0 &&
             (msg.wParam == VK_TAB || msg.wParam == VK_PRIOR || msg.wParam == VK_NEXT))
         {
@@ -851,7 +869,7 @@ namespace Win32xx
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(page);
-        return static_cast<BOOL>(SendMessage(*this, PSM_SETCURSEL, wparam, 0));
+        return SendMessage(*this, PSM_SETCURSEL, wparam, 0) ? TRUE : FALSE;
     }
 
     // Activates the specified property page.
@@ -899,10 +917,11 @@ namespace Win32xx
         switch (msg)
         {
         case DM_SETDEFID:  return OnSetDefID(wparam);
+
+        // Do default processing for other messages.
+        default: return CWnd::WndProcDefault(msg, wparam, lparam);
         }
-        // Pass unhandled messages on for default processing.
-        return CWnd::WndProcDefault(msg, wparam, lparam);
     }
 }
 
-#endif // _WIN32XX_PROPERTYSHEET_H_
+#endif // WIN32XX_PROPERTYSHEET_H_

@@ -1,5 +1,5 @@
-// Win32++   Version 10.2.0
-// Release Date: 20th September 2025
+// Win32++   Version 10.3.0
+// Release Date: 4th September 2026
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2025  David Nash
+// Copyright (c) 2005-2026  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,8 +70,8 @@ if (ff.FindFirstFile(_T("C:\\SomeFolder\\*.*")))
 */
 
 
-#ifndef _WIN32XX_FILEFIND_H_
-#define _WIN32XX_FILEFIND_H_
+#ifndef WIN32XX_FILEFIND_H_
+#define WIN32XX_FILEFIND_H_
 
 #include "wxx_wincore.h"
 
@@ -80,7 +80,7 @@ namespace Win32xx
 {
 
     ////////////////////////////////////////////////////////
-    // CFindFile finds one or more files matching the string
+    // CFileFind finds one or more files matching the string
     // specified by FindFirstFile.
     class CFileFind
     {
@@ -239,10 +239,12 @@ namespace Win32xx
         CString searchName = m_root + m_findData.cFileName;
         CString filePath;
 
-        int buffSize = static_cast<int>(::GetFullPathName(searchName, 0, 0, 0));
+        int buffSize = static_cast<int>(::GetFullPathName(searchName, 0, nullptr, nullptr));
         if (buffSize > 0)
         {
-            ::GetFullPathName(searchName, static_cast<DWORD>(buffSize), filePath.GetBuffer(buffSize), nullptr);
+            ::GetFullPathName(searchName, static_cast<DWORD>(buffSize),
+                filePath.GetBuffer(buffSize), nullptr);
+
             filePath.ReleaseBuffer();
         }
 
@@ -369,8 +371,6 @@ namespace Win32xx
         return (m_findData.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY) ? TRUE : FALSE;
     }
 
-
 }
 
-
-#endif // _WIN32XX_FILEFIND_H_
+#endif // WIN32XX_FILEFIND_H_
