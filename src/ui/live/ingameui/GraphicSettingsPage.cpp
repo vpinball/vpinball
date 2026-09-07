@@ -94,6 +94,11 @@ void GraphicSettingsPage::BuildPage()
 
 #ifdef ENABLE_BGFX
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   #if defined(ENABLE_XR) && BX_PLATFORM_ANDROID
+   if (m_player->IsVR())
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "The graphics backend is selected by the VR runtime: " + string(bgfx::getRendererName(bgfx::getRendererType()))));
+   else
+   #endif
    if (vector<string> renderers = RenderDevice::GetSelectableBackendNames(); !renderers.empty())
    {
       // "Default" first: an unset or unknown GfxBackend resolves to index 0 below (max(0, -1)), so without

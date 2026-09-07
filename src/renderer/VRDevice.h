@@ -188,6 +188,8 @@ private:
 
 #ifdef ENABLE_XR
 public:
+   int GetDisplayRefreshRateMode() const { return m_displayRefreshRateMode; }
+   void SetDisplayRefreshRateMode(int mode);
    bool IsOpenXRReady() const { return m_xrInstance != XR_NULL_HANDLE; }
    void SetupHMD();
    bool IsOpenXRHMDReady() const { return m_systemID != XR_NULL_SYSTEM_ID; }
@@ -280,6 +282,11 @@ private:
    bool m_convertTimespecTimeExtensionSupported = false;
    PFN_xrConvertTimeToTimespecTimeKHR m_xrConvertTimeToTimespecTimeKHR = nullptr;
    #endif
+   bool m_displayRefreshRateExtensionSupported = false;
+   PFN_xrGetDisplayRefreshRateFB m_xrGetDisplayRefreshRateFB = nullptr;
+   PFN_xrRequestDisplayRefreshRateFB m_xrRequestDisplayRefreshRateFB = nullptr;
+   int m_displayRefreshRateMode = 0;
+   void ApplyDisplayRefreshRate();
 
    Matrix3D m_nextProj[2];
 

@@ -118,6 +118,11 @@ void RenderDevice::tBGFXCallback::traceVargs(const char* _filePath, uint16_t _li
 void RenderDevice::tBGFXCallback::screenShot(
    const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip)
 {
+   m_rd.OnScreenshotCaptured(_filePath, _width, _height, _pitch, _format, _data, _size, _yflip);
+}
+
+void RenderDevice::OnScreenshotCaptured(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, const void* _data, uint32_t _size, bool _yflip)
+{
    // Note that BGFX has a few bugs regarding screenshots:
    // - DX11 applies an image swizzle to BGRA (like the doc state) but not accounting for the real backbuffer format, hence failing on anything but a RGBA backbuffer (for example HDR)
    // - DX12 does not implement the framebuffer selection and always captures from the base swapchain and returns data on the swapchain format
@@ -128,12 +133,12 @@ void RenderDevice::tBGFXCallback::screenShot(
    bool callbackSuccess = false;
    {
       // The screenshot state is concurrently written by the logic thread in CaptureScreenshot
-      std::lock_guard lock(m_rd.m_screenshotMutex);
+      std::lock_guard lock(m_screenshotMutex);
 
       const std::filesystem::path path(_filePath);
       int index = -1;
-      for (int i = 0; i < (int)m_rd.m_screenshotFilename.size(); i++)
-         if (m_rd.m_screenshotFilename[i] == path)
+      for (int i = 0; i < (int)m_screenshotFilename.size(); i++)
+         if (m_screenshotFilename[i] == path)
          {
             index = i;
             break;
@@ -142,7 +147,7 @@ void RenderDevice::tBGFXCallback::screenShot(
       // that was already re-issued by the timeout path), instead of saving them again or double-firing.
       if (index < 0)
          return;
-      m_rd.m_screenshotFilename.erase(m_rd.m_screenshotFilename.begin() + index);
+      m_screenshotFilename.erase(m_screenshotFilename.begin() + index);
 
       bool success = false;
       if (auto tex = BaseTexture::Create(_width, _height, BaseTexture::SRGBA); tex)
@@ -187,12 +192,12 @@ void RenderDevice::tBGFXCallback::screenShot(
             success = tex->Save(_filePath);
          }
       }
-      m_rd.m_screenshotSuccess &= success;
-      if (m_rd.m_screenshotFilename.empty())
+      m_screenshotSuccess &= success;
+      if (m_screenshotFilename.empty())
       {
          fireCallback = true;
-         callbackSuccess = m_rd.m_screenshotSuccess;
-         callback = m_rd.m_screenshotCallback;
+         callbackSuccess = m_screenshotSuccess;
+         callback = m_screenshotCallback;
       }
    }
    // Fire outside the lock: the callback may take other locks (e.g. the capture mutex) or re-enter CaptureScreenshot
@@ -577,11 +582,6 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
                END_SPAN(tagSpan)
             }
 
-            // Request BGFX to submit to GPU (calls bgfx::frame())
-            BEGIN_SPAN(tagSpan, "BGFX->GPU")
-            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
-            Flip();
-            m_frameIndex++;
             {
                // Screenshot state is concurrently written by the logic thread in CaptureScreenshot
                std::lock_guard lock(m_screenshotMutex);
@@ -589,10 +589,24 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
                {
                   m_screenshotFrameDelay--;
                   if (m_screenshotFrameDelay == 0)
+                  {
                      for (size_t i = 0; i < m_screenshotWindow.size(); i++)
-                        bgfx::requestScreenShot(m_screenshotWindow[i]->GetBackBuffer()->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+                     {
+                        if (m_screenshotWindow[i] == m_outputWnd[0])
+                           RequestVRScreenshot(vrRenderTarget, m_screenshotFilename[i]);
+                        else if (RenderTarget* const bb = m_screenshotWindow[i]->GetBackBuffer(); bb)
+                           bgfx::requestScreenShot(bb->GetCoreFrameBuffer(), m_screenshotFilename[i].string().c_str());
+                     }
+                  }
                }
             }
+
+            // Request BGFX to submit to GPU (calls bgfx::frame())
+            BEGIN_SPAN(tagSpan, "BGFX->GPU")
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
+            Flip();
+            m_frameIndex++;
+            ProcessVRScreenshot();
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
@@ -602,6 +616,54 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
          });
    }
    g_pplayer->m_vrDevice->ReleaseSession();
+   if (bgfx::isValid(m_vrScreenshotTex))
+   {
+      bgfx::destroy(m_vrScreenshotTex);
+      m_vrScreenshotTex = BGFX_INVALID_HANDLE;
+   }
+}
+
+void RenderDevice::RequestVRScreenshot(RenderTarget* vrRenderTarget, const std::filesystem::path& filename)
+{
+   const uint16_t width = static_cast<uint16_t>(vrRenderTarget->GetWidth());
+   const uint16_t height = static_cast<uint16_t>(vrRenderTarget->GetHeight());
+   if (bgfx::isValid(m_vrScreenshotTex) && (m_vrScreenshotWidth != width || m_vrScreenshotHeight != height))
+   {
+      bgfx::destroy(m_vrScreenshotTex);
+      m_vrScreenshotTex = BGFX_INVALID_HANDLE;
+   }
+   if (!bgfx::isValid(m_vrScreenshotTex))
+   {
+      m_vrScreenshotTex = bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_BLIT_DST | BGFX_TEXTURE_READ_BACK);
+      m_vrScreenshotWidth = width;
+      m_vrScreenshotHeight = height;
+      m_vrScreenshotData.resize(static_cast<size_t>(width) * height * 4);
+   }
+   NextView();
+   bgfx::TextureRegion src;
+   src.init(vrRenderTarget->GetColorSampler()->GetCoreTexture(false), 0, 0, width, height);
+   src.mip = 0;
+   src.z = 0;
+   src.depth = 1;
+   bgfx::TextureRegion dst;
+   dst.init(m_vrScreenshotTex, 0, 0, width, height);
+   dst.mip = 0;
+   dst.z = 0;
+   dst.depth = 1;
+   bgfx::blit(m_activeViewId, dst, src);
+   m_vrScreenshotReadyFrame = bgfx::read(dst, m_vrScreenshotData.data());
+   m_vrScreenshotFilename = filename;
+}
+
+void RenderDevice::ProcessVRScreenshot()
+{
+   if (m_vrScreenshotFilename.empty() || m_lastPresentFrameIdx < m_vrScreenshotReadyFrame)
+      return;
+   const std::filesystem::path filename = m_vrScreenshotFilename;
+   m_vrScreenshotFilename.clear();
+   const string path = filename.string();
+   OnScreenshotCaptured(path.c_str(), m_vrScreenshotWidth, m_vrScreenshotHeight, m_vrScreenshotWidth * 4, bgfx::TextureFormat::RGBA8, m_vrScreenshotData.data(),
+      static_cast<uint32_t>(m_vrScreenshotData.size()), false);
 }
 #endif
 
@@ -1269,12 +1331,6 @@ RenderDevice::RenderDevice(
             << " (valid values: " << validBackends << ')';
    }
 
-   #ifndef __LIBVPINBALL__
-   m_useLowPrecision = init.type == bgfx::RendererType::OpenGLES;
-   #else
-   m_useLowPrecision = true;
-   #endif
-
    init.callback = &m_bgfxCallback;
    init.fallback = true;
    init.resolution.width = swapchainWnd->GetPixelWidth();
@@ -1320,6 +1376,7 @@ RenderDevice::RenderDevice(
       g_pplayer->ProcessOSMessages(false);
       Sleep(0);
    }
+   m_useLowPrecision = bgfx::getRendererType() == bgfx::RendererType::OpenGLES;
 
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////

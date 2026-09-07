@@ -107,6 +107,13 @@ void VRSettingsPage::BuildPage()
       [this]() { return m_player->m_implicitVRBackglass->m_d.m_isVisible; }, //
       [this](bool v) { m_player->m_implicitVRBackglass->m_d.m_isVisible = v; }));
 
+#ifdef ENABLE_XR
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayerVR_DisplayRefreshRate, //
+      [this]() { return m_player->m_vrDevice->GetDisplayRefreshRateMode(); }, //
+      [this](int, int v) { m_player->m_vrDevice->SetDisplayRefreshRateMode(v); }));
+#endif
+
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_VRPreview, //
       [this]() { return static_cast<int>(m_player->m_renderer->m_vrPreview); }, //

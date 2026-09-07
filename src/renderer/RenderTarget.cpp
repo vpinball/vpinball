@@ -140,7 +140,11 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    {
    case colorFormat::RED16F: m_colorFormat = bgfx::TextureFormat::R16F; break;
    case colorFormat::RG16F: m_colorFormat = bgfx::TextureFormat::RG16F; break;
+#ifdef __ANDROID__
+   case colorFormat::RGB16F: m_colorFormat = bgfx::TextureFormat::RG11B10F; break;
+#else
    case colorFormat::RGB16F: m_colorFormat = bgfx::TextureFormat::RGBA16F; break;
+#endif
    case colorFormat::RGBA16F: m_colorFormat = bgfx::TextureFormat::RGBA16F; break;
    case colorFormat::RGB32F: m_colorFormat = bgfx::TextureFormat::RGBA32F; break;
    case colorFormat::RGBA32F: m_colorFormat = bgfx::TextureFormat::RGBA32F; break;

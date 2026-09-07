@@ -238,6 +238,8 @@ VRDevice::VRDevice(const Settings& settings)
          m_convertTimespecTimeExtensionSupported = EnableExtensionIfSupported(XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME);
       #endif
       m_passthroughExtensionSupported = EnableExtensionIfSupported(XR_FB_PASSTHROUGH_EXTENSION_NAME);
+      m_displayRefreshRateExtensionSupported = EnableExtensionIfSupported(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME);
+      m_displayRefreshRateMode = settings.GetPlayerVR_DisplayRefreshRate();
       #ifdef DEBUG
          m_debugUtilsExtensionSupported = EnableExtensionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
       #endif
@@ -271,6 +273,11 @@ VRDevice::VRDevice(const Settings& settings)
             "Failed to get xrConvertTimeToTimespecTimeKHR.");
       }
       #endif
+      if (m_displayRefreshRateExtensionSupported)
+      {
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetDisplayRefreshRateFB", (PFN_xrVoidFunction*)&m_xrGetDisplayRefreshRateFB), "Failed to get xrGetDisplayRefreshRateFB.");
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrRequestDisplayRefreshRateFB", (PFN_xrVoidFunction*)&m_xrRequestDisplayRefreshRateFB), "Failed to get xrRequestDisplayRefreshRateFB.");
+      }
       if (m_visibilityMaskExtensionSupported)
       {
          OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetVisibilityMaskKHR", (PFN_xrVoidFunction*)&xrGetVisibilityMaskKHR), "Failed to get xrGetVisibilityMaskKHR.");
@@ -547,11 +554,11 @@ void VRDevice::SetupHMD()
       m_eyeWidth = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
       m_eyeHeight = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
-   // Limit to a resolution, under the maximum texture size supported by the GPU
-   const bgfx::Caps* caps = bgfx::getCaps();
-   if ((static_cast<uint32_t>(m_eyeWidth) >= caps->limits.maxTextureSize) || (static_cast<uint32_t>(m_eyeHeight) >= caps->limits.maxTextureSize))
+   const uint32_t maxWidth = std::min(m_viewConfigurationViews[0].maxImageRectWidth, m_systemProperties.graphicsProperties.maxSwapchainImageWidth);
+   const uint32_t maxHeight = std::min(m_viewConfigurationViews[0].maxImageRectHeight, m_systemProperties.graphicsProperties.maxSwapchainImageHeight);
+   if (m_eyeWidth == 0 || m_eyeHeight == 0 || m_eyeWidth > maxWidth || m_eyeHeight > maxHeight)
    {
-      PLOGI << "Requested resolution exceed the GPU capability, defaulting to headset recommended resolution";
+      PLOGI << "Requested resolution exceeds OpenXR swapchain limits, defaulting to headset recommended resolution";
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
       m_eyeHeight = m_viewConfigurationViews[0].recommendedImageRectHeight;
    }
@@ -581,6 +588,30 @@ void VRDevice::SetupHMD()
    #endif
 
    assert(m_backend != nullptr);
+}
+
+void VRDevice::SetDisplayRefreshRateMode(int mode)
+{
+   m_displayRefreshRateMode = mode;
+   if (m_sessionRunning)
+      ApplyDisplayRefreshRate();
+}
+
+void VRDevice::ApplyDisplayRefreshRate()
+{
+   if (!m_displayRefreshRateExtensionSupported)
+      return;
+   static constexpr float rates[] = { 0.f, 72.f, 80.f, 90.f, 120.f };
+   const float requested = rates[clamp(m_displayRefreshRateMode, 0, static_cast<int>(std::size(rates)) - 1)];
+   float rate = 0.f;
+   if (m_xrGetDisplayRefreshRateFB(m_session, &rate) == XR_SUCCESS && rate > 0.f && g_pplayer && g_pplayer->m_playfieldWnd)
+      g_pplayer->m_playfieldWnd->SetRefreshRate(rate);
+   if (requested > 0.f && requested != rate)
+   {
+      const XrResult result = m_xrRequestDisplayRefreshRateFB(m_session, requested);
+      if (result != XR_SUCCESS)
+         PLOGW << "Headset refused refresh rate " << requested << " Hz (result: " << result << ')';
+   }
 }
 
 void VRDevice::CreateSession()
@@ -632,7 +663,7 @@ void VRDevice::CreateSession()
    assert(m_session);
 
    // Initialize passthrough if supported (Meta Quest MR feature)
-   if (m_passthroughExtensionSupported)
+   if (m_passthroughExtensionSupported && g_pplayer && g_pplayer->m_ptable->m_settings.GetPlayerVR_UsePassthroughColor())
    {
       PFN_xrCreatePassthroughFB xrCreatePassthroughFB;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrCreatePassthroughFB", (PFN_xrVoidFunction*)&xrCreatePassthroughFB), "Failed to get xrCreatePassthroughFB.");
@@ -697,7 +728,8 @@ void VRDevice::CreateSession()
       swapchainCreateInfo.faceCount = 1;
       swapchainCreateInfo.sampleCount = m_viewConfigurationViews[0].recommendedSwapchainSampleCount;
       swapchainCreateInfo.createFlags = 0;
-      swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | (i == 0 ? XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT : XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+      swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT
+         | (i == 0 ? (XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT) : (XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT));
       OPENXR_CHECK(xrCreateSwapchain(m_session, &swapchainCreateInfo, &swapchain.swapchain), "Failed to create Swapchain");
 
       uint32_t swapchainImageCount;
@@ -814,6 +846,14 @@ void VRDevice::PollEvents()
          }
          break;
       }
+      case XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB:
+      {
+         const XrEventDataDisplayRefreshRateChangedFB* refreshRateChanged = reinterpret_cast<XrEventDataDisplayRefreshRateChangedFB*>(&eventData);
+         PLOGI << "OPENXR: Headset refresh rate changed from " << refreshRateChanged->fromDisplayRefreshRate << " Hz to " << refreshRateChanged->toDisplayRefreshRate << " Hz";
+         if (g_pplayer && g_pplayer->m_playfieldWnd)
+            g_pplayer->m_playfieldWnd->SetRefreshRate(refreshRateChanged->toDisplayRefreshRate);
+         break;
+      }
       // Session State changes:
       case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED:
       {
@@ -831,6 +871,7 @@ void VRDevice::PollEvents()
             sessionBeginInfo.primaryViewConfigurationType = m_viewConfiguration;
             OPENXR_CHECK(xrBeginSession(m_session, &sessionBeginInfo), "Failed to begin Session.");
             m_sessionRunning = true;
+            ApplyDisplayRefreshRate();
          }
          if (sessionStateChanged->state == XR_SESSION_STATE_STOPPING)
          {
@@ -1020,7 +1061,6 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          PLOGE << "Failed to locate Views.";
          rendered = false;
       }
-
       if (rendered)
       {
          // The steps that leads to the matrix stack implemented below are the followings, with first matrix being view, 

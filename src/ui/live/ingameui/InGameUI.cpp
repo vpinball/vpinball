@@ -268,7 +268,7 @@ void InGameUI::HandlePageInput()
       return;
 
    // If user has moved the mouse, disable flipper navigation
-   if (m_useFlipperNav)
+   if (m_useFlipperNav && !m_player->m_vrDevice)
    {
       ImVec2 delta = m_prevMousePos - ImGui::GetMousePos();
       m_useFlipperNav &= fabs(delta.x) <= 3.f && fabs(delta.y) <= 3.f;

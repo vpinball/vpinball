@@ -503,7 +503,8 @@ cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/pinm
 cp pinmame/pinmame/src/libpinmame/PinMAMEPlugin.h ../../../third-party/include/pinmame
 
 cp openxr/openxr/build/src/loader/libopenxr_loader.so ../../../third-party/runtime-libs/android-arm64-v8a
-cp -r openxr/openxr/include/openxr ../../../third-party/include
+mkdir -p ../../../third-party/include/openxr
+cp openxr/openxr/build/include/openxr/*.h ../../../third-party/include/openxr
 
 cp libdmdutil/libdmdutil/build/libdmdutil.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/

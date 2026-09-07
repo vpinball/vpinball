@@ -65,6 +65,7 @@ public:
 
    float GetAspectRatio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
    float GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
+   void SetRefreshRate(const float refreshRate) { m_refreshrate = refreshRate; }
    WindowMode GetWindowMode() const { return m_windowMode; }
    int GetBitDepth() const { return m_bitdepth; }
    bool IsWCGDisplay() const { return m_wcgDisplay; } // Whether this window is on a WCG enabled display
