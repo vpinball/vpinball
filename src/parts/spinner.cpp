@@ -388,7 +388,8 @@ void Spinner::Render(const unsigned int renderMask)
       m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, spinnerBracketNumFaces);
    }
 
-   if (m_phitspinner->m_spinnerMover.m_visible && !isStaticOnly)
+   const bool plateVisible = m_phitspinner ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible;
+   if (plateVisible && !isStaticOnly)
    {
       UpdatePlate(nullptr);
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
@@ -399,13 +400,16 @@ void Spinner::Render(const unsigned int renderMask)
 
 void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 {
+   const float angle = m_phitspinner ? m_phitspinner->m_spinnerMover.m_angle
+      : clamp(0.f, ANGTORAD(min(m_d.m_angleMin, m_d.m_angleMax)), ANGTORAD(max(m_d.m_angleMin, m_d.m_angleMax)));
+
    // early out in case still same rotation
-   if (m_phitspinner->m_spinnerMover.m_angle == m_vertexBuffer_spinneranimangle)
+   if (angle == m_vertexBuffer_spinneranimangle)
        return;
 
-   m_vertexBuffer_spinneranimangle = m_phitspinner->m_spinnerMover.m_angle;
+   m_vertexBuffer_spinneranimangle = angle;
 
-   const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(-m_phitspinner->m_spinnerMover.m_angle)
+   const Matrix3D fullMatrix = Matrix3D::MatrixRotateX(-angle)
                              * Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
    Vertex3D_NoTex2 *buf;
