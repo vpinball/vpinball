@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "AudioStreamPlayer.h"
+#include "utils/denormals.h"
 
 namespace VPX
 {
@@ -96,6 +97,8 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
 
 void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
+   set_denormals_flush_to_zero_once(); // SDL resamples and mixes on this thread, which is created by SDL
+
    const auto me = static_cast<AudioStreamPlayer*>(userdata);
    const unsigned int nQueueSize = max(0, SDL_GetAudioStreamQueued(stream) - total_amount);
    const uint64_t nBytePerSec = me->m_audioSpec.freq * (uint64_t)SDL_AUDIO_FRAMESIZE(me->m_audioSpec);

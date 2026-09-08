@@ -4,6 +4,7 @@
 #include "renderer/Renderer.h"
 
 #include "parts/Collection.h"
+#include "utils/denormals.h"
 
 #ifdef _MSC_VER
 #include "dwmapi.h"
@@ -328,6 +329,7 @@ static const string& bgfxRendererName(const bgfx::RendererType::Enum type);
 void RenderDevice::RenderThread(RenderDevice* rd, bgfx::Init init)
 {
    SetThreadName("RenderThread"s);
+   set_denormals_flush_to_zero(); // FPU mode is per thread
    g_pplayer->m_renderProfiler->SetThreadLock();
 #ifdef __LIBVPINBALL__
 #ifdef __APPLE__

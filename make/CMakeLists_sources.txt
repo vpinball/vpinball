@@ -404,6 +404,7 @@ set(VPX_SOURCES
    src/utils/BiffWriter.h
    src/utils/bulb.cpp
    src/utils/bulb.h
+   src/utils/denormals.h
    src/utils/eventproxy.h
    src/utils/wintimer.cpp
    src/utils/wintimer.h

@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "SensorMapping.h"
+#include "utils/denormals.h"
 
 #include <cmath>
 
@@ -86,6 +87,7 @@ void SensorMapping::CaptureFFT()
       //   (*m_fftCaptureBuffer)[i] = sin(float(16. * 2. * M_PI) * i / static_cast<float>(m_fftCaptureBuffer->size()));
       auto processFFT = [](std::unique_ptr<std::valarray<std::complex<double>>> samples)
       {
+         set_denormals_flush_to_zero(); // runs off the main thread, and the FPU mode is per thread
          fft(*samples.get());
          double maxVal = 0.0;
          float maxFreq = 0.f;

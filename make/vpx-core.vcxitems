@@ -1847,6 +1847,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/bulb.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/denormals.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/eventproxy.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/fileio.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h" />

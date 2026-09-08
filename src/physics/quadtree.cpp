@@ -8,6 +8,7 @@
 #include "parts/hittarget.h"
 #include "parts/primitive.h"
 #include "physics/hitable.h"
+#include "utils/denormals.h"
 
 #include "ThreadPool.h"
 
@@ -382,7 +383,11 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
             {
                if (quadTree->m_threadPool == nullptr)
                   quadTree->m_threadPool = new ThreadPool(g_app->GetLogicalNumberOfProcessors());
-               quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty] { child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty); });
+               quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty]
+               {
+                  set_denormals_flush_to_zero_once(); // the pool's worker threads are not ours to initialize
+                  child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty);
+               });
                continue;
             }
             shouldDispatch = true;

@@ -6,6 +6,7 @@
 #include "parts/pintable.h"
 #include "physics/quadtree.h"
 #include "physics/hitable.h"
+#include "utils/denormals.h"
 
 #include <algorithm>
 
@@ -234,6 +235,7 @@ void AsyncDynamicQuadTree::UpdateAsync()
 void AsyncDynamicQuadTree::UpdateQuadtreeThread()
 {
    SetThreadName("VPX.QuadTree.UpdateThread"s);
+   set_denormals_flush_to_zero(); // FPU mode is per thread
 
    while (true)
    {

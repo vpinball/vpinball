@@ -1802,6 +1802,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/denormals.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/eventproxy.h">
       <Filter>utils</Filter>
     </ClInclude>

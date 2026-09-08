@@ -6,6 +6,7 @@
 #include "plugins/MsgPluginManager.h"
 #include "core/VPXPluginAPIImpl.h"
 #include "parts/pintable.h"
+#include "utils/denormals.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM
@@ -217,6 +218,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
    m_commandQueue.enqueue([this, filename]()
    {
       SetThreadName("VPX.SoundPlayer ["s.append(filename).append(1, ']'));
+      set_denormals_flush_to_zero(); // FPU mode is per thread
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
       if (engine == nullptr)
@@ -271,6 +273,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
       [this, sound]()
    {
       SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
+      set_denormals_flush_to_zero(); // FPU mode is per thread
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
       if (engine == nullptr)

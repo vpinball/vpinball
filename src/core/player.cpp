@@ -32,6 +32,7 @@
 #include "ui/win/worker.h"
 #include "ui/win/WinEditor.h"
 #include "unordered_dense.h"
+#include "utils/denormals.h"
 #include "utils/ushock_output.h"
 
 #ifdef _MSC_VER
@@ -64,15 +65,13 @@ using namespace VPX;
 
 #define RECOMPUTEBUTTONCHECK (WM_USER+100)
 
-#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__x86_64__))
 #ifdef _MSC_VER
  #define init_cpu_detection int regs[4]; __cpuid(regs, 1);
  #define detect_no_sse (regs[3] & 0x002000000) == 0
- #define detect_sse2 (regs[3] & 0x004000000) != 0
 #else
  #define init_cpu_detection __builtin_cpu_init();
  #define detect_no_sse !__builtin_cpu_supports("sse")
- #define detect_sse2 __builtin_cpu_supports("sse2")
 #endif
 #endif
 
@@ -219,21 +218,7 @@ Player::Player(PinTable *const table, const PlayMode playMode)
 
    m_progressDialog.SetProgress("Creating Player..."s, 0.f);
 
-#if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
-   constexpr int denormalBitMask = 1 << 24;
-   int status_word;
-#if defined(__aarch64__)
-   asm volatile("mrs %x[status_word], FPCR" : [status_word] "=r"(status_word));
-   status_word |= denormalBitMask;
-   asm volatile("msr FPCR, %x[src]" : : [src] "r"(status_word));
-#elif defined(__arm__)
-   asm volatile("vmrs %[status_word], FPSCR" : [status_word] "=r"(status_word));
-   status_word |= denormalBitMask;
-   asm volatile("vmsr FPSCR, %[src]" : : [src] "r"(status_word));
-#else
-   #pragma message ( "Warning: No CPU float ignore denorm implemented" )
-#endif
-#else
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__x86_64__))
    {
       init_cpu_detection
       // check for SSE and exit if not available, as some code relies on it by now
@@ -241,13 +226,11 @@ Player::Player(PinTable *const table, const PlayMode playMode)
          ShowError("SSE is not supported on this processor");
          exit(0);
       }
-      // disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
-      if (detect_sse2) // SSE2?
-         _mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
-      else
-         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
    }
 #endif
+   // disable denormalized floating point numbers, can be faster on some CPUs (and VP shouldn't need to rely on denormals)
+   // this covers the main thread, which also runs physics, script and input; every other thread doing float work does it itself
+   set_denormals_flush_to_zero();
 
    bool useVR = false;
    #if defined(ENABLE_XR)

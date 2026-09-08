@@ -4,6 +4,7 @@
 #include "AudioPlayer.h"
 #include "AudioStreamPlayer.h"
 #include "SoundPlayer.h"
+#include "utils/denormals.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 
@@ -89,6 +90,8 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
 
 void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, int additional_amount, const int total_amount)
 {
+   set_denormals_flush_to_zero_once(); // all of miniaudio's mixing happens below, on a thread created by SDL
+
    auto pDevice = static_cast<ma_device_ex*>(pUserData);
    if ((int)pDevice->buffer.size() < total_amount)
       pDevice->buffer.resize(total_amount);
