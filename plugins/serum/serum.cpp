@@ -541,8 +541,8 @@ static void OnControllerChanged()
 // Serum's own frame-identification triggers, which travel the other way on
 // "Serum"/"OnDmdTrigger:1"; only this range means "play colorization scene N".
 // Matches the window libdmdutil has always applied.
-static constexpr int kSceneTriggerMinEvent = 50000;
-static constexpr int kSceneTriggerMaxEvent = 62000;
+static constexpr int sceneTriggerMinEvent = 50000;
+static constexpr int sceneTriggerMaxEvent = 62000;
 
 static void MSGPIAPI OnB2SStateChange(const unsigned int, void*, void* eventData)
 {
@@ -559,7 +559,7 @@ static void MSGPIAPI OnB2SStateChange(const unsigned int, void*, void* eventData
    // would run every scene twice.
    if (event->type != 'D' || event->value != 1)
       return;
-   if (event->index < kSceneTriggerMinEvent || event->index > kSceneTriggerMaxEvent)
+   if (event->index < sceneTriggerMinEvent || event->index > sceneTriggerMaxEvent)
       return;
    colorizer->QueueSceneTrigger(static_cast<uint16_t>(event->index));
 }
