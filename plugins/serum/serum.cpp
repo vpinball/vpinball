@@ -259,13 +259,15 @@ private:
                   animationNextTick = animationTick + std::chrono::milliseconds(firstDelayMs);
                }
 
-               // Gated here as well as in libserum. Disabling the setting sets
+               // Deliberately redundant. Disabling the setting sets
                // keepTriggersInternal, which makes libserum write 0xffffffff
                // into triggerID at every site that would otherwise report one,
-               // so this condition already goes false -- but that is a global
-               // in another library agreeing to keep zeroing a sentinel, and
-               // the setting says "do not put these on the bus". Say so where
-               // the bus message is actually sent.
+               // and that alone is enough: with this check removed, a
+               // colorization whose attract mode fires triggers emitted none.
+               // It stays because relying on it means trusting a global in
+               // another library to keep zeroing a sentinel, and because the
+               // setting says "do not put these on the bus" -- which is worth
+               // saying where the bus message is sent.
                if (serumPupTriggersProp_Get() && m_pSerum->triggerID != 0xffffffff)
                   msgApi->RunOnMainThread(endpointId, 0, [](void* userData) { msgApi->BroadcastMsg(endpointId, onDmdTrigger, &colorizer->m_pSerum->triggerID); }, nullptr);
 
