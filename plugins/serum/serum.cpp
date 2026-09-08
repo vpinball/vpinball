@@ -72,6 +72,18 @@ MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSk
 // not know its output size in advance.
 MSGPI_INT_VAL_SETTING(serumResolutionProp, "Resolution", "Colorization resolution",
    "Rows of the colorized output: 32, 64, or 0 to produce both", true, 0, 64, 0);
+// A colorization can carry PUP triggers of its own, which this plugin forwards
+// on "Serum"/"OnDmdTrigger:1" for PUP and DOF to act on. Whether that is wanted
+// depends on the setup rather than on the colorization: a pack author may be
+// driving PUP from a .pup.csv instead and want the colorization's own triggers
+// out of the way, and a host with no PUP at all has no use for them.
+//
+// libserum reports them unless told otherwise (keepTriggersInternal defaults to
+// false), so the default here keeps what the plugin has always done. Note that
+// libserum's own switch is global rather than per-instance, which is why this
+// is applied on every load rather than once.
+MSGPI_BOOL_VAL_SETTING(serumPupTriggersProp, "PupTriggers", "Report colorization PUP triggers",
+   "Forward PUP triggers embedded in the colorization onto the bus", true, true);
 
 // A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
 static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
@@ -108,6 +120,10 @@ public:
    {
       if (m_pSerum)
       {
+         if (serumPupTriggersProp_Get())
+            Serum_EnablePupTrigers();
+         else
+            Serum_DisablePupTriggers();
          Serum_SetIgnoreUnknownFramesTimeout(static_cast<uint16_t>(serumIgnoreUnknownFramesTimeoutProp_Get()));
          Serum_SetMaximumUnknownFramesToSkip(static_cast<uint8_t>(serumMaxUnknownFramesToSkipProp_Get()));
 
@@ -554,6 +570,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
    msgApi->RegisterSetting(endpointId, &serumResolutionProp);
+   msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
    onB2SStateChange = msgApi->GetMsgID("B2S", "OnStateChange:1");
    msgApi->SubscribeMsg(endpointId, onB2SStateChange, OnB2SStateChange, nullptr);
