@@ -45,7 +45,7 @@ The settings system is based on 2 files:
 
 The table override file allows to tweak a few settings for playing a given table by overriding the settings defined in the global settings.
 
-All the settings can be adjusted using the in-game UI, available when playing. When clicking the save button, the user is asked wether the modifications should be saved as global preferences, or as table overrides. Settings that have been overriden for the played table can be identified by a circle & dot icon in the in-game UI.
+All the settings can be adjusted using the in-game UI, available when playing. When clicking the save button, the user is asked whether the modifications should be saved as global preferences, or as table overrides. Settings that have been overriden for the played table can be identified by a circle & dot icon in the in-game UI.
 
 For advanced uses, it is possible to specify the global and table override ini files on the command line.
 
@@ -106,7 +106,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 │   └── ...
 ├── serum/                                   <= Serum plugin will look here for colorization files
 │   └── xxx/
-│       └── xxx.crz
+│       └── xxx.cromc (or .crz)              <= .cromc preferred for lower resource usage
 ├── Table Name.UltraDMD/                     <= Folder with FlexDMD or UltraDMD content (name is directly defined in the table script)
 │   └── ...
 ├── user/                                    <= VPX stores values saved from script in this folder
