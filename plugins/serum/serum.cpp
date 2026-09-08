@@ -53,15 +53,51 @@ MSGPI_INT_VAL_SETTING(serumIgnoreUnknownFramesTimeoutProp, "IgnoreUnknownFramesT
    "Milliseconds to keep the last colorized frame while frames cannot be identified (0 disables)", true, 0, 65535, 0);
 MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSkip", "Maximum unknown frames to skip",
    "How many consecutive unidentified frames may be skipped (0 disables)", true, 0, 255, 0);
+// A Serum v2 colorization can carry a 32 row and a 64 row output, and by
+// default both are requested and both are published. Two things go wrong with
+// that in a host driving one fixed panel:
+//
+// - Nothing downstream can say which one it wants. The two published sources
+//   share an overrideId, and consumers disagree about how to break the tie --
+//   DMDUtilPlugin takes the largest colour depth, ResURIResolver breaks on the
+//   first match -- so a 128x32 panel can end up downscaling a colorization that
+//   was upscaled to 256x64.
+// - libserum computes both outputs every frame. On a Raspberry Pi driving an SD
+//   panel that is half the colorization work thrown away.
+//
+// Setting this makes the choice explicit: only the requested size is computed
+// and only it is published, so there is nothing left to disagree about. The
+// default keeps today's behaviour, which is the right one for a host that does
+// not know its output size in advance.
+MSGPI_INT_VAL_SETTING(serumResolutionProp, "Resolution", "Colorization resolution",
+   "Rows of the colorized output: 32, 64, or 0 to produce both", true, 0, 64, 0);
 
 // A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
 static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
+
+// Anything other than an exact 32 or 64 means "produce both", so a stray value
+// degrades to the default rather than to no output at all.
+static bool IsResolutionRequested(int rows)
+{
+   const int requested = serumResolutionProp_Get();
+   return (requested != 32 && requested != 64) || requested == rows;
+}
+
+static unsigned int SerumRequestFlags()
+{
+   unsigned int flags = 0;
+   if (IsResolutionRequested(32))
+      flags |= FLAG_REQUEST_32P_FRAMES;
+   if (IsResolutionRequested(64))
+      flags |= FLAG_REQUEST_64P_FRAMES;
+   return flags;
+}
 
 class SerumColorizer
 {
 public:
    SerumColorizer(const std::filesystem::path& serumPath, const std::string_view& currentGameId, uint32_t controllerEndpointId)
-      : m_pSerum(Serum_Load(serumPath.string().c_str(), string(currentGameId).c_str(), FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES))
+      : m_pSerum(Serum_Load(serumPath.string().c_str(), string(currentGameId).c_str(), SerumRequestFlags()))
       , m_controllerEndpointId(controllerEndpointId)
       , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
       , m_colorizedframeId(std_rand())
@@ -98,7 +134,7 @@ private:
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
       const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
       {
-         if (src.id.endpointId == m_controllerEndpointId)
+         if (CtlDisplayControllerId(&src) == m_controllerEndpointId)
             return true;
          if (src.overrideId.id != 0)
             for (const DisplaySrcId& item : items)
@@ -240,6 +276,7 @@ private:
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
                         .overrideId = dmdId.id, //
+                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = dmdId.width, //
                         .height = dmdId.height, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -270,11 +307,15 @@ private:
                      colorizer->m_advertisedWidth32 = colorizer->m_pSerum->width32;
                   if (colorizer->m_pSerum->width64 != 0)
                      colorizer->m_advertisedWidth64 = colorizer->m_pSerum->width64;
-                  if (colorizer->m_advertisedWidth32 > 0)
+                  LOGI(std::format("Publishing colorized output: {}{}",
+                     (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32)) ? std::format("{}x32 ", colorizer->m_advertisedWidth32) : ""s,
+                     (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64)) ? std::format("{}x64", colorizer->m_advertisedWidth64) : ""s));
+                  if (colorizer->m_advertisedWidth32 > 0 && IsResolutionRequested(32))
                   {
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 1 } }, //
                         .overrideId = dmdId.id, //
+                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = colorizer->m_advertisedWidth32, //
                         .height = 32, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -283,11 +324,12 @@ private:
                         .GetRenderFrame = &Trampoline<&SerumColorizer::GetRenderFrameSerumV2_32>::Call //
                      });
                   }
-                  if (colorizer->m_advertisedWidth64 > 0)
+                  if (colorizer->m_advertisedWidth64 > 0 && IsResolutionRequested(64))
                   {
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 2 } }, //
                         .overrideId = dmdId.id, //
+                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = colorizer->m_advertisedWidth64, //
                         .height = 64, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -392,7 +434,7 @@ static void SelectController(std::vector<ControllerDef>& items)
    for (const ControllerDef& controller : items)
    {
       const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
-         [&controller](const DisplaySrcId& display) { return display.id.endpointId == controller.endpointId && IsColorizableDmd(display); });
+         [&controller](const DisplaySrcId& display) { return CtlDisplayControllerId(&display) == controller.endpointId && IsColorizableDmd(display); });
       const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
       if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
       {
@@ -434,6 +476,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
+   msgApi->RegisterSetting(endpointId, &serumResolutionProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
