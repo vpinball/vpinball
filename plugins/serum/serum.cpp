@@ -38,6 +38,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 
 static unsigned int onDmdTrigger;
+static unsigned int onB2SStateChange;
 static std::minstd_rand std_rand;
 
 static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
@@ -153,6 +154,20 @@ private:
          items.push_back(selected);
    }
 
+public:
+   // A scene trigger from the shared event stream. Deliberately not a Serum
+   // specific message: 'D' events are already the channel PUP takes its DMD
+   // triggers from, and a VPX table script or another host can emit one today.
+   // Serum consuming the same events means a colorization scene is triggered
+   // the same way a PUP scene is, with nothing new on the wire.
+   void QueueSceneTrigger(uint16_t event)
+   {
+      std::lock_guard targetLock(m_stateMutex);
+      if (std::find(m_pendingScenes.begin(), m_pendingScenes.end(), event) == m_pendingScenes.end())
+         m_pendingScenes.push_back(event);
+   }
+
+private:
    void StartColorizeThread()
    {
       m_dmdSource.With(
@@ -233,6 +248,35 @@ private:
 
                updated = true;
             });
+
+         // Apply any scene triggers before the animation catch-up below, so a
+         // scene that starts a rotation gets its timer set in this same pass.
+         if (!m_pendingScenes.empty())
+         {
+            std::vector<uint16_t> scenes;
+            scenes.swap(m_pendingScenes);
+            for (const uint16_t scene : scenes)
+            {
+               const uint32_t result = Serum_Scene_Trigger(scene);
+               // Worth a line each: scene triggers are sparse, and a pack author
+               // wiring one up needs to tell "the trigger never arrived" apart
+               // from "it arrived and this colorization has no scene for it".
+               if (result == IDENTIFY_NO_FRAME || result == IDENTIFY_SAME_FRAME)
+               {
+                  LOGI(std::format("Scene trigger {} matched no scene", scene));
+                  continue;
+               }
+               LOGI(std::format("Scene trigger {} started", scene));
+               updated = true;
+               const uint32_t delayMs = result & 0x0000ffff;
+               hasAnimation = (delayMs != 0) && (delayMs < SERUM_MAX_ROTATION_DELAY_MS);
+               if (hasAnimation)
+               {
+                  animationTick = std::chrono::steady_clock::now();
+                  animationNextTick = animationTick + std::chrono::milliseconds(delayMs);
+               }
+            }
+         }
 
          // Perform current animation (catching up to the current time point)
          if (hasAnimation)
@@ -373,6 +417,11 @@ private:
    std::thread m_colorizeThread;
 
    std::mutex m_stateMutex;
+   // Scene triggers waiting to be applied, guarded by m_stateMutex.
+   // Serum_Scene_Trigger mutates libserum's own animation state, so it has to
+   // run where Serum_Colorize and Serum_Rotate run -- on the colorize thread,
+   // under the same lock -- rather than on whichever thread delivered the event.
+   std::vector<uint16_t> m_pendingScenes;
    std::vector<uint8_t> m_colorFrameV1;
    unsigned int m_advertisedWidth32 = 0;
    unsigned int m_advertisedWidth64 = 0;
@@ -464,6 +513,34 @@ static void OnControllerChanged()
       });
 }
 
+// Scene triggers arrive on the shared B2S event stream, the same 'D' events PUP
+// takes its DMD triggers from. Ids outside this window belong to PUP and to
+// Serum's own frame-identification triggers, which travel the other way on
+// "Serum"/"OnDmdTrigger:1"; only this range means "play colorization scene N".
+// Matches the window libdmdutil has always applied.
+static constexpr int kSceneTriggerMinEvent = 50000;
+static constexpr int kSceneTriggerMaxEvent = 62000;
+
+static void MSGPIAPI OnB2SStateChange(const unsigned int, void*, void* eventData)
+{
+   struct B2SPluginEvent
+   {
+      uint8_t type;
+      int32_t index;
+      int32_t value;
+   };
+   const B2SPluginEvent* event = static_cast<const B2SPluginEvent*>(eventData);
+   if (event == nullptr || !colorizer)
+      return;
+   // value == 1 is the press: these are pulses, and acting on the release too
+   // would run every scene twice.
+   if (event->type != 'D' || event->value != 1)
+      return;
+   if (event->index < kSceneTriggerMinEvent || event->index > kSceneTriggerMaxEvent)
+      return;
+   colorizer->QueueSceneTrigger(static_cast<uint16_t>(event->index));
+}
+
 }
 
 using namespace Serum;
@@ -478,6 +555,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
    msgApi->RegisterSetting(endpointId, &serumResolutionProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
+   onB2SStateChange = msgApi->GetMsgID("B2S", "OnStateChange:1");
+   msgApi->SubscribeMsg(endpointId, onB2SStateChange, OnB2SStateChange, nullptr);
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
       []() { OnControllerChanged(); });
@@ -488,6 +567,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    controllers->Unsubscribe();
    controllers = nullptr;
+   msgApi->UnsubscribeMsg(onB2SStateChange, OnB2SStateChange, nullptr);
+   msgApi->ReleaseMsgID(onB2SStateChange);
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi = nullptr;
 }
