@@ -121,7 +121,14 @@ public:
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
-         .overrideId = { { sourceEndpointId, 0xFFFF } }, // We do not override a DMD but we want to be able to identify the source endpointId for colorization purposes
+         // Not an override: this display is built out of the controller's segment
+         // displays and replaces nothing. It used to carry a { endpointId, 0xFFFF }
+         // sentinel here to smuggle the controller's endpoint across, but CtlResId
+         // compares as one 64 bit value and colorizers look for a real item with
+         // that id, so the lookup always failed and alphanumeric games were never
+         // colorized. controllerId says it directly.
+         .overrideId = { { 0, 0 } },
+         .controllerId = sourceEndpointId,
          .width = 128,
          .height = 32,
          .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,

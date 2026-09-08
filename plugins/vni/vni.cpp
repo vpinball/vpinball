@@ -67,7 +67,7 @@ private:
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
       const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
       {
-         if (src.id.endpointId == m_controllerEndpointId)
+         if (CtlDisplayControllerId(&src) == m_controllerEndpointId)
             return true;
          if (src.overrideId.id != 0)
             for (const DisplaySrcId& item : items)

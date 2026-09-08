@@ -193,6 +193,7 @@ typedef struct DisplaySrcId
 {
    CtlResId id;                                                             // Unique Id of the display
    CtlResId overrideId;                                                     // If this source overrides another source, id of the overriden source, 0 otherwise
+   uint32_t controllerId;                                                   // Endpoint of the controller this display derives from, 0 if it is the controller's own (i.e. same as id.endpointId)
    unsigned int width;                                                      // 
    unsigned int height;                                                     // 
    union {
@@ -213,6 +214,17 @@ typedef struct DisplaySrcId
    unsigned int identifyFormat;                                             // See CTLPI_DISPLAY_ID_FORMAT_xxx 
    DisplayFrame(MSGPIAPI* GetIdentifyFrame)(void* callContext);             // Get the last identify frame. Thread safe. Returned value is not null, owned by the source, in the format defined by identifyFormat
 } DisplaySrcId;
+
+// The controller a display belongs to. A renderer that turns a controller's
+// state into a display -- alphadmd building a DMD out of segment displays -- is
+// not overriding anything, so overrideId cannot say which controller it came
+// from, and on a segment-only machine there is no parent display to point at
+// either. Colorizers need the answer regardless, to decide whether a display is
+// one they should colorize for the controller they selected.
+static inline uint32_t CtlDisplayControllerId(const DisplaySrcId* display)
+{
+   return display->controllerId != 0 ? display->controllerId : display->id.endpointId;
+}
 
 typedef struct GetDisplaySrcMsg
 {
