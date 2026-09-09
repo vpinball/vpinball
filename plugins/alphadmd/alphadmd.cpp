@@ -121,14 +121,13 @@ public:
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
-         // Not an override: this display is built out of the controller's segment
-         // displays and replaces nothing. It used to carry a { endpointId, 0xFFFF }
-         // sentinel here to smuggle the controller's endpoint across, but CtlResId
-         // compares as one 64 bit value and colorizers look for a real item with
-         // that id, so the lookup always failed and alphanumeric games were never
-         // colorized. controllerId says it directly.
-         .overrideId = { { 0, 0 } },
-         .controllerId = sourceEndpointId,
+         // Not an override in the usual sense: this display is built from the
+         // controller's segment displays and replaces no display. Only the
+         // endpointId half is meaningful, and it is what lets a colorizer tell
+         // which controller this belongs to. The resId is a placeholder until
+         // resources carry globally unique ids, at which point this can name
+         // the segment display group itself.
+         .overrideId = { { sourceEndpointId, 0xFFFF } },
          .width = 128,
          .height = 32,
          .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,

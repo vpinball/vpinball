@@ -149,10 +149,22 @@ private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
+      // A display the controller owns outright, or one derived from a resource it
+      // owns. The second case cannot be answered by resolving overrideId to an
+      // item: alphadmd builds a DMD out of segment displays, so what it names
+      // there is not a display and no lookup in this list will find it. The
+      // endpointId half is the answer on its own, and stays the answer once
+      // resources carry globally unique ids and that overrideId names the
+      // segment group for real.
+      const auto isFromControllerEndpoint = [&](const DisplaySrcId& src)
+      { return src.id.endpointId == m_controllerEndpointId || (src.overrideId.id != 0 && src.overrideId.endpointId == m_controllerEndpointId); };
+
       const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
       {
-         if (CtlDisplayControllerId(&src) == m_controllerEndpointId)
+         if (isFromControllerEndpoint(src))
             return true;
+         // A longer chain: another plugin's output overriding a display that is
+         // itself derived from the controller.
          if (src.overrideId.id != 0)
             for (const DisplaySrcId& item : items)
                if (item.id == src.overrideId)
@@ -345,7 +357,6 @@ private:
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 0 } }, //
                         .overrideId = dmdId.id, //
-                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = dmdId.width, //
                         .height = dmdId.height, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -384,7 +395,6 @@ private:
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 1 } }, //
                         .overrideId = dmdId.id, //
-                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = colorizer->m_advertisedWidth32, //
                         .height = 32, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -398,7 +408,6 @@ private:
                      colorizer->m_colorizedDmd.AddItem({
                         .id = { { endpointId, 2 } }, //
                         .overrideId = dmdId.id, //
-                        .controllerId = CtlDisplayControllerId(&dmdId), //
                         .width = colorizer->m_advertisedWidth64, //
                         .height = 64, //
                         .hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED, //
@@ -508,7 +517,16 @@ static void SelectController(std::vector<ControllerDef>& items)
    for (const ControllerDef& controller : items)
    {
       const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
-         [&controller](const DisplaySrcId& display) { return CtlDisplayControllerId(&display) == controller.endpointId && IsColorizableDmd(display); });
+         [&controller](const DisplaySrcId& display)
+         {
+            // Same reasoning as FilterDmdSource's isFromControllerEndpoint: a
+            // display alphadmd built from this controller's segment displays is
+            // colorizable for it, and only the endpointId half of its overrideId
+            // says so.
+            return (display.id.endpointId == controller.endpointId
+                      || (display.overrideId.id != 0 && display.overrideId.endpointId == controller.endpointId))
+               && IsColorizableDmd(display);
+         });
       const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
       if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
       {

@@ -177,7 +177,6 @@ public:
       const DisplaySrcId displayId = { //
          .id = { { endpointId, 0 } },
          .overrideId = m_dmdSrc.id,
-         .controllerId = CtlDisplayControllerId(&m_dmdSrc),
          .width = m_dmdSrc.width * scaleFactors[upscalerMode],
          .height = m_dmdSrc.height * scaleFactors[upscalerMode],
          .hardware = m_dmdSrc.hardware,
