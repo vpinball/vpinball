@@ -1781,7 +1781,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                else if (i < m_vsound.size() - 1)
                {
                   for (size_t i2 = i + 1; i2 < m_vsound.size(); ++i2)
-                     if (sound->GetName() == m_vsound[i2]->GetName())
+                     if (StrCompareNoCase(sound->GetName(), m_vsound[i2]->GetName()))
                      {
                         PLOGW << "Duplicate sound name found: " << sound->GetName() << ", dropping it!";
                         m_vsound.erase(m_vsound.begin() + i2);
@@ -1801,7 +1801,7 @@ HRESULT PinTable::LoadGameFromFilename(const std::filesystem::path &filename, VP
                else if (i < m_vimage.size() - 1)
                {
                   for (size_t i2 = i + 1; i2 < m_vimage.size(); ++i2)
-                     if (image->m_name == m_vimage[i2]->m_name)
+                     if (StrCompareNoCase(image->m_name, m_vimage[i2]->m_name))
                      {
                         PLOGW << "Duplicate image name found: " << image->GetName() << ", dropping it!";
                         m_vimage.erase(m_vimage.begin() + i2);
