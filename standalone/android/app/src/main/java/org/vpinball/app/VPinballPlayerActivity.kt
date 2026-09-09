@@ -17,7 +17,7 @@ class VPinballPlayerActivity : SDLActivity() {
 
         VPinballManager.setPlayerActivity(this)
 
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             delay(2000)
             VPinballManager.play()
         }

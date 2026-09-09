@@ -64,7 +64,8 @@ class TableManager(private val context: Context) {
                     else -> table.image
                 }
 
-            if (updatedImage != table.image) {
+            val imageModifiedAt = if (updatedImage.isNotEmpty()) fileModifiedAt(buildPath(updatedImage)) else null
+            if (updatedImage != table.image || (imageModifiedAt != null && imageModifiedAt > table.modifiedAt)) {
                 val updatedTable = table.copy(image = updatedImage, modifiedAt = System.currentTimeMillis() / 1000)
                 _tables.value = _tables.value.map { if (it.uuid == table.uuid) updatedTable else it }
                 saveTables()

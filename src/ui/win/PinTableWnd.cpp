@@ -824,7 +824,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
 
       const bool add = ((ksshift & 0x80000000) != 0);
 
-      if (pisel == (ISelect *)this && add)
+      if (pisel == m_table && add)
       {
          // Can not include the table in multi-select
          // and table will not be unselected, because the
