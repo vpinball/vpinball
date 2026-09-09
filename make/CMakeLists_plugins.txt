@@ -11,8 +11,19 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STRE
 endif()
 
 if(PLATFORM STREQUAL "macos")
-   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../PlugIns")
    set(CMAKE_INSTALL_RPATH "@loader_path/../../Frameworks;@loader_path;@executable_path")
+endif()
+
+# Hosts that embed the plugin system without building the vpinball app -- PPUC
+# drives real pinball hardware -- have no $<TARGET_FILE_DIR:vpinball> to hang
+# the plugin folder off. VPINBALL_PLUGIN_PACKAGE_DIR lets them name it.
+#
+# Kept separate from the rpath above deliberately: overriding the directory must
+# not change how the plugins are linked.
+if(DEFINED VPINBALL_PLUGIN_PACKAGE_DIR AND NOT VPINBALL_PLUGIN_PACKAGE_DIR STREQUAL "")
+   set(PLUGINS_DIR "${VPINBALL_PLUGIN_PACKAGE_DIR}")
+elseif(PLATFORM STREQUAL "macos")
+   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../PlugIns")
 else()
    set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
 endif()
