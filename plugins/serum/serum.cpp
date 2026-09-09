@@ -38,7 +38,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 
 static unsigned int onDmdTrigger;
-static unsigned int onB2SStateChange;
+static unsigned int onTriggerScene;
 static std::minstd_rand std_rand;
 
 static std::unique_ptr<CtrlItemConsumer<ControllerDef>> controllers;
@@ -149,13 +149,20 @@ private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
-      // A display the controller owns outright, or one derived from a resource it
-      // owns. The second case cannot be answered by resolving overrideId to an
-      // item: alphadmd builds a DMD out of segment displays, so what it names
-      // there is not a display and no lookup in this list will find it. The
-      // endpointId half is the answer on its own, and stays the answer once
-      // resources carry globally unique ids and that overrideId names the
-      // segment group for real.
+      // FIXME This resolves one shallow level, not the override chain.
+      //
+      // A display the controller owns outright, or one whose overrideId names a
+      // resource on the controller's endpoint. The second case exists because
+      // alphadmd builds a DMD out of segment displays: what it names there is
+      // not a display, so no lookup in this list can resolve it, and only the
+      // endpointId half of the id answers the question.
+      //
+      // The correct fix is to follow the whole override chain across resource
+      // types rather than stopping at the first hop, which needs resources to
+      // carry globally unique ids -- until then a chain that passes through a
+      // non-display resource more than once is still missed. This unblocks
+      // alphanumeric colorization, which was broken outright; it does not close
+      // the underlying bug.
       const auto isFromControllerEndpoint = [&](const DisplaySrcId& src)
       { return src.id.endpointId == m_controllerEndpointId || (src.overrideId.id != 0 && src.overrideId.endpointId == m_controllerEndpointId); };
 
@@ -519,10 +526,11 @@ static void SelectController(std::vector<ControllerDef>& items)
       const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
          [&controller](const DisplaySrcId& display)
          {
-            // Same reasoning as FilterDmdSource's isFromControllerEndpoint: a
+            // FIXME One shallow level only, as in FilterDmdSource above: a
             // display alphadmd built from this controller's segment displays is
             // colorizable for it, and only the endpointId half of its overrideId
-            // says so.
+            // says so. A deeper chain through a non-display resource is still
+            // missed.
             return (display.id.endpointId == controller.endpointId
                       || (display.overrideId.id != 0 && display.overrideId.endpointId == controller.endpointId))
                && IsColorizableDmd(display);
@@ -556,32 +564,32 @@ static void OnControllerChanged()
       });
 }
 
-// Scene triggers arrive on the shared B2S event stream, the same 'D' events PUP
-// takes its DMD triggers from. Ids outside this window belong to PUP and to
-// Serum's own frame-identification triggers, which travel the other way on
-// "Serum"/"OnDmdTrigger:1"; only this range means "play colorization scene N".
-// Matches the window libdmdutil has always applied.
-static constexpr int sceneTriggerMinEvent = 50000;
-static constexpr int sceneTriggerMaxEvent = 62000;
+// A scene to play, from whoever knows the game should play one.
+//
+// This mirrors the outbound "Serum"/"OnDmdTrigger:1" and carries the same
+// payload, a pointer to the scene id. An earlier version of this listened for
+// 'D' events on "B2S"/"OnStateChange:1" on the grounds that the type is
+// documented as a DMD trigger for PUP and Serum both. That was wrong: nothing
+// in vpinball ever broadcasts a 'D' event there -- B2SServer emits only 'B',
+// 'C' and 'E' -- and the 'D' events PUP acts on are synthesised inside
+// B2SPluginEventStream and delivered by a function call, never reaching the
+// bus. The subscription fired only in a host that published the event itself.
+//
+// Ids outside this window are not scenes. Serum's own frame-identification
+// triggers travel the other way and share the numbering space with PUP's, so
+// the window is what separates "play scene N" from "frame N was recognised".
+// It matches the range libdmdutil has always applied.
+static constexpr unsigned int sceneTriggerMinEvent = 50000;
+static constexpr unsigned int sceneTriggerMaxEvent = 62000;
 
-static void MSGPIAPI OnB2SStateChange(const unsigned int, void*, void* eventData)
+static void MSGPIAPI OnTriggerScene(const unsigned int, void*, void* eventData)
 {
-   struct B2SPluginEvent
-   {
-      uint8_t type;
-      int32_t index;
-      int32_t value;
-   };
-   const B2SPluginEvent* event = static_cast<const B2SPluginEvent*>(eventData);
-   if (event == nullptr || !colorizer)
+   const unsigned int* scene = static_cast<const unsigned int*>(eventData);
+   if (scene == nullptr || !colorizer)
       return;
-   // value == 1 is the press: these are pulses, and acting on the release too
-   // would run every scene twice.
-   if (event->type != 'D' || event->value != 1)
+   if (*scene < sceneTriggerMinEvent || *scene > sceneTriggerMaxEvent)
       return;
-   if (event->index < sceneTriggerMinEvent || event->index > sceneTriggerMaxEvent)
-      return;
-   colorizer->QueueSceneTrigger(static_cast<uint16_t>(event->index));
+   colorizer->QueueSceneTrigger(static_cast<uint16_t>(*scene));
 }
 
 }
@@ -599,8 +607,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumResolutionProp);
    msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
-   onB2SStateChange = msgApi->GetMsgID("B2S", "OnStateChange:1");
-   msgApi->SubscribeMsg(endpointId, onB2SStateChange, OnB2SStateChange, nullptr);
+   onTriggerScene = msgApi->GetMsgID("Serum", "TriggerScene:1");
+   msgApi->SubscribeMsg(endpointId, onTriggerScene, OnTriggerScene, nullptr);
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
       msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG, [](std::vector<ControllerDef>& items) { SelectController(items); }, []() { colorizer = nullptr; },
       []() { OnControllerChanged(); });
@@ -611,8 +619,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    controllers->Unsubscribe();
    controllers = nullptr;
-   msgApi->UnsubscribeMsg(onB2SStateChange, OnB2SStateChange, nullptr);
-   msgApi->ReleaseMsgID(onB2SStateChange);
+   msgApi->UnsubscribeMsg(onTriggerScene, OnTriggerScene, nullptr);
+   msgApi->ReleaseMsgID(onTriggerScene);
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi = nullptr;
 }
