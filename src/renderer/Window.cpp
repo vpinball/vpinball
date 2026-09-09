@@ -197,12 +197,6 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    else
    {
       uint32_t wnd_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-      // So far, the only way to get a clean focus management on all platforms with fullscreen/windowed mode
-      // is to make ancillary windows (backglass, score view, topper) output only. They must never grab input
-      // focus, otherwise showing them (eventually lazily, when the script starts feeding them content) would
-      // steal focus from the playfield and pause the table.
-      if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview)
-         wnd_flags |= SDL_WINDOW_NOT_FOCUSABLE;
 
       #if defined(ENABLE_OPENGL)
          wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
@@ -213,6 +207,28 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
+
+      // Sadly, we haven't found a way to deal with focus management, window movability, decoration removal and taskbar behavior uniformly across platforms.
+      if (SDL_GetCurrentVideoDriver() == "x11"sv)
+      {
+         // On X11, we need ancillary windows to be non focusable but non focusable windows are only resizable if they are utility windows
+         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview && m_windowMode == Windowed)
+            wnd_flags |= SDL_WINDOW_UTILITY;
+      }
+      else if (SDL_GetCurrentVideoDriver() == "windows"sv)
+      {
+         // On Windows, non focusable windows are not proposed in the taskbar leading to situations where ancillary windows are behind the main window and cannot be raised.
+         // As Windows allows direct focus management of owned windows, we just perform direct focus management and let ancillary windows be focusable on user request.
+      }
+      else
+      {
+         // For other platforms, the only way to get a clean focus management with fullscreen/windowed mode
+         // is to make ancillary windows (backglass, score view, topper) output only. They must never grab input
+         // focus, otherwise showing them (eventually lazily, when the script starts feeding them content) would
+         // steal focus from the playfield and pause the table.
+         if (m_windowId != VPXWindowId::VPXWINDOW_Playfield && m_windowId != VPXWindowId::VPXWINDOW_VRPreview && m_windowMode == Windowed)
+            wnd_flags |= SDL_WINDOW_NOT_FOCUSABLE;
+      }
 
       // Request forced raising (standard behavior except on Windows)
       SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
