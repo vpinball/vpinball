@@ -67,11 +67,7 @@ private:
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
       const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
       {
-         // See serum.cpp: alphadmd names a segment display in overrideId, which
-         // no lookup in this list can resolve, so the endpointId half is what
-         // answers "is this derived from my controller".
-         if (src.id.endpointId == m_controllerEndpointId
-            || (src.overrideId.id != 0 && src.overrideId.endpointId == m_controllerEndpointId))
+         if (src.id.endpointId == m_controllerEndpointId)
             return true;
          if (src.overrideId.id != 0)
             for (const DisplaySrcId& item : items)
