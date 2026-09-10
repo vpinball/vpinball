@@ -81,10 +81,12 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
       target_link_libraries(DMDUtilPlugin PUBLIC dmdutil)
    endif()
 
+   set_target_properties(DMDUtilPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/dmdutil"
+   )
+
    add_custom_command(TARGET DMDUtilPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/dmdutil/plugin.cfg" "${PLUGINS_DIR}/dmdutil/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:DMDUtilPlugin>" "${PLUGINS_DIR}/dmdutil"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:DMDUtilPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS)

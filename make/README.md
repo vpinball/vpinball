@@ -61,6 +61,24 @@ cmake -DPLATFORM=windows -DARCH=x86 -B build
 
 All combinations — including the iOS/Android shared-library builds — are handled by the single root `CMakeLists.txt`; an unsupported combination prints the list of supported ones. The source manifests live in `make/CMakeLists_sources.txt` and the plugins in `make/CMakeLists_plugins.txt`.
 
+### Building only the plugins
+
+Set `-DBUILD_APP=OFF` to build the plugins without the application. Each plugin is written to `<build>/plugins/<name>/`, or to `-DPLUGINS_DIR` if set:
+
+```bash
+cmake -DBUILD_APP=OFF -DPLUGINS_DIR=/path/to/plugins -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build
+```
+
+To build specific plugins, name their targets:
+
+```bash
+cmake --build build --target PinMAMEPlugin SerumPlugin
+```
+
+* A relative `PLUGINS_DIR` is resolved against the build directory.
+* `PLUGINS_DIR` is ignored when the application is built, and on iOS, tvOS and Android, where the plugins are static libraries linked into the application.
+
 #### Supported Platforms
 
 <details open>

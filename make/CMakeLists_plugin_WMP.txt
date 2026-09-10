@@ -85,10 +85,12 @@ if(BUILD_SHARED)
       endif()
    endif()
 
+   set_target_properties(WMPPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/wmp"
+   )
+
    add_custom_command(TARGET WMPPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/wmp/plugin.cfg" "${PLUGINS_DIR}/wmp/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:WMPPlugin>" "${PLUGINS_DIR}/wmp"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:WMPPlugin>"
    )
 
    if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")

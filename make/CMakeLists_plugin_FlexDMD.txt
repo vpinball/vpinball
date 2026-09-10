@@ -171,10 +171,12 @@ if(BUILD_SHARED)
       )
    endif()
 
+   set_target_properties(FlexDMDPlugin PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PLUGINS_DIR}/flexdmd"
+   )
+
    add_custom_command(TARGET FlexDMDPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/flexdmd/plugin.cfg" "${PLUGINS_DIR}/flexdmd/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:FlexDMDPlugin>" "${PLUGINS_DIR}/flexdmd"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:FlexDMDPlugin>"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory ${CMAKE_SOURCE_DIR}/plugins/flexdmd/assets "${PLUGINS_DIR}/flexdmd/assets"
    )
 
