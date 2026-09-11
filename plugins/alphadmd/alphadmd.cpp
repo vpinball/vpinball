@@ -114,14 +114,14 @@ static void SetThreadName(const std::string& name)
 class AlphaDMDRenderer
 {
 public:
-   AlphaDMDRenderer(unsigned int sourceEndpointId, const DmdLayouts dmdLayout)
+   AlphaDMDRenderer(CtlResId overridenId, const DmdLayouts dmdLayout)
       : m_dmdLayout(dmdLayout)
       , m_dmdProvider(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
    {
       m_renderThread = std::thread(&AlphaDMDRenderer::RenderThread, this);
       m_dmdProvider.AddItem({
          .id = { { endpointId, 0 } },
-         .overrideId = { { sourceEndpointId, 0xFFFF } }, // We do not override a DMD but we want to be able to identify the source endpointId for colorization purposes
+         .overrideId = overridenId,
          .width = 128,
          .height = 32,
          .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
@@ -563,15 +563,15 @@ static void SelectSource(std::vector<SegSrcId>& items)
 
 static void SetupRenderer()
 {
-   unsigned int selectedEndpoint = 0;
+   CtlResId selectedGroupId { };
    DmdLayouts selectedLayout = DmdLayouts::Undefined;
    segSource->With(
-      [&selectedLayout, &selectedEndpoint](const std::vector<SegSrcId>& selectedSources)
+      [&selectedLayout, &selectedGroupId](const std::vector<SegSrcId>& selectedSources)
       {
          if (selectedSources.empty())
             return;
          
-         selectedEndpoint = selectedSources.front().id.endpointId;
+         selectedGroupId = selectedSources.front().groupId;
          
          // Find a matching layout
          static constexpr int layouts[13][16] = {
@@ -620,7 +620,7 @@ static void SetupRenderer()
       });
 
    if (selectedLayout != DmdLayouts::Undefined)
-      renderer = std::make_unique<AlphaDMDRenderer>(selectedEndpoint, selectedLayout);
+      renderer = std::make_unique<AlphaDMDRenderer>(selectedGroupId, selectedLayout);
 }
 
 }
