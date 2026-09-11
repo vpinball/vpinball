@@ -228,6 +228,26 @@ bool InGameUIItem::IsModified() const
    }
 }
 
+bool InGameUIItem::IsOverriden(Settings& appSettings, Settings& tableSettings) const
+{
+   switch (m_type)
+   {
+   case Type::Property:
+      if (auto id = Settings::GetRegistry().GetPropertyId(m_property->m_groupId, m_property->m_propId); id.has_value())
+      {
+         switch (Settings::GetRegistry().GetStoreType(m_property->m_type))
+         {
+         case PropertyRegistry::StoreType::Int: return appSettings.GetInt(id.value()) != tableSettings.GetInt(id.value());
+         case PropertyRegistry::StoreType::Float: return appSettings.GetFloat(id.value()) != tableSettings.GetFloat(id.value());
+         case PropertyRegistry::StoreType::String: return appSettings.GetString(id.value()) != tableSettings.GetString(id.value());
+         default: assert(false); return false;
+         }
+      }
+      return false;
+   default: assert(false); return true;
+   }
+}
+
 bool InGameUIItem::IsDefaultValue() const
 {
    switch (m_type)

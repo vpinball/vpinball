@@ -83,6 +83,8 @@ public:
    void ResetSave(Settings& settings) const;
    void Save(Settings& settings, bool isTableOverride);
 
+   bool IsOverriden(Settings& appSettings, Settings& tableSettings) const;
+
    bool IsDefaultValue() const;
    void ResetToDefault();
 
