@@ -49,11 +49,6 @@ VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* pMessage)
       VPinballLib::VPinballLib::Instance().Log(level, pMessage);
 }
 
-VPINBALLAPI void VPinballResetLog()
-{
-   VPinballLib::VPinballLib::Instance().ResetLog();
-}
-
 VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey, int defaultValue)
 {
     if (pSectionName == nullptr || pKey == nullptr)
