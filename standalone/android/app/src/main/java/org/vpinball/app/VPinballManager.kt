@@ -273,10 +273,6 @@ object VPinballManager : KoinComponent {
         val viewModel = mainActivity?.viewModel ?: return false
 
         return withContext(Dispatchers.IO) {
-            if (loadValue(STANDALONE, "ResetLogOnPlay", true)) {
-                vpinballJNI.VPinballResetLog()
-            }
-
             val tablePath = TableManager.getInstance().stageTable(table) { progress, status -> onProgress?.invoke(progress, status) }
 
             if (tablePath == null) {
