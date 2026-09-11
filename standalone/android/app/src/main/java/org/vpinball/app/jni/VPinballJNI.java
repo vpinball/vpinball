@@ -4,7 +4,6 @@ public class VPinballJNI {
     public native String VPinballGetVersionStringFull();
     public native void VPinballInit(VPinballEventCallback callback);
     public native void VPinballLog(int level, String message);
-    public native void VPinballResetLog();
     public native int VPinballLoadValueInt(String sectionName, String key, int defaultValue);
     public native float VPinballLoadValueFloat(String sectionName, String key, float defaultValue);
     public native String VPinballLoadValueString(String sectionName, String key, String defaultValue);

@@ -310,11 +310,6 @@ void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)
    }
 }
 
-void VPinballLib::ResetLog()
-{
-   Logger::GetInstance()->Truncate();
-}
-
 int VPinballLib::LoadValueInt(const string& sectionName, const string& key, int defaultValue)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
@@ -459,6 +454,9 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
       m_pTable->Release();
       m_pTable = nullptr;
    }
+
+   if (g_app->m_settings.GetStandalone_ResetLogOnPlay())
+      Logger::Truncate();
 
    CComObject<PinTable>::CreateInstance(&m_pTable);
    m_pTable->AddRef();

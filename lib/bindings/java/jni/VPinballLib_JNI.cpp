@@ -61,11 +61,6 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLog(JNIEnv*
    env->ReleaseStringUTFChars(message, pMessage);
 }
 
-JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetLog(JNIEnv* env, jobject obj)
-{
-   VPinballResetLog();
-}
-
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValueInt(JNIEnv* env, jobject obj, jstring sectionName, jstring key, jint defaultValue)
 {
    const char* pSectionName = env->GetStringUTFChars(sectionName, nullptr);

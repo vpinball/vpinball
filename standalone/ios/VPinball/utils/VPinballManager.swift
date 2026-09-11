@@ -142,10 +142,6 @@ class VPinballManager {
             return false
         }
 
-        if loadValue(.standalone, "ResetLogOnPlay", true) {
-            VPinballResetLog()
-        }
-
         await MainActor.run {
             VPinballModel.shared.activeTable = table
             MainViewModel.shared.errorMessage = ""
