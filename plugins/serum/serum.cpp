@@ -139,6 +139,22 @@ static unsigned int SerumRequestFlags()
    return flags;
 }
 
+// Routes libserum's own diagnostics into the plugin log.
+//
+// Without this they are discarded: libserum only logs through a callback, and
+// nothing installed one. A failed load therefore reported "Failed to load
+// colorization data" and nothing else, while libserum had already said exactly
+// what was wrong - wrong header, version too old, size mismatch - into a
+// callback that was never set.
+static void SERUM_CALLBACK OnSerumLog(const char* format, va_list args, const void* /*userData*/)
+{
+   if (format == nullptr)
+      return;
+   char buffer[1024];
+   vsnprintf(buffer, sizeof(buffer), format, args);
+   LOGI(buffer);
+}
+
 class SerumColorizer
 {
 public:
@@ -601,6 +617,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumResolutionProp);
    msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
+   // Installed before anything can load, so a load failure explains itself.
+   Serum_SetLogCallback(OnSerumLog, nullptr);
    onTriggerScene = msgApi->GetMsgID("Serum", "TriggerScene:1");
    msgApi->SubscribeMsg(endpointId, onTriggerScene, OnTriggerScene, nullptr);
    controllers = std::make_unique<CtrlItemConsumer<ControllerDef>>(
