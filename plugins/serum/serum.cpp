@@ -88,6 +88,14 @@ MSGPI_ENUM_VAL_SETTING(serumDisabledSizeProp, "DisabledSize", "Disabled size",
 MSGPI_BOOL_VAL_SETTING(serumPupTriggersProp, "PupTriggers", "Report colorization PUP triggers",
    "Forward PUP triggers embedded in the colorization onto the bus", true, true);
 
+// What this plugin advertises as a ControllerDef while it holds a colorization
+// carrying DMD triggers. The suffix is the game id, so a consumer answers "are
+// there Serum triggers for the game I loaded?" by a plain string comparison.
+//
+// Consumers carry their own copy of this prefix -- see B2SPluginEventStream.h.
+// It is part of the wire contract, so it changes in both places or neither.
+static constexpr std::string_view serumGameIdPrefix = "serum::"sv;
+
 // A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
 static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
 
@@ -170,6 +178,8 @@ public:
       : m_pSerum(Serum_Load(serumPath.string().c_str(), string(currentGameId).c_str(), SerumRequestFlags()))
       , m_controllerEndpointId(controllerEndpointId)
       , m_colorizedDmd(msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG)
+      , m_serumGameId(std::format("{}{}", serumGameIdPrefix, currentGameId))
+      , m_dmdTriggers(msgApi, endpointId, CTLPI_CONTROLLERS_GET_MSG, CTLPI_CONTROLLERS_ON_CHG_MSG)
       , m_colorizedframeId(std_rand())
       , m_dmdSource(
            msgApi, endpointId, CTLPI_DISPLAY_GET_SRC_MSG, CTLPI_DISPLAY_ON_SRC_CHG_MSG, [this](std::vector<DisplaySrcId>& items) { FilterDmdSource(items); },
@@ -184,6 +194,40 @@ public:
          Serum_SetIgnoreUnknownFramesTimeout(static_cast<uint16_t>(serumIgnoreUnknownFramesTimeoutProp_Get()));
          Serum_SetMaximumUnknownFramesToSkip(static_cast<uint8_t>(serumMaxUnknownFramesToSkipProp_Get()));
 
+         // Say so when this colorization identifies DMD frames for the game, so
+         // a consumer that can identify frames itself -- PUP is the one that
+         // matters -- can switch its own matching off and take these instead of
+         // doing the same work a second time on every frame. Consumers decide;
+         // this plugin only states what it has, and knows nothing about them.
+         //
+         // Both conditions are load-bearing, and neither covers the other.
+         //
+         // ntriggers already counts only the triggers that will be reported:
+         // libserum applies PUP_TRIGGER_MAX_THRESHOLD (50000) both when it
+         // counts them and when it reports one, so ids at or above that -- its
+         // internal ones, including the scene ids arriving on TriggerScene:1 --
+         // are excluded from the count and never emitted. Zero here therefore
+         // means a colorization that identifies nothing for anybody.
+         //
+         // The setting is the other half, because libserum's own switch for it
+         // (keepTriggersInternal) suppresses reporting without changing
+         // ntriggers. A colorization with triggers and reporting turned off
+         // would otherwise advertise while emitting nothing, and a consumer
+         // that stood down for it would go silent for good.
+         if (m_pSerum->ntriggers > 0 && serumPupTriggersProp_Get())
+         {
+            LOGI(std::format("Providing {} DMD trigger(s) as '{}'", m_pSerum->ntriggers, m_serumGameId));
+            // Published here, synchronously, rather than deferred to a later
+            // main-thread callback. AddItem broadcasts the change while this
+            // constructor still runs, which reaches our own controller consumer
+            // -- but that coalesces a reentrant update instead of recursing,
+            // and the refetched list still selects the same controller, so it
+            // settles in one extra pass. Deferring instead would leave a
+            // callback holding `this` across a colorization that can be
+            // replaced before the callback runs.
+            m_dmdTriggers.AddItem({ .endpointId = endpointId, .gameId = m_serumGameId.c_str() });
+         }
+
          m_dmdSource.Subscribe();
       }
       else
@@ -194,6 +238,12 @@ public:
 
    ~SerumColorizer()
    {
+      // The trigger advertisement is withdrawn after this body, when
+      // m_dmdTriggers is destroyed, and so strictly after the colorize thread
+      // has stopped emitting. That ordering is deliberate: a consumer standing
+      // down late means a moment with nobody identifying frames, where standing
+      // down early would mean a moment with two, and a silent gap is the better
+      // of the two on a teardown path.
       StopColorizeThread();
       if (m_pSerum)
       {
@@ -217,11 +267,9 @@ private:
    }
 
 public:
-   // A scene trigger from the shared event stream. Deliberately not a Serum
-   // specific message: 'D' events are already the channel PUP takes its DMD
-   // triggers from, and a VPX table script or another host can emit one today.
-   // Serum consuming the same events means a colorization scene is triggered
-   // the same way a PUP scene is, with nothing new on the wire.
+   // A scene to play, queued for the colorize thread. See OnTriggerScene for
+   // where these come from and why they are Serum's own message rather than a
+   // shared event letter.
    void QueueSceneTrigger(uint16_t event)
    {
       std::lock_guard targetLock(m_stateMutex);
@@ -480,6 +528,12 @@ private:
    const uint32_t m_controllerEndpointId;
 
    CtrlItemProvider<DisplaySrcId> m_colorizedDmd;
+
+   // Advertises that this colorization identifies DMD frames for this game.
+   // ControllerDef holds the pointer rather than the characters, and compares by
+   // pointer identity, so the string has to outlive every list that carries it.
+   const std::string m_serumGameId;
+   CtrlItemProvider<ControllerDef> m_dmdTriggers;
 
    bool m_isRunning = false;
    std::thread m_colorizeThread;
