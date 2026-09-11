@@ -63,15 +63,18 @@ MSGPI_INT_VAL_SETTING(serumMaxUnknownFramesToSkipProp, "MaximumUnknownFramesToSk
 //   DMDUtilPlugin takes the largest colour depth, ResURIResolver breaks on the
 //   first match -- so a 128x32 panel can end up downscaling a colorization that
 //   was upscaled to 256x64.
-// - libserum computes both outputs every frame. On a Raspberry Pi driving an SD
-//   panel that is half the colorization work thrown away.
+// - libserum computes and holds both outputs. That is work and memory spent on
+//   an output nothing will display, and the memory is the larger half of it: a
+//   recent cineastic colorization wants hundreds of megabytes for the SD plane
+//   alone, which a Raspberry Pi or an Android device does not have twice.
 //
-// Setting this makes the choice explicit: only the requested size is computed
-// and only it is published, so there is nothing left to disagree about. The
-// default keeps today's behaviour, which is the right one for a host that does
-// not know its output size in advance.
-MSGPI_INT_VAL_SETTING(serumResolutionProp, "Resolution", "Colorization resolution",
-   "Rows of the colorized output: 32, 64, or 0 to produce both", true, 0, 64, 0);
+// Disabling a size is therefore a performance option for a host that knows its
+// panel, and it costs the ability to drive a display of the other size. Nothing
+// is disabled unless asked.
+const char* serumDisabledSizeLiterals[] = { "None", "32px height", "64px height" };
+MSGPI_ENUM_VAL_SETTING(serumDisabledSizeProp, "DisabledSize", "Disabled size",
+   "Colorization output size to skip entirely, saving the memory and the work of producing it. For hosts driving one fixed panel.", true, 0, 3,
+   serumDisabledSizeLiterals, 0);
 // A colorization can carry PUP triggers of its own, which this plugin forwards
 // on "Serum"/"OnDmdTrigger:1" for PUP and DOF to act on. Whether that is wanted
 // depends on the setup rather than on the colorization: a pack author may be
@@ -121,12 +124,17 @@ static bool IsFromController(const DisplaySrcId& src, uint32_t controllerEndpoin
    return false;
 }
 
-// Anything other than an exact 32 or 64 means "produce both", so a stray value
-// degrades to the default rather than to no output at all.
+// The setting names the size to skip, so every size it does not name is
+// produced. A value outside the enum degrades to "skip nothing" rather than to
+// no output at all.
 static bool IsResolutionRequested(int rows)
 {
-   const int requested = serumResolutionProp_Get();
-   return (requested != 32 && requested != 64) || requested == rows;
+   switch (serumDisabledSizeProp_Get())
+   {
+   case 1: return rows != 32;
+   case 2: return rows != 64;
+   default: return true;
+   }
 }
 
 static unsigned int SerumRequestFlags()
@@ -614,7 +622,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    msgApi->RegisterSetting(endpointId, &serumPathProp);
    msgApi->RegisterSetting(endpointId, &serumIgnoreUnknownFramesTimeoutProp);
    msgApi->RegisterSetting(endpointId, &serumMaxUnknownFramesToSkipProp);
-   msgApi->RegisterSetting(endpointId, &serumResolutionProp);
+   msgApi->RegisterSetting(endpointId, &serumDisabledSizeProp);
    msgApi->RegisterSetting(endpointId, &serumPupTriggersProp);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger:1");
    // Installed before anything can load, so a load failure explains itself.
