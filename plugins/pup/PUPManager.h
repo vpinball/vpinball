@@ -13,7 +13,6 @@
 #include "pupdmd.h"
 #pragma warning(pop)
 
-#include <chrono>
 #include <unordered_dense.h>
 #include <vector>
 #include <queue>
@@ -134,12 +133,9 @@ private:
 
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    // Triggers in the loaded pack that only a DMD frame match can fire, and what
-   // is needed to report once that nothing can fire them. The grace period is
-   // there so a Serum colorization still loading does not read as missing.
-   static constexpr std::chrono::seconds kMissingIdentificationGrace { 3 };
+   // is needed to report once that nothing can fire them.
    unsigned int m_dmdTriggerCount = 0;
    bool m_dmdTriggerDataLoaded = false;
-   std::chrono::steady_clock::time_point m_missingIdentificationReportAt { };
    bool m_reportedMissingIdentification = false;
    std::array<uint8_t, 128 * 32> m_idFrame;
    int ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame);

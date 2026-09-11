@@ -503,29 +503,22 @@ int PUPManager::ProcessDmdFrame(const DisplaySrcId& src, const uint8_t* frame)
          this);
       m_dmdTriggerDataLoaded = m_dmd->Load(m_szPath.string().c_str(), "", src.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2 ? 2 : 4);
       memset(m_idFrame.data(), 0, m_idFrame.size());
-      m_missingIdentificationReportAt = std::chrono::steady_clock::now() + kMissingIdentificationGrace;
    }
 
    // Being called at all means nobody else is identifying frames for this game:
-   // the event stream skips this call entirely while Serum does. So if the pack
-   // has triggers that only a frame match can fire and there is no local
-   // trigger data to match against, those triggers never fire, and the pack
-   // plays with parts of it silently missing.
+   // the event stream skips this call entirely while Serum does, and Serum
+   // claims the game before it starts reading its colorization, so the question
+   // is settled before the first frame gets here rather than however long a
+   // load takes. So if the pack has triggers that only a frame match can fire
+   // and there is no local trigger data to match against, those triggers never
+   // fire, and the pack plays with parts of it silently missing.
    //
    // Worth a message because the failure is otherwise invisible: the pack
    // loads, the screens appear, and only the media behind the missing triggers
    // is absent. A pack built against a Serum colorization is the usual way into
    // this, its author having had no way to declare the dependency -- the PuP
    // editor only knows "D12345" strings.
-   //
-   // Not reported on the first frame. Serum advertises once it has read its
-   // colorization, and nothing orders that against the first frame arriving
-   // here, so reporting immediately would sometimes announce a problem that
-   // resolves itself a moment later. The grace is a delay rather than a frame
-   // count because this is only called when the identify frame changes, and on
-   // an alphanumeric game in attract that can be a handful of frames a minute.
-   if (!m_dmdTriggerDataLoaded && m_dmdTriggerCount > 0 && !m_reportedMissingIdentification
-      && std::chrono::steady_clock::now() >= m_missingIdentificationReportAt)
+   if (!m_dmdTriggerDataLoaded && m_dmdTriggerCount > 0 && !m_reportedMissingIdentification)
    {
       m_reportedMissingIdentification = true;
       LOGE(std::format("This PuP pack has {} DMD trigger(s) but no trigger data of its own, and no Serum colorization is identifying frames for '{}'. "
