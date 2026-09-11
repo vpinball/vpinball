@@ -318,7 +318,7 @@ void EditorUI::RenderUI()
       }
       switch (m_gizmoOperation)
       {
-      case ImGuizmo::NONE: ImGui::TextUnformatted("Select"); break;
+      case ImGuizmo::OPERATION(0): ImGui::TextUnformatted("Select"); break;
       case ImGuizmo::TRANSLATE: ImGui::TextUnformatted("Grab"); break;
       case ImGuizmo::ROTATE: ImGui::TextUnformatted("Rotate"); break;
       case ImGuizmo::SCALE: ImGui::TextUnformatted("Scale"); break;
@@ -595,8 +595,8 @@ void EditorUI::RenderUI()
    {
       if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
-         if (m_gizmoOperation != ImGuizmo::NONE)
-            m_gizmoOperation = ImGuizmo::NONE; // Cancel current operation
+         if (m_gizmoOperation != ImGuizmo::OPERATION(0))
+            m_gizmoOperation = ImGuizmo::OPERATION(0); // Cancel current operation
          else if (m_selection.type != Selection::S_NONE)
             m_selection = Selection(); // Cancel current selection
       }
@@ -1103,7 +1103,7 @@ void EditorUI::UpdateOutlinerUI()
          if (edit->GetEditable()->GetItemType() == eItemPartGroup)
          {
             PartGroup *group = static_cast<PartGroup *>(edit->GetEditable());
-            const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+            const bool opened = ImGui::TreeNodeEx(edit->GetEditable()->GetName().c_str(), ImGuiTreeNodeFlags_AllowOverlap);
             if (m_table->m_liveBaseTable == nullptr)
             {
                ImGui::SameLine(eyeX);
@@ -1117,13 +1117,13 @@ void EditorUI::UpdateOutlinerUI()
          else
          {
             if (parent == nullptr && stack.empty())
-               stack.push_back({ nullptr, ImGui::TreeNodeEx("[Live Objects]", ImGuiTreeNodeFlags_AllowItemOverlap) });
+               stack.push_back({ nullptr, ImGui::TreeNodeEx("[Live Objects]", ImGuiTreeNodeFlags_AllowOverlap) });
             if (stack.back().opened)
             {
                Selection sel(edit);
                if (IsOutlinerFiltered(edit->GetEditable()->GetName()))
                {
-                  if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), m_selection == sel, ImGuiSelectableFlags_AllowItemOverlap))
+                  if (ImGui::Selectable((edit->GetEditable()->GetName() + "##Outliner"s + std::to_string(outlinerItem++)).c_str(), m_selection == sel, ImGuiSelectableFlags_AllowOverlap))
                      m_selection = sel;
                   IEditable* editable = edit->GetEditable();
                   if (editable && m_table->m_liveBaseTable == nullptr)

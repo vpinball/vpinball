@@ -176,7 +176,7 @@ private:
    } m_units = Units::VPX;
 
    // 3D editor
-   ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;
+   ImGuizmo::OPERATION m_gizmoOperation = (ImGuizmo::OPERATION)0;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool GetSelectionTransform(Matrix3D &transform) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
