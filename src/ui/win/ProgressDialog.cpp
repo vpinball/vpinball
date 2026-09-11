@@ -41,7 +41,7 @@ void ProgressDialog::SetProgress(const string &text, const float value)
 #ifndef __STANDALONE__
    if (IsWindow())
    {
-      auto* wtext = new CString(text.c_str());
+      auto* wtext = new CString(text);
       if (!PostMessage(WM_COMMAND, ID_SETTEXT, (LPARAM)wtext))
          delete wtext;
       if (value >= 0.f && m_progress != value)

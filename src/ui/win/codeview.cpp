@@ -2411,19 +2411,12 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
             pcv->UncolorError();
          pcv->m_table->SetDirtyScript(eSaveDirty);
 
+         // Called on every single edit, so fetch straight into the table's script
          const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-         if (cchar == 0)
-         {
-            pcv->m_table->m_script_text = "";
-         }
-         else
-         {
-            string script;
-            script.resize(cchar + 1); // Scintilla expects a buffer with an extra byte for the null terminator
-            ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
-            script.resize(cchar);
-            pcv->m_table->m_script_text = script;
-         }
+         string& script = pcv->m_table->m_script_text;
+         script.resize(cchar + 1); // Scintilla expects a buffer with an extra byte for the null terminator
+         ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)script.data());
+         script.resize(cchar); // remove that terminator again
          return TRUE;
       }
       case CBN_SETFOCUS:
