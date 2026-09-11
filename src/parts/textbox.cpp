@@ -325,7 +325,7 @@ void Textbox::Render(const unsigned int renderMask)
       }
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
       const vec3 color = m_texture->m_format == BaseTexture::BW_FP32 ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
-      m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,
+      m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, false, Renderer::Reinhard, nullptr,
          vec4(0.f, 0.f, 0.f, 0.f), vec3(1.f, 1.f, 1.f), 0.f,
          nullptr, vec4(), vec3(0.f, 0.f, 0.f));
       m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_DMDShader, vertices);

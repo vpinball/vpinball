@@ -1421,16 +1421,13 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetTechnique(ShaderTechnique::display_Seg_world);
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices,
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const bool addBlend, const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices,
    const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
-   #ifdef ENABLE_BGFX
-   if (m_dmdUseLegacyRenderer[profile])
-   #else
-   if (true)
-   #endif
+   if (IsLegacyDMDRenderer(profile))
    {
+      assert(!addBlend); // The legacy renderer has no additive blend encoding, it outputs a plain alpha blended color
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f);
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::glassArea, 0.f, 0.f, 1.f, 1.f);
@@ -1451,9 +1448,10 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::staticColor_Alpha,
          m_dmdUnlitDotColor[profile].x, m_dmdUnlitDotColor[profile].y, m_dmdUnlitDotColor[profile].z, // Unlit dot color (ambient)
          static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
-      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, 
+      m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time,
          static_cast<float>(dmd->width()), static_cast<float>(dmd->height()), // DMD size in dots
-         0.f, 0.f); // Unused
+         addBlend ? clamp(alpha, 0.00001f, 0.9999f) : 0.f, // 'modulate vs add' factor of the additive blend encoding, 0 selecting the plain opaque output instead (see fs_display.sc)
+         0.f); // Unused
       m_renderDevice->m_DMDShader->SetVector(ShaderUniform::displayProperties,
          dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f, // luminance or (s)RGB frame source
          0.5f * (1.0f + (1.0f / (2.0f /*N_SAMPLES*/ + 0.5f)) * m_dmdDotProperties[profile].x / 2.0f), // Internal SDF offset to obtain 0.5 at dot border, increasing inside, decreasing outside
@@ -1464,7 +1462,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
    }
 }
 
-void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha,
+void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const bool addBlend,
    const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
    const vec4& glassArea, const vec3& glassAmbient)
 {
@@ -1476,7 +1474,8 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, // unused
       static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
    m_renderDevice->m_DMDShader->SetVector(ShaderUniform::vRes_Alpha_time, static_cast<float>(crt->width()), static_cast<float>(crt->height()), // CRT size in pixels
-      0.f, 0.f); // Unused
+      addBlend ? clamp(alpha, 0.00001f, 0.9999f) : 0.f, // 'modulate vs add' factor of the additive blend encoding, 0 selecting the plain opaque output instead (see fs_display.sc)
+      0.f); // Unused
    // Which CRT emulation is picked, depends on the source resolution: Nuance-CRT for a 'modern' high res CRT (only Pinball 2000 for now, at 640px wide),
    // Lottes-CRT for the more ancient low resolution ones (Bally Vidpins, Mr. Games and Gottlieb Caveman are all 256px or less)
    constexpr unsigned int nuanceMinWidth = 384;
@@ -1490,7 +1489,8 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
                                      : profile == 1 ? SamplerFilter::SF_ANISOTROPIC
                                      : useNuanceCrt ? SamplerFilter::SF_BILINEAR
                                                     : SamplerFilter::SF_NONE;
-   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, crt.get(), false, displayFilter);
+   // NuanceCRT evaluates in 'display gamma' space throughout, so it is bound without sRGB decoding and the sampler hands back the stored values as they are
+   m_renderDevice->m_DMDShader->SetTexture(ShaderUniform::displayTex, crt.get(), useNuanceCrt, displayFilter);
    m_renderDevice->m_DMDShader->SetTechnique(useNuanceCrt ? ShaderTechnique::display_CRTnuance_world : ShaderTechnique::display_CRT_world);
 }
 
@@ -3172,7 +3172,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
 #if !defined(ENABLE_BGFX)
       return; // just to avoid a crash
 #endif
-      g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+      g_pplayer->m_renderer->SetupCRTRender(style - VPXDMDStyle_Pixelated, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, false, // Never additive, this path draws opaque (blending is disabled above)
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
          vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //
@@ -3180,7 +3180,7 @@ void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle 
    }
    else
    {
-      g_pplayer->m_renderer->SetupDMDRender(style, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, //
+      g_pplayer->m_renderer->SetupDMDRender(style, ctx->is2D, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha, false, // Never additive, this path draws opaque (blending is disabled above)
          isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, //
          vertices, vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
          vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH), //

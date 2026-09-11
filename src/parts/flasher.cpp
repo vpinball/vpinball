@@ -1293,6 +1293,32 @@ void Flasher::Render(const unsigned int renderMask)
 
    const vec4 color = convertColor(m_d.m_color, alpha * m_d.m_intensity_scale / 100.0f);
    const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+
+   // Blend state of the DMD and Display render modes (Alpha Segment uses max blending instead, see below). Select
+   // whether the selected shader implements the additive blend encoding, returns whether it ends up being used, which its setup needs to know as well
+   auto SetupDisplayBlend = [this](const bool canAddModulate) -> bool
+   {
+      RenderDevice *const rd = m_renderer->m_renderDevice;
+      // A 'modulate vs add' of 1 (or above) is a fully opaque display (which allows to skip blending)
+      if (m_d.m_modulate_vs_add >= 1.f)
+      {
+         rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         return false;
+      }
+      if (m_d.m_addBlend && canAddModulate)
+      {
+         // Additive blending which also modulates (darkens) the background, using the same scheme as the 'normal' Flasher
+         // render mode above: the shader packs both terms into its single output, see fs_display.sc
+         rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR);
+         rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
+         return true;
+      }
+      rd->EnableAlphaBlend(m_d.m_addBlend);
+      return false;
+   };
+
    switch (m_d.m_renderMode)
    {
       case FlasherData::FLASHER:
@@ -1383,14 +1409,12 @@ void Flasher::Render(const unsigned int renderMask)
          if (m_renderFrame != nullptr)
          {
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
-            if (m_d.m_modulate_vs_add < 1.f)
-               m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);
-            else
-               m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            const int dmdProfile = clamp(m_d.m_renderStyle, 0, 6); // 7 DMD profiles, see Renderer::m_dmdDotColor & co
+            // The legacy renderer has no additive blend encoding, it outputs a plain alpha blended color
+            const bool addModulate = SetupDisplayBlend(!m_renderer->IsLegacyDMDRenderer(dmdProfile));
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
-            const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-            m_renderer->SetupDMDRender(dmdProfile, m_desktopBackdrop, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupDMDRender(dmdProfile, m_desktopBackdrop, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, addModulate, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
@@ -1405,14 +1429,11 @@ void Flasher::Render(const unsigned int renderMask)
          {
             UploadRenderFrame(display);
             Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
-            if (m_d.m_modulate_vs_add < 1.f)
-               m_renderer->m_renderDevice->EnableAlphaBlend(m_d.m_addBlend);
-            else
-               m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            const bool addModulate = SetupDisplayBlend(true);
             m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
             const vec3 crtTint = vec3(color.x, color.y, color.z);
             const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
-            m_renderer->SetupCRTRender(crtProfile, m_desktopBackdrop, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
+            m_renderer->SetupCRTRender(crtProfile, m_desktopBackdrop, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, addModulate, m_desktopBackdrop ? Renderer::Reinhard : Renderer::Linear,
                m_transformedVertices.data(), vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode

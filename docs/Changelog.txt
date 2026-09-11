@@ -207,6 +207,8 @@ FEATURES:
 
 - backside lighting for normal-mapped parts
 
+- debug builds have now been "replaced" by release builds with debug info, so that stack traces show more usable info by default, and there is less to generate/compile in the github actions
+
 FIXES:
 
 - fix SMAA looking worse compared to 10.7.X, and slightly improve its quality in general

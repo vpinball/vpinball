@@ -288,7 +288,7 @@ void DisplayProfileSettingsPage::Render(float elapsed)
       }
       BaseTexture::Update(m_dmdTexture, 128, 32, BaseTexture::Format::BW_FP32, m_dmdTexture->data());
 
-      m_player->m_renderer->SetupDMDRender(m_selectedProfile, true, vec3(1.f, 1.f, 1.f), m_previewBrightness, m_dmdTexture, 1.0f, Renderer::Reinhard, nullptr, vec4(0.f, 0.f, 0.f, 0.f),
+      m_player->m_renderer->SetupDMDRender(m_selectedProfile, true, vec3(1.f, 1.f, 1.f), m_previewBrightness, m_dmdTexture, 1.0f, false, Renderer::Reinhard, nullptr, vec4(0.f, 0.f, 0.f, 0.f),
          vec3(1.f, 1.f, 1.f), 0.f, nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(0.f, 0.f, 0.f));
    }
    else
