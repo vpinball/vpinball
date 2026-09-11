@@ -194,6 +194,13 @@ public:
          Serum_SetIgnoreUnknownFramesTimeout(static_cast<uint16_t>(serumIgnoreUnknownFramesTimeoutProp_Get()));
          Serum_SetMaximumUnknownFramesToSkip(static_cast<uint8_t>(serumMaxUnknownFramesToSkipProp_Get()));
 
+         // Only when a size was actually disabled. The sizes finally published
+         // are reported later, once a frame has been colorized and their widths
+         // are known -- which is too late, and conditional on frames matching,
+         // for someone checking that the setting they just changed took effect.
+         if (!IsResolutionRequested(32) || !IsResolutionRequested(64))
+            LOGI(std::format("Colorization limited to {}px height by the DisabledSize setting", IsResolutionRequested(32) ? 32 : 64));
+
          // Say so when this colorization identifies DMD frames for the game, so
          // a consumer that can identify frames itself -- PUP is the one that
          // matters -- can switch its own matching off and take these instead of
