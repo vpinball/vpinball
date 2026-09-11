@@ -88,6 +88,39 @@ MSGPI_BOOL_VAL_SETTING(serumPupTriggersProp, "PupTriggers", "Report colorization
 // A display Serum can colorize, and FilterDmdSource can later accept for the selected controller
 static bool IsColorizableDmd(const DisplaySrcId& display) { return display.GetIdentifyFrame != nullptr && display.width >= 128; }
 
+// Does this display carry the selected controller's output, directly or through
+// a chain of overrides?
+//
+// Walking the chain rather than checking one hop is what makes an alphanumeric
+// game colorizable. There the DMD comes from alphadmd, which renders it out of
+// the controller's segment displays and names one of them in overrideId -- so
+// the override is not a display, no lookup in `items` can resolve it, and only
+// its endpointId says who it belongs to. Stopping at the first hop then misses
+// anything stacked on top of that, an upscaler for instance, and Serum declines
+// to colorize a display that is plainly the controller's.
+//
+// The endpointId comparison is what the walk is for: the chain is followed
+// until it reaches a resource the controller owns, and a chain that leaves
+// `items` without reaching one is somebody else's.
+static bool IsFromController(const DisplaySrcId& src, uint32_t controllerEndpointId, const std::vector<DisplaySrcId>& items, unsigned int depth = 0)
+{
+   // A malformed graph must not hang the caller. Real chains are two or three
+   // links -- controller, colorizer, upscaler -- so this only trips on a cycle.
+   constexpr unsigned int maxOverrideDepth = 8;
+   if (depth > maxOverrideDepth)
+      return false;
+   if (src.id.endpointId == controllerEndpointId)
+      return true;
+   if (src.overrideId.id == 0)
+      return false;
+   if (src.overrideId.endpointId == controllerEndpointId)
+      return true;
+   for (const DisplaySrcId& item : items)
+      if (item.id == src.overrideId)
+         return IsFromController(item, controllerEndpointId, items, depth + 1);
+   return false;
+}
+
 // Anything other than an exact 32 or 64 means "produce both", so a stray value
 // degrades to the default rather than to no output at all.
 static bool IsResolutionRequested(int rows)
@@ -149,39 +182,9 @@ private:
    void FilterDmdSource(std::vector<DisplaySrcId>& items)
    {
       // Only keep dmd corresponding to selected controller (or overrides to support alphanumeric rendered DMD for example)
-      // FIXME This resolves one shallow level, not the override chain.
-      //
-      // A display the controller owns outright, or one whose overrideId names a
-      // resource on the controller's endpoint. The second case exists because
-      // alphadmd builds a DMD out of segment displays: what it names there is
-      // not a display, so no lookup in this list can resolve it, and only the
-      // endpointId half of the id answers the question.
-      //
-      // The correct fix is to follow the whole override chain across resource
-      // types rather than stopping at the first hop, which needs resources to
-      // carry globally unique ids -- until then a chain that passes through a
-      // non-display resource more than once is still missed. This unblocks
-      // alphanumeric colorization, which was broken outright; it does not close
-      // the underlying bug.
-      const auto isFromControllerEndpoint = [&](const DisplaySrcId& src)
-      { return src.id.endpointId == m_controllerEndpointId || (src.overrideId.id != 0 && src.overrideId.endpointId == m_controllerEndpointId); };
-
-      const std::function<bool(const DisplaySrcId&)> isFromController = [&](const DisplaySrcId& src)
-      {
-         if (isFromControllerEndpoint(src))
-            return true;
-         // A longer chain: another plugin's output overriding a display that is
-         // itself derived from the controller.
-         if (src.overrideId.id != 0)
-            for (const DisplaySrcId& item : items)
-               if (item.id == src.overrideId)
-                  return isFromController(item);
-         return false;
-      };
-
       DisplaySrcId selected { };
       for (const DisplaySrcId& item : items)
-         if (isFromController(item) && IsColorizableDmd(item))
+         if (IsFromController(item, m_controllerEndpointId, items) && IsColorizableDmd(item))
             selected = item;
 
       items.clear();
@@ -524,17 +527,8 @@ static void SelectController(std::vector<ControllerDef>& items)
    for (const ControllerDef& controller : items)
    {
       const bool hasIdentifiableDmd = std::any_of(displays.begin(), displays.end(),
-         [&controller](const DisplaySrcId& display)
-         {
-            // FIXME One shallow level only, as in FilterDmdSource above: a
-            // display alphadmd built from this controller's segment displays is
-            // colorizable for it, and only the endpointId half of its overrideId
-            // says so. A deeper chain through a non-display resource is still
-            // missed.
-            return (display.id.endpointId == controller.endpointId
-                      || (display.overrideId.id != 0 && display.overrideId.endpointId == controller.endpointId))
-               && IsColorizableDmd(display);
-         });
+         [&controller, &displays](const DisplaySrcId& display)
+         { return IsFromController(display, controller.endpointId, displays) && IsColorizableDmd(display); });
       const std::string_view gameId = PinballPlugin::Controller::CtrlGetGameKey(controller.gameId);
       if (hasIdentifiableDmd && !gameId.empty() && !GetColorization(gameId).empty())
       {
