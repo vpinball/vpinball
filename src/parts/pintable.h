@@ -365,10 +365,9 @@ public:
    void ParseScript(const string &script, vector<string> &functions, vector<string> &identifiers, const std::function<void(const string &, int)>& onDuplicate) const;
    string AuditTable(bool log) const;
 
-   void ImportFont(HWND hwndListView, const string &filename);
-   void ListFonts(HWND hwndListView);
-   int AddListBinary(HWND hwndListView, PinBinary *ppb);
+   void AddFont(PinFont *const ppf);
    void RemoveFont(PinFont *const ppf);
+   const vector<PinFont *> &GetFontList() const { return m_vfont; }
 
 #ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
@@ -705,8 +704,6 @@ public:
 
    vector<VPX::Sound *> m_vsound;
 
-   vector<PinFont *> m_vfont;
-
    VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
@@ -841,6 +838,8 @@ private:
 
    PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it
    int m_loadTemp[5] = { 0, 0, 0, 0, 0 }; // Used to temporarily store the number of elements loaded for each type (subobjects, sounds, textures, fonts, collections) during loading phase
+
+   vector<PinFont *> m_vfont;
 
    ankerl::unordered_dense::set<std::string> m_loggedSoundErrors;
 

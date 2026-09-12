@@ -1179,6 +1179,50 @@ void PinTableWnd::ListCollections(HWND hwndListView)
    }
 }
 
+void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
+{
+#ifndef __STANDALONE__
+   PinFont *const ppb = new PinFont();
+
+   ppb->ReadFromFile(filename);
+
+   if (!ppb->m_buffer.empty())
+   {
+      m_table->AddFont(ppb);
+      const int index = AddListBinary(hwndListView, ppb);
+      ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
+      ppb->Register();
+   }
+#endif
+}
+
+void PinTableWnd::ListFonts(HWND hwndListView)
+{
+   const vector<PinFont *> &fonts = m_table->GetFontList();
+   for (size_t i = 0; i < fonts.size(); i++)
+      AddListBinary(hwndListView, fonts[i]);
+}
+
+int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)
+{
+#ifndef __STANDALONE__
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   lvitem.pszText = (LPSTR)ppb->m_name.c_str();
+   lvitem.lParam = (size_t)ppb;
+
+   const int index = ListView_InsertItem(hwndListView, &lvitem);
+
+   ListView_SetItemText_Safe(hwndListView, index, 1, ppb->m_path.string().c_str());
+
+   return index;
+#else
+   return 0;
+#endif
+}
+
 void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel)
 {
 #ifndef __STANDALONE__

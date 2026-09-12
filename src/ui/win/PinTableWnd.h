@@ -30,6 +30,10 @@ public:
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
 
+   void ImportFont(HWND hwndListView, const string &filename);
+   void ListFonts(HWND hwndListView);
+   int AddListBinary(HWND hwndListView, PinBinary *ppb);
+
    void Redraw();
    void SetDefaultView();
    void GetViewRect(FRect *pfrect) const;
