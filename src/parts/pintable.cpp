@@ -4736,32 +4736,6 @@ string PinTable::AuditTable(bool log) const
    return msg;
 }
 
-void PinTable::ListCustomInfo(HWND hwndListView)
-{
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      AddListItem(hwndListView, m_vCustomInfoTag[i], m_vCustomInfoContent[i], NULL);
-}
-
-int PinTable::AddListItem(HWND hwndListView, const string& szName, const string& szValue1, LPARAM lparam)
-{
-#ifndef __STANDALONE__
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)szName.c_str();
-   lvitem.lParam = lparam;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-
-   ListView_SetItemText_Safe(hwndListView, index, 1, szValue1.c_str());
-
-   return index;
-#else
-   return 0;
-#endif
-}
-
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 {
    *pVal = MakeWideBSTR(m_image);

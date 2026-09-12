@@ -365,9 +365,6 @@ public:
    void ParseScript(const string &script, vector<string> &functions, vector<string> &identifiers, const std::function<void(const string &, int)>& onDuplicate) const;
    string AuditTable(bool log) const;
 
-   void ListCustomInfo(HWND hwndListView);
-   int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
-
    void ImportFont(HWND hwndListView, const string &filename);
    void ListFonts(HWND hwndListView);
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
