@@ -4,10 +4,21 @@ set -e
 
 source ./platforms/config.sh
 
+# MSYS2 root for the MinGW builds (ffmpeg, libzip) and DLL copies. Prefer an override, then
+# the default install path, then derive via cygpath and accept only if the ucrt64 tree exists
+# (present in MSYS2, not git-bash/Cygwin) so installs outside /c/msys64 work automatically.
 if [ -z "${MSYS2_PATH}" ]; then
    MSYS2_PATH="/c/msys64"
+   if [ ! -d "${MSYS2_PATH}" ] && command -v cygpath >/dev/null 2>&1; then
+      _detected_msys2="$(cygpath -m /)"
+      if [ -d "${_detected_msys2}/ucrt64/bin" ]; then
+         MSYS2_PATH="${_detected_msys2}"
+      fi
+      unset _detected_msys2
+   fi
 fi
 
+export MSYS2_PATH
 export MSYSTEM=UCRT64
 
 echo "MSYS2_PATH: ${MSYS2_PATH}"
@@ -232,7 +243,11 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    sed -i.bak 's|\${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/openxr_loader|\${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/openxr_loader64|g' src/loader/CMakeLists.txt
    cmake \
       -G "Visual Studio 18 2026" \
+      -DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF \
+      -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=OFF \
+      -DPython3_EXECUTABLE="$(which python3)" \
       -DBUILD_TESTS=OFF \
+      -DBUILD_API_LAYERS=OFF \
       -DDYNAMIC_LOADER=ON \
       -DOPENXR_DEBUG_POSTFIX="" \
       -B build
