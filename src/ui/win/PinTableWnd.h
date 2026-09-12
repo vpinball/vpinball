@@ -26,6 +26,10 @@ public:
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
    void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
 
+   void NewCollection(const HWND hwndListView, const bool fFromSelection);
+   void ListCollections(HWND hwndListView);
+   int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
+
    void Redraw();
    void SetDefaultView();
    void GetViewRect(FRect *pfrect) const;

@@ -53,7 +53,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
     lvcol.cx = 100;
     ListView_InsertColumn(hListHwnd, 1, &lvcol);
 
-    pt->m_table->ListCollections(hListHwnd);
+    pt->ListCollections(hListHwnd);
     ListView_SetItemState(hListHwnd, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     GotoDlgCtrl(hListHwnd);
     return FALSE;
@@ -171,13 +171,13 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_NEW:
         {
-            pt->m_table->NewCollection(hListHwnd, false);
+            pt->NewCollection(hListHwnd, false);
             pt->m_table->SetNonUndoableDirty(eSaveDirty);
             break;
         }
         case IDC_CREATEFROMSELECTION:
         {
-            pt->m_table->NewCollection(hListHwnd, true);
+            pt->NewCollection(hListHwnd, true);
             pt->m_table->SetNonUndoableDirty(eSaveDirty);
             break;
         }

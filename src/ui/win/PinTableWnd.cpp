@@ -1112,6 +1112,73 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
 #endif
 }
 
+void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelection)
+{
+   CComObject<Collection> *pcol;
+   CComObject<Collection>::CreateInstance(&pcol);
+   pcol->AddRef();
+
+   pcol->m_wzName = m_table->GetUniqueName(LocalStringW(IDS_COLLECTION).m_buffer);
+
+   if (fromSelection && !m_table->MultiSelIsEmpty())
+   {
+      for (int i = 0; i < m_table->m_vmultisel.size(); i++)
+      {
+         ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
+         IEditable *const piedit = pisel->GetIEditable();
+         if (piedit)
+         {
+            if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
+            {
+               piedit->m_vCollection.push_back(pcol);
+               piedit->m_viCollection.push_back(pcol->m_visel.size());
+               pcol->m_visel.push_back(m_table->m_vmultisel.ElementAt(i));
+            }
+         }
+      }
+   }
+
+   const int index = AddListCollection(hwndListView, pcol);
+
+#ifndef __STANDALONE__
+   ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
+#endif
+
+   m_table->AddCollection(pcol);
+   pcol->Release();
+}
+
+int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
+{
+#ifndef __STANDALONE__
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   string name = MakeString(pcol->m_wzName);
+   lvitem.pszText = name.data();
+   lvitem.lParam = (size_t)pcol;
+
+   const int index = ListView_InsertItem(hwndListView, &lvitem);
+   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->m_visel.size()).c_str());
+   return index;
+#else
+   return 0;
+#endif
+}
+
+void PinTableWnd::ListCollections(HWND hwndListView)
+{
+   //ListView_DeleteAllItems(hwndListView);
+
+   for (int i = 0; i < m_table->m_vcollection.size(); i++)
+   {
+      CComObject<Collection> *const pcol = m_table->m_vcollection.ElementAt(i);
+
+      AddListCollection(hwndListView, pcol);
+   }
+}
+
 void PinTableWnd::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel)
 {
 #ifndef __STANDALONE__

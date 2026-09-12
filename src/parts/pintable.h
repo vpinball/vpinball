@@ -370,10 +370,6 @@ public:
    int AddListBinary(HWND hwndListView, PinBinary *ppb);
    void RemoveFont(PinFont *const ppf);
 
-   void NewCollection(const HWND hwndListView, const bool fFromSelection);
-   void ListCollections(HWND hwndListView);
-   int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-
 #ifndef __STANDALONE__
    void DoCommand(int icmd, int x, int y) final;
 #endif
