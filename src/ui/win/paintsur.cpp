@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "paintsur.h"
 
+#include "core/ISelect.h"
+#include "PinTableWnd.h"
+#include "WinEditor.h"
 #include <WinGDI.h> // for AlphaBlend()
 #pragma comment(lib, "Msimg32.lib") // dto.
 
@@ -10,13 +13,33 @@
 static POINT m_ptCache[MAX_SUR_PT_CACHE * 2];
 static const vector<DWORD> m_ptCache_idx(MAX_SUR_PT_CACHE * 2, 2);
 
-PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel)
-   : Sur(hdc, zoom, offx, offy, width, height)
+PaintSur::PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, PinTableWnd *pTableWnd, ISelect *const psel)
+   : Sur(zoom, offx, offy, width, height)
 {
+   m_hdc = hdc;
    m_hbr = CreateSolidBrush(RGB(255, 255, 255));
    m_hpnOutline = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
    m_hpnLine = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
    m_psel = psel;
+   m_pTableWnd = pTableWnd;
+}
+
+COLORREF PaintSur::GetSelectColor() const
+{
+   if (m_pTableWnd && m_pTableWnd->m_vpxEditor)
+   {
+      return m_pTableWnd->m_vpxEditor->m_elemSelectColor;
+   }
+   return RGB(0, 0, 255); // Default blue fallback
+}
+
+COLORREF PaintSur::GetSelectLockedColor() const
+{
+   if (m_pTableWnd && m_pTableWnd->m_vpxEditor)
+   {
+      return m_pTableWnd->m_vpxEditor->m_elemSelectLockedColor;
+   }
+   return RGB(128, 128, 128); // Default gray fallback
 }
 
 PaintSur::~PaintSur()
@@ -31,10 +54,10 @@ PaintSur::~PaintSur()
 
 void PaintSur::Line(const float x, const float y, const float x2, const float y2)
 {
-   const int ix = SCALEXf(x);
-   const int iy = SCALEYf(y);
-   const int ix2 = SCALEXf(x2);
-   const int iy2 = SCALEYf(y2);
+   const int ix = ScaleX(x);
+   const int iy = ScaleY(y);
+   const int ix2 = ScaleX(x2);
+   const int iy2 = ScaleY(y2);
 
    SelectObject(m_hdc, m_hpnLine);
 
@@ -45,10 +68,10 @@ void PaintSur::Line(const float x, const float y, const float x2, const float y2
 
 void PaintSur::Rectangle(const float x, const float y, const float x2, float y2)
 {
-   const int ix = SCALEXf(x);
-   const int iy = SCALEYf(y);
-   const int ix2 = SCALEXf(x2);
-   const int iy2 = SCALEYf(y2);
+   const int ix = ScaleX(x);
+   const int iy = ScaleY(y);
+   const int ix2 = ScaleX(x2);
+   const int iy2 = ScaleY(y2);
 
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
@@ -69,9 +92,9 @@ void PaintSur::Rectangle2(const int x, const int y, const int x2, const int y2)
 
 void PaintSur::Ellipse(float centerx, float centery, float radius)
 {
-   const int ix = SCALEXf(centerx);
-   const int iy = SCALEYf(centery);
-   const int ir = SCALEDf(radius);
+   const int ix = ScaleX(centerx);
+   const int iy = ScaleY(centery);
+   const int ir = ScaleD(radius);
 
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
@@ -81,8 +104,8 @@ void PaintSur::Ellipse(float centerx, float centery, float radius)
 
 void PaintSur::Ellipse2(const float centerx, const float centery, const int radius)
 {
-   const int ix = SCALEXf(centerx);
-   const int iy = SCALEYf(centery);
+   const int ix = ScaleX(centerx);
+   const int iy = ScaleY(centery);
    const int ir = radius;
 
    SelectObject(m_hdc, m_hbr);
@@ -97,8 +120,8 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 
    for (int i = 0; i < count; i++)
    {
-      rgpt[i].x = SCALEXf(rgv[i].x);
-      rgpt[i].y = SCALEYf(rgv[i].y);
+      rgpt[i].x = ScaleX(rgv[i].x);
+      rgpt[i].y = ScaleY(rgv[i].y);
    }
 
    SelectObject(m_hdc, m_hbr);
@@ -114,8 +137,8 @@ void PaintSur::Polygon(const vector<RenderVertex> &rgv)
 
    for (size_t i = 0; i < rgv.size(); i++)
    {
-      rgpt[i].x = SCALEXf(rgv[i].x);
-      rgpt[i].y = SCALEYf(rgv[i].y);
+      rgpt[i].x = ScaleX(rgv[i].x);
+      rgpt[i].y = ScaleY(rgv[i].y);
    }
 
    SelectObject(m_hdc, m_hbr);
@@ -137,10 +160,10 @@ void PaintSur::Polygon(const vector<RenderVertex> &rgv)
 void PaintSur::PolygonImage(
    const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
-   int ix = SCALEXf(left);
-   int iy = SCALEYf(top);
-   int ix2 = SCALEXf(right);
-   int iy2 = SCALEYf(bottom);
+   int ix = ScaleX(left);
+   int iy = ScaleY(top);
+   int ix2 = ScaleX(right);
+   int iy2 = ScaleY(bottom);
 
    // Clamp destination rect to a safe GDI range (with margin)
    constexpr int GDI_LIMIT = 16383; // GDI is based on shorts, within -32768 / 32767. We apply simple limits that leads to height/width within this range (twice the limit)
@@ -169,8 +192,8 @@ void PaintSur::PolygonImage(
       vector<POINT> rgpt(rgv.size());
       for (size_t i = 0; i < rgv.size(); i++)
       {
-         rgpt[i].x = SCALEXf(rgv[i].x);
-         rgpt[i].y = SCALEYf(rgv[i].y);
+         rgpt[i].x = ScaleX(rgv[i].x);
+         rgpt[i].y = ScaleY(rgv[i].y);
       }
 
       const HRGN hrgn = CreatePolygonRgn(rgpt.data(), (int)rgv.size(), WINDING);
@@ -216,8 +239,8 @@ void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 
       for (int i2 = 0; i2 < batchSize; i2++)
       {
-         m_ptCache[i2].x = SCALEXf(rgv[i + i2].x);
-         m_ptCache[i2].y = SCALEYf(rgv[i + i2].y);
+         m_ptCache[i2].x = ScaleX(rgv[i + i2].x);
+         m_ptCache[i2].y = ScaleY(rgv[i + i2].y);
       }
 
       ::Polyline(m_hdc, m_ptCache, batchSize);
@@ -239,8 +262,8 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
 
       for (int i2 = 0; i2 < batchSize * 2; i2++)
       {
-         m_ptCache[i2].x = SCALEXf(rgv[i * 2 + i2].x);
-         m_ptCache[i2].y = SCALEYf(rgv[i * 2 + i2].y);
+         m_ptCache[i2].x = ScaleX(rgv[i * 2 + i2].x);
+         m_ptCache[i2].y = ScaleY(rgv[i * 2 + i2].y);
       }
 
       ::PolyPolyline(m_hdc, m_ptCache, m_ptCache_idx.data(), batchSize);
@@ -249,14 +272,14 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
 
 void PaintSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 {
-   const int ix = SCALEXf(x);
-   const int iy = SCALEYf(y);
-   const int ir = SCALEDf(radius);
+   const int ix = ScaleX(x);
+   const int iy = ScaleY(y);
+   const int ir = ScaleD(radius);
 
-   const int x1 = SCALEXf(pt1x);
-   const int y1 = SCALEYf(pt1y);
-   const int x2 = SCALEXf(pt2x);
-   const int y2 = SCALEYf(pt2y);
+   const int x1 = ScaleX(pt1x);
+   const int y1 = ScaleY(pt1y);
+   const int x2 = ScaleX(pt2x);
+   const int y2 = ScaleY(pt2y);
 
    SelectObject(m_hdc, m_hpnLine);
 
@@ -265,10 +288,10 @@ void PaintSur::Arc(const float x, const float y, const float radius, const float
 
 void PaintSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
 {
-   const int ix = SCALEXf(x);
-   const int iy = SCALEYf(y);
-   const int ix2 = SCALEXf(x2);
-   const int iy2 = SCALEYf(y2);
+   const int ix = ScaleX(x);
+   const int iy = ScaleY(y);
+   const int ix2 = ScaleX(x2);
+   const int iy2 = ScaleY(y2);
 
    SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcSrc, 0, 0, width, height, SRCCOPY);
@@ -278,17 +301,38 @@ void PaintSur::SetObject(ISelect * const psel)
 {
    if ((m_psel != nullptr) && (psel != nullptr)) // m_psel can be null when rendering a blueprint or other item which has no selection feedback
    {
-      if (psel->m_selectstate == ISelect::SelectState::Selected)
+      const bool isLocked = psel->IsUILocked();
+      const COLORREF selectColor = isLocked ? PaintSur::GetSelectLockedColor() : PaintSur::GetSelectColor();
+
+      if (psel->GetItemType() == eItemDragPoint)
       {
-         psel->SetSelectFormat(this);
+         // DragPoint uses fill colors instead of line/border colors
+         if (psel->m_selectstate == ISelect::SelectState::Selected)
+         {
+            SetFillColor(RGB(150, 200, 255));
+         }
+         else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
+         {
+            SetFillColor(RGB(200, 225, 255));
+         }
       }
-      else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
+      else
       {
-         psel->SetMultiSelectFormat(this);
-      }
-      else if (psel->IsUILocked())
-      {
-         psel->SetLockedFormat(this);
+         if (psel->m_selectstate == ISelect::SelectState::Selected)
+         {
+            SetBorderColor(selectColor, false, 4);
+            SetLineColor(selectColor, false, 4);
+         }
+         else if (psel->m_selectstate == ISelect::SelectState::MultiSelected)
+         {
+            SetBorderColor(selectColor, false, 3);
+            SetLineColor(selectColor, false, 3);
+         }
+         else if (isLocked)
+         {
+            SetBorderColor(PaintSur::GetSelectLockedColor(), false, 1);
+            SetLineColor(PaintSur::GetSelectLockedColor(), false, 1);
+         }
       }
    }
 }

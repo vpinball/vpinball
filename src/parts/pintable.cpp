@@ -4055,7 +4055,7 @@ Vertex2D PinTable::TransformPoint(int x, int y) const
 #else
    const CRect rc(m_left, m_top, m_right, m_bottom);
 #endif
-   const HitSur phs(nullptr, m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+   const HitSur phs(m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    const Vertex2D result = phs.ScreenToSurface(x, y);
 

@@ -4,7 +4,6 @@
 #include "dragpoint.h"
 
 #include "parts/pintable.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
@@ -471,16 +470,6 @@ void DragPoint::DoCommand(int icmd, int x, int y)
    }
 }
 #endif
-
-void DragPoint::SetSelectFormat(Sur *psur)
-{
-   psur->SetFillColor(RGB(150, 200, 255));
-}
-
-void DragPoint::SetMultiSelectFormat(Sur *psur)
-{
-   psur->SetFillColor(RGB(200, 225, 255));
-}
 
 STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
 {

@@ -389,6 +389,7 @@ set(VPX_SOURCES
    src/ui/win/hitrectsur.h
    src/ui/win/hitsur.cpp
    src/ui/win/hitsur.h
+   src/ui/win/sur.h
    src/ui/win/PinTableMDI.cpp
    src/ui/win/PinTableMDI.h
    src/ui/win/PinTableWnd.cpp
