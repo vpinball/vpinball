@@ -194,7 +194,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       VPApp theApp;
       CommandLineProcessor cmdLine;
       cmdLine.ProcessCommandLine();
-      theApp.InitInstance();
+      theApp.InitInstance(dynamic_cast<PlayTableCommand*>(cmdLine.m_command.get()) != nullptr);
 
       // The video subsystem is initialized lazily when a window is created (see VPX::Window), so
       // headless commands (info, script/POV export, audit, tournament validation) run without a

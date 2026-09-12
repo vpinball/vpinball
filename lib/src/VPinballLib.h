@@ -52,7 +52,6 @@ public:
    static void SendEvent(VPINBALL_EVENT event, void* data);
    static void PlayRumble(float lowFrequencySpeed, float highFrequencySpeed, unsigned int durationMs);
    void Log(VPINBALL_LOG_LEVEL level, const string& message);
-   void ResetLog();
    int LoadValueInt(const string& sectionName, const string& key, int defaultValue);
    void SaveValueInt(const string& sectionName, const string& key, int value);
    float LoadValueFloat(const string& sectionName, const string& key, float defaultValue);

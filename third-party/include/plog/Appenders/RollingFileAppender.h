@@ -101,6 +101,15 @@ namespace plog
             m_firstWrite = false;
         }
 
+        void truncate()
+        {
+            util::MutexLock lock(m_mutex);
+            m_file.close();
+            util::File::unlink(buildFileName());
+            openLogFile();
+            m_firstWrite = false;
+        }
+
     private:
         void openLogFile()
         {

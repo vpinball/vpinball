@@ -907,6 +907,9 @@ void WinEditor::DoPlay(const int playMode)
       return;
    }
 
+   if (playMode == 0 && g_app->m_settings.GetStandalone_ResetLogOnPlay())
+      Logger::Truncate();
+
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
 
    // Create the player on a (shallow) copy of the table, that will be animated by the script, animations, ...
