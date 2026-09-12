@@ -1193,6 +1193,8 @@ void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
       ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
       ppb->Register();
    }
+   else
+      delete ppb;
 #endif
 }
 
