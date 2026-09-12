@@ -1200,9 +1200,8 @@ void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
 
 void PinTableWnd::ListFonts(HWND hwndListView)
 {
-   const vector<PinFont *> &fonts = m_table->GetFontList();
-   for (size_t i = 0; i < fonts.size(); i++)
-      AddListBinary(hwndListView, fonts[i]);
+   for (PinFont *font : m_table->GetFontList())
+      AddListBinary(hwndListView, font);
 }
 
 int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)

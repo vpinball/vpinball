@@ -2466,23 +2466,32 @@ void PinTable::Load(IObjectReader& reader)
             // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
             if (reader.GetVersion() < 1080 || m_materials.size() == m_numMaterials)
             {
+               // MATE and PHMA records are saved as parallel arrays, so physics properties can be applied by index.
+               // The name based fallback must use an exact match as old tables may contain material names that only differ by their case.
+               const bool applyByIndex = m_materials.size() == m_numMaterials;
                for (int i = 0; i < m_numMaterials; i++)
                {
-                  bool found = true;
-                  Material *pmat = GetMaterial(mats[i].szName);
-                  if (pmat == m_dummyMaterial.get())
+                  Material *pmat = nullptr;
+                  if (applyByIndex)
+                     pmat = m_materials[i];
+                  else
+                     for (Material *mat : m_materials)
+                        if (mat->m_name == mats[i].szName)
+                        {
+                           pmat = mat;
+                           break;
+                        }
+                  if (pmat == nullptr)
                   {
                      assert(!"SaveMaterial not found");
                      pmat = new Material();
                      pmat->m_name = mats[i].szName;
-                     found = false;
+                     m_materials.push_back(pmat);
                   }
                   pmat->m_fElasticity = mats[i].fElasticity;
                   pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
                   pmat->m_fFriction = mats[i].fFriction;
                   pmat->m_fScatterAngle = mats[i].fScatterAngle;
-                  if (!found)
-                     m_materials.push_back(pmat);
                }
             }
             break;
@@ -2543,6 +2552,19 @@ void PinTable::Load(IObjectReader& reader)
          }
          return true;
       });
+
+   // Detect & remove duplicate material names (differing only by case), keeping the last loaded
+   // one as it is the one the player resolves to (the material lookup map keeps the last entry)
+   for (size_t i = 0; i < m_materials.size(); ++i)
+      for (size_t i2 = i + 1; i2 < m_materials.size(); ++i2)
+         if (StrCompareNoCase(m_materials[i]->m_name, m_materials[i2]->m_name))
+         {
+            PLOGW << "Duplicate material name found: " << m_materials[i]->m_name << ", dropping it!";
+            delete m_materials[i];
+            m_materials.erase(m_materials.begin() + i);
+            --i;
+            break;
+         }
 }
 
 bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
@@ -4167,7 +4189,7 @@ void PinTable::ListMaterials(HWND hwndListView)
 bool PinTable::IsMaterialNameUnique(const string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_name == name)
+      if (StrCompareNoCase(m_materials[i]->m_name, name))
          return false;
 
    return true;
@@ -4191,7 +4213,7 @@ Material* PinTable::GetMaterial(const string &name) const
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_name == name)
+      if (StrCompareNoCase(m_materials[i]->m_name, name))
          return m_materials[i];
 
    return m_dummyMaterial.get();
