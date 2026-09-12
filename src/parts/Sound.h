@@ -69,7 +69,7 @@ private:
    int m_volume = 0;
    int m_pan = 0;
    int m_frontRearFade = 0;
-   SoundOutTypes m_outputTarget = SoundOutTypes::SNDOUT_BACKGLASS; //Is it table sound device or BG sound device.
+   SoundOutTypes m_outputTarget = SoundOutTypes::SNDOUT_TABLE;
 };
 
 }
