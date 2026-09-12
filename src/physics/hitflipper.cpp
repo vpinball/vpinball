@@ -998,10 +998,26 @@ void HitFlipper::Collide(const CollisionEvent& coll)
          m_flipperMover.m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit); // simple hit event
       else
          m_flipperMover.m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
-      g_pplayer->m_pininput.PlayFlipperContactRumble(bnv);
    }
 
+   const uint32_t sinceLastContact = g_pplayer->m_time_msec - m_last_hittime;
    m_last_hittime = g_pplayer->m_time_msec; // keep resetting until idle for 250 milliseconds
+
+   // Haptics use their own trigger rather than the script event gate above: that gate counts from the last
+   // contact of any kind, and a ball resting on the raised flipper touches it every few milliseconds, so the
+   // slap that follows never qualified. Contacts less than 80 ms apart form one sequence: its first contact
+   // always plays, later ones only when they exceed the strongest impact of the sequence by a unit, so a slap
+   // (collisions with rising impact) follows to its peak while a resting ball stays silent.
+   if (bnv < -0.25f)
+   {
+      if (sinceLastContact > 80)
+         m_rumblePeak = 0.f;
+      if (m_rumblePeak == 0.f || -bnv > m_rumblePeak + 1.f)
+      {
+         m_rumblePeak = -bnv;
+         g_pplayer->m_pininput.PlayFlipperContactRumble(bnv);
+      }
+   }
 
 #ifdef DEBUG_FLIPPERS
    PLOGD << "   ---- after collision ----\n";

@@ -69,6 +69,12 @@ InputManager::InputManager(Player* player)
 
    m_rumbleMode = g_app->m_settings.GetPlayer_RumbleMode();
    m_rumbleFlipperContact = g_app->m_settings.GetPlayer_RumbleFlipperContact();
+   m_rumbleBumper = g_app->m_settings.GetPlayer_RumbleBumper();
+   m_rumbleSlingshot = g_app->m_settings.GetPlayer_RumbleSlingshot();
+   m_rumblePlunger = g_app->m_settings.GetPlayer_RumblePlunger();
+   m_rumbleFlipperButton = g_app->m_settings.GetPlayer_RumbleFlipperButton();
+   m_rumbleNudge = g_app->m_settings.GetPlayer_RumbleNudge();
+   m_rumbleBallBall = g_app->m_settings.GetPlayer_RumbleBallBall();
 
    // Load settings
    LoadDevicesFromSettings();
@@ -414,6 +420,8 @@ void InputManager::ProcessInput()
    for (const auto& handler : m_inputHandlers)
       handler->Update();
 
+   UpdateRumble();
+
    // Handle automatic start
    if (m_player->m_ptable->m_tblAutoStartEnabled)
       Autostart(m_player->m_ptable->m_tblAutoStart, m_player->m_ptable->m_tblAutoStartRetry);
@@ -703,12 +711,8 @@ void InputManager::CreateInputActions()
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
                return;
-            if (isPressed)
-            {
-               m_player->m_pininput.PlayRumble(0.f, 0.2f, 150);
-               if (m_player->IsPlaying())
-                  SDL_HideCursor();
-            }
+            if (isPressed && m_player->IsPlaying())
+               SDL_HideCursor();
          
             if (action.GetActionId() == m_leftFlipperActionId)
                m_leftFlipperLastChangePollDelay = m_player->m_logicProfiler.GetPrev(FrameProfiler::ProfileSection::PROFILE_INPUT_POLL_PERIOD);
@@ -1127,17 +1131,134 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
    if (m_rumbleMode == 0)
       return;
 
+   // SDL_RumbleJoystick cancels whatever is playing on every call, so forwarding calls as they come lets the last
+   // caller win, however weak (a plunger release calls every 2 ms while its spring rings down). Pulses are
+   // therefore collected here and mixed per motor.
+   // A slider that did not quite reach zero must not leave a faint pulse behind once the motor curve lifts it
+   float low = saturate(lowFrequencySpeed);
+   float high = saturate(highFrequencySpeed);
+   if (low < RUMBLE_OFF_LEVEL)
+      low = 0.f;
+   if (high < RUMBLE_OFF_LEVEL)
+      high = 0.f;
+   if (low <= 0.f && high <= 0.f)
+      return;
+   // Map onto the range the motors actually render (see RUMBLE_MOTOR_FLOOR)
+   if (low > 0.f)
+      low = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * low;
+   if (high > 0.f)
+      high = RUMBLE_MOTOR_FLOOR + (1.f - RUMBLE_MOTOR_FLOOR) * high;
+   const uint32_t now = msec();
+
+   std::lock_guard<std::mutex> lock(m_rumbleMutex);
+   // Take a free slot. With all slots busy, a pulse that would not change the mix - no stronger on either motor
+   // and not outlasting it - is not needed; anything else replaces the weakest.
+   const uint32_t endMs = now + static_cast<uint32_t>(max(ms_duration, 1));
+   int slot = -1;
+   float weakest = 2.f;
+   float mixLow = 0.f;
+   float mixHigh = 0.f;
+   uint32_t mixEndMs = 0;
+   for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
+   {
+      const RumblePulse& p = m_rumblePulses[i];
+      if (p.endMs <= now)
+      {
+         slot = i;
+         break;
+      }
+      mixLow = max(mixLow, p.low);
+      mixHigh = max(mixHigh, p.high);
+      mixEndMs = max(mixEndMs, p.endMs);
+      if (max(p.low, p.high) < weakest)
+      {
+         weakest = max(p.low, p.high);
+         slot = i;
+      }
+   }
+   if (m_rumblePulses[slot].endMs > now && low <= mixLow && high <= mixHigh && endMs <= mixEndMs)
+      return;
+   m_rumblePulses[slot] = { low, high, endMs };
+   // A pulse that the new one covers on both motors is over: its event has been superseded, and letting it
+   // resurface once the new pulse ends would play a vibration for something long past
+   for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
+      if (i != slot && m_rumblePulses[i].endMs > now && m_rumblePulses[i].low <= low && m_rumblePulses[i].high <= high)
+         m_rumblePulses[i].endMs = now;
+   UpdateRumbleOutput(now);
+}
+
+void InputManager::UpdateRumble()
+{
+   std::lock_guard<std::mutex> lock(m_rumbleMutex);
+   if (m_rumbleMode == 0)
+   {
+      // Switched off while something was playing: silence the device and forget the pulses
+      if (m_rumbleSentLow != 0.f || m_rumbleSentHigh != 0.f)
+      {
+         for (RumblePulse& p : m_rumblePulses)
+            p.endMs = 0;
+         UpdateRumbleOutput(msec());
+      }
+      return;
+   }
+   UpdateRumbleOutput(msec());
+}
+
+void InputManager::UpdateRumbleOutput(const uint32_t now)
+{
+   // Strongest active pulse per motor; the output lasts until the last active pulse ends and is re-evaluated
+   // every frame, so it steps down to the next pulse once the strongest has run out.
+   float low = 0.f;
+   float high = 0.f;
+   uint32_t endMs = 0;
+   for (const RumblePulse& p : m_rumblePulses)
+   {
+      if (p.endMs <= now)
+         continue;
+      low = max(low, p.low);
+      high = max(high, p.high);
+      endMs = max(endMs, p.endMs);
+   }
+   // Start kick: a step up of the mix is driven at RUMBLE_KICK_GAIN times the level for RUMBLE_KICK_MS first. It
+   // goes with every step up, not only with the start from rest, so a ball hit that follows the flipper solenoid
+   // pulse still stands out; only levels meant as a hit get it, a light touch stays light. The step is measured
+   // against the mix before any kick, otherwise a hit arriving during another event's kick would count as a
+   // step down.
+   if (low >= RUMBLE_KICK_MIN_LEVEL && low - m_rumbleMixLow >= RUMBLE_KICK_STEP)
+      m_rumbleKickLowEndMs = now + RUMBLE_KICK_MS;
+   else if (low < m_rumbleMixLow)
+      m_rumbleKickLowEndMs = 0; // the pulse that earned the kick is over; a weaker remainder must not be doubled
+   if (high >= RUMBLE_KICK_MIN_LEVEL && high - m_rumbleMixHigh >= RUMBLE_KICK_STEP)
+      m_rumbleKickHighEndMs = now + RUMBLE_KICK_MS;
+   else if (high < m_rumbleMixHigh)
+      m_rumbleKickHighEndMs = 0;
+   m_rumbleMixLow = low;
+   m_rumbleMixHigh = high;
+   if (low > 0.f && now < m_rumbleKickLowEndMs)
+      low = min(1.f, low * RUMBLE_KICK_GAIN);
+   if (high > 0.f && now < m_rumbleKickHighEndMs)
+      high = min(1.f, high * RUMBLE_KICK_GAIN);
+   if (low == m_rumbleSentLow && high == m_rumbleSentHigh && endMs == m_rumbleSentEndMs)
+      return;
+   m_rumbleSentLow = low;
+   m_rumbleSentHigh = high;
+   m_rumbleSentEndMs = endMs;
+   SendRumble(low, high, (endMs > now) ? static_cast<int>(endMs - now) : 0);
+}
+
+void InputManager::SendRumble(const float low, const float high, const int ms_duration)
+{
    for (const auto& handler : m_inputHandlers)
-      handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
+      handler->PlayRumble(low, high, ms_duration);
 
    #if defined(__LIBVPINBALL__) && defined(__APPLE__)
-      VPinballLib::VPinballLib::PlayRumble(saturate(lowFrequencySpeed), saturate(highFrequencySpeed), (unsigned int)ms_duration);
+      VPinballLib::VPinballLib::PlayRumble(low, high, (unsigned int)ms_duration);
    #endif
 }
 
 void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
 {
-   if (m_rumbleFlipperContact <= 0.f)
+   if (m_rumbleFlipperContact < RUMBLE_OFF_LEVEL)
       return;
 
    // A relative normal velocity of roughly 17 units corresponds to a hard hit. Both motors are
@@ -1145,6 +1266,90 @@ void InputManager::PlayFlipperContactRumble(const float normalImpactSpeed)
    // gamepads.
    const float impact = clamp(fabsf(normalImpactSpeed) * 0.06f, 0.05f, 1.f);
    PlayRumble(impact * 0.8f * m_rumbleFlipperContact, impact * m_rumbleFlipperContact, 120);
+}
+
+void InputManager::PlayBumperRumble()
+{
+   if (m_rumbleBumper < RUMBLE_OFF_LEVEL)
+      return;
+   // The former fixed 0.10/0.05 for 100 ms is below what the motors render
+   PlayRumble(0.6f * m_rumbleBumper, 0.35f * m_rumbleBumper, 150);
+}
+
+void InputManager::PlaySlingshotRumble()
+{
+   if (m_rumbleSlingshot < RUMBLE_OFF_LEVEL)
+      return;
+   // 0.5 was still missed now and then, twice that always comes through
+   PlayRumble(0.8f * m_rumbleSlingshot, 0.5f * m_rumbleSlingshot, 150);
+}
+
+void InputManager::PlayPlungerRumble(const float fireSpeed)
+{
+   if (m_rumblePlunger < RUMBLE_OFF_LEVEL)
+      return;
+   // fireSpeed is signed (negative on the forward stroke) and PlayRumble saturates to 0..1, so the strongest
+   // bounce, the one that strikes the ball, used to be clamped to silence: only the magnitude matters. 0.15
+   // rather than the former 0.05 so the spring rebounds are felt as the rattle after the strike.
+   const float speed = fabsf(fireSpeed) * 0.15f;
+   PlayRumble(speed * m_rumblePlunger, speed * m_rumblePlunger, 60);
+}
+
+void InputManager::PlayPlungerLaunchRumble(const float impact)
+{
+   if (m_rumblePlunger < RUMBLE_OFF_LEVEL)
+      return;
+   // A launch shakes the whole cabinet, so at full impact this is the longest and strongest pulse; a ball
+   // rolling back onto the tip is a short light clack.
+   const float i = clamp(impact, 0.f, 1.f);
+   if (i <= 0.f)
+      return;
+   // A short pulse is only felt with the start kick, so a light contact is told apart from the strike by its
+   // length (the kick alone, 80 ms) rather than by a lower level; the full strike runs 250 ms
+   const float s = (0.45f + 0.55f * i) * m_rumblePlunger;
+   PlayRumble(s, 0.6f * s, 80 + static_cast<int>(170.f * i));
+}
+
+void InputManager::PlayFlipperButtonRumble()
+{
+   if (m_rumbleFlipperButton < RUMBLE_OFF_LEVEL)
+      return;
+   // A solenoid is a thump, not a buzz, so both motors carry it. Kept below the kick level on purpose: the
+   // ball hit that follows a few tens of milliseconds later is the bigger event and must stand out.
+   PlayRumble(0.35f * m_rumbleFlipperButton, 0.2f * m_rumbleFlipperButton, 150);
+}
+
+void InputManager::PlayBallBallRumble(const float impactSpeed)
+{
+   if (m_rumbleBallBall < RUMBLE_OFF_LEVEL)
+      return;
+   // Same scale as the flipper contact (roughly 17 units for a hard hit). Steel on steel is a short, sharp clack,
+   // so the high frequency motor carries most of it.
+   const float impact = clamp(fabsf(impactSpeed) * 0.06f, 0.08f, 1.f);
+   PlayRumble(impact * 0.35f * m_rumbleBallBall, impact * 0.9f * m_rumbleBallBall, 70);
+}
+
+void InputManager::PlayNudgeRumble(const Vertex2D& cabinetAcceleration)
+{
+   if (m_nudgeRumbleCooldownMs > 0)
+   {
+      m_nudgeRumbleCooldownMs--;
+      return;
+   }
+   if (m_rumbleNudge < RUMBLE_OFF_LEVEL)
+      return;
+
+   // The nudge models settle on 0.5g as the peak of a strong nudge, and the intent handler ignores anything below
+   // 1 m/s^2, so the same bounds are used here. The cooldown keeps the decaying cabinet oscillation from retriggering.
+   constexpr float thresholdAcceleration = 1.f; // m/s^2
+   constexpr float fullAcceleration = 0.5f * 9.80665f; // m/s^2
+   const float acceleration = cabinetAcceleration.Length();
+   if (acceleration < thresholdAcceleration)
+      return;
+
+   const float impact = clamp(acceleration / fullAcceleration, 0.1f, 1.f);
+   PlayRumble(impact * m_rumbleNudge, impact * 0.5f * m_rumbleNudge, 80);
+   m_nudgeRumbleCooldownMs = 200;
 }
 
 void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
