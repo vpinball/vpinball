@@ -136,7 +136,7 @@ void PinTableWnd::SetMyScrollInfo()
 
    const CRect rc = GetClientRect();
 
-   const HitSur phs(nullptr, GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+   const HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    Vertex2D rgv[2];
    rgv[0] = phs.ScreenToSurface(rc.left, rc.top);
@@ -250,7 +250,7 @@ void PinTableWnd::ExportBlueprint()
    dc.CreateDIBSection(dc.GetHDC(), &bmi, DIB_RGB_COLORS, (void **)&pbits, nullptr, 0);
 
    {
-      PaintSur psur(dc.GetHDC(), (float)bmwidth / tablewidth, tablewidth * 0.5f, tableheight * 0.5f, bmwidth, bmheight, nullptr);
+      PaintSur psur((float)bmwidth / tablewidth, tablewidth * 0.5f, tableheight * 0.5f, bmwidth, bmheight, dc.GetHDC(), this, nullptr);
 
       dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
       dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
@@ -483,7 +483,7 @@ void PinTableWnd::Paint(HDC hdc)
 
    if (m_dirtyDraw)
    {
-      Sur *const psur = new PaintSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, m_table->GetSelectedItem());
+      Sur *const psur = new PaintSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, m_table->GetSelectedItem());
       UIRenderPass2(psur);
 
       delete psur;
@@ -718,8 +718,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    const CRect rc = GetClientRect();
 
-   HitSur phs(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
-   HitSur phs2(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs2(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
 
    m_table->m_allHitElements.clear();
 
@@ -900,7 +900,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
             const CRect rc = m_mdiTable->GetClientRect();
 
-            HitRectSur *const phrs = new HitRectSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
+            HitRectSur *const phrs = new HitRectSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
 
             // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
             UIRenderPass2(phrs);

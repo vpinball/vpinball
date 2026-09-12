@@ -7,7 +7,7 @@
 class PaintSur final : public Sur
 {
 public:
-   PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel);
+   PaintSur(const float zoom, const float offx, const float offy, const int width, const int height, const HDC hdc, class PinTableWnd *pTableWnd, ISelect *const psel);
    ~PaintSur() override;
 
    void Line(const float x, const float y, const float x2, const float y2) override;
@@ -30,11 +30,16 @@ public:
    void SetLineColor(const int rgb, const bool dashed, const int width) override;
 
 private:
+   COLORREF GetSelectColor() const;
+   COLORREF GetSelectLockedColor() const;
+
    HBRUSH m_hbr;
    HPEN m_hpnOutline;
    HPEN m_hpnLine;
 
+   HDC m_hdc;
    ISelect *m_psel;
+   PinTableWnd *m_pTableWnd;
 
    bool m_nullBorder;
 };

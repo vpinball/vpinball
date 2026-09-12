@@ -5,7 +5,7 @@
 
 #define PTINRECT(x,y) ((x) >= m_rcRect.left && (x) <= m_rcRect.right && (y) > m_rcRect.top && (y) < m_rcRect.bottom)
 
-HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<ISelect*> * const pvsel) : Sur(hdc, zoom, offx, offy, width, height)
+HitRectSur::HitRectSur(const float zoom, const float offx, const float offy, const int width, const int height, const FRect * const prcRect, vector<ISelect*> * const pvsel) : Sur(zoom, offx, offy, width, height)
 {
    m_rcRect = *prcRect;
    m_pvsel = pvsel;
@@ -59,18 +59,18 @@ void HitRectSur::Ellipse2(const float centerx, const float centery, const int ra
    if (m_failedAlready)
       return;
 
-   const int ix = SCALEXf(centerx);
-   const int iy = SCALEYf(centery);
+   const int ix = ScaleX(centerx);
+   const int iy = ScaleY(centery);
 
    const int circleleft = ix - radius;
    const int circletop = iy - radius;
    const int circleright = ix + radius;
    const int circlebottom = iy + radius;
 
-   const int left = SCALEXf(m_rcRect.left);
-   const int top = SCALEYf(m_rcRect.top);
-   const int right = SCALEXf(m_rcRect.right);
-   const int bottom = SCALEYf(m_rcRect.bottom);
+   const int left = ScaleX(m_rcRect.left);
+   const int top = ScaleY(m_rcRect.top);
+   const int right = ScaleX(m_rcRect.right);
+   const int bottom = ScaleY(m_rcRect.bottom);
 
    if (circleleft < left || circletop < top || circleright > right || circlebottom > bottom)
       FailObject();

@@ -8,7 +8,6 @@
 #include "parts/Collection.h"
 #include "parts/PartGroup.h"
 #include "parts/pintable.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 
 ISelect::ISelect()
@@ -112,30 +111,6 @@ void ISelect::DoCommand(int icmd, int x, int y)
       break;
    }
 #endif
-}
-
-void ISelect::SetSelectFormat(Sur *psur)
-{
-   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor
-                                       : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-
-   psur->SetBorderColor(color, false, 4);
-   psur->SetLineColor(color, false, 4);
-}
-
-void ISelect::SetMultiSelectFormat(Sur *psur)
-{
-   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor :
-                                         m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-
-   psur->SetBorderColor(color, false, 3);
-   psur->SetLineColor(color, false, 3);
-}
-
-void ISelect::SetLockedFormat(Sur *psur)
-{
-   psur->SetBorderColor(m_vpinball->m_elemSelectLockedColor, false, 1);
-   psur->SetLineColor(m_vpinball->m_elemSelectLockedColor, false, 1);
 }
 
 void ISelect::FlipY(const Vertex2D& pvCenter)

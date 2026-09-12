@@ -42,8 +42,6 @@ public:
    void DoCommand(int icmd, int x, int y) final;
 #endif
 
-   void SetSelectFormat(Sur *psur) final;
-   void SetMultiSelectFormat(Sur *psur) final;
    IEditable *GetIEditable() final;
    const IEditable *GetIEditable() const final;
    PinTable *GetPTable() final { return GetIEditable()->GetPTable(); }
