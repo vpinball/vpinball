@@ -1,6 +1,294 @@
 #include "core/stdafx.h"
 #include "StackTrace.h"
 
+#if defined(__APPLE__)
+
+#include <execinfo.h>
+#include <mach/machine.h>
+#include <mach-o/dyld.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdint>
+
+// macOS resolves our own frames in-process with CoreSymbolication, a private
+// Apple framework (in /System/Library/PrivateFrameworks). It is the same engine
+// atos and Xcode use. There is no public header, so the small slice of the API
+// we use is declared here. If Apple changes it, the build breaks visibly and we
+// fix it; CoreSymbolication is not optional for our own frames.
+//
+// We load the .dSYM by an explicit path (derived from the running executable)
+// via CSSymbolicatorCreateWithURLAndArchitecture rather than by pid. The pid
+// path depends on Spotlight having indexed the .dSYM by UUID, which is not true
+// on an end user's machine. The explicit path is deterministic: the .dSYM ships
+// beside the app (the macOS equivalent of a Windows PDB) and we point straight
+// at it. Addresses from backtrace() are runtime addresses, so we de-slide them
+// by the main image's ASLR slide before querying the symbol owner, which is
+// addressed in the .dSYM's static (link-time) address space.
+//
+// Frames outside our .dSYM (system libraries) are named with dladdr, which reads
+// the loaded image's symbol table (module + symbol + offset, no file:line). This
+// mirrors dbghelp naming system DLL frames on Windows.
+extern "C"
+{
+	typedef struct { const void* data; const void* obj; } CSTypeRef;
+	typedef struct { cpu_type_t cpu_type; cpu_subtype_t cpu_subtype; } CSArchitecture;
+	typedef CSTypeRef CSSymbolicatorRef;
+	typedef CSTypeRef CSSymbolOwnerRef;
+	typedef CSTypeRef CSSymbolRef;
+	typedef CSTypeRef CSSourceInfoRef;
+
+	CSArchitecture CSArchitectureGetArchitectureForName(const char* name);
+	CSSymbolicatorRef CSSymbolicatorCreateWithURLAndArchitecture(CFURLRef url, CSArchitecture arch);
+	int CSSymbolicatorForeachSymbolOwnerAtTime(CSSymbolicatorRef, uint64_t time, void (^it)(CSSymbolOwnerRef));
+	CSSourceInfoRef CSSymbolOwnerGetSourceInfoWithAddress(CSSymbolOwnerRef, vm_address_t addr);
+	CSSymbolRef CSSymbolOwnerGetSymbolWithAddress(CSSymbolOwnerRef, vm_address_t addr);
+	const char* CSSymbolGetName(CSSymbolRef);
+	const char* CSSourceInfoGetPath(CSSourceInfoRef);
+	int CSSourceInfoGetLineNumber(CSSourceInfoRef);
+	CSSymbolRef CSSourceInfoGetSymbol(CSSourceInfoRef);
+	int CSIsNull(CSTypeRef);
+}
+
+namespace
+{
+	constexpr uint64_t kCSNow = 0x80000000u;
+
+	CSSymbolOwnerRef g_owner = {};
+	bool g_ready = false;
+	intptr_t g_slide = 0;
+
+	void GetBaseName(const char* path, char* out, size_t outSize)
+	{
+		const char* base = path;
+		for (const char* p = path; *p; ++p)
+			if (*p == '/')
+				base = p + 1;
+		snprintf(out, outSize, "%s", base);
+	}
+
+	// Build the path to the DWARF file inside the bundled .dSYM, from the running
+	// executable at <bundle>/Contents/MacOS/<name>:
+	//   <bundle>/Contents/Resources/<name>.dSYM/Contents/Resources/DWARF/<name>
+	bool GetDSYMDwarfPath(char* out, size_t outSize)
+	{
+		char exePath[MAXSTRING];
+		uint32_t size = sizeof(exePath);
+		if (_NSGetExecutablePath(exePath, &size) != 0)
+			return false;
+
+		char real[MAXSTRING];
+		const char* exe = realpath(exePath, real) ? real : exePath;
+
+		char name[MAXSTRING];
+		GetBaseName(exe, name, sizeof(name));
+
+		// Directory of the executable (…/Contents/MacOS).
+		char dir[MAXSTRING];
+		snprintf(dir, sizeof(dir), "%s", exe);
+		char* lastSlash = strrchr(dir, '/');
+		if (lastSlash == nullptr)
+			return false;
+		*lastSlash = '\0';
+
+		const int n = snprintf(out, outSize, "%s/../Resources/%s.dSYM/Contents/Resources/DWARF/%s", dir, name, name);
+		return n > 0 && n < (int)outSize;
+	}
+}
+
+namespace rde
+{
+// The Windows StackWalk64/context overloads have no macOS equivalent; the crash
+// handler drives GetCallStack(Address*, ...) directly via backtrace().
+bool StackTrace::InitSymbols()
+{
+	// Load the bundled .dSYM once on the main thread at startup. Mapping the
+	// symbol data must not first happen inside a crash on another thread
+	// (mirrors the MinGW libbacktrace pre-warm).
+	if (g_ready)
+		return true;
+
+	char dwarfPath[MAXSTRING];
+	if (!GetDSYMDwarfPath(dwarfPath, sizeof(dwarfPath)))
+		return false;
+
+	CFStringRef pathStr = CFStringCreateWithCString(nullptr, dwarfPath, kCFStringEncodingUTF8);
+	if (pathStr == nullptr)
+		return false;
+	CFURLRef url = CFURLCreateWithFileSystemPath(nullptr, pathStr, kCFURLPOSIXPathStyle, false);
+	CFRelease(pathStr);
+	if (url == nullptr)
+		return false;
+
+#if defined(__aarch64__)
+	const CSArchitecture arch = CSArchitectureGetArchitectureForName("arm64");
+#else
+	const CSArchitecture arch = CSArchitectureGetArchitectureForName("x86_64");
+#endif
+	const CSSymbolicatorRef symbolicator = CSSymbolicatorCreateWithURLAndArchitecture(url, arch);
+	CFRelease(url);
+	if (CSIsNull(symbolicator))
+		return false;
+
+	// The .dSYM has a single symbol owner (our executable image); capture it.
+	__block CSSymbolOwnerRef owner = {};
+	CSSymbolicatorForeachSymbolOwnerAtTime(symbolicator, kCSNow, ^(CSSymbolOwnerRef o) { owner = o; });
+	if (CSIsNull(owner))
+		return false;
+
+	g_owner = owner;
+	g_slide = _dyld_get_image_vmaddr_slide(0); // ASLR slide of the main executable
+	g_ready = true;
+	return true;
+}
+
+int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip)
+{
+	void* frames[256];
+	if (maxDepth > (int)std::size(frames))
+		maxDepth = (int)std::size(frames);
+	const int captured = backtrace(frames, maxDepth + entriesToSkip + 1);
+	// +1 -> skip over "us" (this function's own frame)
+	int skip = entriesToSkip + 1;
+	int numEntries = 0;
+	for (int i = skip; i < captured && numEntries < maxDepth; ++i)
+		callStack[numEntries++] = frames[i];
+	return numEntries;
+}
+
+int StackTrace::GetCallStack(void* /*context*/, Address* callStack, int maxDepth, int entriesToSkip)
+{
+	// No signal context walk on macOS; fall back to the live stack.
+	return GetCallStack(callStack, maxDepth, entriesToSkip);
+}
+
+int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesToSkip)
+{
+	return GetCallStack(callStack, maxDepth, entriesToSkip);
+}
+
+int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
+{
+	if (maxSymbolLen <= 0)
+		return 0;
+
+	int charsAdded = snprintf(symbol, maxSymbolLen, "%p", address);
+	if (charsAdded < 0)
+		return 0;
+	if (charsAdded > maxSymbolLen - 1)
+		charsAdded = maxSymbolLen - 1;
+
+	if (!InitSymbols())
+		return charsAdded;
+
+	// De-slide the runtime address into the .dSYM's static address space.
+	const vm_address_t staticAddr = (vm_address_t)((uintptr_t)address - g_slide);
+	char* out = symbol + charsAdded;
+	int remaining = maxSymbolLen - charsAdded;
+
+	// Source info carries symbol + file + line; CoreSymbolication demangles the
+	// name and resolves file:line from the .dSYM DWARF.
+	CSSourceInfoRef si = CSSymbolOwnerGetSourceInfoWithAddress(g_owner, staticAddr);
+	if (!CSIsNull(si))
+	{
+		CSSymbolRef sym = CSSourceInfoGetSymbol(si);
+		const char* name = CSIsNull(sym) ? nullptr : CSSymbolGetName(sym);
+		const char* file = CSSourceInfoGetPath(si);
+		const int line = CSSourceInfoGetLineNumber(si);
+
+		int n;
+		if (file != nullptr && line > 0)
+		{
+			char fileBase[MAXSTRING];
+			GetBaseName(file, fileBase, sizeof(fileBase));
+			n = snprintf(out, remaining, " %s %s(%d)", name ? name : "<unknown>", fileBase, line);
+		}
+		else
+			n = snprintf(out, remaining, " %s", name ? name : "<unknown>");
+
+		if (n > 0)
+			charsAdded += (n > remaining - 1) ? remaining - 1 : n;
+		return charsAdded;
+	}
+
+	// No source info, but the address may still be a named symbol in our own
+	// image without line info; take the bare name from the owner.
+	CSSymbolRef sym = CSSymbolOwnerGetSymbolWithAddress(g_owner, staticAddr);
+	if (!CSIsNull(sym))
+	{
+		const char* name = CSSymbolGetName(sym);
+		const int n = snprintf(out, remaining, " %s", name ? name : "<unknown>");
+		if (n > 0)
+			charsAdded += (n > remaining - 1) ? remaining - 1 : n;
+		return charsAdded;
+	}
+
+	// Not in our .dSYM (a system library frame): name it via dladdr, which reads
+	// the loaded image's symbol table. Gives module + symbol + offset, no line.
+	Dl_info info = {};
+	if (dladdr(address, &info) != 0)
+	{
+		if (info.dli_fname != nullptr)
+		{
+			char moduleBase[MAXSTRING];
+			GetBaseName(info.dli_fname, moduleBase, sizeof(moduleBase));
+			const int n = snprintf(out, remaining, " %s", moduleBase);
+			if (n > 0)
+			{
+				const int adv = (n > remaining - 1) ? remaining - 1 : n;
+				out += adv;
+				remaining -= adv;
+				charsAdded += adv;
+			}
+		}
+
+		if (info.dli_sname != nullptr && remaining > 1)
+		{
+			char demangledBuf[MAXSTRING];
+			const char* name = info.dli_sname;
+			int status = 0;
+			size_t len = sizeof(demangledBuf);
+			char* demangled = abi::__cxa_demangle(info.dli_sname, demangledBuf, &len, &status);
+			if (status == 0 && demangled != nullptr)
+				name = demangled;
+
+			const uintptr_t offset = (info.dli_saddr != nullptr)
+				? (uintptr_t)address - (uintptr_t)info.dli_saddr
+				: 0;
+			const int n = snprintf(out, remaining, " %s + 0x%lX", name, (unsigned long)offset);
+			if (n > 0)
+				charsAdded += (n > remaining - 1) ? remaining - 1 : n;
+		}
+	}
+	return charsAdded;
+}
+
+void StackTrace::GetCallStack(void* /*vcontext*/, bool /*includeArguments*/, char* symbol, int maxSymbolLen)
+{
+	Address frames[256];
+	// entriesToSkip 1 -> skip this GetCallStack frame itself.
+	const int numFrames = GetCallStack(frames, (int)std::size(frames), 1);
+	for (int i = 0; i < numFrames && maxSymbolLen > 1; ++i)
+	{
+		const int charsAdded = GetSymbolInfo(frames[i], symbol, maxSymbolLen);
+		symbol += charsAdded;
+		maxSymbolLen -= charsAdded;
+		if (maxSymbolLen > 1)
+		{
+			*symbol++ = '\n';
+			*symbol = '\0';
+			--maxSymbolLen;
+		}
+	}
+}
+
+} // namespace rde
+
+#else // !__APPLE__
+
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -428,3 +716,5 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 }
 
 }
+
+#endif // !__APPLE__

@@ -550,6 +550,11 @@ elseif(PLATFORM STREQUAL "macos")
    add_executable(vpinball
       ${VPX_STANDALONE_SOURCES}
 
+      src/utils/StackTrace.cpp
+      src/utils/StackTrace.h
+      src/utils/CrashHandler.cpp
+      src/utils/CrashHandler.h
+
       standalone/macos/main.mm
    )
 
@@ -571,6 +576,8 @@ elseif(PLATFORM STREQUAL "macos")
       WINE_UNICODE_NATIVE
 
       "__forceinline=__attribute__((always_inline)) inline"
+
+      VPX_STANDALONE_CRASH_HANDLER
    )
 
    if(RENDERER STREQUAL "BGFX")
@@ -597,6 +604,7 @@ elseif(PLATFORM STREQUAL "macos")
       -ffp-contract=off
       -Wno-shorten-64-to-32
       $<$<AND:$<STREQUAL:${ARCH},x64>,$<STREQUAL:${RENDERER},GL>>:-mssse3>
+      $<$<CONFIG:Release>:-g1>
    )
 
    set(RUNTIME_LIBS_DIR "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/macos-${ARCH}")
@@ -613,6 +621,8 @@ elseif(PLATFORM STREQUAL "macos")
       hidapi
       winevbs
       "-framework AppKit"
+      "-framework CoreFoundation"
+      "-F /System/Library/PrivateFrameworks" "-framework CoreSymbolication"
    )
 
    target_link_libraries(vpinball PUBLIC $<IF:$<STREQUAL:${RENDERER},BGFX>,bgfx,glad>)
@@ -651,6 +661,10 @@ elseif(PLATFORM STREQUAL "macos")
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/macos/VPinballX.icns" "$<TARGET_FILE_DIR:vpinball>/../Resources"
       COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
       COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
+   )
+
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND dsymutil "$<TARGET_FILE:vpinball>" -o "$<TARGET_FILE_DIR:vpinball>/../Resources/$<TARGET_FILE_NAME:vpinball>.dSYM"
    )
 
 # Linux build (BGFX / GL)

@@ -1,9 +1,227 @@
 #include "core/stdafx.h"
 
 #include "CrashHandler.h"
+#include "StackTrace.h"
+#include "core/vpversion.h"
+
+#if defined(__APPLE__)
+
+#include <csignal>
+#include <cstring>
+#include <cstdint>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ucontext.h>
+#include <dlfcn.h>
+
+// macOS in-process crash reporter. A fatal signal (SIGSEGV/SIGBUS/SIGILL/
+// SIGFPE/SIGABRT) is caught with sigaction and the report is written from the
+// signal handler using only write(2)/open/close and stack buffers. Symbol
+// resolution (CoreSymbolication + dladdr) may allocate, a pragmatic risk for a
+// best-effort in-process reporter.
+//
+// The report starts at the faulting frame, not our handler. We take a normal
+// backtrace() (reliable full walk), drop the leading frames through _sigtramp
+// (the kernel signal trampoline, above which are only our handler frames), and
+// prepend the ucontext PC as frame 0 since backtrace() omits a leaf that
+// faulted without making a call. This mirrors the Windows path starting from
+// the exception CONTEXT.
+
+#include <execinfo.h>
+
+namespace
+{
+   string s_reportFileName = "crash.txt"s;
+   string s_miniDumpFileName = "crash.dmp"s; // unused on macOS, kept for API parity
+
+   volatile sig_atomic_t s_inHandler = 0;
+   char s_altStack[SIGSTKSZ > 65536 ? SIGSTKSZ : 65536];
+
+   void WriteStr(int fd, const char* s)
+   {
+      if (s != nullptr)
+         (void)!write(fd, s, strlen(s));
+   }
+
+   const char* SignalName(int sig)
+   {
+      switch (sig)
+      {
+      case SIGSEGV: return "SIGSEGV";
+      case SIGBUS:  return "SIGBUS";
+      case SIGILL:  return "SIGILL";
+      case SIGFPE:  return "SIGFPE";
+      case SIGABRT: return "SIGABRT";
+      case SIGTRAP: return "SIGTRAP";
+      default:      return "signal";
+      }
+   }
+
+   void WriteHeader(int fd)
+   {
+      WriteStr(fd, "Crash report VPX - " VP_VERSION_STRING_FULL_LITERAL "\n============\n");
+   }
+
+   void WriteExceptionInfo(int fd, int sig, siginfo_t* si)
+   {
+      char line[MAXSTRING];
+      const void* faultAddr = (si != nullptr) ? si->si_addr : nullptr;
+      uint64_t tid = 0;
+      pthread_threadid_np(nullptr, &tid);
+      snprintf(line, sizeof(line), "Reason: %s (signo %d, code %d) at %p\nThread ID: 0x%llx\n\n",
+         SignalName(sig), sig, (si != nullptr) ? si->si_code : 0, faultAddr, (unsigned long long)tid);
+      WriteStr(fd, line);
+   }
+
+   // Build a fault-first stack: frame 0 is the ucontext PC (the exact crashing
+   // instruction, which backtrace() drops for a leaf), then the backtrace()
+   // frames from just past _sigtramp (dropping our handler and the trampoline).
+   // The first post-trampoline frame is skipped when it maps to the same
+   // function as the PC, to avoid a duplicate for a mid-function fault.
+   int CaptureFromContext(void* uctx, void** out, int max)
+   {
+      if (max <= 0)
+         return 0;
+
+      void* raw[256];
+      const int n = backtrace(raw, (int)std::size(raw));
+
+      int start = 0;
+      for (int i = 0; i < n; ++i)
+      {
+         Dl_info di;
+         if (dladdr(raw[i], &di) && di.dli_sname != nullptr && strcmp(di.dli_sname, "_sigtramp") == 0)
+         {
+            start = i + 1;
+            break;
+         }
+      }
+
+      int w = 0;
+      const void* pc = nullptr;
+      if (uctx != nullptr)
+      {
+         const ucontext_t* uc = (const ucontext_t*)uctx;
+#if defined(__aarch64__)
+         pc = (const void*)uc->uc_mcontext->__ss.__pc;
+#else
+         pc = (const void*)uc->uc_mcontext->__ss.__rip;
+#endif
+         if (pc != nullptr && w < max)
+            out[w++] = (void*)pc;
+      }
+
+      // Drop the first captured frame if it is in the same function as the PC.
+      if (pc != nullptr && start < n)
+      {
+         Dl_info a, b;
+         if (dladdr(pc, &a) && dladdr(raw[start], &b) && a.dli_saddr == b.dli_saddr)
+            ++start;
+      }
+
+      for (int i = start; i < n && w < max; ++i)
+         out[w++] = raw[i];
+      return w;
+   }
+
+   void WriteCallStack(int fd, void* const* frames, int n)
+   {
+      WriteStr(fd, "Call stack\n==========\n");
+
+      // One line per frame: our own frames resolve to symbol + file:line via
+      // CoreSymbolication, system frames to module + symbol via dladdr, and
+      // anything unresolved to the bare address (all handled by GetSymbolInfo).
+      for (int i = 0; i < n; ++i)
+      {
+         char sym[MAXSTRING];
+         const int c = rde::StackTrace::GetSymbolInfo(frames[i], sym, sizeof(sym) - 1);
+         if (c > 0)
+         {
+            sym[c] = '\0';
+            WriteStr(fd, sym);
+            WriteStr(fd, "\n");
+         }
+      }
+      WriteStr(fd, "\n");
+   }
+
+   void WriteReport(int fd, int sig, siginfo_t* si, void* const* frames, int n)
+   {
+      WriteHeader(fd);
+      WriteExceptionInfo(fd, sig, si);
+      WriteCallStack(fd, frames, n);
+   }
+
+   void CrashSignalHandler(int sig, siginfo_t* si, void* uctx)
+   {
+      if (s_inHandler)
+      {
+         signal(sig, SIG_DFL);
+         raise(sig);
+         return;
+      }
+      s_inHandler = 1;
+
+      // Capture a fault-first stack (drops this handler and the trampoline).
+      void* frames[256];
+      const int n = CaptureFromContext(uctx, frames, (int)std::size(frames));
+
+      const int fd = open(s_reportFileName.c_str(), O_CREAT | O_TRUNC | O_WRONLY, 0644);
+      if (fd >= 0)
+      {
+         WriteReport(fd, sig, si, frames, n);
+         close(fd);
+      }
+
+      // Restore default disposition and re-raise so the OS still terminates
+      // (and produces its own crash report / core if configured).
+      signal(sig, SIG_DFL);
+      raise(sig);
+   }
+
+   void InstallHandlers()
+   {
+      stack_t ss = {};
+      ss.ss_sp = s_altStack;
+      ss.ss_size = sizeof(s_altStack);
+      ss.ss_flags = 0;
+      sigaltstack(&ss, nullptr);
+
+      struct sigaction sa = {};
+      sa.sa_sigaction = CrashSignalHandler;
+      sigemptyset(&sa.sa_mask);
+      sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
+
+      const int signals[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
+      for (int s : signals)
+         sigaction(s, &sa, nullptr);
+   }
+} // namespace
+
+namespace rde
+{
+   void CrashHandler::Init()
+   {
+      // Pre-warm symbol resolution on the main thread (mirrors the MinGW arm).
+      rde::StackTrace::InitSymbols();
+      InstallHandlers();
+   }
+
+   void CrashHandler::SetMiniDumpFileName(const string& name)
+   {
+      s_miniDumpFileName = name;
+   }
+
+   void CrashHandler::SetCrashReportFileName(const string& name)
+   {
+      s_reportFileName = name;
+   }
+}
+
+#else // !__APPLE__
+
 #include "BlackBox.h"
 #include "MemoryStatus.h"
-#include "StackTrace.h"
 #include <cstdio>
 #include <cstdlib>
 #define WIN32_LEAN_AND_MEAN
@@ -11,7 +229,6 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cassert>
-#include "core/vpversion.h"
 
 namespace
 {
@@ -365,3 +582,5 @@ namespace rde
       s_reportFileName = name;
    }
 }
+
+#endif // !__APPLE__
