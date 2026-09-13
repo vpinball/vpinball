@@ -114,10 +114,8 @@ void Rubber::WriteRegDefaults()
 #undef LinkProp
 }
 
-void Rubber::DrawRubberMesh(Sur * const psur)
+void Rubber::GetEditorWireframe(vector<Vertex2D> &edges)
 {
-   vector<Vertex2D> drawVertices;
-
    GenerateMesh(6);
    UpdateRubber(false, m_d.m_height);
 
@@ -128,22 +126,20 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       const Vertex3Ds C = Vertex3Ds(m_vertices[m_ringIndices[i + 2]].x, m_vertices[m_ringIndices[i + 2]].y, m_vertices[m_ringIndices[i + 2]].z);
       if (fabsf(m_vertices[m_ringIndices[i]].nz + m_vertices[m_ringIndices[i + 1]].nz) < 1.f)
       {
-         drawVertices.emplace_back(A.x, A.y);
-         drawVertices.emplace_back(B.x, B.y);
+         edges.emplace_back(A.x, A.y);
+         edges.emplace_back(B.x, B.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 1]].nz + m_vertices[m_ringIndices[i + 2]].nz) < 1.f)
       {
-         drawVertices.emplace_back(B.x, B.y);
-         drawVertices.emplace_back(C.x, C.y);
+         edges.emplace_back(B.x, B.y);
+         edges.emplace_back(C.x, C.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 2]].nz + m_vertices[m_ringIndices[i]].nz) < 1.f)
       {
-         drawVertices.emplace_back(C.x, C.y);
-         drawVertices.emplace_back(A.x, A.y);
+         edges.emplace_back(C.x, C.y);
+         edges.emplace_back(A.x, A.y);
       }
    }
-   if (!drawVertices.empty())
-      psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
 }
 
 void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
@@ -337,6 +333,20 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 
    pcvertex = cvertex + 1;
    return rgvLocal;
+}
+
+void Rubber::GetEditorOutline(vector<Vertex2D> &outline, vector<bool> *crossFlags, const float accuracy) const
+{
+   int cvertex;
+   bool *pfCross = nullptr;
+   Vertex2D *const rgvLocal = GetSplineVertex(cvertex, crossFlags ? &pfCross : nullptr, nullptr, accuracy);
+   if (rgvLocal == nullptr)
+      return;
+   outline.assign(rgvLocal, rgvLocal + cvertex * 2);
+   if (crossFlags && pfCross)
+      crossFlags->assign(pfCross, pfCross + cvertex);
+   delete[] rgvLocal;
+   delete[] pfCross;
 }
 
 // Get an approximation of the curve described by the control points of this ramp.

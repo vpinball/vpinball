@@ -185,7 +185,7 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *con
    }
 }
 
-void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height)
+void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height) const
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
@@ -207,7 +207,8 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D ** const pMiddlePoints, const float _accuracy, const bool inc_width)
+Vertex2D *Ramp::GetRampVertex(
+   int &pcvertex, float **const ppheight, bool **const ppfCross, float **const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width) const
 {
    vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex, _accuracy);

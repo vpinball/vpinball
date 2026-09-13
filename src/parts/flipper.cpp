@@ -269,7 +269,7 @@ void Flipper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 #pragma endregion
 
 
-void Flipper::SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
+void Flipper::GetVertices(const float basex, const float basey, const float angle, const float baseradius, const float endradius, Vertex2D &vEndCenter, Vertex2D (&rgvTangents)[4]) const
 {
    const float fradius = m_d.m_FlipperRadius;
    const float fa = asinf((baseradius - endradius) / fradius); //face to centerline angle (center to center)
@@ -277,9 +277,9 @@ void Flipper::SetVertices(const float basex, const float basey, const float angl
    const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero	
 
    const float endx = basex + fradius*sinf(angle); //place end radius center
-   pvEndCenter->x = endx;
+   vEndCenter.x = endx;
    const float endy = basey - fradius*cosf(angle);
-   pvEndCenter->y = endy;
+   vEndCenter.y = endy;
 
    const float faceNormx1 =  sinf(angle - faceNormOffset); // normals to new face positions
    const float faceNormy1 = -cosf(angle - faceNormOffset);

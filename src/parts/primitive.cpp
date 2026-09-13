@@ -407,6 +407,81 @@ void Primitive::TransformVertices()
    }
 }
 
+void Primitive::GetEditorTriangles(vector<Vertex2D> &triangles) const
+{
+   triangles.reserve(m_mesh.NumIndices());
+   for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+   {
+      const Vertex3Ds &A = m_vertices[m_mesh.m_indices[i]];
+      const Vertex3Ds &B = m_vertices[m_mesh.m_indices[i + 1]];
+      const Vertex3Ds &C = m_vertices[m_mesh.m_indices[i + 2]];
+      triangles.emplace_back(C.x, C.y);
+      triangles.emplace_back(B.x, B.y);
+      triangles.emplace_back(A.x, A.y);
+   }
+}
+
+void Primitive::GetEditorWireframe(vector<Vertex2D> &edges, vector<Vertex2D> &polyline) const
+{
+   if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
+   {
+      if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
+      {
+         edges.reserve(m_mesh.NumIndices() * 2);
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+         {
+            const Vertex3Ds &A = m_vertices[m_mesh.m_indices[i]];
+            const Vertex3Ds &B = m_vertices[m_mesh.m_indices[i + 1]];
+            const Vertex3Ds &C = m_vertices[m_mesh.m_indices[i + 2]];
+            edges.emplace_back(A.x, A.y);
+            edges.emplace_back(B.x, B.y);
+            edges.emplace_back(B.x, B.y);
+            edges.emplace_back(C.x, C.y);
+            edges.emplace_back(C.x, C.y);
+            edges.emplace_back(A.x, A.y);
+         }
+      }
+      else if (m_mesh.NumIndices() > 0) // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
+      {
+         polyline.reserve(m_mesh.NumIndices() / 3 + 1);
+         const Vertex3Ds &A = m_vertices[m_mesh.m_indices[0]];
+         polyline.emplace_back(A.x, A.y);
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+         {
+            const Vertex3Ds &B = m_vertices[m_mesh.m_indices[i + 1]];
+            polyline.emplace_back(B.x, B.y);
+         }
+      }
+   }
+   else
+   {
+      for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+      {
+         const Vertex3Ds &A = m_vertices[m_mesh.m_indices[i]];
+         const Vertex3Ds &B = m_vertices[m_mesh.m_indices[i + 1]];
+         const Vertex3Ds &C = m_vertices[m_mesh.m_indices[i + 2]];
+         const float An = m_normals[m_mesh.m_indices[i]];
+         const float Bn = m_normals[m_mesh.m_indices[i + 1]];
+         const float Cn = m_normals[m_mesh.m_indices[i + 2]];
+         if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
+         {
+            edges.emplace_back(A.x, A.y);
+            edges.emplace_back(B.x, B.y);
+         }
+         if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
+         {
+            edges.emplace_back(B.x, B.y);
+            edges.emplace_back(C.x, C.y);
+         }
+         if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
+         {
+            edges.emplace_back(C.x, C.y);
+            edges.emplace_back(A.x, A.y);
+         }
+      }
+   }
+}
+
 //////////////////////////////
 // Rendering
 //////////////////////////////

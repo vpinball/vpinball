@@ -61,7 +61,6 @@ class HitTarget :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   friend class HitTargetWinUIPart;
 #ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
@@ -183,6 +182,9 @@ public:
    HitTargetData m_d;
 
    bool m_hitEvent = false;
+
+   // Fills 'edges' with pairs of 2D vertices forming the editor wireframe of the target mesh.
+   void GetEditorWireframe(vector<Vertex2D> &edges) const;
 
 private:
    void UpdateTarget();

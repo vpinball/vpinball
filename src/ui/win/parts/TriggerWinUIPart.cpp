@@ -15,9 +15,6 @@ TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
 
 void TriggerWinUIPart::UIRenderPass1(Sur* const psur)
 {
-   if (m_trigger->m_vdpoint.empty())
-      m_trigger->InitShape(m_trigger->m_d.m_vCenter.x, m_trigger->m_d.m_vCenter.y);
-
    psur->SetBorderColor(-1, false, 0);
    psur->SetObject(m_trigger);
 
@@ -99,23 +96,10 @@ void TriggerWinUIPart::UIRenderPass2(Sur* const psur)
 
    if (m_trigger->m_d.m_shape == TriggerWireA || m_trigger->m_d.m_shape == TriggerWireB || m_trigger->m_d.m_shape == TriggerWireC || m_trigger->m_d.m_shape == TriggerWireD || m_trigger->m_d.m_shape == TriggerInder)
    {
-      if (m_trigger->m_numIndices > 0)
-      {
-         const size_t numPts = m_trigger->m_numIndices / 3 + 1;
-         vector<Vertex2D> drawVertices(numPts);
-
-         const Vertex3Ds& A = m_trigger->m_vertices[m_trigger->m_faceIndices[0]];
-         drawVertices[0] = Vertex2D(A.x, A.y);
-
-         size_t o = 1;
-         for (int i = 0; i < m_trigger->m_numIndices; i += 3, ++o)
-         {
-            const Vertex3Ds& B = m_trigger->m_vertices[m_trigger->m_faceIndices[i + 1]];
-            drawVertices[o] = Vertex2D(B.x, B.y);
-         }
-
-         psur->Polyline(drawVertices.data(), (int)drawVertices.size());
-      }
+      vector<Vertex2D> outline;
+      m_trigger->GetWireOutline(outline);
+      if (!outline.empty())
+         psur->Polyline(outline.data(), (int)outline.size());
    }
 }
 

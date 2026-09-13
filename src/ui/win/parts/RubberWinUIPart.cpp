@@ -25,14 +25,17 @@ void RubberWinUIPart::UIRenderPass1(Sur* const psur)
 
    if (!m_rubber->m_d.m_showInEditor)
    {
-      int cvertex;
-      const Vertex2D* const rgvLocal = m_rubber->GetSplineVertex(cvertex, nullptr, nullptr, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
-      psur->Polygon(rgvLocal, cvertex * 2);
-      delete[] rgvLocal;
+      vector<Vertex2D> outline;
+      m_rubber->GetEditorOutline(outline, nullptr, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
+      if (!outline.empty())
+         psur->Polygon(outline.data(), (int)outline.size());
    }
    else
    {
-      m_rubber->DrawRubberMesh(psur);
+      vector<Vertex2D> edges;
+      m_rubber->GetEditorWireframe(edges);
+      if (!edges.empty())
+         psur->Lines(edges.data(), (int)(edges.size() / 2));
    }
 }
 
@@ -46,21 +49,22 @@ void RubberWinUIPart::UIRenderPass2(Sur* const psur)
 
    if (!m_rubber->m_d.m_showInEditor)
    {
-      int cvertex;
-      bool* pfCross;
-      const Vertex2D* const rgvLocal = m_rubber->GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
+      vector<Vertex2D> outline;
+      vector<bool> crossFlags;
+      m_rubber->GetEditorOutline(outline, &crossFlags, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
 
-      psur->Polygon(rgvLocal, cvertex * 2);
-      for (int i = 0; i < cvertex; i++)
-         if (pfCross[i])
-            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-
-      delete[] rgvLocal;
-      delete[] pfCross;
+      if (!outline.empty())
+         psur->Polygon(outline.data(), (int)outline.size());
+      for (size_t i = 0; i < crossFlags.size(); i++)
+         if (crossFlags[i])
+            psur->Line(outline[i].x, outline[i].y, outline[outline.size() - i - 1].x, outline[outline.size() - i - 1].y);
    }
    else
    {
-      m_rubber->DrawRubberMesh(psur);
+      vector<Vertex2D> edges;
+      m_rubber->GetEditorWireframe(edges);
+      if (!edges.empty())
+         psur->Lines(edges.data(), (int)(edges.size() / 2));
 
       // if rotation is used don't show dragpoints
       return;
@@ -108,16 +112,14 @@ void RubberWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 
    if (!m_rubber->m_d.m_showInEditor)
    {
-      int cvertex;
-      bool* pfCross;
-      const Vertex2D* const rgvLocal = m_rubber->GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
+      vector<Vertex2D> outline;
+      vector<bool> crossFlags;
+      m_rubber->GetEditorOutline(outline, &crossFlags, 4.0f * powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL) * (float)(1.0 / 1.5)));
 
-      psur->Polygon(rgvLocal, cvertex * 2);
-      for (int i = 0; i < cvertex; i++)
-         if (pfCross[i])
-            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-
-      delete[] rgvLocal;
-      delete[] pfCross;
+      if (!outline.empty())
+         psur->Polygon(outline.data(), (int)outline.size());
+      for (size_t i = 0; i < crossFlags.size(); i++)
+         if (crossFlags[i])
+            psur->Line(outline[i].x, outline[i].y, outline[outline.size() - i - 1].x, outline[outline.size() - i - 1].y);
    }
 }

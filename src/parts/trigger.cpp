@@ -110,6 +110,21 @@ void Trigger::UpdateStatusBarInfo()
    }
 }
 
+void Trigger::GetWireOutline(vector<Vertex2D> &outline) const
+{
+   if (m_numIndices <= 0 || m_faceIndices == nullptr)
+      return;
+
+   outline.reserve(m_numIndices / 3 + 1);
+   const Vertex3Ds &A = m_vertices[m_faceIndices[0]];
+   outline.emplace_back(A.x, A.y);
+   for (int i = 0; i < m_numIndices; i += 3)
+   {
+      const Vertex3Ds &B = m_vertices[m_faceIndices[i + 1]];
+      outline.emplace_back(B.x, B.y);
+   }
+}
+
 void Trigger::InitShape(float x, float y)
 {
    constexpr float lengthX = 30.0f;
@@ -855,6 +870,10 @@ void Trigger::Load(IObjectReader& reader)
          return true;
       });
    UpdateStatusBarInfo();
+
+   // Seed the default shape for tables saved without drag points
+   if (m_vdpoint.empty())
+      InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 }
 
 STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)

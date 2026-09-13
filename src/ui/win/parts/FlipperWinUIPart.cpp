@@ -27,7 +27,7 @@ void FlipperWinUIPart::UIRenderPass1(Sur* const psur)
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
-   m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+   m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
    psur->SetObject(m_flipper);
 
@@ -36,7 +36,7 @@ void FlipperWinUIPart::UIRenderPass1(Sur* const psur)
    psur->Ellipse(vendcenter.x, vendcenter.y, m_flipper->m_d.m_EndRadius);
 
    // rubber
-   m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, rubBaseRadius, rubEndRadius);
+   m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, rubBaseRadius, rubEndRadius, vendcenter, rgv);
 
    psur->SetObject(m_flipper);
    psur->SetLineColor(RGB(128, 0, 0), false, 0);
@@ -55,7 +55,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
-   m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+   m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
    psur->SetFillColor(m_flipper->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
@@ -70,7 +70,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
    psur->Arc(vendcenter.x, vendcenter.y, m_flipper->m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
    // rubber
-   m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, rubBaseRadius, rubEndRadius);
+   m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, rubBaseRadius, rubEndRadius, vendcenter, rgv);
 
    psur->SetFillColor(m_flipper->m_ptable->RenderSolid() ? m_editor->m_vpxEditor->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
@@ -85,7 +85,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
    psur->Arc(vendcenter.x, vendcenter.y, rubEndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
    // draw the flipper up position
-   m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+   m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
    psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
@@ -116,7 +116,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
 
    if (m_flipper->m_d.m_FlipperRadius != m_flipper->m_d.m_FlipperRadiusMax)
    {
-      m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+      m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
       psur->SetObject(m_flipper);
 
@@ -126,7 +126,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
       psur->Arc(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, m_flipper->m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_flipper->m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+      m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
       psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
@@ -150,7 +150,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
       m_flipper->m_d.m_FlipperRadius = m_flipper->m_d.m_FlipperRadiusMax - (m_flipper->m_d.m_FlipperRadiusMax - m_flipper->m_d.m_FlipperRadiusMin) * m_flipper->m_ptable->m_globalDifficulty;
       m_flipper->m_d.m_FlipperRadius = max(m_flipper->m_d.m_FlipperRadius, m_flipper->m_d.m_BaseRadius - m_flipper->m_d.m_EndRadius + 0.05f);
 
-      m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+      m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
       psur->SetObject(m_flipper);
 
@@ -160,7 +160,7 @@ void FlipperWinUIPart::UIRenderPass2(Sur* const psur)
       psur->Arc(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, m_flipper->m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_flipper->m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      m_flipper->SetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius);
+      m_flipper->GetVertices(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y, anglerad2, m_flipper->m_d.m_BaseRadius, m_flipper->m_d.m_EndRadius, vendcenter, rgv);
 
       psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
