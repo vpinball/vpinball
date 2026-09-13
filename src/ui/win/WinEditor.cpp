@@ -2094,30 +2094,31 @@ void WinEditor::AddControlPoint()
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
+         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
          switch (psel->GetItemType())
          {
          case eItemRamp:
          {
-            Ramp * const pRamp = (Ramp *)psel;
-            pRamp->AddPoint(pt.x, pt.y, false);
+            Ramp *const pRamp = (Ramp *)psel;
+            pRamp->AddPoint(v, false);
             break;
          }
          case eItemLight:
          {
-            Light * const pLight = (Light *)psel;
-            pLight->AddPoint(pt.x, pt.y, false);
+            Light *const pLight = (Light *)psel;
+            pLight->AddPoint(v, false);
             break;
          }
          case eItemSurface:
          {
-            Surface * const pSurf = (Surface *)psel;
-            pSurf->AddPoint(pt.x, pt.y, false);
+            Surface *const pSurf = (Surface *)psel;
+            pSurf->AddPoint(v, false);
             break;
          }
          case eItemRubber:
          {
-            Rubber * const pRub = (Rubber *)psel;
-            pRub->AddPoint(pt.x, pt.y, false);
+            Rubber *const pRub = (Rubber *)psel;
+            pRub->AddPoint(v, false);
             break;
          }
          default:
@@ -2139,30 +2140,31 @@ void WinEditor::AddSmoothControlPoint()
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
+         const Vertex2D v = ptCur->TransformPoint(pt.x, pt.y);
          switch (psel->GetItemType())
          {
          case eItemRamp:
          {
-            Ramp * const pRamp = (Ramp *)psel;
-            pRamp->AddPoint(pt.x, pt.y, true);
+            Ramp *const pRamp = (Ramp *)psel;
+            pRamp->AddPoint(v, true);
             break;
          }
          case eItemLight:
          {
-            Light * const pLight = (Light *)psel;
-            pLight->AddPoint(pt.x, pt.y, true);
+            Light *const pLight = (Light *)psel;
+            pLight->AddPoint(v, true);
             break;
          }
          case eItemSurface:
          {
-            Surface * const pSurf = (Surface *)psel;
-            pSurf->AddPoint(pt.x, pt.y, true);
+            Surface *const pSurf = (Surface *)psel;
+            pSurf->AddPoint(v, true);
             break;
          }
          case eItemRubber:
          {
-            Rubber * const pRub = (Rubber *)psel;
-            pRub->AddPoint(pt.x, pt.y, true);
+            Rubber *const pRub = (Rubber *)psel;
+            pRub->AddPoint(v, true);
             break;
          }
          default:

@@ -61,6 +61,9 @@ public:
    float GetZoom() const;
    void SetZoom(float zoom);
 
+   // Transform editor window coordinates to table coordinates
+   Vertex2D TransformPoint(int x, int y) const;
+
    void FVerifySaveToClose();
    void BeginAutoSaveCounter();
    void EndAutoSaveCounter();

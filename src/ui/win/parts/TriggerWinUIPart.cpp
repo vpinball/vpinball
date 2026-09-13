@@ -152,7 +152,7 @@ void TriggerWinUIPart::DoCommand(int icmd, int x, int y)
       m_trigger->BeginUndo();
       m_trigger->MarkForUndo();
 
-      const Vertex2D v = m_trigger->m_ptable->TransformPoint(x, y);
+      const Vertex2D v = m_editor->TransformPoint(x, y);
 
       vector<RenderVertex> vvertex;
       m_trigger->GetRgVertex(vvertex);

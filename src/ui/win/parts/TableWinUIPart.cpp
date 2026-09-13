@@ -17,7 +17,7 @@ TableWinUIPart::TableWinUIPart(PinTableWnd *editor, PinTable *table)
 
 void TableWinUIPart::OnLButtonDown(int x, int y)
 {
-   const Vertex2D v = m_table->TransformPoint(x, y);
+   const Vertex2D v = m_editor->TransformPoint(x, y);
 
    m_table->m_rcDragRect.left = v.x;
    m_table->m_rcDragRect.right = v.x;

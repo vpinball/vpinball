@@ -124,7 +124,7 @@ protected:
 public:
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader& loader) final;
-   void AddPoint(int x, int y, const bool smooth) final;
+   void AddPoint(const Vertex2D &v, const bool smooth) final;
    void UpdateStatusBarInfo() final;
 
    float    GetSlingshotStrength() const { return m_d.m_slingshotforce * (float)(1.0/10.0); }

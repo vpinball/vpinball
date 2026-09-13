@@ -159,7 +159,7 @@ void RampWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      m_ramp->AddPoint(x, y, true);
+      m_ramp->AddPoint(m_editor->TransformPoint(x, y), true);
    }
    break;
    }

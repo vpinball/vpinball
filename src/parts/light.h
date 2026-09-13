@@ -140,7 +140,7 @@ protected:
 public:
    float GetDepth(const Vertex3Ds& viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemLight; }
-   void AddPoint(int x, int y, const bool smooth) final;
+   void AddPoint(const Vertex2D &v, const bool smooth) final;
 
    void WriteRegDefaults() final;
 

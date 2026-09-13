@@ -149,7 +149,7 @@ void RubberWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      m_rubber->AddPoint(x, y, true);
+      m_rubber->AddPoint(m_editor->TransformPoint(x, y), true);
    }
    break;
    }

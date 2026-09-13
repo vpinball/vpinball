@@ -161,6 +161,6 @@ void LightWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_light); break;
 
-   case ID_WALLMENU_ADDPOINT: m_light->AddPoint(x, y, true); break;
+   case ID_WALLMENU_ADDPOINT: m_light->AddPoint(m_editor->TransformPoint(x, y), true); break;
    }
 }

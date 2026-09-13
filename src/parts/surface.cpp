@@ -943,11 +943,9 @@ void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)
    m_renderer->m_renderDevice->m_basicShader->SetVector(ShaderUniform::fDisableLighting_top_below, 0.f, 0.f, 0.f, 0.f);
 }
 
-void Surface::AddPoint(int x, int y, const bool smooth)
+void Surface::AddPoint(const Vertex2D &v, const bool smooth)
 {
    STARTUNDO
-
-   const Vertex2D v = m_ptable->TransformPoint(x, y);
 
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);

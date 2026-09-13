@@ -125,7 +125,7 @@ public:
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
 
-   void AddPoint(int x, int y, const bool smooth) final;
+   void AddPoint(const Vertex2D &v, const bool smooth) final;
 
 protected:
    Renderer *m_renderer = nullptr;

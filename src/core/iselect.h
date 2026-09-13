@@ -95,7 +95,7 @@ public:
    virtual int GetSelectLevel() const { return 1; }
    virtual bool LoadMeshDialog() { return false; }
    virtual void ExportMeshDialog() {}
-   virtual void AddPoint(int x, int y, const bool smooth) {}
+   virtual void AddPoint(const Vertex2D &v, const bool smooth) { }
    virtual void UpdateStatusBarInfo();
 
    virtual bool IsUILocked() const = 0;
