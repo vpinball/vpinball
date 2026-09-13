@@ -24,6 +24,11 @@ void DragPointWinUIPart::OnLButtonUp(int x, int y)
    m_dragPoint->GetPTable()->SetDirtyDraw();
 }
 
+void DragPointWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_dragPoint->m_v.x, m_dragPoint->m_v.y);
+}
+
 void DragPointWinUIPart::EditMenu(CMenu& menu)
 {
    menu.CheckMenuItem(ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_dragPoint->m_smooth ? MF_CHECKED : MF_UNCHECKED));

@@ -257,7 +257,6 @@ public:
    bool PhysicUpdate(class PhysicsEngine *physics, const bool isUI) final;
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;

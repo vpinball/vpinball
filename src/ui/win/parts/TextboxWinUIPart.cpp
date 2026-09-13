@@ -13,6 +13,11 @@ TextboxWinUIPart::TextboxWinUIPart(PinTableWnd* editor, Textbox* textbox)
 {
 }
 
+void TextboxWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_textbox->m_d.m_v1.x, m_textbox->m_d.m_v1.y);
+}
+
 void TextboxWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);

@@ -6,6 +6,7 @@
 #include "core/iselect.h"
 #include "parts/pintable.h"
 #include "ui/win/IWinUIPart.h"
+#include "ui/win/WinEditor.h"
 #include "ui/win/WinUIPartRegistry.h"
 
 void IWinUIPart::OnLButtonDown(int x, int y)
@@ -15,7 +16,7 @@ void IWinUIPart::OnLButtonDown(int x, int y)
 
    m_select->GetPTable()->SetMouseCapture();
 
-   m_select->SetObjectPos();
+   UpdateStatusBarObjectPos();
 }
 
 void IWinUIPart::OnLButtonUp(int x, int y)
@@ -33,6 +34,16 @@ void IWinUIPart::OnLButtonUp(int x, int y)
       if (m_select->GetPTable())
          m_select->GetPTable()->SetDirtyDraw();
    }
+}
+
+void IWinUIPart::UpdateStatusBarObjectPos()
+{
+   m_editor->m_vpxEditor->ClearObjectPosCur();
+}
+
+void IWinUIPart::SetStatusBarObjectPos(const float x, const float y)
+{
+   m_editor->m_vpxEditor->SetObjectPosCur(x, y);
 }
 
 void IWinUIPart::DoCommand(int icmd, int x, int y)

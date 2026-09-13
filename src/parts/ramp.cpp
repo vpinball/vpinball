@@ -1188,11 +1188,6 @@ void Ramp::PrepareHabitrail()
 #pragma endregion
 
 
-void Ramp::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(0, 0);
-}
-
 void Ramp::MoveOffset(const float dx, const float dy)
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)

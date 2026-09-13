@@ -443,11 +443,6 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf) const
    world.TransformVertices(m_vertices, buf, m_numVertices);
 }
 
-void Gate::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Gate::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

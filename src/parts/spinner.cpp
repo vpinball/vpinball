@@ -408,11 +408,6 @@ void Spinner::UpdatePlate(Vertex3D_NoTex2 * const vertBuffer)
 #pragma endregion
 
 
-void Spinner::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Spinner::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

@@ -646,11 +646,6 @@ void Rubber::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void Rubber::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(0, 0);
-}
-
 void Rubber::MoveOffset(const float dx, const float dy)
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)

@@ -30,6 +30,9 @@ public:
    virtual void OnLButtonDown(int x, int y);
    virtual void OnLButtonUp(int x, int y);
 
+   // Updates the editor status bar with the part's position (in table units)
+   virtual void UpdateStatusBarObjectPos();
+
    // Allows the part to customize the editor context menu before it is displayed
    virtual void EditMenu(Win32xx::CMenu& menu) { }
 
@@ -37,6 +40,8 @@ public:
    virtual void DoCommand(int icmd, int x, int y);
 
 protected:
+   void SetStatusBarObjectPos(const float x, const float y);
+
    PinTableWnd* const m_editor;
    ISelect* const m_select;
 };

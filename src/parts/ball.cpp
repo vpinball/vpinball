@@ -59,11 +59,6 @@ HRESULT Ball::Init(const float x, const float y, const bool fromMouseClick, cons
    return S_OK;
 }
 
-void Ball::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y);
-}
-
 void Ball::MoveOffset(const float dx, const float dy)
 {
    m_hitBall.m_d.m_pos.x += dx;

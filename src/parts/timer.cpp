@@ -43,11 +43,6 @@ void Timer::WriteRegDefaults()
 #undef LinkProp
 }
 
-void Timer::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
-}
-
 void Timer::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v.x += dx;

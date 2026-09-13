@@ -169,11 +169,6 @@ void Decal::UpdateBounds()
    }
 }
 
-void Decal::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Decal::GetEditorQuad(Vertex2D rgv[4]) const
 {
    const float halfwidth = m_realwidth * 0.5f;

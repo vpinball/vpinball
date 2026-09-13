@@ -742,11 +742,6 @@ void Light::Render(const unsigned int renderMask)
    }
 }
 
-void Light::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Light::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

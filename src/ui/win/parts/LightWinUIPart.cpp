@@ -14,6 +14,11 @@ LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
 {
 }
 
+void LightWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_light->m_d.m_vCenter.x, m_light->m_d.m_vCenter.y);
+}
+
 void LightWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);

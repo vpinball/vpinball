@@ -13,6 +13,11 @@ GateWinUIPart::GateWinUIPart(PinTableWnd* editor, Gate* gate)
 {
 }
 
+void GateWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y);
+}
+
 void GateWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

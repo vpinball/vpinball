@@ -14,6 +14,11 @@ RampWinUIPart::RampWinUIPart(PinTableWnd* editor, Ramp* ramp)
 {
 }
 
+void RampWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(0.f, 0.f);
+}
+
 void RampWinUIPart::UIRenderPass1(Sur* const psur)
 {
    // make 1-wire ramps look unique in editor - uses ramp color

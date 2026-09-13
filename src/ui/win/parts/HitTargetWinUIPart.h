@@ -12,6 +12,7 @@ public:
 
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
+   void UpdateStatusBarObjectPos() override;
 
 private:
    HitTarget* const m_hittarget;

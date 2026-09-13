@@ -84,7 +84,6 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    // Multi-object manipulation
    void FlipY(const Vertex2D& pvCenter) final;

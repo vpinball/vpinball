@@ -352,11 +352,6 @@ void DispReel::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void DispReel::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
-}
-
 void DispReel::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v1.x += dx;

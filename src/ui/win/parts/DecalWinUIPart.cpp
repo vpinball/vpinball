@@ -14,6 +14,11 @@ DecalWinUIPart::DecalWinUIPart(PinTableWnd* editor, Decal* decal)
 {
 }
 
+void DecalWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_decal->m_d.m_vCenter.x, m_decal->m_d.m_vCenter.y);
+}
+
 void DecalWinUIPart::UIRenderPass1(Sur* const psur)
 {
    if (!(m_decal->m_desktopBackdrop && !m_decal->GetPTable()->GetDecalsEnabled()))

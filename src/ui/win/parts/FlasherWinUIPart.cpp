@@ -14,6 +14,11 @@ FlasherWinUIPart::FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher)
 {
 }
 
+void FlasherWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(0.f, 0.f);
+}
+
 void FlasherWinUIPart::UIRenderPass1(Sur * const psur)
 {
    if (m_flasher->m_vdpoint.empty())

@@ -86,7 +86,6 @@ public:
 
    // ISelect implementation
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
    void SetDefaultPhysics(const bool fromMouseClick) final;

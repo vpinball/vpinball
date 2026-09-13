@@ -14,6 +14,11 @@ RubberWinUIPart::RubberWinUIPart(PinTableWnd* editor, Rubber* rubber)
 {
 }
 
+void RubberWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(0.f, 0.f);
+}
+
 void RubberWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetLineColor(RGB(0, 0, 0), false, 0);

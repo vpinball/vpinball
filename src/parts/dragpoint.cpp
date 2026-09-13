@@ -374,11 +374,6 @@ const IEditable *DragPoint::GetIEditable() const
    return M_PIHDP->GetIEditable();
 }
 
-void DragPoint::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_v.x, m_v.y);
-}
-
 void DragPoint::MoveOffset(const float dx, const float dy)
 {
    m_v.x += dx;

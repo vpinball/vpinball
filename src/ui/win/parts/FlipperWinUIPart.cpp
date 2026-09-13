@@ -13,6 +13,11 @@ FlipperWinUIPart::FlipperWinUIPart(PinTableWnd* editor, Flipper* flipper)
 {
 }
 
+void FlipperWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_flipper->m_d.m_Center.x, m_flipper->m_d.m_Center.y);
+}
+
 void FlipperWinUIPart::UIRenderPass1(Sur* const psur)
 {
    const float rubBaseRadius = m_flipper->m_d.m_BaseRadius - m_flipper->m_d.m_rubberthickness;

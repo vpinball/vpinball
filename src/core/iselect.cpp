@@ -21,11 +21,6 @@ void ISelect::SetDirtyDraw()
       GetPTable()->SetDirtyDraw();
 }
 
-void ISelect::SetObjectPos()
-{
-   m_vpinball->ClearObjectPosCur();
-}
-
 void ISelect::FlipY(const Vertex2D& pvCenter)
 {
    GetIEditable()->MarkForUndo(); // Start/EndUndo cycle is around the loop that calls this

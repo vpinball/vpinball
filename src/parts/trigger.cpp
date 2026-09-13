@@ -479,11 +479,6 @@ std::unique_ptr<std::vector<Vertex3D_NoTex2>> Trigger::GenerateMesh(Vertex3Ds &b
    return triggerVertices;
 }
 
-void Trigger::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Trigger::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

@@ -119,7 +119,6 @@ public:
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &pvOffset) final;
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    int GetMinimumPoints() const final { return 2; }
 

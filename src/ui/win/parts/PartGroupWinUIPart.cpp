@@ -13,6 +13,11 @@ PartGroupWinUIPart::PartGroupWinUIPart(PinTableWnd* editor, PartGroup* partgroup
 {
 }
 
+void PartGroupWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_partgroup->m_d.m_v.x, m_partgroup->m_d.m_v.y);
+}
+
 void PartGroupWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }
