@@ -4,6 +4,7 @@
 
 #include "ui/win/WinUIPartRegistry.h"
 
+#ifndef __STANDALONE__
 #include "ui/win/parts/BallWinUIPart.h"
 #include "parts/ball.h"
 #include "ui/win/parts/BumperWinUIPart.h"
@@ -50,9 +51,11 @@
 #include "parts/timer.h"
 #include "ui/win/parts/TriggerWinUIPart.h"
 #include "parts/trigger.h"
+#endif
 
 ankerl::unordered_dense::map<ItemTypeEnum, WinUIPartRegistry::CreateFunc> WinUIPartRegistry::m_map;
 
+#ifndef __STANDALONE__
 namespace
 {
 // Fallback UI part for ISelect types that do not have a dedicated WinUI part (e.g. light centers).
@@ -68,6 +71,7 @@ public:
    void UIRenderPass2(Sur* psur) override { }
 };
 }
+#endif
 
 std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, ISelect* select)
 {
@@ -83,6 +87,7 @@ std::unique_ptr<IWinUIPart> WinUIPartRegistry::Create(PinTableWnd* editor, ISele
 
 void WinUIPartRegistry::InitRegistry()
 {
+#ifndef __STANDALONE__
    Register<BallWinUIPart, Ball>();
    Register<BumperWinUIPart, Bumper>();
    Register<DecalWinUIPart, Decal>();
@@ -108,4 +113,5 @@ void WinUIPartRegistry::InitRegistry()
    Register<TriggerWinUIPart, Trigger>();
 
    m_map[eItemLightCenter] = [](PinTableWnd* editor, ISelect* part) -> std::unique_ptr<IWinUIPart> { return std::make_unique<GenericWinUIPart>(editor, part); };
+#endif
 }
