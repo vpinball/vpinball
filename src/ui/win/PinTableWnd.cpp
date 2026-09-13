@@ -26,18 +26,19 @@ class SearchSelectDialog { };
 
 
 PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
-   : m_table(table) 
+   : m_table(table)
    , m_pcv(std::make_unique<CodeViewer>(table))
    , m_vpxEditor(vpxEditor)
+#ifndef __STANDALONE__
+   , m_tablePart(this, table)
+#endif
 {
    m_table->AddRef();
    m_table->m_tableEditor = this;
    m_pcv->Create(nullptr);
    SetDefaultView();
 #ifndef __STANDALONE__
-   // UI part of the table itself, plus the UI parts of any part added before the editor was attached
-   if (std::unique_ptr<IWinUIPart> tablePart = WinUIPartRegistry::Create(this, m_table->GetISelect()))
-      m_uiParts[m_table->GetISelect()] = std::move(tablePart);
+   // Create the UI parts of any part added before the editor was attached
    for (IEditable *const part : m_table->GetParts())
       OnPartAdded(part);
 #endif
@@ -389,8 +390,7 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       psur->Rectangle(0, 0, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT);
    }
 
-   IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
-   if (tablePart && tablePart->m_dragging)
+   if (m_tablePart.m_dragging)
    {
       psur->SetFillColor(-1);
       psur->SetBorderColor(RGB(0, 0, 0), true, 0);
@@ -844,8 +844,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         if (IWinUIPart *const uiPart = GetUIPart(pisel))
-            uiPart->OnLButtonDown(x, y); // Start the band select
+         m_tablePart.OnLButtonDown(x, y); // Start the band select
          return;
       }
 
@@ -877,8 +876,7 @@ void PinTableWnd::OnLeftButtonDown(const short x, const short y)
 
 void PinTableWnd::OnLeftButtonUp(int x, int y)
 {
-   IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
-   if ((tablePart == nullptr) || !tablePart->m_dragging) // Not doing band select
+   if (!m_tablePart.m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_table->m_vmultisel.size(); i++)
       {
@@ -895,7 +893,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
    }
    else
    {
-      tablePart->m_dragging = false;
+      m_tablePart.m_dragging = false;
       ReleaseCapture();
       if ((m_table->m_rcDragRect.left != m_table->m_rcDragRect.right) || (m_table->m_rcDragRect.top != m_table->m_rcDragRect.bottom))
       {
@@ -1014,8 +1012,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       const Vertex2D v = m_table->TransformPoint(x, y);
       m_vpxEditor->SetPosCur(v.x, v.y);
 
-      IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
-      if ((tablePart == nullptr) || !tablePart->m_dragging) // Not doing band select
+      if (!m_tablePart.m_dragging) // Not doing band select
       {
          if ((x != m_ptLast.x) || (y != m_ptLast.y))
          {
@@ -1269,7 +1266,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   IWinUIPart *const winPart = GetUIPart(psel);
+   IWinUIPart *const winPart = (psel == m_table) ? &m_tablePart : GetUIPart(psel);
    if (winPart)
       winPart->EditMenu(newMenu);
 
@@ -1455,7 +1452,8 @@ void PinTableWnd::OnPartRemoved(IEditable *part)
 
 IWinUIPart *PinTableWnd::GetUIPart(ISelect *select)
 {
-   if (select == nullptr)
+   // The UI part of the table itself is not stored in the map but directly owned by this editor (m_tablePart)
+   if (select == nullptr || select == m_table->GetISelect())
       return nullptr;
    auto it = m_uiParts.find(select);
    if (it != m_uiParts.end())
