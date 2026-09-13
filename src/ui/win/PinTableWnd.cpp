@@ -1259,7 +1259,8 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   psel->EditMenu(newMenu);
+   if (const auto winPart = WinUIPartRegistry::Create(this, psel))
+      winPart->EditMenu(newMenu);
 
    if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH)
    {

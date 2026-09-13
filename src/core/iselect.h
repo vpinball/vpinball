@@ -55,7 +55,6 @@ public:
    virtual void OnLButtonUp(int x, int y);
 
    virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
-   virtual void EditMenu(CMenu &menu) { }
    virtual void DoCommand(int icmd, int x, int y);
    virtual void SetObjectPos();
 

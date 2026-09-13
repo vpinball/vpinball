@@ -13,6 +13,7 @@ public:
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;
+   void EditMenu(Win32xx::CMenu& menu) override;
 
 private:
    void RenderOutline(Sur* psur);

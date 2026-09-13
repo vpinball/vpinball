@@ -123,7 +123,6 @@ public:
    void ClearForOverwrite() final;
 
 #ifndef __STANDALONE__
-   void EditMenu(CMenu &menu) final;
    void DoCommand(int icmd, int x, int y) final;
 #endif
 

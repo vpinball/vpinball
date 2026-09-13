@@ -1,0 +1,22 @@
+#pragma once
+
+#include "ui/win/IWinUIPart.h"
+#include "ui/win/PinTableWnd.h"
+
+class DragPoint;
+
+class DragPointWinUIPart final : public IWinUIPart
+{
+public:
+   explicit DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint);
+
+   // Dragpoints are drawn by their parent's IWinUIPart
+   void UIRenderPass1(Sur* psur) override { }
+   void UIRenderPass2(Sur* psur) override { }
+
+   void EditMenu(Win32xx::CMenu& menu) override;
+
+private:
+   PinTableWnd* const m_editor;
+   DragPoint* const m_dragPoint;
+};

@@ -31,6 +31,7 @@ public:
    void OnLButtonUp(int x, int y) final;
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
+   static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
    ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
 
    // Multi-object manipulation
@@ -38,7 +39,6 @@ public:
    void PutCenter(const Vertex2D &pv) final;
 
 #ifndef __STANDALONE__
-   void EditMenu(CMenu &menu) final;
    void DoCommand(int icmd, int x, int y) final;
 #endif
 

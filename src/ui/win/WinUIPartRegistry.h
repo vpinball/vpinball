@@ -12,14 +12,15 @@
 class WinUIPartRegistry final
 {
 public:
-   using CreateFunc = std::unique_ptr<IWinUIPart> (*)(PinTableWnd*, IEditable*);
+   using CreateFunc = std::unique_ptr<IWinUIPart> (*)(PinTableWnd*, ISelect*);
 
    template <class UIPart, class Part> static void Register()
    {
-      m_map[Part::ItemType] = [](PinTableWnd* editor, IEditable* part) -> std::unique_ptr<IWinUIPart> { return std::make_unique<UIPart>(editor, static_cast<Part*>(part)); };
+      m_map[Part::ItemType] = [](PinTableWnd* editor, ISelect* part) -> std::unique_ptr<IWinUIPart> { return std::make_unique<UIPart>(editor, static_cast<Part*>(part)); };
    }
 
-   static std::unique_ptr<IWinUIPart> Create(PinTableWnd*, IEditable* editable);
+   static std::unique_ptr<IWinUIPart> Create(PinTableWnd*, ISelect* select);
+   static std::unique_ptr<IWinUIPart> Create(PinTableWnd* editor, IEditable* editable) { return Create(editor, editable ? editable->GetISelect() : nullptr); }
    static void InitRegistry();
 
 private:

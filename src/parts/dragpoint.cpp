@@ -426,13 +426,6 @@ void DragPoint::Uncreate()
 }
 
 #ifndef __STANDALONE__
-void DragPoint::EditMenu(CMenu &menu)
-{
-   menu.CheckMenuItem(ID_POINTMENU_SMOOTH, MF_BYCOMMAND | (m_smooth ? MF_CHECKED : MF_UNCHECKED));
-   //EnableMenuItem(hmenu, ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | (m_fSmooth ? MF_GRAYED : MF_ENABLED));
-   menu.CheckMenuItem(ID_POINTMENU_SLINGSHOT, MF_BYCOMMAND | ((m_slingshot && !m_smooth) ? MF_CHECKED : MF_UNCHECKED));
-}
-
 void DragPoint::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
