@@ -382,6 +382,8 @@ void PinTable::AddPart(IEditable *const part)
    part->AddRef();
    part->m_ptable = this;
    m_vedit.push_back(part);
+   if (m_tableEditor)
+      m_tableEditor->OnPartAdded(part);
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!scriptable->m_wzName.empty());
@@ -399,6 +401,8 @@ void PinTable::RemovePart(IEditable *const part)
    assert(it2 != m_vedit.end());
    assert(part->m_ptable == this);
    m_vedit.erase(it2);
+   if (m_tableEditor)
+      m_tableEditor->OnPartRemoved(part);
    if (auto scriptable = part->GetIScriptable(); scriptable)
    {
       assert(!part->GetIScriptable()->m_wzName.empty());

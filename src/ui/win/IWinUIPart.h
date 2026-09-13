@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/iselect.h"
+
 class Sur;
 class IEditable;
 class ISelect;
@@ -18,6 +20,9 @@ public:
    {
    }
    virtual ~IWinUIPart() = default;
+
+   ISelect* GetSelect() const { return m_select; }
+   IEditable* GetEditable() const { return m_select->GetIEditable(); }
 
    // This function draws the shape of the object with a solid fill, called before the grid lines are drawn on the map
    virtual void UIRenderPass1(Sur* psur) = 0;
@@ -41,6 +46,9 @@ public:
 
    // Executes a command picked from the context menu
    virtual void DoCommand(int icmd, int x, int y);
+
+   // Returns the UI part for a sub select owned by this part's editable (e.g. a drag point, a light center), nullptr if none
+   virtual IWinUIPart* GetSubPart(ISelect* select) { return nullptr; }
 
 protected:
    void SetStatusBarObjectPos(const float x, const float y);

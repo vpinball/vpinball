@@ -6,12 +6,25 @@
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/parts/LightWinUIPart.h"
 
 LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
    : IWinUIPart(editor, light)
    , m_light(light)
+   , m_pointParts(editor, light)
 {
+}
+
+IWinUIPart* LightWinUIPart::GetSubPart(ISelect* select)
+{
+   if (select == m_light->GetLightCenterSelect())
+   {
+      if (!m_centerPart)
+         m_centerPart = WinUIPartRegistry::Create(m_editor, select);
+      return m_centerPart.get();
+   }
+   return m_pointParts.Get(select);
 }
 
 void LightWinUIPart::UpdateStatusBarObjectPos()

@@ -6,7 +6,6 @@
 #include "parts/PartGroup.h"
 #include "ui/win/DragPointDialogs.h"
 #include "ui/win/WinEditor.h"
-#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/parts/TableWinUIPart.h"
 
 TableWinUIPart::TableWinUIPart(PinTableWnd *editor, PinTable *table)
@@ -64,8 +63,8 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
    {
       const int i = (icmd & 0x00FF0000) >> 16;
       ISelect *const pisel = m_table->m_allHitElements[i];
-      if (const auto winPart = WinUIPartRegistry::Create(m_editor, pisel))
-         winPart->DoCommand(icmd, x, y);
+      if (IWinUIPart *const uiPart = m_editor->GetUIPart(pisel))
+         uiPart->DoCommand(icmd, x, y);
       return;
    }
 
@@ -78,8 +77,8 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
       {
          ISelect *const psel = m_table->m_vmultisel.ElementAt(i);
          _ASSERTE(psel != m_table); // Would make an infinite loop
-         if (const auto winPart = WinUIPartRegistry::Create(m_editor, psel))
-            winPart->DoCommand(icmd, x, y);
+         if (IWinUIPart *const uiPart = m_editor->GetUIPart(psel))
+            uiPart->DoCommand(icmd, x, y);
       }
       break;
    }

@@ -11,6 +11,7 @@
 TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
    : IWinUIPart(editor, trigger)
    , m_trigger(trigger)
+   , m_pointParts(editor, trigger)
 {
 }
 

@@ -11,6 +11,7 @@
 RubberWinUIPart::RubberWinUIPart(PinTableWnd* editor, Rubber* rubber)
    : IWinUIPart(editor, rubber)
    , m_rubber(rubber)
+   , m_pointParts(editor, rubber)
 {
 }
 

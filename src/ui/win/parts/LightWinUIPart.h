@@ -2,6 +2,7 @@
 
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/parts/DragPointUIPartList.h"
 
 class Light;
 
@@ -18,8 +19,12 @@ public:
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 
+   IWinUIPart* GetSubPart(ISelect* select) override;
+
 private:
    void RenderOutline(Sur* psur);
 
    Light* const m_light;
+   DragPointUIPartList m_pointParts;
+   std::unique_ptr<IWinUIPart> m_centerPart;
 };

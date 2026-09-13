@@ -11,6 +11,7 @@
 FlasherWinUIPart::FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher)
    : IWinUIPart(editor, flasher)
    , m_flasher(flasher)
+   , m_pointParts(editor, flasher)
 {
 }
 
