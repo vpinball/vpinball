@@ -2,6 +2,7 @@
 
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/parts/DragPointUIPartList.h"
 
 class Trigger;
 
@@ -18,6 +19,9 @@ public:
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 
+   IWinUIPart* GetSubPart(ISelect* select) override { return m_pointParts.Get(select); }
+
 private:
    Trigger* const m_trigger;
+   DragPointUIPartList m_pointParts;
 };

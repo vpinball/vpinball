@@ -2,6 +2,7 @@
 
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
+#include "ui/win/parts/DragPointUIPartList.h"
 
 class Flasher;
 
@@ -16,6 +17,9 @@ public:
    int GetMenuId() const override { return IDR_SURFACEMENU; }
    void DoCommand(int icmd, int x, int y) override;
 
+   IWinUIPart* GetSubPart(ISelect* select) override { return m_pointParts.Get(select); }
+
 private:
    Flasher* const m_flasher;
+   DragPointUIPartList m_pointParts;
 };

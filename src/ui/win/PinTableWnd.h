@@ -3,8 +3,12 @@
 #pragma once
 
 #include "parts/pintable.h"
+#include "unordered_dense.h"
+
+#include <memory>
 
 class PinTableMDI;
+class IWinUIPart;
 
 class PinTableWnd : public CWnd
 {
@@ -57,6 +61,12 @@ public:
    void ShowSearchSelectDlg();
 
    void OnPartChanged(IEditable *part);
+   void OnPartAdded(IEditable *part);
+   void OnPartRemoved(IEditable *part);
+
+   // Returns the UI part owned by this editor for the given select (including sub selects like drag points or light centers), nullptr if none
+   IWinUIPart *GetUIPart(ISelect *select);
+   IWinUIPart *GetUIPart(IEditable *part) { return GetUIPart(part ? part->GetISelect() : nullptr); }
 
    CComObject<PinTable> *const m_table;
    
@@ -104,6 +114,10 @@ private:
 
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
+
+   // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable::GetISelect()), plus the table itself.
+   // Kept in sync by OnPartAdded/OnPartRemoved. Sub selects (drag points, light centers) are owned by their parent's UI part (see IWinUIPart::GetSubPart).
+   ankerl::unordered_dense::map<ISelect *, std::unique_ptr<IWinUIPart>> m_uiParts;
 
 private:
    POINT m_ptLast {}; // Last point when dragging

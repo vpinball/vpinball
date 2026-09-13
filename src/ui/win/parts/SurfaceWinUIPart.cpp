@@ -11,6 +11,7 @@
 SurfaceWinUIPart::SurfaceWinUIPart(PinTableWnd* editor, Surface* surface)
    : IWinUIPart(editor, surface)
    , m_surface(surface)
+   , m_pointParts(editor, surface)
 {
 }
 

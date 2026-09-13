@@ -1673,6 +1673,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h">
       <Filter>ui\win\parts</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointUIPartList.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.h">
       <Filter>ui\win\parts</Filter>
     </ClInclude>

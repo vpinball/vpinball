@@ -34,10 +34,18 @@ PinTableWnd::PinTableWnd(WinEditor *vpxEditor, CComObject<PinTable> *table)
    m_table->m_tableEditor = this;
    m_pcv->Create(nullptr);
    SetDefaultView();
+#ifndef __STANDALONE__
+   // UI part of the table itself, plus the UI parts of any part added before the editor was attached
+   if (std::unique_ptr<IWinUIPart> tablePart = WinUIPartRegistry::Create(this, m_table->GetISelect()))
+      m_uiParts[m_table->GetISelect()] = std::move(tablePart);
+   for (IEditable *const part : m_table->GetParts())
+      OnPartAdded(part);
+#endif
 }
 
 PinTableWnd::~PinTableWnd()
 {
+   m_uiParts.clear();
    m_table->m_tableEditor = nullptr;
    m_table->Release();
 #ifndef __STANDALONE__
@@ -261,10 +269,8 @@ void PinTableWnd::ExportBlueprint()
       for (const auto &ptr : m_table->GetParts())
       {
          if (ptr->m_uiVisible && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
-         {
-            auto winPart = WinUIPartRegistry::Create(this, ptr);
-            winPart->RenderBlueprint(&psur, solid);
-         }
+            if (IWinUIPart *const uiPart = GetUIPart(ptr))
+               uiPart->RenderBlueprint(&psur, solid);
       }
    }
 
@@ -332,10 +338,8 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-      {
-         auto winPart = WinUIPartRegistry::Create(this, ptr);
-         winPart->UIRenderPass1(psur);
-      }
+         if (IWinUIPart *const uiPart = GetUIPart(ptr))
+            uiPart->UIRenderPass1(psur);
    }
 
    if (GetDisplayGrid() && m_vpxEditor->m_gridSize > 0)
@@ -373,10 +377,8 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-      {
-         auto winPart = WinUIPartRegistry::Create(this, ptr);
-         winPart->UIRenderPass2(psur);
-      }
+         if (IWinUIPart *const uiPart = GetUIPart(ptr))
+            uiPart->UIRenderPass2(psur);
    }
 
    if (m_vpxEditor->m_desktopBackdropView) // Outline of the view, for when the grid is off
@@ -729,8 +731,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->GetISelect())
       {
-         auto winPart = WinUIPartRegistry::Create(this, ptr);
-         winPart->UIRenderPass1(&phs2);
+         if (IWinUIPart *const uiPart = GetUIPart(ptr))
+            uiPart->UIRenderPass1(&phs2);
          ISelect *const tmp = phs2.m_pselected;
          if (FindIndexOf(m_table->m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != m_table)
          {
@@ -841,8 +843,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
-            winPart->OnLButtonDown(x, y); // Start the band select
+         if (IWinUIPart *const uiPart = GetUIPart(pisel))
+            uiPart->OnLButtonDown(x, y); // Start the band select
          return;
       }
 
@@ -853,8 +855,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
       {
          ISelect *const pisel2 = m_table->m_vmultisel.ElementAt(i);
          if (pisel2)
-            if (const auto winPart = WinUIPartRegistry::Create(this, pisel2))
-               winPart->OnLButtonDown(x, y);
+            if (IWinUIPart *const uiPart = GetUIPart(pisel2))
+               uiPart->OnLButtonDown(x, y);
       }
    }
 }
@@ -880,8 +882,8 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
       {
          ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
          if (pisel)
-            if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
-               winPart->OnLButtonUp(x, y);
+            if (IWinUIPart *const uiPart = GetUIPart(pisel))
+               uiPart->OnLButtonUp(x, y);
       }
       if (m_moving)
       {
@@ -986,8 +988,8 @@ void PinTableWnd::OnRightButtonUp(int x, int y)
       else if (!m_table->MultiSelIsEmpty())
       {
          int menuid = -1;
-         if (const auto winPart = WinUIPartRegistry::Create(this, m_table->GetSelectedItem()))
-            menuid = winPart->GetMenuId();
+         if (IWinUIPart *const uiPart = GetUIPart(m_table->GetSelectedItem()))
+            menuid = uiPart->GetMenuId();
          DoContextMenu(x, y, menuid, m_table->GetSelectedItem());
       }
       else
@@ -1030,8 +1032,8 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
 
                   const float inv_zoom = 1.0f / GetZoom();
                   m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
-                  if (const auto winPart = WinUIPartRegistry::Create(this, m_table->m_vmultisel.ElementAt(i)))
-                     winPart->UpdateStatusBarObjectPos();
+                  if (IWinUIPart *const uiPart = GetUIPart(m_table->m_vmultisel.ElementAt(i)))
+                     uiPart->UpdateStatusBarObjectPos();
                   Redraw();
                }
             }
@@ -1266,7 +1268,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   const auto winPart = WinUIPartRegistry::Create(this, psel);
+   IWinUIPart *const winPart = GetUIPart(psel);
    if (winPart)
       winPart->EditMenu(newMenu);
 
@@ -1432,6 +1434,38 @@ void PinTableWnd::FVerifySaveToClose()
       m_vpxEditor->SetActionCur(string());
    }
 #endif
+}
+
+void PinTableWnd::OnPartAdded(IEditable *part)
+{
+#ifndef __STANDALONE__
+   if (ISelect *const select = part->GetISelect())
+      if (std::unique_ptr<IWinUIPart> uiPart = WinUIPartRegistry::Create(this, select))
+         m_uiParts[select] = std::move(uiPart);
+#endif
+}
+
+void PinTableWnd::OnPartRemoved(IEditable *part)
+{
+#ifndef __STANDALONE__
+   m_uiParts.erase(part->GetISelect());
+#endif
+}
+
+IWinUIPart *PinTableWnd::GetUIPart(ISelect *select)
+{
+   if (select == nullptr)
+      return nullptr;
+   auto it = m_uiParts.find(select);
+   if (it != m_uiParts.end())
+      return it->second.get();
+   // Not a table part select: delegate to the UI part of the owning part (drag points, light centers, ...)
+   IEditable *const owner = select->GetIEditable();
+   if (owner == nullptr || owner->GetISelect() == select)
+      return nullptr;
+   if (const auto it2 = m_uiParts.find(owner->GetISelect()); it2 != m_uiParts.end())
+      return it2->second->GetSubPart(select);
+   return nullptr;
 }
 
 void PinTableWnd::OnPartChanged(IEditable *part)

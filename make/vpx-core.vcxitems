@@ -1800,6 +1800,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointUIPartList.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.h" />

@@ -11,6 +11,7 @@
 RampWinUIPart::RampWinUIPart(PinTableWnd* editor, Ramp* ramp)
    : IWinUIPart(editor, ramp)
    , m_ramp(ramp)
+   , m_pointParts(editor, ramp)
 {
 }
 
