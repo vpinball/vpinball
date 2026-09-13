@@ -35,8 +35,10 @@ void KickerUIPart::Render(const EditorRenderContext& ctx)
    if (isUIVisible && (ctx.IsSelected() || m_kickerType == KickerType::KickerInvisible))
    {
       m_kicker->m_d.m_visible = true;
-      //ctx.DrawWireframe(m_kicker);
-      ctx.DrawHitObjects(m_kicker);
+      if (m_kickerType == KickerType::KickerInvisible)
+         ctx.DrawHitObjects(m_kicker);
+      else
+         ctx.DrawWireframe(m_kicker);
    }
 
    m_kicker->m_d.m_visible = isUIVisible && (m_kickerType != KickerType::KickerInvisible);

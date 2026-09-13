@@ -297,6 +297,8 @@ void Kicker::Render(const unsigned int renderMask)
    const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
    if (isUIPass)
    {
+      if (m_meshBuffer == nullptr || m_plateMeshBuffer == nullptr)
+         return;
       if (renderMask & Renderer::UI_FILL)
       {
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, true, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
@@ -318,17 +320,13 @@ void Kicker::Render(const unsigned int renderMask)
             default:
             case KickerHoleSimple: indices = kickerSimpleHoleIndices; break;
             }
-            vector<unsigned int> indices2(m_numIndices);
-            for (unsigned int i = 0; i < m_numIndices; i++)
-               indices2.push_back(indices[i]);
+            vector<unsigned int> indices2(indices, indices + m_numIndices);
             m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(indices2);
          }
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
          if (m_plateMeshEdgeBuffer == nullptr)
          {
-            vector<unsigned int> indices(kickerPlateNumIndices);
-            for (unsigned int i = 0; i < kickerPlateNumIndices; i++)
-               indices.push_back(kickerPlateIndices[i]);
+            vector<unsigned int> indices(kickerPlateIndices, kickerPlateIndices + kickerPlateNumIndices);
             m_plateMeshEdgeBuffer = m_plateMeshBuffer->CreateEdgeMeshBuffer(indices);
          }
          m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, pos, 0.f, m_plateMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_plateMeshEdgeBuffer->m_ib->m_count);
