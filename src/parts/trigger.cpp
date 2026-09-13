@@ -32,95 +32,39 @@ Trigger *Trigger::CopyForPlay() const
    return dst;
 }
 
-void Trigger::UpdateStatusBarInfo()
+Trigger::StaticMeshData Trigger::SetupMeshData(const TriggerShape shape)
 {
-   if (g_pplayer)
-       return;
-
-   if (m_d.m_shape != TriggerNone)
+   switch (shape)
    {
-      const Vertex3D_NoTex2 *meshVertices;
-      switch(m_d.m_shape)
-      {
-      case TriggerWireA:
-      case TriggerWireB:
-      case TriggerWireC:
-      {
-         m_numVertices = triggerSimpleNumVertices;
-         m_numIndices = triggerSimpleNumIndices;
-         m_faceIndices = triggerSimpleIndices;
-         meshVertices = triggerSimple;
-         break;
-      }
-      case TriggerWireD:
-      {
-         m_numVertices = triggerDWireNumVertices;
-         m_numIndices = triggerDWireNumIndices;
-         m_faceIndices = triggerDWireIndices;
-         meshVertices = triggerDWireMesh;
-         break;
-      }
-      case TriggerInder:
-      {
-         m_numVertices = triggerInderNumVertices;
-         m_numIndices = triggerInderNumIndices;
-         m_faceIndices = triggerInderIndices;
-         meshVertices = triggerInderMesh;
-         break;
-      }
-      case TriggerButton:
-      {
-         m_numVertices = triggerButtonNumVertices;
-         m_numIndices = triggerButtonNumIndices;
-         m_faceIndices = triggerButtonIndices;
-         meshVertices = triggerButtonMesh;
-         break;
-      }
-      case TriggerStar:
-      {
-         m_numVertices = triggerStarNumVertices;
-         m_numIndices = triggerStarNumIndices;
-         m_faceIndices = triggerStarIndices;
-         meshVertices = triggerStar;
-         break;
-      }
-      default:
-         assert(!"Unhandled Trigger case");
-         break;
-      }
-
-      m_vertices.resize(m_numVertices);
-      const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
-      for (int i = 0; i < m_numVertices; i++)
-      {
-         m_vertices[i] = fullMatrix * meshVertices[i];
-         if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
-         {
-            m_vertices[i].x *= m_d.m_scaleX;
-            m_vertices[i].y *= m_d.m_scaleY;
-         }
-         else
-         {
-            m_vertices[i].x *= m_d.m_radius;
-            m_vertices[i].y *= m_d.m_radius;
-         }
-         m_vertices[i].x += m_d.m_vCenter.x;
-         m_vertices[i].y += m_d.m_vCenter.y;
-      }
+   case TriggerNone: return {};
+   case TriggerWireA:
+   case TriggerWireB:
+   case TriggerWireC: return { triggerSimple, triggerSimpleIndices };
+   case TriggerWireD: return { triggerDWireMesh, triggerDWireIndices };
+   case TriggerInder: return { triggerInderMesh, triggerInderIndices };
+   case TriggerButton: return { triggerButtonMesh, triggerButtonIndices };
+   case TriggerStar: return { triggerStar, triggerStarIndices };
+   default: return {};
    }
 }
 
 void Trigger::GetWireOutline(vector<Vertex2D> &outline) const
 {
-   if (m_numIndices <= 0 || m_faceIndices == nullptr)
+   const StaticMeshData meshData = SetupMeshData(m_d.m_shape);
+   if (meshData.indices.empty())
       return;
 
-   outline.reserve(m_numIndices / 3 + 1);
-   const Vertex3Ds &A = m_vertices[m_faceIndices[0]];
+   const float scaleX = (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton) ? m_d.m_radius : m_d.m_scaleX;
+   const float scaleY = (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton) ? m_d.m_radius : m_d.m_scaleY;
+   const Matrix3D fullMatrix
+      = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation)) * Matrix3D::MatrixScale(scaleX, scaleY, 1.0f) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, 0.0f);
+
+   outline.reserve(meshData.indices.size() / 3 + 1);
+   const Vertex3Ds A = fullMatrix * meshData.vertices[meshData.indices[0]];
    outline.emplace_back(A.x, A.y);
-   for (int i = 0; i < m_numIndices; i += 3)
+   for (size_t i = 0; i < meshData.indices.size(); i += 3)
    {
-      const Vertex3Ds &B = m_vertices[m_faceIndices[i + 1]];
+      const Vertex3Ds B = fullMatrix * meshData.vertices[meshData.indices[i + 1]];
       outline.emplace_back(B.x, B.y);
    }
 }
@@ -319,56 +263,13 @@ void Trigger::RenderSetup(Renderer *renderer)
    if (!m_d.m_visible || m_d.m_shape == TriggerNone)
       return;
 
-   const WORD* indices;
-   switch(m_d.m_shape)
-   {
-   case TriggerWireA:
-   case TriggerWireB:
-   case TriggerWireC:
-   {
-      m_numVertices = triggerSimpleNumVertices;
-      m_numIndices = triggerSimpleNumIndices;
-      indices = triggerSimpleIndices;
-      break;
-   }
-   case TriggerWireD:
-   {
-      m_numVertices = triggerDWireNumVertices;
-      m_numIndices = triggerDWireNumIndices;
-      indices = triggerDWireIndices;
-      break;
-   }
-   case TriggerInder:
-   {
-      m_numVertices = triggerInderNumVertices;
-      m_numIndices = triggerInderNumIndices;
-      indices = triggerInderIndices;
-      break;
-   }
-   case TriggerButton:
-   {
-      m_numVertices = triggerButtonNumVertices;
-      m_numIndices = triggerButtonNumIndices;
-      indices = triggerButtonIndices;
-      break;
-   }
-   case TriggerStar:
-   {
-      m_numVertices = triggerStarNumVertices;
-      m_numIndices = triggerStarNumIndices;
-      indices = triggerStarIndices;
-      break;
-   }
-   default:
-   {
-      assert(!"Unknown Trigger");
-      break;
-   }
-   }
+   const StaticMeshData meshData = SetupMeshData(m_d.m_shape);
+   if (meshData.indices.empty())
+      return;
 
-   GenerateMesh();
-   std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, m_numIndices, indices);
-   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, m_numVertices, (float *)m_triggerVertices, true);
+   m_triggerVertices = GenerateMesh(m_boundingSphereCenter);
+   std::shared_ptr<IndexBuffer> triggerIndexBuffer = std::make_shared<IndexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.indices.size(), meshData.indices.data());
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_renderer->m_renderDevice, (unsigned int)meshData.vertices.size(), (float *)m_triggerVertices->data(), true);
    m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, triggerIndexBuffer, true);
 }
 
@@ -377,7 +278,6 @@ void Trigger::RenderRelease()
    assert(m_renderer != nullptr);
    m_renderer = nullptr;
    m_meshBuffer = nullptr;
-   delete[] m_triggerVertices;
    m_triggerVertices = nullptr;
 }
 
@@ -461,18 +361,19 @@ void Trigger::Render(const unsigned int renderMask)
    if (m_animHeightOffset != m_vertexBuffer_animHeightOffset)
    {
       m_vertexBuffer_animHeightOffset = m_animHeightOffset;
+      const Vertex3D_NoTex2 *const verts = m_triggerVertices->data();
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->Lock(buf);
-      for (int i = 0; i < m_numVertices; i++)
+      for (unsigned int i = 0; i < m_meshBuffer->m_vb->m_count; i++)
       {
-         buf[i].x = m_triggerVertices[i].x;
-         buf[i].y = m_triggerVertices[i].y;
-         buf[i].z = m_triggerVertices[i].z + m_animHeightOffset;
-         buf[i].nx = m_triggerVertices[i].nx;
-         buf[i].ny = m_triggerVertices[i].ny;
-         buf[i].nz = m_triggerVertices[i].nz;
-         buf[i].tu = m_triggerVertices[i].tu;
-         buf[i].tv = m_triggerVertices[i].tv;
+         buf[i].x = verts[i].x;
+         buf[i].y = verts[i].y;
+         buf[i].z = verts[i].z + m_animHeightOffset;
+         buf[i].nx = verts[i].nx;
+         buf[i].ny = verts[i].ny;
+         buf[i].nz = verts[i].nz;
+         buf[i].tu = verts[i].tu;
+         buf[i].tv = verts[i].tv;
       }
       m_meshBuffer->m_vb->Unlock();
    }
@@ -481,7 +382,8 @@ void Trigger::Render(const unsigned int renderMask)
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
       m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_renderer->m_renderDevice->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
-   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   m_renderer->m_renderDevice->DrawMesh(
+      m_renderer->m_renderDevice->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_meshBuffer->m_ib->m_count);
 }
 
 #pragma endregion
@@ -493,117 +395,41 @@ void Trigger::ExportMesh(ObjLoader& loader)
       return;
 
    const string name = MakeString(m_wzName);
-   GenerateMesh();
+   Vertex3Ds boundingSphereCenter;
+   const auto triggerVertices = GenerateMesh(boundingSphereCenter);
+   if (!triggerVertices)
+      return;
+   const StaticMeshData meshData = SetupMeshData(m_d.m_shape);
    loader.WriteObjectName(name);
-   loader.WriteVertexInfo(m_triggerVertices, m_numVertices);
+   loader.WriteVertexInfo(triggerVertices->data(), (unsigned int)meshData.vertices.size());
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
    loader.UseTexture(m_d.m_szMaterial);
 
-   const WORD* indices;
-   switch(m_d.m_shape)
-   {
-   case TriggerWireA:
-   case TriggerWireB:
-   case TriggerWireC:
-   {
-      indices = triggerSimpleIndices;
-      break;
-   }
-   case TriggerWireD:
-   {
-      indices = triggerDWireIndices;
-      break;
-   }
-   case TriggerInder:
-   {
-      indices = triggerInderIndices;
-      break;
-   }
-   case TriggerButton:
-   {
-      indices = triggerButtonIndices;
-      break;
-   }
-   case TriggerStar:
-   {
-      indices = triggerStarIndices;
-      break;
-   }
-   default:
-   {
-      assert(!"Unknown Trigger");
-      break;
-   }
-   }
-
-   loader.WriteFaceInfoList(indices, m_numIndices);
-   loader.UpdateFaceOffset(m_numVertices);
-   
-   delete[] m_triggerVertices;
-   m_triggerVertices = nullptr;
+   loader.WriteFaceInfoList(meshData.indices.data(), (unsigned int)meshData.indices.size());
+   loader.UpdateFaceOffset((unsigned int)meshData.vertices.size());
 }
 
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerMeshGenerator.cs
 
-void Trigger::GenerateMesh()
+std::unique_ptr<std::vector<Vertex3D_NoTex2>> Trigger::GenerateMesh(Vertex3Ds &boundingSphereCenter) const
 {
-   // This create m_triggerVertices which must be disposed by caller
-   assert(m_triggerVertices == nullptr);
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const Vertex3D_NoTex2 *verts;
    float zoffset = (m_d.m_shape == TriggerButton) ? 5.0f : 0.0f;
    if (m_d.m_shape == TriggerWireC) zoffset = -19.0f;
 
-   m_boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, baseHeight);
+   boundingSphereCenter.Set(m_d.m_vCenter.x, m_d.m_vCenter.y, baseHeight);
 
-   switch(m_d.m_shape)
-   {
-   case TriggerWireA:
-   case TriggerWireB:
-   case TriggerWireC:
-   {
-      m_numVertices = triggerSimpleNumVertices;
-      m_numIndices = triggerSimpleNumIndices;
-      verts = triggerSimple;
-      break;
-   }
-   case TriggerWireD:
-   {
-      m_numVertices = triggerDWireNumVertices;
-      m_numIndices = triggerDWireNumIndices;
-      verts = triggerDWireMesh;
-      break;
-   }
-   case TriggerInder:
-   {
-      m_numVertices = triggerInderNumVertices;
-      m_numIndices = triggerInderNumIndices;
-      verts = triggerInderMesh;
-      break;
-   }
-   case TriggerButton:
-   {
-      m_numVertices = triggerButtonNumVertices;
-      m_numIndices = triggerButtonNumIndices;
-      verts = triggerButtonMesh;
-      break;
-   }
-   case TriggerStar:
-   {
-      m_numVertices = triggerStarNumVertices;
-      m_numIndices = triggerStarNumIndices;
-      verts = triggerStar;
-      break;
-   }
-   default:
+   const StaticMeshData meshData = SetupMeshData(m_d.m_shape);
+   const std::span<const Vertex3D_NoTex2> &verts = meshData.vertices;
+   if (verts.empty())
    {
       ShowError("Unknown Trigger type");
-      return;
-   }
+      return nullptr;
    }
 
-   m_triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+   auto triggerVertices = std::make_unique<std::vector<Vertex3D_NoTex2>>(verts.size());
+   Vertex3D_NoTex2 *const outVerts = triggerVertices->data();
 
    Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)
@@ -619,38 +445,39 @@ void Trigger::GenerateMesh()
    else
       fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
 
-   for (int i = 0; i < m_numVertices; i++)
+   for (size_t i = 0; i < verts.size(); i++)
    {
       Vertex3Ds vert = fullMatrix * Vertex3Ds{verts[i].x, verts[i].y, verts[i].z};
 
       if (m_d.m_shape == TriggerButton || m_d.m_shape == TriggerStar)
       {
-         m_triggerVertices[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
-         m_triggerVertices[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = vert.z*m_d.m_radius + baseHeight+zoffset;
+         outVerts[i].x = vert.x * m_d.m_radius + m_d.m_vCenter.x;
+         outVerts[i].y = vert.y * m_d.m_radius + m_d.m_vCenter.y;
+         outVerts[i].z = vert.z * m_d.m_radius + baseHeight + zoffset;
       }
-      else 
+      else
       {
-         m_triggerVertices[i].x = vert.x*m_d.m_scaleX + m_d.m_vCenter.x;
-         m_triggerVertices[i].y = vert.y*m_d.m_scaleY + m_d.m_vCenter.y;
-         m_triggerVertices[i].z = vert.z*1.0f + baseHeight+zoffset;
+         outVerts[i].x = vert.x * m_d.m_scaleX + m_d.m_vCenter.x;
+         outVerts[i].y = vert.y * m_d.m_scaleY + m_d.m_vCenter.y;
+         outVerts[i].z = vert.z * 1.0f + baseHeight + zoffset;
       }
 
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      m_triggerVertices[i].nx = vert.x;
-      m_triggerVertices[i].ny = vert.y;
-      m_triggerVertices[i].nz = vert.z;
-      m_triggerVertices[i].tu = verts[i].tu;
-      m_triggerVertices[i].tv = verts[i].tv;
+      outVerts[i].nx = vert.x;
+      outVerts[i].ny = vert.y;
+      outVerts[i].nz = vert.z;
+      outVerts[i].tu = verts[i].tu;
+      outVerts[i].tv = verts[i].tv;
 
       if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD || m_d.m_shape == TriggerInder)
       {
-         m_triggerVertices[i].x += m_triggerVertices[i].nx*m_d.m_wireThickness;
-         m_triggerVertices[i].y += m_triggerVertices[i].ny*m_d.m_wireThickness;
-         m_triggerVertices[i].z += m_triggerVertices[i].nz*m_d.m_wireThickness;
+         outVerts[i].x += outVerts[i].nx * m_d.m_wireThickness;
+         outVerts[i].y += outVerts[i].ny * m_d.m_wireThickness;
+         outVerts[i].z += outVerts[i].nz * m_d.m_wireThickness;
       }
    }
+   return triggerVertices;
 }
 
 void Trigger::SetObjectPos()
