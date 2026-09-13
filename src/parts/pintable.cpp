@@ -35,7 +35,6 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #include "ui/win/codeview.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/hitsur.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
@@ -2466,23 +2465,32 @@ void PinTable::Load(IObjectReader& reader)
             // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
             if (reader.GetVersion() < 1080 || m_materials.size() == m_numMaterials)
             {
+               // MATE and PHMA records are saved as parallel arrays, so physics properties can be applied by index.
+               // The name based fallback must use an exact match as old tables may contain material names that only differ by their case.
+               const bool applyByIndex = m_materials.size() == m_numMaterials;
                for (int i = 0; i < m_numMaterials; i++)
                {
-                  bool found = true;
-                  Material *pmat = GetMaterial(mats[i].szName);
-                  if (pmat == m_dummyMaterial.get())
+                  Material *pmat = nullptr;
+                  if (applyByIndex)
+                     pmat = m_materials[i];
+                  else
+                     for (Material *mat : m_materials)
+                        if (mat->m_name == mats[i].szName)
+                        {
+                           pmat = mat;
+                           break;
+                        }
+                  if (pmat == nullptr)
                   {
                      assert(!"SaveMaterial not found");
                      pmat = new Material();
                      pmat->m_name = mats[i].szName;
-                     found = false;
+                     m_materials.push_back(pmat);
                   }
                   pmat->m_fElasticity = mats[i].fElasticity;
                   pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
                   pmat->m_fFriction = mats[i].fFriction;
                   pmat->m_fScatterAngle = mats[i].fScatterAngle;
-                  if (!found)
-                     m_materials.push_back(pmat);
                }
             }
             break;
@@ -2543,6 +2551,19 @@ void PinTable::Load(IObjectReader& reader)
          }
          return true;
       });
+
+   // Detect & remove duplicate material names (differing only by case), keeping the last loaded
+   // one as it is the one the player resolves to (the material lookup map keeps the last entry)
+   for (size_t i = 0; i < m_materials.size(); ++i)
+      for (size_t i2 = i + 1; i2 < m_materials.size(); ++i2)
+         if (StrCompareNoCase(m_materials[i]->m_name, m_materials[i2]->m_name))
+         {
+            PLOGW << "Duplicate material name found: " << m_materials[i]->m_name << ", dropping it!";
+            delete m_materials[i];
+            m_materials.erase(m_materials.begin() + i);
+            --i;
+            break;
+         }
 }
 
 bool PinTable::ExportSound(VPX::Sound *const pps, const std::filesystem::path &filename)
@@ -2593,22 +2614,7 @@ void PinTable::RemoveSound(VPX::Sound *const pps)
    delete pps;
 }
 
-void PinTable::ImportFont(HWND hwndListView, const string& filename)
-{
-#ifndef __STANDALONE__
-   PinFont * const ppb = new PinFont();
-
-   ppb->ReadFromFile(filename);
-
-   if (!ppb->m_buffer.empty())
-   {
-      m_vfont.push_back(ppb);
-      const int index = AddListBinary(hwndListView, ppb);
-      ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-      ppb->Register();
-   }
-#endif
-}
+void PinTable::AddFont(PinFont *const ppf) { m_vfont.push_back(ppf); }
 
 void PinTable::RemoveFont(PinFont * const ppf)
 {
@@ -2616,99 +2622,6 @@ void PinTable::RemoveFont(PinFont * const ppf)
 
    ppf->UnRegister();
    delete ppf;
-}
-
-void PinTable::ListFonts(HWND hwndListView)
-{
-   for (size_t i = 0; i < m_vfont.size(); i++)
-      AddListBinary(hwndListView, m_vfont[i]);
-}
-
-int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
-{
-#ifndef __STANDALONE__
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)ppb->m_name.c_str();
-   lvitem.lParam = (size_t)ppb;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-
-   ListView_SetItemText_Safe(hwndListView, index, 1, ppb->m_path.string().c_str());
-
-   return index;
-#else
-   return 0;
-#endif
-}
-
-void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
-{
-   CComObject<Collection> *pcol;
-   CComObject<Collection>::CreateInstance(&pcol);
-   pcol->AddRef();
-
-   pcol->m_wzName = GetUniqueName(LocalStringW(IDS_COLLECTION).m_buffer);
-
-   if (fromSelection && !MultiSelIsEmpty())
-   {
-      for (int i = 0; i < m_vmultisel.size(); i++)
-      {
-         ISelect * const pisel = m_vmultisel.ElementAt(i);
-         IEditable * const piedit = pisel->GetIEditable();
-         if (piedit)
-         {
-            if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
-            {
-               piedit->m_vCollection.push_back(pcol);
-               piedit->m_viCollection.push_back(pcol->m_visel.size());
-               pcol->m_visel.push_back(m_vmultisel.ElementAt(i));
-            }
-         }
-      }
-   }
-
-   const int index = AddListCollection(hwndListView, pcol);
-
-#ifndef __STANDALONE__
-   ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-#endif
-
-   AddCollection(pcol);
-   pcol->Release();
-}
-
-int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
-{
-#ifndef __STANDALONE__
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   string name = MakeString(pcol->m_wzName);
-   lvitem.pszText = name.data();
-   lvitem.lParam = (size_t)pcol;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->m_visel.size()).c_str());
-   return index;
-#else
-   return 0;
-#endif
-}
-
-void PinTable::ListCollections(HWND hwndListView)
-{
-   //ListView_DeleteAllItems(hwndListView);
-
-   for (int i = 0; i < m_vcollection.size(); i++)
-   {
-      CComObject<Collection> * const pcol = m_vcollection.ElementAt(i);
-
-      AddListCollection(hwndListView, pcol);
-   }
 }
 
 void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
@@ -2849,73 +2762,6 @@ bool PinTable::FMutilSelLocked()
 
    return false;
 }
-
-#ifndef __STANDALONE__
-void PinTable::DoCommand(int icmd, int x, int y)
-{
-   if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
-   {
-      UpdateCollection(icmd & 0x000000FF);
-      return;
-   }
-
-   constexpr unsigned int ID_ASSIGN_TO_LAYER_MAX = ID_ASSIGN_TO_LAYER1 + NUM_ASSIGN_LAYERS - 1;
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER_MAX))
-   {
-      PartGroup *group = nullptr;
-      int layerIndex = icmd - ID_ASSIGN_TO_LAYER1;
-      for (IEditable *edit : m_vedit)
-      {
-         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
-         {
-            if (layerIndex == 0)
-               group = static_cast<PartGroup *>(edit);
-            layerIndex--;
-            if (layerIndex < 0)
-               break;
-         }
-      }
-      if (group)
-         AssignSelectionToPartGroup(group);
-      return;
-   }
-
-   if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
-   {
-      const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = m_allHitElements[i];
-      pisel->DoCommand(icmd, x, y);
-      return;
-   }
-
-   switch (icmd)
-   {
-       case ID_DRAWINFRONT:
-       case ID_DRAWINBACK:
-       {
-           for (int i = 0; i < m_vmultisel.size(); i++)
-           {
-               ISelect *const psel = m_vmultisel.ElementAt(i);
-               _ASSERTE(psel != this); // Would make an infinite loop
-               psel->DoCommand(icmd, x, y);
-           }
-           break;
-       }
-       case ID_ASSIGN_TO_CURRENT_LAYER: m_vpinball->GetLayersListDialog()->AssignToSelectedGroup(); break;
-       case ID_EDIT_DRAWINGORDER_HIT: m_vpinball->ShowDrawingOrderDialog(false); break;
-       case ID_EDIT_DRAWINGORDER_SELECT: m_vpinball->ShowDrawingOrderDialog(true); break;
-       case ID_LOCK: LockElements(); break;
-       case ID_WALLMENU_FLIP: FlipY(GetCenter()); break;
-       case ID_WALLMENU_MIRROR: FlipX(GetCenter()); break;
-       case IDC_COPY: Copy(x, y); break;
-       case IDC_PASTE: Paste(false, x, y); break;
-       case IDC_PASTEAT: Paste(true, x, y); break;
-       case ID_WALLMENU_ROTATE: VPX::WinUI::RotatePointsDialog(this); break;
-       case ID_WALLMENU_SCALE: VPX::WinUI::ScalePointsDialog(this); break;
-       case ID_WALLMENU_TRANSLATE: VPX::WinUI::TranslatePointsDialog(this); break;
-   }
-}
-#endif
 
 void PinTable::UpdateCollection(const int index)
 {
@@ -4055,29 +3901,11 @@ Vertex2D PinTable::TransformPoint(int x, int y) const
 #else
    const CRect rc(m_left, m_top, m_right, m_bottom);
 #endif
-   const HitSur phs(nullptr, m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+   const HitSur phs(m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    const Vertex2D result = phs.ScreenToSurface(x, y);
 
    return result;
-}
-
-void PinTable::OnLButtonDown(int x, int y)
-{
-#ifndef __STANDALONE__
-   const Vertex2D v = TransformPoint(x, y);
-
-   m_rcDragRect.left = v.x;
-   m_rcDragRect.right = v.x;
-   m_rcDragRect.top = v.y;
-   m_rcDragRect.bottom = v.y;
-
-   m_dragging = true;
-
-   m_tableEditor->SetCapture();
-
-   SetDirtyDraw();
-#endif
 }
 
 HRESULT PinTable::GetTypeName(BSTR *pVal) const
@@ -4275,7 +4103,7 @@ void PinTable::ListMaterials(HWND hwndListView)
 bool PinTable::IsMaterialNameUnique(const string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_name == name)
+      if (StrCompareNoCase(m_materials[i]->m_name, name))
          return false;
 
    return true;
@@ -4299,7 +4127,7 @@ Material* PinTable::GetMaterial(const string &name) const
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_name == name)
+      if (StrCompareNoCase(m_materials[i]->m_name, name))
          return m_materials[i];
 
    return m_dummyMaterial.get();
@@ -4734,32 +4562,6 @@ string PinTable::AuditTable(bool log) const
       PLOGI << trim_string(msg2);
    }
    return msg;
-}
-
-void PinTable::ListCustomInfo(HWND hwndListView)
-{
-   for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
-      AddListItem(hwndListView, m_vCustomInfoTag[i], m_vCustomInfoContent[i], NULL);
-}
-
-int PinTable::AddListItem(HWND hwndListView, const string& szName, const string& szValue1, LPARAM lparam)
-{
-#ifndef __STANDALONE__
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)szName.c_str();
-   lvitem.lParam = lparam;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-
-   ListView_SetItemText_Safe(hwndListView, index, 1, szValue1.c_str());
-
-   return index;
-#else
-   return 0;
-#endif
 }
 
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)

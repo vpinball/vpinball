@@ -93,12 +93,14 @@ public:
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs,
       const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
       const vec4& glassArea, const vec3& glassAmbient);
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace,
-      const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea,
-      const vec3& glassAmbient);
-   void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const ColorSpace colorSpace,
-      const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea,
-      const vec3& glassAmbient);
+   // 'alpha' is plain opacity for the legacy DMD renderer. For the other ones it is only used when 'addBlend' is set,
+   // as the 'modulate vs add' factor of the additive blend encoding (see fs_display.sc)
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const bool addBlend,
+      const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
+      const vec4& glassArea, const vec3& glassAmbient);
+   void SetupCRTRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& crt, const float alpha, const bool addBlend,
+      const ColorSpace colorSpace, const Vertex3D_NoTex2* vertices, const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex,
+      const vec4& glassArea, const vec3& glassAmbient);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
@@ -342,13 +344,22 @@ private:
    #endif
 
    // Segment display rendering
-   std::unique_ptr<Texture> m_segDisplaySDF[4][9];
+   std::unique_ptr<Texture> m_segDisplaySDF[5][9]; // One per SegmentFamily and segment layout
 public:
    vec4 m_segColor[8]; // Base seg color and brightness
    vec4 m_segUnlitColor[8]; // unlit color and back glow
 
    // DMD rendering
    bool m_dmdUseLegacyRenderer[7];
+   // The legacy DMD renderer is the only one available outside of BGFX, whatever the profile setting says
+   bool IsLegacyDMDRenderer(const int profile) const
+   {
+      #if defined(ENABLE_BGFX)
+         return m_dmdUseLegacyRenderer[profile];
+      #else
+         return true;
+      #endif
+   }
    vec4 m_dmdDotColor[7]; // Base dot color and brightness
    vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, back glow
    vec4 m_dmdUnlitDotColor[7]; // unlit color

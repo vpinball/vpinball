@@ -15,6 +15,7 @@
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/worker.h"
+#include "ui/win/WinUIPartRegistry.h"
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/SearchSelectDialog.h"
@@ -135,7 +136,7 @@ void PinTableWnd::SetMyScrollInfo()
 
    const CRect rc = GetClientRect();
 
-   const HitSur phs(nullptr, GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+   const HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
    Vertex2D rgv[2];
    rgv[0] = phs.ScreenToSurface(rc.left, rc.top);
@@ -249,7 +250,7 @@ void PinTableWnd::ExportBlueprint()
    dc.CreateDIBSection(dc.GetHDC(), &bmi, DIB_RGB_COLORS, (void **)&pbits, nullptr, 0);
 
    {
-      PaintSur psur(dc.GetHDC(), (float)bmwidth / tablewidth, tablewidth * 0.5f, tableheight * 0.5f, bmwidth, bmheight, nullptr);
+      PaintSur psur((float)bmwidth / tablewidth, tablewidth * 0.5f, tableheight * 0.5f, bmwidth, bmheight, dc.GetHDC(), this, nullptr);
 
       dc.SelectObject(static_cast<HBRUSH>(dc.GetStockObject(WHITE_BRUSH)));
       dc.PatBlt(0, 0, bmwidth, bmheight, PATCOPY);
@@ -260,7 +261,10 @@ void PinTableWnd::ExportBlueprint()
       for (const auto &ptr : m_table->GetParts())
       {
          if (ptr->m_uiVisible && ptr->GetISelect() && ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView)
-            ptr->GetISelect()->RenderBlueprint(&psur, solid);
+         {
+            auto winPart = WinUIPartRegistry::Create(this, ptr);
+            winPart->RenderBlueprint(&psur, solid);
+         }
       }
    }
 
@@ -328,7 +332,10 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-         ptr->GetISelect()->UIRenderPass1(psur);
+      {
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass1(psur);
+      }
    }
 
    if (GetDisplayGrid() && m_vpxEditor->m_gridSize > 0)
@@ -366,7 +373,10 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
    for (const auto &ptr : m_table->GetParts())
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->m_uiVisible && ptr->GetISelect())
-         ptr->GetISelect()->UIRenderPass2(psur);
+      {
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass2(psur);
+      }
    }
 
    if (m_vpxEditor->m_desktopBackdropView) // Outline of the view, for when the grid is off
@@ -473,7 +483,7 @@ void PinTableWnd::Paint(HDC hdc)
 
    if (m_dirtyDraw)
    {
-      Sur *const psur = new PaintSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, m_table->GetSelectedItem());
+      Sur *const psur = new PaintSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, m_table->GetSelectedItem());
       UIRenderPass2(psur);
 
       delete psur;
@@ -708,8 +718,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    const CRect rc = GetClientRect();
 
-   HitSur phs(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
-   HitSur phs2(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
+   HitSur phs2(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, x, y, m_table);
 
    m_table->m_allHitElements.clear();
 
@@ -719,7 +729,8 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
    {
       if (ptr->m_desktopBackdrop == m_vpxEditor->m_desktopBackdropView && ptr->GetISelect())
       {
-         ptr->GetISelect()->UIRenderPass1(&phs2);
+         auto winPart = WinUIPartRegistry::Create(this, ptr);
+         winPart->UIRenderPass1(&phs2);
          ISelect *const tmp = phs2.m_pselected;
          if (FindIndexOf(m_table->m_allHitElements, tmp) == -1 && tmp != nullptr && tmp != m_table)
          {
@@ -830,7 +841,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         m_table->OnLButtonDown(x, y); // Start the band select
+         if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
+            winPart->OnLButtonDown(x, y); // Start the band select
          return;
       }
 
@@ -841,7 +853,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
       {
          ISelect *const pisel2 = m_table->m_vmultisel.ElementAt(i);
          if (pisel2)
-            pisel2->OnLButtonDown(x, y);
+            if (const auto winPart = WinUIPartRegistry::Create(this, pisel2))
+               winPart->OnLButtonDown(x, y);
       }
    }
 }
@@ -867,7 +880,8 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
       {
          ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
          if (pisel)
-            pisel->OnLButtonUp(x, y);
+            if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
+               winPart->OnLButtonUp(x, y);
       }
       if (m_moving)
       {
@@ -889,7 +903,7 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
             const CRect rc = m_mdiTable->GetClientRect();
 
-            HitRectSur *const phrs = new HitRectSur(dc.GetHDC(), GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
+            HitRectSur *const phrs = new HitRectSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
 
             // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
             UIRenderPass2(phrs);
@@ -971,7 +985,10 @@ void PinTableWnd::OnRightButtonUp(int x, int y)
       }
       else if (!m_table->MultiSelIsEmpty())
       {
-         DoContextMenu(x, y, m_table->GetSelectedItem()->m_menuid, m_table->GetSelectedItem());
+         int menuid = -1;
+         if (const auto winPart = WinUIPartRegistry::Create(this, m_table->GetSelectedItem()))
+            menuid = winPart->GetMenuId();
+         DoContextMenu(x, y, menuid, m_table->GetSelectedItem());
       }
       else
       {
@@ -1013,7 +1030,8 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
 
                   const float inv_zoom = 1.0f / GetZoom();
                   m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
-                  m_table->m_vmultisel[i].SetObjectPos();
+                  if (const auto winPart = WinUIPartRegistry::Create(this, m_table->m_vmultisel.ElementAt(i)))
+                     winPart->UpdateStatusBarObjectPos();
                   Redraw();
                }
             }
@@ -1067,7 +1085,7 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
    const int maxItems = m_table->m_vcollection.size() - 1;
 
    // run through all collections and list them in the context menu
-   // the actual processing is done in ISelect::DoCommand()
+   // the actual processing is done in IWinUIPart::DoCommand()
    for (int i = maxItems; i >= 0; i--)
    {
       UINT flags = MF_POPUP | MF_UNCHECKED;
@@ -1098,6 +1116,118 @@ void PinTableWnd::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, 
       for (size_t i = 0; i < allIndices.size(); i++)
          colSubMenu.CheckMenuItem(0x40000 + allIndices[i], MF_CHECKED);
    }
+#endif
+}
+
+void PinTableWnd::NewCollection(const HWND hwndListView, const bool fromSelection)
+{
+   CComObject<Collection> *pcol;
+   CComObject<Collection>::CreateInstance(&pcol);
+   pcol->AddRef();
+
+   pcol->m_wzName = m_table->GetUniqueName(LocalStringW(IDS_COLLECTION).m_buffer);
+
+   if (fromSelection && !m_table->MultiSelIsEmpty())
+   {
+      for (int i = 0; i < m_table->m_vmultisel.size(); i++)
+      {
+         ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
+         IEditable *const piedit = pisel->GetIEditable();
+         if (piedit)
+         {
+            if (piedit->GetISelect() == pisel) // Do this check so we don't put walls in a collection when we only have the control point selected
+            {
+               piedit->m_vCollection.push_back(pcol);
+               piedit->m_viCollection.push_back(pcol->m_visel.size());
+               pcol->m_visel.push_back(m_table->m_vmultisel.ElementAt(i));
+            }
+         }
+      }
+   }
+
+   const int index = AddListCollection(hwndListView, pcol);
+
+#ifndef __STANDALONE__
+   ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
+#endif
+
+   m_table->AddCollection(pcol);
+   pcol->Release();
+}
+
+int PinTableWnd::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
+{
+#ifndef __STANDALONE__
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   string name = MakeString(pcol->m_wzName);
+   lvitem.pszText = name.data();
+   lvitem.lParam = (size_t)pcol;
+
+   const int index = ListView_InsertItem(hwndListView, &lvitem);
+   ListView_SetItemText_Safe(hwndListView, index, 1, std::to_string(pcol->m_visel.size()).c_str());
+   return index;
+#else
+   return 0;
+#endif
+}
+
+void PinTableWnd::ListCollections(HWND hwndListView)
+{
+   //ListView_DeleteAllItems(hwndListView);
+
+   for (int i = 0; i < m_table->m_vcollection.size(); i++)
+   {
+      CComObject<Collection> *const pcol = m_table->m_vcollection.ElementAt(i);
+
+      AddListCollection(hwndListView, pcol);
+   }
+}
+
+void PinTableWnd::ImportFont(HWND hwndListView, const string &filename)
+{
+#ifndef __STANDALONE__
+   PinFont *const ppb = new PinFont();
+
+   ppb->ReadFromFile(filename);
+
+   if (!ppb->m_buffer.empty())
+   {
+      m_table->AddFont(ppb);
+      const int index = AddListBinary(hwndListView, ppb);
+      ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
+      ppb->Register();
+   }
+   else
+      delete ppb;
+#endif
+}
+
+void PinTableWnd::ListFonts(HWND hwndListView)
+{
+   for (PinFont *font : m_table->GetFontList())
+      AddListBinary(hwndListView, font);
+}
+
+int PinTableWnd::AddListBinary(HWND hwndListView, PinBinary *ppb)
+{
+#ifndef __STANDALONE__
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   lvitem.pszText = (LPSTR)ppb->m_name.c_str();
+   lvitem.lParam = (size_t)ppb;
+
+   const int index = ListView_InsertItem(hwndListView, &lvitem);
+
+   ListView_SetItemText_Safe(hwndListView, index, 1, ppb->m_path.string().c_str());
+
+   return index;
+#else
+   return 0;
 #endif
 }
 
@@ -1136,7 +1266,9 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    else
       newMenu.CreatePopupMenu();
 
-   psel->EditMenu(newMenu);
+   const auto winPart = WinUIPartRegistry::Create(this, psel);
+   if (winPart)
+      winPart->EditMenu(newMenu);
 
    if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH)
    {
@@ -1199,7 +1331,7 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // I didn't find an easy way to identify the selected menu item of a context menu
                   // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
                   // added for finding the element out of the list
-                  // the selection is done in ISelect::DoCommand()
+                  // the selection is done in IWinUIPart::DoCommand()
                   const UINT_PTR id = 0x80000000 + ((UINT_PTR)i << 16) + ID_SELECT_ELEMENT;
                   newMenu.AppendMenu(MF_STRING, id, szTemp.c_str());
                }
@@ -1217,8 +1349,8 @@ void PinTableWnd::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 
    const int icmd = newMenu.TrackPopupMenuEx(TPM_RETURNCMD, pt.x, pt.y, m_mdiTable->GetHwnd(), nullptr);
 
-   if (icmd != 0)
-      psel->DoCommand(icmd, x, y);
+   if (icmd != 0 && winPart)
+      winPart->DoCommand(icmd, x, y);
 
    newMenu.Destroy();
 

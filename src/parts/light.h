@@ -91,7 +91,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Light() : m_lightcenter(this) { m_menuid = IDR_SURFACEMENU; m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
+   Light() : m_lightcenter(this) { m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
    virtual ~Light();
 
    BEGIN_COM_MAP(Light)
@@ -117,17 +117,9 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    void ClearForOverwrite() final;
-
-#ifndef __STANDALONE__
-   void EditMenu(CMenu &menu) final;
-   void DoCommand(int icmd, int x, int y) final;
-#endif
 
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
@@ -155,8 +147,6 @@ public:
    void InitShape();
    void setInPlayState(const float newVal);
 
-   void RenderOutline(Sur *const psur);
-
    // Light definition
    LightData m_d;
 
@@ -167,15 +157,14 @@ public:
    float m_surfaceHeight;
    bool  m_lockedByLS = false;
 
+   // ISelect of the light center handle, for editor picking
+   ISelect *GetLightCenterSelect() { return &m_lightcenter; }
+
 private:
    class LightCenter final : public ISelect
    {
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
-
-      void UIRenderPass1(Sur *const psur) override { /* Processed by light */ }
-      void UIRenderPass2(Sur *const psur) override { /* Processed by light */ }
-      void RenderBlueprint(Sur *psur, const bool solid) override { /* Processed by light */ }
 
       bool IsUILocked() const override { return m_uiLocked; }
       void SetUILock(bool lock) override { m_uiLocked = lock; }

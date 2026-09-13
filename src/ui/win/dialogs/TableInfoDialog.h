@@ -18,6 +18,7 @@ protected:
    void OnCancel() override;
 
 private:
+   int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
    void VPGetDialogItemText(const CEdit &edit, string &psztext);
 
    CEdit m_tableNameEdit;

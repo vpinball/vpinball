@@ -85,7 +85,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Flasher() { m_menuid = IDR_SURFACEMENU; }
+   Flasher() { }
    virtual ~Flasher();
 
    STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, VIEW_PLAYFIELD | VIEW_BACKGLASS)
@@ -113,24 +113,17 @@ public:
 
    void ClearForOverwrite() final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
    void Translate(const Vertex2D &pvOffset) final;
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    int GetMinimumPoints() const final { return 2; }
 
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
-
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
 
    void AddPoint(int x, int y, const bool smooth) final;
 
@@ -175,8 +168,10 @@ public:
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr; // DMD defined through script API
    std::atomic_uint m_dmdFrameId = 0;
 
-private:
+public:
    void InitShape();
+
+private:
    void UpdateCenter();
    void UploadRenderFrame(const PinballPlugin::ResURIResolver::DisplayState& display);
 

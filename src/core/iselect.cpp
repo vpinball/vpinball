@@ -8,7 +8,6 @@
 #include "parts/Collection.h"
 #include "parts/PartGroup.h"
 #include "parts/pintable.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 
 ISelect::ISelect()
@@ -20,124 +19,6 @@ void ISelect::SetDirtyDraw()
 {
    if (GetPTable())
       GetPTable()->SetDirtyDraw();
-}
-
-void ISelect::SetObjectPos()
-{
-   m_vpinball->ClearObjectPosCur();
-}
-
-void ISelect::RenderBlueprint(Sur *psur, const bool solid) { UIRenderPass2(psur); }
-
-void ISelect::OnLButtonDown(int x, int y)
-{
-   m_dragging = true;
-   m_markedForUndo = false; // So we will be marked when and if we are dragged
-
-   GetPTable()->SetMouseCapture();
-
-   SetObjectPos();
-}
-
-void ISelect::OnLButtonUp(int x, int y)
-{
-   m_dragging = false;
-
-#ifndef __STANDALONE__
-   ReleaseCapture();
-#endif
-
-   if (m_markedForUndo)
-   {
-      m_markedForUndo = false;
-      STOPUNDOSELECT
-   }
-}
-
-void ISelect::DoCommand(int icmd, int x, int y)
-{
-#ifndef __STANDALONE__
-   // Commands that are handled by the table element
-   if ( (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020)) // Assign to collection
-      || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1)) // Assign to layer
-      || (icmd == ID_EDIT_DRAWINGORDER_HIT)
-      || (icmd == ID_EDIT_DRAWINGORDER_SELECT)
-      || (icmd == ID_ASSIGN_TO_CURRENT_LAYER)
-      || (icmd == IDC_COPY)
-      || (icmd == IDC_PASTE)
-      || (icmd == IDC_PASTEAT))
-   {
-      GetPTable()->DoCommand(icmd, x, y);
-      return;
-   }
-
-   IEditable * const piedit = GetIEditable();
-   if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
-   {
-      const int ksshift = GetKeyState(VK_SHIFT);
-      //const int ksctrl = GetKeyState(VK_CONTROL);
-
-      PinTable * const currentTable = GetPTable();
-      const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = currentTable->m_allHitElements[i];
-
-      const bool add = ((ksshift & 0x80000000) != 0);
-
-      if (pisel == (ISelect *)currentTable && add)
-      {
-         // Can not include the table in multi-select
-         // and table will not be unselected, because the
-         // user might be drawing a box around other objects
-         // to add them to the selection group
-         currentTable->OnLButtonDown(x, y); // Start the band select
-         return;
-      }
-
-      currentTable->AddMultiSel(pisel, add, true, true);
-      return;
-   }
-   switch (icmd)
-   {
-   case ID_DRAWINFRONT:
-      GetPTable()->MovePartToFront(piedit);
-      break;
-   case ID_DRAWINBACK:
-      GetPTable()->MovePartToBack(piedit);
-      break;
-   case ID_SETASDEFAULT:
-      piedit->WriteRegDefaults();
-      break;
-   case ID_LOCK:
-      STARTUNDOSELECT
-      SetUILock(!IsUILocked());
-      STOPUNDOSELECT
-      break;
-   }
-#endif
-}
-
-void ISelect::SetSelectFormat(Sur *psur)
-{
-   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor
-                                       : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-
-   psur->SetBorderColor(color, false, 4);
-   psur->SetLineColor(color, false, 4);
-}
-
-void ISelect::SetMultiSelectFormat(Sur *psur)
-{
-   const COLORREF color = IsUILocked() ? m_vpinball->m_elemSelectLockedColor :
-                                         m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
-
-   psur->SetBorderColor(color, false, 3);
-   psur->SetLineColor(color, false, 3);
-}
-
-void ISelect::SetLockedFormat(Sur *psur)
-{
-   psur->SetBorderColor(m_vpinball->m_elemSelectLockedColor, false, 1);
-   psur->SetLineColor(m_vpinball->m_elemSelectLockedColor, false, 1);
 }
 
 void ISelect::FlipY(const Vertex2D& pvCenter)

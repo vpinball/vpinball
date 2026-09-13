@@ -317,17 +317,12 @@ public:
 
    void SetMouseCapture();
 
-   // IEditable
-   void UIRenderPass2(Sur *const psur) final { }
-
    // ISelect
    bool IsUILocked() const final { return false; }
    void SetUILock(bool lock) final { }
    bool IsUIVisible() const final { return true; }
    void SetUIVisible(bool visible) final { }
 
-   void OnLButtonDown(int x, int y) final;
-   void OnLButtonUp(int x, int y) final { }
    void SetDirtyDraw() final;
 
    bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
@@ -368,21 +363,10 @@ public:
    void ParseScript(const string &script, vector<string> &functions, vector<string> &identifiers, const std::function<void(const string &, int)>& onDuplicate) const;
    string AuditTable(bool log) const;
 
-   void ListCustomInfo(HWND hwndListView);
-   int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
-
-   void ImportFont(HWND hwndListView, const string &filename);
-   void ListFonts(HWND hwndListView);
-   int AddListBinary(HWND hwndListView, PinBinary *ppb);
+   void AddFont(PinFont *const ppf);
    void RemoveFont(PinFont *const ppf);
+   const vector<PinFont *> &GetFontList() const { return m_vfont; }
 
-   void NewCollection(const HWND hwndListView, const bool fFromSelection);
-   void ListCollections(HWND hwndListView);
-   int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
    bool FMutilSelLocked();
 
    // Expected by CodeViewer
@@ -407,7 +391,6 @@ public:
 
    // IEditable (mostly bogus for now)
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
-   void UIRenderPass1(Sur *const psur) final { }
    void ClearForOverwrite() final;
    void Load(IObjectReader &reader) final;
    void Save(IObjectWriter& writer, const bool saveForUndo) final;
@@ -433,6 +416,7 @@ public:
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
 
    // FIXME both ISelect and IEditable
+   static inline constexpr ItemTypeEnum ItemType = eItemTable;
    ItemTypeEnum GetItemType() const final { return eItemTable; }
    PinTable *GetPTable() final { return this; }
    const PinTable *GetPTable() const final { return this; }
@@ -716,8 +700,6 @@ public:
 
    vector<VPX::Sound *> m_vsound;
 
-   vector<PinFont *> m_vfont;
-
    VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
@@ -852,6 +834,8 @@ private:
 
    PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it
    int m_loadTemp[5] = { 0, 0, 0, 0, 0 }; // Used to temporarily store the number of elements loaded for each type (subobjects, sounds, textures, fonts, collections) during loading phase
+
+   vector<PinFont *> m_vfont;
 
    ankerl::unordered_dense::set<std::string> m_loggedSoundErrors;
 

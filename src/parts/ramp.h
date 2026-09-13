@@ -62,7 +62,6 @@ public:
 #endif
    Ramp()
    {
-      m_menuid = IDR_SURFACEMENU;
       m_d.m_collidable = true;
       m_d.m_visible = true;
       m_d.m_depthBias = 0.0f;
@@ -97,16 +96,9 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
-
    void ClearForOverwrite() final;
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
-
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
 
    int GetMinimumPoints() const final { return 2; }
 
@@ -132,6 +124,11 @@ public:
 
    float GetSurfaceHeight(float x, float y) const;
    bool IsHabitrail() const;
+
+   // Computes the vertices and additional information for the ramp shape.
+   // Also refreshes the drag points' m_calcHeight display cache (derived value, written through the owned DragPoint pointers)
+   Vertex2D *GetRampVertex(
+      int &pcvertex, float **const ppheight, bool **const ppfCross, float **const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width) const;
 
    RampData m_d;
 
@@ -175,10 +172,10 @@ private:
       IHaveDragPoints::GetRgVertex(vv, false, accuracy);
    }
 
-   Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width);
    void PrepareHabitrail();
 
-   void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
+   // Updates the m_calcHeight display cache of matching drag points (derived value, written through the owned DragPoint pointers)
+   void AssignHeightToControlPoint(const RenderVertex3D &v, const float height) const;
 
    void AddJoint(class PhysicsEngine *physics, const Vertex3Ds &v1, const Vertex3Ds &v2, const bool isUI);
    void AddJoint2D(class PhysicsEngine *physics, const Vertex2D &p, const float zlow, const float zhigh, const bool isUI);

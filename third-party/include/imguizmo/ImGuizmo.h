@@ -1,9 +1,9 @@
 // https://github.com/CedricGuillemet/ImGuizmo
-// v 1.89 WIP
+// v1.92.5 WIP
 //
 // The MIT License(MIT)
 //
-// Copyright(c) 2021 Cedric Guillemet
+// Copyright(c) 2016-2026 Cedric Guillemet and contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -25,6 +25,7 @@
 //
 // -------------------------------------------------------------------------------------------
 // History :
+// 2026/05/03 v1.9 release. CMake build system, vcpkg support, many fixes and new features from contributors.
 // 2019/11/03 View gizmo
 // 2016/09/11 Behind camera culling. Scaling Delta matrix not multiplied by source matrix scales. local/world rotation and translation fixed. Display message is incorrect (X: ... Y:...) in local mode.
 // 2016/09/09 Hatched negative axis. Snapping. Documentation update.
@@ -39,9 +40,9 @@
 // - display rotation/translation/scale infos in local/world space and not only local
 // - finish local/world matrix application
 // - OPERATION as bitmask
-// 
+//
 // -------------------------------------------------------------------------------------------
-// Example 
+// Example
 #if 0
 void EditTransform(const Camera& camera, matrix_t& matrix)
 {
@@ -115,6 +116,8 @@ void EditTransform(const Camera& camera, matrix_t& matrix)
 #define IMGUIZMO_NAMESPACE ImGuizmo
 #endif
 
+struct ImGuiWindow;
+
 namespace IMGUIZMO_NAMESPACE
 {
    // call inside your own window and before Manipulate() in order to draw gizmo to that window.
@@ -135,6 +138,11 @@ namespace IMGUIZMO_NAMESPACE
 
    // return true if mouse IsOver or if the gizmo is in moving state
    IMGUI_API bool IsUsing();
+
+   // return true if the view gizmo is in moving state
+   IMGUI_API bool IsUsingViewManipulate();
+   // only check if your mouse is over the view manipulator - no matter whether it's active or not
+   IMGUI_API bool IsViewManipulateHovered();
 
    // return true if any gizmo is in moving state
    IMGUI_API bool IsUsingAny();
@@ -162,12 +170,19 @@ namespace IMGUIZMO_NAMESPACE
    // default is false
    IMGUI_API void SetOrthographic(bool isOrthographic);
 
+   // Render coordinate system axes (red X, green Y and blue Z). Usefull for debug/tests
+   IMGUI_API void DrawAxes(const float* view, const float* projection, const float* matrices, int matrixCount);
    // Render a cube with face color corresponding to face normal. Usefull for debug/tests
    IMGUI_API void DrawCubes(const float* view, const float* projection, const float* matrices, int matrixCount);
    IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
+   // Render grid with customizable major line step and amount of segments between major lines.
+   // NOTE(m.wlasiuk) : calling this function with majorStep = 1.0f and subdivision = 1 is equivalent to DrawGrid in terms of the end result but performs more calculations
+   IMGUI_API void DrawGridCustom(const float* view, const float* projection, const float* matrix, const float gridSize, const float majorStep, const unsigned int subdivision);
+   // Render grid with customizable major line step and amount of segments between major lines and with possibility to set custom colors for major, minor and center lines
+   IMGUI_API void DrawGridCustomColor(const float* view, const float* projection, const float* matrix, const float gridSize, const float majorStep, const unsigned int subdivision, const ImU32 majorCol, const ImU32 minorCol, const ImU32 centerCol);
 
    // call it when you want a gizmo
-   // Needs view and projection matrices. 
+   // Needs view and projection matrices.
    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
    // translation is applied in world space
    enum OPERATION
@@ -187,7 +202,6 @@ namespace IMGUIZMO_NAMESPACE
       SCALE_YU         = (1u << 12),
       SCALE_ZU         = (1u << 13),
 
-      NONE = 0,
       TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
       ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
       SCALE = SCALE_X | SCALE_Y | SCALE_Z,
@@ -217,11 +231,63 @@ namespace IMGUIZMO_NAMESPACE
    // use this version if you did not call Manipulate before and you are just using ViewManipulate
    IMGUI_API void ViewManipulate(float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor);
 
+   IMGUI_API void SetAlternativeWindow(ImGuiWindow* window);
+
+   [[deprecated("Use PushID/PopID instead.")]]
    IMGUI_API void SetID(int id);
+
+	// ID stack/scopes
+	// Read the FAQ (docs/FAQ.md or http://dearimgui.org/faq) for more details about how ID are handled in dear imgui.
+	// - Those questions are answered and impacted by understanding of the ID stack system:
+	//   - "Q: Why is my widget not reacting when I click on it?"
+	//   - "Q: How can I have widgets with an empty label?"
+	//   - "Q: How can I have multiple widgets with the same label?"
+	// - Short version: ID are hashes of the entire ID stack. If you are creating widgets in a loop you most likely
+	//   want to push a unique identifier (e.g. object pointer, loop index) to uniquely differentiate them.
+	// - You can also use the "Label##foobar" syntax within widget label to distinguish them from each others.
+	// - In this header file we use the "label"/"name" terminology to denote a string that will be displayed + used as an ID,
+	//   whereas "str_id" denote a string that is only used as an ID and not normally displayed.
+	IMGUI_API void          PushID(const char* str_id);                                     // push string into the ID stack (will hash string).
+	IMGUI_API void          PushID(const char* str_id_begin, const char* str_id_end);       // push string into the ID stack (will hash string).
+	IMGUI_API void          PushID(const void* ptr_id);                                     // push pointer into the ID stack (will hash pointer).
+	IMGUI_API void          PushID(int int_id);                                             // push integer into the ID stack (will hash integer).
+	IMGUI_API void          PopID();                                                        // pop from the ID stack.
+	IMGUI_API ImGuiID       GetID(const char* str_id);                                      // calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself
+	IMGUI_API ImGuiID       GetID(const char* str_id_begin, const char* str_id_end);
+	IMGUI_API ImGuiID       GetID(const void* ptr_id);
 
    // return true if the cursor is over the operation's gizmo
    IMGUI_API bool IsOver(OPERATION op);
    IMGUI_API void SetGizmoSizeClipSpace(float value);
+
+   // Handle type used by the translate/rotate/scale gizmos.
+   enum MOVETYPE
+   {
+      MT_NONE,
+      MT_MOVE_X,
+      MT_MOVE_Y,
+      MT_MOVE_Z,
+      MT_MOVE_YZ,
+      MT_MOVE_ZX,
+      MT_MOVE_XY,
+      MT_MOVE_SCREEN,
+      MT_ROTATE_X,
+      MT_ROTATE_Y,
+      MT_ROTATE_Z,
+      MT_ROTATE_SCREEN,
+      MT_SCALE_X,
+      MT_SCALE_Y,
+      MT_SCALE_Z,
+      MT_SCALE_XYZ
+   };
+
+   // Returns which handle is actively being dragged, or MT_NONE.
+   IMGUI_API MOVETYPE GetActiveHandleType();
+   // Returns which handle is currently hovered, or MT_NONE.
+   IMGUI_API MOVETYPE GetHoveredHandleType();
+   // Aliases matching the MOVETYPE enum name.
+   IMGUI_API MOVETYPE GetActiveMoveType();
+   IMGUI_API MOVETYPE GetHoveredMoveType();
 
    // Allow axis to flip
    // When true (default), the guizmo axis flip for better visibility
@@ -230,8 +296,17 @@ namespace IMGUIZMO_NAMESPACE
 
    // Configure the limit where axis are hidden
    IMGUI_API void SetAxisLimit(float value);
+   // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
+   IMGUI_API void SetAxisMask(bool x, bool y, bool z);
    // Configure the limit where planes are hiden
    IMGUI_API void SetPlaneLimit(float value);
+   // from a x,y,z point in space and using Manipulation view/projection matrix, check if mouse is in pixel radius distance of that projected point
+   IMGUI_API bool IsOver(float* position, float pixelRadius);
+
+   // Compute the world-space mouse picking ray from explicit inputs, without reading ImGui IO.
+   // Useful for tests/headless usage. view and projection are column-major float[16] (same
+   // layout as Manipulate). rayOrigin and rayDirection receive a float[3] each.
+   IMGUI_API void ComputeMouseRay(const float* view, const float* projection, const ImVec2& mousePosition, const ImVec2& rectPosition, const ImVec2& rectSize, float* rayOrigin, float* rayDirection);
 
    enum COLOR
    {

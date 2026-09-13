@@ -55,11 +55,6 @@ void PartGroup::WriteRegDefaults()
 #undef LinkProp
 }
 
-void PartGroup::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
-}
-
 void PartGroup::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v.x += dx;
@@ -74,18 +69,6 @@ Vertex2D PartGroup::GetCenter() const
 void PartGroup::PutCenter(const Vertex2D& pv)
 {
    m_d.m_v = pv;
-}
-
-void PartGroup::UIRenderPass1(Sur * const psur)
-{
-}
-
-void PartGroup::UIRenderPass2(Sur * const psur)
-{
-}
-
-void PartGroup::RenderBlueprint(Sur *psur, const bool solid)
-{
 }
 
 #pragma endregion

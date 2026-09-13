@@ -12,7 +12,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/bulb.h"
@@ -133,111 +132,6 @@ void Light::WriteRegDefaults()
    LinkProp(m_timerInterval, TimerInterval);
 #undef LinkProp
 }
-
-void Light::UIRenderPass1(Sur * const psur)
-{
-   psur->SetBorderColor(-1, false, 0);
-   psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color & 0xFEFEFE) + (m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
-   psur->SetObject(this);
-
-   switch (m_d.m_shape)
-   {
-   default:
-   case ShapeCustom:
-      vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
-
-      // Check if we should display the image in the editor.
-      psur->Polygon(vvertex);
-
-      break;
-   }
-}
-
-void Light::UIRenderPass2(Sur * const psur)
-{
-   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
-
-   // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!drawDragpoints)
-   {
-      // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != SelectState::NotSelected)
-         {
-            drawDragpoints = true;
-            break;
-         }
-      }
-   }
-
-   RenderOutline(psur);
-
-   if ((m_d.m_shape == ShapeCustom) && drawDragpoints)
-   {
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(0, 0, 200), false, 0);
-         psur->SetObject(pdp);
-
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
-      }
-   }
-}
-
-void Light::RenderOutline(Sur * const psur)
-{
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetFillColor(-1);
-   psur->SetObject(this);
-   psur->SetObject(nullptr);
-
-   switch (m_d.m_shape)
-   {
-   case ShapeCircle:
-   default:
-   {
-      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
-      break;
-   }
-
-   case ShapeCustom:
-   {
-      vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
-      psur->SetBorderColor(RGB(255, 0, 0), false, 0);
-      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
-      psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-      psur->Polygon(vvertex);
-
-      psur->SetObject((ISelect *)&m_lightcenter);
-      break;
-   }
-   }
-
-   if (m_d.m_shape == ShapeCustom || m_vpinball->m_alwaysDrawLightCenters)
-   {
-      psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
-      psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
-   }
-
-   if (m_d.m_showBulbMesh)
-   {
-      psur->SetBorderColor(RGB(0, 127, 255), false, 0);
-      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_meshRadius * 0.5f);
-   }
-}
-
-void Light::RenderBlueprint(Sur *psur, const bool solid)
-{
-   RenderOutline(psur);
-}
-
 
 void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -848,11 +742,6 @@ void Light::Render(const unsigned int renderMask)
    }
 }
 
-void Light::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Light::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
@@ -1003,17 +892,6 @@ void Light::PutPointCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-#ifndef __STANDALONE__
-void Light::EditMenu(CMenu &menu)
-{
-    menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-    menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-    menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-    menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-    menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-}
-#endif
-
 void Light::AddPoint(int x, int y, const bool smooth)
 {
    STARTUNDO
@@ -1046,40 +924,6 @@ void Light::AddPoint(int x, int y, const bool smooth)
 
    STOPUNDO
 }
-
-#ifndef __STANDALONE__
-void Light::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-      AddPoint(x, y, true);
-      break;
-   }
-}
-#endif
 
 STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
 {

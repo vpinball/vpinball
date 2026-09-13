@@ -10,7 +10,6 @@
 #include "renderer/Shader.h"
 #include "renderer/Texture.h"
 #include "renderer/trace.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
@@ -131,127 +130,6 @@ void Ramp::WriteRegDefaults()
 #undef LinkProp
 }
 
-void Ramp::UIRenderPass1(Sur * const psur)
-{
-   //make 1-wire ramps look unique in editor - uses ramp color
-   psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
-   psur->SetBorderColor(-1, false, 0);
-   psur->SetObject(this);
-
-   int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, false);
-   psur->Polygon(rgvLocal, cvertex * 2);
-
-   delete[] rgvLocal;
-}
-
-void Ramp::UIRenderPass2(Sur * const psur)
-{
-   psur->SetFillColor(-1);
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(this);
-   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
-
-   bool *pfCross;
-   Vertex2D *middlePoints;
-   int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
-   psur->Polygon(rgvLocal, cvertex * 2);
-
-   if (IsHabitrail())
-   {
-      psur->Polyline(middlePoints, cvertex);
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-      {
-         psur->SetLineColor(RGB(0, 0, 0), false, 3);
-         psur->Polyline(rgvLocal, cvertex);
-      }
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-      {
-         psur->SetLineColor(RGB(0, 0, 0), false, 3);
-         psur->Polyline(&rgvLocal[cvertex], cvertex);
-      }
-   }
-   else
-   {
-      for (int i = 0; i < cvertex; i++)
-         if (pfCross[i])
-            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-   }
-
-   delete[] rgvLocal;
-   delete[] pfCross;
-   delete[] middlePoints;
-
-   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || m_vpinball->m_alwaysDrawDragPoints);
-   // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!drawDragpoints)
-   {
-      // if any of the drag points of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != SelectState::NotSelected)
-         {
-            drawDragpoints = true;
-            break;
-         }
-      }
-   }
-
-   if (drawDragpoints)
-   {
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : ((i == 0) ? RGB(0, 0, 255) : RGB(255, 0, 0)), false, 0);
-         psur->SetObject(pdp);
-
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
-      }
-   }
-}
-
-void Ramp::RenderBlueprint(Sur *psur, const bool solid)
-{
-   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(this);
-   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
-
-   bool *pfCross;
-   Vertex2D *middlePoints;
-   int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
-   psur->Polygon(rgvLocal, cvertex * 2);
-
-   if (IsHabitrail())
-   {
-      psur->Polyline(middlePoints, cvertex - 1);
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-      {
-         psur->SetLineColor(RGB(0, 0, 0), false, 3);
-         psur->Polyline(rgvLocal, cvertex);
-      }
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-      {
-         psur->SetLineColor(RGB(0, 0, 0), false, 3);
-         psur->Polyline(&rgvLocal[cvertex], cvertex);
-      }
-   }
-
-   for (int i = 0; i < cvertex; i++)
-      if (pfCross[i])
-         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-
-   delete[] rgvLocal;
-   delete[] pfCross;
-   delete[] middlePoints;
-}
-
 void Ramp::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
 {
    if (legacy_bounds == nullptr && !m_d.m_visible)
@@ -306,7 +184,7 @@ void Ramp::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *con
    }
 }
 
-void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height)
+void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float height) const
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
    {
@@ -328,7 +206,8 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D ** const pMiddlePoints, const float _accuracy, const bool inc_width)
+Vertex2D *Ramp::GetRampVertex(
+   int &pcvertex, float **const ppheight, bool **const ppfCross, float **const ppratio, Vertex2D **const pMiddlePoints, const float _accuracy, const bool inc_width) const
 {
    vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex, _accuracy);
@@ -1309,11 +1188,6 @@ void Ramp::PrepareHabitrail()
 #pragma endregion
 
 
-void Ramp::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(0, 0);
-}
-
 void Ramp::MoveOffset(const float dx, const float dy)
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -1446,42 +1320,6 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
 
    STOPUNDO
 }
-
-#ifndef __STANDALONE__
-void Ramp::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-   {
-      AddPoint(x, y, true);
-   }
-   break;
-   }
-}
-#endif
 
 void Ramp::FlipY(const Vertex2D& pvCenter)
 {

@@ -65,7 +65,6 @@ public:
 
    Surface()
    {
-      m_menuid = IDR_SURFACEMENU;
       m_d.m_collidable = true;
       m_d.m_slingshotAnimation = true;
       m_d.m_isBottomSolid = false;
@@ -95,7 +94,6 @@ public:
 
    // IEditable
    void WriteRegDefaults() final;
-   void RenderBlueprint(Sur *psur, const bool solid) final;
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
    void ClearForOverwrite() final;
@@ -112,9 +110,6 @@ public:
    Vertex2D GetCenter() const final { return GetPointCenter(); }
    void PutCenter(const Vertex2D& pv) final { PutPointCenter(pv); }
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
    // end ISelect
 
    float GetDepth(const Vertex3Ds& viewDir) const final { return viewDir.z * m_d.m_heighttop; }

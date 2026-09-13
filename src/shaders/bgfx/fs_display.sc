@@ -94,6 +94,7 @@ vec3 ReinhardToneMap(vec3 color)
 	#define N_SAMPLES      2                            // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
 	uniform vec4 vRes_Alpha_time;
 	#define dmdSize        (vRes_Alpha_time.xy)         // Display size in dots
+	#define addBlendMod    (vRes_Alpha_time.z)          // 0 = plain opaque output, otherwise the 'modulate vs add' factor, see the output encoding in main()
 	#define coloredDMD     (displayProperties.x != 0.0) // Linear luminance or sRGB color
 	#define sdfOffset      (displayProperties.y)        // Offset needed for SDF=0.5 at border decreasing to 0.0: 0.5 * (1.0 + (1.0 / (float(N_SAMPLES) + 0.5)) * dotSize / 2.0)
 	#define dotThreshold   (displayProperties.z)        // Threshold inside SDF (so > 0.5): 0.5 + 0.5 * (0.025 /* Antialiasing */ + dotSize * (1.0 - dotSharpness) /* Darkening around border inside dot */);
@@ -107,6 +108,7 @@ vec3 ReinhardToneMap(vec3 color)
 #ifdef CRT
 	uniform vec4 vRes_Alpha_time;
 	#define crtSize        (vRes_Alpha_time.xy)   // input display size in pixels
+	#define addBlendMod    (vRes_Alpha_time.z)    // 0 = plain opaque output, otherwise the 'modulate vs add' factor, see the output encoding in main()
 	#define crtMode        (displayProperties.x)  // main render mode (pixelated, smoothed, CRT)
 	// Output size in pixels is evaluated per pixel in main(), see 'outSize' there
 
@@ -145,11 +147,11 @@ vec3 ReinhardToneMap(vec3 color)
 
 #else
 
-	// Setup the function which returns input image color (here its in non linear 'display gamma' space), so the linear
-	// that the sRGB-bound sampler hands back has to be re-encoded. Without it the display comes out far too dark
+	// Setup the function which returns input image color, which this filter wants in non linear 'display gamma' space.
+	// SetupCRTRender binds this permutation without sRGB decoding, so all fine
 	// Explicit LOD as this is called from the oversampling loop, where implicit derivatives are meaningless (see CrtEmitter)
 	vec3 CrtsNuanceFetch(vec2 uv) {
-		return FBGamma(texNoLod(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb);
+		return texNoLod(displayTex, clamp(uv, vec2_splat(0.0), vec2_splat(1.0))).rgb;
 	}
 
 	#include "fs_crt_nuance.fs"
@@ -349,10 +351,26 @@ void main()
 	lum *= glass.rgb;
 
 	// Convert to output color space
+	vec3 outLum;
 	BRANCH if (displayOutputMode == 0.0) // No tonemap, linear Color space
-		gl_FragColor = vec4(lum, 1.0);
+		outLum = lum;
 	else BRANCH if (displayOutputMode == 1.0) // Reinhard tonemapping, linear colorspace
-		gl_FragColor = vec4(ReinhardToneMap(lum), 1.0);
-	else BRANCH if (displayOutputMode == 2.0) // Reinhard tonemapping, sRGB colorspace
-		gl_FragColor = vec4(FBGamma(ReinhardToneMap(lum)), 1.0);
+		outLum = ReinhardToneMap(lum);
+	else // Reinhard tonemapping, sRGB colorspace
+		outLum = FBGamma(ReinhardToneMap(lum));
+
+#if defined(DMD) || defined(CRT)
+	// Additive blending, encoded like the flasher shader does (see fs_flasher.sc): the blend unit is set to
+	// dst' = dst * (1 - src) - src * srcAlpha, so emitting a negative color along a 1/m - 1 alpha gives
+	// dst' = dst + outLum * (1 - m * (1 - dst)), an additive term which fades out over a dark background, m being
+	// the 'modulate vs add' factor. This needs a render target able to hold the negative intermediate (the scene
+	// ones are float), and a caller clamping m to ]0,1[, 0 being what selects the plain opaque output below
+	if (addBlendMod > 0.0)
+	{
+		gl_FragColor = vec4(outLum * (-addBlendMod), 1.0 / addBlendMod - 1.0);
+		return;
+	}
+#endif
+
+	gl_FragColor = vec4(outLum, 1.0);
 }

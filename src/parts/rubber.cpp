@@ -11,7 +11,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
@@ -114,10 +113,8 @@ void Rubber::WriteRegDefaults()
 #undef LinkProp
 }
 
-void Rubber::DrawRubberMesh(Sur * const psur)
+void Rubber::GetEditorWireframe(vector<Vertex2D> &edges)
 {
-   vector<Vertex2D> drawVertices;
-
    GenerateMesh(6);
    UpdateRubber(false, m_d.m_height);
 
@@ -128,135 +125,19 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       const Vertex3Ds C = Vertex3Ds(m_vertices[m_ringIndices[i + 2]].x, m_vertices[m_ringIndices[i + 2]].y, m_vertices[m_ringIndices[i + 2]].z);
       if (fabsf(m_vertices[m_ringIndices[i]].nz + m_vertices[m_ringIndices[i + 1]].nz) < 1.f)
       {
-         drawVertices.emplace_back(A.x, A.y);
-         drawVertices.emplace_back(B.x, B.y);
+         edges.emplace_back(A.x, A.y);
+         edges.emplace_back(B.x, B.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 1]].nz + m_vertices[m_ringIndices[i + 2]].nz) < 1.f)
       {
-         drawVertices.emplace_back(B.x, B.y);
-         drawVertices.emplace_back(C.x, C.y);
+         edges.emplace_back(B.x, B.y);
+         edges.emplace_back(C.x, C.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 2]].nz + m_vertices[m_ringIndices[i]].nz) < 1.f)
       {
-         drawVertices.emplace_back(C.x, C.y);
-         drawVertices.emplace_back(A.x, A.y);
+         edges.emplace_back(C.x, C.y);
+         edges.emplace_back(A.x, A.y);
       }
-   }
-   if (!drawVertices.empty())
-      psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
-}
-
-void Rubber::UIRenderPass1(Sur * const psur)
-{
-   psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
-   if (m_ptable->RenderSolid())
-      psur->SetFillColor(RGB(192, 192, 192));
-   else
-      psur->SetFillColor(-1);
-   psur->SetBorderColor(-1, false, 0);
-   psur->SetObject(this);
-
-   if (!m_d.m_showInEditor)
-   {
-      int cvertex;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
-      psur->Polygon(rgvLocal, cvertex* 2);
-      delete[] rgvLocal;
-   }
-   else
-   {
-      DrawRubberMesh(psur);
-   }
-}
-
-void Rubber::UIRenderPass2(Sur * const psur)
-{
-   psur->SetFillColor(-1);
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(this);
-   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
-
-   if (!m_d.m_showInEditor)
-   {
-      int cvertex;
-      bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
-
-      psur->Polygon(rgvLocal, cvertex* 2);
-      for (int i = 0; i < cvertex; i++)
-         if (pfCross[i])
-            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-
-      delete[] rgvLocal;
-      delete[] pfCross;
-   }
-   else
-   {
-      DrawRubberMesh(psur);
-
-      // if rotation is used don't show dragpoints
-      return;
-   }
-
-
-   bool drawDragpoints = ((m_selectstate != SelectState::NotSelected) || (m_vpinball->m_alwaysDrawDragPoints));
-
-   // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   if (!drawDragpoints)
-   {
-      // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         const CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         if (pdp->m_selectstate != SelectState::NotSelected)
-         {
-            drawDragpoints = true;
-            break;
-         }
-      }
-   }
-
-   if (drawDragpoints)
-   {
-      for (size_t i = 0; i < m_vdpoint.size(); i++)
-      {
-         CComObject<DragPoint> * const pdp = m_vdpoint[i];
-         psur->SetFillColor(-1);
-         psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
-         psur->SetObject(pdp);
-
-         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
-      }
-   }
-}
-
-void Rubber::RenderBlueprint(Sur *psur, const bool solid)
-{
-   psur->SetFillColor(solid ? BLUEPRINT_SOLID_COLOR : -1);
-
-   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetLineColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject(this);
-   psur->SetObject(nullptr); // nullptr so this won't be hit-tested
-
-   if (!m_d.m_showInEditor)
-   {
-      int cvertex;
-      bool *pfCross;
-      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, nullptr, 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)));
-
-      psur->Polygon(rgvLocal, cvertex* 2);
-      for (int i = 0; i < cvertex; i++)
-         if (pfCross[i])
-            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
-
-      delete[] rgvLocal;
-      delete[] pfCross;
-   }
-   else
-   {
-      DrawRubberMesh(psur);
    }
 }
 
@@ -451,6 +332,20 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 
    pcvertex = cvertex + 1;
    return rgvLocal;
+}
+
+void Rubber::GetEditorOutline(vector<Vertex2D> &outline, vector<bool> *crossFlags, const float accuracy) const
+{
+   int cvertex;
+   bool *pfCross = nullptr;
+   Vertex2D *const rgvLocal = GetSplineVertex(cvertex, crossFlags ? &pfCross : nullptr, nullptr, accuracy);
+   if (rgvLocal == nullptr)
+      return;
+   outline.assign(rgvLocal, rgvLocal + cvertex * 2);
+   if (crossFlags && pfCross)
+      crossFlags->assign(pfCross, pfCross + cvertex);
+   delete[] rgvLocal;
+   delete[] pfCross;
 }
 
 // Get an approximation of the curve described by the control points of this ramp.
@@ -751,11 +646,6 @@ void Rubber::Render(const unsigned int renderMask)
 #pragma endregion
 
 
-void Rubber::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(0, 0);
-}
-
 void Rubber::MoveOffset(const float dx, const float dy)
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -844,42 +734,6 @@ void Rubber::Load(IObjectReader& reader)
    if (m_d.m_hitHeight == -1.0f)
       m_d.m_hitHeight = m_d.m_height;
 }
-
-#ifndef __STANDALONE__
-void Rubber::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-   {
-      AddPoint(x, y, true);
-   }
-   break;
-   }
-}
-#endif
 
 void Rubber::FlipY(const Vertex2D& pvCenter)
 {

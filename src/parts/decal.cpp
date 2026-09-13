@@ -97,71 +97,6 @@ void Decal::WriteRegDefaults()
 }
 
 
-void Decal::UIRenderPass1(Sur * const psur)
-{
-   if (!(m_desktopBackdrop && !GetPTable()->GetDecalsEnabled()))
-   {
-      psur->SetBorderColor(-1, false, 0);
-      psur->SetFillColor(m_ptable->RenderSolid() ? RGB(0, 0, 255) : -1);
-      psur->SetObject(this);
-
-      const float halfwidth = m_realwidth/*m_d.m_width*/ * 0.5f;
-      const float halfheight = m_realheight/*m_d.m_height*/ * 0.5f;
-
-      const float radangle = ANGTORAD(m_d.m_rotation);
-      const float sn = sinf(radangle);
-      const float cs = cosf(radangle);
-
-      const Vertex2D rgv[4] = {
-         Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
-         m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
-         m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
-         m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
-         m_d.m_vCenter.y + cs*halfheight - sn*halfwidth) };
-
-      psur->Polygon(rgv, 4);
-   }
-}
-
-void Decal::UIRenderPass2(Sur * const psur)
-{
-   if (!(m_desktopBackdrop && !GetPTable()->GetDecalsEnabled()))
-   {
-      psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-      psur->SetFillColor(-1);
-      psur->SetObject(this);
-      psur->SetObject(nullptr);
-
-      const float halfwidth = m_realwidth * 0.5f;
-      const float halfheight = m_realheight * 0.5f;
-
-      const float radangle = ANGTORAD(m_d.m_rotation);
-      const float sn = sinf(radangle);
-      const float cs = cosf(radangle);
-
-      const Vertex2D rgv[4] = {
-         Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
-         m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
-         m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
-         m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
-
-         Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
-         m_d.m_vCenter.y + cs*halfheight - sn*halfwidth) };
-
-      psur->Polygon(rgv, 4);
-   }
-}
-
 string Decal::GetFontName() const
 {
    return m_d.m_font.name;
@@ -234,9 +169,19 @@ void Decal::UpdateBounds()
    }
 }
 
-void Decal::SetObjectPos()
+void Decal::GetEditorQuad(Vertex2D rgv[4]) const
 {
-   m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float halfwidth = m_realwidth * 0.5f;
+   const float halfheight = m_realheight * 0.5f;
+
+   const float radangle = ANGTORAD(m_d.m_rotation);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
+
+   rgv[0] = Vertex2D(m_d.m_vCenter.x + sn * halfheight - cs * halfwidth, m_d.m_vCenter.y - cs * halfheight - sn * halfwidth);
+   rgv[1] = Vertex2D(m_d.m_vCenter.x + sn * halfheight + cs * halfwidth, m_d.m_vCenter.y - cs * halfheight + sn * halfwidth);
+   rgv[2] = Vertex2D(m_d.m_vCenter.x - sn * halfheight + cs * halfwidth, m_d.m_vCenter.y + cs * halfheight + sn * halfwidth);
+   rgv[3] = Vertex2D(m_d.m_vCenter.x - sn * halfheight - cs * halfwidth, m_d.m_vCenter.y + cs * halfheight - sn * halfwidth);
 }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)

@@ -34,6 +34,7 @@
 #include "ui/win/codeview.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/resource.h"
+#include "ui/win/WinUIPartRegistry.h"
 #include "ui/win/worker.h"
 
 #ifndef __STANDALONE__
@@ -113,6 +114,7 @@ WinEditor::WinEditor(HINSTANCE appInstance)
    m_closing = false;
    m_unloadingTable = false;
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
+   WinUIPartRegistry::InitRegistry(); 
    //implement this and StdMethods QueryInterface, AddRef and Release
 
    m_mouseCursorPosition.x = 0.0f;
@@ -838,7 +840,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       return true;
 
    case ID_TABLE_FONTMANAGER:
-      if (CComObject<PinTable> *const ptCur = GetActiveTable(); ptCur)
+      if (PinTableWnd *const ptCur = GetActiveTableEditor(); ptCur)
          /*const DWORD foo =*/ DialogBoxParam(m_instance, MAKEINTRESOURCE(IDD_FONTDIALOG), GetHwnd(), FontManagerProc, (size_t)ptCur);
       return true;
 
@@ -1841,7 +1843,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
-   CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+   PinTableWnd *pt = (PinTableWnd *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
@@ -1861,7 +1863,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       lvcol.cx = 200;
       ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
-      pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+      pt = (PinTableWnd *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
       pt->ListFonts(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
@@ -1929,7 +1931,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                   ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                   PinFont * const ppf = (PinFont *)lvitem.lParam;
                   ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
-                  pt->RemoveFont(ppf);
+                  pt->m_table->RemoveFont(ppf);
                }
             }
          }

@@ -50,23 +50,7 @@ public:
    // Report a change that would need the Win32 UI to be redrawn
    virtual void SetDirtyDraw();
 
-   // Win32 editor rendering and picking
-   virtual void SetSelectFormat(Sur *psur);
-   virtual void SetMultiSelectFormat(Sur *psur);
-   virtual void SetLockedFormat(Sur *psur);
-   // This function draws the shape of the object with a solid fill, called before the grid lines are drawn on the map
-   virtual void UIRenderPass1(Sur *const psur) = 0;
-   // This function draws the shape of the object with a black outline (no solid fill), called after the grid lines have been drawn on the map.
-   virtual void UIRenderPass2(Sur *const psur) = 0;
-   virtual void RenderBlueprint(Sur *psur, const bool solid);
-
-   virtual void OnLButtonDown(int x, int y);
-   virtual void OnLButtonUp(int x, int y);
-
    virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
-   virtual void EditMenu(CMenu &menu) { }
-   virtual void DoCommand(int icmd, int x, int y);
-   virtual void SetObjectPos();
 
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
@@ -127,8 +111,6 @@ public:
       MultiSelected
    };
    SelectState m_selectstate = SelectState::NotSelected;
-
-   int m_menuid = -1; // context menu to use
 
    bool m_dragging = false;
 

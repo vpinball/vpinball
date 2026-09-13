@@ -26,6 +26,14 @@ public:
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
    void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
 
+   void NewCollection(const HWND hwndListView, const bool fFromSelection);
+   void ListCollections(HWND hwndListView);
+   int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
+
+   void ImportFont(HWND hwndListView, const string &filename);
+   void ListFonts(HWND hwndListView);
+   int AddListBinary(HWND hwndListView, PinBinary *ppb);
+
    void Redraw();
    void SetDefaultView();
    void GetViewRect(FRect *pfrect) const;
@@ -56,6 +64,8 @@ public:
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)
 
+   WinEditor *const m_vpxEditor;
+
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd
@@ -83,7 +93,6 @@ private:
    void UIRenderPass2(Sur *const psur);
 #endif
 
-   WinEditor *const m_vpxEditor;
    PinTableMDI *m_mdiTable = nullptr;
 
    std::unique_ptr<class SearchSelectDialog> m_searchSelectDlg;

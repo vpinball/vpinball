@@ -3,7 +3,7 @@
 #include "core/stdafx.h"
 #include "hitsur.h"
 
-HitSur::HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground) : Sur(hdc, zoom, offx, offy, width, height)
+HitSur::HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground) : Sur(zoom, offx, offy, width, height)
 {
    m_pselected = pbackground;
 
@@ -18,10 +18,10 @@ void HitSur::Line(const float x, const float y, const float x2, const float y2)
    if (m_pcur == nullptr)
       return;
 
-   const int x_1 = SCALEXf(x);
-   const int y_1 = SCALEYf(y);
-   const int x_2 = SCALEXf(x2);
-   const int y_2 = SCALEYf(y2);
+   const int x_1 = ScaleX(x);
+   const int y_1 = ScaleY(y);
+   const int x_2 = ScaleX(x2);
+   const int y_2 = ScaleY(y2);
 
    if (abs(x_2 - x_1) > abs(y_2 - y_1))
    {
@@ -66,10 +66,10 @@ void HitSur::Rectangle(const float x, const float y, const float x2, float y2)
    if (m_pcur == nullptr)
       return;
 
-   int ix = SCALEXf(x);
-   int iy = SCALEYf(y);
-   int ix2 = SCALEXf(x2);
-   int iy2 = SCALEYf(y2);
+   int ix = ScaleX(x);
+   int iy = ScaleY(y);
+   int ix2 = ScaleX(x2);
+   int iy2 = ScaleY(y2);
 
    if (ix > ix2)
    {
@@ -102,9 +102,9 @@ void HitSur::Ellipse(const float centerx, const float centery, const float radiu
    if (m_pcur == nullptr)
       return;
 
-   const int ix = SCALEXf(centerx);
-   const int iy = SCALEYf(centery);
-   const int64_t ir = SCALEDf(radius);
+   const int ix = ScaleX(centerx);
+   const int iy = ScaleY(centery);
+   const int64_t ir = ScaleD(radius);
 
    const int64_t dx = m_hitx - ix;
    const int64_t dy = m_hity - iy;
@@ -121,8 +121,8 @@ void HitSur::Ellipse2(const float centerx, const float centery, const int radius
    if (m_pcur == nullptr)
       return;
 
-   const int ix = SCALEXf(centerx);
-   const int iy = SCALEYf(centery);
+   const int ix = ScaleX(centerx);
+   const int iy = ScaleY(centery);
 
    const int dx = m_hitx - ix;
    const int dy = m_hity - iy;
@@ -139,8 +139,8 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
    if (m_pcur == nullptr || count <= 0)
       return;
 
-   int x1 = SCALEXf(rgv[count - 1].x);
-   int y1 = SCALEYf(rgv[count - 1].y);
+   int x1 = ScaleX(rgv[count - 1].x);
+   int y1 = ScaleY(rgv[count - 1].y);
    bool hx1 = (m_hitx >= x1);
    bool hy1 = (m_hity > y1);
    int crosscount = 0;	// count of lines which the hit point is to the left of
@@ -151,8 +151,8 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
       const bool hx2 = hx1;
       const bool hy2 = hy1;
 
-      x1 = SCALEXf(rgv[i].x);
-      y1 = SCALEYf(rgv[i].y);
+      x1 = ScaleX(rgv[i].x);
+      y1 = ScaleY(rgv[i].y);
       hx1 = (m_hitx >= x1);
       hy1 = (m_hity > y1);
 
@@ -190,8 +190,8 @@ void HitSur::Polygon(const vector<RenderVertex> &rgv)
    if (m_pcur == nullptr || rgv.empty())
       return;
 
-   int x1 = SCALEXf(rgv[rgv.size() - 1].x);
-   int y1 = SCALEYf(rgv[rgv.size() - 1].y);
+   int x1 = ScaleX(rgv[rgv.size() - 1].x);
+   int y1 = ScaleY(rgv[rgv.size() - 1].y);
    bool hx1 = (m_hitx >= x1);
    bool hy1 = (m_hity > y1);
    int crosscount = 0;	// count of lines which the hit point is to the left of
@@ -202,8 +202,8 @@ void HitSur::Polygon(const vector<RenderVertex> &rgv)
       const bool hx2 = hx1;
       const bool hy2 = hy1;
 
-      x1 = SCALEXf(rgv[i].x);
-      y1 = SCALEYf(rgv[i].y);
+      x1 = ScaleX(rgv[i].x);
+      y1 = ScaleY(rgv[i].y);
       hx1 = (m_hitx >= x1);
       hy1 = (m_hity > y1);
 

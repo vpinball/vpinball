@@ -69,7 +69,6 @@ public:
    END_CONNECTION_POINT_MAP()
 
    void MoveOffset(const float dx, const float dy) final { m_d.m_vCenter.x += dx; m_d.m_vCenter.y += dy; }
-   void SetObjectPos() final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final { return m_d.m_vCenter; }
    void PutCenter(const Vertex2D& pv) final { m_d.m_vCenter = pv; }
@@ -83,6 +82,9 @@ public:
    void EnsureSize();
 
    DecalData m_d;
+
+   // Computes the 4 vertices of the rotated quad of this decal for editor display
+   void GetEditorQuad(Vertex2D rgv[4]) const;
 
 private:
    void GetTextSize(int * const px, int * const py);

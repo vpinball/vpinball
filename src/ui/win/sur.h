@@ -4,19 +4,11 @@
 
 #include "math/MeshUtils.h"
 
-#define RoundToInt lround
-
-#define SCALEXf(x) RoundToInt(((x) - m_offx)*m_zoom)
-#define SCALEYf(y) RoundToInt(((y) - m_offy)*m_zoom)
-#define SCALEDf(d) RoundToInt((d)*m_zoom)
-
 class Sur
 {
 public:
-
-   Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height)
+   Sur(const float zoom, const float offx, const float offy, const int width, const int height)
    {
-      m_hdc = hdc;
       m_zoom = zoom;
       const float inv_zoom = 0.5f / zoom;
       m_offx = offx - (float)width*inv_zoom;
@@ -37,7 +29,7 @@ public:
    virtual void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y) = 0;
    virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) = 0;
 
-   virtual void SetObject(ISelect * const psel) = 0;
+   virtual void SetObject(class ISelect * const psel) = 0;
 
    virtual void SetFillColor(const int rgb) = 0;
    virtual void SetBorderColor(const int rgb, const bool dashed, const int width) = 0;
@@ -51,7 +43,12 @@ public:
        (float)screeny*inv_zoom + m_offy};
    }
 
-   HDC m_hdc;
+protected:
+   int ScaleX(const float x) const { return lround(((x) - m_offx)*m_zoom); }
+   int ScaleY(const float y) const { return lround(((y) - m_offy)*m_zoom); }
+   int ScaleD(const float d) const { return lround((d)*m_zoom); }
+
+private:
    float m_zoom;
    float m_offx, m_offy;
 };

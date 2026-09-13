@@ -796,8 +796,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-               id.has_value() && g_app->m_settings.GetFloat(id.value()) != m_player->m_ptable->m_settings.GetFloat(id.value()))
+            else if (item->IsOverriden(g_app->m_settings, m_player->m_ptable->m_settings))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -834,7 +833,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (id.has_value() && g_app->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
+            else if (item->IsOverriden(g_app->m_settings, m_player->m_ptable->m_settings))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -865,8 +864,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-               id.has_value() && g_app->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
+            else if (item->IsOverriden(g_app->m_settings, m_player->m_ptable->m_settings))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -890,8 +888,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-               id.has_value() && g_app->m_settings.GetBool(id.value()) != m_player->m_ptable->m_settings.GetBool(id.value()))
+            else if (item->IsOverriden(g_app->m_settings, m_player->m_ptable->m_settings))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);
@@ -914,8 +911,7 @@ void InGameUIPage::Render(float elapsedS)
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_PENCIL);
             }
-            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-               id.has_value() && g_app->m_settings.GetString(id.value()) != m_player->m_ptable->m_settings.GetString(id.value()))
+            else if (item->IsOverriden(g_app->m_settings, m_player->m_ptable->m_settings))
             {
                ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
                ImGui::Text(ICON_FK_DOT_CIRCLE_O);

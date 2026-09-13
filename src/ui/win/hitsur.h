@@ -8,7 +8,7 @@ class HitSur : public Sur
 {
 public:
 
-   HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground);
+   HitSur(const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground);
    ~HitSur() override { }
 
    void Line(const float x, const float y, const float x2, const float y2) override;
