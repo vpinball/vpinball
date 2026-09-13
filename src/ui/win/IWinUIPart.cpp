@@ -11,21 +11,22 @@
 
 void IWinUIPart::OnLButtonDown(int x, int y)
 {
+#ifndef __STANDALONE__
    m_select->m_dragging = true;
    m_select->m_markedForUndo = false; // So we will be marked when and if we are dragged
 
    m_select->GetPTable()->SetMouseCapture();
 
    UpdateStatusBarObjectPos();
+#endif
 }
 
 void IWinUIPart::OnLButtonUp(int x, int y)
 {
+#ifndef __STANDALONE__
    m_select->m_dragging = false;
 
-#ifndef __STANDALONE__
    ReleaseCapture();
-#endif
 
    if (m_select->m_markedForUndo)
    {
@@ -34,20 +35,26 @@ void IWinUIPart::OnLButtonUp(int x, int y)
       if (m_select->GetPTable())
          m_select->GetPTable()->SetDirtyDraw();
    }
+#endif
 }
 
 void IWinUIPart::UpdateStatusBarObjectPos()
 {
+#ifndef __STANDALONE__
    m_editor->m_vpxEditor->ClearObjectPosCur();
+#endif
 }
 
 void IWinUIPart::SetStatusBarObjectPos(const float x, const float y)
 {
+#ifndef __STANDALONE__
    m_editor->m_vpxEditor->SetObjectPosCur(x, y);
+#endif
 }
 
 void IWinUIPart::DoCommand(int icmd, int x, int y)
 {
+#ifndef __STANDALONE__
    // Commands that are handled by the table element
    if ((((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020)) // Assign to collection
       || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1 + NUM_ASSIGN_LAYERS - 1)) // Assign to layer
@@ -99,4 +106,5 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          m_select->GetPTable()->SetDirtyDraw();
       break;
    }
+#endif
 }
