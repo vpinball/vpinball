@@ -88,7 +88,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          return;
       }
 
-      currentTable->AddMultiSel(pisel, add, true, true);
+      m_editor->AddMultiSel(pisel, add, true, true);
       return;
    }
    switch (icmd)

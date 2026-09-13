@@ -8,6 +8,7 @@
 #include "parts/Collection.h"
 #include "parts/PartGroup.h"
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
 #include "ui/win/WinEditor.h"
 
@@ -138,8 +139,8 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_SELECT:
       if (m_activeTable && GetSelectedPartGroup())
       {
-         m_activeTable->ClearMultiSel();
-         m_activeTable->AddMultiSel(GetSelectedPartGroup(), true, false, false);
+         m_activeTable->m_tableEditor->ClearMultiSel();
+         m_activeTable->m_tableEditor->AddMultiSel(GetSelectedPartGroup(), true, false, false);
          m_activeTable->RefreshProperties();
          m_activeTable->SetDirtyDraw();
       }
@@ -189,7 +190,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void LayersListDialog::AssignToSelectedGroup()
 {
-   if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
+   if (m_activeTable == nullptr || m_activeTable->m_tableEditor->MultiSelIsEmpty())
       return;
 
    PartGroup* group = GetSelectedPartGroup();
@@ -212,7 +213,7 @@ void LayersListDialog::SetActiveTable(PinTable* ptable)
       {
          if (m_activeTable)
          {
-            ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+            ISelect* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
             m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
          }
          else
@@ -229,7 +230,7 @@ void LayersListDialog::Update()
    m_layerTreeView.Update();
    if (IsSyncedOnSelection())
    {
-      ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+      ISelect* const sel = m_activeTable->m_tableEditor->GetSelectedItem();
       m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
    }
    UpdateCommands();
@@ -729,18 +730,19 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
       return FALSE;
    auto selected = selectedItem->editable;
 
-   m_activeTable->ClearMultiSel();
+   m_activeTable->m_tableEditor->ClearMultiSel();
    if (selected->GetItemType() == eItemPartGroup)
-      std::ranges::for_each(m_content,[&, selected](const TreeEntry& te)
-         { 
+      std::ranges::for_each(m_content,
+         [&, selected](const TreeEntry& te)
+         {
             PartGroup* pg = te.editable->GetPartGroup();
             while (pg != nullptr && pg != selected)
                pg = pg->GetPartGroup();
             if (pg == selected)
-               m_activeTable->AddMultiSel(te.editable->GetISelect(), true, false, false);
+               m_activeTable->m_tableEditor->AddMultiSel(te.editable->GetISelect(), true, false, false);
          });
    else
-      m_activeTable->AddMultiSel(selected->GetISelect(), true, false, false);
+      m_activeTable->m_tableEditor->AddMultiSel(selected->GetISelect(), true, false, false);
    m_activeTable->RefreshProperties();
    m_activeTable->SetDirtyDraw();
    return TRUE;

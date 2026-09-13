@@ -434,11 +434,6 @@ public:
    // Transform editor window coordinates to table coordinates
    Vertex2D TransformPoint(int x, int y) const;
 
-   void ClearMultiSel(ISelect *newSel = nullptr);
-   bool MultiSelIsEmpty() const;
-   ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
-   void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
-
    HRESULT Save();
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
@@ -607,8 +602,6 @@ private:
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
 public:
-   VectorProtected<ISelect> m_vmultisel;
-
    float m_left = 0.f; // always zero for now
    float m_top = 0.f; // always zero for now
    float m_right = 0.f;

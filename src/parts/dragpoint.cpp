@@ -4,6 +4,7 @@
 #include "dragpoint.h"
 
 #include "parts/pintable.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
@@ -285,7 +286,8 @@ void IHaveDragPoints::ClearPointsForOverwrite()
       if (m_vdpoint[i]->m_selectstate != ISelect::SelectState::NotSelected /*GetPTable()->m_pselcur == m_vdpoint[i]*/)
       {
          //GetPTable()->SetSel(GetPTable());
-         GetPTable()->AddMultiSel(GetPTable(), false, true, false);
+         if (PinTableWnd *const tableEditor = GetPTable()->m_tableEditor)
+            tableEditor->AddMultiSel(GetPTable(), false, true, false);
       }
 
       m_vdpoint[i]->Release();

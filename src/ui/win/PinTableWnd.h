@@ -22,7 +22,12 @@ public:
 
    ISelect *HitTest(const int x, const int y);
 
-   #ifndef __STANDALONE__
+   void ClearMultiSel(ISelect *newSel = nullptr);
+   bool MultiSelIsEmpty() const;
+   ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
+   void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
+
+#ifndef __STANDALONE__
    void SetMouseCursor();
    #endif
    void SetCaption(const string &caption);
@@ -70,7 +75,9 @@ public:
    IWinUIPart *GetUIPart(IEditable *part) { return GetUIPart(part ? part->GetISelect() : nullptr); }
 
    CComObject<PinTable> *const m_table;
-   
+
+   VectorProtected<ISelect> m_vmultisel;
+
    std::unique_ptr<class CodeViewer> m_pcv;
 
    ViewSetupID m_currentBackglassMode = ViewSetupID::BG_DESKTOP; // POV shown in the UI (not persisted)

@@ -500,7 +500,7 @@ void WinEditor::RenameEditable(IEditable *editable, const string &name)
 
 #ifndef __STANDALONE__
    PinTable *const pt = editable->GetPTable();
-   g_pvp->SetPropSel(pt->m_vmultisel);
+   g_pvp->SetPropSel(pt->m_tableEditor->m_vmultisel);
    g_pvp->GetLayersListDialog()->Update();
 
    if (editable->GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
@@ -636,8 +636,8 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
                info.DoModal();
             }
          }
-         ptCur->ClearMultiSel(nullptr);
-         SetPropSel(ptCur->m_vmultisel);
+         ptCur->m_tableEditor->ClearMultiSel();
+         SetPropSel(ptCur->m_tableEditor->m_vmultisel);
          GetLayersListDialog()->ResetView();
          ToggleToolbar();
          SetEnableMenuItems();
@@ -1046,7 +1046,7 @@ void WinEditor::LoadFileName(const string& filename, const bool updateEditor, VP
       g_app->m_settings.SetRecentDir_LoadDir(tablePath.string(), false);
       UpdateRecentFileList(filename);
 
-      ppt->m_table->AddMultiSel(ppt->m_table, false, true, false);
+      ppt->AddMultiSel(ppt->m_table, false, true, false);
       if (updateEditor)
       {
 #ifndef __STANDALONE__
@@ -1995,7 +1995,7 @@ void WinEditor::ToggleBackglassView()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
       // Set selection to something in the new view (unless hiding table elements)
-      ptCur->AddMultiSel((ISelect *)ptCur, false, true, false);
+      ptCur->m_tableEditor->AddMultiSel((ISelect *)ptCur, false, true, false);
 
    ToggleToolbar();
 }
@@ -2030,8 +2030,8 @@ void WinEditor::SetDefaultPhysics()
       if (answ == IDYES)
       {
          ptCur->BeginUndo();
-         for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
-            ptCur->m_vmultisel[i].SetDefaultPhysics(true);
+         for (int i = 0; i < ptCur->m_tableEditor->m_vmultisel.size(); i++)
+            ptCur->m_tableEditor->m_vmultisel[i].SetDefaultPhysics(true);
          ptCur->EndUndo();
       }
    }
@@ -2082,9 +2082,9 @@ void WinEditor::AddControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_table->m_vmultisel.empty())
+   if (!ptCur->m_vmultisel.empty())
    {
-      ISelect * const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
@@ -2127,9 +2127,9 @@ void WinEditor::AddSmoothControlPoint()
    if (ptCur == nullptr)
       return;
 
-   if (!ptCur->m_table->m_vmultisel.empty())
+   if (!ptCur->m_vmultisel.empty())
    {
-      ISelect *const psel = ptCur->m_table->m_vmultisel.ElementAt(0);
+      ISelect *const psel = ptCur->m_vmultisel.ElementAt(0);
       if (psel != nullptr)
       {
          const POINT pt = ptCur->GetScreenPoint();
@@ -2257,7 +2257,7 @@ void WinEditor::OpenNewTable(size_t tableId)
 
    m_vtable.push_back(mdiTable->GetTableWnd());
    AddMDIChild(mdiTable);
-   mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
+   mdiTable->GetTableWnd()->AddMultiSel(mdiTable->GetTable(), false, true, false);
    GetLayersListDialog()->ResetView();
    ToggleToolbar();
    if (m_dockNotes != nullptr)
