@@ -14,6 +14,9 @@ public:
    void UIRenderPass1(Sur* psur) override { }
    void UIRenderPass2(Sur* psur) override { }
 
+   void OnLButtonDown(int x, int y) override;
+   void OnLButtonUp(int x, int y) override;
+
    void EditMenu(Win32xx::CMenu& menu) override;
    void DoCommand(int icmd, int x, int y) override;
 

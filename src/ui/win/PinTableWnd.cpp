@@ -841,7 +841,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         m_table->OnLButtonDown(x, y); // Start the band select
+         if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
+            winPart->OnLButtonDown(x, y); // Start the band select
          return;
       }
 
@@ -852,7 +853,8 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
       {
          ISelect *const pisel2 = m_table->m_vmultisel.ElementAt(i);
          if (pisel2)
-            pisel2->OnLButtonDown(x, y);
+            if (const auto winPart = WinUIPartRegistry::Create(this, pisel2))
+               winPart->OnLButtonDown(x, y);
       }
    }
 }
@@ -878,7 +880,8 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
       {
          ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
          if (pisel)
-            pisel->OnLButtonUp(x, y);
+            if (const auto winPart = WinUIPartRegistry::Create(this, pisel))
+               winPart->OnLButtonUp(x, y);
       }
       if (m_moving)
       {

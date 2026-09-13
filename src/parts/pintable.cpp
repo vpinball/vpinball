@@ -3908,24 +3908,6 @@ Vertex2D PinTable::TransformPoint(int x, int y) const
    return result;
 }
 
-void PinTable::OnLButtonDown(int x, int y)
-{
-#ifndef __STANDALONE__
-   const Vertex2D v = TransformPoint(x, y);
-
-   m_rcDragRect.left = v.x;
-   m_rcDragRect.right = v.x;
-   m_rcDragRect.top = v.y;
-   m_rcDragRect.bottom = v.y;
-
-   m_dragging = true;
-
-   m_tableEditor->SetCapture();
-
-   SetDirtyDraw();
-#endif
-}
-
 HRESULT PinTable::GetTypeName(BSTR *pVal) const
 {
    const int stringid = (!m_vpinball->m_desktopBackdropView) ? IDS_TABLE : IDS_TB_BACKGLASS;

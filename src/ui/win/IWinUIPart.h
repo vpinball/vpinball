@@ -26,6 +26,10 @@ public:
 
    virtual void RenderBlueprint(Sur* psur, bool solid) { UIRenderPass2(psur); }
 
+   // Win32 editor picking
+   virtual void OnLButtonDown(int x, int y);
+   virtual void OnLButtonUp(int x, int y);
+
    // Allows the part to customize the editor context menu before it is displayed
    virtual void EditMenu(Win32xx::CMenu& menu) { }
 

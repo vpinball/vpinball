@@ -3,12 +3,25 @@
 #include "core/stdafx.h"
 
 #include "parts/dragpoint.h"
+#include "parts/pintable.h"
 #include "ui/win/parts/DragPointWinUIPart.h"
 
 DragPointWinUIPart::DragPointWinUIPart(PinTableWnd* editor, DragPoint* dragPoint)
    : IWinUIPart(editor, dragPoint)
    , m_dragPoint(dragPoint)
 {
+}
+
+void DragPointWinUIPart::OnLButtonDown(int x, int y)
+{
+   IWinUIPart::OnLButtonDown(x, y);
+   m_dragPoint->GetPTable()->SetDirtyDraw();
+}
+
+void DragPointWinUIPart::OnLButtonUp(int x, int y)
+{
+   IWinUIPart::OnLButtonUp(x, y);
+   m_dragPoint->GetPTable()->SetDirtyDraw();
 }
 
 void DragPointWinUIPart::EditMenu(CMenu& menu)
