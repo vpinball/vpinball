@@ -18,6 +18,7 @@ echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo "  LIBWINEVBS_SHA: ${LIBWINEVBS_SHA}"
+echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo ""
 
 NUM_PROCS=$(nproc)
@@ -156,6 +157,38 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    cd ..
 
    echo "$BGFX_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+
+#
+# build openxr
+#
+
+OPENXR_EXPECTED_SHA="${OPENXR_SHA}"
+OPENXR_FOUND_SHA="$([ -f openxr/cache.txt ] && cat openxr/cache.txt || echo "")"
+
+if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
+   echo "Building OpenXR. Expected: ${OPENXR_EXPECTED_SHA}, Found: ${OPENXR_FOUND_SHA}"
+
+   rm -rf openxr
+   mkdir openxr
+   cd openxr
+
+   curl -sL https://github.com/KhronosGroup/OpenXR-SDK-Source/archive/${OPENXR_SHA}.tar.gz -o OpenXR-SDK-Source-${OPENXR_SHA}.tar.gz
+   tar xzf OpenXR-SDK-Source-${OPENXR_SHA}.tar.gz
+   mv OpenXR-SDK-Source-${OPENXR_SHA} openxr
+   cd openxr
+   cmake \
+      -DBUILD_TESTS=OFF \
+      -DDYNAMIC_LOADER=ON \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$OPENXR_EXPECTED_SHA" > cache.txt
 
    cd ..
 fi
@@ -396,6 +429,9 @@ fi
 #
 # copy libraries
 #
+
+cp -a openxr/openxr/build/src/loader/libopenxr_loader.so* ../../../third-party/runtime-libs/linux-x64
+cp -r openxr/openxr/include/openxr ../../../third-party/include
 
 cp -a SDL3/SDL/build/libSDL3.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 cp -r SDL3/SDL/include/SDL3 ../../../third-party/include/

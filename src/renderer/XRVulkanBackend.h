@@ -105,9 +105,9 @@ public:
 #if BX_PLATFORM_ANDROID
          instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_LINUX
-         instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-         instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+         instanceExtensions.push_back("VK_KHR_wayland_surface");
+         instanceExtensions.push_back("VK_KHR_xlib_surface");
+         instanceExtensions.push_back("VK_KHR_xcb_surface");
 #elif BX_PLATFORM_WINDOWS
          instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif BX_PLATFORM_OSX

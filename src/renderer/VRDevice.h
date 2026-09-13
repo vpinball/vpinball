@@ -3,14 +3,13 @@
 #pragma once
 
 #if defined(ENABLE_XR)
+   #ifdef __STANDALONE__
+   #pragma push_macro("_WIN64")
+   #undef _WIN64
+   #endif
    #include "bx/platform.h"
-
-   #if defined(__ANDROID__) && BX_PLATFORM_WINDOWS
-      // Our setup may lead to this incorrect double definition, so fix it
-      #undef BX_PLATFORM_WINDOWS
-      #define BX_PLATFORM_WINDOWS 0
-      #undef BX_PLATFORM_ANDROID
-      #define BX_PLATFORM_ANDROID 1
+   #ifdef __STANDALONE__
+   #pragma pop_macro("_WIN64")
    #endif
 
    #if BX_PLATFORM_WINDOWS
@@ -26,6 +25,9 @@
       #define XR_USE_PLATFORM_ANDROID
       #define XR_USE_GRAPHICS_API_VULKAN
       //#define XR_USE_GRAPHICS_API_OPENGL_ES
+   #elif BX_PLATFORM_LINUX
+      #define XR_USE_TIMESPEC
+      #define XR_USE_GRAPHICS_API_VULKAN
    #endif
 
 
@@ -278,7 +280,7 @@ private:
    #if BX_PLATFORM_WINDOWS
    bool m_win32PerfCounterExtensionSupported = false;
    PFN_xrConvertTimeToWin32PerformanceCounterKHR m_xrConvertTimeToWin32PerformanceCounterKHR = nullptr;
-   #elif BX_PLATFORM_ANDROID
+   #elif BX_PLATFORM_ANDROID || BX_PLATFORM_LINUX
    bool m_convertTimespecTimeExtensionSupported = false;
    PFN_xrConvertTimeToTimespecTimeKHR m_xrConvertTimeToTimespecTimeKHR = nullptr;
    #endif
