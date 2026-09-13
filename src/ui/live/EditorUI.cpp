@@ -36,6 +36,7 @@
 #include "renderer/Shader.h"
 #include "renderer/VRDevice.h"
 
+#include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 
 #include "utils/color.h"
@@ -168,7 +169,10 @@ void EditorUI::RenderUI()
          if (!IsInspectMode() && ImGui::BeginMenu("File"))
          {
             if (ImGui::MenuItem("Save"))
-               m_table->Save();
+            {
+               VPXFileFeedback feedback;
+               m_table->Save(feedback);
+            }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit"))
                m_player->SetCloseState(Player::CS_CLOSE_APP);

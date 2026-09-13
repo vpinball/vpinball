@@ -95,8 +95,8 @@ public:
 
    class PinTableWnd* GetActiveTableEditor();
    CComObject<PinTable>* GetActiveTable();
-   bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);
-   void LoadFileName(const string& szFileName, const bool updateEditor, VPXFileFeedback* feedback = nullptr);
+   bool LoadFile(const bool updateEditor);
+   void LoadFileName(const string& szFileName, const bool updateEditor);
    void SetClipboard(vector<IStream*> * const pvstm);
 
    void DoPlay(const int playMode);

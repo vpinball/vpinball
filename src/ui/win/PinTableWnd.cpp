@@ -20,6 +20,7 @@
 
 #ifndef __STANDALONE__
 #include "ui/win/dialogs/SearchSelectDialog.h"
+#include "ui/win/dialogs/Win32ProgressBar.h"
 #include "FreeImage.h"
 #else
 class SearchSelectDialog { };
@@ -1596,7 +1597,8 @@ void PinTableWnd::AutoSave()
    FastIStorage *const pstgroot = new FastIStorage();
    pstgroot->AddRef();
 
-   const HRESULT hr = m_table->SaveToStorage(pstgroot);
+   Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
+   const HRESULT hr = m_table->SaveToStorage(pstgroot, feedback);
 
    m_table->m_undo.SetCleanPoint((SaveDirtyState)min((int)m_table->m_sdsDirtyProp, (int)eSaveAutosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_table->m_sdsDirtyScript, (int)eSaveAutosaved));

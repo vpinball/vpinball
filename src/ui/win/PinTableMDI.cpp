@@ -4,8 +4,12 @@
 
 #include "PinTableMDI.h"
 
-
 #include "ui/win/WinEditor.h"
+
+#ifndef __STANDALONE__
+#include "core/VPApp.h"
+#include "ui/win/dialogs/Win32ProgressBar.h"
+#endif
 
 static CComObject<PinTable>* CreatePinTable()
 {
@@ -44,7 +48,8 @@ bool PinTableMDI::CanClose() const
         if (result == IDCANCEL)
             return false;
 
-        if ((result == IDYES) && (m_tableWnd->m_table->Save() != S_OK))
+        Win32ProgressBar feedback(g_app->GetInstanceHandle(), m_vpxEditor->m_hwndStatusBar);
+        if ((result == IDYES) && (m_tableWnd->m_table->Save(feedback) != S_OK))
             MessageBox(LocalString(IDS_SAVEERROR).m_szbuffer, "Visual Pinball", MB_ICONERROR);
 #endif
     }
