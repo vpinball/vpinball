@@ -18,9 +18,9 @@ public:
 
    virtual void Line(const float x, const float y, const float x2, const float y2) = 0;
    virtual void Rectangle(const float x, const float y, const float x2, float y2) = 0;
-   virtual void Rectangle2(const int x, const int y, const int x2, const int y2) = 0;
+   virtual void Rectangle2(const int x, const int y, const int x2, const int y2) = 0; // Rectangle2 draws in screen coordinates (no offset/scaling) **without** selection
    virtual void Ellipse(const float centerx, const float centery, const float radius) = 0;
-   virtual void Ellipse2(const float centerx, const float centery, const int radius) = 0;
+   virtual void Ellipse2(const float centerx, const float centery, const int radius) = 0; // Ellipse2 draws in screen coordinates (no offset/scaling) **with** selection
    virtual void Polygon(const Vertex2D * const rgv, const int count) = 0;
    virtual void Polygon(const vector<RenderVertex> &rgv) = 0;
    virtual void PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) = 0;
