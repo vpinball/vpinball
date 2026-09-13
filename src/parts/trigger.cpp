@@ -504,55 +504,35 @@ void Trigger::PutPointCenter(const Vertex2D& pv)
    m_d.m_vCenter = pv;
 }
 
-void Trigger::FlipY(const Vertex2D& pvCenter)
-{
-   if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::FlipPointY(pvCenter);
-}
+void Trigger::FlipX(const Vertex2D &pvCenter) { IHaveDragPoints::FlipPointX(pvCenter); }
 
-void Trigger::FlipX(const Vertex2D& pvCenter)
-{
-   if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::FlipPointX(pvCenter);
-}
+void Trigger::FlipY(const Vertex2D &pvCenter) { IHaveDragPoints::FlipPointY(pvCenter); }
 
 void Trigger::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
-   else
-   {
-      STARTUNDO
-      m_d.m_rotation = ang;
-      STOPUNDO
-      UpdateStatusBarInfo();
-   }
+   STARTUNDO
+   IHaveDragPoints::RotatePoints(ang, pvCenter, useElementCenter);
+   m_d.m_rotation += ang;
+   STOPUNDO
+   UpdateStatusBarInfo();
 }
 
 void Trigger::Scale(const float scalex, const float scaley, const Vertex2D& pvCenter, const bool useElementCenter)
 {
-   if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
-   else
-   {
-      STARTUNDO
-      m_d.m_scaleX = scalex;
-      m_d.m_scaleY = scaley;
-      STOPUNDO
-      UpdateStatusBarInfo();
-   }
+   STARTUNDO
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter, useElementCenter);
+   m_d.m_scaleX *= scalex;
+   m_d.m_scaleY *= scaley;
+   STOPUNDO
+   UpdateStatusBarInfo();
 }
 
 void Trigger::Translate(const Vertex2D &pvOffset)
 {
-   if (m_d.m_shape == TriggerNone)
-      IHaveDragPoints::TranslatePoints(pvOffset);
-   else
-   {
-      STARTUNDO
-      MoveOffset(pvOffset.x, pvOffset.y);
-      STOPUNDO
-   }
+   STARTUNDO
+   IHaveDragPoints::TranslatePoints(pvOffset);
+   MoveOffset(pvOffset.x, pvOffset.y);
+   STOPUNDO
 }
 
 void Trigger::Save(IObjectWriter& writer, const bool saveForUndo)
