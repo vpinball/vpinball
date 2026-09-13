@@ -521,8 +521,6 @@ public:
    CONNECTION_POINT_ENTRY(DIID_ITableEvents)
    END_CONNECTION_POINT_MAP()
 
-   void ListMaterials(HWND hwndListView);
-   int AddListMaterial(HWND hwndListView, Material *const pmat);
    void RemoveMaterial(Material *const pmat);
    void AddMaterial(Material *const pmat);
 
