@@ -500,11 +500,6 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf) const
    }
 }
 
-void Kicker::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Kicker::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

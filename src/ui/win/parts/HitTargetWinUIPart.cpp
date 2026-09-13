@@ -13,6 +13,11 @@ HitTargetWinUIPart::HitTargetWinUIPart(PinTableWnd* editor, HitTarget* hittarget
 {
 }
 
+void HitTargetWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_hittarget->m_d.m_vPosition.x, m_hittarget->m_d.m_vPosition.y);
+}
+
 void HitTargetWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

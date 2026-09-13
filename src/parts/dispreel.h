@@ -78,7 +78,6 @@ public:
    STANDARD_EDITABLE_DECLARES_NO_HITABLE(DispReel, eItemDispReel, DISPREEL, VIEW_BACKGLASS)
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;

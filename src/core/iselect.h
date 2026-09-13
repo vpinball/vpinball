@@ -51,7 +51,6 @@ public:
    virtual void SetDirtyDraw();
 
    virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
-   virtual void SetObjectPos();
 
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;

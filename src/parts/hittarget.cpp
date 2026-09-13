@@ -698,11 +698,6 @@ void HitTarget::UpdateTarget()
 // Positioning
 //////////////////////////////
 
-void HitTarget::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
-}
-
 void HitTarget::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vPosition.x += dx;

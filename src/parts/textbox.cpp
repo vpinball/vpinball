@@ -167,11 +167,6 @@ STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-void Textbox::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
-}
-
 void Textbox::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v1.x += dx;

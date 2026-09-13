@@ -13,6 +13,11 @@ SpinnerWinUIPart::SpinnerWinUIPart(PinTableWnd* editor, Spinner* spinner)
 {
 }
 
+void SpinnerWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_spinner->m_d.m_vCenter.x, m_spinner->m_d.m_vCenter.y);
+}
+
 void SpinnerWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

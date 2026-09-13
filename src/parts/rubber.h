@@ -90,7 +90,6 @@ public:
    void ClearForOverwrite() final;
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    int GetMinimumPoints() const final { return 2; }
 

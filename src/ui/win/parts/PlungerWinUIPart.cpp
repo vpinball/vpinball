@@ -13,6 +13,11 @@ PlungerWinUIPart::PlungerWinUIPart(PinTableWnd* editor, Plunger* plunger)
 {
 }
 
+void PlungerWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_plunger->m_d.m_v.x, m_plunger->m_d.m_v.y);
+}
+
 void PlungerWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

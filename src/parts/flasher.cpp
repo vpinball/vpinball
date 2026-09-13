@@ -203,11 +203,6 @@ void Flasher::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
 }
 
-void Flasher::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(0, 0);
-}
-
 void Flasher::FlipY(const Vertex2D& pvCenter)
 {
    IHaveDragPoints::FlipPointY(pvCenter);

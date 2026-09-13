@@ -1027,7 +1027,8 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
 
                   const float inv_zoom = 1.0f / GetZoom();
                   m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
-                  m_table->m_vmultisel[i].SetObjectPos();
+                  if (const auto winPart = WinUIPartRegistry::Create(this, m_table->m_vmultisel.ElementAt(i)))
+                     winPart->UpdateStatusBarObjectPos();
                   Redraw();
                }
             }

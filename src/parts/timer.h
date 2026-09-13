@@ -60,7 +60,6 @@ public:
    END_CONNECTION_POINT_MAP()
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;

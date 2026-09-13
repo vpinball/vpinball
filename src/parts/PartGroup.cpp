@@ -55,11 +55,6 @@ void PartGroup::WriteRegDefaults()
 #undef LinkProp
 }
 
-void PartGroup::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
-}
-
 void PartGroup::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v.x += dx;

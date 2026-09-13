@@ -299,11 +299,6 @@ void Flipper::GetVertices(const float basex, const float basey, const float angl
    rgvTangents[2].y = endy + endradius*faceNormy2;
 }
 
-void Flipper::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_Center.x, m_d.m_Center.y);
-}
-
 void Flipper::MoveOffset(const float dx, const float dy)
 {
    m_d.m_Center.x += dx;

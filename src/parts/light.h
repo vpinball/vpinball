@@ -118,7 +118,6 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
 
    void ClearForOverwrite() final;
 

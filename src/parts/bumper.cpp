@@ -627,11 +627,6 @@ void Bumper::UpdateAnimation(const float diff_time_msec)
 #pragma endregion
 
 
-void Bumper::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vCenter.x, m_d.m_vCenter.y);
-}
-
 void Bumper::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;

@@ -12,6 +12,7 @@ public:
 
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
+   void UpdateStatusBarObjectPos() override;
 
 private:
    Textbox* const m_textbox;

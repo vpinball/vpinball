@@ -1176,11 +1176,6 @@ void Primitive::UpdateAnimation(const float diff_time_msec)
 // Positioning
 //////////////////////////////
 
-void Primitive::SetObjectPos()
-{
-    m_vpinball->SetObjectPosCur(m_d.m_vPosition.x, m_d.m_vPosition.y);
-}
-
 void Primitive::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vPosition.x += dx;

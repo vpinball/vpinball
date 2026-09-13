@@ -14,6 +14,11 @@ TriggerWinUIPart::TriggerWinUIPart(PinTableWnd* editor, Trigger* trigger)
 {
 }
 
+void TriggerWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_trigger->m_d.m_vCenter.x, m_trigger->m_d.m_vCenter.y);
+}
+
 void TriggerWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);

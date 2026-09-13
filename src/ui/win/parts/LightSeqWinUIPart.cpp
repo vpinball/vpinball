@@ -13,6 +13,11 @@ LightSeqWinUIPart::LightSeqWinUIPart(PinTableWnd* editor, LightSeq* lightseq)
 {
 }
 
+void LightSeqWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_lightseq->m_d.m_v.x, m_lightseq->m_d.m_v.y);
+}
+
 void LightSeqWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);

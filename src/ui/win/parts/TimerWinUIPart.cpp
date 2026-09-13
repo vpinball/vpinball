@@ -13,6 +13,11 @@ TimerWinUIPart::TimerWinUIPart(PinTableWnd* editor, Timer* timer)
 {
 }
 
+void TimerWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y);
+}
+
 void TimerWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

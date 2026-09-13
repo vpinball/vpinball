@@ -28,7 +28,6 @@ public:
 
    // From ISelect
    void MoveOffset(const float dx, const float dy) final;
-   void SetObjectPos() final;
    static inline constexpr ItemTypeEnum ItemType = eItemDragPoint;
    ItemTypeEnum GetItemType() const final { return eItemDragPoint; }
 

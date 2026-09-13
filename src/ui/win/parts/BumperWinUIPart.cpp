@@ -15,6 +15,11 @@ BumperWinUIPart::BumperWinUIPart(PinTableWnd* editor, Bumper* bumper)
 {
 }
 
+void BumperWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_bumper->m_d.m_vCenter.x, m_bumper->m_d.m_vCenter.y);
+}
+
 void BumperWinUIPart::UIRenderPass1(Sur* const psur)
 {
    psur->SetBorderColor(-1, false, 0);

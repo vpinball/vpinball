@@ -144,11 +144,6 @@ void Plunger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 #pragma endregion
 
 
-void Plunger::SetObjectPos()
-{
-   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
-}
-
 void Plunger::MoveOffset(const float dx, const float dy)
 {
    m_d.m_v.x += dx;

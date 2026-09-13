@@ -13,6 +13,11 @@ PrimitiveWinUIPart::PrimitiveWinUIPart(PinTableWnd* editor, Primitive* primitive
 {
 }
 
+void PrimitiveWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_primitive->m_d.m_vPosition.x, m_primitive->m_d.m_vPosition.y);
+}
+
 void PrimitiveWinUIPart::UIRenderPass1(Sur* const psur)
 {
 }

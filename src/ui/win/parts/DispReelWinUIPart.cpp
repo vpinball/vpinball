@@ -12,6 +12,11 @@ DispReelWinUIPart::DispReelWinUIPart(PinTableWnd* editor, DispReel* dispreel)
 {
 }
 
+void DispReelWinUIPart::UpdateStatusBarObjectPos()
+{
+   SetStatusBarObjectPos(m_dispreel->m_d.m_v1.x, m_dispreel->m_d.m_v1.y);
+}
+
 void DispReelWinUIPart::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
