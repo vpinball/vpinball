@@ -619,7 +619,7 @@ void ImageDialog::Export()
                      }
                   }
 
-                  if (!pt->ExportImage(ppi, (selectedItemsCount>1) ? filename : g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
+                  if (!ppi->SaveFile((selectedItemsCount > 1) ? filename : g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;

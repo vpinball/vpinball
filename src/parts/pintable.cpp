@@ -3872,11 +3872,6 @@ Texture* PinTable::GetImage(const string &szName) const
    return nullptr;
 }
 
-bool PinTable::ExportImage(const Texture * const ppi, const string &filename)
-{
-   return ppi->SaveFile(filename);
-}
-
 Texture *PinTable::ImportImage(const std::filesystem::path &filename, const string &imagename)
 {
    Texture *existing = nullptr;
