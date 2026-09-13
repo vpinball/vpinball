@@ -62,7 +62,7 @@ class SettingsModel: ObservableObject {
 
         // Advanced
 
-        resetLogOnPlay = vpinballManager.loadValue(.standalone, "ResetLogOnPlay", true)
+        resetLogOnPlay = vpinballManager.loadValue(.global, "ResetLogOnPlay", true)
     }
 
     func reset() {
@@ -74,7 +74,7 @@ class SettingsModel: ObservableObject {
     }
 
     func handleResetLogOnPlay() {
-        vpinballManager.saveValue(.standalone, "ResetLogOnPlay", resetLogOnPlay)
+        vpinballManager.saveValue(.global, "ResetLogOnPlay", resetLogOnPlay)
     }
 
     func handleExternalDMD() {

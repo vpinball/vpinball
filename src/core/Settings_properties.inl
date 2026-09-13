@@ -1,8 +1,12 @@
 // Versions
 PropString(Version, VPinball, "VPX Version"s, "VPX version that saved this file"s, string(VP_VERSION_STRING_DIGITS));
 
+// Global settings
+PropBool(Global, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
+PropBool(Global, LogScriptOutput, "Log Script Output"s, "Enable script logging output"s, true);
+PropBool(Global, ResetLogOnPlay, "Reset Log on Play"s, "Reset the log file when a table is played"s, g_isMobile);
+
 // General Application settings
-PropBool(Editor, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
 PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrity validation (risky; but slightly faster loading)"s, false);
 
 // Audio settings
@@ -1371,7 +1375,6 @@ PropBoolDyn(PluginVNI, Enable, "Enable"s, "Enable VNI plugin"s, g_isStandalone);
 
 // Standalone
 PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
-PropBool(Standalone, ResetLogOnPlay, "Reset Log on Play"s, ""s, g_isMobile);
 
 // Editor settings
 PropIntUnbounded(Editor, WindowLeft, "WindowLeft"s, "Main window left"s, -1);
@@ -1421,7 +1424,6 @@ PropBool(Editor, AutoSaveOn, "AutoSaveOn"s, "Enable Autosave for table(s)"s, tru
 PropIntUnbounded(Editor, AutoSaveTime, "AutoSaveTime"s, "Time for the Autosave intervals"s, 10);
 PropIntUnbounded(Editor, GridSize, "GridSize"s, "Grid size in viewport/editor"s, 50);
 PropBool(Editor, GroupElementsInCollection, "GroupElementsInCollection"s, "Group Elements in a collection in viewport/editor"s, true);
-PropBool(Editor, LogScriptOutput, "LogScriptOutput"s, "Enable script logging output"s, true);
 PropInt(Editor, DefaultMaterialColor, "DefaultMaterialColor"s, "Default material color in viewport/editor"s, 0x000000, 0xFFFFFF, 0xB469FF);
 PropInt(Editor, ElementSelectColor, "ElementSelectColor"s, "Element selection color in viewport/editor"s, 0x000000, 0xFFFFFF, 0x00FF0000);
 PropInt(Editor, ElementSelectLockedColor, "ElementSelectLockedColor"s, "Locked Element selection color in viewport/editor"s, 0x000000, 0xFFFFFF, 0x00A7726D);

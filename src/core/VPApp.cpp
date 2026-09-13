@@ -328,8 +328,8 @@ void VPApp::InitInstance(bool isPlay)
    libwinevbs_init(&callbacks);
 #endif
 
-   Logger::SetupLogger(m_settings.GetEditor_EnableLog());
-   if (isPlay && m_settings.GetStandalone_ResetLogOnPlay())
+   Logger::SetupLogger(m_settings.GetGlobal_EnableLog());
+   if (isPlay && m_settings.GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
 
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;

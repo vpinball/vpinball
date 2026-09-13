@@ -455,7 +455,7 @@ VPINBALL_STATUS VPinballLib::LoadTable(const string& tablePath)
       m_pTable = nullptr;
    }
 
-   if (g_app->m_settings.GetStandalone_ResetLogOnPlay())
+   if (g_app->m_settings.GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
 
    CComObject<PinTable>::CreateInstance(&m_pTable);

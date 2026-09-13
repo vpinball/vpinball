@@ -14,6 +14,7 @@ import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballPath
+import org.vpinball.app.jni.VPinballSettingsSection.GLOBAL
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
@@ -121,7 +122,7 @@ class SettingsViewModel : ViewModel() {
 
         // Advanced
 
-        resetLogOnPlay = VPinballManager.loadValue(STANDALONE, "ResetLogOnPlay", true)
+        resetLogOnPlay = VPinballManager.loadValue(GLOBAL, "ResetLogOnPlay", true)
     }
 
     // General
@@ -218,7 +219,7 @@ class SettingsViewModel : ViewModel() {
 
     fun handleResetLogOnPlay(value: Boolean) {
         resetLogOnPlay = value
-        VPinballManager.saveValue(STANDALONE, "ResetLogOnPlay", resetLogOnPlay)
+        VPinballManager.saveValue(GLOBAL, "ResetLogOnPlay", resetLogOnPlay)
     }
 
     // Reset

@@ -92,10 +92,10 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const float throwBallMass = g_app->m_settings.GetEditor_ThrowBallMass();
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
-    const bool enableLog = g_app->m_settings.GetEditor_EnableLog();
+    const bool enableLog = g_app->m_settings.GetGlobal_EnableLog();
     SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool logScript = g_app->m_settings.GetEditor_LogScriptOutput();
+    const bool logScript = g_app->m_settings.GetGlobal_LogScriptOutput();
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const std::filesystem::path appPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Root) / "VPinballX.ini"sv;
@@ -324,11 +324,11 @@ void EditorOptionsDialog::OnOK()
     g_app->m_settings.SetEditor_AlwaysViewScript(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_LOGGING) == BST_CHECKED);
-    g_app->m_settings.SetEditor_EnableLog(checked, false);
+    g_app->m_settings.SetGlobal_EnableLog(checked, false);
     Logger::GetInstance()->SetupLogger(checked);
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_SCRIPT_LOGGING) == BST_CHECKED);
-    g_app->m_settings.SetEditor_LogScriptOutput(checked, false);
+    g_app->m_settings.SetGlobal_LogScriptOutput(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
     const std::filesystem::path prefPath = g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "VPinballX.ini"sv;
