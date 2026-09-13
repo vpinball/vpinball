@@ -120,6 +120,20 @@ void PinTableWnd::SetZoom(float zoom)
    Redraw();
 }
 
+Vertex2D PinTableWnd::TransformPoint(int x, int y) const
+{
+#ifndef __STANDALONE__
+   const CRect rc = GetClientRect();
+#else
+   const CRect rc(m_table->m_left, m_table->m_top, m_table->m_right, m_table->m_bottom);
+#endif
+   const HitSur phs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
+
+   const Vertex2D result = phs.ScreenToSurface(x, y);
+
+   return result;
+}
+
 void PinTableWnd::GetViewRect(FRect *const pfrect) const
 {
    if (!m_vpxEditor->m_desktopBackdropView)
@@ -1011,7 +1025,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ksctrl & 0x80000000))
    {
-      SetViewOffset(m_table->TransformPoint(x, y));
+      SetViewOffset(TransformPoint(x, y));
       SetZoom(GetZoom() * (zoomIn ? 1.5f : 0.5f));
       Redraw();
    }
@@ -1046,7 +1060,7 @@ void PinTableWnd::DoLeftButtonDown(int x, int y, bool zoomIn)
 
 void PinTableWnd::UseTool(int x, int y, int tool)
 {
-   const Vertex2D v = m_table->TransformPoint(x, y);
+   const Vertex2D v = TransformPoint(x, y);
 
    const ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
    IEditable *const pie = EditableRegistry::CreateAndInit(type, m_table, v.x, v.y);
@@ -1153,7 +1167,7 @@ void PinTableWnd::OnRightButtonDown(int x, int y)
 
    if ((m_vpxEditor->m_ToolCur == ID_TABLE_MAGNIFY) || (ks & 0x80000000))
    {
-      SetViewOffset(m_table->TransformPoint(x, y));
+      SetViewOffset(TransformPoint(x, y));
       SetZoom(GetZoom() * 0.5f);
       Redraw();
    }
@@ -1217,7 +1231,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
    }
    else
    {
-      const Vertex2D v = m_table->TransformPoint(x, y);
+      const Vertex2D v = TransformPoint(x, y);
       m_vpxEditor->SetPosCur(v.x, v.y);
 
       if (!m_tablePart.m_dragging) // Not doing band select
@@ -1249,7 +1263,7 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       }
       else
       {
-         const Vertex2D vec = m_table->TransformPoint(x, y);
+         const Vertex2D vec = TransformPoint(x, y);
          m_table->m_rcDragRect.right = vec.x;
          m_table->m_rcDragRect.bottom = vec.y;
          Redraw();

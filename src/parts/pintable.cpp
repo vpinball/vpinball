@@ -3586,7 +3586,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
    // Center view on newly created objects, if they are off the screen
    if ((cpasted > 0) && atLocation)
-      Translate(TransformPoint(x, y) - GetCenter());
+      Translate(m_tableEditor->TransformPoint(x, y) - GetCenter());
 
    if (error)
       ShowError(LocalString(IDS_NOPASTEINVIEW).m_szbuffer);
@@ -3657,20 +3657,6 @@ void PinTable::OnDelete()
 
    SetDirtyDraw();
 #endif
-}
-
-Vertex2D PinTable::TransformPoint(int x, int y) const
-{
-#ifndef __STANDALONE__
-   const CRect rc = m_tableEditor->GetClientRect();
-#else
-   const CRect rc(m_left, m_top, m_right, m_bottom);
-#endif
-   const HitSur phs(m_tableEditor->GetZoom(), m_tableEditor->GetViewOffset().x, m_tableEditor->GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
-
-   const Vertex2D result = phs.ScreenToSurface(x, y);
-
-   return result;
 }
 
 HRESULT PinTable::GetTypeName(BSTR *pVal) const

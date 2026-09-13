@@ -120,6 +120,6 @@ void SurfaceWinUIPart::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_surface); break;
 
-   case ID_WALLMENU_ADDPOINT: m_surface->AddPoint(x, y, false); break;
+   case ID_WALLMENU_ADDPOINT: m_surface->AddPoint(m_editor->TransformPoint(x, y), false); break;
    }
 }

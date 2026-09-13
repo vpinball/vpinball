@@ -248,10 +248,9 @@ void Flasher::MoveOffset(const float dx, const float dy)
    m_dynamicVertexBufferRegenerate = true;
 }
 
-void Flasher::AddPoint(int x, int y, const bool smooth)
+void Flasher::AddPoint(const Vertex2D &v, const bool smooth)
 {
       STARTUNDO
-      const Vertex2D v = m_ptable->TransformPoint(x, y);
 
       vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
