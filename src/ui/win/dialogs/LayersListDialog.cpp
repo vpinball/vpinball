@@ -200,7 +200,7 @@ void LayersListDialog::AssignToSelectedGroup()
       return;
    }
 
-   m_activeTable->AssignSelectionToPartGroup(group);
+   m_activeTable->m_tableEditor->AssignSelectionToPartGroup(group);
 }
 
 void LayersListDialog::SetActiveTable(PinTable* ptable)

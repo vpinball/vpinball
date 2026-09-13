@@ -2717,32 +2717,6 @@ void PinTable::FireOptionEvent(OptionEventType eventType)
    FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
 }
 
-void PinTable::AssignSelectionToPartGroup(PartGroup* group)
-{
-   STARTUNDO
-   bool show = false, hide = false;
-   for (const IEditable* const e : GetParts())
-      if (e->GetPartGroup() == group && e->GetISelect())
-      {
-         show |= e->m_uiVisible;
-         hide |= !e->m_uiVisible;
-      }
-   for (int t = 0; t < m_tableEditor->m_vmultisel.size(); t++)
-   {
-      ISelect *const psel = m_tableEditor->m_vmultisel.ElementAt(t);
-      IEditable *const pedit = psel->GetIEditable();
-      pedit->SetPartGroup(group);
-      if (psel->IsUIVisible() && hide && !show)
-         psel->SetUIVisible(false);
-      else if (!psel->IsUIVisible() && show && !hide)
-         psel->SetUIVisible(true);
-   }
-   STOPUNDO
-#ifndef __STANDALONE__
-   g_pvp->GetLayersListDialog()->Update();
-#endif
-}
-
 string PinTable::GetElementName(IEditable *pedit)
 {
    if (pedit)
