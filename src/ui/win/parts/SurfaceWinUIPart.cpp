@@ -68,7 +68,7 @@ void SurfaceWinUIPart::UIRenderPass2(Sur* const psur)
       if (!(drawDragpoints || pdp->m_slingshot))
          continue;
       psur->SetFillColor(-1);
-      psur->SetBorderColor(pdp->m_dragging ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
+      psur->SetBorderColor(m_pointParts.IsDragging(pdp) ? RGB(0, 255, 0) : RGB(255, 0, 0), false, 0);
 
       if (drawDragpoints)
       {

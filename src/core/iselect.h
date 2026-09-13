@@ -112,10 +112,6 @@ public:
    };
    SelectState m_selectstate = SelectState::NotSelected;
 
-   bool m_dragging = false;
-
-   bool m_markedForUndo = false; // Flag set when dragged to enable undo
-
 protected:
    WinEditor *m_vpinball = nullptr;
 };

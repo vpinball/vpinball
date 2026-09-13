@@ -23,7 +23,7 @@ void TableWinUIPart::OnLButtonDown(int x, int y)
    m_table->m_rcDragRect.top = v.y;
    m_table->m_rcDragRect.bottom = v.y;
 
-   m_table->m_dragging = true;
+   m_dragging = true;
 
    m_editor->SetCapture();
 

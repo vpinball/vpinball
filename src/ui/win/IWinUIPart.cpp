@@ -12,8 +12,8 @@
 void IWinUIPart::OnLButtonDown(int x, int y)
 {
 #ifndef __STANDALONE__
-   m_select->m_dragging = true;
-   m_select->m_markedForUndo = false; // So we will be marked when and if we are dragged
+   m_dragging = true;
+   m_markedForUndo = false; // So we will be marked when and if we are dragged
 
    m_select->GetPTable()->SetMouseCapture();
 
@@ -24,13 +24,13 @@ void IWinUIPart::OnLButtonDown(int x, int y)
 void IWinUIPart::OnLButtonUp(int x, int y)
 {
 #ifndef __STANDALONE__
-   m_select->m_dragging = false;
+   m_dragging = false;
 
    ReleaseCapture();
 
-   if (m_select->m_markedForUndo)
+   if (m_markedForUndo)
    {
-      m_select->m_markedForUndo = false;
+      m_markedForUndo = false;
       m_select->GetIEditable()->EndUndo();
       if (m_select->GetPTable())
          m_select->GetPTable()->SetDirtyDraw();
