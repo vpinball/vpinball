@@ -91,7 +91,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Light() : m_lightcenter(this) { m_menuid = IDR_SURFACEMENU; m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
+   Light() : m_lightcenter(this) { m_d.m_depthBias = 0.0f; m_d.m_shape = ShapeCustom; m_d.m_visible = true; }
    virtual ~Light();
 
    BEGIN_COM_MAP(Light)

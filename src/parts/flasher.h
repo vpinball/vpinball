@@ -85,7 +85,7 @@ public:
    STDMETHOD(GetDocumentation)(MEMBERID index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   Flasher() { m_menuid = IDR_SURFACEMENU; }
+   Flasher() { }
    virtual ~Flasher();
 
    STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, VIEW_PLAYFIELD | VIEW_BACKGLASS)

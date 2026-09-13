@@ -33,6 +33,9 @@ public:
    // Updates the editor status bar with the part's position (in table units)
    virtual void UpdateStatusBarObjectPos();
 
+   // Returns the context menu resource id used when right-clicking this part (-1 for none)
+   virtual int GetMenuId() const { return -1; }
+
    // Allows the part to customize the editor context menu before it is displayed
    virtual void EditMenu(Win32xx::CMenu& menu) { }
 

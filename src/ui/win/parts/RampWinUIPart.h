@@ -14,6 +14,7 @@ public:
    void UIRenderPass2(Sur* psur) override;
    void RenderBlueprint(Sur* psur, bool solid) override;
    void UpdateStatusBarObjectPos() override;
+   int GetMenuId() const override { return IDR_SURFACEMENU; }
    void DoCommand(int icmd, int x, int y) override;
 
 private:

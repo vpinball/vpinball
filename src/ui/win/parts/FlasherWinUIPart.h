@@ -13,6 +13,7 @@ public:
    void UIRenderPass1(Sur* psur) override;
    void UIRenderPass2(Sur* psur) override;
    void UpdateStatusBarObjectPos() override;
+   int GetMenuId() const override { return IDR_SURFACEMENU; }
    void DoCommand(int icmd, int x, int y) override;
 
 private:

@@ -985,7 +985,10 @@ void PinTableWnd::OnRightButtonUp(int x, int y)
       }
       else if (!m_table->MultiSelIsEmpty())
       {
-         DoContextMenu(x, y, m_table->GetSelectedItem()->m_menuid, m_table->GetSelectedItem());
+         int menuid = -1;
+         if (const auto winPart = WinUIPartRegistry::Create(this, m_table->GetSelectedItem()))
+            menuid = winPart->GetMenuId();
+         DoContextMenu(x, y, menuid, m_table->GetSelectedItem());
       }
       else
       {

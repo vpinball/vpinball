@@ -112,8 +112,6 @@ public:
    };
    SelectState m_selectstate = SelectState::NotSelected;
 
-   int m_menuid = -1; // context menu to use
-
    bool m_dragging = false;
 
    bool m_markedForUndo = false; // Flag set when dragged to enable undo
