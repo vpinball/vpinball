@@ -3,6 +3,7 @@
 #pragma once
 
 #include "parts/pintable.h"
+#include "ui/win/parts/TableWinUIPart.h"
 #include "unordered_dense.h"
 
 #include <memory>
@@ -76,6 +77,12 @@ public:
 
    WinEditor *const m_vpxEditor;
 
+#ifndef __STANDALONE__
+   // UI part of the table itself. Unlike the other UI parts, it is not created through WinUIPartRegistry
+   // but is a direct member of this editor, sharing its lifecycle.
+   TableWinUIPart m_tablePart;
+#endif
+
 protected:
 #ifndef __STANDALONE__
    // Overriden from CWnd
@@ -115,7 +122,7 @@ private:
    bool m_dirtyDraw = true; // Whether our background bitmap is up to date
    HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
 
-   // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable::GetISelect()), plus the table itself.
+   // UI parts owned by this editor: one per entry of PinTable::m_vedit (keyed by IEditable::GetISelect()).
    // Kept in sync by OnPartAdded/OnPartRemoved. Sub selects (drag points, light centers) are owned by their parent's UI part (see IWinUIPart::GetSubPart).
    ankerl::unordered_dense::map<ISelect *, std::unique_ptr<IWinUIPart>> m_uiParts;
 

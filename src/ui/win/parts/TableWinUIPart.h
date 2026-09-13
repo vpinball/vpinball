@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ui/win/IWinUIPart.h"
-#include "ui/win/PinTableWnd.h"
 
 class PinTable;
 

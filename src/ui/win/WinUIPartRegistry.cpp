@@ -43,8 +43,6 @@
 #include "parts/spinner.h"
 #include "ui/win/parts/SurfaceWinUIPart.h"
 #include "parts/surface.h"
-#include "ui/win/parts/TableWinUIPart.h"
-#include "parts/pintable.h"
 #include "ui/win/parts/TextboxWinUIPart.h"
 #include "parts/textbox.h"
 #include "ui/win/parts/TimerWinUIPart.h"
@@ -107,7 +105,6 @@ void WinUIPartRegistry::InitRegistry()
    Register<RubberWinUIPart, Rubber>();
    Register<SpinnerWinUIPart, Spinner>();
    Register<SurfaceWinUIPart, Surface>();
-   Register<TableWinUIPart, PinTable>();
    Register<TextboxWinUIPart, Textbox>();
    Register<TimerWinUIPart, Timer>();
    Register<TriggerWinUIPart, Trigger>();

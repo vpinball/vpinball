@@ -8,6 +8,7 @@
 #include "ui/win/IWinUIPart.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
+#include "ui/win/parts/TableWinUIPart.h"
 
 void IWinUIPart::OnLButtonDown(int x, int y)
 {
@@ -61,8 +62,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
       || (icmd == ID_EDIT_DRAWINGORDER_HIT) || (icmd == ID_EDIT_DRAWINGORDER_SELECT) || (icmd == ID_ASSIGN_TO_CURRENT_LAYER) || (icmd == IDC_COPY) || (icmd == IDC_PASTE)
       || (icmd == IDC_PASTEAT))
    {
-      if (IWinUIPart *const tablePart = m_editor->GetUIPart(m_select->GetPTable()->GetISelect()))
-         tablePart->DoCommand(icmd, x, y);
+      m_editor->m_tablePart.DoCommand(icmd, x, y);
       return;
    }
 
@@ -84,8 +84,7 @@ void IWinUIPart::DoCommand(int icmd, int x, int y)
          // and table will not be unselected, because the
          // user might be drawing a box around other objects
          // to add them to the selection group
-         if (IWinUIPart *const tablePart = m_editor->GetUIPart(currentTable->GetISelect()))
-            tablePart->OnLButtonDown(x, y); // Start the band select
+         m_editor->m_tablePart.OnLButtonDown(x, y); // Start the band select
          return;
       }
 

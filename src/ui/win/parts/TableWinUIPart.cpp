@@ -5,6 +5,7 @@
 #include "parts/pintable.h"
 #include "parts/PartGroup.h"
 #include "ui/win/DragPointDialogs.h"
+#include "ui/win/PinTableWnd.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/TableWinUIPart.h"
 
