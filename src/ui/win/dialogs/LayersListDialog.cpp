@@ -141,7 +141,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          m_activeTable->m_tableEditor->ClearMultiSel();
          m_activeTable->m_tableEditor->AddMultiSel(GetSelectedPartGroup(), true, false, false);
-         m_activeTable->RefreshProperties();
+         m_activeTable->m_tableEditor->RefreshProperties();
          m_activeTable->SetDirtyDraw();
       }
       return TRUE;
@@ -743,7 +743,7 @@ LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
          });
    else
       m_activeTable->m_tableEditor->AddMultiSel(selected->GetISelect(), true, false, false);
-   m_activeTable->RefreshProperties();
+   m_activeTable->m_tableEditor->RefreshProperties();
    m_activeTable->SetDirtyDraw();
    return TRUE;
 }

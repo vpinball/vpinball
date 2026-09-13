@@ -794,7 +794,6 @@ public:
    float GetPlayfieldOverridenSlope() const;
 
    const wstring& GetCollectionNameByElement(const ISelect *const element) const;
-   void RefreshProperties();
 
    void SetNotesText(const string &text)
    {

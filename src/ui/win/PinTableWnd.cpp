@@ -859,6 +859,13 @@ void PinTableWnd::AddMultiSel(ISelect *psel, const bool add, const bool update, 
 #endif
 }
 
+void PinTableWnd::RefreshProperties()
+{
+#ifndef __STANDALONE__
+   m_vpxEditor->SetPropSel(m_vmultisel);
+#endif
+}
+
 ISelect *PinTableWnd::HitTest(const int x, const int y)
 {
 #ifdef __STANDALONE__
