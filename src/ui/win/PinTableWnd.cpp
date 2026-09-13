@@ -304,16 +304,15 @@ void PinTableWnd::ExportBlueprint()
 }
 
 #ifndef __STANDALONE__
-void PinTableWnd::UIRenderPass2(Sur *const psur)
+void PinTableWnd::RenderTable(Sur *const psur)
 {
    const CRect rc = GetClientRect();
    psur->SetFillColor(m_vpxEditor->m_backgroundColor);
    psur->SetBorderColor(-1, false, 0);
+   psur->Rectangle2(rc.left, rc.top, rc.right, rc.bottom);
 
    FRect frect;
    GetViewRect(&frect);
-
-   psur->Rectangle2(rc.left, rc.top, rc.right, rc.bottom);
 
    if (GetDisplayBackdrop())
    {
@@ -486,10 +485,8 @@ void PinTableWnd::Paint(HDC hdc)
 
    if (m_dirtyDraw)
    {
-      Sur *const psur = new PaintSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, m_table->GetSelectedItem());
-      UIRenderPass2(psur);
-
-      delete psur;
+      PaintSur psur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, dc.GetHDC(), this, m_table->GetSelectedItem());
+      RenderTable(&psur);
    }
 
    BitBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, dc.GetHDC(), 0, 0, SRCCOPY);
@@ -726,7 +723,7 @@ ISelect *PinTableWnd::HitTest(const int x, const int y)
 
    m_table->m_allHitElements.clear();
 
-   UIRenderPass2(&phs);
+   RenderTable(&phs);
 
    for (IEditable *const ptr : m_table->GetParts())
    {
@@ -903,10 +900,10 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
 
          const CRect rc = m_mdiTable->GetClientRect();
 
-         HitRectSur *const phrs = new HitRectSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
+         HitRectSur phrs(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
 
          // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
-         UIRenderPass2(phrs);
+         RenderTable(&phrs);
 
          const int ksshift = GetKeyState(VK_SHIFT);
          const bool add = ((ksshift & 0x80000000) != 0);
@@ -930,8 +927,6 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
                if (vsel[i]->GetSelectLevel() == minlevel)
                   m_table->AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
          }
-
-         delete phrs;
       }
       Redraw();
    }

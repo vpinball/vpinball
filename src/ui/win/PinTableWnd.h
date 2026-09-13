@@ -107,7 +107,7 @@ private:
 
    void Paint(HDC hdc);
    void Render3DProjection(Sur *const psur);
-   void UIRenderPass2(Sur *const psur);
+   void RenderTable(Sur *const psur);
 #endif
 
    PinTableMDI *m_mdiTable = nullptr;
