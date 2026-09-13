@@ -4,7 +4,7 @@ namespace rde
 {
 namespace StackTrace
 {
-#if defined (_MSC_VER) || defined (__MINGW32__)
+#if defined (_MSC_VER) || defined (__MINGW32__) || defined (__APPLE__)
 	typedef const void*	Address;
 #else
 #	error "StackTrace not implemented for this platform!"
