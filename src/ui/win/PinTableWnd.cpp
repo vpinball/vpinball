@@ -866,6 +866,34 @@ void PinTableWnd::RefreshProperties()
 #endif
 }
 
+void PinTableWnd::AssignSelectionToPartGroup(PartGroup *group)
+{
+   m_table->BeginUndo();
+   m_table->MarkForUndo();
+   bool show = false, hide = false;
+   for (const IEditable *const e : m_table->GetParts())
+      if (e->GetPartGroup() == group && e->GetISelect())
+      {
+         show |= e->m_uiVisible;
+         hide |= !e->m_uiVisible;
+      }
+   for (int t = 0; t < m_vmultisel.size(); t++)
+   {
+      ISelect *const psel = m_vmultisel.ElementAt(t);
+      IEditable *const pedit = psel->GetIEditable();
+      pedit->SetPartGroup(group);
+      if (psel->IsUIVisible() && hide && !show)
+         psel->SetUIVisible(false);
+      else if (!psel->IsUIVisible() && show && !hide)
+         psel->SetUIVisible(true);
+   }
+   m_table->EndUndo();
+   m_table->SetDirtyDraw();
+#ifndef __STANDALONE__
+   m_vpxEditor->GetLayersListDialog()->Update();
+#endif
+}
+
 ISelect *PinTableWnd::HitTest(const int x, const int y)
 {
 #ifdef __STANDALONE__

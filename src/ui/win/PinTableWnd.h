@@ -27,6 +27,7 @@ public:
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
    void RefreshProperties();
+   void AssignSelectionToPartGroup(PartGroup *group);
 
 #ifndef __STANDALONE__
    void SetMouseCursor();

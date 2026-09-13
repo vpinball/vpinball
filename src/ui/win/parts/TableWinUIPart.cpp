@@ -56,7 +56,7 @@ void TableWinUIPart::DoCommand(int icmd, int x, int y)
          }
       }
       if (group)
-         m_table->AssignSelectionToPartGroup(group);
+         m_editor->AssignSelectionToPartGroup(group);
       return;
    }
 
