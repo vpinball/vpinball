@@ -122,7 +122,7 @@ public:
          };
          uint64_t ull;
       } h;
-      h.uc[0] = ((unsigned int)m_type << 6) | ((unsigned int)m_bOpacityActive << 8) | (const unsigned int)(((size_t)this / sizeof(Material)) & 63); //!! meh
+      h.uc[0] = ((unsigned int)m_type << 6) | ((unsigned int)m_bOpacityActive << 7) | (const unsigned int)(((size_t)this / sizeof(Material)) & 63); //!! meh
       h.uc[1] = (unsigned char)(saturate(m_fWrapLighting)*255.0f);
       h.uc[2] = (unsigned char)(saturate(m_fRoughness)*255.0f);
       h.uc[3] = (((unsigned char)(saturate(m_fEdge)*255.0f)) >> 4) | (m_bOpacityActive ? ((((unsigned char)(clamp(m_fEdgeAlpha, 0.f, 1.f)*255.0f)) >> 4) << 4) : 0);
