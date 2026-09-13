@@ -948,6 +948,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.cpp" />
@@ -1797,6 +1798,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/BumperWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DecalWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlipperWinUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/GateWinUIPart.h" />

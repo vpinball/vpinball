@@ -512,15 +512,6 @@ void Trigger::PutPointCenter(const Vertex2D& pv)
 }
 
 #ifndef __STANDALONE__
-void Trigger::EditMenu(CMenu &menu)
-{
-   menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | MF_ENABLED);
-   menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | MF_ENABLED);
-   menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | MF_ENABLED);
-   menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | MF_ENABLED);
-   menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | MF_ENABLED);
-}
-
 void Trigger::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);

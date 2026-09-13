@@ -114,3 +114,12 @@ void TriggerWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
 
    psur->Ellipse(m_trigger->m_d.m_vCenter.x, m_trigger->m_d.m_vCenter.y, m_trigger->m_d.m_radius);
 }
+
+void TriggerWinUIPart::EditMenu(CMenu& menu)
+{
+   menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | MF_ENABLED);
+   menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | MF_ENABLED);
+   menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | MF_ENABLED);
+   menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | MF_ENABLED);
+   menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | MF_ENABLED);
+}

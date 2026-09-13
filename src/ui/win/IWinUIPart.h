@@ -2,6 +2,10 @@
 
 class Sur;
 class IEditable;
+namespace Win32xx
+{
+class CMenu;
+}
 
 class IWinUIPart
 {
@@ -14,4 +18,7 @@ public:
    virtual void UIRenderPass2(Sur* psur) = 0;
 
    virtual void RenderBlueprint(Sur* psur, bool solid) { UIRenderPass2(psur); }
+
+   // Allows the part to customize the editor context menu before it is displayed
+   virtual void EditMenu(Win32xx::CMenu& menu) { }
 };

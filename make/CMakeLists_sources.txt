@@ -409,6 +409,8 @@ set(VPX_SOURCES
    src/ui/win/parts/DecalWinUIPart.h
    src/ui/win/parts/DispReelWinUIPart.cpp
    src/ui/win/parts/DispReelWinUIPart.h
+   src/ui/win/parts/DragPointWinUIPart.cpp
+   src/ui/win/parts/DragPointWinUIPart.h
    src/ui/win/parts/FlasherWinUIPart.cpp
    src/ui/win/parts/FlasherWinUIPart.h
    src/ui/win/parts/FlipperWinUIPart.cpp

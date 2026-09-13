@@ -87,7 +87,6 @@ public:
    void SetObjectPos() final;
 
 #ifndef __STANDALONE__
-   void EditMenu(CMenu &hmenu) final;
    void DoCommand(int icmd, int x, int y) final;
 #endif
 

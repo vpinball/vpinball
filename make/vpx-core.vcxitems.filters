@@ -651,6 +651,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.cpp">
+      <Filter>ui\win\parts</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.cpp">
       <Filter>ui\win\parts</Filter>
     </ClCompile>
@@ -1662,6 +1665,9 @@
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DispReelWinUIPart.h">
+      <Filter>ui\win\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/DragPointWinUIPart.h">
       <Filter>ui\win\parts</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/parts/FlasherWinUIPart.h">
