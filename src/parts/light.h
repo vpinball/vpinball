@@ -122,10 +122,6 @@ public:
 
    void ClearForOverwrite() final;
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
-
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;
    void Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter) final;

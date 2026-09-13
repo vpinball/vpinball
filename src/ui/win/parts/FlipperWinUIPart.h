@@ -14,6 +14,5 @@ public:
    void UIRenderPass2(Sur* psur) override;
 
 private:
-   PinTableWnd* const m_editor;
    Flipper* const m_flipper;
 };

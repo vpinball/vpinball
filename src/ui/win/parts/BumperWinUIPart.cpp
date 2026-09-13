@@ -10,7 +10,7 @@
 
 
 BumperWinUIPart::BumperWinUIPart(PinTableWnd* editor, Bumper* bumper)
-   : m_editor(editor)
+   : IWinUIPart(editor, bumper)
    , m_bumper(bumper)
 {
 }

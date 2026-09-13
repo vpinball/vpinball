@@ -7,7 +7,7 @@
 #include "ui/win/parts/DispReelWinUIPart.h"
 
 DispReelWinUIPart::DispReelWinUIPart(PinTableWnd* editor, DispReel* dispreel)
-   : m_editor(editor)
+   : IWinUIPart(editor, dispreel)
    , m_dispreel(dispreel)
 {
 }

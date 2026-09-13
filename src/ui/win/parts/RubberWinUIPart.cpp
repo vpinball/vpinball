@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/rubber.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/RubberWinUIPart.h"
 
 RubberWinUIPart::RubberWinUIPart(PinTableWnd* editor, Rubber* rubber)
-   : m_editor(editor)
+   : IWinUIPart(editor, rubber)
    , m_rubber(rubber)
 {
 }
@@ -121,5 +122,29 @@ void RubberWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
       for (size_t i = 0; i < crossFlags.size(); i++)
          if (crossFlags[i])
             psur->Line(outline[i].x, outline[i].y, outline[outline.size() - i - 1].x, outline[outline.size() - i - 1].y);
+   }
+}
+
+void RubberWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_rubber->FlipPointY(m_rubber->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_rubber->FlipPointX(m_rubber->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_rubber); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_rubber); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_rubber); break;
+
+   case ID_WALLMENU_ADDPOINT:
+   {
+      m_rubber->AddPoint(x, y, true);
+   }
+   break;
    }
 }

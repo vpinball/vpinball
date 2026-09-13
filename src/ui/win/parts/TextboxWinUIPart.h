@@ -14,6 +14,5 @@ public:
    void UIRenderPass2(Sur* psur) override;
 
 private:
-   PinTableWnd* const m_editor;
    Textbox* const m_textbox;
 };

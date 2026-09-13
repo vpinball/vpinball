@@ -396,6 +396,7 @@ set(VPX_SOURCES
    src/ui/win/PinTableWnd.h
    src/ui/win/ProgressDialog.cpp
    src/ui/win/ProgressDialog.h
+   src/ui/win/IWinUIPart.cpp
    src/ui/win/IWinUIPart.h
    src/ui/win/WinEditor.cpp
    src/ui/win/WinEditor.h
@@ -439,6 +440,8 @@ set(VPX_SOURCES
    src/ui/win/parts/SpinnerWinUIPart.h
    src/ui/win/parts/SurfaceWinUIPart.cpp
    src/ui/win/parts/SurfaceWinUIPart.h
+   src/ui/win/parts/TableWinUIPart.cpp
+   src/ui/win/parts/TableWinUIPart.h
    src/ui/win/parts/TextboxWinUIPart.cpp
    src/ui/win/parts/TextboxWinUIPart.h
    src/ui/win/parts/TimerWinUIPart.cpp

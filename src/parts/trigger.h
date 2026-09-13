@@ -86,10 +86,6 @@ public:
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
-
    // Multi-object manipulation
    void FlipY(const Vertex2D& pvCenter) final;
    void FlipX(const Vertex2D& pvCenter) final;

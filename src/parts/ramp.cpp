@@ -10,7 +10,6 @@
 #include "renderer/Shader.h"
 #include "renderer/Texture.h"
 #include "renderer/trace.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
@@ -1326,42 +1325,6 @@ void Ramp::AddPoint(int x, int y, const bool smooth)
 
    STOPUNDO
 }
-
-#ifndef __STANDALONE__
-void Ramp::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-   {
-      AddPoint(x, y, true);
-   }
-   break;
-   }
-}
-#endif
 
 void Ramp::FlipY(const Vertex2D& pvCenter)
 {

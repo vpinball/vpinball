@@ -9,7 +9,7 @@
 
 
 KickerWinUIPart::KickerWinUIPart(PinTableWnd* editor, Kicker* kicker)
-   : m_editor(editor)
+   : IWinUIPart(editor, kicker)
    , m_kicker(kicker)
 {
 }

@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/flasher.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/FlasherWinUIPart.h"
 
 FlasherWinUIPart::FlasherWinUIPart(PinTableWnd* editor, Flasher* flasher)
-   : m_editor(editor)
+   : IWinUIPart(editor, flasher)
    , m_flasher(flasher)
 {
 }
@@ -115,4 +116,24 @@ void FlasherWinUIPart::UIRenderPass2(Sur * const psur)
    // Little cross at the object center
    psur->Line(m_flasher->m_d.m_vCenter.x - 10.0f, m_flasher->m_d.m_vCenter.y, m_flasher->m_d.m_vCenter.x + 10.0f, m_flasher->m_d.m_vCenter.y);
    psur->Line(m_flasher->m_d.m_vCenter.x, m_flasher->m_d.m_vCenter.y - 10.0f, m_flasher->m_d.m_vCenter.x, m_flasher->m_d.m_vCenter.y + 10.0f);
+}
+
+void FlasherWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_flasher->FlipPointY(m_flasher->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_flasher->FlipPointX(m_flasher->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_flasher); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_flasher); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_flasher); break;
+
+   case ID_WALLMENU_ADDPOINT: m_flasher->AddPoint(x, y, false); break;
+   }
 }

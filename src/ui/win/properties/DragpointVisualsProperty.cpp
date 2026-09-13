@@ -205,7 +205,7 @@ BOOL DragpointVisualsProperty::OnCommand(WPARAM wParam, LPARAM lParam)
                     if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemDragPoint))
                         continue;
                     DragPoint * const dpoint = (DragPoint *)m_pvsel->ElementAt(i);
-                    dpoint->DoCommand(ID_POINTMENU_SMOOTH, 0, 0);
+                    dpoint->ToggleSmooth();
                 }
             }
             UpdateProperties(dispID);

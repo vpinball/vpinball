@@ -8,7 +8,7 @@
 #include "ui/win/parts/PlungerWinUIPart.h"
 
 PlungerWinUIPart::PlungerWinUIPart(PinTableWnd* editor, Plunger* plunger)
-   : m_editor(editor)
+   : IWinUIPart(editor, plunger)
    , m_plunger(plunger)
 {
 }

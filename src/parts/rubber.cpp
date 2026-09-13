@@ -11,7 +11,6 @@
 #include "renderer/Renderer.h"
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/objloader.h"
@@ -740,42 +739,6 @@ void Rubber::Load(IObjectReader& reader)
    if (m_d.m_hitHeight == -1.0f)
       m_d.m_hitHeight = m_d.m_height;
 }
-
-#ifndef __STANDALONE__
-void Rubber::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-   {
-      AddPoint(x, y, true);
-   }
-   break;
-   }
-}
-#endif
 
 void Rubber::FlipY(const Vertex2D& pvCenter)
 {

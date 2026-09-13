@@ -92,10 +92,6 @@ public:
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
-
    int GetMinimumPoints() const final { return 2; }
 
    void FlipY(const Vertex2D& pvCenter) final;

@@ -12,7 +12,6 @@
 #include "renderer/Shader.h"
 #include "renderer/trace.h"
 #include "renderer/VertexBuffer.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "utils/bulb.h"
@@ -930,40 +929,6 @@ void Light::AddPoint(int x, int y, const bool smooth)
 
    STOPUNDO
 }
-
-#ifndef __STANDALONE__
-void Light::DoCommand(int icmd, int x, int y)
-{
-   ISelect::DoCommand(icmd, x, y);
-
-   switch (icmd)
-   {
-   case ID_WALLMENU_FLIP:
-      FlipPointY(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_MIRROR:
-      FlipPointX(GetPointCenter());
-      break;
-
-   case ID_WALLMENU_ROTATE:
-      VPX::WinUI::RotatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_SCALE:
-      VPX::WinUI::ScalePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_TRANSLATE:
-      VPX::WinUI::TranslatePointsDialog(this);
-      break;
-
-   case ID_WALLMENU_ADDPOINT:
-      AddPoint(x, y, true);
-      break;
-   }
-}
-#endif
 
 STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
 {

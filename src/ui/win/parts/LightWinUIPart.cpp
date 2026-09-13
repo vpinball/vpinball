@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/light.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/LightWinUIPart.h"
 
 LightWinUIPart::LightWinUIPart(PinTableWnd* editor, Light* light)
-   : m_editor(editor)
+   : IWinUIPart(editor, light)
    , m_light(light)
 {
 }
@@ -124,4 +125,24 @@ void LightWinUIPart::EditMenu(CMenu& menu)
    menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_light->m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
    menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_light->m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
    menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_light->m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+}
+
+void LightWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_light->FlipPointY(m_light->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_light->FlipPointX(m_light->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_light); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_light); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_light); break;
+
+   case ID_WALLMENU_ADDPOINT: m_light->AddPoint(x, y, true); break;
+   }
 }

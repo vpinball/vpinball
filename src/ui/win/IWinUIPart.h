@@ -2,6 +2,8 @@
 
 class Sur;
 class IEditable;
+class ISelect;
+class PinTableWnd;
 namespace Win32xx
 {
 class CMenu;
@@ -10,6 +12,11 @@ class CMenu;
 class IWinUIPart
 {
 public:
+   IWinUIPart(PinTableWnd* editor, ISelect* select)
+      : m_editor(editor)
+      , m_select(select)
+   {
+   }
    virtual ~IWinUIPart() = default;
 
    // This function draws the shape of the object with a solid fill, called before the grid lines are drawn on the map
@@ -21,4 +28,11 @@ public:
 
    // Allows the part to customize the editor context menu before it is displayed
    virtual void EditMenu(Win32xx::CMenu& menu) { }
+
+   // Executes a command picked from the context menu
+   virtual void DoCommand(int icmd, int x, int y);
+
+protected:
+   PinTableWnd* const m_editor;
+   ISelect* const m_select;
 };

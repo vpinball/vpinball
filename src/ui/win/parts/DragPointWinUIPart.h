@@ -15,8 +15,8 @@ public:
    void UIRenderPass2(Sur* psur) override { }
 
    void EditMenu(Win32xx::CMenu& menu) override;
+   void DoCommand(int icmd, int x, int y) override;
 
 private:
-   PinTableWnd* const m_editor;
    DragPoint* const m_dragPoint;
 };

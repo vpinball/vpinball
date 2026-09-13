@@ -3,12 +3,13 @@
 #include "core/stdafx.h"
 
 #include "parts/surface.h"
+#include "ui/win/DragPointDialogs.h"
 #include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 #include "ui/win/parts/SurfaceWinUIPart.h"
 
 SurfaceWinUIPart::SurfaceWinUIPart(PinTableWnd* editor, Surface* surface)
-   : m_editor(editor)
+   : IWinUIPart(editor, surface)
    , m_surface(surface)
 {
 }
@@ -100,4 +101,24 @@ void SurfaceWinUIPart::RenderBlueprint(Sur* psur, const bool solid)
    m_surface->GetRgVertex(vvertex);
 
    psur->Polygon(vvertex);
+}
+
+void SurfaceWinUIPart::DoCommand(int icmd, int x, int y)
+{
+   IWinUIPart::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP: m_surface->FlipPointY(m_surface->GetPointCenter()); break;
+
+   case ID_WALLMENU_MIRROR: m_surface->FlipPointX(m_surface->GetPointCenter()); break;
+
+   case ID_WALLMENU_ROTATE: (void)VPX::WinUI::RotatePointsDialog(m_surface); break;
+
+   case ID_WALLMENU_SCALE: (void)VPX::WinUI::ScalePointsDialog(m_surface); break;
+
+   case ID_WALLMENU_TRANSLATE: (void)VPX::WinUI::TranslatePointsDialog(m_surface); break;
+
+   case ID_WALLMENU_ADDPOINT: m_surface->AddPoint(x, y, false); break;
+   }
 }

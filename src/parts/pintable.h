@@ -369,9 +369,6 @@ public:
    void RemoveFont(PinFont *const ppf);
    const vector<PinFont *> &GetFontList() const { return m_vfont; }
 
-#ifndef __STANDALONE__
-   void DoCommand(int icmd, int x, int y) final;
-#endif
    bool FMutilSelLocked();
 
    // Expected by CodeViewer
@@ -421,6 +418,7 @@ public:
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
 
    // FIXME both ISelect and IEditable
+   static inline constexpr ItemTypeEnum ItemType = eItemTable;
    ItemTypeEnum GetItemType() const final { return eItemTable; }
    PinTable *GetPTable() final { return this; }
    const PinTable *GetPTable() const final { return this; }

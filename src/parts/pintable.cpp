@@ -35,7 +35,6 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
 #include "ui/win/codeview.h"
-#include "ui/win/DragPointDialogs.h"
 #include "ui/win/hitsur.h"
 #include "ui/win/PinTableWnd.h"
 #include "ui/win/resource.h"
@@ -2763,73 +2762,6 @@ bool PinTable::FMutilSelLocked()
 
    return false;
 }
-
-#ifndef __STANDALONE__
-void PinTable::DoCommand(int icmd, int x, int y)
-{
-   if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
-   {
-      UpdateCollection(icmd & 0x000000FF);
-      return;
-   }
-
-   constexpr unsigned int ID_ASSIGN_TO_LAYER_MAX = ID_ASSIGN_TO_LAYER1 + NUM_ASSIGN_LAYERS - 1;
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER_MAX))
-   {
-      PartGroup *group = nullptr;
-      int layerIndex = icmd - ID_ASSIGN_TO_LAYER1;
-      for (IEditable *edit : m_vedit)
-      {
-         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
-         {
-            if (layerIndex == 0)
-               group = static_cast<PartGroup *>(edit);
-            layerIndex--;
-            if (layerIndex < 0)
-               break;
-         }
-      }
-      if (group)
-         AssignSelectionToPartGroup(group);
-      return;
-   }
-
-   if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
-   {
-      const int i = (icmd & 0x00FF0000) >> 16;
-      ISelect * const pisel = m_allHitElements[i];
-      pisel->DoCommand(icmd, x, y);
-      return;
-   }
-
-   switch (icmd)
-   {
-       case ID_DRAWINFRONT:
-       case ID_DRAWINBACK:
-       {
-           for (int i = 0; i < m_vmultisel.size(); i++)
-           {
-               ISelect *const psel = m_vmultisel.ElementAt(i);
-               _ASSERTE(psel != this); // Would make an infinite loop
-               psel->DoCommand(icmd, x, y);
-           }
-           break;
-       }
-       case ID_ASSIGN_TO_CURRENT_LAYER: m_vpinball->GetLayersListDialog()->AssignToSelectedGroup(); break;
-       case ID_EDIT_DRAWINGORDER_HIT: m_vpinball->ShowDrawingOrderDialog(false); break;
-       case ID_EDIT_DRAWINGORDER_SELECT: m_vpinball->ShowDrawingOrderDialog(true); break;
-       case ID_LOCK: LockElements(); break;
-       case ID_WALLMENU_FLIP: FlipY(GetCenter()); break;
-       case ID_WALLMENU_MIRROR: FlipX(GetCenter()); break;
-       case IDC_COPY: Copy(x, y); break;
-       case IDC_PASTE: Paste(false, x, y); break;
-       case IDC_PASTEAT: Paste(true, x, y); break;
-       case ID_WALLMENU_ROTATE: VPX::WinUI::RotatePointsDialog(this); break;
-       case ID_WALLMENU_SCALE: VPX::WinUI::ScalePointsDialog(this); break;
-       case ID_WALLMENU_TRANSLATE: VPX::WinUI::TranslatePointsDialog(this); break;
-   }
-}
-#endif
 
 void PinTable::UpdateCollection(const int index)
 {

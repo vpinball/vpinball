@@ -9,7 +9,7 @@
 
 
 BallWinUIPart::BallWinUIPart(PinTableWnd* editor, Ball* ball)
-   : m_editor(editor)
+   : IWinUIPart(editor, ball)
    , m_ball(ball)
 {
 }
