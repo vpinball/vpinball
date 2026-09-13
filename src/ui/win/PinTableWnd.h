@@ -105,6 +105,7 @@ private:
    void OnLeftDoubleClick(int x, int y);
    void OnLeftButtonDown(const short x, const short y);
    void DoLeftButtonDown(int x, int y, bool zoomIn);
+   void UseTool(int x, int y, int tool);
    void OnLeftButtonUp(int x, int y);
    void OnRightButtonDown(int x, int y);
    void OnRightButtonUp(int x, int y);
