@@ -389,7 +389,8 @@ void PinTableWnd::UIRenderPass2(Sur *const psur)
       psur->Rectangle(0, 0, EDITOR_BG_WIDTH, EDITOR_BG_HEIGHT);
    }
 
-   if (m_table->m_dragging)
+   IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
+   if (tablePart && tablePart->m_dragging)
    {
       psur->SetFillColor(-1);
       psur->SetBorderColor(RGB(0, 0, 0), true, 0);
@@ -876,7 +877,8 @@ void PinTableWnd::OnLeftButtonDown(const short x, const short y)
 
 void PinTableWnd::OnLeftButtonUp(int x, int y)
 {
-   if (!m_table->m_dragging) // Not doing band select
+   IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
+   if ((tablePart == nullptr) || !tablePart->m_dragging) // Not doing band select
    {
       for (int i = 0; i < m_table->m_vmultisel.size(); i++)
       {
@@ -893,48 +895,45 @@ void PinTableWnd::OnLeftButtonUp(int x, int y)
    }
    else
    {
-      if (m_table->m_dragging)
+      tablePart->m_dragging = false;
+      ReleaseCapture();
+      if ((m_table->m_rcDragRect.left != m_table->m_rcDragRect.right) || (m_table->m_rcDragRect.top != m_table->m_rcDragRect.bottom))
       {
-         m_table->m_dragging = false;
-         ReleaseCapture();
-         if ((m_table->m_rcDragRect.left != m_table->m_rcDragRect.right) || (m_table->m_rcDragRect.top != m_table->m_rcDragRect.bottom))
+         vector<ISelect *> vsel;
+
+         const CDC &dc = m_mdiTable->GetDC();
+
+         const CRect rc = m_mdiTable->GetClientRect();
+
+         HitRectSur *const phrs = new HitRectSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
+
+         // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
+         UIRenderPass2(phrs);
+
+         const int ksshift = GetKeyState(VK_SHIFT);
+         const bool add = ((ksshift & 0x80000000) != 0);
+         if (!add)
+            m_table->ClearMultiSel();
+
+         int minlevel = INT_MAX;
+
+         for (const auto &ptr : vsel)
+            minlevel = min(minlevel, ptr->GetSelectLevel());
+
+         if (!vsel.empty())
          {
-            vector<ISelect *> vsel;
+            size_t lastItemForUpdate = -1;
+            // first check which item is the last item to add to the multi selection
+            for (size_t i = 0; i < vsel.size(); i++)
+               if (vsel[i]->GetSelectLevel() == minlevel)
+                  lastItemForUpdate = i;
 
-            const CDC &dc = m_mdiTable->GetDC();
-
-            const CRect rc = m_mdiTable->GetClientRect();
-
-            HitRectSur *const phrs = new HitRectSur(GetZoom(), GetViewOffset().x, GetViewOffset().y, rc.right - rc.left, rc.bottom - rc.top, &m_table->m_rcDragRect, &vsel);
-
-            // Just want one rendering pass (no UIRenderPass1) so we don't select things twice
-            UIRenderPass2(phrs);
-
-            const int ksshift = GetKeyState(VK_SHIFT);
-            const bool add = ((ksshift & 0x80000000) != 0);
-            if (!add)
-               m_table->ClearMultiSel();
-
-            int minlevel = INT_MAX;
-
-            for (const auto &ptr : vsel)
-               minlevel = min(minlevel, ptr->GetSelectLevel());
-
-            if (!vsel.empty())
-            {
-               size_t lastItemForUpdate = -1;
-               // first check which item is the last item to add to the multi selection
-               for (size_t i = 0; i < vsel.size(); i++)
-                  if (vsel[i]->GetSelectLevel() == minlevel)
-                     lastItemForUpdate = i;
-
-               for (size_t i = 0; i < vsel.size(); i++)
-                  if (vsel[i]->GetSelectLevel() == minlevel)
-                     m_table->AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
-            }
-
-            delete phrs;
+            for (size_t i = 0; i < vsel.size(); i++)
+               if (vsel[i]->GetSelectLevel() == minlevel)
+                  m_table->AddMultiSel(vsel[i], true, (i == lastItemForUpdate), false); //last item updates the (multi-)selection in the editor
          }
+
+         delete phrs;
       }
       Redraw();
    }
@@ -1015,25 +1014,27 @@ void PinTableWnd::OnMouseMove(const int x, const int y)
       const Vertex2D v = m_table->TransformPoint(x, y);
       m_vpxEditor->SetPosCur(v.x, v.y);
 
-      if (!m_table->m_dragging) // Not doing band select
+      IWinUIPart *const tablePart = GetUIPart(m_table->GetISelect());
+      if ((tablePart == nullptr) || !tablePart->m_dragging) // Not doing band select
       {
          if ((x != m_ptLast.x) || (y != m_ptLast.y))
          {
             for (int i = 0; i < m_table->m_vmultisel.size(); i++)
             {
-               if (m_table->m_vmultisel[i].m_dragging && !m_table->m_vmultisel[i].GetIEditable()->m_uiLocked) // For drag points, follow the lock of the parent
+               ISelect *const pisel = m_table->m_vmultisel.ElementAt(i);
+               IWinUIPart *const uiPart = GetUIPart(pisel);
+               if (uiPart && uiPart->m_dragging && !pisel->GetIEditable()->m_uiLocked) // For drag points, follow the lock of the parent
                {
-                  if (!m_table->m_vmultisel[i].m_markedForUndo)
+                  if (!uiPart->m_markedForUndo)
                   {
-                     m_table->m_vmultisel[i].m_markedForUndo = true;
-                     m_table->m_vmultisel[i].GetIEditable()->BeginUndo();
-                     m_table->m_vmultisel[i].GetIEditable()->MarkForUndo();
+                     uiPart->m_markedForUndo = true;
+                     pisel->GetIEditable()->BeginUndo();
+                     pisel->GetIEditable()->MarkForUndo();
                   }
 
                   const float inv_zoom = 1.0f / GetZoom();
-                  m_table->m_vmultisel[i].MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
-                  if (IWinUIPart *const uiPart = GetUIPart(m_table->m_vmultisel.ElementAt(i)))
-                     uiPart->UpdateStatusBarObjectPos();
+                  pisel->MoveOffset((float)(x - m_ptLast.x) * inv_zoom, (float)(y - m_ptLast.y) * inv_zoom);
+                  uiPart->UpdateStatusBarObjectPos();
                   Redraw();
                }
             }

@@ -24,6 +24,10 @@ public:
    ISelect* GetSelect() const { return m_select; }
    IEditable* GetEditable() const { return m_select->GetIEditable(); }
 
+   bool m_dragging = false;
+
+   bool m_markedForUndo = false; // Flag set when dragged to enable undo
+
    // This function draws the shape of the object with a solid fill, called before the grid lines are drawn on the map
    virtual void UIRenderPass1(Sur* psur) = 0;
    // This function draws the shape of the object with a black outline (no solid fill), called after the grid lines have been drawn on the map.

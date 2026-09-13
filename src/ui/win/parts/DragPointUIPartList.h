@@ -27,6 +27,12 @@ public:
       return nullptr;
    }
 
+   bool IsDragging(ISelect* select)
+   {
+      const IWinUIPart* const part = Get(select);
+      return part && part->m_dragging;
+   }
+
 private:
    void Sync()
    {
