@@ -5,7 +5,6 @@
 
 #include "core/VPApp.h"
 #include "parts/Collection.h"
-#include "ui/win/sur.h"
 #include "ui/win/WinEditor.h"
 
 
